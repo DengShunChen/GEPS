@@ -1,0 +1,400 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jul 12 10:11:52 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/tco639l72/src_4cpl
+   Source file       : vartrix.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "vartrix"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine vartrix(vorten,divten,phiten,kk,k,          &
+               2                                              x,nn,m,nbig,jtrun,jtmax,isym,iflag)
+               3                     !
+               4                     !  purpose: Scatter between vorten, divten, phiten and x vector
+               5                     !-----------------------------------------------------------------------
+               6                     !  ****  input ****
+               7                     !  vorten  :  vorticity tendency(correction) array in spectrum domaon
+               8                     !  divten  :  divergence tendency(correction) array in spectrum domain
+               9                     !  phiten  :  geopotantial tendency(correction) array in spectrum domain
+              10                     !  x       : vector matrix( when iflag=-2)
+              11                     !  kk      : total vertical levels
+              12                     !  nn      : total number of variables in one dimension
+              13                     !            i.e. the size of the vector matrixs
+              14                     !  m       : horizontal wave number
+              15                     !  nbig    : how many  wave number for initialization
+              16                     !  isym    : = +1   :  symmetric case
+              17                     !            = -1   :  asymmetric case
+              18                     !  iflag   : = +2   :  variable tendency  to x vector (5.43)
+              19                     !              -2   :  x vector(correction) to (vors,divs,phis)
+              20                     !
+              21                     !  **** output ****
+              22                     !  vorten  :  vorticity tendency(correction) array in spectrum domaon
+              23                     !  divten  :  divergence tendency(correction) array in spectrum domain
+              24                     !  phiten  :  geopotantial tendency(correction) array in spectrum domain
+              25                     !  x       : vector matrix(when iglag=+2)
+              26                     !-----------------------------------------------------------------------
+              27                           use index
+              28                           use const, only: RTYPE
+              29                     
+              30                           implicit none
+              31                     
+              32                           integer  iflag,isym,nbig,m,k,kk,jtrun,jtmax,nn,l,j,n,i
+              33                     
+              34                           real(kind=RTYPE) vorten(kk,2,jtrun,jtmax),  &
+              35                                            divten(kk,2,jtrun,jtmax),  &
+              36                                            phiten(kk,2,jtrun,jtmax)
+              37                     !
+              38                             real x(nn,2)
+              39                     !
+              40                     
+              41                             l=mlist(m)
+              42                     
+              43                             j=0
+              44                             n=nbig/2
+              45                     
+              46     1                       if(iflag.eq.2)then
+              47     1               ! symmetric case
+              48     2                         if(isym.eq.1)then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 348
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.07, ITR: 40, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      x
+                                   <<< Loop-information  End >>>
+              49     3  pp    v                  do 100 i=1,n
+              50     3   p    v                    j=j+1
+              51     3   p    v                    x(j,1)=phiten(k,1,l,m)
+              52     3   p    v                    x(j,2)=phiten(k,2,l,m)
+              53     3   p    v                    j=j+1
+              54     3   p    v                    x(j,1)=divten(k,1,l,m)
+              55     3   p    v                    x(j,2)=divten(k,2,l,m)
+              56     3   p    v                    j=j+1
+              57     3   p    v                    x(j,1)=vorten(k,1,l+1,m)
+              58     3   p    v                    x(j,2)=vorten(k,2,l+1,m)
+              59     3   p    v                    l=l+2
+              60     3   p    v       100        continue
+              61     3                           if(mod(nbig,2).ne.0)then
+              62     3                             j=j+1
+              63     3                             x(j,1)=phiten(k,1,l,m)
+              64     3                             x(j,2)=phiten(k,2,l,m)
+              65     3                             j=j+1
+              66     3                             x(j,1)=divten(k,1,l,m)
+              67     3                             x(j,2)=divten(k,2,l,m)
+              68     3                           endif
+              69     2                         else if(isym.eq.-1)then
+              70     2               !  antiaymmetrix case
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 348
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.07, ITR: 40, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      x
+                                   <<< Loop-information  End >>>
+              71     3  pp    v                  do 110 i=1,n
+              72     3   p    v                    j=j+1
+              73     3   p    v                    x(j,1)=vorten(k,1,l,m)
+              74     3   p    v                    x(j,2)=vorten(k,2,l,m)
+              75     3   p    v                    j=j+1
+              76     3   p    v                    x(j,1)=phiten(k,1,l+1,m)
+              77     3   p    v                    x(j,2)=phiten(k,2,l+1,m)
+              78     3   p    v                    j=j+1
+              79     3   p    v                    x(j,1)=divten(k,1,l+1,m)
+              80     3   p    v                    x(j,2)=divten(k,2,l+1,m)
+              81     3   p    v                    l=l+2
+              82     3   p    v       110        continue
+              83     3                           if(mod(nbig,2).ne.0)then
+              84     3                             j=j+1
+              85     3                             x(j,1)=vorten(k,1,l,m)
+              86     3                             x(j,2)=vorten(k,2,l,m)
+              87     3                           endif
+              88     2                         endif
+              89     1                       else if(iflag.eq.-2)then
+              90     1               ! inverse transform
+              91     2                         if(isym.eq.1)then
+              92     2               ! symmmetrix case
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 348
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.07, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      x
+                                   <<< Loop-information  End >>>
+              93     3  pp    v                  do 120 i=1,n
+              94     3   p    v                    j=j+1
+              95     3   p    v                    phiten(k,1,l,m)=x(j,1)
+              96     3   p    v                    phiten(k,2,l,m)=x(j,2)
+              97     3   p    v                    j=j+1
+              98     3   p    v                    divten(k,1,l,m)=x(j,1)
+              99     3   p    v                    divten(k,2,l,m)=x(j,2)
+             100     3   p    v                    j=j+1
+             101     3   p    v                    vorten(k,1,l+1,m)=x(j,1)
+             102     3   p    v                    vorten(k,2,l+1,m)=x(j,2)
+             103     3   p    v                    l=l+2
+             104     3   p    v       120        continue
+             105     3                           if(mod(nbig,2).ne.0)then
+             106     3                             j=j+1
+             107     3                             phiten(k,1,l,m)=x(j,1)
+             108     3                             phiten(k,2,l,m)=x(j,2)
+             109     3                             j=j+1
+             110     3                             divten(k,1,l,m)=x(j,1)
+             111     3                             divten(k,2,l,m)=x(j,2)
+             112     3                           endif
+             113     2                         else if(isym.eq.-1)then
+             114     2               !  antiammetrix case
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 348
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.07, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      x
+                                   <<< Loop-information  End >>>
+             115     3  pp    v                  do 130 i=1,n
+             116     3   p    v                    j=j+1
+             117     3   p    v                    vorten(k,1,l,m)=x(j,1)
+             118     3   p    v                    vorten(k,2,l,m)=x(j,2)
+             119     3   p    v                    j=j+1
+             120     3   p    v                    phiten(k,1,l+1,m)=x(j,1)
+             121     3   p    v                    phiten(k,2,l+1,m)=x(j,2)
+             122     3   p    v                    j=j+1
+             123     3   p    v                    divten(k,1,l+1,m)=x(j,1)
+             124     3   p    v                    divten(k,2,l+1,m)=x(j,2)
+             125     3   p    v                    l=l+2
+             126     3   p    v       130        continue
+             127     3                           if(mod(nbig,2).ne.0)then
+             128     3                             j=j+1
+             129     3                             vorten(k,1,l,m)=x(j,1)
+             130     3                             vorten(k,2,l,m)=x(j,2)
+             131     3                           endif
+             132     2                         endif
+             133     1                       endif
+             134                     !
+             135                             return
+             136                             end
+
+ Procedure information
+   Lines      : 136
+   Statements : 95
+   Stack(byte): 2192
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : vartrix
+   Attribute and Cross reference of name
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 28
+     divten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  34
+      |(Definition)     : 98  99  110  111  123  124
+      |(Reference)      : 54  55  66  67  79  80
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 32
+      |(Definition)     : 49  71  93  115
+      |(Reference)      : 
+     iflag
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  32
+      |(Definition)     : 
+      |(Reference)      : 46  89
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 27
+     isym
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  32
+      |(Definition)     : 
+      |(Reference)      : 48  69  91  113
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 32
+      |(Definition)     : 43  50  53  56  62  65  72  75  78  84  94  97  100  106  109  116  119  122  128
+      |(Reference)      : 50  51  52  53  54  55  56  57  58  62  63  64  65  66  67  72  73  74  75  76  77  78  79  80  84  85  86  94  95  96  97  98  99  100  101  102  106  107  108  109  110  111  116  117  118  119  120  121  122  123  124  128  129  130
+     jtmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  32
+      |(Definition)     : 
+      |(Reference)      : 34  34  34
+     jtrun
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  32
+      |(Definition)     : 
+      |(Reference)      : 34  34  34
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  32
+      |(Definition)     : 
+      |(Reference)      : 51  52  54  55  57  58  63  64  66  67  73  74  76  77  79  80  85  86  95  96  98  99  101  102  107  108  110  111  117  118  120  121  123  124  129  130
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  32
+      |(Definition)     : 
+      |(Reference)      : 34  34  34
+     l
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 32
+      |(Definition)     : 41  59  81  103  125
+      |(Reference)      : 51  52  54  55  57  58  59  63  64  66  67  73  74  76  77  79  80  81  85  86  95  96  98  99  101  102  103  107  108  110  111  117  118  120  121  123  124  125  129  130
+     m
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  32
+      |(Definition)     : 
+      |(Reference)      : 41  51  52  54  55  57  58  63  64  66  67  73  74  76  77  79  80  85  86  95  96  98  99  101  102  107  108  110  111  117  118  120  121  123  124  129  130
+     mlist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 41
+     mod
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 61  83  105  127
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 32
+      |(Definition)     : 44
+      |(Reference)      : 49  71  93  115
+     nbig
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  32
+      |(Definition)     : 
+      |(Reference)      : 44  61  83  105  127
+     nn
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  32
+      |(Definition)     : 
+      |(Reference)      : 38
+     phiten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  34
+      |(Definition)     : 95  96  107  108  120  121
+      |(Reference)      : 51  52  63  64  76  77
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 28  34
+     vartrix
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     vorten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  34
+      |(Definition)     : 101  102  117  118  129  130
+      |(Reference)      : 57  58  73  74  85  86
+     x
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  38
+      |(Definition)     : 51  52  54  55  57  58  63  64  66  67  73  74  76  77  79  80  85  86
+      |(Reference)      : 95  96  98  99  101  102  107  108  110  111  117  118  120  121  123  124  129  130
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        100  execution     (Definition) 60  
+                           (Reference)  49
+        110  execution     (Definition) 82  
+                           (Reference)  71
+        120  execution     (Definition) 104  
+                           (Reference)  93
+        130  execution     (Definition) 126  
+                           (Reference)  115
+
+ Total information
+   Procedures       : 1
+   Total lines      : 136
+   Total statements : 95
+   Total stack(byte): 2192
+   Total prefetch num: 0
+

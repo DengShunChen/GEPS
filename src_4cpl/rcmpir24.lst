@@ -1,0 +1,1408 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jul 12 10:11:42 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/tco639l72/src_4cpl
+   Source file       : rcmpir24.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "rcmpir24"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine rcmpir24( nr,nx,lev,bf,ee,ww1,ww2,ww,ttau,ffu,ffd )
+               2                     !
+               3                     ! **********************************************************************
+               4                     ! In this subroutine, the two- and four- stream combination  scheme  or
+               5                     ! the source function technique (Toon et al. 1989) is used to calculate
+               6                     ! the IR radiative fluxes. The exponential approximation for the Planck
+               7                     ! function in optical depth is used ( Fu, 1991).
+               8                     ! At IR wavelengths, the two-stream results are not exact in the limit
+               9                     ! of no scattering. It also introduces large error in the case of sca-
+              10                     ! ttering. Since the no-scattering limit is of considerable significance
+              11                     ! at IR wavelengths, we have used  the source function technique  that
+              12                     ! would be exact in the limit of the pure absorption and would also en-
+              13                     ! hance the accuracy of the two-stream approach when scattering occurs
+              14                     ! in the IR wavelengths.
+              15                     ! Here, we use nq Gauss points to obtain the fluxes: when nq=2, we use
+              16                     ! double Gaussian quadrature as in Fu and Liou (1993) for  four-stream
+              17                     ! approximation; when nq = 3, we use the regular Gauss quadrature  but
+              18                     ! u1*w1+u2*w2+u3*w3=1.0.
+              19                     !
+              20                     ! ++ input/output variables:
+              21                     !    (1) input variables :
+              22                     !        nr    : number of grid points to calculate ir flux
+              23                     !        nx    : horizontal dimension of input array
+              24                     !        lev   : number of vertical layers
+              25                     !        bf    : blockbody intensity function integrated over
+              26                     !                the band "ib"
+              27                     !                bf(1~lev+1) : atmospheric levels
+              28                     !                bf(lev+2)   : surface level
+              29                     !        ee    : ground surface emissivity
+              30                     !        ww1~2 : first two coeff. of legendre polynomials for
+              31                     !                the scattering phase function
+              32                     !        ww    : single scattering albedo
+              33                     !        ttau(lev+1) : total optical depth from top to reference level
+              34                     !
+              35                     !    (2) output variables :
+              36                     !        ffu
+              37                     !        ffd
+              38                     !
+              39                     ! ++ auther :
+              40                     !    original : fu and liou (1992)
+              41                     !    modified : c. t. fong (1996)
+              42                     !    modify to f90 by C-H Lee in 2015
+              43                     !
+              44                     ! **********************************************************************
+              45                           use paramt
+              46                     
+              47                           implicit  none
+              48                     !
+              49                     !fong parameter ( nq = 1 )  ! souce function techn. for two streams
+              50                           integer, parameter :: nq = 2 ! .............. for four streams
+              51                     !fong parameter ( nq = 3 )  ! ..................... for six streams
+              52                     !
+              53                           integer   nr,nx,lev
+              54                     
+              55                           real      bf(nx*(lev+2)),ee(nx),ww1(nx*lev),ww2(nx*lev),ww(nx*lev), &
+              56                                     ttau(nx*(lev+1))
+              57                           real      ffu(nx*(lev+1)),ffd(nx*(lev+1))
+              58                     !
+              59                     !   local working arrays
+              60                     !
+              61                     !     include '../include/paramt.h'
+              62                     !
+              63                           real      w1(ilm),w(ilm),qu0(ilm),f0(ilm),tau(im*(lm+1))
+              64                           real      lamdan(ilm)
+              65                           real      ug(nq),wg(nq),ugwg(nq)
+              66                           real      gamman(ilm),caddn(ilm),                &
+              67                                     cminn(ilm),caddn0(ilm),cminn0(ilm),    &
+              68                                     aa(ilm),bb(ilm),expn(ilm)
+              69                           real      f(ilm),xn(ilm),yn(ilm),zn(ilm)
+              70                           real      etri(im,lm*2,4),alfa(im*(lm+1)),beta(ilm)
+              71                           real      fg(ilm),fh(ilm),fj(ilm),fk(ilm)
+              72                           real      fiu(im*(lm+1),nq),fid(im*(lm+1),nq),fx(ilm,nq),&
+              73                                     fz1(ilm,nq),fz2(ilm,nq),fuq1(ilm),fuq2(ilm)
+              74                           real      wk1(im),wk2(im)
+              75                     !
+              76                     !6st  data ug / 0.238619, 0.661209, 0.932469 /
+              77                     !6st  data wg / 0.467914, 0.360762, 0.171324 /
+              78                     !6st  data ugwg / 0.109475, 0.233886, 0.156639 /
+              79                           data ug / 0.2113248, 0.7886752 /
+              80                           data wg / 0.5, 0.5 /
+              81                           data ugwg / 0.105662, 0.394338 /
+              82                     !2st  data ug / 0.5 /
+              83                     !2st  data wg / 1.0 /
+              84                     !2st  data ugwg / 0.5 /
+              85                     !
+              86                           integer   nrn,nrn1,lev2,i,j,jk,jj,j2n,j2n1,jkes,jke,jje,j2m1,j2m,nst
+              87                           real      sqrt3,rsqrt3,pi,ugts1,fw,q1,dtau,q2,x,gamma1,gamma2,z,rsfc
+              88                           real      ssfc,wm1,wm2,y1,y,rugts1,xx,xxm1
+              89                     
+              90                           nrn  = nr*lev
+              91                           nrn1 = nr*(lev+1)
+              92                           lev2 = lev*2
+              93                           sqrt3= sqrt(3.)
+              94                           rsqrt3= 1./sqrt3
+              95                           pi   = 4.*atan(1.)
+              96                           ugts1 = 0.5
+              97                     !
+              98                     !fong01
+              99                     ! incorporate a delta-function adjustment to account for the forward
+             100                     ! diffraction  peak in the context of the two stream approximations.
+             101                     ! w1(n),  w(n), and tau(n+1) are the adjusted parameters.
+             102                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1334
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ww2, f
+                                   <<< Loop-information  End >>>
+             103     1  pp   2v            do 6 i =1, nrn
+             104     1   p   2v            f(i) = ww2(i) / 5.0
+             105     1   p   2v          6 continue
+             106                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tau
+                                   <<< Loop-information  End >>>
+             107     1  pp   4v            do 7 i = 1, nr
+             108     1   p   4v            tau(i) = 0.
+             109     1   p   4v          7 continue
+             110                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 341
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.63, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      f, ww, ttau, ww1, w1, f0, w
+                                   <<< Loop-information  End >>>
+             111     1  pp    v            do 10 i = 1, nrn
+             112     1   p    v            fw = 1.0 - f(i) * ww(i)
+             113     1   p    v            w1(i) = ( ww1(i) - 3.0 * f(i) ) / ( 1.0 - f(i) )
+             114     1   p    v            w(i)  = ( 1.0 - f(i) ) * ww(i) / fw
+             115     1   p    v            f0(i) = (ttau(i+nr) - ttau(i)) * fw
+             116     1   p    v         10 continue
+             117                     !
+             118     1                     do 12 j = 1, lev
+             119     1                     jk = j*nr
+             120     1                     jj = jk-nr
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 889
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      f0, tau
+                                   <<< Loop-information  End >>>
+             121     2  pp   2v            do 12 i = 1, nr
+             122     2   p   2v            tau(i+jk) = tau(i+jj) + f0(i+jj)
+             123     1   p   2v         12 continue
+             124                     !fong01
+             125                     !
+             126                     !fong01.1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 39
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.72, ITR: 56, MVE: 3, POL: L)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      w, bf, qu0, f0, tau, beta
+                                   <<< Loop-information  End >>>
+             127     1  pp    v            do 15 i = 1, nrn
+             128     1   p    v            q1 = log( bf(i+nr)/bf(i) )
+             129     1   p    v            if( abs(q1) .lt. 1.0e-10 ) q1 = 1.0e-10
+             130     1   p    v            dtau = tau(i+nr) - tau(i)
+             131     1   p    v            dtau = max(0.000001, dtau)
+             132     1               !cc   q2 = 1.0 / ( tau(i+nr) - tau(i) )
+             133     1   p    v            q2 = 1.0 / dtau
+             134     1   p    v            f0(i)  = 2.0 * ( 1.0 - w(i) ) * bf(i)
+             135     1   p    v            qu0(i) = - 1.0 / ( q1 * q2 )
+             136     1   p    v            beta(i)= -1.0 / qu0(i)
+             137     1   p    v         15 continue
+             138                     !fong01.1
+             139                     !
+             140                     !fong02
+             141                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 843
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 208, MVE: 7, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      w
+                                   <<< Loop-information  End >>>
+             142     1  pp   2v            do 20 i = 1, nrn
+             143     1   p   2v            w(i) = min ( w(i), 0.999999 )
+             144     1   p   2v         20 continue
+             145                     !
+             146                     !
+             147                     ! The following is used to calculate the coefficients for hemispheric
+             148                     ! mean two streams.
+             149                     ! The  hemispheric  mean scheme is derived by assuming that the phase
+             150                     ! function is equal to 1 + g in  the forward scattering hemisphere
+             151                     ! and 1 - g  in  the  backward scattering hemisphere where g is the
+             152                     ! asymmetry factor.   The hemispheric mean is only used for infrared
+             153                     ! wavelengths (Toon et al. 1989).
+             154                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 37
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.86, ITR: 48, MVE: 2, POL: L)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      lamdan, cminn0, caddn0, cminn, caddn, f0
+                                   <<<      tau, gamman, beta, w1, w
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 0
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 2  FILL 9
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             155     1  pp    v            do 40 i = 1, nrn
+             156     1   p    v            x = w(i) * w1(i) / 3.0
+             157     1   p    v            gamma1 = 2.0 - w(i) - x
+             158     1   p    v            gamma2 = w(i) - x
+             159     1               !vpp  lamdan(i) = exp( 0.5*log((gamma1 + gamma2)*(gamma1 - gamma2)) )
+             160     1   p    v            lamdan(i) = sqrt((gamma1 + gamma2)*(gamma1 - gamma2))
+             161     1   p    v            gamman(i) = gamma2 / ( gamma1 + lamdan(i) )
+             162     1   p    v            fw = pi * f0(i)
+             163     1   p    v            x = exp ( beta(i) * ( tau(i+nr) - tau(i) ) )
+             164     1   p    v            z = lamdan(i) * lamdan(i) - beta(i) * beta(i)
+             165     2   p    v            if(abs(z) .lt. 1.0e-6)then
+             166     2   p    v             beta(i) = beta(i)+beta(i)*0.01
+             167     2   p    v             z = lamdan(i) * lamdan(i) - beta(i) * beta(i)
+             168     2   p    v            end if
+             169     1   p    v            caddn0(i) = fw * ( ( gamma1 + beta(i) ) + gamma2 ) / z
+             170     1   p    v            cminn0(i) = fw * ( ( gamma1 - beta(i) ) + gamma2 ) / z
+             171     1   p    v            caddn(i) = caddn0(i) * x
+             172     1   p    v            cminn(i) = cminn0(i) * x
+             173     1   p    v         40 continue
+             174                     !fong02
+             175                     !
+             176                     !fong03
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 41
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.07, ITR: 64, MVE: 3, POL: L)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      gamman, xn, lamdan, expn, yn, zn, tau
+                                   <<< Loop-information  End >>>
+             177     1  pp    v            do 50 i = 1, nrn
+             178     1   p    v            dtau = tau(i+nr) - tau(i)
+             179     1   p    v            expn(i) = exp ( - lamdan(i) * dtau )
+             180     1   p    v            xn(i) = gamman(i) * expn(i)
+             181     1   p    v            yn(i) = ( expn(i) - gamman(i) ) / ( xn(i) - 1.0 )
+             182     1   p    v            zn(i) = ( expn(i) + gamman(i) ) / ( xn(i) + 1.0 )
+             183     1   p    v         50 continue
+             184                     !fong03
+             185                     !
+             186                     !fong04
+             187                     !
+             188                     !  etri : tridiagonal matrix for eq(39) in toon et al. (1989)
+             189                     !  etri(i,k,m) : i=1,nr (horizontal grids), k=1,2*lev (vertical levels)
+             190                     !                mm=1,4 (1:a, 2:b, 3:d, 4:e, a,b,d,e refer to eq(39))
+             191                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 616
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.66, ITR: 48, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cminn0, xn, etri
+                                   <<< Loop-information  End >>>
+             192     1  pp    v            do 110 i = 1, nr
+             193     1   p    v            etri(i,1,1) = 0.0
+             194     1   p    v            etri(i,1,2) = xn(i) + 1.0
+             195     1   p    v            etri(i,1,3) = xn(i) - 1.0
+             196     1   p    v            etri(i,1,4) = - cminn0(i)
+             197     1   p    v        110 continue
+             198                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      caddn, cminn, zn, caddn0, expn, gamman
+                                   <<<      xn, cminn0, yn, etri
+                                   <<<    PREFETCH(SOFT) : 16
+                                   <<<     SEQUENTIAL : 16
+                                   <<<      gamman: 4, etri: 12
+                                   <<< Loop-information  End >>>
+             199     1  pp                 do 150 j = 1, lev-1
+             200     1   p                 jk = j*nr
+             201     1   p                 jj = jk-nr
+             202     1   p                 j2n = j+j
+             203     1   p                 j2n1= j2n+1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.79, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      caddn, caddn0, gamman, expn, cminn
+                                   <<<      cminn0, xn, zn, etri, yn
+                                   <<<    PREFETCH(SOFT) : 14
+                                   <<<     SEQUENTIAL : 14
+                                   <<<      etri: 12, gamman: 2
+                                   <<< Loop-information  End >>>
+             204     2   p    v            do 150 i = 1, nr
+             205     2   p    v            etri(i,j2n,1) = 1.0+xn(i+jj)-yn(i+jk)*(gamman(i+jj)+expn(i+jj))
+             206     2   p    v            etri(i,j2n,2) = 1.0-xn(i+jj)-yn(i+jk)*(gamman(i+jj)-expn(i+jj))
+             207     2   p    v            etri(i,j2n,3) = yn(i+jk)*(1.0+xn(i+jk))-expn(i+jk)-gamman(i+jk)
+             208     2   p    v            etri(i,j2n,4) = caddn0(i+jk)-caddn(i+jj)-yn(i+jk) *             &
+             209     2                               ( cminn0(i+jk)-cminn(i+jj) )
+             210     2   p    v            etri(i,j2n1,1) = gamman(i+jj)-expn(i+jj)-zn(i+jj)*(1.0-xn(i+jj))
+             211     2   p    v            etri(i,j2n1,2) = -1.0-xn(i+jk)+zn(i+jj)*(expn(i+jk)+gamman(i+jk))
+             212     2   p    v            etri(i,j2n1,3) = zn(i+jj)*(expn(i+jk)-gamman(i+jk))-xn(i+jk)+1.0
+             213     2   p    v            etri(i,j2n1,4) = cminn0(i+jk)-cminn(i+jj)-zn(i+jj) *            &
+             214     2                                ( caddn0(i+jk)-caddn(i+jj) )
+             215     1   p    v        150 continue
+             216                     !fong04
+             217                     !
+             218                     !fong05
+             219                           jkes= (lev+1)*nr
+             220                           jke = lev*nr
+             221                           jje = jke-nr
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 286
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.90, ITR: 72, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      bf, expn, xn, etri, ee, cminn, caddn
+                                   <<<      gamman
+                                   <<< Loop-information  End >>>
+             222     1  pp    v            do 170 i = 1, nr
+             223     1   p    v            rsfc = 1.0 - ee(i)
+             224     1   p    v            ssfc = pi * ( bf(i+jkes) * ee(i) )
+             225     1   p    v            wm1 = 1.0 - rsfc * gamman(i+jje)
+             226     1   p    v            wm2 = xn(i+jje) - rsfc * expn(i+jje)
+             227     1   p    v            etri(i,lev2,1) = wm1 + wm2
+             228     1   p    v            etri(i,lev2,2) = wm1 - wm2
+             229     1   p    v            etri(i,lev2,3) = 0.0
+             230     1   p    v            etri(i,lev2,4) = rsfc * cminn(i+jje) - caddn(i+jje) + ssfc
+             231     1   p    v        170 continue
+             232                     !fong05
+             233                     !
+             234                     !fong06
+             235                     !  solve a tridiagonal matrix using gaussian elimination
+             236                     !
+             237                           call trigau ( etri, nx, nr, lev2, lev2, 0 )
+             238                     !fong06
+             239                     !
+             240                     !fong07
+             241                     !
+             242                     !  aa : Y1 + Y2 as in the table 3 of toon et al. (1989)
+             243                     !  bb : Y1 - Y2    .......
+             244                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      etri, bb, aa
+                                   <<< Loop-information  End >>>
+             245     1                     do 180 j = 1, lev
+             246     1                     jk = j*nr
+             247     1                     jj = jk-nr
+             248     1                     j2m1 = j+j-1
+             249     1                     j2m  = j+j
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 667
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 128, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      bb, etri, aa
+                                   <<< Loop-information  End >>>
+             250     2  pp   2v            do 180 i = 1, nr
+             251     2   p   2v            aa(i+jj) = etri(i,j2m1,4) + etri(i,j2m,4)
+             252     2   p   2v            bb(i+jj) = etri(i,j2m1,4) - etri(i,j2m,4)
+             253     1   p   2v        180 continue
+             254                     !fong07
+             255                     !
+             256                     !fong08
+             257                     !
+             258                     !  compute parameters of the source function, eq(53) and (54)
+             259                     !  in toon et al. (1989)
+             260                     !  notice : there is a little difference here from original eqs.
+             261                     !           because of the different approximation to an emitting
+             262                     !           source of plank function used by fu(1992)
+             263                     !
+             264                     !  fg, fh, fj, fk : parameter G, H, J, K of the table 3 respectively
+             265                     !  fuq1 * (2*pi*bf) : the rest of terms for upward source function
+             266                     !  fuq2 * (2*pi*bf) : the rest of terms for downward source function
+             267                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 356
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.68, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      lamdan, w1, beta, w, fuq2, fuq1
+                                   <<< Loop-information  End >>>
+             268     1  pp    v            do 210 i =1, nrn
+             269     1   p    v            x = 2.0 * ( 1.0 - w(i) ) * w(i) / ( lamdan(i) *   &
+             270     1                         lamdan(i) - beta(i) * beta(i) )
+             271     1   p    v            y1 = w1(i) / 3.0
+             272     1   p    v            y = 2.0 * ( 1.0 - w(i) * y1 )
+             273     1   p    v            z = -y1 * beta(i)
+             274     1   p    v            fuq1(i) = x * ( y - z ) + 1.0 - w(i)
+             275     1   p    v            fuq2(i) = x * ( y + z ) + 1.0 - w(i)
+             276     1   p    v        210 continue
+             277                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1334
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      bf, alfa
+                                   <<< Loop-information  End >>>
+             278     1  pp   2v            do 220 i = 1, nrn1
+             279     1   p   2v            alfa(i) = 2. * pi * bf(i)
+             280     1   p   2v        220 continue
+             281                     !
+             282                           rugts1 = 1.0 / ugts1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 445
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.42, ITR: 64, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fk, bb, lamdan, aa, fg, gamman, fj, fh
+                                   <<< Loop-information  End >>>
+             283     1  pp    v            do 230 i = 1, nrn
+             284     1   p    v            y = gamman(i) * ( rugts1 + lamdan(i) )
+             285     1   p    v            z = rugts1 - lamdan(i)
+             286     1   p    v            fg(i) = aa(i) * z
+             287     1   p    v            fh(i) = bb(i) * y
+             288     1   p    v            fj(i) = aa(i) * y
+             289     1   p    v            fk(i) = bb(i) * z
+             290     1   p    v        230 continue
+             291                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<< Loop-information  End >>>
+             292     1  pp                 do 250 nst = 1, nq
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fid
+                                   <<< Loop-information  End >>>
+             293     2   p   4v            do 250 i = 1, nr
+             294     2   p   4v            fid(i,nst) = 0.0
+             295     1   p   4v        250 continue
+             296                     !
+             297                     !  use the source function technique to compute fluxes at each level
+             298                     !  ,which are eq(55) and (56) of toon et al. (1989)
+             299                     !
+             300                     !  form the way down
+             301                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      beta, tau, gamman, expn, lamdan, fx, fz1
+                                   <<<      fz2
+                                   <<< Loop-information  End >>>
+             302     1                     do 300 nst = 1, nq
+             303     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 39
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.39, ITR: 72, MVE: 3, POL: L)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fz2, expn, fx, lamdan, gamman, fz1, beta
+                                   <<<      tau
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 0
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 15
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             304     2  pp    v            do 280 i = 1, nrn
+             305     2   p    v            fx(i,nst) = exp ( - ( tau(i+nr) - tau(i) ) / ug(nst) )
+             306     2   p    v            xx = lamdan(i) * ug(nst)
+             307     2   p    v            xxm1 = xx - 1.0
+             308     2   p    v            if(abs(xxm1) .lt. 1.0e-6) xx = lamdan(i)*(ug(nst)+ug(nst)*0.01)
+             309     2   p    v            fz1(i,nst) = ( 1.0 - fx(i,nst) * expn(i) ) / ( xx + 1.0 )
+             310     2   p    v            fz2(i,nst) = ( fx(i,nst) - expn(i) ) / ( xx - 1.0 )
+             311     2   p    v            gamman(i) = ug(nst)*beta(i) + 1.0
+             312     2   p    v            if(abs(gamman(i)).lt.1.0e-6)                          &
+             313     2                        gamman(i) = (ug(nst)+ug(nst)*0.01)*beta(i) + 1.0
+             314     2   p    v        280 continue
+             315     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      gamman, fuq2, fk, alfa, fx, fz2, fj, fz1
+                                   <<<      fid
+                                   <<< Loop-information  End >>>
+             316     2                     do 290 j = 1, lev
+             317     2                     jk = j*nr
+             318     2                     jj = jk-nr
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 272
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.70, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      gamman, fuq2, fj, fz1, fid, fx, alfa, fk
+                                   <<<      fz2
+                                   <<< Loop-information  End >>>
+             319     3  pp    v            do 290 i = 1, nr
+             320     3   p    v            fid(i+jk,nst) = fid(i+jj,nst)*fx(i+jj,nst) + fj(i+jj)             &
+             321     3                                   * fz1(i+jj,nst) + fk(i+jj)*fz2(i+jj,nst)            &
+             322     3               !org 2              + 1.0/( ug(nst)*beta(i+jj) + 1.0 )
+             323     3                                   + 1.0/gamman(i+jj)                                  &
+             324     3                                   * (alfa(i+jk)-alfa(i+jj)*fx(i+jj,nst)) * fuq2(i+jj)
+             325     2   p    v        290 continue
+             326     1               
+             327     1                 300 continue
+             328                     !
+             329                     !  fluxes at the surface
+             330                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wk1
+                                   <<< Loop-information  End >>>
+             331     1  pp   4v            do 400 i = 1, nr
+             332     1   p   4v            wk1(i) = 0.0
+             333     1   p   4v        400 continue
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fid, wk1
+                                   <<< Loop-information  End >>>
+             334     1                     do 410 nst = 1, nq
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 800
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 192, MVE: 7, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fid, wk1
+                                   <<< Loop-information  End >>>
+             335     2  pp   2v            do 410 i = 1, nr
+             336     2   p   2v            wk1(i) = wk1(i) + ugwg(nst) * fid(i+jke,nst)
+             337     1   p   2v        410 continue
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 640
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.12, ITR: 128, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      bf, ee, wk1, wk2
+                                   <<< Loop-information  End >>>
+             338     1  pp   2v            do 420 i = 1, nr
+             339     1   p   2v            wk2(i) = wk1(i)*(1.0-ee(i))*2.0 + 2.*pi*ee(i)*bf(i+jkes)
+             340     1   p   2v        420 continue
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wk2, fiu
+                                   <<< Loop-information  End >>>
+             341     1  pp                 do 430 nst = 1, nq
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wk2, fiu
+                                   <<< Loop-information  End >>>
+             342     2   p   2v            do 430 i = 1, nr
+             343     2   p   2v            fiu(i+jke,nst) = wk2(i)
+             344     1   p   2v        430 continue
+             345                     !
+             346                     !  from the way up
+             347                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      beta, gamman
+                                   <<< Loop-information  End >>>
+             348     1                     do 500 nst = 1, nq
+             349     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 843
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 160, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      beta, gamman
+                                   <<< Loop-information  End >>>
+             350     2  pp   2v            do 480 i = 1, nrn
+             351     2   p   2v            gamman(i) = ug(nst)*beta(i) - 1.0
+             352     2   p   2v            if(abs(gamman(i)) .lt. 1.0e-6)                   &
+             353     2                        gamman(i)=(ug(nst)+ug(nst)*0.01)*beta(i)-1.0
+             354     2   p   2v        480 continue
+             355     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      gamman, fuq1, fh, alfa, fx, fz1, fg, fz2
+                                   <<<      fiu
+                                   <<< Loop-information  End >>>
+             356     2                     do 490 j = lev, 1, -1
+             357     2                     jk = j*nr
+             358     2                     jj = jk-nr
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 272
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.70, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      gamman, fuq1, fg, fz2, fiu, fx, alfa, fh
+                                   <<<      fz1
+                                   <<< Loop-information  End >>>
+             359     3  pp    v            do 490 i = 1, nr
+             360     3   p    v            fiu(i+jj,nst) = fiu(i+jk,nst)*fx(i+jj,nst) + fg(i+jj)             &
+             361     3                                   * fz2(i+jj,nst) + fh(i+jj)*fz1(i+jj,nst)            &
+             362     3               !rog 2              + 1.0/( ug(nst)*beta(i+jj)-1.0 )
+             363     3                                   + 1.0/gamman(i+jj)                                  &
+             364     3                                   * (alfa(i+jk)*fx(i+jj,nst)-alfa(i+jj)) * fuq1(i+jj)
+             365     2   p    v        490 continue
+             366     1               
+             367     1                 500 continue
+             368                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1455
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ffd, ffu
+                                   <<< Loop-information  End >>>
+             369     1  pp   2v            do 600 i = 1, nrn1
+             370     1   p   2v            ffu(i) = 0.0
+             371     1   p   2v            ffd(i) = 0.0
+             372     1   p   2v        600 continue
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fid, ffd, ffu, fiu
+                                   <<< Loop-information  End >>>
+             373     1                     do 700 nst = 1, nq
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 534
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 88, MVE: 6, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fid, ffd, ffu, fiu
+                                   <<< Loop-information  End >>>
+             374     2  pp    v            do 700 i = 1,  nrn1
+             375     2   p    v            ffu(i) = ffu(i) + ugwg(nst) * fiu(i,nst)
+             376     2   p    v            ffd(i) = ffd(i) + ugwg(nst) * fid(i,nst)
+             377     1   p    v        700 continue
+             378                     !fong08
+             379                           return
+             380                           end
+
+ Procedure information
+   Lines      : 380
+   Statements : 208
+   Stack(byte): 6560
+   Prefetch num: 30
+
+ Scoping unit of external sub-program : rcmpir24
+   Attribute and Cross reference of name
+     aa
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 66
+      |(Definition)     : 251
+      |(Reference)      : 286  288
+     abs
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 129  165  308  312  352
+     alfa
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 70
+      |(Definition)     : 279
+      |(Reference)      : 320  320  360  360
+     atan
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 95
+     bb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 66
+      |(Definition)     : 252
+      |(Reference)      : 287  289
+     beta
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 70
+      |(Definition)     : 136  166
+      |(Reference)      : 163  164  164  166  166  167  167  169  170  269  269  273  311  312  351  352
+     bf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 128  128  134  224  279  339
+     caddn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 66
+      |(Definition)     : 171
+      |(Reference)      : 208  213  230
+     caddn0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 66
+      |(Definition)     : 169
+      |(Reference)      : 171  208  213
+     cminn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 66
+      |(Definition)     : 172
+      |(Reference)      : 208  213  230
+     cminn0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 66
+      |(Definition)     : 170
+      |(Reference)      : 172  196  208  213
+     dtau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 87
+      |(Definition)     : 130  131  178
+      |(Reference)      : 131  133  179
+     ee
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 223  224  339  339
+     etri
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 70
+      |(Definition)     : 193  194  195  196  205  206  207  208  210  211  212  213  227  228  229  230  237
+      |(Reference)      : 251  251  252  252
+     exp
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 163  179  305
+     expn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 66
+      |(Definition)     : 179
+      |(Reference)      : 180  181  182  205  206  207  210  211  212  226  309  310
+     f
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 69
+      |(Definition)     : 104
+      |(Reference)      : 112  113  113  114
+     f0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 115  134
+      |(Reference)      : 122  162
+     ffd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  57
+      |(Definition)     : 371  376
+      |(Reference)      : 376
+     ffu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  57
+      |(Definition)     : 370  375
+      |(Reference)      : 375
+     fg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 71
+      |(Definition)     : 286
+      |(Reference)      : 360
+     fh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 71
+      |(Definition)     : 287
+      |(Reference)      : 360
+     fid
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 72
+      |(Definition)     : 294  320
+      |(Reference)      : 320  336  376
+     fiu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 72
+      |(Definition)     : 343  360
+      |(Reference)      : 360  375
+     fj
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 71
+      |(Definition)     : 288
+      |(Reference)      : 320
+     fk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 71
+      |(Definition)     : 289
+      |(Reference)      : 320
+     fuq1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 72
+      |(Definition)     : 274
+      |(Reference)      : 360
+     fuq2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 72
+      |(Definition)     : 275
+      |(Reference)      : 320
+     fw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 87
+      |(Definition)     : 112  162
+      |(Reference)      : 114  115  169  170
+     fx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 72
+      |(Definition)     : 305
+      |(Reference)      : 309  310  320  320  360  360
+     fz1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 72
+      |(Definition)     : 309
+      |(Reference)      : 320  360
+     fz2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 72
+      |(Definition)     : 310
+      |(Reference)      : 320  360
+     gamma1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 87
+      |(Definition)     : 157
+      |(Reference)      : 160  160  161  169  170
+     gamma2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 87
+      |(Definition)     : 158
+      |(Reference)      : 160  160  161  169  170
+     gamman
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 66
+      |(Definition)     : 161  311  312  351  352
+      |(Reference)      : 180  181  182  205  206  207  210  211  212  225  284  312  320  352  360
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 86
+      |(Definition)     : 103  107  111  121  127  142  155  177  192  204  222  250  268  278  283  293  304  319  331  335  338  342  350  359  369  374
+      |(Reference)      : 104  104  108  112  112  113  113  113  113  114  114  114  115  115  115  122  122  122  128  128  130  130  134  134  134  135  136  136  143  143  156  156  157  158  160  161  161  162  163  163  163  164  164  164  164  166  166  166  167  167  167  167  169  169  170  170  171  171  172  172  178  178  179  179  180  180  180  181  181  181  181  182  182  182  182  193  194  194  195  195  196  196  205  205  205  205  205  206  206  206  206  206  207  207  207  207  207  208  208  208  208  208  208  210  210  210  210  210  211  211  211  211  211  212  212  212  212  212  213  213  213  213  213  213  223  224  224  225  226  226  227  228  229  230  230  230  251  251  251  252  252  252  269  269  269  269  269  269  271  272  273  274  274  275  275  279  279  284  284  285  286  286  287  287  288  288  289  289  294  305  305  305  306  308  309  309  309  310  310  310  311  311  312  312  312  320  320  320  320  320  320  320  320  320  320  320  320  332  336  336  336  339  339  339  339  339  343  343  351  351  352  352  352  360  360  360  360  360  360  360  360  360  360  360  360  370  371  375  375  375  376  376  376
+     ilm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 63  63  63  63  64  66  66  66  66  66  66  66  66  69  69  69  69  70  71  71  71  71  72  72  72  72  72
+     im
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 63  70  70  72  72  74  74
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 86
+      |(Definition)     : 118  199  245  316  356
+      |(Reference)      : 119  200  202  202  246  248  248  249  249  317  357
+     j2m
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 86
+      |(Definition)     : 249
+      |(Reference)      : 251  252
+     j2m1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 86
+      |(Definition)     : 248
+      |(Reference)      : 251  252
+     j2n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 86
+      |(Definition)     : 202
+      |(Reference)      : 203  205  206  207  208
+     j2n1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 86
+      |(Definition)     : 203
+      |(Reference)      : 210  211  212  213
+     jj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 86
+      |(Definition)     : 120  201  247  318  358
+      |(Reference)      : 122  122  205  205  205  206  206  206  208  208  210  210  210  210  211  212  213  213  213  251  252  320  320  320  320  320  320  320  320  320  320  360  360  360  360  360  360  360  360  360  360
+     jje
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 86
+      |(Definition)     : 221
+      |(Reference)      : 225  226  226  230  230
+     jk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 86
+      |(Definition)     : 119  200  246  317  357
+      |(Reference)      : 120  122  201  205  206  207  207  207  207  208  208  208  211  211  211  212  212  212  213  213  247  318  320  320  358  360  360
+     jke
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 86
+      |(Definition)     : 220
+      |(Reference)      : 221  336  343
+     jkes
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 86
+      |(Definition)     : 219
+      |(Reference)      : 224  339
+     lamdan
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 160
+      |(Reference)      : 161  164  164  167  167  179  269  269  284  285  306  308
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  53
+      |(Definition)     : 
+      |(Reference)      : 55  55  55  55  55  57  57  90  91  92  118  199  219  220  245  316  356
+     lev2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 86
+      |(Definition)     : 92  237  237
+      |(Reference)      : 227  228  229  230
+     lm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 63  70  70  72  72
+     log
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 128
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 131
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 143
+     nq
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 50
+      |(Definition)     : 
+      |(Reference)      : 65  65  65  72  72  72  72  72  292  302  334  341  348  373
+     nr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  53
+      |(Definition)     : 237
+      |(Reference)      : 90  91  107  115  119  120  121  128  130  163  178  192  200  201  204  219  220  221  222  246  247  250  293  305  317  318  319  331  335  338  342  357  358  359
+     nrn
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 86
+      |(Definition)     : 90
+      |(Reference)      : 103  111  127  142  155  177  268  283  304  350
+     nrn1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 86
+      |(Definition)     : 91
+      |(Reference)      : 278  369  374
+     nst
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 86
+      |(Definition)     : 292  302  334  341  348  373
+      |(Reference)      : 294  305  305  306  308  308  309  309  310  310  311  312  312  320  320  320  320  320  320  336  336  343  351  352  352  360  360  360  360  360  360  375  375  376  376
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  53
+      |(Definition)     : 237
+      |(Reference)      : 55  55  55  55  55  55  57  57
+     paramt
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 45
+     pi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 87
+      |(Definition)     : 95
+      |(Reference)      : 162  224  279  339
+     q1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 87
+      |(Definition)     : 128  129
+      |(Reference)      : 129  135
+     q2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 87
+      |(Definition)     : 133
+      |(Reference)      : 135
+     qu0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 135
+      |(Reference)      : 136
+     rcmpir24
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     rsfc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 87
+      |(Definition)     : 223
+      |(Reference)      : 225  226  230
+     rsqrt3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 87
+      |(Definition)     : 94
+      |(Reference)      : 
+     rugts1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 88
+      |(Definition)     : 282
+      |(Reference)      : 284  285
+     sqrt
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 93  160
+     sqrt3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 87
+      |(Definition)     : 93
+      |(Reference)      : 94
+     ssfc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 88
+      |(Definition)     : 224
+      |(Reference)      : 230
+     tau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 108  122
+      |(Reference)      : 122  130  130  163  163  178  178  305  305
+     trigau
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 237
+     ttau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 115  115
+     ug
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 65  79
+      |(Definition)     : 
+      |(Reference)      : 305  306  308  308  311  312  312  351  352  352
+     ugts1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 87
+      |(Definition)     : 96
+      |(Reference)      : 282
+     ugwg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 65  81
+      |(Definition)     : 
+      |(Reference)      : 336  375  376
+     w
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 114  143
+      |(Reference)      : 134  143  156  157  158  269  269  272  274  275
+     w1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 113
+      |(Reference)      : 156  271
+     wg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 65  80
+      |(Definition)     : 
+      |(Reference)      : 
+     wk1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 74
+      |(Definition)     : 332  336
+      |(Reference)      : 336  339
+     wk2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 74
+      |(Definition)     : 339
+      |(Reference)      : 343
+     wm1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 88
+      |(Definition)     : 225
+      |(Reference)      : 227  228
+     wm2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 88
+      |(Definition)     : 226
+      |(Reference)      : 227  228
+     ww
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 112  114
+     ww1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 113
+     ww2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 104
+     x
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 87
+      |(Definition)     : 156  163  269
+      |(Reference)      : 157  158  171  172  274  275
+     xn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 69
+      |(Definition)     : 180
+      |(Reference)      : 181  182  194  195  205  206  207  210  211  212  226
+     xx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 88
+      |(Definition)     : 306  308
+      |(Reference)      : 307  309  310
+     xxm1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 88
+      |(Definition)     : 307
+      |(Reference)      : 308
+     y
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 88
+      |(Definition)     : 272  284
+      |(Reference)      : 274  275  287  288
+     y1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 88
+      |(Definition)     : 271
+      |(Reference)      : 272  273
+     yn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 69
+      |(Definition)     : 181
+      |(Reference)      : 205  206  207  208
+     z
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 87
+      |(Definition)     : 164  167  273  285
+      |(Reference)      : 165  169  170  274  275  286  289
+     zn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 69
+      |(Definition)     : 182
+      |(Reference)      : 210  211  212  213
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+          6  execution     (Definition) 105  
+                           (Reference)  103
+          7  execution     (Definition) 109  
+                           (Reference)  107
+         10  execution     (Definition) 116  
+                           (Reference)  111
+         12  execution     (Definition) 123  
+                           (Reference)  118  121
+         15  execution     (Definition) 137  
+                           (Reference)  127
+         20  execution     (Definition) 144  
+                           (Reference)  142
+         40  execution     (Definition) 173  
+                           (Reference)  155
+         50  execution     (Definition) 183  
+                           (Reference)  177
+        110  execution     (Definition) 197  
+                           (Reference)  192
+        150  execution     (Definition) 215  
+                           (Reference)  199  204
+        170  execution     (Definition) 231  
+                           (Reference)  222
+        180  execution     (Definition) 253  
+                           (Reference)  245  250
+        210  execution     (Definition) 276  
+                           (Reference)  268
+        220  execution     (Definition) 280  
+                           (Reference)  278
+        230  execution     (Definition) 290  
+                           (Reference)  283
+        250  execution     (Definition) 295  
+                           (Reference)  292  293
+        280  execution     (Definition) 314  
+                           (Reference)  304
+        290  execution     (Definition) 325  
+                           (Reference)  316  319
+        300  execution     (Definition) 327  
+                           (Reference)  302
+        400  execution     (Definition) 333  
+                           (Reference)  331
+        410  execution     (Definition) 337  
+                           (Reference)  334  335
+        420  execution     (Definition) 340  
+                           (Reference)  338
+        430  execution     (Definition) 344  
+                           (Reference)  341  342
+        480  execution     (Definition) 354  
+                           (Reference)  350
+        490  execution     (Definition) 365  
+                           (Reference)  356  359
+        500  execution     (Definition) 367  
+                           (Reference)  348
+        600  execution     (Definition) 372  
+                           (Reference)  369
+        700  execution     (Definition) 377  
+                           (Reference)  373  374
+
+ Total information
+   Procedures       : 1
+   Total lines      : 380
+   Total statements : 208
+   Total stack(byte): 6560
+   Total prefetch num: 30
+

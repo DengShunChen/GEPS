@@ -1,0 +1,2098 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jul 12 10:12:45 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/tco639l72/src_4cpl
+   Source file       : out2d.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "out2d"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine out2d (nx,lev,my,my_max,ifilout,itau,idtg,taudir,ntau &
+               2                            ,hflux,qflux,tg,gwet,snr,z0,raintot,raincu,rainlp               &
+               3                            ,plcl,cumtop,ss,rs,alb,gwclim,glob,acld                         &
+               4                            ,ugws,vgws,t2,q2,rh2,rh10,u10,v10,gfx,rld,sld,wk_xy             &
+               5                     !       ,soil_xy,canopy,ggdef,lwrite,flash)
+               6                            ,soil_xy,canopy,ggdef)
+               7                     !
+               8                           use rank
+               9                           use mpe
+              10                           use index
+              11                           use mod_outflds
+              12                           use mod_grb2_param
+              13                           use const ,only:outgrb2 ,outdms ,domfc ,RTYPE,kflag
+              14                     !
+              15                           implicit  none
+              16                     
+              17                           integer   nx,lev,my,my_max,itau,ntau
+              18                     
+              19                           real      hflux(nxp,my_max),qflux(nxp,my_max),                       &
+              20                                     tg(nxp,my_max),gwet(nxp,my_max),                           &
+              21                                     snr(nxp,my_max),z0(nxp,my_max),                            &
+              22                                     raintot(nxp,my_max),raincu(nxp,my_max),rainlp(nxp,my_max), &
+              23                                     plcl(nxp,my_max),cumtop(nxp,my_max),                       &
+              24                                     ss(nxp,my_max),rs(nxp,my_max),                             &
+              25                                     alb(nxp,my_max),gwclim(nxp,my_max),acld(lev,my),           &
+              26                                     ugws(nxp,my_max),vgws(nxp,my_max),t2(nxp,my_max),          &
+              27                                     q2(nxp,my_max),rh2(nxp,my_max),rh10(nxp,my_max),           &
+              28                                     u10(nxp,my_max),v10(nxp,my_max),gfx(nxp,my_max),           &
+              29                                     rld(nxp,my_max),sld(nxp,my_max)
+              30                     
+              31                           character*16 taudir(ntau)
+              32                           character*4 ggdef
+              33                           character::varkey*6
+              34                           integer*8 idtg
+              35                     !
+              36                           real(kind=RTYPE) glob(nx,my),mout(nx,my)
+              37                     !
+              38                     !  local array
+              39                     !
+              40                           real(kind=RTYPE) globp(nxp,my_max)
+              41                     !
+              42                           real(kind=RTYPE) wk_xy(nxp,my_max,12),soil_xy(nxp,my_max,12)
+              43                     !soil
+              44                           real      canopy(nxp,my_max)
+              45                     !
+              46                           character*80 ifilout
+              47                           character*26 ihdg,ihdg2
+              48                           character*6  label(ntau),labx
+              49                           character*1  lflg
+              50                     !
+              51                           integer   num,n,levz,lenc,lenc2,i,ia,kk,j,jj,nxj,istat,nc,ilev
+              52                           real      tnshun
+              53                     !kc >
+              54                           real      sfac2,sfac3,sfac4
+              55                           integer::praint
+              56                     !kc <
+              57                     !      logical lwrite
+              58                     !xb110>
+              59                     !      real flash(nxp,my_max)  !flash density (in flashes km^-2 day^-1)
+              60                     !xb110<
+              61                     
+              62                           num= 0
+              63                           nc = 0
+              64                           if(myrank .eq. 0) print *,' out2d ntau=',ntau
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 2  FILL 11
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+              65     1                     do 20 n=1,ntau
+              66     1                     read(taudir(n),'(a6,1x,i4)') labx,levz
+              67     2                     if(levz.eq.0) then
+              68     2                     num= num+1
+              69     2                     label(num)= labx
+              70     2                     if(myrank .eq. 0) print *,'num= ',num,' out2d labx=',labx
+              71     2                     endif
+              72     1                  20 continue
+              73                     
+              74                           if(num.eq.0) return
+              75                     
+              76                     !
+              77                           tnshun= 1.0
+              78                           lenc= nx*my
+              79                           lenc2= lev*my
+              80                     !
+              81                     !  change the letter from uppercase to lowercase
+              82                     !
+              83     1                     do n = 1, num
+              84     1                     labx = label(n)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+              85     2       f             do i = 1, 6
+              86     2       f              ia=ichar(labx(i:i))
+              87     3       f              if((ia.ge.65).and.(ia.le.90))then
+              88     3       f                ia=ia+32
+              89     3       f                labx(i:i)=char(ia)
+              90     3       f              endif
+              91     2       f             enddo
+              92     1                     label(n) = labx
+              93     1                     enddo
+              94                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      acld
+                                   <<< Loop-information  End >>>
+              95     1                     do 30 kk=1,num
+              96     1               
+              97     1               !surface albedo  0 - 1.0
+              98     2                     if(label(kk).eq.'s00030') then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      alb, globp
+                                   <<< Loop-information  End >>>
+              99     2  pp   4v            globp=alb
+             100     2                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             101     2                     call syslbl ('s00030',idtg,itau,ggdef,ihdg)
+             102     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             103     2                     if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             104     2                     if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,19,1,3,1,0,0.,glob)
+             105     2                     go to 30
+             106     2                     endif
+             107     1               !surface roughness(m)
+             108     2                     if(label(kk).eq.'s00040') then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      z0, globp
+                                   <<< Loop-information  End >>>
+             109     2  pp   4v            globp=z0
+             110     2                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             111     2                     call syslbl ('s00040',idtg,itau,ggdef,ihdg)
+             112     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             113     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             114     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,1,2,1,0,0.,glob)
+             115     2                     go to 30
+             116     2                     endif
+             117     1               
+             118     1               !   ---------- Precipitation ----------
+             119     1               !
+             120     2                     if(label(kk).eq.'b00620')then
+             121     2               !
+             122     2               !cumulus parameterization precipitation
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      raincu, globp
+                                   <<< Loop-information  End >>>
+             123     2  pp   4v            globp=raincu
+             124     2                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             125     2                     call syslbl ('b00630',idtg,itau,ggdef,ihdg)
+             126     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             127     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             128     3                     if(outgrb2==1.and.myrank==0)then
+             129     3                       praint=mod(itau,12)
+             130     3                       if(praint==0)praint=12
+             131     3                       call wrt_grb2_accu(itau,0,1,10,2,103,0,0.,1,praint,glob)
+             132     3                     endif
+             133     2               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rainlp, globp
+                                   <<< Loop-information  End >>>
+             134     2  pp   4v            globp=rainlp
+             135     2                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             136     2                     call syslbl ('b00640',idtg,itau,ggdef,ihdg)
+             137     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             138     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             139     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,47,2,103,0,0.,1,praint,glob)
+             140     2               !total precipitation  every 12 hour reset to zero (mm)
+             141     2                     call syslbl ('b00620',idtg,itau,ggdef,ihdg)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rainlp, raincu, globp
+                                   <<< Loop-information  End >>>
+             142     3  pp                 do 98 jj=1,jlistnum
+             143     3   p                    j=jlist1(jj)
+             144     3   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 144, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rainlp, raincu, globp
+                                   <<< Loop-information  End >>>
+             145     4   p   2v            do 98 i=1,nxj
+             146     4   p   2v              globp(i,jj)=raincu(i,jj)+rainlp(i,jj)
+             147     3   p   2v       98   continue
+             148     2                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             149     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             150     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             151     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,8,2,103,0,0.,1,praint,glob)
+             152     2               !accu. total precipitation from tau 0
+             153     3                     if( itau==0 .or.  itau .gt. nint(domfc) )then
+             154     3               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      raintot, globp
+                                   <<< Loop-information  End >>>
+             155     3  pp   4v            globp=raintot
+             156     3                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             157     3                     call syslbl ('b0062t',idtg,itau,ggdef,ihdg)
+             158     3                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             159     3                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             160     3                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,49,0,103,0,0.,glob)
+             161     3                     endif !domfc
+             162     2                     go to 30
+             163     2                     endif
+             164     1               !snow depth of water state at the surface (mm)
+             165     2                     if(label(kk).eq.'b00650') then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      snr, globp
+                                   <<< Loop-information  End >>>
+             166     2  pp   4v            globp=snr
+             167     2                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             168     2                     call syslbl ('b00650',idtg,itau,ggdef,ihdg)
+             169     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             170     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             171     2                     if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,1,60,2,103,0,0.,glob)
+             172     2                     go to 30
+             173     2                     endif
+             174     1               !atmosphere column precipitable water (mm)
+             175     2                     if(label(kk).eq.'x00590') then
+             176     2                     call unify_reduceintp(nx,my,my_max,wk_xy(1,1,4),glob)
+             177     2                     call syslbl ('x00590',idtg,itau,ggdef,ihdg)
+             178     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             179     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             180     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,3,2,10,0,0.,glob)
+             181     2                     go to 30
+             182     2                     endif
+             183     1               !   ---------- short wave Radiation ----------
+             184     1               !net shortwave solar flux at the surface
+             185     2                     if(label(kk).eq.'s00310') then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ss, globp
+                                   <<< Loop-information  End >>>
+             186     2  pp   4v            globp=ss
+             187     2                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             188     2                     call syslbl ('s00310',idtg,itau,ggdef,ihdg)
+             189     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             190     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             191     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,4,9,2,1,0,0.,glob)
+             192     2                     go to 30
+             193     2                     endif
+             194     1               !net radiation flux at the surface
+             195     2                     if(label(kk).eq.'s00300') then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rs, ss, globp
+                                   <<< Loop-information  End >>>
+             196     3  pp                 do jj=1,jlistnum
+             197     3   p                    j=jlist1(jj)
+             198     3   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 144, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rs, ss, globp
+                                   <<< Loop-information  End >>>
+             199     4   p   2v            do i=1,nxj
+             200     4   p   2v              globp(i,jj)=ss(i,jj)-rs(i,jj)
+             201     4   p   2v            enddo
+             202     3   p                 enddo
+             203     2                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             204     2                     call syslbl ('s00300',idtg,itau,ggdef,ihdg)
+             205     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             206     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             207     2                     if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,4,0,2,1,0,0.,glob)
+             208     2                     go to 30
+             209     2                     endif
+             210     1               !donwward shortwave radiation at the surface
+             211     2                     if(label(kk).eq.'s003u0') then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sld, globp
+                                   <<< Loop-information  End >>>
+             212     2  pp   4v            globp=sld
+             213     2                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             214     2                     call syslbl ('s003u0',idtg,itau,ggdef,ihdg)
+             215     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             216     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             217     2                     if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,4,7,2,1,0,0.,glob)
+             218     2                     go to 30
+             219     2                     endif
+             220     1               !solar absorption at the top atmosphere
+             221     2                     if(label(kk).eq.'x00330') then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      plcl, globp
+                                   <<< Loop-information  End >>>
+             222     2  pp   4v            globp=plcl
+             223     2                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             224     2                     call syslbl ('x00330',idtg,itau,ggdef,ihdg)
+             225     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             226     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             227     2                     if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,4,1,2,8,0,0.,glob)
+             228     2                     go to 30
+             229     2                     endif
+             230     1               !   ---------- long wave Radiation ----------
+             231     1               !net longwave infrared flux at the surface
+             232     2                     if(label(kk).eq.'s00320') then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rs, globp
+                                   <<< Loop-information  End >>>
+             233     2  pp   4v            globp=rs
+             234     2                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             235     2                     call syslbl ('s00320',idtg,itau,ggdef,ihdg)
+             236     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             237     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             238     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,5,5,2,1,0,0.,glob)
+             239     2                     go to 30
+             240     2                     endif
+             241     1               !downward longwave radiation at the surface
+             242     2                     if(label(kk).eq.'s003x0') then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rld, globp
+                                   <<< Loop-information  End >>>
+             243     2  pp   4v            globp=rld
+             244     2                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             245     2                     call syslbl ('s003x0',idtg,itau,ggdef,ihdg)
+             246     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             247     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             248     2                     if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,5,3,2,1,0,0.,glob)
+             249     2                     go to 30
+             250     2                     endif
+             251     1               !outgoing longwave radiation (OLR)
+             252     1               !net longwave flux at the top atmosphere
+             253     2                     if(label(kk).eq.'x00340') then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cumtop, globp
+                                   <<< Loop-information  End >>>
+             254     2  pp   4v            globp=cumtop
+             255     2                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             256     2                     call syslbl ('x00340',idtg,itau,ggdef,ihdg)
+             257     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             258     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             259     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,5,5,2,8,0,0.,glob)
+             260     2                     go to 30
+             261     2                     endif
+             262     1               !   ---------- Heat flux ----------
+             263     1               !sensible heat flux at the surface
+             264     2                     if(label(kk).eq.'s00420') then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      hflux, globp
+                                   <<< Loop-information  End >>>
+             265     2  pp   4v            globp=hflux
+             266     2                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             267     2                     call syslbl ('s00420',idtg,itau,ggdef,ihdg)
+             268     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             269     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             270     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,0,11,2,1,0,0.,glob)
+             271     2                     go to 30
+             272     2                     endif
+             273     1               !lentent heat flux at the surface
+             274     2                     if(label(kk).eq.'s00430') then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qflux, globp
+                                   <<< Loop-information  End >>>
+             275     2  pp   4v            globp=qflux
+             276     2                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             277     2                     call syslbl ('s00430',idtg,itau,ggdef,ihdg)
+             278     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             279     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             280     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,0,10,2,1,0,0.,glob)
+             281     2                     go to 30
+             282     2                     endif
+             283     1               !ground heat flux
+             284     2                     if(label(kk).eq.'s00440') then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      gfx, globp
+                                   <<< Loop-information  End >>>
+             285     2  pp   4v            globp=gfx
+             286     2                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             287     2                     call syslbl ('s00440',idtg,itau,ggdef,ihdg)
+             288     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             289     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             290     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,10,2,1,0,0.,glob)
+             291     2                     go to 30
+             292     2                     endif
+             293     1               !u conponent of surface grivity wave stress
+             294     2                     if(label(kk).eq.'s00450') then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ugws, globp
+                                   <<< Loop-information  End >>>
+             295     2  pp   4v            globp=ugws
+             296     2                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             297     2                     call syslbl ('s00450',idtg,itau,ggdef,ihdg)
+             298     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             299     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             300     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,3,16,2,1,0,0.,glob)
+             301     2                     go to 30
+             302     2                     endif
+             303     1               !v conponent of surface grivity wave stress
+             304     2                     if(label(kk).eq.'s00460') then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vgws, globp
+                                   <<< Loop-information  End >>>
+             305     2  pp   4v            globp=vgws
+             306     2                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             307     2                     call syslbl ('s00460',idtg,itau,ggdef,ihdg)
+             308     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             309     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             310     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,3,17,2,1,0,0.,glob)
+             311     2                     go to 30
+             312     2                     endif
+             313     1               !   ---------- temperature ----------
+             314     1               !land suface tempaerature or sea surface temperature
+             315     2                     if(label(kk).eq.'s00100') then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tg, globp
+                                   <<< Loop-information  End >>>
+             316     2  pp   4v            globp=tg
+             317     2                     call unify_reduceintp_idw(nx,my,my_max,globp,glob)
+             318     2                     call syslbl ('s00100',idtg,itau,ggdef,ihdg)
+             319     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             320     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             321     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,0,17,2,1,0,0.,glob)
+             322     2                     go to 30
+             323     2                     endif
+             324     1               !land skin air temperature (the model lowest)
+             325     2                     if(label(kk).eq.'b00100') then
+             326     2                     call unify_reduceintp(nx,my,my_max,wk_xy(1,1,1),glob)
+             327     2                     call syslbl ('b00100',idtg,itau,ggdef,ihdg)
+             328     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             329     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             330     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,0,0,2,103,0,0.,glob)
+             331     2                     go to 30
+             332     2                     endif
+             333     1               ! 2m temerature
+             334     2                     if(label(kk).eq.'b02100') then
+             335     3                     if( itau==0 .or. itau .gt. nint(domfc) )then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      t2, globp
+                                   <<< Loop-information  End >>>
+             336     3  pp   4v            globp=t2
+             337     3                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             338     3                     call syslbl ('b02100',idtg,itau,ggdef,ihdg)
+             339     3                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             340     3                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             341     3                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,0,0,2,103,0,2.,glob)
+             342     3                     endif !domfc
+             343     2                     go to 30
+             344     2                     endif
+             345     1               !   ---------- wind component ----------
+             346     1               !skin u component ( model lowest)
+             347     2                     if(label(kk).eq.'b00200') then
+             348     2                     call unify_reduceintp(nx,my,my_max,wk_xy(1,1,2),glob)
+             349     2                     call syslbl ('b00200',idtg,itau,ggdef,ihdg)
+             350     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             351     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             352     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,2,2,2,103,0,0.,glob)
+             353     2                     go to 30
+             354     2                     endif
+             355     1               !skinvu component ( model lowest)
+             356     2                     if(label(kk).eq.'b00210') then
+             357     2                     call unify_reduceintp(nx,my,my_max,wk_xy(1,1,3),glob)
+             358     2                     call syslbl ('b00210',idtg,itau,ggdef,ihdg)
+             359     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             360     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             361     2                     if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,2,3,2,103,0,0.,glob)
+             362     2                     go to 30
+             363     2                     endif
+             364     1               !10m u component
+             365     2                     if(label(kk).eq.'b10200') then
+             366     3                     if( itau==0 .or. itau .gt. nint(domfc) )then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      u10, globp
+                                   <<< Loop-information  End >>>
+             367     3  pp   4v            globp=u10
+             368     3                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             369     3                     call syslbl ('b10200',idtg,itau,ggdef,ihdg)
+             370     3                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             371     3                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             372     3                     if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,2,2,2,103,0,10.,glob)
+             373     3                     endif !domfc
+             374     2                     go to 30
+             375     2                     endif
+             376     1               !10m v component
+             377     2                     if(label(kk).eq.'b10210') then
+             378     3                     if( itau==0 .or.  itau .gt. nint(domfc) )then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      v10, globp
+                                   <<< Loop-information  End >>>
+             379     3  pp   4v            globp=v10
+             380     3                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             381     3                     call syslbl ('b10210',idtg,itau,ggdef,ihdg)
+             382     3                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             383     3                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             384     3                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,2,3,2,103,0,10.,glob)
+             385     3                     endif !domfc
+             386     2                     go to 30
+             387     2                     endif
+             388     1               !   ---------- humidity ----------
+             389     1               !skin relative humidity (model lowest)
+             390     2                     if(label(kk).eq.'b00510') then
+             391     2                     call unify_reduceintp(nx,my,my_max,wk_xy(1,1,5),glob)
+             392     2                     call syslbl ('b00510',idtg,itau,ggdef,ihdg)
+             393     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             394     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             395     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,1,2,103,0,0.,glob)
+             396     2                     go to 30
+             397     2                     endif
+             398     1               !2m specific humidity
+             399     2                     if(label(kk).eq.'b02500') then
+             400     3                     if( itau==0 .or. itau .gt. nint(domfc) )then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      q2, globp
+                                   <<< Loop-information  End >>>
+             401     3  pp   4v            globp=q2
+             402     3                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             403     3                     call syslbl ('b02500',idtg,itau,ggdef,ihdg)
+             404     3                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             405     3                     if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             406     3                     if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,1,0,6,103,0,2.,glob)
+             407     3                     endif !domfc
+             408     2                     go to 30
+             409     2                     endif
+             410     1               !2m relative humidity
+             411     2                     if(label(kk).eq.'b02510') then
+             412     3                     if( itau==0 .or. itau .gt. nint(domfc) )then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rh2, globp
+                                   <<< Loop-information  End >>>
+             413     4  pp                 do 37 jj=1,jlistnum
+             414     4   p                   j=jlist1(jj)
+             415     4   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rh2, globp
+                                   <<< Loop-information  End >>>
+             416     5   p   2v            do 37 i=1,nxj
+             417     5   p   2v              globp(i,jj)=rh2(i,jj) * 100.0
+             418     4   p   2v       37   continue
+             419     3                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             420     3                     call syslbl ('b02510',idtg,itau,ggdef,ihdg)
+             421     3                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             422     3                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             423     3                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,1,2,103,0,2.,glob)
+             424     3                     endif !domfc
+             425     2                     go to 30
+             426     2                     endif
+             427     1               !10m relative humidity
+             428     2                     if(label(kk).eq.'b10510') then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rh10, globp
+                                   <<< Loop-information  End >>>
+             429     3  pp                 do 38 jj=1,jlistnum
+             430     3   p                    j=jlist1(jj)
+             431     3   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rh10, globp
+                                   <<< Loop-information  End >>>
+             432     4   p   2v            do 38 i=1,nxj
+             433     4   p   2v              globp(i,jj)=rh10(i,jj) * 100.0
+             434     3   p   2v       38   continue
+             435     2                     call unify_reduceintp(nx,my,my_max,globp,glob)
+             436     2                     call syslbl ('b10510',idtg,itau,ggdef,ihdg)
+             437     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             438     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             439     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,1,2,103,0,10.,glob)
+             440     2                     go to 30
+             441     2                     endif
+             442     1               !
+             443     1               !   ---------- Soil and Land model ----------
+             444     1               !ground wetness 0 - 1.0
+             445     2                     if(label(kk).eq.'s005a0') then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      gwet, globp
+                                   <<< Loop-information  End >>>
+             446     3  pp                 do 36 jj=1,jlistnum
+             447     3   p                    j=jlist1(jj)
+             448     3   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      gwet, globp
+                                   <<< Loop-information  End >>>
+             449     4   p   2v            do 36 i=1,nxj
+             450     4   p   2v              globp(i,jj)=gwet(i,jj)/20.
+             451     3   p   2v       36   continue
+             452     2                     call unify_reduceintp_idw(nx,my,my_max,globp,glob)
+             453     2                     call syslbl ('s005a0',idtg,itau,ggdef,ihdg)
+             454     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             455     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             456     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,3,1,0,0.,glob)
+             457     2                     go to 30
+             458     2                     endif
+             459     1               !soil moisture content (mm)
+             460     2                     if(label(kk).eq.'s005a1') then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      gwet, globp
+                                   <<< Loop-information  End >>>
+             461     2  pp   4v            globp=gwet
+             462     2                     call unify_reduceintp_idw(nx,my,my_max,globp,glob)
+             463     2                     call syslbl ('s005a1',idtg,itau,ggdef,ihdg)
+             464     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             465     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             466     2                     if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,2,0,3,2,1,0,0.,glob)
+             467     2                     go to 30
+             468     2                     endif
+             469     1               !canopy moisture content(mm)
+             470     2                     if(label(kk).eq.'s005c0') then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      canopy, globp
+                                   <<< Loop-information  End >>>
+             471     2  pp   4v            globp=canopy
+             472     2                     call unify_reduceintp_idw(nx,my,my_max,globp,glob)
+             473     2                     call syslbl ('s005c0',idtg,itau,ggdef,ihdg)
+             474     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             475     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             476     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,19,2,1,0,0.,glob)
+             477     2                     go to 30
+             478     2                     endif
+             479     1               
+             480     1               ! s**5b0
+             481     1               !
+             482     1               !   s01??? = sa1??? = L01???   0-10cm
+             483     1               !   s02??? =                  10-200cm
+             484     1               !   s03??? = sa2??? = L02???  10-40cm
+             485     1               !   s04??? = sa3??? = L03???  40-100cm
+             486     1               !   s05??? = sa4??? = L04???  100-200cm
+             487     1               !
+             488     1               !
+             489     1               ! 0-10cm Volumetric soil moisture fraction (0-1.0)
+             490     2                     if(label(kk).eq.'sa15b0') then
+             491     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,1),glob)
+             492     2                     call syslbl ('sa15b0',idtg,itau,ggdef,ihdg)
+             493     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             494     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             495     2                     if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,2,0,9,2,151,0,1.,glob)
+             496     2                     go to 30
+             497     2                     endif
+             498     1               
+             499     1               ! 10-40cm Volumetric soil moisture fraction (0-1.0)
+             500     2                     if(label(kk).eq.'sa25b0') then
+             501     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,2),glob)
+             502     2                     call syslbl ('sa25b0',idtg,itau,ggdef,ihdg)
+             503     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             504     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             505     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,2,151,0,2.,glob)
+             506     2                     go to 30
+             507     2                     endif
+             508     1               ! 40-100cm Volumetric soil moisture fraction (0-1.0)
+             509     2                     if(label(kk).eq.'sa35b0') then
+             510     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,3),glob)
+             511     2                     call syslbl ('sa35b0',idtg,itau,ggdef,ihdg)
+             512     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             513     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             514     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,2,151,0,3.,glob)
+             515     2                     go to 30
+             516     2                     endif
+             517     1               ! 100-200cm Volumetric soil moisture fraction (0-1.0)
+             518     2                     if(label(kk).eq.'sa45b0') then
+             519     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,4),glob)
+             520     2                     call syslbl ('sa45b0',idtg,itau,ggdef,ihdg)
+             521     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             522     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             523     2                     if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,2,0,9,2,151,0,4.,glob)
+             524     2                     go to 30
+             525     2                     endif
+             526     1               !kc >
+             527     1               ! 0-10cm Volumetric soil moisture fraction (0-1.0)
+             528     2                     if(label(kk).eq.'s015b0') then
+             529     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,1),glob)
+             530     2                     call syslbl ('s015b0',idtg,itau,ggdef,ihdg)
+             531     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             532     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             533     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,2,151,0,1.,glob)
+             534     2                     go to 30
+             535     2                     endif
+             536     1               
+             537     1                     sfac2=3./19.
+             538     1                     sfac3=6./19.
+             539     1                     sfac4=10./19.
+             540     1               !  10-200cm Volumetric soil moisture fraction (0-1.0)
+             541     2                     if(label(kk).eq.'s025b0') then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      soil_xy, globp
+                                   <<< Loop-information  End >>>
+             542     3  pp                 do jj=1,jlistnum
+             543     3   p                    j=jlist1(jj)
+             544     3   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.85, ITR: 112, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      soil_xy, globp
+                                   <<< Loop-information  End >>>
+             545     4   p   2v            do i=1,nxj
+             546     4   p   2v             globp(i,jj)=soil_xy(i,jj,2)*sfac2+soil_xy(i,jj,3)*sfac3 &
+             547     4                                 +soil_xy(i,jj,4)*sfac4
+             548     4   p   2v            end do
+             549     3   p                 end do
+             550     2                     call unify_reduceintp_idw(nx,my,my_max,globp,glob)
+             551     2                     call syslbl ('s025b0',idtg,itau,ggdef,ihdg)
+             552     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             553     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             554     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,2,151,0,2.,glob)
+             555     2                     go to 30
+             556     2                     endif
+             557     1               !xb13 <
+             558     1               ! 10-40cm Volumetric soil moisture fraction (0-1.0)
+             559     2                     if(label(kk).eq.'s035b0') then
+             560     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,2),glob)
+             561     2                     call syslbl ('s035b0',idtg,itau,ggdef,ihdg)
+             562     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             563     2                     if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             564     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,2,151,0,3.,glob)
+             565     2                     go to 30
+             566     2                     endif
+             567     1               
+             568     1               ! 40-100cm Volumetric soil moisture fraction (0-1.0)
+             569     2                     if(label(kk).eq.'s045b0') then
+             570     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,3),glob)
+             571     2                     call syslbl ('s045b0',idtg,itau,ggdef,ihdg)
+             572     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             573     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             574     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,2,151,0,4.,glob)
+             575     2                     go to 30
+             576     2                     endif
+             577     1               ! 100-200cm Volumetric soil moisture fraction (0-1.0)
+             578     2                     if(label(kk).eq.'s055b0') then
+             579     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,4),glob)
+             580     2                     call syslbl ('s055b0',idtg,itau,ggdef,ihdg)
+             581     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             582     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             583     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,2,151,0,5.,glob)
+             584     2                     go to 30
+             585     2                     endif
+             586     1               !xb13 >
+             587     1               ! s**5b1
+             588     1               ! 0-10cm Unfrozen(liquid) soil moisture content(volumetric fraction)
+             589     2                     if(label(kk).eq.'sa15b1') then
+             590     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,5),glob)
+             591     2                     call syslbl ('sa15b1',idtg,itau,ggdef,ihdg)
+             592     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             593     2                     if(outdms.gt.0 )call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             594     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,10,2,151,0,1.,glob)
+             595     2                     go to 30
+             596     2                     endif
+             597     1               ! 10-40cm Unfrozen(liquid) soil moisture content(volumetric fraction)
+             598     2                     if(label(kk).eq.'sa25b1') then
+             599     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,6),glob)
+             600     2                     call syslbl ('sa25b1',idtg,itau,ggdef,ihdg)
+             601     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             602     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             603     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,10,2,151,0,2.,glob)
+             604     2                     go to 30
+             605     2                     endif
+             606     1               ! 40-100cm Unfrozen(liquid) soil moisture content(volumetric fraction)
+             607     2                     if(label(kk).eq.'sa35b1') then
+             608     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,7),glob)
+             609     2                     call syslbl ('sa35b1',idtg,itau,ggdef,ihdg)
+             610     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             611     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             612     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,10,2,151,0,3.,glob)
+             613     2                     go to 30
+             614     2                     endif
+             615     1               ! 100-200cm Unfrozen(liquid) soil moisture content(volumetric fraction)
+             616     2                     if(label(kk).eq.'sa45b1') then
+             617     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,8),glob)
+             618     2                     call syslbl ('sa45b1',idtg,itau,ggdef,ihdg)
+             619     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             620     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             621     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,10,2,151,0,4.,glob)
+             622     2                     go to 30
+             623     2                     endif
+             624     1               !xb13
+             625     1               ! 0-10cm Unfrozen(liquid) soil moisture content(volumetric fraction)
+             626     2                     if(label(kk).eq.'s015b1') then
+             627     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,5),glob)
+             628     2                     call syslbl ('s015b1',idtg,itau,ggdef,ihdg)
+             629     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             630     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             631     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,10,2,151,0,1.,glob)
+             632     2                     go to 30
+             633     2                     endif
+             634     1               
+             635     1               ! 10-200cm Unfrozen(liquid) soil moisture content(volumetric fraction)
+             636     2                     if(label(kk).eq.'s025b1') then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      soil_xy, globp
+                                   <<< Loop-information  End >>>
+             637     3  pp                 do jj=1,jlistnum
+             638     3   p                    j=jlist1(jj)
+             639     3   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.85, ITR: 112, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      soil_xy, globp
+                                   <<< Loop-information  End >>>
+             640     4   p   2v            do i=1,nxj
+             641     4   p   2v             globp(i,jj)=soil_xy(i,jj,6)*sfac2+soil_xy(i,jj,7)*sfac3 &
+             642     4                                 +soil_xy(i,jj,8)*sfac4
+             643     4   p   2v            end do
+             644     3   p                 end do
+             645     2                     call unify_reduceintp_idw(nx,my,my_max,globp,glob)
+             646     2                     call syslbl ('s025b1',idtg,itau,ggdef,ihdg)
+             647     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             648     2                     if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             649     2                     if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,2,3,10,2,151,0,2.,glob)
+             650     2                     go to 30
+             651     2                     endif
+             652     1               ! 10-40cm Unfrozen(liquid) soil moisture content(volumetric fraction)
+             653     2                     if(label(kk).eq.'s035b1') then
+             654     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,6),glob)
+             655     2                     call syslbl ('s035b1',idtg,itau,ggdef,ihdg)
+             656     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             657     2                     if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             658     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,10,2,151,0,3.,glob)
+             659     2                     go to 30
+             660     2                     endif
+             661     1               ! 40-100cm Unfrozen(liquid) soil moisture content(volumetric fraction)
+             662     2                     if(label(kk).eq.'s045b1') then
+             663     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,7),glob)
+             664     2                     call syslbl ('s045b1',idtg,itau,ggdef,ihdg)
+             665     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             666     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             667     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,10,2,151,0,4.,glob)
+             668     2                     go to 30
+             669     2                     endif
+             670     1               ! 100-200cm Unfrozen(liquid) soil moisture content(volumetric fraction)
+             671     2                     if(label(kk).eq.'s055b1') then
+             672     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,8),glob)
+             673     2                     call syslbl ('s055b1',idtg,itau,ggdef,ihdg)
+             674     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             675     2                     if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             676     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,10,2,151,0,5.,glob)
+             677     2                     go to 30
+             678     2                     endif
+             679     1               !<xb13
+             680     1               ! s**100
+             681     1               ! 0-10cm Volumetric soil temperature(K)
+             682     2                     if(label(kk).eq.'sa1100') then
+             683     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,9),glob)
+             684     2                     call syslbl ('sa1100',idtg,itau,ggdef,ihdg)
+             685     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             686     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             687     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,18,2,151,0,1.,glob)
+             688     2                     go to 30
+             689     2                     endif
+             690     1               ! 10-40cm Volumetric soil temperature(K)
+             691     2                     if(label(kk).eq.'sa2100') then
+             692     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,10),glob)
+             693     2                     call syslbl ('sa2100',idtg,itau,ggdef,ihdg)
+             694     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             695     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             696     2                     if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,2,3,18,2,151,0,2.,glob)
+             697     2                     go to 30
+             698     2                     endif
+             699     1               ! 40-100cm Volumetric soil temperature(K)
+             700     2                     if(label(kk).eq.'sa3100') then
+             701     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,11),glob)
+             702     2                     call syslbl ('sa3100',idtg,itau,ggdef,ihdg)
+             703     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             704     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             705     2                     if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,2,3,18,2,151,0,3.,glob)
+             706     2                     go to 30
+             707     2                     endif
+             708     1               ! 100-200cm Volumetric soil temperature(K)
+             709     2                     if(label(kk).eq.'sa4100') then
+             710     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,12),glob)
+             711     2                     call syslbl ('sa4100',idtg,itau,ggdef,ihdg)
+             712     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             713     2                     if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             714     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,18,2,151,0,4.,glob)
+             715     2                     go to 30
+             716     2                     endif
+             717     1               !xb13>
+             718     1               ! 0-10cm Volumetric soil temperature(K)
+             719     2                     if(label(kk).eq.'s01100') then
+             720     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,9),glob)
+             721     2                     call syslbl ('s01100',idtg,itau,ggdef,ihdg)
+             722     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             723     2                     if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             724     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,18,2,151,0,1.,glob)
+             725     2                     go to 30
+             726     2                     endif
+             727     1               ! 10-200cm Volumetric soil temperature(K)
+             728     2                     if(label(kk).eq.'s02100') then
+             729     2               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      soil_xy, globp
+                                   <<< Loop-information  End >>>
+             730     3  pp                 do jj=1,jlistnum
+             731     3   p                    j=jlist1(jj)
+             732     3   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.85, ITR: 112, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      soil_xy, globp
+                                   <<< Loop-information  End >>>
+             733     4   p   2v            do i=1,nxj
+             734     4   p   2v             globp(i,jj)=soil_xy(i,jj,10)*sfac2+soil_xy(i,jj,11)*sfac3 &
+             735     4                                 +soil_xy(i,jj,12)*sfac4
+             736     4   p   2v            end do
+             737     3   p                 end do
+             738     2                     call unify_reduceintp_idw(nx,my,my_max,globp,glob)
+             739     2                     call syslbl ('s02100',idtg,itau,ggdef,ihdg)
+             740     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             741     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             742     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,18,2,151,0,2.,glob)
+             743     2                     go to 30
+             744     2                     endif
+             745     1               ! 10-40cm Volumetric soil temperature(K)
+             746     2                     if(label(kk).eq.'s03100') then
+             747     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,10),glob)
+             748     2                     call syslbl ('s03100',idtg,itau,ggdef,ihdg)
+             749     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             750     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             751     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,18,2,151,0,3.,glob)
+             752     2                     go to 30
+             753     2                     endif
+             754     1               ! 40-100cm Volumetric soil temperature(K)
+             755     2                     if(label(kk).eq.'s04100') then
+             756     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,11),glob)
+             757     2                     call syslbl ('s04100',idtg,itau,ggdef,ihdg)
+             758     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             759     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             760     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,18,2,151,0,4.,glob)
+             761     2                     go to 30
+             762     2                     endif
+             763     1               ! 100-200cm Volumetric soil temperature(K)
+             764     2                     if(label(kk).eq.'s05100') then
+             765     2                     call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,12),glob)
+             766     2                     call syslbl ('s05100',idtg,itau,ggdef,ihdg)
+             767     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             768     2                     if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             769     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,18,2,151,0,5.,glob)
+             770     2                     go to 30
+             771     2                     endif
+             772     1               !   ---------- cloud cover ----------
+             773     1               !< xb13
+             774     1               ! ctot_total cloud fraction
+             775     2                     if(label(kk).eq.'x00770') then
+             776     3                     if( itau==0 .or. itau .gt. nint(domfc) )then
+             777     3                     call unify_reduceintp(nx,my,my_max,wk_xy(1,1,6),glob)
+             778     3                     call syslbl ('x00770',idtg,itau,ggdef,ihdg)
+             779     3                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             780     3                     if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             781     3                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,6,1,3,10,0,0.,glob)
+             782     3                     endif !domfc
+             783     2                     go to 30
+             784     2                     endif
+             785     1               ! chig_high cloud fraction
+             786     2                     if(label(kk).eq.'x00760') then
+             787     2                     call unify_reduceintp(nx,my,my_max,wk_xy(1,1,7),glob)
+             788     2                     call syslbl ('x00760',idtg,itau,ggdef,ihdg)
+             789     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             790     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             791     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,6,5,3,10,0,0.,glob)
+             792     2                     go to 30
+             793     2                     endif
+             794     1               ! cmid_middle cloud fraction
+             795     2                     if(label(kk).eq.'x00750') then
+             796     2                     call unify_reduceintp(nx,my,my_max,wk_xy(1,1,8),glob)
+             797     2                     call syslbl ('x00750',idtg,itau,ggdef,ihdg)
+             798     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             799     2                     if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             800     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,6,4,3,10,0,0.,glob)
+             801     2                     go to 30
+             802     2                     endif
+             803     1               ! clow_low cloud fraction
+             804     2                     if(label(kk).eq.'x00740') then
+             805     2                     call unify_reduceintp(nx,my,my_max,wk_xy(1,1,9),glob)
+             806     2                     call syslbl ('x00740',idtg,itau,ggdef,ihdg)
+             807     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             808     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             809     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,6,3,3,10,0,0.,glob)
+             810     2                     go to 30
+             811     2                     endif
+             812     1               !zonal mean cloudiness of Y-Z cross section 0-1
+             813     2                     if(label(kk).eq.'x00730') then
+             814     2                     call mpe_unify(acld,lev,my,2,mpe_double)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1334
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 256, MVE: 9, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      acld
+                                   <<< Loop-information  End >>>
+             815     3  pp   2v            do i=1,lev*my
+             816     3   p   2v             acld(i,1)=acld(i,1)*100.
+             817     3   p   2v            end do
+             818     2                     call syslbl ('x00730',idtg,itau,ggdef,ihdg)
+             819     2                     if(outdms.gt.0) call dmswrit(lev,my,ihdg,lenc2,kflag,ifilout,acld,istat)
+             820     2                     !if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,6,22,2,10,0,0.,glob)
+             821     2                     go to 30
+             822     2                     endif
+             823     1               
+             824     1               !   ---------- other ----------
+             825     1               ! pbl height
+             826     2                     if(label(kk).eq.'pbl000') then
+             827     2                     call unify_reduceintp(nx,my,my_max,wk_xy(1,1,10),glob)
+             828     2                     call syslbl ('pbl000',idtg,itau,ggdef,ihdg)
+             829     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             830     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             831     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,3,18,1,10,0,0.,glob)
+             832     2                     go to 30
+             833     2                     endif
+             834     1               !
+             835     1               ! specific humidity
+             836     2                     if(label(kk).eq.'m01500') then
+             837     2                     call unify_reduceintp(nx,my,my_max,wk_xy(1,1,11),glob)
+             838     2                     call syslbl ('m01500',idtg,itau,ggdef,ihdg)
+             839     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             840     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             841     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,0,9,104,0,1.,glob)
+             842     2                     go to 30
+             843     2                     endif
+             844     1               !
+             845     2                     if(label(kk).eq.'m60500') then
+             846     3                     if ( lev .lt. 100 ) then
+             847     3                       ilev=lev
+             848     3                       lflg='m'
+             849     3                     else
+             850     3                       ilev=mod(lev,100)
+             851     3                       lflg='n'
+             852     3                     endif
+             853     2                     call unify_reduceintp(nx,my,my_max,wk_xy(1,1,12),glob)
+             854     2                     write(varkey,'(A1,I2.2,A3)')lflg,ilev,'500'
+             855     2                     call syslbl (varkey,idtg,itau,ggdef,ihdg)
+             856     2                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             857     2                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             858     2                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,0,9,104,0,float(lev),glob)
+             859     2                     go to 30
+             860     2                     endif
+             861     1               
+             862     1               !move to  out24.f90
+             863     1               !xb110> flash density
+             864     1               !      if(label(kk).eq.'fshden') then
+             865     1               !      call unify_reduceintp(nx,my,my_max,flash,glob)
+             866     1               !      call syslbl ('x00999',idtg,itau,ggdef,ihdg)
+             867     1               !      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             868     1               !      call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             869     1               !      go to 30
+             870     1               !      endif
+             871     1               !xb110<
+             872     1               
+             873     1                  30 continue  !============end do ( kk=1,num )
+             874                     
+             875                     !
+             876     1                     if(outdms.gt.0)then
+             877     1                      if ( myrank .lt. nc )             &
+             878     1                         call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
+             879     1                     endif
+             880                     !
+             881                           return
+             882                           end
+
+ Procedure information
+   Lines      : 882
+   Statements : 708
+   Stack(byte): 13456
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : out2d
+   Attribute and Cross reference of name
+     acld
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 814  816  819
+      |(Reference)      : 816
+     alb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 99
+     canopy
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  44
+      |(Definition)     : 
+      |(Reference)      : 471
+     char
+      |(Class and Type) : intrinsic function name, CHARACTER((unknown),1)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 89
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 13
+     cumtop
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 254
+     dmswrit
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 819
+     dmswrit_split
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 877
+     domfc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 13  153  335  366  378  400  412  776
+     float
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 858
+     gfx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 285
+     ggdef
+      |(Class and Type) : variable name, CHARACTER(4,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  32
+      |(Definition)     : 101  111  125  136  141  157  168  177  188  204  214  224  235  245  256  267  277  287  297  307  318  327  338  349  358  369  381  392  403  420  436  453  463  473  492  502  511  520  530  551  561  571  580  591  600  609  618  628  646  655  664  673  684  693  702  711  721  739  748  757  766  778  788  797  806  818  828  838  855
+      |(Reference)      : 
+     glob
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  36
+      |(Definition)     : 100  102  103  104  110  112  113  114  124  126  127  131  135  137  138  139  148  149  150  151  156  158  159  160  167  169  170  171  176  178  179  180  187  189  190  191  203  205  206  207  213  215  216  217  223  225  226  227  234  236  237  238  244  246  247  248  255  257  258  259  266  268  269  270  276  278  279  280  286  288  289  290  296  298  299  300  306  308  309  310  317  319  320  321  326  328  329  330  337  339  340  341  348  350  351  352  357  359  360  361  368  370  371  372  380  382  383  384  391  393  394  395  402  404  405  406  419  421  422  423  435  437  438  439  452  454  455  456  462  464  465  466  472  474  475  476  491  493  494  495  501  503  504  505  510  512  513  514  519  521  522  523  529  531  532  533  550  552  553  554  560  562  563  564  570  572  573  574  579  581  582  583  590  592  593  594  599  601  602  603  608  610  611  612  617  619  620  621  627  629  630  631  645  647  648  649  654  656  657  658  663  665  666  667  672  674  675  676  683  685  686  687  692  694  695  696  701  703  704  705  710  712  713  714  720  722  723  724  738  740  741  742  747  749  750  751  756  758  759  760  765  767  768  769  777  779  780  781  787  789  790  791  796  798  799  800  805  807  808  809  827  829  830  831  837  839  840  841  853  856  857  858
+      |(Reference)      : 
+     globp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 40
+      |(Definition)     : 99  100  109  110  123  124  134  135  146  148  155  156  166  167  186  187  200  203  212  213  222  223  233  234  243  244  254  255  265  266  275  276  285  286  295  296  305  306  316  317  336  337  367  368  379  380  401  402  417  419  433  435  450  452  461  462  471  472  546  550  641  645  734  738
+      |(Reference)      : 
+     gwclim
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 
+     gwet
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 450  461
+     hflux
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 265
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 51
+      |(Definition)     : 85  145  199  416  432  449  545  640  733  815
+      |(Reference)      : 86  86  89  89  146  146  146  200  200  200  417  417  433  433  450  450  546  546  546  546  641  641  641  641  734  734  734  734  816  816
+     ia
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 51
+      |(Definition)     : 86  88
+      |(Reference)      : 87  87  88  89
+     ichar
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 86
+     idtg
+      |(Class and Type) : variable name, INTEGER(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  34
+      |(Definition)     : 101  111  125  136  141  157  168  177  188  204  214  224  235  245  256  267  277  287  297  307  318  327  338  349  358  369  381  392  403  420  436  453  463  473  492  502  511  520  530  551  561  571  580  591  600  609  618  628  646  655  664  673  684  693  702  711  721  739  748  757  766  778  788  797  806  818  828  838  855
+      |(Reference)      : 
+     ifilout
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  46
+      |(Definition)     : 103  113  127  138  150  159  170  179  190  206  216  226  237  247  258  269  279  289  299  309  320  329  340  351  360  371  383  394  405  422  438  455  465  475  494  504  513  522  532  553  563  573  582  593  602  611  620  630  648  657  666  675  686  695  704  713  723  741  750  759  768  780  790  799  808  819  830  840  857  877
+      |(Reference)      : 
+     ihdg
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : 
+      |(Declaration)    : 47
+      |(Definition)     : 101  102  102  103  111  112  112  113  125  126  126  127  136  137  137  138  141  149  149  150  157  158  158  159  168  169  169  170  177  178  178  179  188  189  189  190  204  205  205  206  214  215  215  216  224  225  225  226  235  236  236  237  245  246  246  247  256  257  257  258  267  268  268  269  277  278  278  279  287  288  288  289  297  298  298  299  307  308  308  309  318  319  319  320  327  328  328  329  338  339  339  340  349  350  350  351  358  359  359  360  369  370  370  371  381  382  382  383  392  393  393  394  403  404  404  405  420  421  421  422  436  437  437  438  453  454  454  455  463  464  464  465  473  474  474  475  492  493  493  494  502  503  503  504  511  512  512  513  520  521  521  522  530  531  531  532  551  552  552  553  561  562  562  563  571  572  572  573  580  581  581  582  591  592  592  593  600  601  601  602  609  610  610  611  618  619  619  620  628  629  629  630  646  647  647  648  655  656  656  657  664  665  665  666  673  674  674  675  684  685  685  686  693  694  694  695  702  703  703  704  711  712  712  713  721  722  722  723  739  740  740  741  748  749  749  750  757  758  758  759  766  767  767  768  778  779  779  780  788  789  789  790  797  798  798  799  806  807  807  808  818  819  828  829  829  830  838  839  839  840  855  856  856  857
+      |(Reference)      : 
+     ihdg2
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : 
+      |(Declaration)    : 47
+      |(Definition)     : 103  113  127  138  150  159  170  179  190  206  216  226  237  247  258  269  279  289  299  309  320  329  340  351  360  371  383  394  405  422  438  455  465  475  494  504  513  522  532  553  563  573  582  593  602  611  620  630  648  657  666  675  686  695  704  713  723  741  750  759  768  780  790  799  808  830  840  857  877
+      |(Reference)      : 
+     ilev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 51
+      |(Definition)     : 847  850
+      |(Reference)      : 854
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 10
+     istat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 51
+      |(Definition)     : 819  877
+      |(Reference)      : 
+     itau
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 101  104  111  114  125  131  136  139  141  151  157  160  168  171  177  180  188  191  204  207  214  217  224  227  235  238  245  248  256  259  267  270  277  280  287  290  297  300  307  310  318  321  327  330  338  341  349  352  358  361  369  372  381  384  392  395  403  406  420  423  436  439  453  456  463  466  473  476  492  495  502  505  511  514  520  523  530  533  551  554  561  564  571  574  580  583  591  594  600  603  609  612  618  621  628  631  646  649  655  658  664  667  673  676  684  687  693  696  702  705  711  714  721  724  739  742  748  751  757  760  766  769  778  781  788  791  797  800  806  809  818  828  831  838  841  855  858
+      |(Reference)      : 129  153  153  335  335  366  366  378  378  400  400  412  412  776  776
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 51
+      |(Definition)     : 143  197  414  430  447  543  638  731
+      |(Reference)      : 144  198  415  431  448  544  639  732
+     jj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 51
+      |(Definition)     : 142  196  413  429  446  542  637  730
+      |(Reference)      : 143  146  146  146  197  200  200  200  414  417  417  430  433  433  447  450  450  543  546  546  546  546  638  641  641  641  641  731  734  734  734  734
+     jlist1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 143  197  414  430  447  543  638  731
+     jlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 142  196  413  429  446  542  637  730
+     kflag
+      |(Class and Type) : named constant, CHARACTER(1,1)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 13  819  877
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 51
+      |(Definition)     : 95
+      |(Reference)      : 98  108  120  165  175  185  195  211  221  232  242  253  264  274  284  294  304  315  325  334  347  356  365  377  390  399  411  428  445  460  470  490  500  509  518  528  541  559  569  578  589  598  607  616  626  636  653  662  671  682  691  700  709  719  728  746  755  764  775  786  795  804  813  826  836  845
+     label
+      |(Class and Type) : variable name, CHARACTER(6,1)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 48
+      |(Definition)     : 69  92
+      |(Reference)      : 84  98  108  120  165  175  185  195  211  221  232  242  253  264  274  284  294  304  315  325  334  347  356  365  377  390  399  411  428  445  460  470  490  500  509  518  528  541  559  569  578  589  598  607  616  626  636  653  662  671  682  691  700  709  719  728  746  755  764  775  786  795  804  813  826  836  845
+     labx
+      |(Class and Type) : variable name, CHARACTER(6,1)
+      |(Attributes)     : 
+      |(Declaration)    : 48
+      |(Definition)     : 66  84  89
+      |(Reference)      : 69  70  86  92
+     lenc
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 51
+      |(Definition)     : 78  103  113  127  138  150  159  170  179  190  206  216  226  237  247  258  269  279  289  299  309  320  329  340  351  360  371  383  394  405  422  438  455  465  475  494  504  513  522  532  553  563  573  582  593  602  611  620  630  648  657  666  675  686  695  704  713  723  741  750  759  768  780  790  799  808  830  840  857  877
+      |(Reference)      : 
+     lenc2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 51
+      |(Definition)     : 79  819
+      |(Reference)      : 
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 814  819
+      |(Reference)      : 19  79  815  846  847  850  858
+     levz
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 51
+      |(Definition)     : 66
+      |(Reference)      : 67
+     lflg
+      |(Class and Type) : variable name, CHARACTER(1,1)
+      |(Attributes)     : 
+      |(Declaration)    : 49
+      |(Definition)     : 848  851
+      |(Reference)      : 854
+     mod
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 129  850
+     mod_grb2_param
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 12
+     mod_outflds
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 11
+     mout
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 36
+      |(Definition)     : 103  113  127  138  150  159  170  179  190  206  216  226  237  247  258  269  279  289  299  309  320  329  340  351  360  371  383  394  405  422  438  455  465  475  494  504  513  522  532  553  563  573  582  593  602  611  620  630  648  657  666  675  686  695  704  713  723  741  750  759  768  780  790  799  808  830  840  857  877
+      |(Reference)      : 
+     mpe
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 9
+     mpe_double
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 814
+     mpe_unify
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 814
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 100  102  103  110  112  113  124  126  127  135  137  138  148  149  150  156  158  159  167  169  170  176  178  179  187  189  190  203  205  206  213  215  216  223  225  226  234  236  237  244  246  247  255  257  258  266  268  269  276  278  279  286  288  289  296  298  299  306  308  309  317  319  320  326  328  329  337  339  340  348  350  351  357  359  360  368  370  371  380  382  383  391  393  394  402  404  405  419  421  422  435  437  438  452  454  455  462  464  465  472  474  475  491  493  494  501  503  504  510  512  513  519  521  522  529  531  532  550  552  553  560  562  563  570  572  573  579  581  582  590  592  593  599  601  602  608  610  611  617  619  620  627  629  630  645  647  648  654  656  657  663  665  666  672  674  675  683  685  686  692  694  695  701  703  704  710  712  713  720  722  723  738  740  741  747  749  750  756  758  759  765  767  768  777  779  780  787  789  790  796  798  799  805  807  808  814  819  827  829  830  837  839  840  853  856  857  877
+      |(Reference)      : 19  36  36  78  79  815
+     my_max
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 100  110  124  135  148  156  167  176  187  203  213  223  234  244  255  266  276  286  296  306  317  326  337  348  357  368  380  391  402  419  435  452  462  472  491  501  510  519  529  550  560  570  579  590  599  608  617  627  645  654  663  672  683  692  701  710  720  738  747  756  765  777  787  796  805  827  837  853
+      |(Reference)      : 19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  40  42  42  44
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 64  70  104  114  128  139  151  160  171  180  191  207  217  227  238  248  259  270  280  290  300  310  321  330  341  352  361  372  384  395  406  423  439  456  466  476  495  505  514  523  533  554  564  574  583  594  603  612  621  631  649  658  667  676  687  696  705  714  724  742  751  760  769  781  791  800  809  831  841  858  877
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 51
+      |(Definition)     : 65  83
+      |(Reference)      : 66  84  92
+     nc
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 51
+      |(Definition)     : 63  103  113  127  138  150  159  170  179  190  206  216  226  237  247  258  269  279  289  299  309  320  329  340  351  360  371  383  394  405  422  438  455  465  475  494  504  513  522  532  553  563  573  582  593  602  611  620  630  648  657  666  675  686  695  704  713  723  741  750  759  768  780  790  799  808  830  840  857
+      |(Reference)      : 877
+     nint
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 153  335  366  378  400  412  776
+     ntau
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 31  48  64  65
+     num
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 51
+      |(Definition)     : 62  68
+      |(Reference)      : 68  69  70  74  83  95
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 100  102  103  110  112  113  124  126  127  135  137  138  148  149  150  156  158  159  167  169  170  176  178  179  187  189  190  203  205  206  213  215  216  223  225  226  234  236  237  244  246  247  255  257  258  266  268  269  276  278  279  286  288  289  296  298  299  306  308  309  317  319  320  326  328  329  337  339  340  348  350  351  357  359  360  368  370  371  380  382  383  391  393  394  402  404  405  419  421  422  435  437  438  452  454  455  462  464  465  472  474  475  491  493  494  501  503  504  510  512  513  519  521  522  529  531  532  550  552  553  560  562  563  570  572  573  579  581  582  590  592  593  599  601  602  608  610  611  617  619  620  627  629  630  645  647  648  654  656  657  663  665  666  672  674  675  683  685  686  692  694  695  701  703  704  710  712  713  720  722  723  738  740  741  747  749  750  756  758  759  765  767  768  777  779  780  787  789  790  796  798  799  805  807  808  827  829  830  837  839  840  853  856  857  877
+      |(Reference)      : 36  36  78
+     nxdef_2d
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 144  198  415  431  448  544  639  732
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 51
+      |(Definition)     : 144  198  415  431  448  544  639  732
+      |(Reference)      : 145  199  416  432  449  545  640  733
+     nxp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  19  40  42  42  44
+     out2d
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     outdms
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 13  103  113  127  138  150  159  170  179  190  206  216  226  237  247  258  269  279  289  299  309  320  329  340  351  360  371  383  394  405  422  438  455  465  475  494  504  513  522  532  553  563  573  582  593  602  611  620  630  648  657  666  675  686  695  704  713  723  741  750  759  768  780  790  799  808  819  830  840  857  876
+     outgrb2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 13  104  114  128  139  151  160  171  180  191  207  217  227  238  248  259  270  280  290  300  310  321  330  341  352  361  372  384  395  406  423  439  456  466  476  495  505  514  523  533  554  564  574  583  594  603  612  621  631  649  658  667  676  687  696  705  714  724  742  751  760  769  781  791  800  809  831  841  858
+     plcl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 222
+     praint
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 55
+      |(Definition)     : 129  130  131  139  151
+      |(Reference)      : 130
+     q2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 401
+     qflux
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 275
+     qmaxn3
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 102  112  126  137  149  158  169  178  189  205  215  225  236  246  257  268  278  288  298  308  319  328  339  350  359  370  382  393  404  421  437  454  464  474  493  503  512  521  531  552  562  572  581  592  601  610  619  629  647  656  665  674  685  694  703  712  722  740  749  758  767  779  789  798  807  829  839  856
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 13  36  40  42
+     raincu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 123  146
+     rainlp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 134  146
+     raintot
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 155
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8
+     rh10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 433
+     rh2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 417
+     rld
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 243
+     rs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 200  233
+     sfac2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 54
+      |(Definition)     : 537
+      |(Reference)      : 546  641  734
+     sfac3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 54
+      |(Definition)     : 538
+      |(Reference)      : 546  641  734
+     sfac4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 54
+      |(Definition)     : 539
+      |(Reference)      : 546  641  734
+     sld
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 212
+     snr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 166
+     soil_xy
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  42
+      |(Definition)     : 491  501  510  519  529  560  570  579  590  599  608  617  627  654  663  672  683  692  701  710  720  747  756  765
+      |(Reference)      : 546  546  546  641  641  641  734  734  734
+     split
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 103  113  127  138  150  159  170  179  190  206  216  226  237  247  258  269  279  289  299  309  320  329  340  351  360  371  383  394  405  422  438  455  465  475  494  504  513  522  532  553  563  573  582  593  602  611  620  630  648  657  666  675  686  695  704  713  723  741  750  759  768  780  790  799  808  830  840  857
+     ss
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 186  200
+     syslbl
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101  111  125  136  141  157  168  177  188  204  214  224  235  245  256  267  277  287  297  307  318  327  338  349  358  369  381  392  403  420  436  453  463  473  492  502  511  520  530  551  561  571  580  591  600  609  618  628  646  655  664  673  684  693  702  711  721  739  748  757  766  778  788  797  806  818  828  838  855
+     t2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 336
+     taudir
+      |(Class and Type) : variable name, CHARACTER(16,1)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  31
+      |(Definition)     : 
+      |(Reference)      : 66
+     tg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 316
+     tnshun
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 77
+      |(Reference)      : 
+     u10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 367
+     ugws
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 295
+     unify_reduceintp
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 100  110  124  135  148  156  167  176  187  203  213  223  234  244  255  266  276  286  296  306  326  337  348  357  368  380  391  402  419  435  777  787  796  805  827  837  853
+     unify_reduceintp_idw
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 317  452  462  472  491  501  510  519  529  550  560  570  579  590  599  608  617  627  645  654  663  672  683  692  701  710  720  738  747  756  765
+     v10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 379
+     varkey
+      |(Class and Type) : variable name, CHARACTER(6,1)
+      |(Attributes)     : 
+      |(Declaration)    : 33
+      |(Definition)     : 854  855
+      |(Reference)      : 
+     vgws
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 305
+     wk_xy
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  42
+      |(Definition)     : 176  326  348  357  391  777  787  796  805  827  837  853
+      |(Reference)      : 
+     wrt_grb2
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 104  114  160  171  180  191  207  217  227  238  248  259  270  280  290  300  310  321  330  341  352  361  372  384  395  406  423  439  456  466  476  495  505  514  523  533  554  564  574  583  594  603  612  621  631  649  658  667  676  687  696  705  714  724  742  751  760  769  781  791  800  809  831  841  858
+     wrt_grb2_accu
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 131  139  151
+     z0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 
+      |(Reference)      : 109
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         20  execution     (Definition) 72  
+                           (Reference)  65
+         30  execution     (Definition) 873  
+                           (Reference)  95  105  115  162  172  181  192  208  218  228  239  249  260  271  281  291  301  311  322  331  343  353  362  374  386  396  408  425  440  457  467  477  496  506  515  524  534  555  565  575  584  595  604  613  622  632  650  659  668  677  688  697  706  715  725  743  752  761  770  783  792  801  810  821  832  842  859
+         36  execution     (Definition) 451  
+                           (Reference)  446  449
+         37  execution     (Definition) 418  
+                           (Reference)  413  416
+         38  execution     (Definition) 434  
+                           (Reference)  429  432
+         98  execution     (Definition) 147  
+                           (Reference)  142  145
+
+ External subroutine subprogram "split"
+  (inc)(line-no.)(nest)(optimize)
+             883                     !---------------------------------------------------------------
+             884                           subroutine split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             885                     !
+             886                           use rank
+             887                           use const, only: RTYPE,kflag
+             888                     !
+             889                           implicit none
+             890                     !
+             891                           integer   nx,my,nc,istat,lenc,lev
+             892                           real(kind=RTYPE) glob(nx,my),mout(nx,my)
+             893                           character*26 ihdg,ihdg2
+             894                           character*80 ifilout
+             895                     
+             896     1                     if (myrank .eq. nc) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1334
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      glob, mout
+                                   <<< Loop-information  End >>>
+             897     1  pp   4v              mout  = glob
+             898     1                       ihdg2 = ihdg
+             899     1                     endif
+             900                             nc    = nc + 1
+             901                     !
+             902     1                     if ( nc .eq. nsize .and. myrank .lt. nc ) then
+             903     1                       call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
+             904     1                       nc    = 0
+             905     1                     endif
+             906                     !
+             907                           return
+             908                           end
+
+ Procedure information
+   Lines      : 26
+   Statements : 19
+   Stack(byte): 768
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : split
+   Attribute and Cross reference of name
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 887
+     dmswrit_split
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 903
+     glob
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 884  892
+      |(Definition)     : 
+      |(Reference)      : 897
+     ifilout
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 884  894
+      |(Definition)     : 903
+      |(Reference)      : 
+     ihdg
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 884  893
+      |(Definition)     : 
+      |(Reference)      : 898
+     ihdg2
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 884  893
+      |(Definition)     : 898  903
+      |(Reference)      : 
+     istat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 891
+      |(Definition)     : 903
+      |(Reference)      : 
+     kflag
+      |(Class and Type) : named constant, CHARACTER(1,1)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 887  903
+     lenc
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 884  891
+      |(Definition)     : 903
+      |(Reference)      : 
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 891
+      |(Definition)     : 
+      |(Reference)      : 
+     mout
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 884  892
+      |(Definition)     : 897  903
+      |(Reference)      : 
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 884  891
+      |(Definition)     : 903
+      |(Reference)      : 892  892
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 896  902
+     nc
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 884  891
+      |(Definition)     : 900  904
+      |(Reference)      : 896  900  902  902
+     nsize
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 902
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 884  891
+      |(Definition)     : 903
+      |(Reference)      : 892  892
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 887  892
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 886
+     split
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 884
+      |(Reference)      : 
+
+ Total information
+   Procedures       : 2
+   Total lines      : 908
+   Total statements : 727
+   Total stack(byte): 14224
+   Total prefetch num: 0
+

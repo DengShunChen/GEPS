@@ -1,0 +1,1276 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jul 12 10:11:57 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/tco639l72/src_4cpl
+   Source file       : mod_grid.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ Module "grid"
+  (inc)(line-no.)(nest)(optimize)
+               1                           module grid
+               2                     !
+               3                     ! modify to f90 by C-H Lee and sort by River Chen in 2015
+               4                     !
+               5                           use param
+               6                           use index
+               7                           use const, only : RTYPE
+               8                     
+               9                           implicit none
+              10                     
+              11                           public
+              12                     
+              13                           real, dimension(:,:),allocatable,save ::                      &
+              14                                                pdiff,t1000,tsave,std
+              15                           real(kind=RTYPE),dimension(:,:),allocatable,save :: pt,sgeo,  &
+              16                                                ptend,ptp
+              17                     
+              18                           real, dimension(:,:,:),allocatable,save :: plt
+              19                     !! for Semi-Lagrangian
+              20                           real(kind=RTYPE), dimension(:,:),allocatable,save :: dlpl,dtpl
+              21                           real(kind=RTYPE), dimension(:,:,:),allocatable,save ::        &
+              22                                                ut,vt,tt,qt,up,vp,ttp,qp,qm,sd,vvel,     &
+              23                                                ut_sl,vt_sl,phi,dlphi,dtphi,rvor,rdiv,   &
+              24                                                pk,pk2
+              25                     
+              26                     !!                             ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl
+              27                     !!      real, dimension(:,:,:,:),allocatable,save :: qm_sl
+              28                     !!    real, dimension(:,:),allocatable,save :: pt_sl,ptp_sl
+              29                     
+              30                           integer   lonfull,lonhalf,lonpart,lonlenmax,mylonlen
+              31                           integer   latfull,lathalf,latpart,latlenmax,mylatlen
+              32                           integer   ndslhvar,ndslvvar,xy
+              33                     
+              34                           integer, allocatable :: lonstr(:),lonlen(:)
+              35                           integer, allocatable :: latstr(:),latlen(:)
+              36                           real(kind=RTYPE), allocatable :: gslati(:),gglati(:)
+              37                           real(kind=RTYPE), allocatable :: fa1(:),fa2(:),fa3(:),fa4(:)
+              38                           contains
+              39                     
+              40                              subroutine allocate_grid_array
+              41                     
+              42                                integer  ierr
+              43                     
+              44                                allocate (ut(nxp,lev,my_max),  &
+              45                                          vt(nxp,lev,my_max),  &
+              46                                          sd(nxp,lev,my_max),  &
+              47                                        vvel(nxp,lev,my_max),  &
+              48                                        rvor(nxp,lev,my_max),  &
+              49                                        rdiv(nxp,lev,my_max),  &
+              50                                          tt(nxp,lev,my_max),  &
+              51                                       qt(nxp,lev*ncld,my_max),&
+              52                                         phi(nxp,lev,my_max),  &
+              53                                         plt(nxp,lev,my_max),  &
+              54                                          pk(nxp,lev,my_max),  &
+              55                                         pk2(nxp,lev,my_max),  &
+              56                                          up(nxp,lev,my_max),  &
+              57                                          vp(nxp,lev,my_max),  &
+              58                                         ttp(nxp,lev,my_max),  &
+              59                                       qp(nxp,lev*ncld,my_max),&
+              60                                       qm(nxp,lev*ncld,my_max),&
+              61                     !! for Semi-Lagrangian
+              62                                       ut_sl(nx,levp,my_max),      &
+              63                                       vt_sl(nx,levp,my_max),      &
+              64                     !!                 uum_sl(nx,levp,my_max),      &
+              65                     !!                 vvm_sl(nx,levp,my_max),      &
+              66                     !!                 ttm_sl(nx,levp,my_max),      &
+              67                     !!                  qm_sl(nx,levp,ncld,my_max), &
+              68                     !!                pt_sl(nx,my_max),           &
+              69                     !!                  ptp_sl(nx,my_max),           &
+              70                                      stat=ierr)
+              71                     
+              72     1                          if (ierr/= 0) then
+              73     1                              write(6,*) 'mod_grid : allocate fail 1 '
+              74     1                              stop
+              75     1                          end if
+              76                     
+              77                                allocate (pt(nxp,my_max),dlpl(nxp,my_max),dtpl(nxp,my_max), &
+              78                                         sgeo(nxp,my_max), pdiff(nxp,my_max),&
+              79                                         ptend(nxp,my_max), t1000(nxp,my_max), tsave(nxp,my_max), &
+              80                                         std(nxp,my_max), ptp(nxp,my_max) ,stat=ierr)
+              81                     
+              82     1                          if (ierr/= 0) then
+              83     1                              write(6,*) 'mod_grid : allocate fail 2 '
+              84     1                              stop
+              85     1                          end if
+              86                     
+              87                                allocate (gslati(my*2+1),gglati(my*2+1),                 &
+              88                                          lonstr(npe),lonlen(npe),                       &
+              89                                          latstr(npe),latlen(npe), stat=ierr)
+              90                     
+              91     1                          if (ierr/= 0) then
+              92     1                              write(6,*) 'mod_grid for ndsl : allocate fail 3'
+              93     1                              stop
+              94     1                          end if
+              95                     
+              96                                allocate (dlphi(nxp,lev,my_max),  &
+              97                                          dtphi(nxp,lev,my_max),stat=ierr)
+              98                     
+              99     1                          if (ierr/= 0) then
+             100     1                              write(6,*) 'mod_grid for ndsl : allocate fail 4'
+             101     1                              stop
+             102     1                          end if
+             103                     
+             104                                allocate (fa1(my*2),fa2(my*2),fa3(my*2),fa4(my*2), stat=ierr)
+             105                     
+             106     1                          if (ierr/= 0) then
+             107     1                              write(6,*) 'mod_grid for ndsl : allocate fail 5'
+             108     1                              stop
+             109     1                          end if
+             110                     
+             111                     !CWB2015
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ptend
+                                   <<< Loop-information  End >>>
+             112        pp   4v                 ptend=0.
+             113                     
+             114                     !CWB2018
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ut
+                                   <<< Loop-information  End >>>
+             115        pp   4v                 ut=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vt
+                                   <<< Loop-information  End >>>
+             116        pp   4v                 vt=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      up
+                                   <<< Loop-information  End >>>
+             117        pp   4v                 up=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vp
+                                   <<< Loop-information  End >>>
+             118        pp   4v                 vp=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tt
+                                   <<< Loop-information  End >>>
+             119        pp   4v                 tt=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ttp
+                                   <<< Loop-information  End >>>
+             120        pp   4v                 ttp=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qt
+                                   <<< Loop-information  End >>>
+             121        pp   4v                 qt=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qp
+                                   <<< Loop-information  End >>>
+             122        pp   4v                 qp=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qm
+                                   <<< Loop-information  End >>>
+             123        pp   4v                 qm=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sd
+                                   <<< Loop-information  End >>>
+             124        pp   4v                 sd=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vvel
+                                   <<< Loop-information  End >>>
+             125        pp   4v                 vvel=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2286
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fa1
+                                   <<< Loop-information  End >>>
+             126        pp   4v                 fa1=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2286
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fa2
+                                   <<< Loop-information  End >>>
+             127        pp   4v                 fa2=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2286
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fa3
+                                   <<< Loop-information  End >>>
+             128        pp   4v                 fa3=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2286
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fa4
+                                   <<< Loop-information  End >>>
+             129        pp   4v                 fa4=0.
+             130                     
+             131                                return
+             132                     
+             133                              end subroutine
+             134                     
+             135                              subroutine deallocate_grid_array
+             136                     
+             137                                deallocate (ut,vt,sd,vvel,rvor,rdiv,tt,qt,phi,plt,pk,pk2,up,vp,ttp,qp,qm)
+             138                                deallocate ( pt,dlpl,dtpl,sgeo,pdiff, &
+             139                                    ptend,t1000,tsave,std,ptp)
+             140                     ! for Semi-Lagrangian
+             141                                deallocate (gslati,gglati,lonstr,lonlen,latstr,latlen)
+             142                                deallocate (fa1,fa2,fa3,fa4)
+             143                                deallocate (dlphi,dtphi)
+             144                     !!         deallocate (ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl,qm_sl,pt_sl,ptp_sl)
+             145                                deallocate (ut_sl,vt_sl)
+             146                     
+             147                                return
+             148                     
+             149                              end subroutine
+             150                     
+             151                           end module grid
+
+ Procedure information
+   Lines      : 151
+   Statements : 74
+   Stack(byte): 6352
+   Prefetch num: 0
+
+ Scoping unit of module : grid
+   Attribute and Cross reference of name
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 7
+     dlphi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 21
+      |(Definition)     : 
+      |(Reference)      : 
+     dlpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 20
+      |(Definition)     : 
+      |(Reference)      : 
+     dtphi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 21
+      |(Definition)     : 
+      |(Reference)      : 
+     dtpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 20
+      |(Definition)     : 
+      |(Reference)      : 
+     fa1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION
+      |(Declaration)    : 37
+      |(Definition)     : 
+      |(Reference)      : 
+     fa2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION
+      |(Declaration)    : 37
+      |(Definition)     : 
+      |(Reference)      : 
+     fa3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION
+      |(Declaration)    : 37
+      |(Definition)     : 
+      |(Reference)      : 
+     fa4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION
+      |(Declaration)    : 37
+      |(Definition)     : 
+      |(Reference)      : 
+     gglati
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION
+      |(Declaration)    : 36
+      |(Definition)     : 
+      |(Reference)      : 
+     grid
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 151
+     gslati
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION
+      |(Declaration)    : 36
+      |(Definition)     : 
+      |(Reference)      : 
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 6
+     latfull
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 31
+      |(Definition)     : 
+      |(Reference)      : 
+     lathalf
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 31
+      |(Definition)     : 
+      |(Reference)      : 
+     latlen
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION
+      |(Declaration)    : 35
+      |(Definition)     : 
+      |(Reference)      : 
+     latlenmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 31
+      |(Definition)     : 
+      |(Reference)      : 
+     latpart
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 31
+      |(Definition)     : 
+      |(Reference)      : 
+     latstr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION
+      |(Declaration)    : 35
+      |(Definition)     : 
+      |(Reference)      : 
+     lonfull
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 30
+      |(Definition)     : 
+      |(Reference)      : 
+     lonhalf
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 30
+      |(Definition)     : 
+      |(Reference)      : 
+     lonlen
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION
+      |(Declaration)    : 34
+      |(Definition)     : 
+      |(Reference)      : 
+     lonlenmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 30
+      |(Definition)     : 
+      |(Reference)      : 
+     lonpart
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 30
+      |(Definition)     : 
+      |(Reference)      : 
+     lonstr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION
+      |(Declaration)    : 34
+      |(Definition)     : 
+      |(Reference)      : 
+     mylatlen
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 31
+      |(Definition)     : 
+      |(Reference)      : 
+     mylonlen
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 30
+      |(Definition)     : 
+      |(Reference)      : 
+     ndslhvar
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 32
+      |(Definition)     : 
+      |(Reference)      : 
+     ndslvvar
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 32
+      |(Definition)     : 
+      |(Reference)      : 
+     param
+      |(Class and Type) : module name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 5
+     pdiff
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 13
+      |(Definition)     : 
+      |(Reference)      : 
+     phi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 21
+      |(Definition)     : 
+      |(Reference)      : 
+     pk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 21
+      |(Definition)     : 
+      |(Reference)      : 
+     pk2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 21
+      |(Definition)     : 
+      |(Reference)      : 
+     plt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 
+     pt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 15
+      |(Definition)     : 
+      |(Reference)      : 
+     ptend
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 15
+      |(Definition)     : 
+      |(Reference)      : 
+     ptp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 15
+      |(Definition)     : 
+      |(Reference)      : 
+     qm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 21
+      |(Definition)     : 
+      |(Reference)      : 
+     qp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 21
+      |(Definition)     : 
+      |(Reference)      : 
+     qt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 21
+      |(Definition)     : 
+      |(Reference)      : 
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 7  15  20  21  36  37
+     rdiv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 21
+      |(Definition)     : 
+      |(Reference)      : 
+     rvor
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 21
+      |(Definition)     : 
+      |(Reference)      : 
+     sd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 21
+      |(Definition)     : 
+      |(Reference)      : 
+     sgeo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 15
+      |(Definition)     : 
+      |(Reference)      : 
+     std
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 13
+      |(Definition)     : 
+      |(Reference)      : 
+     t1000
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 13
+      |(Definition)     : 
+      |(Reference)      : 
+     tsave
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 13
+      |(Definition)     : 
+      |(Reference)      : 
+     tt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 21
+      |(Definition)     : 
+      |(Reference)      : 
+     ttp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 21
+      |(Definition)     : 
+      |(Reference)      : 
+     up
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 21
+      |(Definition)     : 
+      |(Reference)      : 
+     ut
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 21
+      |(Definition)     : 
+      |(Reference)      : 
+     ut_sl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 21
+      |(Definition)     : 
+      |(Reference)      : 
+     vp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 21
+      |(Definition)     : 
+      |(Reference)      : 
+     vt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 21
+      |(Definition)     : 
+      |(Reference)      : 
+     vt_sl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 21
+      |(Definition)     : 
+      |(Reference)      : 
+     vvel
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 21
+      |(Definition)     : 
+      |(Reference)      : 
+     xy
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 32
+      |(Definition)     : 
+      |(Reference)      : 
+
+ Scoping unit of module sub-program : allocate_grid_array
+   Attribute and Cross reference of name
+     allocate_grid_array
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 40
+      |(Reference)      : 
+     dlphi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 96
+      |(Reference)      : 
+     dlpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 77
+      |(Reference)      : 
+     dtphi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 96
+      |(Reference)      : 
+     dtpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 77
+      |(Reference)      : 
+     fa1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 104  126
+      |(Reference)      : 
+     fa2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 104  127
+      |(Reference)      : 
+     fa3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 104  128
+      |(Reference)      : 
+     fa4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 104  129
+      |(Reference)      : 
+     gglati
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 87
+      |(Reference)      : 
+     gslati
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 87
+      |(Reference)      : 
+     ierr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 42
+      |(Definition)     : 44  77  87  96  104
+      |(Reference)      : 72  82  91  99  106
+     latlen
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 87
+      |(Reference)      : 
+     latstr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 87
+      |(Reference)      : 
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 44  44  44  44  44  44  44  44  44  44  44  44  44  44  44  44  44  96  96
+     levp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 44  44
+     lonlen
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 87
+      |(Reference)      : 
+     lonstr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 87
+      |(Reference)      : 
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 87  87  104  104  104  104
+     my_max
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 44  44  44  44  44  44  44  44  44  44  44  44  44  44  44  44  44  44  44  77  77  77  77  77  77  77  77  77  77  96  96
+     ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 44  44  44
+     npe
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 87  87  87  87
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 44  44
+     nxp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 44  44  44  44  44  44  44  44  44  44  44  44  44  44  44  44  44  77  77  77  77  77  77  77  77  77  77  96  96
+     pdiff
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 77
+      |(Reference)      : 
+     phi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 44
+      |(Reference)      : 
+     pk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 44
+      |(Reference)      : 
+     pk2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 44
+      |(Reference)      : 
+     plt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 44
+      |(Reference)      : 
+     pt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 77
+      |(Reference)      : 
+     ptend
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 77  112
+      |(Reference)      : 
+     ptp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 77
+      |(Reference)      : 
+     qm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 44  123
+      |(Reference)      : 
+     qp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 44  122
+      |(Reference)      : 
+     qt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 44  121
+      |(Reference)      : 
+     rdiv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 44
+      |(Reference)      : 
+     rvor
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 44
+      |(Reference)      : 
+     sd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 44  124
+      |(Reference)      : 
+     sgeo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 77
+      |(Reference)      : 
+     std
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 77
+      |(Reference)      : 
+     t1000
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 77
+      |(Reference)      : 
+     tsave
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 77
+      |(Reference)      : 
+     tt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 44  119
+      |(Reference)      : 
+     ttp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 44  120
+      |(Reference)      : 
+     up
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 44  117
+      |(Reference)      : 
+     ut
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 44  115
+      |(Reference)      : 
+     ut_sl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 44
+      |(Reference)      : 
+     vp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 44  118
+      |(Reference)      : 
+     vt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 44  116
+      |(Reference)      : 
+     vt_sl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 44
+      |(Reference)      : 
+     vvel
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 44  125
+      |(Reference)      : 
+
+ Scoping unit of module sub-program : deallocate_grid_array
+   Attribute and Cross reference of name
+     deallocate_grid_array
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 135
+      |(Reference)      : 
+     dlphi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 143
+      |(Reference)      : 
+     dlpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138
+      |(Reference)      : 
+     dtphi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 143
+      |(Reference)      : 
+     dtpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138
+      |(Reference)      : 
+     fa1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 142
+      |(Reference)      : 
+     fa2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 142
+      |(Reference)      : 
+     fa3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 142
+      |(Reference)      : 
+     fa4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 142
+      |(Reference)      : 
+     gglati
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 141
+      |(Reference)      : 
+     gslati
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 141
+      |(Reference)      : 
+     latlen
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 141
+      |(Reference)      : 
+     latstr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 141
+      |(Reference)      : 
+     lonlen
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 141
+      |(Reference)      : 
+     lonstr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 141
+      |(Reference)      : 
+     pdiff
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138
+      |(Reference)      : 
+     phi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 137
+      |(Reference)      : 
+     pk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 137
+      |(Reference)      : 
+     pk2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 137
+      |(Reference)      : 
+     plt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 137
+      |(Reference)      : 
+     pt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138
+      |(Reference)      : 
+     ptend
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138
+      |(Reference)      : 
+     ptp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138
+      |(Reference)      : 
+     qm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 137
+      |(Reference)      : 
+     qp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 137
+      |(Reference)      : 
+     qt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 137
+      |(Reference)      : 
+     rdiv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 137
+      |(Reference)      : 
+     rvor
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 137
+      |(Reference)      : 
+     sd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 137
+      |(Reference)      : 
+     sgeo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138
+      |(Reference)      : 
+     std
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138
+      |(Reference)      : 
+     t1000
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138
+      |(Reference)      : 
+     tsave
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138
+      |(Reference)      : 
+     tt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 137
+      |(Reference)      : 
+     ttp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 137
+      |(Reference)      : 
+     up
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 137
+      |(Reference)      : 
+     ut
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 137
+      |(Reference)      : 
+     ut_sl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 145
+      |(Reference)      : 
+     vp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 137
+      |(Reference)      : 
+     vt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 137
+      |(Reference)      : 
+     vt_sl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 145
+      |(Reference)      : 
+     vvel
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 137
+      |(Reference)      : 
+
+ Total information
+   Procedures       : 1
+   Total lines      : 151
+   Total statements : 74
+   Total stack(byte): 6352
+   Total prefetch num: 0
+

@@ -1,0 +1,588 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jul 12 10:11:46 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/tco639l72/src_4cpl
+   Source file       : sfc_ocean.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "sfc_ocean"
+  (inc)(line-no.)(nest)(optimize)
+               1                     !-----------------------------------
+               2                           subroutine sfc_ocean                                              &
+               3                     !...................................
+               4                     !  ---  inputs: &
+               5                                ( imj,im, ps, u1, v1, t1, q1, tskin, cm, ch,                 &
+               6                                  prsl1, prslki, islimsk, ddvel, flag_iter,                  &
+               7                     !  ---  outputs:
+               8                     !    &       qsurf, cmm, chh, gflux, evap, hflx, ep                     &
+               9                                  qsurf, gflux, evap, hflx, ep, ssu, ssv                     &
+              10                                )
+              11                     
+              12                     ! ===================================================================== !
+              13                     !  description:                                                         !
+              14                     !                                                                       !
+              15                     !  usage:                                                               !
+              16                     !                                                                       !
+              17                     !    call sfc_ocean                                                     !
+              18                     !       inputs:                                                         !
+              19                     !          ( im, ps, u1, v1, t1, q1, tskin, cm, ch,                     !
+              20                     !            prsl1, prslki, islimsk, ddvel, flag_iter,                  !
+              21                     !       outputs:                                                        !
+              22                     !            qsurf, cmm, chh, gflux, evap, hflx, ep )                   !
+              23                     !                                                                       !
+              24                     !                                                                       !
+              25                     !  subprograms/functions called: fpvs                                   !
+              26                     !                                                                       !
+              27                     !                                                                       !
+              28                     !  program history log:                                                 !
+              29                     !         2005  -- created from the original progtm to account for      !
+              30                     !                  ocean only                                           !
+              31                     !    oct  2006  -- h. wei      added cmm and chh to the output          !
+              32                     !    apr  2009  -- y.-t. hou   modified to match the modified gbphys.f  !
+              33                     !                  reformatted the code and added program documentation !
+              34                     !    sep  2009  -- s. moorthi removed rcl and made pa as pressure unit  !
+              35                     !                  and furthur reformatted the code                     !
+              36                     !                                                                       !
+              37                     !                                                                       !
+              38                     !  ====================  defination of variables  ====================  !
+              39                     !                                                                       !
+              40                     !  inputs:                                                       size   !
+              41                     !     im       - integer, horizontal dimension                     1    !
+              42                     !     ps       - real, surface pressure                            im   !
+              43                     !     u1, v1   - real, u/v component of surface layer wind         im   !
+              44                     !     t1       - real, surface layer mean temperature ( k )        im   !
+              45                     !     q1       - real, surface layer mean specific humidity        im   !
+              46                     !     tskin    - real, ground surface skin temperature ( k )       im   !
+              47                     !     cm       - real, surface exchange coeff for momentum (m/s)   im   !
+              48                     !     ch       - real, surface exchange coeff heat & moisture(m/s) im   !
+              49                     !     prsl1    - real, surface layer mean pressure                 im   !
+              50                     !     prslki   - real,                                             im   !
+              51                     !     islimsk  - integer, sea/land/ice mask (=0/1/2)               im   !
+              52                     !     ddvel    - real, wind enhancement due to convection (m/s)    im   !
+              53                     !     flag_iter- logical,                                          im   !
+              54                     !                                                                       !
+              55                     !  outputs:                                                             !
+              56                     !     qsurf    - real, specific humidity at sfc                    im   !
+              57                     !     cmm      - real,                                             im   !
+              58                     !     chh      - real,                                             im   !
+              59                     !     gflux    - real, ground heat flux (zero for ocean)           im   !
+              60                     !     evap     - real, evaporation from latent heat flux           im   !
+              61                     !     hflx     - real, sensible heat flux                          im   !
+              62                     !     ep       - real, potential evaporation                       im   !
+              63                     !                                                                       !
+              64                     ! ===================================================================== !
+              65                     !
+              66                           use machine , only : kind_phys
+              67                     !     use funcphys, only : fpvs
+              68                           use physcons, only : cp => con_cp, rd => con_rd, eps => con_eps,    &
+              69                                                epsm1 => con_epsm1, hvap => con_hvap,          &
+              70                                                rvrdm1 => con_fvirt
+              71                           use const,    only : RTYPE
+              72                     !
+              73                           implicit none
+              74                     !
+              75                     !  ---  constant parameters:
+              76                           real (kind=kind_phys), parameter :: cpinv  = 1.0/cp                 &
+              77                           ,                                   hvapi  = 1.0/hvap               &
+              78                           ,                                   elocp  = hvap/cp
+              79                     
+              80                     !  ---  inputs:
+              81                           integer, intent(in) :: im, imj
+              82                     
+              83                           real (kind=RTYPE), dimension(im), intent(in) :: u1, v1, t1, q1
+              84                           real (kind=kind_phys), dimension(im), intent(in) :: ps,             &
+              85                                 tskin, cm, ch, prsl1, prslki, ddvel, ssu, ssv
+              86                           integer, dimension(im), intent(in):: islimsk
+              87                     
+              88                           logical, intent(in) :: flag_iter(im)
+              89                     
+              90                     !  ---  outputs:
+              91                     !     real (kind=kind_phys), dimension(im), intent(out) :: qsurf,         &
+              92                           real (kind=kind_phys), dimension(im) :: qsurf,         &
+              93                                  cmm, chh, gflux, evap, hflx, ep
+              94                     
+              95                     !  ---  locals:
+              96                     
+              97                           real (kind=kind_phys) :: q0, qss, rch, rho, wind, tem, fpvs
+              98                     
+              99                           integer :: i
+             100                     
+             101                           logical :: flag(im)
+             102                     !
+             103                     !===> ...  begin here
+             104                     !
+             105                     !  --- ...  flag for open water
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      islimsk, flag_iter, flag
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 18
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             106     1   s    s            do i = 1, imj
+             107     1   m    m              flag(i) = ( islimsk(i) == 0 .and. flag_iter(i) )
+             108     1               
+             109     1               !  --- ...  initialize variables. all units are supposedly m.k.s. unless specified
+             110     1               !           ps is in pascals, wind is wind speed,
+             111     1               !           rho is density, qss is sat. hum. at surface
+             112     1               
+             113     2   s    s              if ( flag(i) ) then
+             114     2               
+             115     2   m    m                wind     = max(sqrt((u1(i)-ssu(i))**2 + (v1(i)-ssv(i))**2)          &
+             116     2                                      + max( 0.0, min( ddvel(i), 30.0 ) ), 1.0)
+             117     2               
+             118     2   p    v                q0       = max( q1(i), 1.0e-8 )
+             119     2   p    v                rho      = prsl1(i) / (rd*t1(i)*(1.0 + rvrdm1*q0))
+             120     2               
+             121     2   s    s                qss      = fpvs( tskin(i) )
+             122     2   p    v                qss      = eps*qss / (ps(i) + epsm1*qss)
+             123     2               
+             124     2   p    v                evap(i)  = 0.0
+             125     2   p    v                hflx(i)  = 0.0
+             126     2   p    v                ep(i)    = 0.0
+             127     2   p    v                gflux(i) = 0.0
+             128     2               
+             129     2               !  --- ...    rcp  = rho cp ch v
+             130     2               
+             131     2   p    v                rch      = rho * cp * ch(i) * wind
+             132     2   p    v                cmm(i)   = cm(i) * wind
+             133     2   p    v                chh(i)   = rho * ch(i) * wind
+             134     2               
+             135     2               !  --- ...  sensible and latent heat flux over open water
+             136     2               
+             137     2   m    m                hflx(i)  = rch * (tskin(i) - t1(i) * prslki(i))
+             138     2               
+             139     2   p    v                evap(i)  = elocp*rch * (qss - q0)
+             140     2   p    v                qsurf(i) = qss
+             141     2               
+             142     2   p    v                tem      = 1.0 / rho
+             143     2   p    v                hflx(i)  = hflx(i) * tem * cpinv
+             144     2   p    v                evap(i)  = evap(i) * tem * hvapi
+             145     2   p    v              endif
+             146     1   p    v            enddo
+             147                     !
+             148                           return
+             149                     !...................................
+             150                           end subroutine sfc_ocean
+             151                     !-----------------------------------
+
+ Procedure information
+   Lines      : 151
+   Statements : 40
+   Stack(byte): 496
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : sfc_ocean
+   Attribute and Cross reference of name
+     ch
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  84
+      |(Definition)     : 
+      |(Reference)      : 131  133
+     chh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 92
+      |(Definition)     : 133
+      |(Reference)      : 
+     cm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  84
+      |(Definition)     : 
+      |(Reference)      : 132
+     cmm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 92
+      |(Definition)     : 132
+      |(Reference)      : 
+     con_cp
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 68
+     con_eps
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 68
+     con_epsm1
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 68
+     con_fvirt
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 68
+     con_hvap
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 68
+     con_rd
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 68
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 71
+     cp
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 68  76  76  131
+     cpinv
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 76
+      |(Definition)     : 
+      |(Reference)      : 143
+     ddvel
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  84
+      |(Definition)     : 
+      |(Reference)      : 115
+     elocp
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 76
+      |(Definition)     : 
+      |(Reference)      : 139
+     ep
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  92
+      |(Definition)     : 126
+      |(Reference)      : 
+     eps
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 68  122
+     epsm1
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 68  122
+     evap
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  92
+      |(Definition)     : 124  139  144
+      |(Reference)      : 144
+     flag
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 101
+      |(Definition)     : 107
+      |(Reference)      : 113
+     flag_iter
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  88
+      |(Definition)     : 
+      |(Reference)      : 107
+     fpvs
+      |(Class and Type) : external function name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 121
+     fpvs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 97
+      |(Definition)     : 
+      |(Reference)      : 
+     gflux
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  92
+      |(Definition)     : 127
+      |(Reference)      : 
+     hflx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  92
+      |(Definition)     : 125  137  143
+      |(Reference)      : 143
+     hvap
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 68  76  76
+     hvapi
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 76
+      |(Definition)     : 
+      |(Reference)      : 144
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 99
+      |(Definition)     : 106
+      |(Reference)      : 107  107  107  113  115  115  115  115  115  118  119  119  121  122  124  125  126  127  131  132  132  133  133  137  137  137  137  139  140  143  143  144  144
+     im
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 2  81
+      |(Definition)     : 
+      |(Reference)      : 83  83  83  83  84  84  84  84  84  84  84  84  84  86  88  92  92  92  92  92  92  92  101
+     imj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 2  81
+      |(Definition)     : 
+      |(Reference)      : 106
+     islimsk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  86
+      |(Definition)     : 
+      |(Reference)      : 107
+     kind_phys
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 66  76  84  92  97
+     machine
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 66
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 115  115  118
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 115
+     physcons
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 68
+     prsl1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  84
+      |(Definition)     : 
+      |(Reference)      : 119
+     prslki
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  84
+      |(Definition)     : 
+      |(Reference)      : 137
+     ps
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  84
+      |(Definition)     : 
+      |(Reference)      : 122
+     q0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 97
+      |(Definition)     : 118
+      |(Reference)      : 119  139
+     q1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  83
+      |(Definition)     : 
+      |(Reference)      : 118
+     qss
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 97
+      |(Definition)     : 121  122
+      |(Reference)      : 122  122  139  140
+     qsurf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  92
+      |(Definition)     : 140
+      |(Reference)      : 
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 71  83
+     rch
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 97
+      |(Definition)     : 131
+      |(Reference)      : 137  139
+     rd
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 68  119
+     rho
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 97
+      |(Definition)     : 119
+      |(Reference)      : 131  133  142
+     rvrdm1
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 68  119
+     sfc_ocean
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 2
+      |(Reference)      : 150
+     sqrt
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 115
+     ssu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  84
+      |(Definition)     : 
+      |(Reference)      : 115
+     ssv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  84
+      |(Definition)     : 
+      |(Reference)      : 115
+     t1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  83
+      |(Definition)     : 
+      |(Reference)      : 119  137
+     tem
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 97
+      |(Definition)     : 142
+      |(Reference)      : 143  144
+     tskin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  84
+      |(Definition)     : 
+      |(Reference)      : 121  137
+     u1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  83
+      |(Definition)     : 
+      |(Reference)      : 115
+     v1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  83
+      |(Definition)     : 
+      |(Reference)      : 115
+     wind
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 97
+      |(Definition)     : 115
+      |(Reference)      : 131  132  133
+
+ Total information
+   Procedures       : 1
+   Total lines      : 151
+   Total statements : 40
+   Total stack(byte): 496
+   Total prefetch num: 0
+

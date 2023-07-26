@@ -53,14 +53,14 @@ export MDIR=$(pwd)
 module purge
 module use  ${MDIR}/modulefiles
 module av
-module show modulefile.tcogfs.${MACHINE}
-module load modulefile.tcogfs.${MACHINE}
+module show modulefile.tcogfs.${MACHINE}_2cpl
+module load modulefile.tcogfs.${MACHINE}_2cpl
 module list
 module unuse ${MDIR}/modulefiles
 
 # compile
 cd src/
-#make clean
+make clean
 make -j24
 
 if [[ $? -ne 0 ]];then exit ;fi

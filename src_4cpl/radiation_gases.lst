@@ -1,0 +1,3112 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jul 12 10:12:00 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/tco639l72/src_4cpl
+   Source file       : radiation_gases.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ Module "module_radiation_gases"
+  (inc)(line-no.)(nest)(optimize)
+               1                     !!!!!  ==========================================================  !!!!!
+               2                     !!!!!              'module_radiation_gases'  description           !!!!!
+               3                     !!!!!  ==========================================================  !!!!!
+               4                     !                                                                      !
+               5                     !   set up ozone climatological profiles and other constant gas        !
+               6                     !   profiles, such as co2, ch4, n2o, o2, and those of cfc gases.  all  !
+               7                     !   data are entered as mixing ratio by volume, except ozone which is  !
+               8                     !   mass mixing ratio (g/g).                                           !
+               9                     !                                                                      !
+              10                     !   in the module, the externally callabe subroutines are :            !
+              11                     !                                                                      !
+              12                     !      'gas_init'   -- initialization                                  !
+              13                     !         input:                                                       !
+              14                     !           ( me )                                                     !
+              15                     !         output:                                                      !
+              16                     !           ( none )                                                   !
+              17                     !                                                                      !
+              18                     !      'gas_update' -- read in data and update with time               !
+              19                     !         input:                                                       !
+              20                     !           ( iyear, imon, iday, ihour, loz1st, ldoco2, me )           !
+              21                     !         output:                                                      !
+              22                     !           ( none )                                                   !
+              23                     !                                                                      !
+              24                     !      'getozn'     -- setup climatological ozone profile              !
+              25                     !         input:                                                       !
+              26                     !           ( prslk,xlat,                                              !
+              27                     !             imax, lm )                                               !
+              28                     !         output:                                                      !
+              29                     !           ( o3mmr )                                                  !
+              30                     !                                                                      !
+              31                     !      'getgases'   -- setup constant gas profiles for lw and sw       !
+              32                     !         input:                                                       !
+              33                     !           ( plvl, xlon, xlat,                                        !
+              34                     !             imax, lmax )                                             !
+              35                     !         output:                                                      !
+              36                     !           ( gasdat )                                                 !
+              37                     !                                                                      !
+              38                     !   external modules referenced:                                       !
+              39                     !       'module machine'                    in 'machine.f'             !
+              40                     !       'module funcphys'                   in 'funcphys.f'            !
+              41                     !       'module physcons'                   in 'physcons.f             !
+              42                     !       'module module_iounitdef'           in 'iounitdef.f'           !
+              43                     !                                                                      !
+              44                     !   unit used for radiative active gases:                              !
+              45                     !      ozone : mass mixing ratio                     (g/g)             !
+              46                     !      co2   : volume mixing ratio                   (p/p)             !
+              47                     !      n2o   : volume mixing ratio                   (p/p)             !
+              48                     !      ch4   : volume mixing ratio                   (p/p)             !
+              49                     !      o2    : volume mixing ratio                   (p/p)             !
+              50                     !      co    : volume mixing ratio                   (p/p)             !
+              51                     !      cfc11 : volume mixing ratio                   (p/p)             !
+              52                     !      cfc12 : volume mixing ratio                   (p/p)             !
+              53                     !      cfc22 : volume mixing ratio                   (p/p)             !
+              54                     !      ccl4  : volume mixing ratio                   (p/p)             !
+              55                     !      cfc113: volume mixing ratio                   (p/p)             !
+              56                     !                                                                      !
+              57                     !                                                                      !
+              58                     !   program history:                                                   !
+              59                     !     may 2003 - y-t hou     create rad_module.f that collectively     !
+              60                     !                  combines several radiation computation supporting   !
+              61                     !                  programs into fortran 90 module structure (gases    !
+              62                     !                  and aerosols, etc.)                                 !
+              63                     !     apr 2004 - y-t hou     modified to add astronomy and surface     !
+              64                     !                  module components.                                  !
+              65                     !     feb 2005 - y-t hou     rewrite the component modules into        !
+              66                     !                  separate individule modules for thier corresponding !
+              67                     !                  tasks. here as radiation_gases.f                    !
+              68                     !     mar 2006 - y-t hou     add initialization subroutine to co2 and  !
+              69                     !                  other gases. historical 2-d co2 data are added.     !
+              70                     !     sep 2008 - y-t hou     add parameter ictm to control the input   !
+              71                     !                  data time at the model initial condition.           !
+              72                     !     oct 2008 - y-t hou     modify the initialization code to add the !
+              73                     !                  option of superimposing climatology seasonal cycle  !
+              74                     !                  to the initial condition data (currently co2 only)  !
+              75                     !     nov 2008 - y-t hou     fix bugs in superimposing climatology     !
+              76                     !                  seasonal cycle calculations                         !
+              77                     !     aug 2011 - y-t hou     fix a bug in subr getgases doing vertical !
+              78                     !                  co2 mapping. (for iflip=0 case, not affact opr).    !
+              79                     !     aug 2012 - y-t hou     modified subr getozn.  moved the if-first !
+              80                     !                  block to subr gas_init to ensure threading safe in  !
+              81                     !                  climatology ozone applications. (not affect gfs)    !
+              82                     !                  also changed the initialization subr into two parts:!
+              83                     !                  'gas_init' is called at the start of run to set up  !
+              84                     !                  module parameters; and 'gas_update' is called within!
+              85                     !                  the time loop to check and update data sets. defined!
+              86                     !                  the climatology ozone parameters k1oz,k2oz,facoz as !
+              87                     !                  module variables and are set in subr 'gas_update'   !
+              88                     !     nov 2012 - y-t hou     modified control parameters thru module   !
+              89                     !                  'physpara'.                                         !
+              90                     !     jan 2013 - z. janjic/y. hou   modified ilon (longitude index)    !
+              91                     !                  computing formula in subroutine getgases to work    !
+              92                     !                  properly for models with either of  0->360 or       !
+              93                     !                  -180->180 zonal grid directions.                    !
+              94                     !                                                                      !
+              95                     !                                                                      !
+              96                     !!!!!  ==========================================================  !!!!!
+              97                     !!!!!                       end descriptions                       !!!!!
+              98                     !!!!!  ==========================================================  !!!!!
+              99                     
+             100                     
+             101                     
+             102                     !========================================!
+             103                           module module_radiation_gases      !
+             104                     !........................................!
+             105                     !
+             106                           use physpara,          only : ico2flg, ictmflg, ioznflg, ivflip,  &
+             107                          &                              co2dat_file, co2gbl_file,           &
+             108                          &                              co2usr_file, co2cyc_file,           &
+             109                          &                              kind_phys, kind_io4
+             110                           use funcphys,          only : fpkapx
+             111                           use physcons,          only : con_pi
+             112                           use ozne_def,          only : jmr => latsozc, loz => levozc,      &
+             113                          &                              blte => blatc, dlte=> dphiozc,      &
+             114                          &                              timeozc => timeozc
+             115                           use module_iounitdef,  only : nio3clm, nico2cn
+             116                     !
+             117                           implicit   none
+             118                     !
+             119                           private
+             120                     
+             121                     !  ---  version tag and last revision date
+             122                           character(40), parameter ::                                       &
+             123                          &   vtaggas='ncep-radiation_gases     v5.1  nov 2012 '
+             124                     !    &   vtaggas='ncep-radiation_gases     v5.0  aug 2012 '
+             125                     
+             126                     !  ---  parameter constants
+             127                           integer, parameter, public :: nf_vgas = 10     ! number of gas species
+             128                           integer, parameter         :: imxco2  = 24     ! input co2 data lon points
+             129                           integer, parameter         :: jmxco2  = 12     ! input co2 data lat points
+             130                           integer, parameter         :: minyear = 1957   ! earlist year 2-d co2 data
+             131                                                                          ! available
+             132                     
+             133                           real (kind=kind_phys), parameter :: resco2=15.0         ! horiz res in degree
+             134                           real (kind=kind_phys), parameter :: raddeg=180.0/con_pi ! rad->deg conversion
+             135                           real (kind=kind_phys), parameter :: prsco2=788.0        ! pres lim for 2-d co2 (mb)
+             136                           real (kind=kind_phys), parameter :: hfpi  =0.5*con_pi   ! half of pi
+             137                     
+             138                     !  ---  parameter constants for gas volume mixing ratioes
+             139                           real (kind=kind_phys), parameter :: co2vmr_def = 350.0e-6
+             140                           real (kind=kind_phys), parameter :: n2ovmr_def = 0.31e-6
+             141                           real (kind=kind_phys), parameter :: ch4vmr_def = 1.50e-6
+             142                           real (kind=kind_phys), parameter :: o2vmr_def  = 0.209
+             143                           real (kind=kind_phys), parameter :: covmr_def  = 1.50e-8
+             144                           real (kind=kind_phys), parameter :: f11vmr_def = 3.520e-10   ! aer 2003 value
+             145                           real (kind=kind_phys), parameter :: f12vmr_def = 6.358e-10   ! aer 2003 value
+             146                           real (kind=kind_phys), parameter :: f22vmr_def = 1.500e-10   ! aer 2003 value
+             147                           real (kind=kind_phys), parameter :: cl4vmr_def = 1.397e-10   ! aer 2003 value
+             148                           real (kind=kind_phys), parameter :: f113vmr_def= 8.2000e-11  ! gfdl 1999 value
+             149                     
+             150                     !  ---  ozone seasonal climatology parameters defined in module ozne_def
+             151                     !   - 4x5 ozone data parameter
+             152                     !     integer, parameter :: jmr=45, loz=17
+             153                     !     real (kind=kind_phys), parameter :: blte=-86.0, dlte=4.0
+             154                     !   - geos ozone data
+             155                     !     integer, parameter :: jmr=18, loz=17
+             156                     !     real (kind=kind_phys), parameter :: blte=-85.0, dlte=10.0
+             157                     
+             158                     !  ---  module variables to be set in subroutin gas_init and/or gas_update
+             159                     
+             160                     !   - variables for climatology ozone (ioznflg = 0)
+             161                           real (kind=kind_phys), allocatable :: pkstr(:), o3r(:,:,:)
+             162                           integer :: k1oz = 0,  k2oz = 0
+             163                           real (kind=kind_phys) :: facoz = 0.0
+             164                     
+             165                     !   - arrays for co2 2-d monthly data and global mean values from observed data
+             166                           real (kind=kind_phys), allocatable :: co2vmr_sav(:,:,:)
+             167                           real (kind=kind_phys), allocatable :: co2cyc_sav(:,:,:)
+             168                     
+             169                           real (kind=kind_phys) :: co2_glb = co2vmr_def
+             170                           real (kind=kind_phys) :: gco2cyc(12)
+             171                           data gco2cyc(:) / 12*0.0 /
+             172                     
+             173                           integer :: kyrsav  = 0
+             174                           integer :: kmonsav = 1
+             175                     
+             176                     !  ---  public interfaces
+             177                     
+             178                           public  gas_init, gas_update, getgases, getozn
+             179                     
+             180                     
+             181                     ! =================
+             182                           contains
+             183                     ! =================
+             184                     
+             185                     !-----------------------------------
+             186                           subroutine gas_init                                               &
+             187                     !...................................
+             188                     
+             189                     !  ---  inputs:
+             190                          &     ( me,myrank )
+             191                     !  ---  outputs: ( none )
+             192                     
+             193                     !  ===================================================================  !
+             194                     !                                                                       !
+             195                     !  gas_init sets up ozone, co2, etc. parameters.  if climatology ozone  !
+             196                     !  then read in monthly ozone data.                                     !
+             197                     !                                                                       !
+             198                     !  inputs:                                               dimemsion      !
+             199                     !     me      - print message control flag                  1           !
+             200                     !                                                                       !
+             201                     !  outputs: (to the module variables)                                   !
+             202                     !    ( none )                                                           !
+             203                     !                                                                       !
+             204                     !  external module variables:  (in physpara)                            !
+             205                     !     ico2flg    - co2 data source control flag                         !
+             206                     !                   =0: use prescribed co2 global mean value            !
+             207                     !                   =1: use input global mean co2 value (co2_glb)       !
+             208                     !                   =2: use input 2-d monthly co2 value (co2vmr_sav)    !
+             209                     !     ictmflg    - =yyyy#, data ic time/date control flag               !
+             210                     !                  =   -2: same as 0, but superimpose seasonal cycle    !
+             211                     !                          from climatology data set.                   !
+             212                     !                  =   -1: use user provided external data for the fcst !
+             213                     !                          time, no extrapolation.                      !
+             214                     !                  =    0: use data at initial cond time, if not existed!
+             215                     !                          then use latest, without extrapolation.      !
+             216                     !                  =    1: use data at the forecast time, if not existed!
+             217                     !                          then use latest and extrapolate to fcst time.!
+             218                     !                  =yyyy0: use yyyy data for the forecast time, no      !
+             219                     !                          further data extrapolation.                  !
+             220                     !                  =yyyy1: use yyyy data for the fcst. if needed, do    !
+             221                     !                          extrapolation to match the fcst time.        !
+             222                     !     ioznflg    - ozone data control flag                              !
+             223                     !                   =0: use climatological ozone profile                !
+             224                     !                   >0: use interactive ozone profile                   !
+             225                     !     ivflip     - vertical profile indexing flag                       !
+             226                     !     co2usr_file- external co2 user defined data table                 !
+             227                     !     co2cyc_file- external co2 climotology monthly cycle data table    !
+             228                     !                                                                       !
+             229                     !  internal module variables:                                           !
+             230                     !     pkstr, o3r - arrays for climatology ozone data                    !
+             231                     !                                                                       !
+             232                     !  usage:    call gas_init                                              !
+             233                     !                                                                       !
+             234                     !  subprograms called:  none                                            !
+             235                     !                                                                       !
+             236                     !  ===================================================================  !
+             237                     !
+             238                           implicit none
+             239                     
+             240                     !  ---  inputs:
+             241                           integer, intent(in) :: me, myrank
+             242                     
+             243                     !  ---  output: ( none )
+             244                     
+             245                     !  ---  locals:
+             246                           real (kind=kind_phys), dimension(imxco2,jmxco2) :: co2dat
+             247                           real (kind=kind_phys), dimension(imxco2,jmxco2,12) :: co2dat3
+             248                           real (kind=kind_phys) :: co2g1, co2g2
+             249                           real (kind=kind_phys) :: pstr(loz)
+             250                           real (kind=kind_io4)  :: o3clim4(jmr,loz,12), pstr4(loz)
+             251                     
+             252                           integer    :: imond(12), ilat(jmr,12)
+             253                           integer    :: i, j, k, iyr, imo, jn
+             254                           logical    :: file_exist, lextpl
+             255                           character  :: cline*100, cform*8
+             256                           data  cform  / '(24f7.2)' /       !! data format in imxco2*f7.2
+             257                     !
+             258                     !===>  ...  begin here
+             259                     !
+             260                           if ( me == 0 .and. myrank == 0) print *, vtaggas    ! print out version tag
+             261                     
+             262                           kyrsav  = 0
+             263                           kmonsav = 1
+             264                     
+             265                     !  --- ...  climatology ozone data section
+             266                     
+             267     1                     if ( ioznflg > 0 ) then
+             268     2                       if ( me == 0 .and. myrank == 0 ) then
+             269     2                         print *,' - using interactive ozone distribution'
+             270     2                       endif
+             271     1                     else
+             272     2                       if ( timeozc /= 12 ) then
+             273     2                         print *,' - using climatology ozone distribution'
+             274     2                         print *,' timeozc=',timeozc, ' is not monthly mean',          &
+             275     2                    &            ' - job aborting in subroutin gas_init!!!'
+             276     2                         stop
+             277     2                       endif
+             278     1               
+             279     1                       allocate (pkstr(loz), o3r(jmr,loz,12))
+             280     1                       rewind nio3clm
+             281     1               
+             282     2                       if ( loz == 17 ) then       ! for the operational ozone climatology
+             283     3   s    s                do k = 1, loz
+             284     3   s    s                  read (nio3clm,15) pstr4(k)
+             285     3                  15       format(f10.3)
+             286     3   s    s                enddo
+             287     2               
+             288     3                         do imo = 1, 12
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 5
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             289     4   s    s                  do j = 1, jmr
+             290     4   m    m                    read (nio3clm,16) imond(imo), ilat(j,imo),                &
+             291     4                    &                          (o3clim4(j,k,imo),k=1,10)
+             292     4                  16         format(i2,i4,10f6.2)
+             293     4   m    m                    read (nio3clm,20) (o3clim4(j,k,imo),k=11,loz)
+             294     4                  20         format(6x,10f6.2)
+             295     4   p    v                  enddo
+             296     3                         enddo
+             297     2                       else                      ! for newer ozone climatology
+             298     2                         read (nio3clm)
+             299     3   s    s                do k = 1, loz
+             300     3   s    s                  read (nio3clm) pstr4(k)
+             301     3   s    s                enddo
+             302     2               
+             303     3                         do imo = 1, 12
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 1  FILL 1
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             304     4   s    s                  do k = 1, loz
+             305     4   m    s                    read (nio3clm) (o3clim4(j,k,imo),j=1,jmr)
+             306     4   p    s                  enddo
+             307     3                         enddo
+             308     2                       endif   ! end if_loz_block
+             309     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             310     2  pp                   do imo = 1, 12
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      o3clim4, o3r
+                                   <<< Loop-information  End >>>
+             311     3   p                     do k = 1, loz
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      o3clim4, o3r
+                                   <<< Loop-information  End >>>
+             312     4   p   2v                  do j = 1, jmr
+             313     4   p   2v                    o3r(j,k,imo) = o3clim4(j,k,imo) * 1.655e-6
+             314     4   p   2v                  enddo
+             315     3   p                     enddo
+             316     2   p                   enddo
+             317     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1143
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pstr4, pstr
+                                   <<< Loop-information  End >>>
+             318     2  pp   2v              do k = 1, loz
+             319     2   p   2v                pstr(k) = pstr4(k)
+             320     2   p   2v              enddo
+             321     1               
+             322     2                       if ( me == 0 .and. myrank == 0 ) then
+             323     2                         print *,' - using climatology ozone distribution'
+             324     2                         print *,'   found ozone data for levels pstr=',               &
+             325     2                    &            (pstr(k),k=1,loz)
+             326     2               !         print *,' o3=',(o3r(15,k,1),k=1,loz)
+             327     2                       endif
+             328     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pstr, pkstr
+                                   <<< Loop-information  End >>>
+             329     2  pp    s              do k = 1, loz
+             330     2   p    m                pkstr(k) = fpkapx(pstr(k)*100.0)
+             331     2   p    v              enddo
+             332     1                     endif   ! end if_ioznflg_block
+             333                     
+             334                     !  --- ...  co2 data section
+             335                     
+             336                           co2_glb = co2vmr_def
+             337                     
+             338     1                     lab_ico2 : if ( ico2flg == 0 ) then
+             339     1               
+             340     2                       if ( me == 0 .and. myrank == 0) then
+             341     2                         print *,' - using prescribed co2 global mean value=',         &
+             342     2                    &              co2vmr_def
+             343     2                       endif
+             344     1               
+             345     1                     else  lab_ico2
+             346     1               
+             347     2                       lab_ictm : if ( ictmflg == -1 ) then      ! input user provided data
+             348     2               
+             349     2                         inquire (file=co2usr_file, exist=file_exist)
+             350     3                         if ( .not. file_exist ) then
+             351     3                           print *,'   can not find user co2 data file: ',co2usr_file, &
+             352     3                    &              ' - stopped in subroutine gas_init !!'
+             353     3                           stop
+             354     3                         else
+             355     3                           close (nico2cn)
+             356     3                           open(nico2cn,file=co2usr_file,form='formatted',status='old')
+             357     3                           rewind nico2cn
+             358     3                           read (nico2cn, 25) iyr, cline, co2g1, co2g2
+             359     3                 25        format(i4,a94,f7.2,16x,f5.2)
+             360     3                           co2_glb = co2g1 * 1.0e-6
+             361     3               
+             362     4                           if ( ico2flg == 1 ) then
+             363     5                             if ( me == 0 .and. myrank == 0) then
+             364     5                               print *,' - using co2 global annual mean value from',   &
+             365     5                    &                  ' user provided data set:',co2usr_file
+             366     5                               print *, iyr,cline(1:94),co2g1,'  growth rate =', co2g2
+             367     5                             endif
+             368     4                           elseif ( ico2flg == 2 ) then
+             369     4                             allocate ( co2vmr_sav(imxco2,jmxco2,12) )
+             370     4               
+             371     4               !cmy--------------------------------------------------------------------
+             372     4               !cmy --- transfer j-index from N->S : 1-jmxco2 to S->N : 1-jmxco2
+             373     4               !cmy--------------------------------------------------------------------
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      co2dat, (unknown)
+                                   <<< Loop-information  End >>>
+             374     5                             do imo = 1, 12
+             375     5                               read (nico2cn,cform) co2dat
+             376     5               !check          print cform, co2dat
+             377     5               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1067
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      co2dat, (unknown)
+                                   <<< Loop-information  End >>>
+             378     6   s   2v                      do j = 1, jmxco2
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<< Loop-information  End >>>
+             379     7   s   2v                        do i = 1, imxco2
+             380     7   p   2v                          co2dat3(i,j,imo) = co2dat(i,j) * 1.0e-6
+             381     7   p   2v                        enddo
+             382     6   p                           enddo
+             383     5                              enddo
+             384     4               !cmy--------------------------------------------------------------------
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      co2dat3
+                                   <<< Loop-information  End >>>
+             385     5  pp                         do imo = 1, 12
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 48, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      co2dat3
+                                   <<< Loop-information  End >>>
+             386     6   p                           do j = 1, jmxco2
+             387     6   p                              jn = jmxco2-j+1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             388     7   p   fv                        do i = 1, imxco2
+             389     7   p   fv                          co2vmr_sav(i,jn,imo) = co2dat3(i,j,imo)
+             390     7   p   fv                        enddo
+             391     6   p                           enddo
+             392     5   p                         enddo
+             393     4               !cmy--------------------------------------------------------------------
+             394     4               
+             395     5                             if ( me == 0 .and. myrank == 0) then
+             396     5                               print *,' - using co2 monthly 2-d data from user',      &
+             397     5                    &                ' provided data set:',co2usr_file
+             398     5                               print *, iyr,cline(1:94),co2g1,'  growth rate =', co2g2
+             399     5               
+             400     5                               print *,' check: sample of selected months of co2 data'
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 5
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             401     6   s    s                      do imo = 1, 12, 3
+             402     6   m    m                        print *,'        month =',imo
+             403     6   m    s                        print *, co2vmr_sav(1,:,imo)
+             404     6   p    v                      enddo
+             405     5                             endif
+             406     4                           else
+             407     4                             print *,' ico2=',ico2flg,' is not a valid selection',     &
+             408     4                    &                ' - stoped in subroutine gas_init!!!'
+             409     4                             stop
+             410     4                           endif    ! endif_ico2flg_block
+             411     3               
+             412     3                           close (nico2cn)
+             413     3                         endif    ! endif_file_exist_block
+             414     2               
+             415     2                       else   lab_ictm                           ! input from observed data
+             416     2               
+             417     3                         if ( ico2flg == 1 ) then
+             418     4                           if ( me == 0 .and. myrank == 0 ) then
+             419     4                             print *,' - using observed co2 global annual mean value'
+             420     4                           endif
+             421     3                         elseif ( ico2flg == 2 ) then
+             422     3                           allocate ( co2vmr_sav(imxco2,jmxco2,12) )
+             423     3               
+             424     4                           if ( me == 0 .and. myrank == 0) then
+             425     4                             print *,' - using observed co2 monthly 2-d data'
+             426     4                           endif
+             427     3                         else
+             428     3                           print *,' ico2=',ico2flg,' is not a valid selection',       &
+             429     3                    &              ' - stoped in subroutine gas_init!!!'
+             430     3                           stop
+             431     3                         endif
+             432     2               
+             433     3                         if ( ictmflg == -2 ) then
+             434     3                           inquire (file=co2cyc_file, exist=file_exist)
+             435     4                           if ( .not. file_exist ) then
+             436     5                             if ( me == 0 .and. myrank ==0 ) then
+             437     5                               print *,'   can not find seasonal cycle co2 data: ',    &
+             438     5                    &               co2cyc_file,' - stopped in subroutine gas_init !!'
+             439     5                             endif
+             440     4                             stop
+             441     4                           else
+             442     4                             allocate( co2cyc_sav(imxco2,jmxco2,12) )
+             443     4               
+             444     4               !  --- ...  read in co2 2-d seasonal cycle data
+             445     4                             close (nico2cn)
+             446     4                             open (nico2cn,file=co2cyc_file,form='formatted',          &
+             447     4                    &              status='old')
+             448     4                             rewind nico2cn
+             449     4                             read (nico2cn, 35) cline, co2g1, co2g2
+             450     4                 35          format(a98,f7.2,16x,f5.2)
+             451     4                             read (nico2cn,cform) co2dat        ! skip annual mean part
+             452     4               
+             453     5                             if ( me == 0 ) then
+             454     5                               print *,' - superimpose seasonal cycle to mean co2 data'
+             455     5                               print *,'   opened co2 climatology seasonal cycle data',&
+             456     5                    &                  ' file: ',co2cyc_file
+             457     5               !check          print *, cline(1:98), co2g1, co2g2
+             458     5                             endif
+             459     4               !cmy--------------------------------------------------------------------
+             460     4               !cmy --- transfer j-index from N->S : 1-jmxco2 to S->N : 1-jmxco2
+             461     4               !cmy--------------------------------------------------------------------
+             462     4               
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      co2dat, (unknown)
+                                   <<< Loop-information  End >>>
+             463     5                             do imo = 1, 12
+             464     5                               read (nico2cn,45) cline, gco2cyc(imo)
+             465     5                 45            format(a58,f7.2)
+             466     5               !check          print *, cline(1:58),gco2cyc(imo)
+             467     5                               gco2cyc(imo) = gco2cyc(imo) * 1.0e-6
+             468     5               
+             469     5                               read (nico2cn,cform) co2dat
+             470     5               !check          print cform, co2dat
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1067
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      co2dat, (unknown)
+                                   <<< Loop-information  End >>>
+             471     6   s   2v                      do j = 1, jmxco2
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<< Loop-information  End >>>
+             472     7   s   2v                        do i = 1, imxco2
+             473     7   p   2v                          co2dat3(i,j,imo) = co2dat(i,j) * 1.0e-6
+             474     7   p   2v                        enddo
+             475     6   p                           enddo
+             476     5                             enddo
+             477     4               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      co2dat3
+                                   <<< Loop-information  End >>>
+             478     5  pp                         do imo = 1, 12
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 48, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      co2dat3
+                                   <<< Loop-information  End >>>
+             479     6   p                           do j = 1, jmxco2
+             480     6   p                              jn = jmxco2-j+1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             481     7   p   fv                        do i = 1, imxco2
+             482     7   p   fv                          co2cyc_sav(i,jn,imo) = co2dat3(i,j,imo)
+             483     7   p   fv                        enddo
+             484     6   p                           enddo
+             485     5   p                         enddo
+             486     4               !cmy--------------------------------------------------------------------
+             487     4               
+             488     4                             close (nico2cn)
+             489     4                           endif   ! endif_file_exist_block
+             490     3                         endif
+             491     2               
+             492     2                       endif   lab_ictm
+             493     1                     endif   lab_ico2
+             494                     
+             495                           return
+             496                     !
+             497                     !...................................
+             498                           end subroutine gas_init
+             499                     !-----------------------------------
+             500                     
+             501                     
+             502                     !-----------------------------------
+             503                           subroutine gas_update                                             &
+             504                     !...................................
+             505                     
+             506                     !  ---  inputs:
+             507                          &     ( myrank, iyear, imon, iday, ihour, loz1st, ldoco2, me )
+             508                     !  ---  outputs: ( none )
+             509                     
+             510                     !  ===================================================================  !
+             511                     !                                                                       !
+             512                     !  gas_update reads in 2-d monthly co2 data set for a specified year.   !
+             513                     !  data are in a 15 degree lat/lon horizontal resolution.               !
+             514                     !                                                                       !
+             515                     !  inputs:                                               dimemsion      !
+             516                     !     iyear   - year of the requested data for fcst         1           !
+             517                     !     imon    - month of the year                           1           !
+             518                     !     iday    - day of the month                            1           !
+             519                     !     ihour   - hour of the day                             1           !
+             520                     !     loz1st  - clim ozone 1st time update control flag     1           !
+             521                     !     ldoco2  - co2 update control flag                     1           !
+             522                     !     me      - print message control flag                  1           !
+             523                     !                                                                       !
+             524                     !  outputs: (to the module variables)                                   !
+             525                     !    ( none )                                                           !
+             526                     !                                                                       !
+             527                     !  external module variables:  (in physpara)                            !
+             528                     !     ico2flg    - co2 data source control flag                         !
+             529                     !                   =0: use prescribed co2 global mean value            !
+             530                     !                   =1: use input global mean co2 value (co2_glb)       !
+             531                     !                   =2: use input 2-d monthly co2 value (co2vmr_sav)    !
+             532                     !     ictmflg    - =yyyy#, data ic time/date control flag               !
+             533                     !                  =   -2: same as 0, but superimpose seasonal cycle    !
+             534                     !                          from climatology data set.                   !
+             535                     !                  =   -1: use user provided external data for the fcst !
+             536                     !                          time, no extrapolation.                      !
+             537                     !                  =    0: use data at initial cond time, if not existed!
+             538                     !                          then use latest, without extrapolation.      !
+             539                     !                  =    1: use data at the forecast time, if not existed!
+             540                     !                          then use latest and extrapolate to fcst time.!
+             541                     !                  =yyyy0: use yyyy data for the forecast time, no      !
+             542                     !                          further data extrapolation.                  !
+             543                     !                  =yyyy1: use yyyy data for the fcst. if needed, do    !
+             544                     !                          extrapolation to match the fcst time.        !
+             545                     !     ioznflg    - ozone data control flag                              !
+             546                     !                   =0: use climatological ozone profile                !
+             547                     !                   >0: use interactive ozone profile                   !
+             548                     !     ivflip     - vertical profile indexing flag                       !
+             549                     !     co2dat_file- external co2 2d monthly obsv data table              !
+             550                     !     co2gbl_file- external co2 global annual mean data table           !
+             551                     !                                                                       !
+             552                     !  internal module variables:                                           !
+             553                     !     co2vmr_sav - monthly co2 volume mixing ratio     imxco2*jmxco2*12 !
+             554                     !     co2cyc_sav - monthly cycle co2 vol mixing ratio  imxco2*jmxco2*12 !
+             555                     !     co2_glb    - global annual mean co2 mixing ratio                  !
+             556                     !     gco2cyc    - global monthly mean co2 variation       12           !
+             557                     !     k1oz,k2oz,facoz                                                   !
+             558                     !                - climatology ozone parameters             1           !
+             559                     !                                                                       !
+             560                     !  usage:    call gas_update                                            !
+             561                     !                                                                       !
+             562                     !  subprograms called:  none                                            !
+             563                     !                                                                       !
+             564                     !  ===================================================================  !
+             565                     !
+             566                           implicit none
+             567                     
+             568                     !  ---  inputs:
+             569                           integer, intent(in) :: iyear, imon, iday, ihour, me, myrank
+             570                     
+             571                           logical, intent(in) :: loz1st, ldoco2
+             572                     
+             573                     !  ---  output: ( none )
+             574                     
+             575                     !  ---  locals:
+             576                           real (kind=kind_phys), dimension(imxco2,jmxco2) :: co2dat, co2ann
+             577                           real (kind=kind_phys), dimension(imxco2,jmxco2,12) :: co2dat3
+             578                           real (kind=kind_phys) :: co2g1, co2g2, rate
+             579                     
+             580                           integer    :: i, id, j, l, iyr, imo, iyr1, iyr2, jyr, idyr, jn
+             581                           integer, save :: mdays(13), midmon=15, midm=15, midp=45
+             582                     !  ---  number of days in a month
+             583                           data mdays / 31,28,31,30,31,30,31,31,30,31,30,31,30 /
+             584                     
+             585                           logical    :: file_exist, lextpl, change
+             586                           character  :: cline*100, cform*8, cfile1*26
+             587                           data  cform  / '(24f7.2)' /       !! data format in imxco2*f7.2
+             588                     !
+             589                     !===>  ...  begin here
+             590                     !
+             591                     !  --- ...  ozone data section
+             592                     
+             593     1                     if ( ioznflg == 0 ) then
+             594     1                       midmon = mdays(imon)/2 + 1
+             595     1                       change = loz1st .or. ( (iday==midmon) .and. (ihour==0) )
+             596     1               !
+             597     2                       if ( change ) then
+             598     3                         if ( iday < midmon ) then
+             599     3                           k1oz = mod(imon+10, 12) + 1
+             600     3                           midm = mdays(k1oz)/2 + 1
+             601     3                           k2oz = imon
+             602     3                           midp = mdays(k1oz) + midmon
+             603     3                         else
+             604     3                           k1oz = imon
+             605     3                           midm = midmon
+             606     3                           k2oz = mod(imon, 12) + 1
+             607     3                           midp = mdays(k2oz)/2 + 1 + mdays(k1oz)
+             608     3                         endif
+             609     2                       endif
+             610     1               !
+             611     2                       if (iday < midmon) then
+             612     2                        id = iday + mdays(k1oz)
+             613     2                       else
+             614     2                        id = iday
+             615     2                       endif
+             616     1               
+             617     1                       facoz = float(id - midm) / float(midp - midm)
+             618     1                     endif
+             619                     
+             620                     !  --- ...  co2 data section
+             621                     
+             622                           if ( ico2flg == 0 ) return    ! use prescribed global mean co2 data
+             623                           if ( ictmflg ==-1 ) return    ! use user provided co2 data
+             624                           if ( .not. ldoco2 ) return    ! no need to update co2 data
+             625                     
+             626     1                     if ( ictmflg < 0 ) then        ! use user provided external data
+             627     1                       lextpl = .false.                   ! no time extrapolation
+             628     1                       idyr   = iyear                     ! use the model year
+             629     1                     else                           ! use historically observed data
+             630     1                       lextpl = ( mod(ictmflg,10) == 1 )  ! flag for data extrapolation
+             631     1                       idyr   = ictmflg / 10              ! year of data source used
+             632     1                       if ( idyr == 0 ) idyr = iyear      ! not specified, use model year
+             633     1                     endif
+             634                     
+             635                     !  --- ...  auto select co2 2-d data table for required year
+             636                     
+             637                           kmonsav = imon
+             638                           if ( kyrsav == iyear ) return
+             639                           kyrsav = iyear
+             640                           iyr    = iyear
+             641                     
+             642                     !  --- ...  for data earlier than minyear (1957), the data are in
+             643                     !           the form of semi-yearly global mean values.  otherwise,
+             644                     !           data are monthly mean in horizontal 2-d map.
+             645                     
+             646     1                     lab_if_idyr : if ( idyr < minyear .and. ictmflg > 0 ) then
+             647     1               
+             648     2                       if ( me == 0 .and. myrank == 0) then
+             649     2                         print *,'   requested co2 data year',iyear,' earlier than',   &
+             650     2                    &            minyear
+             651     2                         print *,'   which is the earliest monthly observation',       &
+             652     2                    &            ' data available.'
+             653     2                         print *,'   thus, historical global mean data is used'
+             654     2                       endif
+             655     1               
+             656     1               !  --- ... check to see if requested co2 data file existed
+             657     1               
+             658     1                       inquire (file=co2gbl_file, exist=file_exist)
+             659     2                       if ( .not. file_exist ) then
+             660     2                         print *,'   requested co2 data file "',co2gbl_file,           &
+             661     2                    &            '" not found - stopped in subroutine gas_update!!'
+             662     2                         stop
+             663     2                       else
+             664     2                         close(nico2cn)
+             665     2                         open (nico2cn,file=co2gbl_file,form='formatted',status='old')
+             666     2                         rewind nico2cn
+             667     2               
+             668     2                         read (nico2cn, 24) iyr1, iyr2, cline
+             669     2                 24      format(i4,4x,i4,a48)
+             670     2               
+             671     3                         if ( me == 0 .and. myrank == 0) then
+             672     3                           print *,'   opened co2 data file: ',co2gbl_file
+             673     3               !check      print *, iyr1, iyr2, cline(1:48)
+             674     3                         endif
+             675     2               
+             676     3                         if ( idyr < iyr1 ) then
+             677     3                           iyr = iyr1
+             678     3               !check      if ( me == 0 ) then
+             679     3               !             print *,'   using earlist available co2 data, year=',iyr1
+             680     3               !check      endif
+             681     3                         endif
+             682     2               
+             683     2                         i = iyr2
+             684     3                         lab_dowhile1 : do while ( i >= iyr1 )
+             685     3               !           read (nico2cn,26) jyr, co2g1, co2g2
+             686     3               ! 26        format(i4,4x,2f7.2)
+             687     3                           read (nico2cn, *) jyr, co2g1, co2g2
+             688     3               
+             689     4                           if ( i == iyr .and. iyr == jyr ) then
+             690     4                             co2_glb = (co2g1+co2g2) * 0.5e-6
+             691     5                             if ( ico2flg == 2 ) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 6
+                                   <<< Loop-information  End >>>
+             692     6  pp                           do j = 1, jmxco2
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.25, ITR: 36, MVE: 2, POL: S)
+                                   <<< Loop-information  End >>>
+             693     7   p   2                         do i = 1, imxco2
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             694     7   p   2v                          co2vmr_sav(i,j,1:6)  = co2g1 * 1.0e-6
+             695     7   p   2v                          co2vmr_sav(i,j,7:12) = co2g2 * 1.0e-6
+             696     7   p   2                         enddo
+             697     6   p                           enddo
+             698     5                             endif
+             699     4               
+             700     5                             if ( me == 0 .and. myrank == 0 ) then
+             701     5                                  print *,'  co2 data for year',iyear,co2_glb
+             702     5                             endif
+             703     4                             exit lab_dowhile1
+             704     4                           else
+             705     4               !check        if ( me == 0 ) print *,'   skip co2 data for year',i
+             706     4                             i = i - 1
+             707     4                           endif
+             708     3                         enddo  lab_dowhile1
+             709     2               
+             710     2                         close ( nico2cn )
+             711     2                       endif   ! end if_file_exist_block
+             712     1               
+             713     1                     else  lab_if_idyr
+             714     1               
+             715     1               !  --- ...  set up input data file name
+             716     1               
+             717     1                       cfile1 = co2dat_file
+             718     1                       write(cfile1(19:22),34) idyr
+             719     1                 34    format(i4.4)
+             720     1               
+             721     1               !  --- ... check to see if requested co2 data file existed
+             722     1               
+             723     1                       inquire (file=cfile1, exist=file_exist)
+             724     2                       if ( .not. file_exist ) then
+             725     2               
+             726     3                         lab_if_ictm : if ( ictmflg  > 10 ) then    ! specified year of data not found
+             727     4                           if ( me == 0 .and. myrank == 0  ) then
+             728     4                             print *,'   specified co2 data for year',idyr,            &
+             729     4                    &               ' not found !!  need to change namelist ictm !!'
+             730     4                             print *,'   *** stopped in subroutine gas_update !!'
+             731     4                           endif
+             732     3                           stop
+             733     3                         else lab_if_ictm                        ! looking for latest available data
+             734     4                           if ( me == 0 .and. myrank == 0) then
+             735     4                             print *,'   requested co2 data for year',idyr,            &
+             736     4                    &              ' not found, check for other available data set'
+             737     4                           endif
+             738     3               
+             739     4                           lab_dowhile2 : do while ( iyr >= minyear )
+             740     4                             iyr = iyr - 1
+             741     4                             write(cfile1(19:22),34) iyr
+             742     4               
+             743     4                             inquire (file=cfile1, exist=file_exist)
+             744     5                             if ( me == 0 .and. myrank == 0 ) then
+             745     5                               print *,' looking for co2 file ',cfile1
+             746     5                             endif
+             747     4               
+             748     5                             if ( file_exist ) then
+             749     5                               exit lab_dowhile2
+             750     5                             endif
+             751     4                           enddo   lab_dowhile2
+             752     3               
+             753     4                           if ( .not. file_exist ) then
+             754     5                             if ( me == 0 .and. myrank == 0 ) then
+             755     5                               print *,'   can not find co2 data source file'
+             756     5                               print *,'   *** stopped in subroutine gas_update !!'
+             757     5                             endif
+             758     4                             stop
+             759     4                           endif
+             760     3                         endif  lab_if_ictm
+             761     2                       endif   ! end if_file_exist_block
+             762     1               
+             763     1               !  --- ...  read in co2 2-d data for the requested month
+             764     1               
+             765     1                       close(nico2cn)
+             766     1                       open (nico2cn,file=cfile1,form='formatted',status='old')
+             767     1                       rewind nico2cn
+             768     1                       read (nico2cn, 36) iyr, cline, co2g1, co2g2
+             769     1                 36    format(i4,a94,f7.2,16x,f5.2)
+             770     1               
+             771     2                       if ( me == 0 .and. myrank == 0 ) then
+             772     2                         print *,'   opened co2 data file: ',cfile1
+             773     2                         print *, iyr, cline(1:94), co2g1,'  growth rate =', co2g2
+             774     2                       endif
+             775     1               
+             776     1               !  --- ...  add growth rate if needed
+             777     2                       if ( lextpl ) then
+             778     2               !         rate = co2g2 * (iyear - iyr)   ! rate from early year
+             779     2               !         rate = 1.60  * (iyear - iyr)   ! avg rate over long period
+             780     2                         rate = 2.00  * (iyear - iyr)   ! avg rate for recent period
+             781     2                       else
+             782     2                         rate = 0.0
+             783     2                       endif
+             784     1               
+             785     1                       co2_glb = (co2g1 + rate) * 1.0e-6
+             786     2                       if ( me == 0 .and. myrank == 0 ) then
+             787     2                         print *,'   global annual mean co2 data for year',            &
+             788     2                    &              iyear, co2_glb
+             789     2                       endif
+             790     1               
+             791     2                       if ( ictmflg == -2 ) then     ! need to calc ic time annual mean first
+             792     2               
+             793     3                         if ( ico2flg == 1 ) then
+             794     4                           if ( me==0 .and. myrank == 0 ) then
+             795     4                             print *,' check: monthly deviations of climatology ',     &
+             796     4                    &                'to be superimposed on global annual mean'
+             797     4                             print *, gco2cyc
+             798     4                           endif
+             799     3                         elseif ( ico2flg == 2 ) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      (unknown)
+                                   <<< Loop-information  End >>>
+             800     3   s   4v                  co2ann(:,:) = 0.0
+             801     3               
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      co2dat, (unknown)
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 1
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             802     4                           do imo = 1, 12
+             803     4                             read (nico2cn,cform) co2dat
+             804     4               !check        print cform, co2dat
+             805     4               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 942
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.75, ITR: 192, MVE: 13, POL: S)
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             806     5   s   2v                    do j = 1, jmxco2
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<< Loop-information  End >>>
+             807     6   s   2v                      do i = 1, imxco2
+             808     6   p   2v                        co2ann(i,j) = co2ann(i,j) + co2dat(i,j)
+             809     6   p   2v                      enddo
+             810     5   p                         enddo
+             811     4                           enddo
+             812     3               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1143
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.66, ITR: 256, MVE: 11, POL: S)
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             813     4   s   2v                  do j = 1, jmxco2
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<< Loop-information  End >>>
+             814     5   s   2v                    do i = 1, imxco2
+             815     5   p   2v                      co2ann(i,j) = co2ann(i,j) * 1.0e-6 / float(12)
+             816     5   p   2v                    enddo
+             817     4   p                       enddo
+             818     3               !cmy--------------------------------------------------------------------
+             819     3               !cmy --- transfer j-index from N->S : 1-jmxco2 to S->N : 1-jmxco2
+             820     3               !cmy--------------------------------------------------------------------
+             821     3               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      co2cyc_sav, co2ann, co2dat3
+                                   <<< Loop-information  End >>>
+             822     4  pp                       do imo = 1, 12
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.66, ITR: 56, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      co2dat3, co2cyc_sav, co2ann
+                                   <<< Loop-information  End >>>
+             823     5   p                         do j = 1, jmxco2
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             824     6   p   fv                      do i = 1, imxco2
+             825     6   p   fv                        co2dat3(i,j,imo) = co2ann(i,j)+co2cyc_sav(i,j,imo)
+             826     6   p   fv                      enddo
+             827     5   p                         enddo
+             828     4   p                       enddo
+             829     3               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      co2dat3
+                                   <<< Loop-information  End >>>
+             830     4  pp                       do imo = 1, 12
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 48, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      co2dat3
+                                   <<< Loop-information  End >>>
+             831     5   p                         do j = 1, jmxco2
+             832     5   p                            jn= jmxco2-j+1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             833     6   p   fv                      do i = 1, imxco2
+             834     6   p   fv                        co2vmr_sav(i,jn,imo) = co2dat3(i,j,imo)
+             835     6   p   fv                      enddo
+             836     5   p                         enddo
+             837     4   p                       enddo
+             838     3               
+             839     3               !cmy--------------------------------------------------------------------
+             840     4                           if ( me==0 .and. myrank == 0 ) then
+             841     4                             print *,' check: sample of 2-d annual mean of co2 ',      &
+             842     4                    &                'data used for year:',iyear
+             843     4                             print *, co2ann(1,:)
+             844     4                             print *,' check: after adding seasonal cycle, sample ',   &
+             845     4                    &                'of selected months of co2 data for year:',iyear
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 6
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             846     5   s    s                    do imo = 1, 12, 3
+             847     5   m    m                      print *,'        month =',imo
+             848     5   m    s                      print *, co2vmr_sav(1,:,imo)
+             849     5   p    v                    enddo
+             850     4                           endif
+             851     3                         endif   ! endif_icl2flg_block
+             852     2               
+             853     2                       else                  ! no need to calc ic time annual mean first
+             854     2               
+             855     3                         if ( ico2flg == 2 ) then      ! directly save monthly data
+             856     3               !cmy--------------------------------------------------------------------
+             857     3               !cmy --- transfer j-index from N->S : 1-jmxco2 to S->N : 1-jmxco2
+             858     3               !cmy--------------------------------------------------------------------
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      co2dat, (unknown)
+                                   <<< Loop-information  End >>>
+             859     4                           do imo = 1, 12
+             860     4                             read (nico2cn,cform) co2dat
+             861     4               !check        print cform, co2dat
+             862     4               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.75, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      co2dat, (unknown)
+                                   <<< Loop-information  End >>>
+             863     5   s   2v                    do j = 1, jmxco2
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<< Loop-information  End >>>
+             864     6   s   2v                      do i = 1, imxco2
+             865     6   p   2v                        co2dat3(i,j,imo) = (co2dat(i,j) + rate) * 1.0e-6
+             866     6   p   2v                      enddo
+             867     5   p                         enddo
+             868     4                           enddo
+             869     3               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      co2dat3
+                                   <<< Loop-information  End >>>
+             870     4  pp                       do imo = 1, 12
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 48, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      co2dat3
+                                   <<< Loop-information  End >>>
+             871     5   p                         do j = 1, jmxco2
+             872     5   p                            jn = jmxco2-j+1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             873     6   p   fv                      do i = 1, imxco2
+             874     6   p   fv                        co2vmr_sav(i,jn,imo) = co2dat3(i,j,imo)
+             875     6   p   fv                      enddo
+             876     5   p                         enddo
+             877     4   p                       enddo
+             878     3               !cmy--------------------------------------------------------------------
+             879     3               
+             880     4                           if ( me == 0 .and. myrank == 0 ) then
+             881     4                             print *,' check: sample of selected months of co2 ',      &
+             882     4                    &                'data used for year:',iyear
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 5
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             883     5   s    s                    do imo = 1, 12, 3
+             884     5   m    m                      print *,'        month =',imo
+             885     5   m    s                      print *, co2vmr_sav(1,:,imo)
+             886     5   p    v                    enddo
+             887     4                           endif
+             888     3                         endif   ! endif_ico2flg_block
+             889     2               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             890     3   s    v                do imo = 1, 12
+             891     3   p    v                  gco2cyc(imo) = 0.0
+             892     3   p    v                enddo
+             893     2                       endif   ! endif_ictmflg_block
+             894     1                       close ( nico2cn )
+             895     1               
+             896     1                     endif  lab_if_idyr
+             897                     
+             898                           return
+             899                     !
+             900                     !...................................
+             901                           end subroutine gas_update
+             902                     !-----------------------------------
+             903                     
+             904                     
+             905                     !-----------------------------------
+             906                           subroutine getgases                                               &
+             907                     !...................................
+             908                     
+             909                     !  ---  inputs:
+             910                          &     ( plvl, xlon, xlat,                                          &
+             911                          &       imax, lmax,                                                &
+             912                     !  ---  outputs:
+             913                          &       gasdat                                                     &
+             914                          &      )
+             915                     
+             916                     !  ===================================================================  !
+             917                     !                                                                       !
+             918                     !  getgases set up global distribution of radiation absorbing  gases    !
+             919                     !  in volume mixing ratio.  currently only co2 has the options from     !
+             920                     !  observed values, all other gases are asigned to the climatological   !
+             921                     !  values.                                                              !
+             922                     !                                                                       !
+             923                     !  inputs:                                                              !
+             924                     !     plvl(imax,lmax+1)- pressure at model layer interfaces (mb)        !
+             925                     !     xlon(imax)       - grid longitude in radians, ok both 0->2pi or   !
+             926                     !                        -pi -> +pi arrangements                        !
+             927                     !     xlat(imax)       - grid latitude in radians, default range to     !
+             928                     !                        pi/2 -> -pi/2, otherwise see in-line comment   !
+             929                     !     imax, lmax       - horiz, vert dimensions for output data         !
+             930                     !                                                                       !
+             931                     !  outputs:                                                             !
+             932                     !     gasdat(imax,lmax,nf_vgas) - gases volume mixing ratioes           !
+             933                     !               (:,:,1)           - co2                                 !
+             934                     !               (:,:,2)           - n2o                                 !
+             935                     !               (:,:,3)           - ch4                                 !
+             936                     !               (:,:,4)           - o2                                  !
+             937                     !               (:,:,5)           - co                                  !
+             938                     !               (:,:,6)           - cfc11                               !
+             939                     !               (:,:,7)           - cfc12                               !
+             940                     !               (:,:,8)           - cfc22                               !
+             941                     !               (:,:,9)           - ccl4                                !
+             942                     !               (:,:,10)          - cfc113                              !
+             943                     !                                                                       !
+             944                     !  external module variables:  (in physpara)                            !
+             945                     !     ico2flg    - co2 data source control flag                         !
+             946                     !                   =0: use prescribed co2 global mean value            !
+             947                     !                   =1: use input global mean co2 value (co2_glb)       !
+             948                     !                   =2: use input 2-d monthly co2 value (co2vmr_sav)    !
+             949                     !     ivflip     - vertical profile indexing flag                       !
+             950                     !                                                                       !
+             951                     !  internal module variables used:                                      !
+             952                     !     co2vmr_sav - saved monthly co2 concentration from sub gas_update  !
+             953                     !     co2_glb    - saved global annual mean co2 value from  gas_update  !
+             954                     !     gco2cyc    - saved global seasonal variation of co2 climatology   !
+             955                     !                  in 12-month form                                     !
+             956                     !  ** note: for lower atmos co2vmr_sav may have clim monthly deviations !
+             957                     !           superimposed on init-cond co2 value, while co2_glb only     !
+             958                     !           contains the global mean value, thus needs to add the       !
+             959                     !           monthly dglobal mean deviation gco2cyc at upper atmos. for  !
+             960                     !           ictmflg/=-2, this value will be zero.                       !
+             961                     !                                                                       !
+             962                     !  usage:    call getgases                                              !
+             963                     !                                                                       !
+             964                     !  subprograms called:  none                                            !
+             965                     !                                                                       !
+             966                     !  ===================================================================  !
+             967                     !
+             968                           implicit none
+             969                     
+             970                     !  ---  input:
+             971                           integer,  intent(in)  :: imax, lmax
+             972                           real (kind=kind_phys), intent(in) :: plvl(:,:), xlon(:), xlat(:)
+             973                     
+             974                     !  ---  output:
+             975                           real (kind=kind_phys), intent(out) :: gasdat(:,:,:)
+             976                     
+             977                     !  ---  local:
+             978                           integer :: i, k, ilat, ilon
+             979                     
+             980                           real (kind=kind_phys) :: xlon1, xlat1, tmp
+             981                     
+             982                     !===>  ...  begin here
+             983                     
+             984                     !  --- ...  assign default values
+             985                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             986     1  pp                 do k = 1, lmax
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.20, ITR: 24, MVE: 2, POL: S)
+                                   <<< Loop-information  End >>>
+             987     2   p    v            do i = 1, imax
+             988     2   p    v              gasdat(i,k,1) = co2vmr_def
+             989     2   p    v              gasdat(i,k,2) = n2ovmr_def
+             990     2   p    v              gasdat(i,k,3) = ch4vmr_def
+             991     2   p    v              gasdat(i,k,4) = o2vmr_def
+             992     2   p    v              gasdat(i,k,5) = covmr_def
+             993     2   p    v              gasdat(i,k,6) = f11vmr_def
+             994     2   p    v              gasdat(i,k,7) = f12vmr_def
+             995     2   p    v              gasdat(i,k,8) = f22vmr_def
+             996     2   p    v              gasdat(i,k,9) = cl4vmr_def
+             997     2   p    v              gasdat(i,k,10)= f113vmr_def
+             998     2   p    v            enddo
+             999     1   p                 enddo
+            1000                     
+            1001                     !  --- ...  co2 section
+            1002                     
+            1003     1                     if ( ico2flg == 1 ) then
+            1004     1               !  ---  use obs co2 global annual mean value only
+            1005     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<< Loop-information  End >>>
+            1006     2  pp                   do k = 1, lmax
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+            1007     3   p   4v                do i = 1, imax
+            1008     3   p   4v                  gasdat(i,k,1) = co2_glb + gco2cyc(kmonsav)
+            1009     3   p   4v                enddo
+            1010     2   p                   enddo
+            1011     1               
+            1012     1                     elseif ( ico2flg == 2 ) then
+            1013     1               !  ---  use obs co2 monthly data with 2-d variation at lower atmos
+            1014     1               !       otherwise use global mean value
+            1015     1               
+            1016     1                       tmp = raddeg / resco2
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+            1017     2  pp                   do i = 1, imax
+            1018     2   p                     xlon1 = xlon(i)
+            1019     2   p                     if ( xlon1 < 0.0 ) xlon1 = xlon1 + con_pi  ! if xlon in -pi->pi, convert to 0->2pi
+            1020     2               !         xlat1 = hfpi - xlat(i)                     ! if xlat in pi/2 -> -pi/2 range
+            1021     2   p                     xlat1 = hfpi + xlat(i)                     ! if xlat in -pi/2 -> pi/2 range
+            1022     2               !note     xlat1 = xlat(i)                            ! if xlat in 0 -> pi range
+            1023     2               
+            1024     2   p                     ilon = min( imxco2, int( xlon1*tmp + 1 ))
+            1025     2   p                     ilat = min( jmxco2, int( xlat1*tmp + 1 ))
+            1026     2               
+            1027     3   p                     if ( ivflip == 0 ) then         ! index from toa to sfc
+            1028     4   p   2s                  do k = 1, lmax
+            1029     5   p   2m                    if ( plvl(i,k) >= prsco2 ) then
+            1030     5   p   2s                      gasdat(i,k,1) = co2vmr_sav(ilon,ilat,kmonsav)
+            1031     5   p   2s                    else
+            1032     5   p   2s                      gasdat(i,k,1) = co2_glb + gco2cyc(kmonsav)
+            1033     5   p   2v                    endif
+            1034     4   p   2v                  enddo
+            1035     3   p                     else                            ! index from sfc to toa
+            1036     4   p   2s                  do k = 1, lmax
+            1037     5   p   2m                    if ( plvl(i,k+1) >= prsco2 ) then
+            1038     5   p   2s                      gasdat(i,k,1) = co2vmr_sav(ilon,ilat,kmonsav)
+            1039     5   p   2s                    else
+            1040     5   p   2s                      gasdat(i,k,1) = co2_glb + gco2cyc(kmonsav)
+            1041     5   p   2v                    endif
+            1042     4   p   2v                  enddo
+            1043     3   p                     endif
+            1044     2   p                   enddo
+            1045     1                     endif
+            1046                     
+            1047                     !
+            1048                           return
+            1049                     !...................................
+            1050                           end subroutine getgases
+            1051                     !-----------------------------------
+            1052                     
+            1053                     
+            1054                     !-----------------------------------
+            1055                           subroutine getozn                                                 &
+            1056                     !...................................
+            1057                     
+            1058                     !  ---  inputs:
+            1059                          &     ( prslk,xlat,                                                &
+            1060                          &       imax, lm,                                                  &
+            1061                     !  ---  outputs:
+            1062                          &       o3mmr                                                      &
+            1063                          &     )
+            1064                     
+            1065                     !  ===================================================================  !
+            1066                     !                                                                       !
+            1067                     !  getozn sets up climatological ozone profile for radiation calculation!
+            1068                     !                                                                       !
+            1069                     !  this code is originally written by shrinivas moorthi                 !
+            1070                     !                                                                       !
+            1071                     !  inputs:                                                              !
+            1072                     !     prslk (imax,lm)  - exner function = (p/p0)**rocp                  !
+            1073                     !     xlat  (imax)     - latitude in radians, default to pi/2 -> -pi/2  !
+            1074                     !                        range, otherwise see in-line comment           !
+            1075                     !     imax, lm         - horizontal and vertical dimensions             !
+            1076                     !                                                                       !
+            1077                     !  outputs:                                                             !
+            1078                     !     o3mmr (imax,lm)  - output ozone profile in mass mixing ratio (g/g)!
+            1079                     !                                                                       !
+            1080                     !  module variables:                                                    !
+            1081                     !     k1oz, k2oz       - ozone data interpolation indices               !
+            1082                     !     facoz            - ozone data interpolation factor                !
+            1083                     !     ivflip           - control flag for direction of vertical index   !
+            1084                     !                                                                       !
+            1085                     !  usage:    call getozn                                                !
+            1086                     !                                                                       !
+            1087                     !  ===================================================================  !
+            1088                     !
+            1089                           implicit none
+            1090                     
+            1091                     !  ---  inputs:
+            1092                           integer,  intent(in) :: imax, lm
+            1093                     
+            1094                           real (kind=kind_phys), intent(in) :: prslk(:,:), xlat(:)
+            1095                     
+            1096                     !  ---  outputs:
+            1097                           real (kind=kind_phys), intent(out) :: o3mmr(:,:)
+            1098                     
+            1099                     !  ---  locals:
+            1100                           real (kind=kind_phys) :: o3i(imax,loz), wk1(imax), deglat, elte,  &
+            1101                          &                         tem, tem1, tem2, tem3, tem4, temp
+            1102                     
+            1103                           integer :: i, j, k, l, j1, j2, ll
+            1104                     !
+            1105                     !===> ...  begin here
+            1106                     !
+            1107                           elte = blte + (jmr-1)*dlte
+            1108                     
+            1109     1                     do i = 1, imax
+            1110     1                       deglat = xlat(i) * raddeg        ! if xlat in pi/2 -> -pi/2 range
+            1111     1               !       deglat = 90.0 - xlat(i)*raddeg   ! if xlat in 0 -> pi range
+            1112     1               
+            1113     2                       if (deglat > blte .and. deglat < elte) then
+            1114     2                         tem1 = (deglat - blte) / dlte + 1
+            1115     2                         j1   = tem1
+            1116     2                         j2   = j1 + 1
+            1117     2                         tem1 = tem1 - j1
+            1118     2                       elseif (deglat <= blte) then
+            1119     2                         j1   = 1
+            1120     2                         j2   = 1
+            1121     2                         tem1 = 1.0
+            1122     2                       elseif (deglat >= elte) then
+            1123     2                         j1   = jmr
+            1124     2                         j2   = jmr
+            1125     2                         tem1 = 1.0
+            1126     2                       endif
+            1127     1               
+            1128     1                       tem2 = 1.0 - tem1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 445
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.81, ITR: 80, MVE: 2, POL: S)
+                                   <<< Loop-information  End >>>
+            1129     2  pp   2v              do j = 1, loz
+            1130     2   p   2v                tem3     = tem2*o3r(j1,j,k1oz) + tem1*o3r(j2,j,k1oz)
+            1131     2   p   2v                tem4     = tem2*o3r(j1,j,k2oz) + tem1*o3r(j2,j,k2oz)
+            1132     2   p   2v                o3i(i,j) = tem4*facoz          + tem3*(1.0 - facoz)
+            1133     2   p   2v              enddo
+            1134     1                     enddo
+            1135                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wk1, o3i
+                                   <<< Loop-information  End >>>
+            1136     1                     do l = 1, lm
+            1137     1                       ll = l
+            1138     1                       if (ivflip == 1) ll = lm -l + 1
+            1139     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1231
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.37, ITR: 256, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wk1
+                                   <<< Loop-information  End >>>
+            1140     2  pp   4v              do i = 1, imax
+            1141     2   p   4v                wk1(i) = prslk(i,ll)
+            1142     2   p   4v              enddo
+            1143     1               
+            1144     2                       do k = 1, loz-1
+            1145     2                         temp = 1.0 / (pkstr(k+1) - pkstr(k))
+            1146     2               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 534
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wk1
+                                   <<< Loop-information  End >>>
+            1147     3  pp   2s                do i = 1, imax
+            1148     4   p   2m                  if (wk1(i) > pkstr(k) .and. wk1(i) <= pkstr(k+1)) then
+            1149     4   p   2s                    tem       = (pkstr(k+1) - wk1(i)) * temp
+            1150     4   p   2s                    o3mmr(i,ll) = tem * o3i(i,k) + (1.0 - tem) * o3i(i,k+1)
+            1151     4   p   2v                  endif
+            1152     3   p   2v                enddo
+            1153     2                       enddo
+            1154     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 667
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.33, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wk1, o3i
+                                   <<< Loop-information  End >>>
+            1155     2  pp   2v              do i = 1, imax
+            1156     2   p   2v                if (wk1(i) > pkstr(loz)) o3mmr(i,ll) = o3i(i,loz)
+            1157     2   p   2v                if (wk1(i) < pkstr(1))   o3mmr(i,ll) = o3i(i,1)
+            1158     2   p   2v              enddo
+            1159     1                     enddo
+            1160                     !
+            1161                           return
+            1162                     !...................................
+            1163                           end subroutine getozn
+            1164                     !-----------------------------------
+            1165                     
+            1166                     !
+            1167                     !........................................!
+            1168                           end module module_radiation_gases  !
+            1169                     !========================================!
+
+ Procedure information
+   Lines      : 1169
+   Statements : 564
+   Stack(byte): 85584
+   Prefetch num: 0
+
+ Scoping unit of module : module_radiation_gases
+   Attribute and Cross reference of name
+     blatc
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 112
+     blte
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PRIVATE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 112
+     ch4vmr_def
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 141
+      |(Definition)     : 
+      |(Reference)      : 
+     cl4vmr_def
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 147
+      |(Definition)     : 
+      |(Reference)      : 
+     co2_glb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PRIVATE, initialized
+      |(Declaration)    : 169
+      |(Definition)     : 
+      |(Reference)      : 
+     co2cyc_file
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : PRIVATE, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 106
+     co2cyc_sav
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PRIVATE, ALLOCATABLE, DIMENSION
+      |(Declaration)    : 167
+      |(Definition)     : 
+      |(Reference)      : 
+     co2dat_file
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : PRIVATE, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 106
+     co2gbl_file
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : PRIVATE, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 106
+     co2usr_file
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : PRIVATE, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 106
+     co2vmr_def
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 139
+      |(Definition)     : 
+      |(Reference)      : 169
+     co2vmr_sav
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PRIVATE, ALLOCATABLE, DIMENSION
+      |(Declaration)    : 166
+      |(Definition)     : 
+      |(Reference)      : 
+     con_pi
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 111  134  136
+     covmr_def
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 143
+      |(Definition)     : 
+      |(Reference)      : 
+     dlte
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PRIVATE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 112
+     dphiozc
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 112
+     f113vmr_def
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 148
+      |(Definition)     : 
+      |(Reference)      : 
+     f11vmr_def
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 144
+      |(Definition)     : 
+      |(Reference)      : 
+     f12vmr_def
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 145
+      |(Definition)     : 
+      |(Reference)      : 
+     f22vmr_def
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 146
+      |(Definition)     : 
+      |(Reference)      : 
+     facoz
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PRIVATE, initialized
+      |(Declaration)    : 163
+      |(Definition)     : 
+      |(Reference)      : 
+     fpkapx
+      |(Class and Type) : module function name, REAL(8)
+      |(Attributes)     : PUBLIC, use-associated, PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 110
+     funcphys
+      |(Class and Type) : module name
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 110
+     gas_init
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 178
+      |(Definition)     : 
+      |(Reference)      : 
+     gas_update
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 178
+      |(Definition)     : 
+      |(Reference)      : 
+     gco2cyc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PRIVATE, DIMENSION, initialized
+      |(Declaration)    : 170  171
+      |(Definition)     : 
+      |(Reference)      : 
+     getgases
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 178
+      |(Definition)     : 
+      |(Reference)      : 
+     getozn
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 178
+      |(Definition)     : 
+      |(Reference)      : 
+     hfpi
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 136
+      |(Definition)     : 
+      |(Reference)      : 
+     ico2flg
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PRIVATE, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 106
+     ictmflg
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PRIVATE, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 106
+     imxco2
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 128
+      |(Definition)     : 
+      |(Reference)      : 
+     ioznflg
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PRIVATE, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 106
+     ivflip
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PRIVATE, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 106
+     jmr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PRIVATE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 112
+     jmxco2
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 129
+      |(Definition)     : 
+      |(Reference)      : 
+     k1oz
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PRIVATE, initialized
+      |(Declaration)    : 162
+      |(Definition)     : 
+      |(Reference)      : 
+     k2oz
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PRIVATE, initialized
+      |(Declaration)    : 162
+      |(Definition)     : 
+      |(Reference)      : 
+     kind_io4
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PRIVATE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 106
+     kind_phys
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PRIVATE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 106  133  134  135  136  139  140  141  142  143  144  145  146  147  148  161  163  166  167  169  170
+     kmonsav
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PRIVATE, initialized
+      |(Declaration)    : 174
+      |(Definition)     : 
+      |(Reference)      : 
+     kyrsav
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PRIVATE, initialized
+      |(Declaration)    : 173
+      |(Definition)     : 
+      |(Reference)      : 
+     latsozc
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 112
+     levozc
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 112
+     loz
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PRIVATE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 112
+     minyear
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 130
+      |(Definition)     : 
+      |(Reference)      : 
+     module_iounitdef
+      |(Class and Type) : module name
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 115
+     module_radiation_gases
+      |(Class and Type) : module name
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 103
+      |(Definition)     : 
+      |(Reference)      : 1168
+     NICO2CN
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PRIVATE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 115
+     NIO3CLM
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PRIVATE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 115
+     n2ovmr_def
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 140
+      |(Definition)     : 
+      |(Reference)      : 
+     nf_vgas
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 127
+      |(Definition)     : 
+      |(Reference)      : 
+     o2vmr_def
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 142
+      |(Definition)     : 
+      |(Reference)      : 
+     o3r
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PRIVATE, ALLOCATABLE, DIMENSION
+      |(Declaration)    : 161
+      |(Definition)     : 
+      |(Reference)      : 
+     ozne_def
+      |(Class and Type) : module name
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 112
+     physcons
+      |(Class and Type) : module name
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 111
+     physpara
+      |(Class and Type) : module name
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 106
+     pkstr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PRIVATE, ALLOCATABLE, DIMENSION
+      |(Declaration)    : 161
+      |(Definition)     : 
+      |(Reference)      : 
+     prsco2
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 135
+      |(Definition)     : 
+      |(Reference)      : 
+     raddeg
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 134
+      |(Definition)     : 
+      |(Reference)      : 
+     resco2
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 133
+      |(Definition)     : 
+      |(Reference)      : 
+     timeozc
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PRIVATE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 112
+     timeozc
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 112
+     vtaggas
+      |(Class and Type) : named constant, CHARACTER(40,1)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 122
+      |(Definition)     : 
+      |(Reference)      : 
+
+ Scoping unit of module sub-program : gas_init
+   Attribute and Cross reference of name
+     cform
+      |(Class and Type) : variable name, CHARACTER(8,1)
+      |(Attributes)     : initialized
+      |(Declaration)    : 255  256
+      |(Definition)     : 
+      |(Reference)      : 375  451  469
+     cline
+      |(Class and Type) : variable name, CHARACTER(100,1)
+      |(Attributes)     : 
+      |(Declaration)    : 255
+      |(Definition)     : 358  449  464
+      |(Reference)      : 366  398
+     co2_glb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 336  360
+      |(Reference)      : 
+     co2cyc_file
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 434  437  446  455
+     co2cyc_sav
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 442  482
+      |(Reference)      : 
+     co2dat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 246
+      |(Definition)     : 375  451  469
+      |(Reference)      : 380  473
+     co2dat3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 247
+      |(Definition)     : 380  473
+      |(Reference)      : 389  482
+     co2g1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 248
+      |(Definition)     : 358  449
+      |(Reference)      : 360  366  398
+     co2g2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 248
+      |(Definition)     : 358  449
+      |(Reference)      : 366  398
+     co2usr_file
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 349  351  356  364  396
+     co2vmr_def
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 336  341
+     co2vmr_sav
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 369  389  422
+      |(Reference)      : 403
+     file_exist
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 254
+      |(Definition)     : 349  434
+      |(Reference)      : 350  435
+     fpkapx
+      |(Class and Type) : module function name, REAL(8)
+      |(Attributes)     : host-associated, PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 330
+     gas_init
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 186
+      |(Reference)      : 498
+     gco2cyc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 464  467
+      |(Reference)      : 467
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 253
+      |(Definition)     : 379  388  472  481
+      |(Reference)      : 380  380  389  389  473  473  482  482
+     ico2flg
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 338  362  368  407  417  421  428
+     ictmflg
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 347  433
+     ilat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 252
+      |(Definition)     : 290
+      |(Reference)      : 
+     imo
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 253
+      |(Definition)     : 288  303  310  374  385  401  463  478
+      |(Reference)      : 290  290  290  293  305  313  313  380  389  389  402  403  464  467  467  473  482  482
+     imond
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 252
+      |(Definition)     : 290
+      |(Reference)      : 
+     imxco2
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 246  247  369  379  388  422  442  472  481
+     ioznflg
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 267
+     iyr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 253
+      |(Definition)     : 358
+      |(Reference)      : 366  398
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 253
+      |(Definition)     : 289  305  312  378  386  471  479
+      |(Reference)      : 290  290  293  305  313  313  380  380  387  389  473  473  480  482
+     jmr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 250  252  279  289  305  312
+     jmxco2
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 246  247  369  378  386  387  422  442  471  479  480
+     jn
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 253
+      |(Definition)     : 387  480
+      |(Reference)      : 389  482
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 253
+      |(Definition)     : 283  290  293  299  304  311  318  324  329
+      |(Reference)      : 284  290  293  300  305  313  313  319  319  324  330  330
+     kind_io4
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 250
+     kind_phys
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 246  247  248  249
+     kmonsav
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 263
+      |(Reference)      : 
+     kyrsav
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 262
+      |(Reference)      : 
+     lab_ico2
+      |(Class and Type) : construct name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 338
+      |(Reference)      : 345  493
+     lab_ictm
+      |(Class and Type) : construct name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 347
+      |(Reference)      : 415  492
+     lextpl
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 254
+      |(Definition)     : 
+      |(Reference)      : 
+     loz
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 249  250  250  279  279  282  283  293  299  304  311  318  324  329
+     me
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 186  241
+      |(Definition)     : 
+      |(Reference)      : 260  268  322  340  363  395  418  424  436  453
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 186  241
+      |(Definition)     : 
+      |(Reference)      : 260  268  322  340  363  395  418  424  436
+     NICO2CN
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 355  356  357  358  375  412  445  446  448  449  451  464  469  488
+     NIO3CLM
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 280  284  290  293  298  300  305
+     o3clim4
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 250
+      |(Definition)     : 290  293  305
+      |(Reference)      : 313
+     o3r
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 279  313
+      |(Reference)      : 
+     pkstr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 279  330
+      |(Reference)      : 
+     pstr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 249
+      |(Definition)     : 319
+      |(Reference)      : 324  330
+     pstr4
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 250
+      |(Definition)     : 284  300
+      |(Reference)      : 319
+     timeozc
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 272  274
+     vtaggas
+      |(Class and Type) : named constant, CHARACTER(40,1)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 260
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         15  format        (Definition) 285  
+                           (Reference)  284
+         16  format        (Definition) 292  
+                           (Reference)  290
+         20  format        (Definition) 294  
+                           (Reference)  293
+         25  format        (Definition) 359  
+                           (Reference)  358
+         35  format        (Definition) 450  
+                           (Reference)  449
+         45  format        (Definition) 465  
+                           (Reference)  464
+
+ Scoping unit of module sub-program : gas_update
+   Attribute and Cross reference of name
+     cfile1
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : 
+      |(Declaration)    : 586
+      |(Definition)     : 717  718  741
+      |(Reference)      : 723  743  745  766  772
+     cform
+      |(Class and Type) : variable name, CHARACTER(8,1)
+      |(Attributes)     : initialized
+      |(Declaration)    : 586  587
+      |(Definition)     : 
+      |(Reference)      : 803  860
+     change
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 585
+      |(Definition)     : 595
+      |(Reference)      : 597
+     cline
+      |(Class and Type) : variable name, CHARACTER(100,1)
+      |(Attributes)     : 
+      |(Declaration)    : 586
+      |(Definition)     : 668  768
+      |(Reference)      : 773
+     co2_glb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 690  785
+      |(Reference)      : 701  787
+     co2ann
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 576
+      |(Definition)     : 800  808  815
+      |(Reference)      : 808  815  825  843
+     co2cyc_sav
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 825
+     co2dat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 576
+      |(Definition)     : 803  860
+      |(Reference)      : 808  865
+     co2dat3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 577
+      |(Definition)     : 825  865
+      |(Reference)      : 834  874
+     co2dat_file
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 717
+     co2g1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 578
+      |(Definition)     : 687  768
+      |(Reference)      : 690  694  773  785
+     co2g2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 578
+      |(Definition)     : 687  768
+      |(Reference)      : 690  695  773
+     co2gbl_file
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 658  660  665  672
+     co2vmr_sav
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 694  695  834  874
+      |(Reference)      : 848  885
+     facoz
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 617
+      |(Reference)      : 
+     file_exist
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 585
+      |(Definition)     : 658  723  743
+      |(Reference)      : 659  724  748  753
+     float
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 617  617  815
+     gas_update
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 503
+      |(Reference)      : 901
+     gco2cyc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 891
+      |(Reference)      : 797
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 580
+      |(Definition)     : 683  693  706  807  814  824  833  864  873
+      |(Reference)      : 684  689  694  695  706  808  808  808  815  815  825  825  825  834  834  865  865  874  874
+     ico2flg
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 622  691  793  799  855
+     ictmflg
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 623  626  630  631  646  726  791
+     id
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 580
+      |(Definition)     : 612  614
+      |(Reference)      : 617
+     iday
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 503  569
+      |(Definition)     : 
+      |(Reference)      : 595  598  611  612  614
+     idyr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 580
+      |(Definition)     : 628  631  632
+      |(Reference)      : 632  646  676  718  728  735
+     ihour
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 503  569
+      |(Definition)     : 
+      |(Reference)      : 595
+     imo
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 580
+      |(Definition)     : 802  822  830  846  859  870  883  890
+      |(Reference)      : 825  825  834  834  847  848  865  874  874  884  885  891
+     imon
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 503  569
+      |(Definition)     : 
+      |(Reference)      : 594  599  601  604  606  637
+     imxco2
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 576  577  693  807  814  824  833  864  873
+     ioznflg
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 593
+     iyear
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 503  569
+      |(Definition)     : 
+      |(Reference)      : 628  632  638  639  640  649  701  780  787  841  844  881
+     iyr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 580
+      |(Definition)     : 640  677  740  768
+      |(Reference)      : 689  689  739  740  741  773  780
+     iyr1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 580
+      |(Definition)     : 668
+      |(Reference)      : 676  677  684
+     iyr2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 580
+      |(Definition)     : 668
+      |(Reference)      : 683
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 580
+      |(Definition)     : 692  806  813  823  831  863  871
+      |(Reference)      : 694  695  808  808  808  815  815  825  825  825  832  834  865  865  872  874
+     jmxco2
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 576  577  692  806  813  823  831  832  863  871  872
+     jn
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 580
+      |(Definition)     : 832  872
+      |(Reference)      : 834  874
+     jyr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 580
+      |(Definition)     : 687
+      |(Reference)      : 689
+     k1oz
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 599  604
+      |(Reference)      : 600  602  607  612
+     k2oz
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 601  606
+      |(Reference)      : 607
+     kind_phys
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 576  577  578
+     kmonsav
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 637
+      |(Reference)      : 
+     kyrsav
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 639
+      |(Reference)      : 638
+     l
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 580
+      |(Definition)     : 
+      |(Reference)      : 
+     lab_dowhile1
+      |(Class and Type) : construct name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 684
+      |(Reference)      : 703  708
+     lab_dowhile2
+      |(Class and Type) : construct name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 739
+      |(Reference)      : 749  751
+     lab_if_ictm
+      |(Class and Type) : construct name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 726
+      |(Reference)      : 733  760
+     lab_if_idyr
+      |(Class and Type) : construct name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 646
+      |(Reference)      : 713  896
+     ldoco2
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 503  571
+      |(Definition)     : 
+      |(Reference)      : 624
+     lextpl
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 585
+      |(Definition)     : 627  630
+      |(Reference)      : 777
+     loz1st
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 503  571
+      |(Definition)     : 
+      |(Reference)      : 595
+     mdays
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, SAVE, initialized
+      |(Declaration)    : 581  583
+      |(Definition)     : 
+      |(Reference)      : 594  600  602  607  607  612
+     me
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 503  569
+      |(Definition)     : 
+      |(Reference)      : 648  671  700  727  734  744  754  771  786  794  840  880
+     midm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, initialized
+      |(Declaration)    : 581
+      |(Definition)     : 600  605
+      |(Reference)      : 617  617
+     midmon
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, initialized
+      |(Declaration)    : 581
+      |(Definition)     : 594
+      |(Reference)      : 595  598  602  605  611
+     midp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, initialized
+      |(Declaration)    : 581
+      |(Definition)     : 602  607
+      |(Reference)      : 617
+     minyear
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 646  649  739
+     mod
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 599  606  630
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 503  569
+      |(Definition)     : 
+      |(Reference)      : 648  671  700  727  734  744  754  771  786  794  840  880
+     NICO2CN
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 664  665  666  668  687  710  765  766  767  768  803  860  894
+     rate
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 578
+      |(Definition)     : 780  782
+      |(Reference)      : 785  865
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         24  format        (Definition) 669  
+                           (Reference)  668
+         34  format        (Definition) 719  
+                           (Reference)  718  741
+         36  format        (Definition) 769  
+                           (Reference)  768
+
+ Scoping unit of module sub-program : getgases
+   Attribute and Cross reference of name
+     ch4vmr_def
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 990
+     cl4vmr_def
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 996
+     co2_glb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1008  1032  1040
+     co2vmr_def
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 988
+     co2vmr_sav
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1030  1038
+     con_pi
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1019
+     covmr_def
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 992
+     f113vmr_def
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 997
+     f11vmr_def
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 993
+     f12vmr_def
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 994
+     f22vmr_def
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 995
+     gasdat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
+      |(Declaration)    : 906  975
+      |(Definition)     : 988  989  990  991  992  993  994  995  996  997  1008  1030  1032  1038  1040
+      |(Reference)      : 
+     gco2cyc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1008  1032  1040
+     getgases
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 906
+      |(Reference)      : 1050
+     hfpi
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1021
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 978
+      |(Definition)     : 987  1007  1017
+      |(Reference)      : 988  989  990  991  992  993  994  995  996  997  1008  1018  1021  1029  1030  1032  1037  1038  1040
+     ico2flg
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1003  1012
+     ilat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 978
+      |(Definition)     : 1025
+      |(Reference)      : 1030  1038
+     ilon
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 978
+      |(Definition)     : 1024
+      |(Reference)      : 1030  1038
+     imax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 906  971
+      |(Definition)     : 
+      |(Reference)      : 987  1007  1017
+     imxco2
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1024
+     int
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1024  1025
+     ivflip
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1027
+     jmxco2
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1025
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 978
+      |(Definition)     : 986  1006  1028  1036
+      |(Reference)      : 988  989  990  991  992  993  994  995  996  997  1008  1029  1030  1032  1037  1038  1040
+     kind_phys
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 972  975  980
+     kmonsav
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1008  1030  1032  1038  1040
+     lmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 906  971
+      |(Definition)     : 
+      |(Reference)      : 986  1006  1028  1036
+     min
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1024  1025
+     n2ovmr_def
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 989
+     o2vmr_def
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 991
+     plvl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 906  972
+      |(Definition)     : 
+      |(Reference)      : 1029  1037
+     prsco2
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1029  1037
+     raddeg
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1016  1016
+     tmp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 980
+      |(Definition)     : 1016
+      |(Reference)      : 1024  1025
+     xlat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 906  972
+      |(Definition)     : 
+      |(Reference)      : 1021
+     xlat1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 980
+      |(Definition)     : 1021
+      |(Reference)      : 1025
+     xlon
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 906  972
+      |(Definition)     : 
+      |(Reference)      : 1018
+     xlon1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 980
+      |(Definition)     : 1018  1019
+      |(Reference)      : 1019  1019  1024
+
+ Scoping unit of module sub-program : getozn
+   Attribute and Cross reference of name
+     blte
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1107  1113  1114  1118
+     deglat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 1100
+      |(Definition)     : 1110
+      |(Reference)      : 1113  1113  1114  1118  1122
+     dlte
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1107  1114
+     elte
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 1100
+      |(Definition)     : 1107
+      |(Reference)      : 1113  1122
+     facoz
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1132  1132
+     getozn
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1055
+      |(Reference)      : 1163
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 1103
+      |(Definition)     : 1109  1140  1147  1155
+      |(Reference)      : 1110  1132  1141  1141  1148  1148  1149  1150  1150  1150  1156  1156  1156  1157  1157  1157
+     imax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 1055  1092
+      |(Definition)     : 
+      |(Reference)      : 1100  1100  1109  1140  1147  1155
+     ivflip
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1138
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 1103
+      |(Definition)     : 1129
+      |(Reference)      : 1130  1130  1131  1131  1132
+     j1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 1103
+      |(Definition)     : 1115  1119  1123
+      |(Reference)      : 1116  1117  1130  1131
+     j2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 1103
+      |(Definition)     : 1116  1120  1124
+      |(Reference)      : 1130  1131
+     jmr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1107  1123  1124
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 1103
+      |(Definition)     : 1144
+      |(Reference)      : 1145  1145  1148  1148  1149  1150  1150
+     k1oz
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1130  1130
+     k2oz
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1131  1131
+     kind_phys
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1094  1097  1100
+     l
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 1103
+      |(Definition)     : 1136
+      |(Reference)      : 1137  1138
+     ll
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 1103
+      |(Definition)     : 1137  1138
+      |(Reference)      : 1141  1150  1156  1157
+     lm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 1055  1092
+      |(Definition)     : 
+      |(Reference)      : 1136  1138
+     loz
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1100  1129  1144  1156  1156
+     o3i
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 1100
+      |(Definition)     : 1132
+      |(Reference)      : 1150  1150  1156  1157
+     o3mmr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
+      |(Declaration)    : 1055  1097
+      |(Definition)     : 1150  1156  1157
+      |(Reference)      : 
+     o3r
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1130  1130  1131  1131
+     pkstr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1145  1145  1148  1148  1149  1156  1157
+     prslk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 1055  1094
+      |(Definition)     : 
+      |(Reference)      : 1141
+     raddeg
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1110
+     tem
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 1100
+      |(Definition)     : 1149
+      |(Reference)      : 1150  1150
+     tem1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 1100
+      |(Definition)     : 1114  1117  1121  1125
+      |(Reference)      : 1115  1117  1128  1130  1131
+     tem2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 1100
+      |(Definition)     : 1128
+      |(Reference)      : 1130  1131
+     tem3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 1100
+      |(Definition)     : 1130
+      |(Reference)      : 1132
+     tem4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 1100
+      |(Definition)     : 1131
+      |(Reference)      : 1132
+     temp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 1100
+      |(Definition)     : 1145
+      |(Reference)      : 1149
+     wk1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 1100
+      |(Definition)     : 1141
+      |(Reference)      : 1148  1148  1149  1156  1157
+     xlat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 1055  1094
+      |(Definition)     : 
+      |(Reference)      : 1110
+
+ Total information
+   Procedures       : 1
+   Total lines      : 1169
+   Total statements : 564
+   Total stack(byte): 85584
+   Total prefetch num: 0
+

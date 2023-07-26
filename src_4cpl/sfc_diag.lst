@@ -1,0 +1,471 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jul 12 10:11:45 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/tco639l72/src_4cpl
+   Source file       : sfc_diag.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "sfc_diag"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine sfc_diag(imj,im,ps,u1,v1,t1,q1,                   &
+               2                     !    &                    tskin,qsurf,f10m,u10m,v10m,t2m,q2m,      &
+               3                                               tskin,qsurf,u10m,v10m,t2m,q2m, &
+               4                                               prslki,evap,fm,fh,fm10,fh2,fh10,rh2,rh10)
+               5                     !
+               6                           use machine , only : kind_phys
+               7                     !     use funcphys, only : fpvs
+               8                           use physcons, grav => con_g,  cp => con_cp, &
+               9                                         eps => con_eps, epsm1 => con_epsm1
+              10                           use const,    only : RTYPE
+              11                           implicit none
+              12                     !
+              13                           integer              im,imj
+              14                           real(kind=RTYPE), dimension(im) :: u1,  v1,  t1,  q1
+              15                           real, dimension(im) :: ps,   tskin,  qsurf,                       &
+              16                                                  f10m, u10m, v10m, t2m, t10m, q2m, q10m,    &
+              17                                                  prslki,evap,fm,fh,fh10,fm10,fh2,rh2,rh10
+              18                     !
+              19                     !     locals
+              20                     !
+              21                           real (kind=kind_phys), parameter :: qmin=1.0e-8
+              22                           integer              k,i
+              23                     !
+              24                           real(kind=kind_phys)        fhi, qss, wrk,fpvs
+              25                     !     real(kind=kind_phys) sig2k, fhi, qss
+              26                     !
+              27                     !     real, parameter :: g=grav
+              28                     !
+              29                     !     estimate sigma ** k at 2 m
+              30                     !
+              31                     !     sig2k = 1. - 4. * g * 2. / (cp * 280.)
+              32                     !
+              33                     !  initialize variables. all units are supposedly m.k.s. unless specified
+              34                     !  ps is in pascals
+              35                     !
+              36                     !!
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fm10, fm, f10m, u1, u10m, v1, fh, v10m
+                                   <<<      fh2, t1, prslki, tskin, t2m, evap, q1
+                                   <<<      ps
+                                   <<<    PREFETCH(SOFT) : 12
+                                   <<<     SEQUENTIAL : 12
+                                   <<<      fh10: 2, q2m: 2, rh2: 2, t10m: 2
+                                   <<<      q10m: 2, rh10: 2
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 20
+                                   <<<      SIMD&FP   : SPILL 4  FILL 4
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+              37     1   s    s            do i = 1, imj
+              38     1   p    v              f10m(i) = fm10(i) / fm(i)
+              39     1               !       f10m(i) = min(f10m(i),1.)
+              40     1   p    v              u10m(i) = f10m(i) * u1(i)
+              41     1   p    v              v10m(i) = f10m(i) * v1(i)
+              42     1   p    v              fhi     = min( fh2(i) / fh(i) , 0.99 )
+              43     1               !       t2m(i)  = tskin(i)*(1. - fhi) + t1(i) * prslki(i) * fhi
+              44     1               !       sig2k   = 1. - (grav+grav) / (cp * t2m(i))
+              45     1               !       t2m(i)  = t2m(i) * sig2k
+              46     1   p    v              wrk     = 1.0 - fhi
+              47     1               
+              48     1   m    m              t2m(i)  = tskin(i)*wrk + t1(i)*prslki(i)*fhi - (grav+grav)/cp
+              49     1               
+              50     2   p    v              if(evap(i) >= 0.) then !  for evaporation>0, use inferred qsurf to deduce q2m
+              51     2   p    v                q2m(i) = qsurf(i)*wrk + max(qmin,q1(i))*fhi
+              52     2   p    v              else                   !  for dew formation, use saturated q at tskin
+              53     2   s    s                qss    = fpvs(tskin(i))
+              54     2   s    s                qss    = eps * qss / (ps(i) + epsm1 * qss)
+              55     2   m    m                q2m(i) = qss*wrk + max(qmin,q1(i))*fhi
+              56     2   p    v              endif
+              57     1   s    s              qss    = fpvs(t2m(i))
+              58     1   p    v              qss    = eps * qss / (ps(i) + epsm1 * qss)
+              59     1   p    v              q2m(i) = min(q2m(i),qss)
+              60     1               !
+              61     1   p    v              rh2(i) = max( q2m(i)/qss , 0.)
+              62     1               
+              63     1   p    v              fhi     = min( fh10(i) / fh(i) , 0.99 )
+              64     1   s    s              wrk     = 1.0 - fhi
+              65     1   m    m              t10m(i)  = tskin(i)*wrk + t1(i)*prslki(i)*fhi - (grav+grav)/cp
+              66     2   p    v              if(evap(i) >= 0.) then !  for evaporation>0, use inferred qsurf to deduce q2m
+              67     2   p    v                q10m(i) = qsurf(i)*wrk + max(qmin,q1(i))*fhi
+              68     2   p    v              else                   !  for dew formation, use saturated q at tskin
+              69     2   s    s                qss    = fpvs(tskin(i))
+              70     2   p    v                qss    = eps * qss / (ps(i) + epsm1 * qss)
+              71     2   p    v                q10m(i) = qss*wrk + max(qmin,q1(i))*fhi
+              72     2   p    v              endif
+              73     1   s    s              qss    = fpvs(t10m(i))
+              74     1   p    v              qss    = eps * qss / (ps(i) + epsm1 * qss)
+              75     1   p    v              q10m(i) = min(q10m(i),qss)
+              76     1               !
+              77     1   p    v              rh10(i) = max( q10m(i)/qss , 0.)
+              78     1               
+              79     1   p    v            enddo
+              80                     
+              81                           return
+              82                           end
+
+ Procedure information
+   Lines      : 82
+   Statements : 46
+   Stack(byte): 912
+   Prefetch num: 12
+
+ Scoping unit of external sub-program : sfc_diag
+   Attribute and Cross reference of name
+     con_cp
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8
+     con_eps
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8
+     con_epsm1
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8
+     con_g
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 10
+     cp
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8  48  65
+     eps
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8  54  58  70  74
+     epsm1
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8  54  58  70  74
+     evap
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  15
+      |(Definition)     : 
+      |(Reference)      : 50  66
+     f10m
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 15
+      |(Definition)     : 38
+      |(Reference)      : 40  41
+     fh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  15
+      |(Definition)     : 
+      |(Reference)      : 42  63
+     fh10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  15
+      |(Definition)     : 
+      |(Reference)      : 63
+     fh2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  15
+      |(Definition)     : 
+      |(Reference)      : 42
+     fhi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 24
+      |(Definition)     : 42  63
+      |(Reference)      : 46  48  51  55  64  65  67  71
+     fm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  15
+      |(Definition)     : 
+      |(Reference)      : 38
+     fm10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  15
+      |(Definition)     : 
+      |(Reference)      : 38
+     fpvs
+      |(Class and Type) : external function name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 53  57  69  73
+     fpvs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 
+     grav
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8  48  48  65  65
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 22
+      |(Definition)     : 37
+      |(Reference)      : 38  38  38  40  40  40  41  41  41  42  42  48  48  48  48  50  51  51  51  53  54  55  55  57  58  59  59  61  61  63  63  65  65  65  65  66  67  67  67  69  70  71  71  73  74  75  75  77  77
+     im
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  13
+      |(Definition)     : 
+      |(Reference)      : 14  14  14  14  15  15  15  15  15  15  15  15  15  15  15  15  15  15  15  15  15  15  15
+     imj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  13
+      |(Definition)     : 
+      |(Reference)      : 37
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 22
+      |(Definition)     : 
+      |(Reference)      : 
+     kind_phys
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 6  21  24
+     machine
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 6
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 51  55  61  67  71  77
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 42  59  63  75
+     physcons
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8
+     prslki
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  15
+      |(Definition)     : 
+      |(Reference)      : 48  65
+     ps
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  15
+      |(Definition)     : 
+      |(Reference)      : 54  58  70  74
+     q1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  14
+      |(Definition)     : 
+      |(Reference)      : 51  55  67  71
+     q10m
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 15
+      |(Definition)     : 67  71  75
+      |(Reference)      : 75  77
+     q2m
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  15
+      |(Definition)     : 51  55  59
+      |(Reference)      : 59  61
+     qmin
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 21
+      |(Definition)     : 
+      |(Reference)      : 51  55  67  71
+     qss
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 24
+      |(Definition)     : 53  54  57  58  69  70  73  74
+      |(Reference)      : 54  54  55  58  58  59  61  70  70  71  74  74  75  77
+     qsurf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  15
+      |(Definition)     : 
+      |(Reference)      : 51  67
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 10  14
+     rh10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  15
+      |(Definition)     : 77
+      |(Reference)      : 
+     rh2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  15
+      |(Definition)     : 61
+      |(Reference)      : 
+     sfc_diag
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     t1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  14
+      |(Definition)     : 
+      |(Reference)      : 48  65
+     t10m
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 15
+      |(Definition)     : 65  73
+      |(Reference)      : 
+     t2m
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  15
+      |(Definition)     : 48  57
+      |(Reference)      : 
+     tskin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  15
+      |(Definition)     : 53  69
+      |(Reference)      : 48  65
+     u1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  14
+      |(Definition)     : 
+      |(Reference)      : 40
+     u10m
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  15
+      |(Definition)     : 40
+      |(Reference)      : 
+     v1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  14
+      |(Definition)     : 
+      |(Reference)      : 41
+     v10m
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  15
+      |(Definition)     : 41
+      |(Reference)      : 
+     wrk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 24
+      |(Definition)     : 46  64
+      |(Reference)      : 48  51  55  65  67  71
+
+ Total information
+   Procedures       : 1
+   Total lines      : 82
+   Total statements : 46
+   Total stack(byte): 912
+   Total prefetch num: 12
+

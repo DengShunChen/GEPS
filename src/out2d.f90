@@ -314,6 +314,7 @@
 !land suface tempaerature or sea surface temperature
       if(label(kk).eq.'s00100') then
       globp=tg
+!      call unify_reduceintp_idw(nx,my,my_max,globp,glob)
       call unify_reduceintp_idw(nx,my,my_max,globp,glob)
       call syslbl ('s00100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)

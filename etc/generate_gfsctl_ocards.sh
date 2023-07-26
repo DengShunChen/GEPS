@@ -1,5 +1,7 @@
 #!/bin/bash
 
+. /nwpr/gfs/xb157/CWBSUMc2/4cpl/op_work/00_setDate.sh
+
 dmskeys='S00000
          S00070
          B10200
@@ -28,7 +30,9 @@ dmskeys='S00000
          B0062F
          B00623
          B00630
-         B00640'
+         B00640
+	 S05100
+	 S04100'
 
 vars='h2o 
       phi 
@@ -58,12 +62,14 @@ levs2='  10
 
 ft_ini=0
 #ft_end=8784
-ft_end=240
+ft_end=${FCSTHR}
 #ft_end=1095
 ft_gap=6
 
-if [ -f ocards ]; then
-  rm -f ocards
+ft_day=$(( ${ft_end}/24 ))
+
+if [ -f ocards_${ft_day}d ]; then
+  rm -f ocards_${ft_day}d
 fi
 
 for dmskey in $dmskeys
@@ -79,7 +85,7 @@ do
     fi
     fi
     fi
-    echo $dmskey'     ' $ft >> ocards    
+    echo $dmskey'     ' $ft >> ocards_${ft_day}d    
   done
 done
 
@@ -107,7 +113,7 @@ do
       fi
       fi
       fi
-      echo "${varlv}" $ft >> ocards
+      echo "${varlv}" $ft >> ocards_${ft_day}d
     done
   done
 
@@ -122,7 +128,7 @@ do
     fi
     fi
 
-    for ft in $(seq ${ft_ini} 24 840)
+    for ft in $(seq ${ft_ini} ${ft_gap} ${ft_end})
     do
       if [ $ft -lt 10 ]; then
         ft='000'$ft
@@ -133,14 +139,14 @@ do
       fi
       fi
       fi
-      echo "${varlv}" $ft >> ocards
+      echo "${varlv}" $ft >> ocards_${ft_day}d
     done
   done
 
 
 done
 
-echo nomodata >> ocards
+echo nomodata >> ocards_${ft_day}d
 
 if [ -f gfsctl ]; then
   rm -f gfsctl

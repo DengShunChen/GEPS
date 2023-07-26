@@ -1,0 +1,1991 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jul 12 10:11:43 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/tco639l72/src_4cpl
+   Source file       : radir99.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "radir99"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine radir99( nr,nx,lev,fluxcl,ee,pu                      &
+               2                                            ,pa,ta,tg,wa,oa,umco2,umch4,umn2o,cld,clwc     &
+               3                                            ,cre,ciwc,cde,cufrac,fuir,fdir,fuirr,fdirr )
+               4                     !
+               5                     !#####################################################################
+               6                     !
+               7                     !  (1)compute infrared radiation fluxes at each model level using
+               8                     !  correlated k-distribution method to resolve gas absorption
+               9                     !  coefficients (Fu and Liou, 1992) and delta two and four-stream
+              10                     !  approximation to compute fluxes (Fu et al., 1998; Fong, 1998).
+              11                     !
+              12                     !  (2)the delta two and four-stream approximation includes the
+              13                     !  partial cloud treatment consistent with that used in the solar
+              14                     !  radiation model.
+              15                     !
+              16                     !  ++ input/output variables :
+              17                     !     (1) input :
+              18                     !      nr    : number of grid points to calculate ir flux ( <= nx )
+              19                     !      nx    : horizontal dimension of input array
+              20                     !      lev   : number of vertical layers
+              21                     !      fluxcl : logical const. to perform cloud forcing calculation
+              22                     !      ee(nx,ibir) : ir surface emissivity at each band
+              23                     !      pu(nx*(lev+1)) : presure at level levels
+              24                     !      pa(nx*lev)     : presure at odd levels ( prediction levels )
+              25                     !      ta(nx*lev)     : temperature at odd levels
+              26                     !      tg(nx)         : surface ground temperature ( k )
+              27                     !      wa(nx*lev)     : moisture (mixing ratio) specific humility ( kg/kg )
+              28                     !      oa(nx*lev)     : ozone mixing ratio from climatology ( kg/kg )
+              29                     !      umco2 : constant concentration of co2 ( ppmv )
+              30                     !      umch4 : constant concentration of ch4 ( ppmv )
+              31                     !      umn2o : constant concentration of n2o ( ppmv )
+              32                     !      cld(nx*lev)    : cloud fraction at each layer
+              33                     !      clwc(nx*lev)   : liquid water content at each layer ( g/m3 )
+              34                     !      cre(nx*lev)    : effective size of water clouds ( um )
+              35                     !      ciwc(nx*lev)   : ice water content at each layer ( g/m3 )
+              36                     !      cde(nx*lev)    : effective size of ice clouds ( um )
+              37                     !      cufrac(nx) : cumulus-related cloud fraction for chooseing
+              38                     !                    cloud overlapping approximation
+              39                     !
+              40                     !     (2) output : (nx*(lev+1))
+              41                     !      fuir   : all-sky ir upward flux at each level ( w/m2 )
+              42                     !      fdir   : all-sky ir downward flux at each level ( w/m2 )
+              43                     !      fuirr  : clear-sky ir upward flux at each level ( w/m2 )
+              44                     !      fdirr  : clear-sky ir downward flux at each level ( w/m2 )
+              45                     !
+              46                     !#########################################################################
+              47                     !
+              48                     !  ibir : total band number in ir region
+              49                     !  igir : total k-interval (g-value) number in ir region
+              50                     !
+              51                           implicit none
+              52                           integer, parameter :: ibir = 12, igir = 67
+              53                     
+              54                           integer  nr,nx,lev
+              55                           logical  fluxcl
+              56                           real     ee(nx,ibir),pu(nx*(lev+1)),pa(nx*lev),ta(nx*lev),     &
+              57                                    tg(nx),wa(nx*lev),oa(nx*lev),cld(nx*lev),clwc(nx*lev),&
+              58                                    cre(nx*lev),ciwc(nx*lev),cde(nx*lev),                 &
+              59                                    cufrac(nx),fuir(nx*(lev+1)),fdir(nx*(lev+1)),         &
+              60                                    fuirr(nx*(lev+1)),fdirr(nx*(lev+1))
+              61                     !
+              62                     !  common block, data comes from "rkdisir.f"
+              63                     !
+              64                           real     hk1(2), c1h2o(3,19,2)
+              65                           real     hk2(3), c2h2o(3,19,3)
+              66                           real     hk3(4), c3h2o(3,19,4)
+              67                           real     hk4(4),c4h2o(3,19,4),c4ch4(3,19),c4n2o(3,19)
+              68                           real     hk5(3),c5h2o(3,19,3),c5ch4(3,19),c5n2o(3,19)
+              69                           real     hk6(5),c6o3(3,19,5),c6h2o(3,19)
+              70                           real     hk7(2), c7h2o(3,19,2)
+              71                           real     hk8(10), c8hca(3,19,10), c8hcb(3,19,10)
+              72                           real     hk9(12), c9hca(3,19,12), c9hcb(3,19,12)
+              73                           real     hk10(7), c10h2o(3,19,7)
+              74                           real     hk11(7), c11h2o(3,19,7)
+              75                           real     hk12(8), c12h2o(3,19,8)
+              76                     
+              77                           common /ir1/ hk1, c1h2o
+              78                           common /ir2/ hk2, c2h2o
+              79                           common /ir3/ hk3, c3h2o
+              80                           common /ir4/ hk4,c4h2o,c4ch4,c4n2o
+              81                           common /ir5/ hk5,c5h2o,c5ch4,c5n2o
+              82                           common /ir6/ hk6,c6o3,c6h2o
+              83                           common /ir7/ hk7, c7h2o
+              84                           common /ir8/ hk8, c8hca, c8hcb
+              85                           common /ir9/ hk9, c9hca, c9hcb
+              86                           common /ir10/ hk10, c10h2o
+              87                           common /ir11/ hk11, c11h2o
+              88                           common /ir12/ hk12, c12h2o
+              89                     !
+              90                     !  local working arrays
+              91                     !
+              92                           logical ozon
+              93                           real    hk(igir),vv(12),pc(5,12)
+              94                           integer igb(12)
+              95                           real    dp(nx*lev),tu(nx*(lev+2))
+              96                           real    zw1(nx*lev,2),zw2(nx*lev,2),                      &
+              97                                   zw(nx*lev,2),ztau(nx*lev,2),zttau(nx*(lev+1),2),  &
+              98                                   zbf(nx*(lev+2)),zffu(nx*(lev+1)),zffd(nx*(lev+1))
+              99                           real    taugas(nx*lev,igir),tauic(nx*lev),tauwc(nx*lev),  &
+             100                                   taucon(nx*lev)
+             101                           real    wic1(nx*lev),wic2(nx*lev),wwc1(nx*lev),wwc2(nx*lev),&
+             102                                   wic(nx*lev),wwc(nx*lev)
+             103                           real    fkg(nx*lev,igir),fuq(nx),wk1(nx*lev),wk2(nx*(lev+2),3),&
+             104                                   dz(nx*lev)
+             105                           real    cldb(nx*lev,4)
+             106                     
+             107                           integer nrn,nrn1,i,j,jk,jj,jje,m,igt,ig,ib
+             108                           real    pi,vmin,umn2o,umch4,umco2,h1269,h476,cld_maxran,dzmax_km,dlogpa
+             109                           real    dlogp,x1,x2,rch4,rn2o,rco2,x,y,z,r,trg,s,pe,w,fk,tics,twcs,ttts
+             110                     
+             111                     !
+             112                     !  igb : the max. number of g-values contained in the band 1-12
+             113                     !
+             114                           data igb /2,3,4,4,3,5,2,10,12,7,7,8/
+             115                     !
+             116                     ! "taucon" are the optical depthes due to water vapor continuum absorp-
+             117                     ! tion in lev layers for a given band ib. We include continuum absorp-
+             118                     ! tion in the 280 to 1250 cm**-1 region. vv(11)-vv(17) are the central
+             119                     ! wavenumbers of each band in this region.
+             120                     !
+             121                           data vv / 4*0.0,1175.0,1040.0,890.0,735.0,605.0,470.0,340.0,0.0 /
+             122                     !
+             123                     !  coefficients for computing the blackbody intensity function
+             124                     !
+             125                            data pc /                                                        &
+             126                            9.598466e-9, -7.287285e-6, 2.090916e-3,-2.677473e-1, 1.286976e+1,&
+             127                            7.211260e-9, -4.792760e-6, 1.202248e-3,-1.344489e-1, 5.639765e+0,&
+             128                            7.572943e-9, -2.626821e-6, 2.216726e-5, 7.445105e-2,-6.670347e+0,&
+             129                            4.730481e-11, 2.706418e-6,-1.351777e-3, 2.282604e-1,-1.300338e+1,&
+             130                           -3.297827e-9,  5.815023e-6,-2.261827e-3, 3.382716e-1,-1.779915e+1,&
+             131                           -4.643682e-9,  6.200410e-6,-2.132982e-3, 2.915934e-1,-1.426057e+1,&
+             132                           -7.868328e-9,  9.028216e-6,-2.644667e-3, 3.072150e-1,-1.274817e+1,&
+             133                           -4.047419e-9,  3.969190e-6,-7.282698e-4, 2.771434e-2, 1.444413e+0,&
+             134                           -1.476049e-9,  9.066730e-7, 4.060300e-4,-1.256673e-1, 8.467850e+0,&
+             135                            5.730060e-10,-1.242197e-6, 1.034899e-3,-1.776529e-1, 9.197895e+0,&
+             136                            8.067974e-10,-1.134579e-6, 6.529138e-4,-8.009666e-2, 2.954545e+0,&
+             137                            3.569705e-10,-4.619423e-7, 2.387227e-4,-1.647910e-3,-7.843924e-1/
+             138                     !
+             139                     !  476.16 = 2.24e4 / M * 10.0 / 9.8, where M = 48 for o3
+             140                     !  1269.841 = 2.24e4 / M * 10.0 / 9.8, where M = 18 for h2o
+             141                     !
+             142                           data h476/476.16/, h1269/1269.841/
+             143                     !
+             144                     !  if "cufrac(i)" .gt. "cld_maxran", assume maximum-random cloud overlapping
+             145                     !  if "cufrac(i)" .le. "cld_maxran", assume random cloud overlapping
+             146                     !  so, set cld_maxran equal to less than 0. if assume the maximum-random cloud
+             147                     !  overlapping approximation always
+             148                     !
+             149                           data cld_maxran / 0. /
+             150                     !
+             151                           nrn  = nr*lev
+             152                           nrn1 = nr*(lev+1)
+             153                           pi = 4.*atan(1.)
+             154                           vmin = 1.0e-8
+             155                     !
+             156                     !
+             157                     !  obtain the temperature (tu) at even levels
+             158                     !
+             159                     !  lev+1 : the surface skin temperature
+             160                     !  lev+2 : the ground temperature
+             161                     !  dp : layer thickness in pressure (hPa)
+             162                     !  dz : layer thickness (km)
+             163                     !
+             164                     !  assume the temperature at the top even level equal to that at
+             165                     !  the top odd level
+             166                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1455
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ta, tu
+                                   <<< Loop-information  End >>>
+             167     1  pp   4v            do 20 i = 1, nr
+             168     1   p   4v            tu(i) = ta(i)
+             169     1   p   4v         20 continue
+             170                     !
+             171                     ! note : dz in ir radiation uses unit of km instead of m in solar
+             172                     !
+             173                           dzmax_km = 1.   ! avoid too thick cloud depth
+             174                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pu, ta, dp, dz
+                                   <<< Loop-information  End >>>
+             175     1                     do 25 j = 1, lev
+             176     1                     jk = j*nr
+             177     1                     jj = jk-nr
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 42
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.17, ITR: 72, MVE: 4, POL: L)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      dp, ta, dz, pu
+                                   <<< Loop-information  End >>>
+             178     2  pp    v            do 25 i = 1, nr
+             179     2   p    v            dp(i+jj) = pu(i+jk) - pu(i+jj)
+             180     2   p    v            dz(i+jj) = 0.0292674 * ta(i+jj) * log( pu(i+jk) / pu(i+jj) )
+             181     2               !
+             182     2   p    v            dz(i+jj) = min( dzmax_km, dz(i+jj) )
+             183     2               !
+             184     1   p    v         25 continue
+             185                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 15
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ta, pa, pu, tu
+                                   <<< Loop-information  End >>>
+             186     1  pp    v            do 30 i = 1, nr*(lev-1)
+             187     1   p    v            dlogpa = log ( pa(i+nr) ) - log ( pa(i) )
+             188     1   p    v            dlogp  = log ( pu(i+nr) ) - log ( pa(i) )
+             189     1   p    v            tu(i+nr) = ta(i) + ( ta(i+nr) - ta(i) ) * dlogp / dlogpa
+             190     1   p    v         30 continue
+             191                     !
+             192                     !  assume the lowest model layer is well mixed (i.e. theta = const. )
+             193                     !
+             194                           jje = (lev-1)*nr
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 15
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.77, ITR: 40, MVE: 2, POL: L)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ta, tg, tu, pu, pa
+                                   <<< Loop-information  End >>>
+             195     1  pp    v            do 35 i = 1, nr
+             196     1   p    v            x1 = log ( pa(i+jje) )
+             197     1   p    v            x2 = log ( pu(i+nrn) )
+             198     1   p    v            tu(i+nrn)  = ta(i+jje) * exp ( 0.286*(x2-x1) )
+             199     1   p    v            tu(i+nrn) = (2.0*tg(i)+tu(i+nrn))/3.0
+             200     1   p    v            tu(i+nrn1) = tg(i)
+             201     1   p    v         35 continue
+             202                     !
+             203                     !  compute cloud optical properties
+             204                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<< Loop-information  End >>>
+             205     1  pp                 do 60 m = 1, 4
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cldb
+                                   <<< Loop-information  End >>>
+             206     2   p   4v            do 60 i = 1, nrn
+             207     2   p   4v            cldb(i,m) = 1.0
+             208     1   p   4v         60 continue
+             209                     !
+             210                     !  compute cloud overlapping variables assuming mixed maximum
+             211                     !  and random overlap based on the method proposed by Geleyn and
+             212                     !  Hollingsworth (1979, contrib. atmos. phys.)
+             213                     !
+             214                           jj = nrn - nr
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 593
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.50, ITR: 64, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cldb, cld
+                                   <<< Loop-information  End >>>
+             215     1  pp    v            do 68 i = 1, nr
+             216     1   p    v            cldb(i,1) = 1.0 - cld(i)
+             217     1   p    v            cldb(i,3) = cld(i)
+             218     1   p    v            cldb(i+jj,2) = 1.0 - cld(i+jj)
+             219     1   p    v            cldb(i+jj,4) = cld(i+jj)
+             220     1   p    v         68 continue
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cufrac, cld, cldb
+                                   <<< Loop-information  End >>>
+             221     1                     do 69 j = 1, lev-1
+             222     1                     jk = j*nr
+             223     1                     jj = jk-nr
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 118
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.51, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cufrac, cld, cldb
+                                   <<< Loop-information  End >>>
+             224     2  pp    v            do 69 i = 1, nr
+             225     3   p    v            if ( cufrac(i) .ge. cld_maxran ) then
+             226     3   p    v            cldb(i+jk,1) = max( vmin, 1.0-max( cld(i+jk),cld(i+jj) ) ) /  &
+             227     3                                    max( vmin, 1.0-cld(i+jj) )
+             228     3   p    v            cldb(i+jk,3) = max( vmin, min( cld(i+jk),cld(i+jj) ) ) /      &
+             229     3                                    max( vmin, cld(i+jj) )
+             230     3   p    v            cldb(i+jj,2) = max( vmin, 1.0-max( cld(i+jj),cld(i+jk) ) ) /  &
+             231     3                                    max( vmin, 1.0-cld(i+jk) )
+             232     3   p    v            cldb(i+jj,4) = max( vmin, min( cld(i+jj),cld(i+jk) ) ) /      &
+             233     3                                    max( vmin, cld(i+jk) )
+             234     3   p    v            else
+             235     3   p    v            cldb(i+jk,1) = 1.0 - cld(i+jk)
+             236     3   p    v            cldb(i+jk,3) = cld(i+jk)
+             237     3   p    v            cldb(i+jj,2) = 1.0 - cld(i+jj)
+             238     3   p    v            cldb(i+jj,4) = cld(i+jj)
+             239     3   p    v            end if
+             240     1   p    v         69 continue
+             241                     !
+             242                           igt = 0
+             243                           ozon = .false.
+             244                     !****************************************************************
+             245                     !
+             246                     !  compute the gas optical depth for a given g-value in the band 1-12
+             247                     !
+             248                     !  (1) band 1 ( 0 - 280 cm^-1 )
+             249                     !
+             250                           call rqkir ( nr,nx,lev,igb(1),ozon,c1h2o,pa,ta,fkg )
+             251                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wa, dp, fkg, taugas
+                                   <<< Loop-information  End >>>
+             252     1  pp                 do 210 ig = 1, igb(1)
+             253     1   p                 igt = igt + 1
+             254     1   p                 hk(igt) = hk1(ig)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.14, ITR: 96, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fkg, wa, dp, taugas
+                                   <<< Loop-information  End >>>
+             255     2   p   2v            do 210  i = 1, nrn
+             256     2   p   2v            taugas(i,igt) = fkg(i,ig) * wa(i) * dp(i) * h1269
+             257     1   p   2v        210 continue
+             258                     !
+             259                     !  (2) band 2 ( 280 - 400 cm^-1 )
+             260                     !
+             261                           call rqkir ( nr,nx,lev,igb(2),ozon,c2h2o,pa,ta,fkg )
+             262                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wa, dp, fkg, taugas
+                                   <<< Loop-information  End >>>
+             263     1  pp                 do 220 ig = 1, igb(2)
+             264     1   p                 igt = igt + 1
+             265     1   p                 hk(igt) = hk2(ig)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.14, ITR: 96, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fkg, wa, dp, taugas
+                                   <<< Loop-information  End >>>
+             266     2   p   2v            do 220  i = 1, nrn
+             267     2   p   2v            taugas(i,igt) = fkg(i,ig) * wa(i) * dp(i) * h1269
+             268     1   p   2v        220 continue
+             269                     !
+             270                     !  (3) band 3 ( 400 - 540 cm^-1 )
+             271                     !
+             272                           call rqkir ( nr,nx,lev,igb(3),ozon,c3h2o,pa,ta,fkg )
+             273                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wa, dp, fkg, taugas
+                                   <<< Loop-information  End >>>
+             274     1  pp                 do 230 ig = 1, igb(3)
+             275     1   p                 igt = igt + 1
+             276     1   p                 hk(igt) = hk3(ig)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.14, ITR: 96, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fkg, wa, dp, taugas
+                                   <<< Loop-information  End >>>
+             277     2   p   2v            do 230  i = 1, nrn
+             278     2   p   2v            taugas(i,igt) = fkg(i,ig) * wa(i) * dp(i) * h1269
+             279     1   p   2v        230 continue
+             280                     !
+             281                     !  (4) band 4 ( 540 - 670 cm^-1 )
+             282                     !
+             283                           call rqkir ( nr,nx,lev,igb(4),ozon,c4h2o,pa,ta,fkg(1,1) )
+             284                           call rqkir ( nr,nx,lev,1,ozon,c4ch4,pa,ta,fkg(1,11) )
+             285                           call rqkir ( nr,nx,lev,1,ozon,c4n2o,pa,ta,fkg(1,12) )
+             286                     !
+             287                     !  1.26238e-3 = 2.24e4 / M * 10.0 / 9.8 * 1.6e-6 * M / 28.97, where
+             288                     !               M = 16 for CH4.
+             289                     !  2.20918e-4 = 2.24e4 / M * 10.0 / 9.8 * 0.28e-6 * M / 28.97, where
+             290                     !                M = 44 for N2O.
+             291                     !
+             292                           rch4 = umch4 / 1.6
+             293                           rn2o = umn2o / 0.28
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 696
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.40, ITR: 112, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fkg, dp, wk1
+                                   <<< Loop-information  End >>>
+             294     1  pp   2v            do 240 i = 1, nrn
+             295     1               !err  wk1(i) = ( fkg(i,11)*1.26238e-3 + fkg(i,12)*2.20918e-4 ) * dp(i)
+             296     1   p   2v            wk1(i) = (fkg(i,11)*1.26238e-3*rch4 + fkg(i,12)*2.20918e-4*rn2o) * dp(i)
+             297     1   p   2v        240 continue
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fkg, wa, dp, wk1, taugas
+                                   <<< Loop-information  End >>>
+             298     1  pp                 do 241 ig = 1, igb(4)
+             299     1   p                 igt = igt + 1
+             300     1   p                 hk(igt) = hk4(ig)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.12, ITR: 96, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wa, dp, wk1, fkg, taugas
+                                   <<< Loop-information  End >>>
+             301     2   p   2v            do 241  i = 1, nrn
+             302     2   p   2v            taugas(i,igt) = fkg(i,ig) * wa(i) * dp(i) * h1269 + wk1(i)
+             303     1   p   2v        241 continue
+             304                     !
+             305                     !  (5) band 5 ( 670 - 800 cm^-1 )
+             306                     !
+             307                           call rqkir ( nr,nx,lev,igb(5),ozon,c5h2o,pa,ta,fkg(1,1) )
+             308                           call rqkir ( nr,nx,lev,1,ozon,c5ch4,pa,ta,fkg(1,11) )
+             309                           call rqkir ( nr,nx,lev,1,ozon,c5n2o,pa,ta,fkg(1,12) )
+             310                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 696
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.40, ITR: 112, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fkg, dp, wk1
+                                   <<< Loop-information  End >>>
+             311     1  pp   2v            do 250 i = 1, nrn
+             312     1               !err  wk1(i) = ( fkg(i,11)*1.26238e-3 + fkg(i,12)*2.20918e-4 ) * dp(i)
+             313     1   p   2v            wk1(i) = (fkg(i,11)*1.26238e-3*rch4 + fkg(i,12)*2.20918e-4*rn2o) * dp(i)
+             314     1   p   2v        250 continue
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fkg, wa, dp, wk1, taugas
+                                   <<< Loop-information  End >>>
+             315     1  pp                 do 251 ig = 1, igb(5)
+             316     1   p                 igt = igt + 1
+             317     1   p                 hk(igt) = hk5(ig)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.12, ITR: 96, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wa, dp, wk1, fkg, taugas
+                                   <<< Loop-information  End >>>
+             318     2   p   2v            do 251  i = 1, nrn
+             319     2   p   2v            taugas(i,igt) = fkg(i,ig) * wa(i) * dp(i) * h1269 + wk1(i)
+             320     1   p   2v        251 continue
+             321                     !
+             322                     !  (6) band 6 ( 800 - 980 cm^-1 )
+             323                     !
+             324                           ozon = .true.
+             325                           call rqkir ( nr,nx,lev,igb(6),ozon,c6o3,pa,ta,fkg(1,1) )
+             326                           ozon = .false.
+             327                           call rqkir ( nr,nx,lev,1,ozon,c6h2o,pa,ta,fkg(1,11) )
+             328                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 800
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.85, ITR: 96, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fkg, wa, dp, wk1
+                                   <<< Loop-information  End >>>
+             329     1  pp   2v            do 260 i = 1, nrn
+             330     1   p   2v            wk1(i) = fkg(i,11) * wa(i) * dp(i) * h1269
+             331     1   p   2v        260 continue
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fkg, oa, dp, wk1, taugas
+                                   <<< Loop-information  End >>>
+             332     1  pp                 do 261 ig = 1, igb(6)
+             333     1   p                 igt = igt + 1
+             334     1   p                 hk(igt) = hk6(ig)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.12, ITR: 96, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      oa, dp, wk1, fkg, taugas
+                                   <<< Loop-information  End >>>
+             335     2   p   2v            do 261  i = 1, nrn
+             336     2   p   2v            taugas(i,igt) = fkg(i,ig) * oa(i) * dp(i) * h476 + wk1(i)
+             337     1   p   2v        261 continue
+             338                     !
+             339                     !  (7) band 7 ( 980 - 1100 cm^-1 )
+             340                     !
+             341                           call rqkir ( nr,nx,lev,igb(7),ozon,c7h2o,pa,ta,fkg )
+             342                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wa, dp, fkg, taugas
+                                   <<< Loop-information  End >>>
+             343     1  pp                 do 270 ig = 1, igb(7)
+             344     1   p                 igt = igt + 1
+             345     1   p                 hk(igt) = hk7(ig)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.14, ITR: 96, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fkg, wa, dp, taugas
+                                   <<< Loop-information  End >>>
+             346     2   p   2v            do 270  i = 1, nrn
+             347     2   p   2v            taugas(i,igt) = fkg(i,ig) * wa(i) * dp(i) * h1269
+             348     1   p   2v        270 continue
+             349                     !
+             350                     !  (8) band 8 ( 1100 - 1250 cm^-1 )
+             351                     !
+             352                           call rqkir ( nr,nx,lev,igb(8),ozon,c8hca,pa,ta,fkg(1,1) )
+             353                           call rqkir ( nr,nx,lev,igb(8),ozon,c8hcb,pa,ta,fkg(1,igb(8)+1) )
+             354                     !
+             355                           rco2 = umco2 / 330.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fkg, wa, dp, taugas
+                                   <<< Loop-information  End >>>
+             356     1  pp                 do 280 ig = 1, igb(8)
+             357     1   p                 igt = igt + 1
+             358     1   p                 hk(igt) = hk8(ig)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 112, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wa, fkg, dp, taugas
+                                   <<< Loop-information  End >>>
+             359     2   p   2v            do 280  i = 1, nrn
+             360     2   p   2v            taugas(i,igt) = (fkg(i,ig)*rco2 + wa(i)*fkg(i,ig+igb(8))) * dp(i)
+             361     1   p   2v        280 continue
+             362                     !
+             363                     !  (9) band 9 ( 1250 - 1400 cm^-1 )
+             364                     !
+             365                           call rqkir ( nr,nx,lev,igb(9),ozon,c9hca,pa,ta,fkg(1,1) )
+             366                           call rqkir ( nr,nx,lev,igb(9),ozon,c9hcb,pa,ta,fkg(1,igb(9)+1) )
+             367                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fkg, wa, dp, taugas
+                                   <<< Loop-information  End >>>
+             368     1  pp                 do 290 ig = 1, igb(9)
+             369     1   p                 igt = igt + 1
+             370     1   p                 hk(igt) = hk9(ig)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 112, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wa, fkg, dp, taugas
+                                   <<< Loop-information  End >>>
+             371     2   p   2v            do 290  i = 1, nrn
+             372     2   p   2v            taugas(i,igt) = (fkg(i,ig)*rco2 + wa(i)*fkg(i,ig+igb(9))) * dp(i)
+             373     1   p   2v        290 continue
+             374                     !
+             375                     !  (10) band 10 ( 1400 - 1700 cm^-1 )
+             376                     !
+             377                           call rqkir ( nr,nx,lev,igb(10),ozon,c10h2o,pa,ta,fkg )
+             378                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wa, dp, fkg, taugas
+                                   <<< Loop-information  End >>>
+             379     1  pp                 do 300 ig = 1, igb(10)
+             380     1   p                 igt = igt + 1
+             381     1   p                 hk(igt) = hk10(ig)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.14, ITR: 96, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fkg, wa, dp, taugas
+                                   <<< Loop-information  End >>>
+             382     2   p   2v            do 300  i = 1, nrn
+             383     2   p   2v            taugas(i,igt) = fkg(i,ig) * wa(i) * dp(i) * h1269
+             384     1   p   2v        300 continue
+             385                     !
+             386                     !  (11) band 11 ( 1700 - 1900 cm^-1 )
+             387                     !
+             388                           call rqkir ( nr,nx,lev,igb(11),ozon,c11h2o,pa,ta,fkg )
+             389                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wa, dp, fkg, taugas
+                                   <<< Loop-information  End >>>
+             390     1  pp                 do 310 ig = 1, igb(11)
+             391     1   p                 igt = igt + 1
+             392     1   p                 hk(igt) = hk11(ig)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.14, ITR: 96, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fkg, wa, dp, taugas
+                                   <<< Loop-information  End >>>
+             393     2   p   2v            do 310  i = 1, nrn
+             394     2   p   2v            taugas(i,igt) = fkg(i,ig) * wa(i) * dp(i) * h1269
+             395     1   p   2v        310 continue
+             396                     !
+             397                     !  (12) band 12 ( 1900 - 2200 cm^-1 )
+             398                     !
+             399                           call rqkir ( nr,nx,lev,igb(12),ozon,c12h2o,pa,ta,fkg )
+             400                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fkg, wa, dp, taugas
+                                   <<< Loop-information  End >>>
+             401     1  pp                 do 320 ig = 1, igb(12)
+             402     1   p                 igt = igt + 1
+             403     1   p                 hk(igt) = hk12(ig)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.14, ITR: 96, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fkg, wa, dp, taugas
+                                   <<< Loop-information  End >>>
+             404     2   p   2v            do 320  i = 1, nrn
+             405     2   p   2v            taugas(i,igt) = fkg(i,ig) * wa(i) * dp(i) * h1269
+             406     1   p   2v        320 continue
+             407                     !
+             408                     !*******************************************************************
+             409                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 942
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fdirr, fuirr, fdir, fuir
+                                   <<< Loop-information  End >>>
+             410     1  pp   2v            do 380 i = 1, nrn1
+             411     1   p   2v            fuir(i) = 0.
+             412     1   p   2v            fdir(i) = 0.
+             413     1   p   2v            fuirr(i) = 0.
+             414     1   p   2v            fdirr(i) = 0.
+             415     1   p   2v        380 continue
+             416                     !
+             417                           igt = 0
+             418                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tu, wk2, zbf, ta, wa, pa, dp, taucon
+                                   <<< Loop-information  End >>>
+             419     1                     do 600 ib = 1, ibir
+             420     1               
+             421     1               !
+             422     1               !  compute the blackbody intensity function integrated over a given
+             423     1               !  band at temperature t, the units are w/m2/sr
+             424     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 411
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED(lines: 425,430)
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.37, ITR: 96, MVE: 6, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tu, wk2, zbf
+                                   <<< Loop-information  End >>>
+             425     2  pp    v            do 400 i = 1, nr*(lev+2)
+             426     2   p    v            wk2(i,1) = tu(i) * tu(i)
+             427     2   p    v            wk2(i,2) = wk2(i,1) * tu(i)
+             428     2   p    v            wk2(i,3) = wk2(i,1) * wk2(i,1)
+             429     2   p    v        400 continue
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             430     2                     do 405 i = 1, nr*(lev+2)
+             431     2                     zbf(i) = pc(1,ib)*wk2(i,3) + pc(2,ib)*wk2(i,2) +       &
+             432     2                              pc(3,ib)*wk2(i,1) + pc(4,ib)*tu(i) + pc(5,ib)
+             433     2                     zbf(i) = max ( 1.e-3, zbf(i) )
+             434     2                 405 continue
+             435     1               !
+             436     1               !  compute the optical depth due to water vapor continuum absorption
+             437     1               !  the units of fk are cm2/g, see eq. (a.19) of fu (1991)
+             438     1               !
+             439     1                     x = 4.18
+             440     1                     y = 5577.8
+             441     1                     z = 0.00787
+             442     1                     r = 0.002
+             443     1                     trg = 10. / 9.80616
+             444     2                     if( ib .gt. 4 .and. ib .lt. 12 ) then
+             445     2                       s = ( x + y * exp ( -z * vv(ib) ) ) / 1013.25
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 42
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.92, ITR: 72, MVE: 3, POL: L)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      taucon, dp, wa, pa, ta
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 0
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 12
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             446     3  pp    v              do 410  i = 1, nrn
+             447     3   p    v              pe = pa(i) * wa(i) / ( 0.622 + 0.378 * wa(i) )
+             448     3   p    v              w = exp ( 1800.0 / ta(i) - 6.08108 )
+             449     3   p    v              fk = s * ( pe + r * pa(i) ) * w
+             450     3   p    v              taucon(i) = ( fk * wa(i) )* dp(i) * trg
+             451     3   p    v        410   continue
+             452     2                     else
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      taucon
+                                   <<< Loop-information  End >>>
+             453     3  pp   4v              do 412 i = 1, nrn
+             454     3   p   4v              taucon(i) = 0.
+             455     3   p   4v        412   continue
+             456     2                     end if
+             457     1               !
+             458     1               !  obtain cloud optical properties
+             459     1               !
+             460     1                     call roptir( nr,nx,lev,ib,dz,cld,clwc,ciwc,cre,cde,tauwc,tauic  &
+             461     1                                 ,wwc,wic,wwc1,wwc2,wic1,wic2 )
+             462     1               !
+             463     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      zffd, fdir, zffu, fuir, fdirr, fuirr
+                                   <<< Loop-information  End >>>
+             464     2                     do 500 ig = 1, igb(ib)
+             465     2                     igt = igt + 1
+             466     2               !
+             467     2               !  combine single-scattering properties due to ice and water clouds
+             468     2               !  along with nongray gasous absorption
+             469     2               !  m=1 : clear part
+             470     2               !  m=2 : cloudy part
+             471     2               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<< Loop-information  End >>>
+             472     3  pp                 do 415 m = 1, 2
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      zttau
+                                   <<< Loop-information  End >>>
+             473     4   p   4v            do 415 i = 1, nr
+             474     4   p   4v            zttau(i,m) = 0.
+             475     3   p   4v        415 continue
+             476     2               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 341
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.65, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      taucon, taugas, tauwc, tauic, wic, wwc
+                                   <<<      zw, ztau
+                                   <<< Loop-information  End >>>
+             477     3  pp    v            do 420 i = 1, nrn
+             478     3   p    v      	ztau(i,1) = taugas(i,igt) + taucon(i)
+             479     3   p    v      	ztau(i,2) = taugas(i,igt) + taucon(i) + tauwc(i) + tauic(i)
+             480     3   p    v      	zw(i,1) = 0.
+             481     3   p    v      	zw(i,2) = ( tauic(i)*wic(i) + tauwc(i)*wwc(i) ) / ztau(i,2)
+             482     3   p    v        420 continue
+             483     2               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      zw, wic, tauic, tauwc, wwc, wic1, wic2
+                                   <<<      wwc1, wwc2, zw2, zw1
+                                   <<< Loop-information  End >>>
+             484     3  pp                 do 430 m = 1, 2
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.81, ITR: 40, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wic, tauic, tauwc, wwc, wic1, wic2, wwc1
+                                   <<<      wwc2, zw, zw1, zw2
+                                   <<< Loop-information  End >>>
+             485     4   p    v            do 430 i = 1, nrn
+             486     5   p    v            if ( zw(i,m) .lt. 1.0e-10 ) then
+             487     5   p    v      	zw1(i,m) = 0.
+             488     5   p    v      	zw2(i,m) = 0.
+             489     5   p    v            else
+             490     5   p    v      	tics = tauic(i) * wic(i)
+             491     5   p    v      	twcs = tauwc(i) * wwc(i)
+             492     5   p    v      	ttts = tics + twcs
+             493     5   p    v      	zw1(i,m) = ( tics*wic1(i)+twcs*wwc1(i) ) / ttts
+             494     5   p    v      	zw2(i,m) = ( tics*wic2(i)+twcs*wwc2(i) ) / ttts
+             495     5   p    v            end if
+             496     3   p    v        430 continue
+             497     2               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             498     3  pp                 do 440 m = 1, 2
+             499     4   p                 do 440 j = 1, lev
+             500     4   p                 jk = j*nr
+             501     4   p                 jj = jk-nr
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ztau, zttau
+                                   <<< Loop-information  End >>>
+             502     5   p   2v            do 440 i = 1, nr
+             503     5   p   2v            zttau(i+jk,m) = zttau(i+jj,m) + ztau(i+jj,m)
+             504     3   p   2v        440 continue
+             505     2               !
+             506     2               !  compute ir fluxes
+             507     2               !
+             508     2                     call rcmpir24c(nr,nx,lev,zbf,ee(1,ib),zw1,zw2,zw,zttau,cld,cldb  &
+             509     2                                  ,zffu,zffd )
+             510     2               !
+             511     2               !
+             512     2               !  multiply the ir energy fraction contained in a g-value
+             513     2               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 593
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 96, MVE: 6, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fdir, zffd, zffu, fuir
+                                   <<< Loop-information  End >>>
+             514     3  pp    v            do 450 i = 1, nrn1
+             515     3   p    v            fuir(i) = fuir(i) + zffu(i)*hk(igt)
+             516     3   p    v            fdir(i) = fdir(i) + zffd(i)*hk(igt)
+             517     3   p    v        450 continue
+             518     2               !
+             519     3                     if( fluxcl ) then
+             520     3               !
+             521     3               !  clear-sky case
+             522     3               !
+             523     3                     call rcmpir24(nr,nx,lev,zbf,ee(1,ib),zw1(1,1),zw2(1,1),zw(1,1)  &
+             524     3                                  ,zttau(1,1),zffu,zffd )
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 593
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 96, MVE: 6, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fdirr, zffd, zffu, fuirr
+                                   <<< Loop-information  End >>>
+             525     4  pp    v            do 480 i = 1, nrn1
+             526     4   p    v            fuirr(i) = fuirr(i) + zffu(i)*hk(igt)
+             527     4   p    v            fdirr(i) = fdirr(i) + zffd(i)*hk(igt)
+             528     4   p    v        480 continue
+             529     3               !
+             530     3                     end if
+             531     2               !
+             532     2                 500 continue
+             533     1                 600 continue
+             534                     !
+             535                     !  fuq is the surface emitted flux in the band 0 - 280 cm**-1 with a
+             536                     !  hk of 0.03, which isn't absorbed by atmosphere.
+             537                     !  ( note : the summation of all hk in band 12 only equalto 0.97 )
+             538                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 843
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.57, ITR: 96, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      zbf, ee, fuq
+                                   <<< Loop-information  End >>>
+             539     1  pp   2v            do 750 i = 1, nr
+             540     1   p   2v            fuq(i) = zbf(i+nrn1) * 0.03 * pi * ee(i,12)
+             541     1   p   2v        750 continue
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fuq, fuirr, fuir
+                                   <<< Loop-information  End >>>
+             542     1                     do 780 j = 1, lev+1
+             543     1                     jj = (j-1)*nr
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 667
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.85, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fuirr, fuir, fuq
+                                   <<< Loop-information  End >>>
+             544     2  pp   2v            do 780 i = 1, nr
+             545     2   p   2v            fuir(i+jj) = fuir(i+jj) + fuq(i)
+             546     2   p   2v            fuirr(i+jj) = fuirr(i+jj) + fuq(i)
+             547     1   p   2v        780 continue
+             548                     !cc
+             549                           return
+             550                           end
+
+ Procedure information
+   Lines      : 550
+   Statements : 303
+   Stack(byte): 10192
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : radir99
+   Attribute and Cross reference of name
+     atan
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 153
+     c10h2o
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 73  86
+      |(Definition)     : 377
+      |(Reference)      : 
+     c11h2o
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 74  87
+      |(Definition)     : 388
+      |(Reference)      : 
+     c12h2o
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 75  88
+      |(Definition)     : 399
+      |(Reference)      : 
+     c1h2o
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 64  77
+      |(Definition)     : 250
+      |(Reference)      : 
+     c2h2o
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 65  78
+      |(Definition)     : 261
+      |(Reference)      : 
+     c3h2o
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 66  79
+      |(Definition)     : 272
+      |(Reference)      : 
+     c4ch4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 67  80
+      |(Definition)     : 284
+      |(Reference)      : 
+     c4h2o
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 67  80
+      |(Definition)     : 283
+      |(Reference)      : 
+     c4n2o
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 67  80
+      |(Definition)     : 285
+      |(Reference)      : 
+     c5ch4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 68  81
+      |(Definition)     : 308
+      |(Reference)      : 
+     c5h2o
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 68  81
+      |(Definition)     : 307
+      |(Reference)      : 
+     c5n2o
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 68  81
+      |(Definition)     : 309
+      |(Reference)      : 
+     c6h2o
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 69  82
+      |(Definition)     : 327
+      |(Reference)      : 
+     c6o3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 69  82
+      |(Definition)     : 325
+      |(Reference)      : 
+     c7h2o
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 70  83
+      |(Definition)     : 341
+      |(Reference)      : 
+     c8hca
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 71  84
+      |(Definition)     : 352
+      |(Reference)      : 
+     c8hcb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 71  84
+      |(Definition)     : 353
+      |(Reference)      : 
+     c9hca
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 72  85
+      |(Definition)     : 365
+      |(Reference)      : 
+     c9hcb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 72  85
+      |(Definition)     : 366
+      |(Reference)      : 
+     cde
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 460
+      |(Reference)      : 
+     ciwc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 460
+      |(Reference)      : 
+     cld
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 460  508
+      |(Reference)      : 216  217  218  219  226  226  226  228  228  228  230  230  230  232  232  232  235  236  237  238
+     cld_maxran
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : initialized
+      |(Declaration)    : 108  149
+      |(Definition)     : 
+      |(Reference)      : 225
+     cldb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 105
+      |(Definition)     : 207  216  217  218  219  226  228  230  232  235  236  237  238  508
+      |(Reference)      : 
+     clwc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 460
+      |(Reference)      : 
+     cre
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 460
+      |(Reference)      : 
+     cufrac
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 
+      |(Reference)      : 225
+     dlogp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 188
+      |(Reference)      : 189
+     dlogpa
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 108
+      |(Definition)     : 187
+      |(Reference)      : 189
+     dp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 95
+      |(Definition)     : 179
+      |(Reference)      : 256  267  278  296  302  313  319  330  336  347  360  372  383  394  405  450
+     dz
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 103
+      |(Definition)     : 180  182  460
+      |(Reference)      : 182
+     dzmax_km
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 108
+      |(Definition)     : 173
+      |(Reference)      : 182
+     ee
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 508  523
+      |(Reference)      : 540
+     exp
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 198  445  448
+     fdir
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 412  516
+      |(Reference)      : 516
+     fdirr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 414  527
+      |(Reference)      : 527
+     fk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 449
+      |(Reference)      : 450
+     fkg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 103
+      |(Definition)     : 250  261  272  283  284  285  307  308  309  325  327  341  352  353  365  366  377  388  399
+      |(Reference)      : 256  267  278  296  296  302  313  313  319  330  336  347  360  360  372  372  383  394  405
+     fluxcl
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 519
+     fuir
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 411  515  545
+      |(Reference)      : 515  545
+     fuirr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 413  526  546
+      |(Reference)      : 526  546
+     fuq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 103
+      |(Definition)     : 540
+      |(Reference)      : 545  546
+     h1269
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : initialized
+      |(Declaration)    : 108  142
+      |(Definition)     : 
+      |(Reference)      : 256  267  278  302  319  330  347  383  394  405
+     h476
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : initialized
+      |(Declaration)    : 108  142
+      |(Definition)     : 
+      |(Reference)      : 336
+     hk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 93
+      |(Definition)     : 254  265  276  300  317  334  345  358  370  381  392  403
+      |(Reference)      : 515  516  526  527
+     hk1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 64  77
+      |(Definition)     : 
+      |(Reference)      : 254
+     hk10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 73  86
+      |(Definition)     : 
+      |(Reference)      : 381
+     hk11
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 74  87
+      |(Definition)     : 
+      |(Reference)      : 392
+     hk12
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 75  88
+      |(Definition)     : 
+      |(Reference)      : 403
+     hk2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 65  78
+      |(Definition)     : 
+      |(Reference)      : 265
+     hk3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 66  79
+      |(Definition)     : 
+      |(Reference)      : 276
+     hk4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 67  80
+      |(Definition)     : 
+      |(Reference)      : 300
+     hk5
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 68  81
+      |(Definition)     : 
+      |(Reference)      : 317
+     hk6
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 69  82
+      |(Definition)     : 
+      |(Reference)      : 334
+     hk7
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 70  83
+      |(Definition)     : 
+      |(Reference)      : 345
+     hk8
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 71  84
+      |(Definition)     : 
+      |(Reference)      : 358
+     hk9
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 72  85
+      |(Definition)     : 
+      |(Reference)      : 370
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 107
+      |(Definition)     : 167  178  186  195  206  215  224  255  266  277  294  301  311  318  329  335  346  359  371  382  393  404  410  425  430  446  453  473  477  485  502  514  525  539  544
+      |(Reference)      : 168  168  179  179  179  180  180  180  180  182  182  187  187  188  188  189  189  189  189  196  197  198  198  199  199  199  200  200  207  216  216  217  217  218  218  219  219  225  226  226  226  226  228  228  228  228  230  230  230  230  232  232  232  232  235  235  236  236  237  237  238  238  256  256  256  256  267  267  267  267  278  278  278  278  296  296  296  296  302  302  302  302  302  313  313  313  313  319  319  319  319  319  330  330  330  330  336  336  336  336  336  347  347  347  347  360  360  360  360  360  372  372  372  372  372  383  383  383  383  394  394  394  394  405  405  405  405  411  412  413  414  426  426  426  427  427  427  428  428  428  431  431  431  431  431  433  433  447  447  447  448  449  450  450  450  454  474  478  478  478  479  479  479  479  479  480  481  481  481  481  481  481  486  487  488  490  490  491  491  493  493  493  494  494  494  503  503  503  515  515  515  516  516  516  526  526  526  527  527  527  540  540  540  545  545  545  546  546  546
+     ib
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 107
+      |(Definition)     : 419  460
+      |(Reference)      : 431  431  431  431  431  444  444  445  464  508  523
+     ibir
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 
+      |(Reference)      : 56  419
+     ig
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 107
+      |(Definition)     : 252  263  274  298  315  332  343  356  368  379  390  401  464
+      |(Reference)      : 254  256  265  267  276  278  300  302  317  319  334  336  345  347  358  360  360  370  372  372  381  383  392  394  403  405
+     igb
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 94  114
+      |(Definition)     : 250  261  272  283  307  325  341  352  353  365  366  377  388  399
+      |(Reference)      : 252  263  274  298  315  332  343  353  356  360  366  368  372  379  390  401  464
+     igir
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 
+      |(Reference)      : 93  99  103
+     igt
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 107
+      |(Definition)     : 242  253  264  275  299  316  333  344  357  369  380  391  402  417  465
+      |(Reference)      : 253  254  256  264  265  267  275  276  278  299  300  302  316  317  319  333  334  336  344  345  347  357  358  360  369  370  372  380  381  383  391  392  394  402  403  405  465  478  479  515  516  526  527
+     ir1
+      |(Class and Type) : common name
+      |(Attributes)     : 
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 
+     ir10
+      |(Class and Type) : common name
+      |(Attributes)     : 
+      |(Declaration)    : 86
+      |(Definition)     : 
+      |(Reference)      : 
+     ir11
+      |(Class and Type) : common name
+      |(Attributes)     : 
+      |(Declaration)    : 87
+      |(Definition)     : 
+      |(Reference)      : 
+     ir12
+      |(Class and Type) : common name
+      |(Attributes)     : 
+      |(Declaration)    : 88
+      |(Definition)     : 
+      |(Reference)      : 
+     ir2
+      |(Class and Type) : common name
+      |(Attributes)     : 
+      |(Declaration)    : 78
+      |(Definition)     : 
+      |(Reference)      : 
+     ir3
+      |(Class and Type) : common name
+      |(Attributes)     : 
+      |(Declaration)    : 79
+      |(Definition)     : 
+      |(Reference)      : 
+     ir4
+      |(Class and Type) : common name
+      |(Attributes)     : 
+      |(Declaration)    : 80
+      |(Definition)     : 
+      |(Reference)      : 
+     ir5
+      |(Class and Type) : common name
+      |(Attributes)     : 
+      |(Declaration)    : 81
+      |(Definition)     : 
+      |(Reference)      : 
+     ir6
+      |(Class and Type) : common name
+      |(Attributes)     : 
+      |(Declaration)    : 82
+      |(Definition)     : 
+      |(Reference)      : 
+     ir7
+      |(Class and Type) : common name
+      |(Attributes)     : 
+      |(Declaration)    : 83
+      |(Definition)     : 
+      |(Reference)      : 
+     ir8
+      |(Class and Type) : common name
+      |(Attributes)     : 
+      |(Declaration)    : 84
+      |(Definition)     : 
+      |(Reference)      : 
+     ir9
+      |(Class and Type) : common name
+      |(Attributes)     : 
+      |(Declaration)    : 85
+      |(Definition)     : 
+      |(Reference)      : 
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 107
+      |(Definition)     : 175  221  499  542
+      |(Reference)      : 176  222  500  543
+     jj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 107
+      |(Definition)     : 177  214  223  501  543
+      |(Reference)      : 179  179  180  180  180  182  182  218  218  219  219  226  226  228  228  230  230  232  232  237  237  238  238  503  503  545  545  546  546
+     jje
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 107
+      |(Definition)     : 194
+      |(Reference)      : 196  198
+     jk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 107
+      |(Definition)     : 176  222  500
+      |(Reference)      : 177  179  180  223  226  226  228  228  230  230  232  232  235  235  236  236  501  503
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  54
+      |(Definition)     : 250  261  272  283  284  285  307  308  309  325  327  341  352  353  365  366  377  388  399  460  508  523
+      |(Reference)      : 56  56  56  56  56  56  56  56  56  56  56  56  56  56  95  95  96  96  96  96  96  96  96  96  99  99  99  99  101  101  101  101  101  101  103  103  103  103  105  151  152  175  194  221  499  542
+     log
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 180  187  187  188  188  196  197
+     m
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 107
+      |(Definition)     : 205  472  484  498
+      |(Reference)      : 207  474  486  487  488  493  494  503  503  503
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 226  226  226  228  228  230  230  230  232  232  433
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 182  228  232
+     nr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  54
+      |(Definition)     : 250  261  272  283  284  285  307  308  309  325  327  341  352  353  365  366  377  388  399  460  508  523
+      |(Reference)      : 151  152  167  176  177  178  186  187  188  189  189  194  195  214  215  222  223  224  425  430  473  500  501  502  539  543  544
+     nrn
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 107
+      |(Definition)     : 151
+      |(Reference)      : 197  198  199  199  206  214  255  266  277  294  301  311  318  329  335  346  359  371  382  393  404  446  453  477  485
+     nrn1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 107
+      |(Definition)     : 152
+      |(Reference)      : 200  410  514  525  540
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  54
+      |(Definition)     : 250  261  272  283  284  285  307  308  309  325  327  341  352  353  365  366  377  388  399  460  508  523
+      |(Reference)      : 56  56  56  56  56  56  56  56  56  56  56  56  56  56  56  56  56  95  95  96  96  96  96  96  96  96  96  99  99  99  99  101  101  101  101  101  101  103  103  103  103  103  105
+     oa
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 
+      |(Reference)      : 336
+     ozon
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 92
+      |(Definition)     : 243  250  261  272  283  284  285  307  308  309  324  325  326  327  341  352  353  365  366  377  388  399
+      |(Reference)      : 
+     pa
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 250  261  272  283  284  285  307  308  309  325  327  341  352  353  365  366  377  388  399
+      |(Reference)      : 187  187  188  196  447  449
+     pc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 93  125
+      |(Definition)     : 
+      |(Reference)      : 431  431  431  431  431
+     pe
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 447
+      |(Reference)      : 449
+     pi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 108
+      |(Definition)     : 153
+      |(Reference)      : 540
+     pu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 
+      |(Reference)      : 179  179  180  180  188  197
+     r
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 442
+      |(Reference)      : 449
+     radir99
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     rch4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 292
+      |(Reference)      : 296  313
+     rcmpir24
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 523
+     rcmpir24c
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 508
+     rco2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 355
+      |(Reference)      : 360  372
+     rn2o
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 293
+      |(Reference)      : 296  313
+     roptir
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 460
+     rqkir
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 250  261  272  283  284  285  307  308  309  325  327  341  352  353  365  366  377  388  399
+     s
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 445
+      |(Reference)      : 449
+     ta
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 250  261  272  283  284  285  307  308  309  325  327  341  352  353  365  366  377  388  399
+      |(Reference)      : 168  180  189  189  189  198  448
+     taucon
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 99
+      |(Definition)     : 450  454
+      |(Reference)      : 478  479
+     taugas
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 99
+      |(Definition)     : 256  267  278  302  319  336  347  360  372  383  394  405
+      |(Reference)      : 478  479
+     tauic
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 99
+      |(Definition)     : 460
+      |(Reference)      : 479  481  490
+     tauwc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 99
+      |(Definition)     : 460
+      |(Reference)      : 479  481  491
+     tg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 
+      |(Reference)      : 199  200
+     tics
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 490
+      |(Reference)      : 492  493  494
+     trg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 443
+      |(Reference)      : 450
+     ttts
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 492
+      |(Reference)      : 493  494
+     tu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 95
+      |(Definition)     : 168  189  198  199  200
+      |(Reference)      : 199  426  426  427  431
+     twcs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 491
+      |(Reference)      : 492  493  494
+     umch4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  108
+      |(Definition)     : 
+      |(Reference)      : 292
+     umco2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  108
+      |(Definition)     : 
+      |(Reference)      : 355
+     umn2o
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  108
+      |(Definition)     : 
+      |(Reference)      : 293
+     vmin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 108
+      |(Definition)     : 154
+      |(Reference)      : 226  226  228  228  230  230  232  232
+     vv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 93  121
+      |(Definition)     : 
+      |(Reference)      : 445
+     w
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 448
+      |(Reference)      : 449
+     wa
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 
+      |(Reference)      : 256  267  278  302  319  330  347  360  372  383  394  405  447  447  450
+     wic
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 101
+      |(Definition)     : 460
+      |(Reference)      : 481  490
+     wic1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 101
+      |(Definition)     : 460
+      |(Reference)      : 493
+     wic2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 101
+      |(Definition)     : 460
+      |(Reference)      : 494
+     wk1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 103
+      |(Definition)     : 296  313  330
+      |(Reference)      : 302  319  336
+     wk2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 103
+      |(Definition)     : 426  427  428
+      |(Reference)      : 427  428  428  431  431  431
+     wwc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 101
+      |(Definition)     : 460
+      |(Reference)      : 481  491
+     wwc1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 101
+      |(Definition)     : 460
+      |(Reference)      : 493
+     wwc2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 101
+      |(Definition)     : 460
+      |(Reference)      : 494
+     x
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 439
+      |(Reference)      : 445
+     x1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 196
+      |(Reference)      : 198
+     x2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 197
+      |(Reference)      : 198
+     y
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 440
+      |(Reference)      : 445
+     z
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 441
+      |(Reference)      : 445
+     zbf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 96
+      |(Definition)     : 431  433  508  523
+      |(Reference)      : 433  540
+     zffd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 96
+      |(Definition)     : 508  523
+      |(Reference)      : 516  527
+     zffu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 96
+      |(Definition)     : 508  523
+      |(Reference)      : 515  526
+     ztau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 96
+      |(Definition)     : 478  479
+      |(Reference)      : 481  503
+     zttau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 96
+      |(Definition)     : 474  503  508  523
+      |(Reference)      : 503
+     zw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 96
+      |(Definition)     : 480  481  508  523
+      |(Reference)      : 486
+     zw1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 96
+      |(Definition)     : 487  493  508  523
+      |(Reference)      : 
+     zw2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 96
+      |(Definition)     : 488  494  508  523
+      |(Reference)      : 
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         20  execution     (Definition) 169  
+                           (Reference)  167
+         25  execution     (Definition) 184  
+                           (Reference)  175  178
+         30  execution     (Definition) 190  
+                           (Reference)  186
+         35  execution     (Definition) 201  
+                           (Reference)  195
+         60  execution     (Definition) 208  
+                           (Reference)  205  206
+         68  execution     (Definition) 220  
+                           (Reference)  215
+         69  execution     (Definition) 240  
+                           (Reference)  221  224
+        210  execution     (Definition) 257  
+                           (Reference)  252  255
+        220  execution     (Definition) 268  
+                           (Reference)  263  266
+        230  execution     (Definition) 279  
+                           (Reference)  274  277
+        240  execution     (Definition) 297  
+                           (Reference)  294
+        241  execution     (Definition) 303  
+                           (Reference)  298  301
+        250  execution     (Definition) 314  
+                           (Reference)  311
+        251  execution     (Definition) 320  
+                           (Reference)  315  318
+        260  execution     (Definition) 331  
+                           (Reference)  329
+        261  execution     (Definition) 337  
+                           (Reference)  332  335
+        270  execution     (Definition) 348  
+                           (Reference)  343  346
+        280  execution     (Definition) 361  
+                           (Reference)  356  359
+        290  execution     (Definition) 373  
+                           (Reference)  368  371
+        300  execution     (Definition) 384  
+                           (Reference)  379  382
+        310  execution     (Definition) 395  
+                           (Reference)  390  393
+        320  execution     (Definition) 406  
+                           (Reference)  401  404
+        380  execution     (Definition) 415  
+                           (Reference)  410
+        400  execution     (Definition) 429  
+                           (Reference)  425
+        405  execution     (Definition) 434  
+                           (Reference)  430
+        410  execution     (Definition) 451  
+                           (Reference)  446
+        412  execution     (Definition) 455  
+                           (Reference)  453
+        415  execution     (Definition) 475  
+                           (Reference)  472  473
+        420  execution     (Definition) 482  
+                           (Reference)  477
+        430  execution     (Definition) 496  
+                           (Reference)  484  485
+        440  execution     (Definition) 504  
+                           (Reference)  498  499  502
+        450  execution     (Definition) 517  
+                           (Reference)  514
+        480  execution     (Definition) 528  
+                           (Reference)  525
+        500  execution     (Definition) 532  
+                           (Reference)  464
+        600  execution     (Definition) 533  
+                           (Reference)  419
+        750  execution     (Definition) 541  
+                           (Reference)  539
+        780  execution     (Definition) 547  
+                           (Reference)  542  544
+
+ Total information
+   Procedures       : 1
+   Total lines      : 550
+   Total statements : 303
+   Total stack(byte): 10192
+   Total prefetch num: 0
+

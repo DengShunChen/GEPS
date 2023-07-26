@@ -1,0 +1,2525 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jul 12 10:12:40 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/tco639l72/src_4cpl
+   Source file       : gwdc.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "gwdc"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine gwdc(im,ix,iy,km,u1,v1,t1,q1,           &
+               2                                           pmid1,pint1,dpmid1,                &
+               3                                           ktop,kbot,kcnv,cldf,qmax,          &
+               4                                           grav,cp,rd,fv,deltim,dlength,             &
+               5                                           utgwc,vtgwc,tauctx,taucty,j)
+               6                     !***********************************************************************
+               7                     !        original code for parameterization of convectively forced
+               8                     !        gravity wave drag from yonsei university, korea
+               9                     !        based on the theory given by chun and baik (jas, 1998)
+              10                     !        modified for implementation into the gfs/cfs by
+              11                     !        ake johansson  --- aug 2005
+              12                     !***********************************************************************
+              13                     !lzl +add === #
+              14                           use mpe
+              15                           use rank
+              16                           use index
+              17                           use const, only: RTYPE
+              18                     !lzl -end === #
+              19                     
+              20                     !lzl      use machine , only : kind_phys
+              21                           implicit none
+              22                     
+              23                     !---------------------------- arguments --------------------------------
+              24                     !
+              25                     !  input variables
+              26                     !
+              27                     !  u        : midpoint zonal wind
+              28                     !  v        : midpoint meridional wind
+              29                     !  t        : midpoint temperatures
+              30                     !  pmid     : midpoint pressures
+              31                     !  pint     : interface pressures
+              32                     !  dpmid    : midpoint delta p ( pi(k)-pi(k-1) )
+              33                     !  lat      : latitude index
+              34                     !  qmax     : deep convective heating
+              35                     !  kcldtop  : vertical level index for cloud top    ( mid level )
+              36                     !  kcldbot  : vertical level index for cloud bottom ( mid level )
+              37                     !  kcnv     : (0,1) dependent on whether convection occur or not
+              38                     !
+              39                     !  output variables
+              40                     !
+              41                     !  utgwc    : zonal wind tendency
+              42                     !  vtgwc    : meridional wind tendency
+              43                     !
+              44                     !-----------------------------------------------------------------------
+              45                     
+              46                           integer im, ix, iy, km, lat, ipr,j,iii,kkk,iinpt
+              47                           integer ktop(im),kbot(im),kcnv(im)
+              48                     
+              49                     !lzl      real(kind=kind_phys) grav,cp,rd,fv,fhour,fhourpr
+              50                     !lzl      real(kind=kind_phys), dimension(ix)      :: qmax
+              51                     !lzl     &,                                           tauctx, taucty
+              52                     !lzl      real(kind=kind_phys), dimension(im)      :: cldf,dlength
+              53                     !lzl      real(kind=kind_phys), dimension(ix,km)   :: u1,v1,t1,q1,
+              54                     !lzl     &                                            pmid1,dpmid1
+              55                     !lzl!    &,                                           cumchr1
+              56                     !lzl      real(kind=kind_phys), dimension(iy,km)   :: utgwc,vtgwc
+              57                     !lzl      real(kind=kind_phys), dimension(ix,km+1) :: pint1
+              58                     !lzl
+              59                     !lzl      logical lprnt
+              60                     !
+              61                     !lzl add ---- ##
+              62                           real  grav,cp,rd,fv,fhour,fhourpr,deltim
+              63                           real, dimension(im)      :: qmax,tauctx, taucty
+              64                           real, dimension(im)      :: cldf,dlength
+              65                           real, dimension(ix,km)   :: u1,v1,t1,pmid1,dpmid1
+              66                     !    &,                                           cumchr1
+              67                           real, dimension(iy,km)   :: utgwc,vtgwc
+              68                           real, dimension(ix,km+1) :: pint1
+              69                           real(kind=RTYPE), dimension(ix,km) :: q1
+              70                     
+              71                           logical lprnt
+              72                     !
+              73                     !------------------------- local workspace -----------------------------
+              74                     !
+              75                     !  i, k     : loop index
+              76                     !  kk       : loop index
+              77                     !  cldf     : deep convective cloud fraction at the cloud top.
+              78                     !  ugwdc    : zonal wind after gwdc paramterization
+              79                     !  vgwdc    : meridional wind after gwdc parameterization
+              80                     !  plnmid   : log(pmid) ( mid level )
+              81                     !  plnint   : log(pint) ( interface level )
+              82                     !  dpint    : delta pmid ( interface level )
+              83                     !  tauct    : wave stress at the cloud top calculated using basic-wind
+              84                     !             parallel to the wind vector at the cloud top ( mid level )
+              85                     !  tauctx   : wave stress at the cloud top projected in the east
+              86                     !  taucty   : wave stress at the cloud top projected in the north
+              87                     !  qmax     : maximum deep convective heating rate ( k s-1 ) in a
+              88                     !             horizontal grid point calculated from cumulus para-
+              89                     !             meterization. ( mid level )
+              90                     !  wtgwc    : wind tendency in direction to the wind vector at the cloud top level
+              91                     !             due to convectively generated gravity waves ( mid level )
+              92                     !  utgwcl   : zonal wind tendency due to convectively generated
+              93                     !             gravity waves ( mid level )
+              94                     !  vtgwcl   : meridional wind tendency due to convectively generated
+              95                     !             gravity waves ( mid level )
+              96                     !  taugwci  : profile of wave stress calculated using basic-wind
+              97                     !             parallel to the wind vector at the cloud top
+              98                     !  taugwcxi : profile of zonal component of gravity wave stress
+              99                     !  taugwcyi : profile of meridional component of gravity wave stress
+             100                     !
+             101                     !  taugwci, taugwcxi, and taugwcyi are defined at the interface level
+             102                     !
+             103                     !  bruni    : brunt-vaisala frequency ( interface level )
+             104                     !  brunm    : brunt-vaisala frequency ( mid level )
+             105                     !  rhoi     : air density ( interface level )
+             106                     !  rhom     : air density ( mid level )
+             107                     !  ti       : temperature ( interface level )
+             108                     !  basicum  : basic-wind profile. basic-wind is parallel to the wind
+             109                     !             vector at the cloud top level. (mid level)
+             110                     !  basicui  : basic-wind profile. basic-wind is parallel to the wind
+             111                     !             vector at the cloud top level. ( interface level )
+             112                     !  riloc    : local richardson number ( interface level )
+             113                     !  rimin    : minimum richardson number including both the basic-state
+             114                     !             and gravity wave effects ( interface level )
+             115                     !  gwdcloc  : horizontal location where the gwdc scheme is activated.
+             116                     !  break    : horizontal location where wave breaking is occurred.
+             117                     !  critic   : horizontal location where critical level filtering is
+             118                     !             occurred.
+             119                     !  dogwdc   : logical flag whether the gwdc parameterization is
+             120                     !             calculated at a grid point or not.
+             121                     !
+             122                     !  dogwdc is used in order to lessen cpu time for gwdc calculation.
+             123                     !
+             124                     !-----------------------------------------------------------------------
+             125                     
+             126                           integer i,ii,k,kk,kb,ilev,npt,kcb,kcldm,npr
+             127                           integer, dimension(im) :: ipt
+             128                     
+             129                     !lzl      real(kind=kind_phys) tem, tem1,  tem2, qtem, wtgwc, tauct,
+             130                     !lzl     &                     windcltop,  shear, nonlinct, nonlin, nonlins,
+             131                     !lzl     &                     n2,   dtdp,  crit1, crit2, pi, p1, p2,
+             132                     !lzl     &                     gsqr,  onebg
+             133                     !lzl!    &                     taus, n2,   dtdp,  crit1, crit2, pi, p1, p2
+             134                     
+             135                     !lzl +add -------- ##
+             136                           real tem, tem1,  tem2, qtem, wtgwc, tauct,                    &
+             137                     !lzl c           windcltop,  shear, nonlinct, nonlin, nonlins,            &
+             138                                shear, nonlinct, nonlin, nonlins,                        &
+             139                                n2,   dtdp,  crit1, crit2, pi, p1, p2,                   &
+             140                                gsqr,  onebg
+             141                     !lzl -end -------- ##
+             142                           integer,              allocatable :: kcldtop(:),kcldbot(:)
+             143                           logical,              allocatable :: do_gwc(:)
+             144                     !lzl      real(kind=kind_phys), allocatable :: tauctxl(:), tauctyl(:),
+             145                     !lzl     &                                     gwdcloc(:), break(:),
+             146                     !lzl     &                                     critic(:),
+             147                     !lzl!    &                                     critic(:),  angle(:),
+             148                     !lzl     &                                     cosphi(:),  sinphi(:),
+             149                     !lzl     &                                     xstress(:), ystress(:),
+             150                     !lzl     &                                     ucltop(:),  vcltop(:),
+             151                     !lzl     &                                     wrk(:),
+             152                     !lzl     &                                     dlen(:),       gqmcldlen(:)
+             153                     !lzl!     real(kind=kind_phys), allocatable :: plnint(:,:),   dpint(:,:),
+             154                     !lzl!    &                                     taugwci(:,:),  taugwcxi(:,:),
+             155                     !lzl!    &                                     taugwcyi(:,:), bruni(:,:),
+             156                     !lzl!    &                                     taugwcyi(:,:), bruni(:,:),
+             157                     !lzl      real(kind=kind_phys), allocatable :: plnint(:,:),
+             158                     !lzl     &                                     taugwci(:,:),  bruni(:,:),
+             159                     !lzl     &                                     rhoi(:,:),     basicui(:,:),
+             160                     !lzl     &                                     ti(:,:),       riloc(:,:),
+             161                     !lzl     &                                     rimin(:,:),    pint(:,:)
+             162                     !lzl!     real(kind=kind_phys), allocatable :: ugwdc(:,:),    vgwdc(:,:),
+             163                     !lzl      real(kind=kind_phys), allocatable ::
+             164                     !lzl!    &                                     plnmid(:,:),   wtgwc(:,:),
+             165                     !lzl     &                                     plnmid(:,:),
+             166                     !lzl     &                                     utgwcl(:,:),   vtgwcl(:,:),
+             167                     !lzl     &                                     basicum(:,:),  u(:,:),v(:,:),
+             168                     !lzl     &                                     t(:,:),        spfh(:,:),
+             169                     !lzl     &                                     pmid(:,:),     dpmid(:,:),
+             170                     !lzl!    &                                     pmid(:,:),     cumchr(:,:),
+             171                     !lzl     &                                     brunm(:,:),    rhom(:,:)
+             172                     !lzl!
+             173                     !lzl +add -------- ##
+             174                           real, allocatable :: tauctxl(:), tauctyl(:),                     &
+             175                                  gwdcloc(:), break(:),                                     &
+             176                                  critic(:),                                                &
+             177                     !    &                                     critic(:),  angle(:),
+             178                                  cosphi(:),  sinphi(:),                                    &
+             179                                  xstress(:), ystress(:),                                   &
+             180                                  ucltop(:),  vcltop(:),                                    &
+             181                                  windcltop(:),tmpwindcltop(:),                             &
+             182                                  wrk(:),     dtfac(:),                                     &
+             183                                  dlen(:),       gqmcldlen(:)
+             184                     !     real(kind=kind_phys), allocatable :: plnint(:,:),   dpint(:,:),
+             185                     !    &                                     taugwci(:,:),  taugwcxi(:,:),
+             186                     !    &                                     taugwcyi(:,:), bruni(:,:),
+             187                     !    &                                     taugwcyi(:,:), bruni(:,:),
+             188                           real, allocatable :: plnint(:,:), velco(:,:),                    &
+             189                                 taugwci(:,:),  bruni(:,:),                                 &
+             190                                 rhoi(:,:),     basicui(:,:),                               &
+             191                                 ti(:,:),       riloc(:,:),                                 &
+             192                                 rimin(:,:),    pint(:,:)
+             193                     !     real(kind=kind_phys), allocatable :: ugwdc(:,:),    vgwdc(:,:),
+             194                           real, allocatable ::                                             &
+             195                     !    &                                     plnmid(:,:),   wtgwc(:,:),
+             196                                 plnmid(:,:),   taugw(:,:),                                 &
+             197                                 utgwcl(:,:),   vtgwcl(:,:),                                &
+             198                                 basicum(:,:),  u(:,:),v(:,:),                              &
+             199                                 t(:,:),        spfh(:,:),                                  &
+             200                                 pmid(:,:),     dpmid(:,:),                                 &
+             201                     !    &                                     pmid(:,:),     cumchr(:,:),
+             202                                 brunm(:,:),    rhom(:,:)
+             203                     
+             204                     !lzl -end -------- ##
+             205                     !-----------------------------------------------------------------------
+             206                     !
+             207                     !  ucltop    : zonal wind at the cloud top ( mid level )
+             208                     !  vcltop    : meridional wind at the cloud top ( mid level )
+             209                     !  windcltop : wind speed at the cloud top ( mid level )
+             210                     !  shear     : vertical shear of basic wind
+             211                     !  cosphi    : cosine of angle of wind vector at the cloud top
+             212                     !  sinphi    : sine   of angle of wind vector at the cloud top
+             213                     !  c1        : tunable parameter
+             214                     !  c2        : tunable parameter
+             215                     !  dlength   : grid spacing in the direction of basic wind at the cloud top
+             216                     !  nonlinct  : nonlinear parameter at the cloud top
+             217                     !  nonlin    : nonlinear parameter above the cloud top
+             218                     !  nonlins   : saturation nonlinear parameter
+             219                     !  taus      : saturation gravity wave drag == taugwci(i,k)
+             220                     !  n2        : square of brunt-vaisala frequency
+             221                     !  dtdp      : dt/dp
+             222                     !  xstress   : vertically integrated zonal momentum change due to gwdc
+             223                     !  ystress   : vertically integrated meridional momentum change due to gwdc
+             224                     !  crit1     : variable 1 for checking critical level
+             225                     !  crit2     : variable 2 for checking critical level
+             226                     !
+             227                     !-----------------------------------------------------------------------
+             228                     
+             229                     !lzl      real(kind=kind_phys), parameter ::
+             230                     !lzl     &                      c1=1.41,          c2=-0.38,     ricrit=0.25
+             231                     !lzl     &,                     n2min=1.e-32,     zero=0.0,     one=1.0
+             232                     !lzl     &,                     taumin=1.0e-20,   tauctmax=-5.
+             233                     !lzl     &,                     qmin=1.0e-10,     shmin=1.0e-20
+             234                     !lzl     &,                     rimax=1.0e+20,    rimaxm=0.99e+20
+             235                     !lzl     &,                     rimaxp=1.01e+20,  rilarge=0.9e+20
+             236                     !lzl     &,                     riminx=-1.0e+20,  riminm=-1.01e+20
+             237                     !lzl     &,                     riminp=-0.99e+20, rismall=-0.9e+20
+             238                     !
+             239                     !lzl +add -------- ##
+             240                           real, parameter ::                                     &
+             241                                c1=1.41,          c2=-0.38,     ricrit=0.25,      &
+             242                                n2min=1.e-32,     zero=0.0,     one=1.0,          &
+             243                     !           taumin=1.0e-20,   tauctmax=-5.,                   &
+             244                                taumin=1.0e-20,   tauctmax=-20.,                   &
+             245                                qmin=1.0e-10,     shmin=1.0e-20,                  &
+             246                                rimax=1.0e+20,    rimaxm=0.99e+20,                &
+             247                                rimaxp=1.01e+20,  rilarge=0.9e+20,                &
+             248                                riminx=-1.0e+20,  riminm=-1.01e+20,               &
+             249                               riminp=-0.99e+20, rismall=-0.9e+20
+             250                     !
+             251                            iii= 1132
+             252                            kkk= 24
+             253                     !
+             254                     !       if(myrank.eq.0) print*,'inside gwdc '
+             255                     
+             256                           npt = 0
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ipt, kcnv
+                                   <<< Loop-information  End >>>
+             257     1       2s            do i = 1,im
+             258     1       2s              ipt(i) = 0
+             259     2       2v              if (kcnv(i) /= 0 .and. qmax(i) > zero) then
+             260     2       2m                npt      = npt + 1
+             261     2       2s                 ipt(npt) = i
+             262     2               !              if(i.eq.iii)then
+             263     2               !                print*,' npt = ',npt
+             264     2               !                iinpt = npt
+             265     2               !              endif
+             266     2       2v              endif
+             267     1       2v            enddo
+             268                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<< Loop-information  End >>>
+             269     1  pp                 do k=1,km
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vtgwc, utgwc
+                                   <<< Loop-information  End >>>
+             270     2   p   2v              do i=1,im
+             271     2   p   2v                utgwc(i,k) = 0.0
+             272     2   p   2v                vtgwc(i,k) = 0.0
+             273     2               !         brunm(i,k) = 0.0
+             274     2               !         rhom(i,k)  = 0.0
+             275     2   p   2v                enddo
+             276     1   p                 enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1455
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      taucty, tauctx
+                                   <<< Loop-information  End >>>
+             277     1  pp   2v            do i=1,im
+             278     1   p   2v              tauctx(i) = 0.0
+             279     1   p   2v              taucty(i) = 0.0
+             280     1   p   2v            enddo
+             281                     !
+             282                     !      if (npt == 0) print *,' npt =0 no gwdc calculation done! '
+             283                           if (npt == 0) return      ! no gwdc calculation done!
+             284                     
+             285                     !***********************************************************************
+             286                     !
+             287                     !  begin gwdc
+             288                     !
+             289                     !***********************************************************************
+             290                     
+             291                     !-----------------------------------------------------------------------
+             292                     !        write out incoming variables
+             293                     !-----------------------------------------------------------------------
+             294                           fhourpr = zero
+             295                     !     if (lprnt) then
+             296                     !       if (fhour >= fhourpr) then
+             297                     !         print *,' '
+             298                     !         write(*,*) 'inside gwdc raw input start print at fhour = ',
+             299                     !    &               fhour
+             300                     !-------- u1 v1 t1 ----------
+             301                     !         write(*,9130)
+             302                     !         do ilev=km,1,-1
+             303                     !           write(*,9140) ilev,u1(ipr,ilev),v1(ipr,ilev),t1(ipr,ilev)
+             304                     !         enddo
+             305                     !
+             306                     !         print *,' '
+             307                     !         print *,' inside gwdc raw input end print'
+             308                     !       endif
+             309                     !     endif
+             310                     
+             311                     !9100 format(//,14x,'pressure levels',//,
+             312                     !    +' ilev',6x,'pint1',7x,'pmid1',6x,'dpmid1',/)
+             313                     !9110 format(i4,2x,f10.3)
+             314                     !9120 format(i4,12x,2(2x,f10.3))
+             315                     !9130 format(//,' ilev',7x,'u1',10x,'v1',10x,'t1',/)
+             316                     !9140 format(i4,3(2x,f10.3))
+             317                     !
+             318                     !     allocate local arrays
+             319                     
+             320                           allocate (kcldtop(npt), kcldbot(npt), do_gwc(npt))
+             321                           allocate (tauctxl(npt), tauctyl(npt), dtfac(npt),              &
+             322                                    gwdcloc(npt), break(npt), critic(npt),   cosphi(npt), &
+             323                                    sinphi(npt),  xstress(npt),  ystress(npt), wrk(npt),  &
+             324                                    windcltop(npt),tmpwindcltop(npt),                     &
+             325                                    ucltop(npt),  vcltop(npt),dlen(npt),     gqmcldlen(npt))
+             326                     
+             327                     !     allocate (plnint(npt,km+1),  dpint(npt,km+1),
+             328                     !    &          taugwci(npt,km+1),  taugwcxi(npt,km+1),
+             329                     !    &          taugwcyi(npt,km+1), bruni(npt,km+1),
+             330                           allocate (plnint(npt,2:km+1),                                 &
+             331                                    taugwci(npt,km+1),  bruni(npt,km+1),                 &
+             332                                    rhoi(npt,km+1),     basicui(npt,km+1),               &
+             333                                    ti(npt,km+1),       riloc(npt,km+1),                 &
+             334                                    rimin(npt,km+1),    pint(npt,km+1))
+             335                     
+             336                     !     allocate (ugwdc(npt,km),   vgwdc(npt,km),
+             337                           allocate                                                     &
+             338                     !    &         (plnmid(npt,km),  wtgwc(npt,km),
+             339                                   (plnmid(npt,km),  velco(npt,km),                    &
+             340                                    utgwcl(npt,km),  vtgwcl(npt,km),                   &
+             341                                    basicum(npt,km), u(npt,km),    v(npt,km),          &
+             342                                    t(npt,km),       spfh(npt,km), pmid(npt,km),       &
+             343                                    dpmid(npt,km),   taugw(npt,km),                    &
+             344                     !    &          dpmid(npt,km),   cumchr(npt,km),
+             345                                    brunm(npt,km),   rhom(npt,km))
+             346                     
+             347                     !-----------------------------------------------------------------------
+             348                     !        create local arrays with reversed vertical indices
+             349                     !        and initialize local variables
+             350                     !-----------------------------------------------------------------------
+             351                           gsqr  = grav * grav
+             352                           onebg = one / grav
+             353                     
+             354                     !lzl c      if (lprnt) then
+             355                     !lzl c        npr = 1
+             356                     !lzl c        do i=1,npt
+             357                     !lzl c          if (ipr == ipt(i))then
+             358                     !lzl c            npr = i
+             359                     !lzl c            exit
+             360                     !lzl c          endif
+             361                     !lzl c        enddo
+             362                     !lzl c      endif
+             363                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ipt, basicum, vtgwcl, brunm, utgwcl
+                                   <<<      dpmid, pmid, plnmid, spfh, rhom, t, v, u
+                                   <<< Loop-information  End >>>
+             364     1  pp                 do k=1,km
+             365     1               !byl        k1 = km - k + 1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.35, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      basicum, ipt, brunm, vtgwcl, utgwcl
+                                   <<<      dpmid, pmid, plnmid, spfh, rhom, t, v, u
+                                   <<< Loop-information  End >>>
+             366     2   p    v              do i=1,npt
+             367     2   p    v                ii = ipt(i)
+             368     2   p    v                u(i,k)        = u1(ii,k)
+             369     2   p    v                v(i,k)        = v1(ii,k)
+             370     2   p    v                t(i,k)        = t1(ii,k)
+             371     2   p    v                spfh(i,k)     = max(q1(ii,k),qmin)
+             372     2   p    v                pmid(i,k)     = pmid1(ii,k)
+             373     2   p    v                dpmid(i,k)    = dpmid1(ii,k) * onebg
+             374     2               !         cumchr(i,k)   = cumchr1(ii,k)
+             375     2               
+             376     2   p    v                rhom(i,k)     = pmid(i,k) / (rd*t(i,k)*(1.0+fv*spfh(i,k)))
+             377     2   p    v                plnmid(i,k)   = log(pmid(i,k))
+             378     2   p    v                utgwcl(i,k)   = zero
+             379     2   p    v                vtgwcl(i,k)   = zero
+             380     2               !         ugwdc(i,k)    = zero
+             381     2               !         vgwdc(i,k)    = zero
+             382     2   p    v                brunm(i,k)    = zero
+             383     2   p    v                basicum(i,k)  = zero
+             384     2   p    v              enddo
+             385     1   p                 enddo
+             386                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ipt, rimin, bruni, pint, riloc, basicui
+                                   <<<      ti, rhoi, taugwci
+                                   <<< Loop-information  End >>>
+             387     1  pp                 do k=1,km+1
+             388     1               !byl        k1 = km - k + 2
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 40, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rimin, riloc, basicui, ti, rhoi, bruni
+                                   <<<      taugwci, ipt, pint
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 2
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             389     2   p    v              do i=1,npt
+             390     2   p    v                ii = ipt(i)
+             391     2   p    v                pint(i,k)     = pint1(ii,k)
+             392     2   p    v                taugwci(i,k)  = zero
+             393     2   p    v                bruni(i,k)    = zero
+             394     2   p    v                rhoi(i,k)     = zero
+             395     2   p    v                ti(i,k)       = zero
+             396     2   p    v                basicui(i,k)  = zero
+             397     2   p    v                riloc(i,k)    = zero
+             398     2   p    v                rimin(i,k)    = zero
+             399     2   p    v              enddo
+             400     1   p                 enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pint, plnint
+                                   <<< Loop-information  End >>>
+             401     1  pp                 do k=2,km+1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.89, ITR: 56, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pint, plnint
+                                   <<< Loop-information  End >>>
+             402     2   p    v              do i=1,npt
+             403     2   p    v                plnint(i,k)   = log(pint(i,k))
+             404     2   p    v              enddo
+             405     1   p                 enddo
+             406                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 327
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.80, ITR: 96, MVE: 6, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ipt, kcldbot, dlen, kcldtop, gqmcldlen
+                                   <<< Loop-information  End >>>
+             407     1  pp    v            do i = 1, npt
+             408     1   p    v              ii = ipt(i)
+             409     1   p    v              kcldtop(i)   = km - ktop(ii) + 1
+             410     1   p    v              kcldbot(i)   = km - kbot(ii) + 1
+             411     1   p    v              dlen(i)      = dlength(ii)
+             412     1               !                                    (g*qmax(ii)*cldf(ii)*dlength(ii))
+             413     1   p    v              gqmcldlen(i) = grav*qmax(ii)*cldf(ii)*dlen(i)
+             414     1               !
+             415     1   p    v            enddo
+             416                     
+             417                     !     if (lprnt) then
+             418                     !       if (fhour.ge.fhourpr) then
+             419                     !
+             420                     !           write(*,9201) kcnv(i),kcldbot(i),kcldtop(i)
+             421                     !         enddo
+             422                     !      endif
+             423                     !
+             424                     !       endif
+             425                     !     endif
+             426                     !
+             427                     !9200  format(//,'  inside gwdc local variables start print',//,     &
+             428                     !       2x,'kcnv',2x,'kcldbot',2x,'kcldtop',//)
+             429                     !9201  format(i4,2x,i5,4x,i5)
+             430                     
+             431                     !***********************************************************************
+             432                     
+             433                           pi     = 2.*asin(1.)
+             434                     
+             435                     !-----------------------------------------------------------------------
+             436                     !
+             437                     !                              pressure variables
+             438                     !
+             439                     !  interface 1 ======== pint(1)           *********
+             440                     !  mid-level 1 --------          pmid(1)            dpmid(1)
+             441                     !            2 ======== pint(2)           dpint(2)
+             442                     !            2 --------          pmid(2)            dpmid(2)
+             443                     !            3 ======== pint(3)           dpint(3)
+             444                     !            3 --------          pmid(3)            dpmid(3)
+             445                     !            4 ======== pint(4)           dpint(4)
+             446                     !            4 --------          pmid(4)            dpmid(4)
+             447                     !              ........
+             448                     !           17 ======== pint(17)          dpint(17)
+             449                     !           17 --------          pmid(17)           dpmid(17)
+             450                     !           18 ======== pint(18)          dpint(18)
+             451                     !           18 --------          pmid(18)           dpmid(18)
+             452                     !           19 ======== pint(19)          *********
+             453                     !
+             454                     !-----------------------------------------------------------------------
+             455                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 176
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      t, pint, tauctxl, ti, bruni, spfh, rhoi
+                                   <<<      tauctyl
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 1
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             456     1  pp    v            do i = 1, npt
+             457     1   p    v              tauctxl(i)    = zero
+             458     1   p    v              tauctyl(i)    = zero
+             459     1               
+             460     1               !-----------------------------------------------------------------------
+             461     1               !                              thermal variables
+             462     1               !
+             463     1               !  interface 1 ========       ti(1)           rhoi(1)            bruni(1)
+             464     1               !            1 -------- t(1)         rhom(1)           brunm(1)
+             465     1               !            2 ========       ti(2)           rhoi(2)            bruni(2)
+             466     1               !            2 -------- t(2)         rhom(2)           brunm(2)
+             467     1               !            3 ========       ti(3)           rhoi(3)            bruni(3)
+             468     1               !            3 -------- t(3)         rhom(3)           brunm(3)
+             469     1               !            4 ========       ti(4)           rhoi(4)            bruni(4)
+             470     1               !            4 -------- t(4)         rhom(4)           brunm(4)
+             471     1               !              ........
+             472     1               !           17 ========
+             473     1               !           17 -------- t(17)        rhom(17)          brunm(17)
+             474     1               !           18 ========       ti(18)          rhoi(18)           bruni(18)
+             475     1               !           18 -------- t(18)        rhom(18)          brunm(18)
+             476     1               !           19 ========       ti(19)          rhoi(19)           bruni(19)
+             477     1               !
+             478     1               
+             479     1               !
+             480     1               !  top interface temperature is calculated assuming an isothermal
+             481     1               !  atmosphere above the top mid level.
+             482     1               
+             483     1   p    v              ti(i,1)    = t(i,1)
+             484     1   p    v              rhoi(i,1)  = pint(i,1)/(rd*ti(i,1))
+             485     1   p    v              bruni(i,1) = sqrt ( gsqr / (cp*ti(i,1)) )
+             486     1               !
+             487     1               !  bottom interface temperature is calculated assuming an isothermal
+             488     1               !  atmosphere below the bottom mid level
+             489     1               
+             490     1   p    v              ti(i,km+1)    = t(i,km)
+             491     1   p    v              rhoi(i,km+1)  = pint(i,km+1)/(rd*ti(i,km+1)*(1.0+fv*spfh(i,km)))
+             492     1   p    v              bruni(i,km+1) = sqrt ( gsqr / (cp*ti(i,km+1)) )
+             493     1   p    v            enddo
+             494                     
+             495                     !-----------------------------------------------------------------------
+             496                     !
+             497                     !  calculate interface level temperature, density, and brunt-vaisala
+             498                     !  frequencies based on linear interpolation of temp in ln(pressure)
+             499                     !
+             500                     !-----------------------------------------------------------------------
+             501                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             502     1  pp                 do k = 2, km
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      plnmid, plnint, t, spfh, pint, pmid
+                                   <<<      bruni, rhoi, ti
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 1
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             503     2   p    v              do i = 1, npt
+             504     2   p    v                tem1 = (plnmid(i,k)-plnint(i,k)) / (plnmid(i,k)-plnmid(i,k-1))
+             505     2   p    v                tem2 = one - tem1
+             506     2   p    v                ti(i,k)    = t(i,k-1)    * tem1 + t(i,k)    * tem2
+             507     2   p    v                qtem       = spfh(i,k-1) * tem1 + spfh(i,k) * tem2
+             508     2   p    v                rhoi(i,k)  = pint(i,k) / ( rd * ti(i,k)*(1.0+fv*qtem) )
+             509     2   p    v                dtdp       = (t(i,k)-t(i,k-1)) / (pmid(i,k)-pmid(i,k-1))
+             510     2   p    v                n2         = gsqr / ti(i,k) * ( 1./cp - rhoi(i,k)*dtdp )
+             511     2   p    v                bruni(i,k) = sqrt (max (n2min, n2))
+             512     2   p    v              enddo
+             513     1   p                 enddo
+             514                     
+             515                           deallocate (spfh)
+             516                     !-----------------------------------------------------------------------
+             517                     !
+             518                     !  determine the mid-level brunt-vaisala frequencies.
+             519                     !             based on interpolated interface temperatures [ ti ]
+             520                     !
+             521                     !-----------------------------------------------------------------------
+             522                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pint, rhom, t, ti, brunm
+                                   <<< Loop-information  End >>>
+             523     1  pp                 do k = 1, km
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.29, ITR: 40, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      t, pint, rhom, ti, brunm
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 3
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             524     2   p    v              do i = 1, npt
+             525     2   p    v                dtdp       = (ti(i,k+1)-ti(i,k)) / (pint(i,k+1)-pint(i,k))
+             526     2   p    v                n2         = gsqr / t(i,k) * ( 1./cp - rhom(i,k)*dtdp )
+             527     2   p    v                brunm(i,k) = sqrt (max (n2min, n2))
+             528     2   p    v              enddo
+             529     1   p                 enddo
+             530                     
+             531                     !-----------------------------------------------------------------------
+             532                     !        printout
+             533                     !-----------------------------------------------------------------------
+             534                     
+             535                     !     if (lprnt) then
+             536                     !       if (fhour.ge.fhourpr) then
+             537                     
+             538                     !-------- pressure levels ----------
+             539                     !
+             540                     !
+             541                     !         write(*,9101)
+             542                     !         do ilev=1,km
+             543                     !           write(*,9111) ilev,(0.01*pint(ipr,ilev)),        &
+             544                     !                              (0.01*dpint(ipr,ilev)),plnint(ipr,ilev)
+             545                     !           write(*,9121) ilev,(0.01*pmid(ipr,ilev)),        &
+             546                     !                              (0.01*dpmid(ipr,ilev)),plnmid(ipr,ilev)
+             547                     !         enddo
+             548                     !         ilev=km+1
+             549                     !         write(*,9111) ilev,(0.01*pint(ipr,ilev)),          &
+             550                     !                            (0.01*dpint(ipr,ilev)),plnint(ipr,ilev)
+             551                     
+             552                     !                2
+             553                     !-------- u v t n  ----------
+             554                              ipr =iii
+             555                     !         if(j.eq.499) then
+             556                     !         write(*,9102)
+             557                     !         do ilev=1,km
+             558                     !           print*,'ti bruni = ',ti(iii,kkk),bruni(iii,kkk)
+             559                     !           print*,'u v t brunm =',u(iii,kkk),v(iii,kkk),t(iii,kkk),brunm(iii,kkk)
+             560                     !           write(*,9112) ilev,ti(ipr,ilev),(100.*bruni(ipr,ilev))
+             561                     !           write(*,9122) ilev,u(ipr,ilev),v(ipr,ilev),     &
+             562                     !                         t(ipr,ilev),(100.*brunm(ipr,ilev))
+             563                     !         enddo
+             564                     !         ilev=km+1
+             565                     !          print*,'k ti bruni =',ilev,ti(ipr,ilev),bruni(ipr,ilev)
+             566                     !         write(*,9112) ilev,ti(ipr,ilev),(100.*bruni(ipr,ilev))
+             567                     !
+             568                     !        endif
+             569                     
+             570                     !       endif
+             571                     !     endif
+             572                     
+             573                     !9101 format(//,14x,'pressure levels',//,       &
+             574                     !      ' ilev',4x,'pint',4x,'pmid',4x,'dpint',3x,'dpmid',5x,'lnp',/)
+             575                     !9111 format(i4,1x,f8.2,9x,f8.2,9x,f8.2)
+             576                     !9121 format(i4,9x,f8.2,9x,f8.2,1x,f8.2)
+             577                     !9102 format(//' ilev',5x,'u',7x,'v',5x,'ti',7x,'t',    &
+             578                     !      5x,'bruni',3x,'brunm',//)
+             579                     !9112 format(i4,16x,f8.2,8x,f8.3)
+             580                     !9122 format(i4,2f8.2,8x,f8.2,8x,f8.3)
+             581                     
+             582                     
+             583                     !***********************************************************************
+             584                     !
+             585                     !        big loop over grid points                    only done if kcnv=1
+             586                     !
+             587                     !***********************************************************************
+             588                     
+             589                           kcldm = 1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 272
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             590     1  pp    v            do i = 1, npt
+             591     1   p    v              kk        = kcldtop(i)
+             592     1   p    v              kb        = kcldbot(i)
+             593     1   p    v              kcldm     = max(kcldm,kk)
+             594     1               
+             595     1               !-----------------------------------------------------------------------
+             596     1               !
+             597     1               !  determine cloud top wind component, direction, and speed.
+             598     1               !  here, ucltop, vcltop, and windcltop are wind components and
+             599     1               !  wind speed at mid-level cloud top index
+             600     1               !
+             601     1               !-----------------------------------------------------------------------
+             602     1               
+             603     1   p    v              ucltop(i) = u(i,kk)
+             604     1   p    v              vcltop(i) = v(i,kk)
+             605     1               !       windcltop = sqrt( ucltop(i)*ucltop(i) + vcltop(i)*vcltop(i) )
+             606     1               !lzl tmp        windcltop = 1.0 / sqrt( ucltop(i)*ucltop(i)                    &
+             607     1               !lzl tmp                             + vcltop(i)*vcltop(i) )
+             608     1               !
+             609     1               !lzl tmp        cosphi(i) = ucltop(i)*windcltop
+             610     1               !lzl tmp        sinphi(i) = vcltop(i)*windcltop
+             611     1               !
+             612     1               !lzl tmp 2        windcltop(i) = 1.0 / sqrt( ucltop(i)*ucltop(i)                 &
+             613     1               !lzl tmp 2                             + vcltop(i)*vcltop(i) )
+             614     1               !
+             615     1   p    v              windcltop(i) = 1.0 / sqrt( ucltop(i)*ucltop(i) + vcltop(i)*vcltop(i) )
+             616     1               
+             617     1   p    v              cosphi(i) = ucltop(i)*windcltop(i)
+             618     1   p    v              sinphi(i) = vcltop(i)*windcltop(i)
+             619     1               
+             620     1               !       angle(i)  = acos(cosphi)*180./pi
+             621     1               !
+             622     1   p    v            enddo
+             623                     !
+             624                     !-----------------------------------------------------------------------
+             625                     !
+             626                     !  calculate basic state wind projected in the direction of the cloud
+             627                     !  top wind.
+             628                     !  input u(i,k) and v(i,k) is defined at mid level
+             629                     !
+             630                     !-----------------------------------------------------------------------
+             631                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cosphi, u, v, sinphi, basicum
+                                   <<< Loop-information  End >>>
+             632     1  pp                 do k=1,km
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.57, ITR: 96, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      v, sinphi, cosphi, u, basicum
+                                   <<< Loop-information  End >>>
+             633     2   p   2v              do i=1,npt
+             634     2   p   2v                basicum(i,k) = u(i,k)*cosphi(i) + v(i,k)*sinphi(i)
+             635     2   p   2v              enddo
+             636     1   p                 enddo
+             637                     
+             638                     !-----------------------------------------------------------------------
+             639                     !
+             640                     !  basic state wind at interface level is also calculated
+             641                     !  based on linear interpolation in ln(pressure)
+             642                     !
+             643                     !  in the top and bottom boundaries, basic-state wind at interface level
+             644                     !  is assumed to be vertically uniform.
+             645                     !
+             646                     !-----------------------------------------------------------------------
+             647                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 696
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.83, ITR: 80, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      basicum, basicui
+                                   <<< Loop-information  End >>>
+             648     1  pp   2v            do i=1,npt
+             649     1   p   2v              basicui(i,1)    = basicum(i,1)
+             650     1   p   2v              basicui(i,km+1) = basicum(i,km)
+             651     1   p   2v            enddo
+             652                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      plnmid, plnint, basicum, basicui
+                                   <<< Loop-information  End >>>
+             653     1  pp                 do k=2,km
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.48, ITR: 40, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      basicum, plnmid, plnint, basicui
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 3
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             654     2   p    v              do i=1,npt
+             655     2   p    v                tem1 = (plnmid(i,k)-plnint(i,k)) / (plnmid(i,k)-plnmid(i,k-1))
+             656     2   p    v                tem2 = one - tem1
+             657     2   p    v                basicui(i,k) = basicum(i,k)*tem2 + basicum(i,k-1)*tem1
+             658     2   p    v              enddo
+             659     1   p                 enddo
+             660                     
+             661                     !-----------------------------------------------------------------------
+             662                     !
+             663                     !  calculate local richardson number
+             664                     !
+             665                     !  basicum   : u at mid level
+             666                     !  basicui   : ui at interface level
+             667                     !
+             668                     !  interface 1 ========       ui(1)            rhoi(1)  bruni(1)  riloc(1)
+             669                     !  mid-level 1 -------- u(1)
+             670                     !            2 ========       ui(2)  dpint(2)  rhoi(2)  bruni(2)  riloc(2)
+             671                     !            2 -------- u(2)
+             672                     !            3 ========       ui(3)  dpint(3)  rhoi(3)  bruni(3)  riloc(3)
+             673                     !            3 -------- u(3)
+             674                     !            4 ========       ui(4)  dpint(4)  rhoi(4)  bruni(4)  riloc(4)
+             675                     !            4 -------- u(4)
+             676                     !              ........
+             677                     !           17 ========       ui(17) dpint(17) rhoi(17) bruni(17) riloc(17)
+             678                     !           17 -------- u(17)
+             679                     !           18 ========       ui(18) dpint(18) rhoi(18) bruni(18) riloc(18)
+             680                     !           18 -------- u(18)
+             681                     !           19 ========       ui(19)           rhoi(19) bruni(19) riloc(19)
+             682                     !
+             683                     !-----------------------------------------------------------------------
+             684                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      basicum, pmid, rhoi, bruni, riloc
+                                   <<< Loop-information  End >>>
+             685     1  pp                 do k=2,km
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.70, ITR: 56, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      basicum, pmid, bruni, rhoi, riloc
+                                   <<< Loop-information  End >>>
+             686     2   p    v              do i=1,npt
+             687     2   p    v                shear = grav*rhoi(i,k) * (basicum(i,k) - basicum(i,k-1))    &
+             688     2                                               / (pmid(i,k) - pmid(i,k-1))
+             689     3   p    v                if ( abs(shear) < shmin ) then
+             690     3   p    v                  riloc(i,k) = rimax
+             691     3   p    v                else
+             692     3   p    v                  tem = bruni(i,k) / shear
+             693     3   p    v                  riloc(i,k)  = tem * tem
+             694     3   p    v                  if (riloc(i,k) >= rimax ) riloc(i,k) = rilarge
+             695     3   p    v                end if
+             696     2   p    v              enddo
+             697     1   p                 enddo
+             698                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 800
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      riloc
+                                   <<< Loop-information  End >>>
+             699     1  pp   2v            do i=1,npt
+             700     1   p   2v              riloc(i,1)    = riloc(i,2)
+             701     1   p   2v              riloc(i,km+1) = riloc(i,km)
+             702     1   p   2v            enddo
+             703                     
+             704                     !
+             705                     
+             706                     !     if (lprnt.and.(i.eq.ipr)) then
+             707                     !       if (fhour.ge.fhourpr) then
+             708                     
+             709                     !         write(*,9104) ucltop,vcltop,windcltop,angle,kk
+             710                     !         do ilev=1,km
+             711                     !           write(*,9114) ilev,basicui(ipr,ilev),dpint(ipr,ilev),   &
+             712                     !            rhoi(ipr,ilev),(100.*bruni(ipr,ilev)),riloc(ilev)
+             713                     !           write(*,9124) ilev,(basicum(ipr,ilev))
+             714                     !         enddo
+             715                              ilev=km+1
+             716                     !         write(*,9114) ilev,basicui(ipr,ilev),dpint(ipr,ilev),     &
+             717                     !            rhoi(ipr,ilev),(100.*bruni(ipr,ilev)),riloc(ilev)
+             718                     
+             719                     !       endif
+             720                     !     endif
+             721                     
+             722                     !9104 format(//,'wind vector at cloudtop = (',f6.2,' , ',f6.2,' ) = ', &
+             723                     !      f6.2,' in direction ',f6.2,4x,'kk = ',i2,//,                    &
+             724                     !      ' ilev',2x,'basicum',2x,'basicui',4x,'dpint',6x,'rhoi',5x,      &
+             725                     !      'bruni',6x,'ri',/)
+             726                     9114 format(i4,10x,f8.2,4(2x,f8.2))
+             727                     9124 format(i4,1x,f8.2)
+             728                     
+             729                     !-----------------------------------------------------------------------
+             730                     !
+             731                     !  calculate gravity wave stress at the interface level cloud top
+             732                     !
+             733                     !  kcldtopi  : the interface level cloud top index
+             734                     !  kcldtop   : the midlevel cloud top index
+             735                     !  kcldbot   : the midlevel cloud bottom index
+             736                     !
+             737                     !  a : find deep convective heating rate maximum
+             738                     !
+             739                     !      if kcldtop(i) is less than kcldbot(i) in a horizontal grid point,
+             740                     !      it can be thought that there is deep convective cloud. however,
+             741                     !      deep convective heating between kcldbot and kcldtop is sometimes
+             742                     !      zero in spite of kcldtop less than kcldbot. in this case,
+             743                     !      maximum deep convective heating is assumed to be 1.e-30.
+             744                     !
+             745                     !  b : kk is the vertical index for interface level cloud top
+             746                     !
+             747                     !  c : total convective fractional cover (cldf) is used as the
+             748                     !      convective cloud cover for gwdc calculation instead of
+             749                     !      convective cloud cover in each layer (concld).
+             750                     !                       a1 = cldf*dlength
+             751                     !      you can see the difference between cldf(i) and concld(i)
+             752                     !      in (4.a.2) in description of the ncar community climate
+             753                     !      model (ccm3).
+             754                     !      in ncar ccm3, cloud fractional cover in each layer in a deep
+             755                     !      cumulus convection is determined assuming total convective
+             756                     !      cloud cover is randomly overlapped in each layer in the
+             757                     !      cumulus convection.
+             758                     !
+             759                     !  d : wave stress at cloud top is calculated when the atmosphere
+             760                     !      is dynamically stable at the cloud top
+             761                     !
+             762                     !  e : cloud top wave stress and nonlinear parameter are calculated
+             763                     !      using density, temperature, and wind that are defined at mid
+             764                     !      level just below the interface level in which cloud top wave
+             765                     !      stress is defined.
+             766                     !      nonlinct is defined at the interface level.
+             767                     !
+             768                     !  f : if the atmosphere is dynamically unstable at the cloud top,
+             769                     !      gwdc calculation in current horizontal grid is skipped.
+             770                     !
+             771                     !  g : if mean wind at the cloud top is less than zero, gwdc
+             772                     !      calculation in current horizontal grid is skipped.
+             773                     !
+             774                     !  h : maximum cloud top stress, tauctmax =  -20 n m^(-2),
+             775                     !  h : max stress -5 (*j*)5/2015 tauctmax =  - 5 n m^(-2),
+             776                     !      in order to prevent numerical instability.
+             777                     !
+             778                     !-----------------------------------------------------------------------
+             779                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 123
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      kcldtop, do_gwc
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 3
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             780     1  pp    s            do i=1,npt
+             781     1   p    v              kk = kcldtop(i)
+             782     2   p    m              if ( abs(basicui(i,kk)) > zero .and. riloc(i,kk) > ricrit) then
+             783     2               !
+             784     2   p    s                tem       = basicum(i,kk)
+             785     2   p    s                tem1      = tem * tem
+             786     2   p    s                nonlinct  = gqmcldlen(i) / (bruni(i,kk)*t(i,kk)*tem1)    ! mu
+             787     2   p    s                tem2      = c2*nonlinct
+             788     2               !                                  rhou^3c1(c2mu)^2/ndx
+             789     2   p    s                tauct     = - rhom(i,kk) * tem * tem1 * c1 * tem2 * tem2   &
+             790     2                                  /  (bruni(i,kk)*dlen(i))
+             791     2               
+             792     2   p    s                tauct         = max(tauctmax, tauct)
+             793     2   p    s                tauctxl(i)    = tauct * cosphi(i)           ! x stress at cloud top
+             794     2   p    s                tauctyl(i)    = tauct * sinphi(i)           ! y stress at cloud top
+             795     2   p    s                taugwci(i,kk) = tauct                                    !  *1
+             796     2   p    s                do_gwc(i)     = .true.
+             797     2               !
+             798     2   p    s              else
+             799     2               !
+             800     2   p    s                tauctxl(i) = zero
+             801     2   p    s                tauctyl(i) = zero
+             802     2   p    s                do_gwc(i) = .false.
+             803     2   p    v              end if
+             804     1               !
+             805     1   p    v            enddo
+             806                     
+             807                     !
+             808                     
+             809                     !       if (lprnt.and.(i.eq.ipr)) then
+             810                     !         if (fhour.ge.fhourpr) then
+             811                     !lzl write out-------------#
+             812                     !            write(*,9210) tauctx(ipr),taucty(ipr),tauct(ipr),angle,kk
+             813                     !         endif
+             814                     !       endif
+             815                     
+             816                     9210 format(/,5x,'stress vector = ( ',f8.3,' , ',f8.3,' ) = ',f8.3,   &
+             817                           ' in direction ',f6.2,4x,'kk = ',i2,/)
+             818                     !-----------------------------------------------------------------------
+             819                     !
+             820                     !  at this point, mean wind at the cloud top is larger than zero and
+             821                     !  local ri at the cloud top is larger than ricrit (=0.25)
+             822                     !
+             823                     !  calculate minimum of richardson number including both basic-state
+             824                     !  condition and wave effects.
+             825                     !
+             826                     !          g*q_0*alpha*dx                  ri_loc*(1 - mu*|c2|)
+             827                     !  mu  =  ----------------  ri_min =  -----------------------------
+             828                     !           c_p*n*t*u^2                (1 + mu*ri_loc^(0.5)*|c2|)^2
+             829                     !
+             830                     !  minimum ri is calculated for the following two cases
+             831                     !
+             832                     !  (1)   riloc < 1.e+20
+             833                     !  (2)   riloc = 1.e+20  ----> vertically uniform basic-state wind
+             834                     !
+             835                     !  riloc cannot be smaller than zero because n^2 becomes 1.e-32 in the
+             836                     !  case of n^2 < 0.. thus the sign of rinum is determined by
+             837                     !  1 - nonlin*|c2|.
+             838                     !
+             839                     !-----------------------------------------------------------------------
+             840                     
+             841     1                     do k=kcldm,1,-1
+             842     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 56
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      do_gwc, kcldtop, taugwci, v, u, vcltop
+                                   <<<      cosphi, ucltop, sinphi, riloc, velco
+                                   <<<    PREFETCH(SOFT) : 24
+                                   <<<     SEQUENTIAL : 24
+                                   <<<      u: 2, basicui: 2, ti: 2, bruni: 2
+                                   <<<      gqmcldlen: 2, dlen: 2, rimin: 2
+                                   <<<      taugwci: 2, rhoi: 2, basicum: 4
+                                   <<<      velco: 2
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 21
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 4  FILL 4
+                                   <<< Loop-information  End >>>
+             843     2  pp    v              do i=1,npt
+             844     3   p    v                if (do_gwc(i)) then
+             845     3   p    v                  kk = kcldtop(i)
+             846     3   p    v                  if (k > kk) cycle
+             847     4   p    v                  if ( k /= 1 ) then
+             848     4   p    v                    tem1 = (u(i,k)+u(i,k-1))*0.5
+             849     4   p    v                    tem2 = (v(i,k)+v(i,k-1))*0.5
+             850     4   p    v                    crit1 = ucltop(i)*tem1
+             851     4   p    v                    crit2 = vcltop(i)*tem2
+             852     4   p    v                    velco(i,k) = tem1 * cosphi(i) + tem2 * sinphi(i)
+             853     4   p    v                  else
+             854     4   p    v                    crit1 = ucltop(i)*u(i,1)
+             855     4   p    v                    crit2 = vcltop(i)*v(i,1)
+             856     4   p    v                    velco(i,1) = u(i,1) * cosphi(i) + v(i,1) * sinphi(i)
+             857     4   p    v                  end if
+             858     3               
+             859     4   p    v                  if ( abs(basicui(i,k)) > zero .and. crit1 > zero          &
+             860     4                                                        .and. crit2 > zero ) then
+             861     4   p    v                    tem = basicui(i,k) * basicui(i,k)
+             862     4   p    v                    nonlin   = gqmcldlen(i) / (bruni(i,k)*ti(i,k)*tem)
+             863     4   p    v                    tem  = nonlin*abs(c2)
+             864     5   p    v                    if ( riloc(i,k)  <  rimaxm ) then
+             865     5   p    v                      tem1 = 1 + tem*sqrt(riloc(i,k))
+             866     5   p    v                      rimin(i,k) = riloc(i,k) * (1-tem) / (tem1*tem1)
+             867     5   p    v                    else if((riloc(i,k) > rimaxm) .and.                     &
+             868     5                                    (riloc(i,k) < rimaxp)) then
+             869     5   p    v                      rimin(i,k) = ( 1 - tem) / (tem*tem)
+             870     5   p    v                    end if
+             871     5   p    v                    if ( rimin(i,k) <= riminx ) then
+             872     5   p    v                      rimin(i,k) = rismall
+             873     5   p    v                    end if
+             874     4   p    v                  else
+             875     4   p    v                    rimin(i,k) = riminx
+             876     4   p    v                  end if
+             877     3               
+             878     3               !-----------------------------------------------------------------------
+             879     3               !
+             880     3               !  if minimum ri at interface cloud top is less than or equal to 1/4,
+             881     3               !  gwdc calculation for current horizontal grid is skipped
+             882     3               !
+             883     3               !-----------------------------------------------------------------------
+             884     3               
+             885     3               !-----------------------------------------------------------------------
+             886     3               !
+             887     3               !  calculate gravity wave stress profile using the wave saturation
+             888     3               !  hypothesis of lindzen (1981).
+             889     3               !
+             890     3               !  assuming kcldtop(i)=10 and kcldbot=16,
+             891     3               !
+             892     3               !                             taugwci  riloc  rimin   utgwc
+             893     3               !
+             894     3               !  interface 1 ========       - 0.001         -1.e20
+             895     3               !            1 --------                               0.000
+             896     3               !            2 ========       - 0.001         -1.e20
+             897     3               !            2 --------                               0.000
+             898     3               !            3 ========       - 0.001         -1.e20
+             899     3               !            3 --------                               -.xxx
+             900     3               !            4 ========       - 0.001  2.600  2.000
+             901     3               !            4 --------                               0.000
+             902     3               !            5 ========       - 0.001  2.500  2.000
+             903     3               !            5 --------                               0.000
+             904     3               !            6 ========       - 0.001  1.500  0.110
+             905     3               !            6 --------                               +.xxx
+             906     3               !            7 ========       - 0.005  2.000  3.000
+             907     3               !            7 --------                               0.000
+             908     3               !            8 ========       - 0.005  1.000  0.222
+             909     3               !            8 --------                               +.xxx
+             910     3               !            9 ========       - 0.010  1.000  2.000
+             911     3               !            9 --------                               0.000
+             912     3               ! kcldtopi  10 ========  $$$  - 0.010
+             913     3               ! kcldtop   10 --------  $$$                          yyyyy
+             914     3               !           11 ========  $$$  0
+             915     3               !           11 --------  $$$
+             916     3               !           12 ========  $$$  0
+             917     3               !           12 --------  $$$
+             918     3               !           13 ========  $$$  0
+             919     3               !           13 --------  $$$
+             920     3               !           14 ========  $$$  0
+             921     3               !           14 --------  $$$
+             922     3               !           15 ========  $$$  0
+             923     3               !           15 --------  $$$
+             924     3               !           16 ========  $$$  0
+             925     3               ! kcldbot   16 --------  $$$
+             926     3               !           17 ========       0
+             927     3               !           17 --------
+             928     3               !           18 ========       0
+             929     3               !           18 --------
+             930     3               !           19 ========       0
+             931     3               !
+             932     3               !-----------------------------------------------------------------------
+             933     3               !
+             934     3               !   even though the cloud top level obtained in deep convective para-
+             935     3               !   meterization is defined in mid-level, the cloud top level for
+             936     3               !   the gwdc calculation is assumed to be the interface level just
+             937     3               !   above the mid-level cloud top vertical level index.
+             938     3               !
+             939     3               !-----------------------------------------------------------------------
+             940     3               
+             941     4   p    v                  if (k < kk .and. k > 1) then
+             942     5   p    v                    if ( abs(taugwci(i,k+1)) > taumin ) then                  ! taugwci
+             943     6   p    v                      if ( riloc(i,k) > ricrit ) then                         ! riloc
+             944     7   p    v                        if ( rimin(i,k) > ricrit ) then                       ! rimin
+             945     7   p    v                          taugwci(i,k) = taugwci(i,k+1)
+             946     7   p    v                        elseif (rimin(i,k) > riminp) then
+             947     7   p    v                          tem = 2.0 + 1.0 / sqrt(riloc(i,k))
+             948     7   p    v                          nonlins = (1.0/abs(c2)) * (2.*sqrt(tem) - tem)
+             949     7   p    v                          tem1 = basicui(i,k)
+             950     7   p    v                          tem2 = c2*nonlins*tem1
+             951     7   p    v                          taugwci(i,k) = - rhoi(i,k) * c1 * tem1 * tem2 * tem2   &
+             952     7                                               /  (bruni(i,k)*dlen(i))
+             953     7   p    v                        elseif (rimin(i,k) > riminm) then
+             954     7   p    v                          taugwci(i,k) = zero
+             955     7   p    v                        end if                                              ! rimin
+             956     6   p    v                      else
+             957     6               
+             958     6               !!!!!!!!!! in the dynamically unstable environment, there is no gravity wave stress
+             959     6               
+             960     6   p    v                        taugwci(i,k) = zero
+             961     6   p    v                      end if                                                ! riloc
+             962     5   p    v                    else
+             963     5   p    v                       taugwci(i,k) = zero
+             964     5   p    v                    end if                                                  ! taugwci
+             965     4               
+             966     5   p    v                    if ( (basicum(i,k+1)*basicum(i,k) ) < 0. ) then
+             967     5   p    v                       taugwci(i,k+1) = zero
+             968     5   p    v                       taugwci(i,k)   = zero
+             969     5   p    v                    endif
+             970     4               
+             971     5   p    v                    if (abs(taugwci(i,k)) > abs(taugwci(i,k+1))) then
+             972     5   p    v                      taugwci(i,k) = taugwci(i,k+1)
+             973     5   p    v                    end if
+             974     4               
+             975     4   p    v                  elseif (k == 1) then
+             976     4               
+             977     4               !!!!!! upper boundary condition - permit upward propagation of gravity wave energy
+             978     4               
+             979     4   p    v                    taugwci(i,1) = taugwci(i,2)
+             980     4   p    v                  endif
+             981     3   p    v                endif
+             982     2   p    v              enddo                     ! end of i=1,npt loop
+             983     1                     enddo                       ! end of k=kcldm,1,-1 loop
+             984                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1778
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      dtfac
+                                   <<< Loop-information  End >>>
+             985     1  pp   4v            do i=1,npt
+             986     1   p   4v              dtfac(i)   = 1.0
+             987     1   p   4v            enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      do_gwc, kcldtop, taugw, taugwci, dpmid
+                                   <<<      velco, dtfac
+                                   <<< Loop-information  End >>>
+             988     1                     do k=1,km
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 200
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.46, ITR: 48, MVE: 3, POL: L)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      kcldtop, taugw, dtfac, velco, taugwci
+                                   <<<      dpmid, do_gwc
+                                   <<< Loop-information  End >>>
+             989     2  pp    v              do i=1,npt
+             990     3   p    v                if (do_gwc(i)) then
+             991     3   p    v                  kk = kcldtop(i)
+             992     4   p    v                  if (k < kk) then
+             993     4   p    v                    taugw(i,k) = (taugwci(i,k+1) - taugwci(i,k)) / dpmid(i,k)
+             994     5   p    v                    if (taugw(i,k) /= 0.0) then
+             995     5   p    v                      tem  = deltim * taugw(i,k)
+             996     5   p    v                      dtfac(i) = min(dtfac(i), abs(velco(i,k)/tem))
+             997     5   p    v                    endif
+             998     4   p    v                  else
+             999     4   p    v                    taugw(i,k) = 0.0
+            1000     4   p    v                  endif
+            1001     3   p    v                else
+            1002     3   p    v                  taugw(i,k) = 0.0
+            1003     3   p    v                endif
+            1004     2   p    v              enddo
+            1005     1                     enddo
+            1006                     
+            1007                     !!!!!! Vertical differentiation
+            1008                     !!!!!!
+            1009                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      do_gwc, kcldtop, taugw, dtfac, cosphi
+                                   <<<      sinphi, utgwcl, vtgwcl
+                                   <<< Loop-information  End >>>
+            1010     1  pp                 do k=1,km
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.95, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      kcldtop, cosphi, sinphi, do_gwc, taugw
+                                   <<<      dtfac, utgwcl, vtgwcl
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 2
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+            1011     2   p    v              do i=1,npt
+            1012     3   p    v                if (do_gwc(i)) then
+            1013     3   p    v                  kk = kcldtop(i)
+            1014     4   p    v                  if (k < kk) then
+            1015     4               !              wtgwc       = (taugwci(i,k+1) - taugwci(i,k)) / dpmid(i,k)
+            1016     4   p    v                    wtgwc       = taugw(i,k) * dtfac(i)
+            1017     4   p    v                    utgwcl(i,k) = wtgwc * cosphi(i)
+            1018     4   p    v                    vtgwcl(i,k) = wtgwc * sinphi(i)
+            1019     4   p    v                  else
+            1020     4   p    v                    utgwcl(i,k) = zero
+            1021     4   p    v                    vtgwcl(i,k) = zero
+            1022     4   p    v                  endif
+            1023     3   p    v                endif
+            1024     2   p    v              enddo
+            1025     1   p                 enddo
+            1026                     !-----------------------------------------------------------------------
+            1027                     !
+            1028                     !  calculate momentum flux = stress deposited above cloup top
+            1029                     !  apply equal amount with opposite sign within cloud
+            1030                     !
+            1031                     !-----------------------------------------------------------------------
+            1032                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1231
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ystress, xstress
+                                   <<< Loop-information  End >>>
+            1033     1  pp   2v            do i=1,npt
+            1034     1   p   2v              xstress(i) = zero
+            1035     1   p   2v              ystress(i) = zero
+            1036     1   p   2v            enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      do_gwc, utgwcl, dpmid, xstress, vtgwcl
+                                   <<<      ystress
+                                   <<< Loop-information  End >>>
+            1037     1                     do k=1,kcldm
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 341
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.12, ITR: 80, MVE: 6, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      do_gwc, utgwcl, dpmid, xstress, vtgwcl
+                                   <<<      ystress
+                                   <<< Loop-information  End >>>
+            1038     2  pp    v              do i=1,npt
+            1039     3   p    v                if (do_gwc(i)) then
+            1040     3   p    v                  xstress(i) = xstress(i) + utgwcl(i,k)*dpmid(i,k)
+            1041     3   p    v                  ystress(i) = ystress(i) + vtgwcl(i,k)*dpmid(i,k)
+            1042     3   p    v                endif
+            1043     2   p    v              enddo
+            1044     1                     enddo
+            1045                     !-----------------------------------------------------------------------
+            1046                     !        alt 1      only uppermost layer
+            1047                     !-----------------------------------------------------------------------
+            1048                     
+            1049                     !     kk = kcldtop(i)
+            1050                     !     tem1 = g / dpmid(i,kk)
+            1051                     !     utgwc(i,kk) = - tem1 * xstress
+            1052                     !     vtgwc(i,kk) = - tem1 * ystress
+            1053                     
+            1054                     !-----------------------------------------------------------------------
+            1055                     !        alt 2      sin(kt-kb)
+            1056                     !-----------------------------------------------------------------------
+            1057                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 348
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      do_gwc
+                                   <<< Loop-information  End >>>
+            1058     1  pp    s            do i=1,npt
+            1059     2   p    m              if (do_gwc(i)) then
+            1060     2   p    s                wrk(i) = 0.5 * pi / (pint(i,kcldbot(i)+1)-pint(i,kcldtop(i)))
+            1061     2   p    v              endif
+            1062     1   p    v            enddo
+            1063                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+            1064     1  pp                 do k=1,km
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      do_gwc
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 1
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+            1065     2   p    s              do i=1,npt
+            1066     3   p    m                if (do_gwc(i)) then
+            1067     3   p    s                  kk = kcldtop(i)
+            1068     4   p    s                  if (k >= kk .and. k <= kcldbot(i)) then
+            1069     4   p    s                    p1 = sin(wrk(i) * (pint(i,k)  -pint(i,kk)))
+            1070     4   p    s                    p2 = sin(wrk(i) * (pint(i,k+1)-pint(i,kk)))
+            1071     4   p    s                    tem = - (p2-p1) / dpmid(i,k)
+            1072     4   p    s                    utgwcl(i,k) = tem*xstress(i)
+            1073     4   p    s                    vtgwcl(i,k) = tem*ystress(i)
+            1074     4   p    s                  endif
+            1075     3   p    v                endif
+            1076     2   p    v              enddo
+            1077     1   p                 enddo
+            1078                     !-----------------------------------------------------------------------
+            1079                     !        alt 3      from kt to kb  proportional to conv heating
+            1080                     !-----------------------------------------------------------------------
+            1081                     
+            1082                     !     do k=kcldtop(i),kcldbot(i)
+            1083                     !     p1=cumchr(i,k)
+            1084                     !     p2=cumchr(i,k+1)
+            1085                     !     utgwcl(i,k) = - g*xstress*(p1-p2)/dpmid(i,k)
+            1086                     !     enddo
+            1087                     !-----------------------------------------------------------------------
+            1088                     !
+            1089                     !  the gwdc should accelerate the zonal and meridional wind in the
+            1090                     !  opposite direction of the previous zonal and meridional wind,
+            1091                     !  respectively
+            1092                     !
+            1093                     !-----------------------------------------------------------------------
+            1094                     !     do k=1,kcldtop(i)-1
+            1095                     !      if (utgwcl(i,k)*u(i,k) .gt. 0.0) then
+            1096                     !-------------------- x-component-------------------
+            1097                     !       write(6,'(a)')
+            1098                     !    +  '(gwdc) warning: the gwdc should accelerate the zonal wind '
+            1099                     !       write(6,'(a,a,i3,a,i3)')
+            1100                     !    +  'in the opposite direction of the previous zonal wind',
+            1101                     !    +  ' at i = ',i,' and j = ',lat
+            1102                     !       write(6,'(4(1x,e17.10))') u(i,kk),v(i,kk),u(i,k),v(i,k)
+            1103                     !       write(6,'(a,1x,e17.10))') 'vcld . v =',
+            1104                     !    +  u(i,kk)*u(i,k)+v(i,kk)*v(i,k)
+            1105                     !       if(u(i,kcldtop(i))*u(i,k)+v(i,kcldtop(i))*v(i,k).gt.0.0)then
+            1106                     !       do k1=1,km
+            1107                     !         write(6,'(i2,36x,2(1x,e17.10))')
+            1108                     !    +             k1,taugwcxi(i,k1),taugwci(i,k1)
+            1109                     !         write(6,'(i2,2(1x,e17.10))') k1,utgwcl(i,k1),u(i,k1)
+            1110                     !       end do
+            1111                     !       write(6,'(i2,36x,1x,e17.10)') (km+1),taugwcxi(i,km+1)
+            1112                     !       end if
+            1113                     !-------------------- along wind at cloud top -----
+            1114                     !       do k1=1,km
+            1115                     !         write(6,'(i2,36x,2(1x,e17.10))')
+            1116                     !    +             k1,taugwci(i,k1)
+            1117                     !         write(6,'(i2,2(1x,e17.10))') k1,wtgwc(i,k1),basicum(i,k1)
+            1118                     !       end do
+            1119                     !       write(6,'(i2,36x,1x,e17.10)') (km+1),taugwci(i,km+1)
+            1120                     !      end if
+            1121                     !      if (vtgwc(i,k)*v(i,k) .gt. 0.0) then
+            1122                     !       write(6,'(a)')
+            1123                     !    +  '(gwdc) warning: the gwdc should accelerate the meridional wind'
+            1124                     !       write(6,'(a,a,i3,a,i3)')
+            1125                     !    +  'in the opposite direction of the previous meridional wind',
+            1126                     !    +  ' at i = ',i,' and j = ',lat
+            1127                     !       write(6,'(4(1x,e17.10))') u(i,kcldtop(i)),v(i,kcldtop(i)),
+            1128                     !    +                            u(i,k),v(i,k)
+            1129                     !       write(6,'(a,1x,e17.10))') 'vcld . v =',
+            1130                     !    +                    u(i,kcldtop(i))*u(i,k)+v(i,kcldtop(i))*v(i,k)
+            1131                     !       if(u(i,kcldtop(i))*u(i,k)+v(i,kcldtop(i))*v(i,k).gt.0.0)then
+            1132                     !       do k1=1,km
+            1133                     !         write(6,'(i2,36x,2(1x,e17.10))')
+            1134                     !    +                        k1,taugwcyi(i,k1),taugwci(i,k1)
+            1135                     !         write(6,'(i2,2(1x,e17.10))') k1,vtgwc(i,k1),v(i,k1)
+            1136                     !       end do
+            1137                     !       write(6,'(i2,36x,1x,e17.10)') (km+1),taugwcyi(i,km+1)
+            1138                     !       end if
+            1139                     !      end if
+            1140                     !     enddo
+            1141                     !1000 continue
+            1142                     !***********************************************************************
+            1143                     !     if (lprnt) then
+            1144                     !       if (fhour.ge.fhourpr) then
+            1145                     !-------- utgwc vtgwc ----------
+            1146                     !         write(*,9220)
+            1147                     !         do ilev=1,km
+            1148                     !           write(*,9221) ilev,(86400.*utgwcl(ipr,ilev)),
+            1149                     !    +                         (86400.*vtgwcl(ipr,ilev))
+            1150                     !         enddo
+            1151                     !       endif
+            1152                     !     endif
+            1153                     
+            1154                     !9220 format(//,14x,'tendency due to gwdc',//,
+            1155                     !    +' ilev',6x,'utgwc',7x,'vtgwc',/)
+            1156                     !9221 format(i4,2(2x,f10.3))
+            1157                     
+            1158                     !-----------------------------------------------------------------------
+            1159                     !
+            1160                     !  for gwdc performance analysis
+            1161                     !
+            1162                     !-----------------------------------------------------------------------
+            1163                     !     do k = 1, kk-1
+            1164                     !       do i = 1, nct
+            1165                     !         kk = kcldtop(i)
+            1166                     !         if ( (abs(taugwci(i,kk)) > taumin) ) then
+            1167                     !           gwdcloc(i) = one
+            1168                     !        if ( abs(taugwci(i,k)-taugwci(i,kk)) > taumin ) then
+            1169                     !         break(i) = 1.0
+            1170                     !         go to 2000
+            1171                     !        endif
+            1172                     !       enddo
+            1173                     !2000   continue
+            1174                     
+            1175                     !       do k = 1, kk-1
+            1176                     !        if ( ( abs(taugwci(i,k)).lt.taumin ) .and.
+            1177                     !    &        ( abs(taugwci(i,k+1)).gt.taumin ) .and.
+            1178                     !    &        ( basicum(i,k+1)*basicum(i,k) .lt. 0. ) ) then
+            1179                     !         critic(i) = 1.0
+            1180                     !         print *,i,k,' inside gwdc  taugwci(k) = ',taugwci(i,k)
+            1181                     !         print *,i,k+1,' inside gwdc  taugwci(k+1) = ',taugwci(i,k+1)
+            1182                     !         print *,i,k,' inside gwdc  basicum(k) = ',basicum(i,k)
+            1183                     !         print *,i,k+1,' inside gwdc  basicum(k+1) = ',basicum(i,k+1)
+            1184                     !         print *,i,' inside gwdc  critic = ',critic(i)
+            1185                     !         goto 2010
+            1186                     !        endif
+            1187                     !       enddo
+            1188                     !2010   continue
+            1189                     !      endif
+            1190                     !     enddo
+            1191                     !-----------------------------------------------------------------------
+            1192                     !        convert back local gwdc tendency arrays to gfs model vertical indices
+            1193                     !        outgoing (fu1,fv1)=(utgwc,vtgwc)
+            1194                     !-----------------------------------------------------------------------
+            1195                     !         brunm(ii,kk) = brunm(i,k)
+            1196                     !         brunm(i,k)  = tem
+            1197                     !         rhom(ii,kk) = rhom(i,k)
+            1198                     !
+            1199                     ! still keep: 1(top)-to-60(bot)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ipt, utgwcl, vtgwcl
+                                   <<< Loop-information  End >>>
+            1200     1  pp                 do k=1,km
+            1201     1               !byl        k1 = km - k + 1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.37, ITR: 96, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ipt, vtgwcl, utgwcl
+                                   <<< Loop-information  End >>>
+            1202     2   p   2v              do i=1,npt
+            1203     2   p   2v                ii = ipt(i)
+            1204     2   p   2v                utgwc(ii,k) = utgwcl(i,k)
+            1205     2   p   2v                vtgwc(ii,k) = vtgwcl(i,k)
+            1206     2               !         brunm(ii,kk) = brunm(i,k)
+            1207     2               !         brunm(i,k)  = tem
+            1208     2               !         rhom(ii,kk) = rhom(i,k)
+            1209     2   p   2v              enddo
+            1210     1   p                 enddo
+            1211                     
+            1212                     ! ---  update the wind components with  gwdc tendencies
+            1213                     !
+            1214                     !!      do k =1,km
+            1215                     !!        do i = 1,im
+            1216                     !!          u1(i,k) = u1(i,k)+utgwc(i,k)*deltim
+            1217                     !!          v1(i,k) = v1(i,k)+vtgwc(i,k)*deltim
+            1218                     !!        enddo
+            1219                     !!      enddo
+            1220                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.42, ITR: 80, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ipt, tauctxl, tauctyl
+                                   <<< Loop-information  End >>>
+            1221     1   s   2v            do i=1,npt
+            1222     1   p   2v              ii = ipt(i)
+            1223     1   m   2v              tauctx(ii) = tauctxl(i)
+            1224     1   s   2v              taucty(ii) = tauctyl(i)
+            1225     1   p   2v             enddo
+            1226                     !
+            1227                     !     if (lprnt) then
+            1228                     !       if (fhour.ge.fhourpr) then
+            1229                     !-------- utgwc vtgwc ----------
+            1230                     !lzl +add turn on write out-----#
+            1231                     !         write(*,9225)
+            1232                     !         do ilev=km,1,-1
+            1233                     !           write(*,9226) ilev,(86400.*fu1(ipr,ilev)),
+            1234                     !     +                         (86400.*fv1(ipr,ilev))
+            1235                     !           write(*,9226) ilev,(utgwc(ipr,ilev)),
+            1236                     !     +                         (vtgwc(ipr,ilev))
+            1237                     !         enddo
+            1238                     !       endif
+            1239                     !     endif
+            1240                     
+            1241                     !9225 format(//,14x,'tendency due to gwdc - to gbphys',//,
+            1242                     !     +' ilev',6x,'utgwc',7x,'vtgwc',/)
+            1243                     !9226 format(i4,2(2x,f10.3))
+            1244                     !
+            1245                           deallocate (kcldtop,kcldbot,do_gwc)
+            1246                           deallocate (tauctxl,  tauctyl,                             &
+            1247                                      gwdcloc, break, critic,   cosphi,              &
+            1248                                      sinphi,         xstress,  ystress,             &
+            1249                                      dlen,    ucltop, vcltop,  gqmcldlen, wrk)
+            1250                     
+            1251                           deallocate (plnint,          taugwci, velco,            &
+            1252                                      bruni, rhoi,     basicui,                    &
+            1253                                      ti,       riloc, rimin,    pint)
+            1254                     
+            1255                           deallocate (plnmid, utgwcl, vtgwcl, basicum, u, v, t,   &
+            1256                                      pmid,   dpmid,  brunm,  rhom, taugw)
+            1257                     
+            1258                           deallocate (windcltop)
+            1259                     
+            1260                           return
+            1261                           end
+
+ Procedure information
+   Lines      : 1261
+   Statements : 344
+   Stack(byte): 31984
+   Prefetch num: 24
+
+ Scoping unit of external sub-program : gwdc
+   Attribute and Cross reference of name
+     abs
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 689  782  859  863  942  948  971  971  996
+     asin
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 433
+     basicui
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 188
+      |(Definition)     : 330  396  649  650  657  1251
+      |(Reference)      : 782  859  861  861  949
+     basicum
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 194
+      |(Definition)     : 337  383  634  1255
+      |(Reference)      : 649  650  657  657  687  687  784  966  966
+     break
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 321  1246
+      |(Reference)      : 
+     bruni
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 188
+      |(Definition)     : 330  393  485  492  511  1251
+      |(Reference)      : 692  786  789  862  951
+     brunm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 194
+      |(Definition)     : 337  382  527  1255
+      |(Reference)      : 
+     c1
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 
+      |(Reference)      : 789  951
+     c2
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 
+      |(Reference)      : 787  863  948  950
+     cldf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  64
+      |(Definition)     : 
+      |(Reference)      : 413
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 17
+     cosphi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 321  617  1246
+      |(Reference)      : 634  793  852  856  1017
+     cp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  62
+      |(Definition)     : 
+      |(Reference)      : 485  492  510  526
+     crit1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 136
+      |(Definition)     : 850  854
+      |(Reference)      : 859
+     crit2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 136
+      |(Definition)     : 851  855
+      |(Reference)      : 859
+     critic
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 321  1246
+      |(Reference)      : 
+     deltim
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  62
+      |(Definition)     : 
+      |(Reference)      : 995
+     dlen
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 321  411  1246
+      |(Reference)      : 413  789  951
+     dlength
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  64
+      |(Definition)     : 
+      |(Reference)      : 411
+     do_gwc
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 143
+      |(Definition)     : 320  796  802  1245
+      |(Reference)      : 844  990  1012  1039  1059  1066
+     dpmid
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 194
+      |(Definition)     : 337  373  1255
+      |(Reference)      : 993  1040  1041  1071
+     dpmid1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  65
+      |(Definition)     : 
+      |(Reference)      : 373
+     dtdp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 136
+      |(Definition)     : 509  525
+      |(Reference)      : 510  526
+     dtfac
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 321  986  996
+      |(Reference)      : 996  1016
+     fhour
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 
+      |(Reference)      : 
+     fhourpr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 294
+      |(Reference)      : 
+     fv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  62
+      |(Definition)     : 
+      |(Reference)      : 376  491  508
+     gqmcldlen
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 321  413  1246
+      |(Reference)      : 786  862
+     grav
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  62
+      |(Definition)     : 
+      |(Reference)      : 351  351  352  413  687
+     gsqr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 136
+      |(Definition)     : 351
+      |(Reference)      : 485  492  510  526
+     gwdc
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     gwdcloc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 321  1246
+      |(Reference)      : 
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 126
+      |(Definition)     : 257  270  277  366  389  402  407  456  503  524  590  633  648  654  686  699  780  843  985  989  1011  1033  1038  1058  1065  1202  1221
+      |(Reference)      : 258  259  259  261  271  272  278  279  367  368  369  370  371  372  373  376  376  376  376  377  377  378  379  382  383  390  391  392  393  394  395  396  397  398  403  403  408  409  410  411  413  413  457  458  483  483  484  484  484  485  485  490  490  491  491  491  491  492  492  504  504  504  504  506  506  506  507  507  508  508  508  509  509  509  509  510  510  511  525  525  525  525  526  526  527  591  592  603  603  604  604  615  615  615  615  615  617  617  617  618  618  618  634  634  634  634  634  649  649  650  650  655  655  655  655  657  657  657  687  687  687  687  687  690  692  693  694  694  700  700  701  701  781  782  782  784  786  786  786  789  789  789  793  793  794  794  795  796  800  801  802  844  845  848  848  849  849  850  851  852  852  852  854  854  855  855  856  856  856  856  856  859  861  861  862  862  862  864  865  866  866  867  867  869  871  872  875  942  943  944  945  945  946  947  949  951  951  951  951  953  954  960  963  966  966  967  968  971  971  972  972  979  979  986  990  991  993  993  993  993  994  995  996  996  996  999  1002  1012  1013  1016  1016  1017  1017  1018  1018  1020  1021  1034  1035  1039  1040  1040  1040  1040  1041  1041  1041  1041  1059  1060  1060  1060  1060  1060  1066  1067  1068  1069  1069  1069  1070  1070  1070  1071  1072  1072  1073  1073  1203  1204  1205  1222  1223  1224
+     ii
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 126
+      |(Definition)     : 367  390  408  1203  1222
+      |(Reference)      : 368  369  370  371  372  373  391  409  410  411  413  413  1204  1205  1223  1224
+     iii
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 46
+      |(Definition)     : 251
+      |(Reference)      : 554
+     iinpt
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 46
+      |(Definition)     : 
+      |(Reference)      : 
+     ilev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 126
+      |(Definition)     : 715
+      |(Reference)      : 
+     im
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  46
+      |(Definition)     : 
+      |(Reference)      : 47  47  47  63  63  63  64  64  127  257  270  277
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 16
+     ipr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 46
+      |(Definition)     : 554
+      |(Reference)      : 
+     ipt
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 127
+      |(Definition)     : 258  261
+      |(Reference)      : 367  390  408  1203  1222
+     ix
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  46
+      |(Definition)     : 
+      |(Reference)      : 65  65  65  65  65  68  69
+     iy
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  46
+      |(Definition)     : 
+      |(Reference)      : 67  67
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  46
+      |(Definition)     : 
+      |(Reference)      : 
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 126
+      |(Definition)     : 269  364  387  401  502  523  632  653  685  841  988  1010  1037  1064  1200
+      |(Reference)      : 271  272  368  368  369  369  370  370  371  371  372  372  373  373  376  376  376  376  377  377  378  379  382  383  391  391  392  393  394  395  396  397  398  403  403  504  504  504  504  506  506  506  507  507  508  508  508  509  509  509  509  510  510  511  525  525  525  525  526  526  527  634  634  634  655  655  655  655  657  657  657  687  687  687  687  687  690  692  693  694  694  846  847  848  848  849  849  852  859  861  861  862  862  864  865  866  866  867  867  869  871  872  875  941  941  942  943  944  945  945  946  947  949  951  951  951  953  954  960  963  966  966  967  968  971  971  972  972  975  992  993  993  993  993  994  995  996  999  1002  1014  1016  1017  1018  1020  1021  1040  1040  1041  1041  1068  1068  1069  1070  1071  1072  1073  1204  1204  1205  1205
+     kb
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 126
+      |(Definition)     : 592
+      |(Reference)      : 
+     kbot
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  47
+      |(Definition)     : 
+      |(Reference)      : 410
+     kcb
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 126
+      |(Definition)     : 
+      |(Reference)      : 
+     kcldbot
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 142
+      |(Definition)     : 320  410  1245
+      |(Reference)      : 592  1060  1068
+     kcldm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 126
+      |(Definition)     : 589  593
+      |(Reference)      : 593  841  1037
+     kcldtop
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 142
+      |(Definition)     : 320  409  1245
+      |(Reference)      : 591  781  845  991  1013  1060  1067
+     kcnv
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  47
+      |(Definition)     : 
+      |(Reference)      : 259
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 126
+      |(Definition)     : 591  781  845  991  1013  1067
+      |(Reference)      : 593  603  604  782  782  784  786  786  789  789  795  846  941  992  1014  1068  1069  1070
+     kkk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 46
+      |(Definition)     : 252
+      |(Reference)      : 
+     km
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  46
+      |(Definition)     : 
+      |(Reference)      : 65  65  65  65  65  67  67  68  69  269  330  330  330  330  330  330  330  330  330  337  337  337  337  337  337  337  337  337  337  337  337  337  337  364  387  401  409  410  490  490  491  491  491  491  492  492  502  523  632  650  650  653  685  701  701  715  988  1010  1064  1200
+     ktop
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  47
+      |(Definition)     : 
+      |(Reference)      : 409
+     lat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 46
+      |(Definition)     : 
+      |(Reference)      : 
+     log
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 377  403
+     lprnt
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 71
+      |(Definition)     : 
+      |(Reference)      : 
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 371  511  527  593  792
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 996
+     mpe
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 14
+     n2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 136
+      |(Definition)     : 510  526
+      |(Reference)      : 511  527
+     n2min
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 
+      |(Reference)      : 511  527
+     nonlin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 136
+      |(Definition)     : 862
+      |(Reference)      : 863
+     nonlinct
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 136
+      |(Definition)     : 786
+      |(Reference)      : 787
+     nonlins
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 136
+      |(Definition)     : 948
+      |(Reference)      : 950
+     npr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 126
+      |(Definition)     : 
+      |(Reference)      : 
+     npt
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 126
+      |(Definition)     : 256  260
+      |(Reference)      : 260  261  283  320  320  320  321  321  321  321  321  321  321  321  321  321  321  321  321  321  321  321  321  330  330  330  330  330  330  330  330  330  337  337  337  337  337  337  337  337  337  337  337  337  337  337  366  389  402  407  456  503  524  590  633  648  654  686  699  780  843  985  989  1011  1033  1038  1058  1065  1202  1221
+     one
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 
+      |(Reference)      : 352  505  656
+     onebg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 136
+      |(Definition)     : 352
+      |(Reference)      : 373
+     p1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 136
+      |(Definition)     : 1069
+      |(Reference)      : 1071
+     p2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 136
+      |(Definition)     : 1070
+      |(Reference)      : 1071
+     pi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 136
+      |(Definition)     : 433
+      |(Reference)      : 1060
+     pint
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 188
+      |(Definition)     : 330  391  1251
+      |(Reference)      : 403  484  491  508  525  525  1060  1060  1069  1069  1070  1070
+     pint1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  68
+      |(Definition)     : 
+      |(Reference)      : 391
+     plnint
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 188
+      |(Definition)     : 330  403  1251
+      |(Reference)      : 504  655
+     plnmid
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 194
+      |(Definition)     : 337  377  1255
+      |(Reference)      : 504  504  504  655  655  655
+     pmid
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 194
+      |(Definition)     : 337  372  1255
+      |(Reference)      : 376  377  509  509  687  687
+     pmid1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  65
+      |(Definition)     : 
+      |(Reference)      : 372
+     q1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  69
+      |(Definition)     : 
+      |(Reference)      : 371
+     qmax
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  63
+      |(Definition)     : 
+      |(Reference)      : 259  413
+     qmin
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 
+      |(Reference)      : 371
+     qtem
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 136
+      |(Definition)     : 507
+      |(Reference)      : 508
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 17  69
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 15
+     rd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  62
+      |(Definition)     : 
+      |(Reference)      : 376  484  491  508
+     rhoi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 188
+      |(Definition)     : 330  394  484  491  508  1251
+      |(Reference)      : 510  687  951
+     rhom
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 194
+      |(Definition)     : 337  376  1255
+      |(Reference)      : 526  789
+     ricrit
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 
+      |(Reference)      : 782  943  944
+     rilarge
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 
+      |(Reference)      : 694
+     riloc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 188
+      |(Definition)     : 330  397  690  693  694  700  701  1251
+      |(Reference)      : 694  700  701  782  864  865  866  867  867  943  947
+     rimax
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 
+      |(Reference)      : 690  694
+     rimaxm
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 
+      |(Reference)      : 864  867
+     rimaxp
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 
+      |(Reference)      : 867
+     rimin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 188
+      |(Definition)     : 330  398  866  869  872  875  1251
+      |(Reference)      : 871  944  946  953
+     riminm
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 
+      |(Reference)      : 953
+     riminp
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 
+      |(Reference)      : 946
+     riminx
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 
+      |(Reference)      : 871  875
+     rismall
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 
+      |(Reference)      : 872
+     shear
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 136
+      |(Definition)     : 687
+      |(Reference)      : 689  692
+     shmin
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 
+      |(Reference)      : 689
+     sin
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1069  1070
+     sinphi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 321  618  1246
+      |(Reference)      : 634  794  852  856  1018
+     spfh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 194
+      |(Definition)     : 337  371  515
+      |(Reference)      : 376  491  507  507
+     sqrt
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 485  492  511  527  615  865  947  948
+     t
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 194
+      |(Definition)     : 337  370  1255
+      |(Reference)      : 376  483  490  506  506  509  509  526  786
+     t1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  65
+      |(Definition)     : 
+      |(Reference)      : 370
+     tauct
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 136
+      |(Definition)     : 789  792
+      |(Reference)      : 792  793  794  795
+     tauctmax
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 
+      |(Reference)      : 792
+     tauctx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  63
+      |(Definition)     : 278  1223
+      |(Reference)      : 
+     tauctxl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 321  457  793  800  1246
+      |(Reference)      : 1223
+     taucty
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  63
+      |(Definition)     : 279  1224
+      |(Reference)      : 
+     tauctyl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 321  458  794  801  1246
+      |(Reference)      : 1224
+     taugw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 194
+      |(Definition)     : 337  993  999  1002  1255
+      |(Reference)      : 994  995  1016
+     taugwci
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 188
+      |(Definition)     : 330  392  795  945  951  954  960  963  967  968  972  979  1251
+      |(Reference)      : 942  945  971  971  972  979  993  993
+     taumin
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 
+      |(Reference)      : 942
+     tem
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 136
+      |(Definition)     : 692  784  861  863  947  995  1071
+      |(Reference)      : 693  693  785  785  789  862  865  866  869  869  869  948  948  996  1072  1073
+     tem1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 136
+      |(Definition)     : 504  655  785  848  865  949
+      |(Reference)      : 505  506  507  656  657  786  789  850  852  866  866  950  951
+     tem2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 136
+      |(Definition)     : 505  656  787  849  950
+      |(Reference)      : 506  507  657  789  789  851  852  951  951
+     ti
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 188
+      |(Definition)     : 330  395  483  490  506  1251
+      |(Reference)      : 484  485  491  492  508  510  525  525  862
+     tmpwindcltop
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 321
+      |(Reference)      : 
+     u
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 194
+      |(Definition)     : 337  368  1255
+      |(Reference)      : 603  634  848  848  854  856
+     u1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  65
+      |(Definition)     : 
+      |(Reference)      : 368
+     ucltop
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 321  603  1246
+      |(Reference)      : 615  615  617  850  854
+     utgwc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  67
+      |(Definition)     : 271  1204
+      |(Reference)      : 
+     utgwcl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 194
+      |(Definition)     : 337  378  1017  1020  1072  1255
+      |(Reference)      : 1040  1204
+     v
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 194
+      |(Definition)     : 337  369  1255
+      |(Reference)      : 604  634  849  849  855  856
+     v1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  65
+      |(Definition)     : 
+      |(Reference)      : 369
+     vcltop
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 321  604  1246
+      |(Reference)      : 615  615  618  851  855
+     velco
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 188
+      |(Definition)     : 337  852  856  1251
+      |(Reference)      : 996
+     vtgwc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  67
+      |(Definition)     : 272  1205
+      |(Reference)      : 
+     vtgwcl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 194
+      |(Definition)     : 337  379  1018  1021  1073  1255
+      |(Reference)      : 1041  1205
+     windcltop
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 321  615  1258
+      |(Reference)      : 617  618
+     wrk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 321  1060  1246
+      |(Reference)      : 1069  1070
+     wtgwc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 136
+      |(Definition)     : 1016
+      |(Reference)      : 1017  1018
+     xstress
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 321  1034  1040  1246
+      |(Reference)      : 1040  1072
+     ystress
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 321  1035  1041  1246
+      |(Reference)      : 1041  1073
+     zero
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 
+      |(Reference)      : 259  294  378  379  382  383  392  393  394  395  396  397  398  457  458  782  800  801  859  859  859  954  960  963  967  968  1020  1021  1034  1035
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+       9114  format        (Definition) 726
+       9124  format        (Definition) 727
+       9210  format        (Definition) 816
+
+ Total information
+   Procedures       : 1
+   Total lines      : 1261
+   Total statements : 344
+   Total stack(byte): 31984
+   Total prefetch num: 24
+

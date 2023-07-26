@@ -1,0 +1,2565 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jul 12 10:11:42 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/tco639l72/src_4cpl
+   Source file       : eispack.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "RG"
+  (inc)(line-no.)(nest)(optimize)
+               1                           SUBROUTINE RG(NM,N,A,WR,WI,MATZ,Z,IV1,FV1,IERR)
+               2                     !!
+               3                     !
+               4                           INTEGER N,NM,IS1,IS2,IERR,MATZ
+               5                           REAL A(NM,N),WR(N),WI(N),Z(NM,N),FV1(N)
+               6                           INTEGER IV1(N)
+               7                     !
+               8                     !
+               9                           IF (N.LE.NM) GO TO 10
+              10                           IERR=10*N
+              11                           GO TO 50
+              12                     !
+              13                        10 CALL BALANC(NM,N,A,IS1,IS2,FV1)
+              14                           CALL ELMHES(NM,N,IS1,IS2,A,IV1)
+              15                           IF (MATZ.NE.0) GO TO 20
+              16                     ! ************* FIND EIGEN VALUES ONLY *********************
+              17                           CALL HQR(NM,N,IS1,IS2,A,WR,WI,IERR)
+              18                           GO TO 50
+              19                     ! ************* FIND BOTH EIGENVALUES AND EIGENVECTORS *****
+              20                        20 CALL ELTRAN(NM,N,IS1,IS2,A,IV1,Z)
+              21                           CALL HQR2(NM,N,IS1,IS2,A,WR,WI,Z,IERR)
+              22                           IF (IERR.NE.0) GO TO 50
+              23                           CALL BALBAK(NM,N,IS1,IS2,FV1,N,Z)
+              24                        50 RETURN
+              25                           END
+
+ Procedure information
+   Lines      : 25
+   Statements : 18
+   Stack(byte): 384
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : RG
+   Attribute and Cross reference of name
+     A
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  5
+      |(Definition)     : 13  14  17  20  21
+      |(Reference)      : 
+     BALANC
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 13
+     BALBAK
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 23
+     ELMHES
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 14
+     ELTRAN
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 20
+     FV1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  5
+      |(Definition)     : 13  23
+      |(Reference)      : 
+     HQR
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 17
+     HQR2
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 21
+     IERR
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  4
+      |(Definition)     : 10  17  21
+      |(Reference)      : 22
+     IS1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 4
+      |(Definition)     : 13  14  17  20  21  23
+      |(Reference)      : 
+     IS2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 4
+      |(Definition)     : 13  14  17  20  21  23
+      |(Reference)      : 
+     IV1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  6
+      |(Definition)     : 14  20
+      |(Reference)      : 
+     MATZ
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  4
+      |(Definition)     : 
+      |(Reference)      : 15
+     N
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  4
+      |(Definition)     : 13  14  17  20  21  23  23
+      |(Reference)      : 5  5  5  5  5  6  9  10
+     NM
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  4
+      |(Definition)     : 13  14  17  20  21  23
+      |(Reference)      : 5  5  9
+     RG
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     WI
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  5
+      |(Definition)     : 17  21
+      |(Reference)      : 
+     WR
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  5
+      |(Definition)     : 17  21
+      |(Reference)      : 
+     Z
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  5
+      |(Definition)     : 20  21  23
+      |(Reference)      : 
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         10  execution     (Definition) 13  
+                           (Reference)  9
+         20  execution     (Definition) 20  
+                           (Reference)  15
+         50  execution     (Definition) 24  
+                           (Reference)  11  18  22
+
+ External subroutine subprogram "BALANC"
+  (inc)(line-no.)(nest)(optimize)
+              26                     !
+              27                     !
+              28                           SUBROUTINE BALANC(NM,N,A,LOW,IGH,SCALE)
+              29                     !
+              30                           INTEGER I,J,K,L,M,N,JJ,NM,IGH,LOW,IEXC
+              31                           REAL A(NM,N),SCALE(N)
+              32                           REAL C,F,G,R,S,B2,RADIX
+              33                           REAL ABS
+              34                           LOGICAL NOCONV
+              35                     !
+              36                     ! ***************** RADIX is a MACHINE DEPENDENT PARAMETER SPACIFYING
+              37                     !                   THE BASE OF THE MACHINE FLOATING POINT REPRESENTATION
+              38                     ! *************************************************************************
+              39                     !
+              40                           RADIX=2.
+              41                     !
+              42                           B2=RADIX*RADIX
+              43                           K=1
+              44                           L=N
+              45                           GO TO 100
+              46                     ! ***************IN-LINE PROCEDURE FOR ROW AND COLUMN EXCHANG *******
+              47                        20 SCALE(M)=J
+              48                           IF (J.EQ.M) GO TO 50
+              49                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 800
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      A
+                                   <<< Loop-information  End >>>
+              50     1  pp   2v            DO 30 I=1,L
+              51     1   p   2v            F=A(I,J)
+              52     1   p   2v            A(I,J)=A(I,M)
+              53     1   p   2v            A(I,M)=F
+              54     1   p   2v         30 CONTINUE
+              55                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 800
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+              56     1  pp   2v            DO 40 I=K,N
+              57     1   p   2v            F=A(J,I)
+              58     1   p   2v            A(J,I)=A(M,I)
+              59     1   p   2v            A(M,I)=F
+              60     1   p   2v         40 CONTINUE
+              61                     !
+              62                        50 GO TO (80,130), IEXC
+              63                     ! *************** SEARCH FOR ROWS ISOLATING AN EIGENVALUE AND PUSH THEM DOWN
+              64                        80 IF (L.EQ.1) GO TO 280
+              65                           L=L-1
+              66                     ! *************** FOR J+L STEP -1 UNTIL 1 do -- ********************
+              67     1                 100 DO 120 JJ=1, L
+              68     1                     J=L+1-JJ
+              69     1               !
+              70     2                     DO 110 I=1,L
+              71     2                       IF (I.EQ.J) GO TO 110
+              72     2                       IF (A(J,I).NE.0.) GO TO 120
+              73     2                 110 CONTINUE
+              74     1               !
+              75     1                     M=L
+              76     1                     IEXC=1
+              77     1                     GO TO 20
+              78     1                 120 CONTINUE
+              79                           GO TO 140
+              80                     ! *************** SEARCH FOR COLUMNS ISOLATING AN EIGENVALUE AND
+              81                     !                 PUSH THEM LEFT **********************
+              82                       130 K=K+1
+              83                     !
+              84     1                 140 DO 170 J=K,L
+              85     1               !
+              86     2                       DO 150 I=K,L
+              87     2                         IF(I.EQ.J) GO TO 150
+              88     2                         IF(A(I,J).NE.0.) GO TO 170
+              89     2                 150   CONTINUE
+              90     1               !
+              91     1                       M=K
+              92     1                       IEXC=2
+              93     1                       GO TO 20
+              94     1                 170 CONTINUE
+              95                     ! ***************** NOW BALANCE THE SUBMATRIX IN ROWS K TO L *************
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      SCALE
+                                   <<< Loop-information  End >>>
+              96     1  pp   4v            DO 180 I=K,L
+              97     1   p   4v        180 SCALE(I)=1.0
+              98                     ! ***************** ITERATIVE LOOP FOR NORM REDUCTION **************
+              99                       190 NOCONV=.FALSE.
+             100                     !
+             101     1                     DO 270 I=K,L
+             102     1                       C=0.
+             103     1                       R=0.
+             104     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 728
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             105     2  pp    v            DO 200 J=K,L
+             106     2   p    v              IF (J.EQ.I) GO TO 200
+             107     2   p    v              C=C+ABS(A(J,I))
+             108     2   p    v              R=R+ABS(A(I,J))
+             109     2   p    v        200 CONTINUE
+             110     1               ! ***************** GUARD AGAINST ZERO C OR R DUE TO UNDERFLOW *********
+             111     1                     IF (C.EQ.0.OR.R.EQ.0.) GO TO 270
+             112     1                     G=R/RADIX
+             113     1                     F=1.
+             114     1                     S=C+R
+             115     1                 210 IF(C.GE.G) GO TO 220
+             116     1                     F=F*RADIX
+             117     1                     C=C*B2
+             118     1                     GO TO 210
+             119     1                 220 G=R*RADIX
+             120     1                 230 IF (C.LT.G) GO TO 240
+             121     1                     F=F/RADIX
+             122     1                     C=C/B2
+             123     1                     GO TO 230
+             124     1               ! *********************** NOW BALANCE *******************************
+             125     1                 240 IF ((C+R)/F.GE.0.95*S) GO TO 270
+             126     1                     G=1./F
+             127     1                     SCALE(I)=SCALE(I)*F
+             128     1                     NOCONV=.TRUE.
+             129     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1143
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.18, ITR: 96, MVE: 2, POL: L)
+                                   <<< Loop-information  End >>>
+             130     2  pp   4v            do 250 J=K,N
+             131     2   p   4v        250 A(I,J)=A(I,J)*G
+             132     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1143
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 256, MVE: 9, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      A
+                                   <<< Loop-information  End >>>
+             133     2  pp   2v            DO 260 J=1,L
+             134     2   p   2v        260 A(J,I)=A(J,I)*F
+             135     1               !
+             136     1                 270 CONTINUE
+             137                     !
+             138                           IF(NOCONV) GO TO 190
+             139                     !
+             140                       280 LOW=K
+             141                           IGH=L
+             142                           RETURN
+             143                           END
+
+ Procedure information
+   Lines      : 118
+   Statements : 85
+   Stack(byte): 28560
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : BALANC
+   Attribute and Cross reference of name
+     A
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 28  31
+      |(Definition)     : 52  53  58  59  131  134
+      |(Reference)      : 51  52  57  58  72  88  107  108  131  134
+     ABS
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 33
+      |(Definition)     : 
+      |(Reference)      : 107  108
+     B2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 32
+      |(Definition)     : 42
+      |(Reference)      : 117  122
+     BALANC
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 28
+      |(Reference)      : 
+     C
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 32
+      |(Definition)     : 102  107  117  122
+      |(Reference)      : 107  111  114  115  117  120  122  125
+     F
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 32
+      |(Definition)     : 51  57  113  116  121
+      |(Reference)      : 53  59  116  121  125  126  127  134
+     G
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 32
+      |(Definition)     : 112  119  126
+      |(Reference)      : 115  120  131
+     I
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 50  56  70  86  96  101
+      |(Reference)      : 51  52  52  53  57  58  58  59  71  72  87  88  97  106  107  108  127  127  131  131  134  134
+     IEXC
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 76  92
+      |(Reference)      : 62
+     IGH
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 28  30
+      |(Definition)     : 141
+      |(Reference)      : 
+     J
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 68  84  105  130  133
+      |(Reference)      : 47  48  51  52  57  58  71  72  87  88  106  107  108  131  131  134  134
+     JJ
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 67
+      |(Reference)      : 68
+     K
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 43  82
+      |(Reference)      : 56  82  84  86  91  96  101  105  130  140
+     L
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 44  65
+      |(Reference)      : 50  64  65  67  68  70  75  84  86  96  101  105  133  141
+     LOW
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 28  30
+      |(Definition)     : 140
+      |(Reference)      : 
+     M
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 75  91
+      |(Reference)      : 47  48  52  53  58  59
+     N
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 28  30
+      |(Definition)     : 
+      |(Reference)      : 31  31  44  56  130
+     NM
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 28  30
+      |(Definition)     : 
+      |(Reference)      : 31
+     NOCONV
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 34
+      |(Definition)     : 99  128
+      |(Reference)      : 138
+     R
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 32
+      |(Definition)     : 103  108
+      |(Reference)      : 108  111  112  114  119  125
+     RADIX
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 32
+      |(Definition)     : 40
+      |(Reference)      : 42  42  112  116  119  121
+     S
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 32
+      |(Definition)     : 114
+      |(Reference)      : 125
+     SCALE
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 28  31
+      |(Definition)     : 47  97  127
+      |(Reference)      : 127
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         20  execution     (Definition) 47  
+                           (Reference)  77  93
+         30  execution     (Definition) 54  
+                           (Reference)  50
+         40  execution     (Definition) 60  
+                           (Reference)  56
+         50  execution     (Definition) 62  
+                           (Reference)  48
+         80  execution     (Definition) 64  
+                           (Reference)  62
+        100  execution     (Definition) 67  
+                           (Reference)  45
+        110  execution     (Definition) 73  
+                           (Reference)  70  71
+        120  execution     (Definition) 78  
+                           (Reference)  67  72
+        130  execution     (Definition) 82  
+                           (Reference)  62
+        140  execution     (Definition) 84  
+                           (Reference)  79
+        150  execution     (Definition) 89  
+                           (Reference)  86  87
+        170  execution     (Definition) 94  
+                           (Reference)  84  88
+        180  execution     (Definition) 97  
+                           (Reference)  96
+        190  execution     (Definition) 99  
+                           (Reference)  138
+        200  execution     (Definition) 109  
+                           (Reference)  105  106
+        210  execution     (Definition) 115  
+                           (Reference)  118
+        220  execution     (Definition) 119  
+                           (Reference)  115
+        230  execution     (Definition) 120  
+                           (Reference)  123
+        240  execution     (Definition) 125  
+                           (Reference)  120
+        250  execution     (Definition) 131  
+                           (Reference)  130
+        260  execution     (Definition) 134  
+                           (Reference)  133
+        270  execution     (Definition) 136  
+                           (Reference)  101  111  125
+        280  execution     (Definition) 140  
+                           (Reference)  64
+
+ External subroutine subprogram "BALBAK"
+  (inc)(line-no.)(nest)(optimize)
+             144                     !
+             145                     !
+             146                           SUBROUTINE BALBAK(NM,N,LOW,IGH,SCALE,M,Z)
+             147                     !
+             148                           INTEGER I,J,K,M,N,II,NM,IGH,LOW
+             149                           REAL SCALE(N),Z(NM,M)
+             150                           REAL S
+             151                     !
+             152                           IF(M.EQ.0) GO TO 200
+             153                           IF(IGH.EQ.LOW) GO TO 120
+             154                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<< Loop-information  End >>>
+             155     1  pp                 DO 110 I=LOW,IGH
+             156     1   p                   S=SCALE(I)
+             157     1               ! **************** LEFT HAND EIGENVECTORS ARE BACK TRANSFORMED
+             158     1               !                  IF THE FOREGOING STATEMENT IS REPLACED BY
+             159     1               !                  S=1.0/SCALE(i). *******************************
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.18, ITR: 96, MVE: 2, POL: L)
+                                   <<< Loop-information  End >>>
+             160     2   p   4v            DO 100 J=1,M
+             161     2   p   4v        100 Z(I,J)=Z(I,J)*S
+             162     1               !
+             163     1   p             110 CONTINUE
+             164                     ! *****************_ FOR I=LOW-1 UNTIL 1,
+             165                     !                    IGH+1 STEP 1 until N DO __ ********************
+             166     1                 120 DO 140 II=1,N
+             167     1                       I=II
+             168     1                       IF(I.GE.LOW.AND.I.LE.IGH) GO TO 140
+             169     1                       IF(I.LT.LOW) I=LOW-II
+             170     1                       K=SCALE(I)
+             171     1                       IF(K.EQ.I) GO TO 140
+             172     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 800
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             173     2  pp   2v              DO 130 J=1,M
+             174     2   p   2v                S=Z(I,J)
+             175     2   p   2v                Z(I,J)=Z(K,J)
+             176     2   p   2v                Z(K,J)=S
+             177     2   p   2v        130   CONTINUE
+             178     1               !
+             179     1                 140 CONTINUE
+             180                     !
+             181                       200 RETURN
+             182                           END
+
+ Procedure information
+   Lines      : 39
+   Statements : 25
+   Stack(byte): 1152
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : BALBAK
+   Attribute and Cross reference of name
+     BALBAK
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 146
+      |(Reference)      : 
+     I
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 148
+      |(Definition)     : 155  167  169
+      |(Reference)      : 156  161  161  168  168  169  170  171  174  175
+     IGH
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 146  148
+      |(Definition)     : 
+      |(Reference)      : 153  155  168
+     II
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 148
+      |(Definition)     : 166
+      |(Reference)      : 167  169
+     J
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 148
+      |(Definition)     : 160  173
+      |(Reference)      : 161  161  174  175  175  176
+     K
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 148
+      |(Definition)     : 170
+      |(Reference)      : 171  175  176
+     LOW
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 146  148
+      |(Definition)     : 
+      |(Reference)      : 153  155  168  169  169
+     M
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 146  148
+      |(Definition)     : 
+      |(Reference)      : 149  152  160  173
+     N
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 146  148
+      |(Definition)     : 
+      |(Reference)      : 149  166
+     NM
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 146  148
+      |(Definition)     : 
+      |(Reference)      : 149
+     S
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 150
+      |(Definition)     : 156  174
+      |(Reference)      : 161  176
+     SCALE
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 146  149
+      |(Definition)     : 
+      |(Reference)      : 156  170
+     Z
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 146  149
+      |(Definition)     : 161  175  176
+      |(Reference)      : 161  174  175
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        100  execution     (Definition) 161  
+                           (Reference)  160
+        110  execution     (Definition) 163  
+                           (Reference)  155
+        120  execution     (Definition) 166  
+                           (Reference)  153
+        130  execution     (Definition) 177  
+                           (Reference)  173
+        140  execution     (Definition) 179  
+                           (Reference)  166  168  171
+        200  execution     (Definition) 181  
+                           (Reference)  152
+
+ External subroutine subprogram "ELMHES"
+  (inc)(line-no.)(nest)(optimize)
+             183                     !
+             184                     !
+             185                           SUBROUTINE ELMHES(NM,N,LOW,IGH,A,INT)
+             186                     !
+             187                           INTEGER I,J,M,N,LA,NM,IGH,KP1,LOW,MM1,MP1
+             188                           REAL A(NM,N)
+             189                           REAL X,Y
+             190                     !      REAL ABS
+             191                           INTEGER INT(IGH)
+             192                     !
+             193                           LA=IGH-1
+             194                           KP1=LOW+1
+             195                           IF(LA.LT.KP1) GO TO 200
+             196                     !
+             197     1                     DO 180 M=KP1,LA
+             198     1                       MM1=M-1
+             199     1                       X=0.
+             200     1                       I=M
+             201     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      A
+                                   <<< Loop-information  End >>>
+             202     2   s   2s              DO 100 J=M,IGH
+             203     2   m   2m                IF (ABS(A(J,MM1)).LE.ABS(X)) GO TO 100
+             204     2   s   2s                  X=A(J,MM1)
+             205     2   p   2v                  I=J
+             206     2   p   2v        100   CONTINUE
+             207     1               !
+             208     1                       INT(M)=I
+             209     1                       IF (I.EQ.M) GO TO 130
+             210     1               ! ***************** INTERCHANGE ROWS AND CLOUMNS OF A *****************
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 800
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             211     2  pp   2v              DO 110 J=MM1,N
+             212     2   p   2v                Y=A(I,J)
+             213     2   p   2v                A(I,J)=A(M,J)
+             214     2   p   2v                A(M,J)=Y
+             215     2   p   2v        110   CONTINUE
+             216     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 800
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      A
+                                   <<< Loop-information  End >>>
+             217     2  pp   2v              DO 120 J=1,IGH
+             218     2   p   2v                Y=A(J,I)
+             219     2   p   2v                A(J,I)=A(J,M)
+             220     2   p   2v                A(J,M)=Y
+             221     2   p   2v        120   CONTINUE
+             222     1               ! ****************** END INTERCHANGE ***********************
+             223     1                 130   IF(X.EQ.0.) GO TO 180
+             224     1                       MP1=M+1
+             225     1               !
+             226     2       2               DO 160 I=MP1,IGH
+             227     2       2                 Y=A(I,MM1)
+             228     2       2                 IF(Y.EQ.0.) GO TO 160
+             229     2       2                 Y=Y/X
+             230     2       2                 A(I,MM1)=Y
+             231     2               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 843
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             232     3  pp   2v                DO 140 J=M,N
+             233     3   p   2v        140     A(I,J)=A(I,J)-Y*A(M,J)
+             234     2               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 843
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      A
+                                   <<< Loop-information  End >>>
+             235     3  pp   2v                DO 150 J=1,IGH
+             236     3   p   2v        150     A(J,M)=A(J,M)+Y*A(J,I)
+             237     2               !
+             238     2       2         160   CONTINUE
+             239     1                 180 CONTINUE
+             240                     !
+             241                       200 RETURN
+             242                           END
+
+ Procedure information
+   Lines      : 60
+   Statements : 44
+   Stack(byte): 1568
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : ELMHES
+   Attribute and Cross reference of name
+     A
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 185  188
+      |(Definition)     : 213  214  219  220  230  233  236
+      |(Reference)      : 203  204  212  213  218  219  227  233  233  236  236
+     ABS
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 203  203
+     ELMHES
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 185
+      |(Reference)      : 
+     I
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 187
+      |(Definition)     : 200  205  226
+      |(Reference)      : 208  209  212  213  218  219  227  230  233  233  236
+     IGH
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 185  187
+      |(Definition)     : 
+      |(Reference)      : 191  193  202  217  226  235
+     INT
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 185  191
+      |(Definition)     : 208
+      |(Reference)      : 
+     J
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 187
+      |(Definition)     : 202  211  217  232  235
+      |(Reference)      : 203  204  205  212  213  213  214  218  219  219  220  233  233  233  236  236  236
+     KP1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 187
+      |(Definition)     : 194
+      |(Reference)      : 195  197
+     LA
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 187
+      |(Definition)     : 193
+      |(Reference)      : 195  197
+     LOW
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 185  187
+      |(Definition)     : 
+      |(Reference)      : 194
+     M
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 187
+      |(Definition)     : 197
+      |(Reference)      : 198  200  202  208  209  213  214  219  220  224  232  233  236  236
+     MM1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 187
+      |(Definition)     : 198
+      |(Reference)      : 203  204  211  227  230
+     MP1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 187
+      |(Definition)     : 224
+      |(Reference)      : 226
+     N
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 185  187
+      |(Definition)     : 
+      |(Reference)      : 188  211  232
+     NM
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 185  187
+      |(Definition)     : 
+      |(Reference)      : 188
+     X
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 189
+      |(Definition)     : 199  204
+      |(Reference)      : 203  223  229
+     Y
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 189
+      |(Definition)     : 212  218  227  229
+      |(Reference)      : 214  220  228  229  230  233  236
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        100  execution     (Definition) 206  
+                           (Reference)  202  203
+        110  execution     (Definition) 215  
+                           (Reference)  211
+        120  execution     (Definition) 221  
+                           (Reference)  217
+        130  execution     (Definition) 223  
+                           (Reference)  209
+        140  execution     (Definition) 233  
+                           (Reference)  232
+        150  execution     (Definition) 236  
+                           (Reference)  235
+        160  execution     (Definition) 238  
+                           (Reference)  226  228
+        180  execution     (Definition) 239  
+                           (Reference)  197  223
+        200  execution     (Definition) 241  
+                           (Reference)  195
+
+ External subroutine subprogram "ELTRAN"
+  (inc)(line-no.)(nest)(optimize)
+             243                     !
+             244                     !
+             245                           SUBROUTINE ELTRAN(NM,N,LOW,IGH,A,INT,Z)
+             246                     !
+             247                           INTEGER I,J,N,KL,MM,MP,NM,IGH,LOW,MP1
+             248                           REAL A(NM,IGH),Z(NM,N)
+             249                           INTEGER INT(IGH)
+             250                     !
+             251                     ! ***************** INITIALIZE Z TO IDENTITY MATRIX **************
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1778
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      Z
+                                   <<< Loop-information  End >>>
+             252     1  pp    v            DO 80 I=1,N
+             253     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    INTERCHANGED(nest: 1)
+                                   <<< Loop-information  End >>>
+             254     2  pp   4               DO 60 J=1,N
+             255     2   p   4v         60   Z(I,J)=0.
+             256     1               !
+             257     1   p   4v              Z(I,I)=1.
+             258     1   p   4v         80 CONTINUE
+             259                     !
+             260                           KL=IGH-LOW-1
+             261                           IF (KL.LT.1) GO TO 200
+             262                     ! ***************** FOR MP=IGH-1 STEP -1 UNTIL LOW+1 DO __ ********
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      A, Z
+                                   <<< Loop-information  End >>>
+             263     1                     DO 140 MM=1,KL
+             264     1                       MP=IGH-MM
+             265     1                       MP1=MP+1
+             266     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1231
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      A, Z
+                                   <<< Loop-information  End >>>
+             267     2  pp   4v              DO 100 I=MP1,IGH
+             268     2   p   4v        100   Z(I,MP)=A(I,MP-1)
+             269     1               !
+             270     1                       I=INT(MP)
+             271     1                       IF(I.EQ.MP) GO TO 140
+             272     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 942
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             273     2  pp   2v              DO 130 J=MP,IGH
+             274     2   p   2v                Z(MP,J)=Z(I,J)
+             275     2   p   2v                Z(I,J)=0.
+             276     2   p   2v        130   CONTINUE
+             277     1               !
+             278     1                       Z(I,MP)=1.
+             279     1                 140 CONTINUE
+             280                     !
+             281                       200 RETURN
+             282                           END
+
+ Procedure information
+   Lines      : 40
+   Statements : 26
+   Stack(byte): 1520
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : ELTRAN
+   Attribute and Cross reference of name
+     A
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 245  248
+      |(Definition)     : 
+      |(Reference)      : 268
+     ELTRAN
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 245
+      |(Reference)      : 
+     I
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 247
+      |(Definition)     : 252  267  270
+      |(Reference)      : 255  257  257  268  268  271  274  275  278
+     IGH
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 245  247
+      |(Definition)     : 
+      |(Reference)      : 248  249  260  264  267  273
+     INT
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 245  249
+      |(Definition)     : 
+      |(Reference)      : 270
+     J
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 247
+      |(Definition)     : 254  273
+      |(Reference)      : 255  274  274  275
+     KL
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 247
+      |(Definition)     : 260
+      |(Reference)      : 261  263
+     LOW
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 245  247
+      |(Definition)     : 
+      |(Reference)      : 260
+     MM
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 247
+      |(Definition)     : 263
+      |(Reference)      : 264
+     MP
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 247
+      |(Definition)     : 264
+      |(Reference)      : 265  268  268  270  271  273  274  278
+     MP1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 247
+      |(Definition)     : 265
+      |(Reference)      : 267
+     N
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 245  247
+      |(Definition)     : 
+      |(Reference)      : 248  252  254
+     NM
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 245  247
+      |(Definition)     : 
+      |(Reference)      : 248  248
+     Z
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 245  248
+      |(Definition)     : 255  257  268  274  275  278
+      |(Reference)      : 274
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         60  execution     (Definition) 255  
+                           (Reference)  254
+         80  execution     (Definition) 258  
+                           (Reference)  252
+        100  execution     (Definition) 268  
+                           (Reference)  267
+        130  execution     (Definition) 276  
+                           (Reference)  273
+        140  execution     (Definition) 279  
+                           (Reference)  263  271
+        200  execution     (Definition) 281  
+                           (Reference)  261
+
+ External subroutine subprogram "HQR"
+  (inc)(line-no.)(nest)(optimize)
+             283                     !
+             284                     !
+             285                           SUBROUTINE HQR(NM,N,LOW,IGH,H,WR,WI,IERR)
+             286                     !
+             287                           INTEGER I,J,K,L,M,N,EN,LL,MM,NA,NM,IGH,ITS,LOW,MP2,ENM2,IERR
+             288                           REAL H(NM,N),WR(N),WI(N)
+             289                           REAL P,Q,R,S,T,W,X,Y,ZZ,NORM,MACHEP
+             290                     !      REAL SQRT,ABS,SIGN
+             291                     !      INTEGER MIN0
+             292                           LOGICAL NOLATS
+             293                     !
+             294                     ! **************** MACHEP IS A MACHINE DEPENDENT PARAMETER SPACIFYING
+             295                     !                  THE RELATIVE PRECISION OF FLOATING POINT ARITHEMETIC
+             296                     ! ************************************************************************
+             297                           MACHEP=2.**(-47)
+             298                     !
+             299                           IERR=0
+             300                           NORM=0.
+             301                           K=1
+             302                     ! **************** STORE ROOTS OSOLATED BY BALANC
+             303                     !                  AND COMPUTE MATRIX NORM ***********************
+             304     1                     DO 50 I=1,N
+             305     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1600
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             306     2  pp    v              DO 40 J=K,N
+             307     2   p    v         40   NORM=NORM+ABS(H(I,J))
+             308     1               !
+             309     1                       K=I
+             310     1                       IF (I.GE.LOW.AND.I.LE.IGH) GO TO 50
+             311     1                       WR(I)=H(I,J)
+             312     1                       WI(I)=0.
+             313     1                  50 CONTINUE
+             314                     !
+             315                           EN=IGH
+             316                           T=0.
+             317                     ! ***************** SEARCH FOR NEXT EIGENVALUES *******************
+             318                        60 IF (EN.LT.LOW) GO TO 1001
+             319                           ITS=0
+             320                           NA=EN-1
+             321                           ENM2=NA-1
+             322                     ! ***************** LOOK FOR SINGLE SMALL SUB-DIAGONAL ELEMENT
+             323                     !                   FOR L=en STEP -1 UNTIL LOW DO __ ***************
+             324     1        s         70 DO 80 LL=LOW,EN
+             325     1        s              L=EN+LOW-LL
+             326     1        s              IF (L.EQ.LOW) GO TO 100
+             327     1        s              S=ABS(H(L-1,L-1))+ABS(H(L,L))
+             328     1        s              IF (S.EQ.0.) S=NORM
+             329     1        s              IF (ABS(H(L,L-1)).LE.MACHEP*S) GO TO 100
+             330     1        s         80 CONTINUE
+             331                     ! ***************** FORM SHIFT **************************************
+             332                       100 X=H(EN,EN)
+             333                           IF(L.EQ.EN) GO TO 270
+             334                           Y=H(NA,NA)
+             335                           W=H(EN,NA)*H(NA,EN)
+             336                           IF (L.EQ.NA) GO TO 280
+             337                           IF (ITS.EQ.30) GO TO 1000
+             338                           IF (ITS.NE.10.AND.ITS.NE.20) GO TO 130
+             339                     ! ***************** FORM EXCEPTIONAL SHIFT *************************
+             340                           T=T+X
+             341                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1231
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.18, ITR: 96, MVE: 2, POL: L)
+                                   <<< Loop-information  End >>>
+             342     1  pp   4v            DO 120 I=LOW,EN
+             343     1   p   4v        120 H(I,I)=H(I,I)-X
+             344                     !
+             345                           S=ABS(H(EN,NA))+ABS(H(NA,ENM2))
+             346                           X=0.75*S
+             347                           Y=X
+             348                           W=-0.4375*S*S
+             349                       130 ITS=ITS+1
+             350                     ! ***************** LOOK FOR TWO CONSECUTIVE SMALL
+             351                     !                   SUB-DIAGONAL ELEMENTS.
+             352                     !                   FOR m=EN-2 STEP-1 UNTIL L DO__ ******************
+             353     1        s            DO 140 MM=L,ENM2
+             354     1        s              M=ENM2+L-MM
+             355     1        s              ZZ=H(M,M)
+             356     1        s              R=X-ZZ
+             357     1        s              S=Y-ZZ
+             358     1        s              P=(R*S-W)/H(M+1,M)+H(M,M+1)
+             359     1        s              Q=H(M+1,M+1)-ZZ-R-S
+             360     1        s              R=H(M+2,M+1)
+             361     1        s              S=ABS(P)+ABS(Q)+ABS(R)
+             362     1        s              P=P/S
+             363     1        s              Q=Q/S
+             364     1        s              R=R/S
+             365     1        s              IF (M.EQ.L) GO TO 150
+             366     1        s              IF (ABS(H(M,M-1))*(ABS(Q)+ABS(R)).LE.MACHEP*ABS(P)       &
+             367     1                        * (ABS(H(M-1,M-1))+ABS(ZZ)+ABS(H(M+1,M+1)))) GO TO 150
+             368     1        s        140 CONTINUE
+             369                     !
+             370                       150 MP2=M+2
+             371                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.62, ITR: 80, MVE: 2, POL: S)
+                                   <<< Loop-information  End >>>
+             372     1  pp   2v            DO 160 I=MP2,EN
+             373     1   p   2v              H(I,I-2)=0.
+             374     1   p   2v              IF (I.EQ.MP2) GO TO 160
+             375     1   p   2v              H(I,I-3)=0.
+             376     1   p   2v        160 CONTINUE
+             377                     ! ******************** DOUBLE QR STEP INVOLVING ROWS L TO EN AND
+             378                     !                      COLUMNS M TO EN **************************
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      H
+                                   <<< Loop-information  End >>>
+             379     1                     DO 260 K=M,NA
+             380     1                       NOLATS=K.NE.NA
+             381     1                       IF (K.EQ.M) GO TO 170
+             382     1                       P=H(K,K-1)
+             383     1                       Q=H(K+1,K-1)
+             384     1                       R=0.
+             385     1                       IF (NOLATS) R=H(K+2,K-1)
+             386     1                       X=ABS(P)+ABS(Q)+ABS(R)
+             387     1                       IF (X.EQ.0.) GO TO 260
+             388     1                       P=P/X
+             389     1                       Q=Q/X
+             390     1                       R=R/X
+             391     1                 170   S=SIGN(SQRT(P*P+Q*Q+R*R),P)
+             392     1                       IF (K.EQ.M) GO TO 180
+             393     1                       H(K,K-1)=-S*X
+             394     1                       GO TO 190
+             395     1                 180   IF(L.NE.M) H(K,K-1)=-H(K,K-1)
+             396     1                 190   P=P+S
+             397     1                       X=P/S
+             398     1                       Y=Q/S
+             399     1                       ZZ=R/S
+             400     1                       Q=Q/P
+             401     1                       R=R/P
+             402     1               ! ******************** ROW MODIFICATION ***************************
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 458
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    UNSWITCHING
+                                   <<< Loop-information  End >>>
+             403     2  pp   2v              DO 210 J=K,EN
+             404     2   p   2v                P=H(K,J)+Q*H(K+1,J)
+             405     2   p   2v                IF (.NOT.NOLATS) GO TO 200
+             406     2   p   2v                P=P+R*H(K+2,J)
+             407     2   p   2v                H(K+2,J)=H(K+2,J)-P*ZZ
+             408     2   p   2v        200     H(K+1,J)=H(K+1,J)-P*Y
+             409     2   p   2v                H(K,J)=H(K,J)-P*X
+             410     2   p   2v        210   CONTINUE
+             411     1               !
+             412     1                       J=MIN0(EN,K+3)
+             413     1               ! ******************** COLUMN MODIFICATION *************************
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 458
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 104, MVE: 7, POL: S)
+                                   <<<    UNSWITCHING
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      H
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 0
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 5
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             414     2  pp    v              DO 230 I=L,J
+             415     2   p    v                P=X*H(I,K)+Y*H(I,K+1)
+             416     2   p    v                IF (.NOT.NOLATS) GO TO 220
+             417     2   p    v                P=P+ZZ*H(I,K+2)
+             418     2   p    v                H(I,K+2)=H(I,K+2)-P*R
+             419     2   p    v        220     H(I,K+1)=H(I,K+1)-P*Q
+             420     2   p    v                H(I,K)=H(I,K)-P
+             421     2   p    v        230   CONTINUE
+             422     1               !
+             423     1                 260 CONTINUE
+             424                     !
+             425                           GO TO 70
+             426                     ! ******************** ONE ROOT FOUND ******************************
+             427                       270 WR(EN)=X+T
+             428                           WI(EN)=0.
+             429                           EN=NA
+             430                           GO TO 60
+             431                     ! ******************** TWO ROOTS FOUND *****************************
+             432                       280 P=(Y-X)/2.0
+             433                           Q=P*P+W
+             434                           ZZ=SQRT(ABS(Q))
+             435                           X=X+T
+             436                           IF (Q.LT.0.) GO TO 320
+             437                     ! ******************** REAL PAIR ***********************************
+             438                           ZZ=P+SIGN(ZZ,P)
+             439                           WR(NA)=X+ZZ
+             440                           WR(EN)=WR(NA)
+             441                           IF (ZZ.NE.0.) WR(EN)=X-W/ZZ
+             442                           WI(NA)=0.
+             443                           WI(EN)=0.
+             444                           GO TO 330
+             445                     ! ******************** COMPLEX PAIR *******************************
+             446                       320 WR(NA)=X+P
+             447                           WR(EN)=X+P
+             448                           WI(NA)=ZZ
+             449                           WI(EN)=-ZZ
+             450                       330 EN=ENM2
+             451                           GO TO 60
+             452                     ! ******************** SET ERROR -- NO CONVERGENCE TO AN
+             453                     !                      EIGENVALUE AFTER 30 ITERATIONS *************
+             454                      1000 IERR=EN
+             455                      1001 RETURN
+             456                           END
+
+ Procedure information
+   Lines      : 174
+   Statements : 133
+   Stack(byte): 16528
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : HQR
+   Attribute and Cross reference of name
+     ABS
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 307  327  327  329  345  345  361  361  361  366  366  366  366  366  366  366  386  386  386  434
+     EN
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 287
+      |(Definition)     : 315  429  450
+      |(Reference)      : 318  320  324  325  332  332  333  335  335  342  345  372  403  412  427  428  440  441  443  447  449  454
+     ENM2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 287
+      |(Definition)     : 321
+      |(Reference)      : 345  353  354  450
+     H
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 285  288
+      |(Definition)     : 343  373  375  393  395  407  408  409  418  419  420
+      |(Reference)      : 307  311  327  327  329  332  334  335  335  343  345  345  355  358  358  359  360  366  366  366  382  383  385  395  404  404  406  407  408  409  415  415  417  418  419  420
+     HQR
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 285
+      |(Reference)      : 
+     I
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 287
+      |(Definition)     : 304  342  372  414
+      |(Reference)      : 307  309  310  310  311  311  312  343  343  343  343  373  373  374  375  375  415  415  417  418  418  419  419  420  420
+     IERR
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 285  287
+      |(Definition)     : 299  454
+      |(Reference)      : 
+     IGH
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 285  287
+      |(Definition)     : 
+      |(Reference)      : 310  315
+     ITS
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 287
+      |(Definition)     : 319  349
+      |(Reference)      : 337  338  338  349
+     J
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 287
+      |(Definition)     : 306  403  412
+      |(Reference)      : 307  311  404  404  406  407  407  408  408  409  409  414
+     K
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 287
+      |(Definition)     : 301  309  379
+      |(Reference)      : 306  380  381  382  382  383  383  385  385  392  393  393  395  395  395  395  403  404  404  406  407  407  408  408  409  409  412  415  415  417  418  418  419  419  420  420
+     L
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 287
+      |(Definition)     : 325
+      |(Reference)      : 326  327  327  327  327  329  329  333  336  353  354  365  395  414
+     LL
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 287
+      |(Definition)     : 324
+      |(Reference)      : 325
+     LOW
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 285  287
+      |(Definition)     : 
+      |(Reference)      : 310  318  324  325  326  342
+     M
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 287
+      |(Definition)     : 354
+      |(Reference)      : 355  355  358  358  358  358  359  359  360  360  365  366  366  366  366  366  366  370  379  381  392  395
+     MACHEP
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 289
+      |(Definition)     : 297
+      |(Reference)      : 329  366
+     MIN0
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 412
+     MM
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 287
+      |(Definition)     : 353
+      |(Reference)      : 354
+     MP2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 287
+      |(Definition)     : 370
+      |(Reference)      : 372  374
+     N
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 285  287
+      |(Definition)     : 
+      |(Reference)      : 288  288  288  304  306
+     NA
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 287
+      |(Definition)     : 320
+      |(Reference)      : 321  334  334  335  335  336  345  345  379  380  429  439  440  442  446  448
+     NM
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 285  287
+      |(Definition)     : 
+      |(Reference)      : 288
+     NOLATS
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 292
+      |(Definition)     : 380
+      |(Reference)      : 385  405  416
+     NORM
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 289
+      |(Definition)     : 300  307
+      |(Reference)      : 307  328
+     P
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 289
+      |(Definition)     : 358  362  382  388  396  404  406  415  417  432
+      |(Reference)      : 361  362  366  386  388  391  391  391  396  397  400  401  406  407  408  409  417  418  419  420  433  433  438  438  446  447
+     Q
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 289
+      |(Definition)     : 359  363  383  389  400  433
+      |(Reference)      : 361  363  366  386  389  391  391  398  400  404  419  434  436
+     R
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 289
+      |(Definition)     : 356  360  364  384  385  390  401
+      |(Reference)      : 358  359  361  364  366  386  390  391  391  399  401  406  418
+     S
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 289
+      |(Definition)     : 327  328  345  357  361  391
+      |(Reference)      : 328  329  346  348  348  358  359  362  363  364  393  396  397  398  399
+     SIGN
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 391  438
+     SQRT
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 391  434
+     T
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 289
+      |(Definition)     : 316  340
+      |(Reference)      : 340  427  435
+     W
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 289
+      |(Definition)     : 335  348
+      |(Reference)      : 358  433  441
+     WI
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 285  288
+      |(Definition)     : 312  428  442  443  448  449
+      |(Reference)      : 
+     WR
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 285  288
+      |(Definition)     : 311  427  439  440  441  446  447
+      |(Reference)      : 440
+     X
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 289
+      |(Definition)     : 332  346  386  397  435
+      |(Reference)      : 340  343  347  356  387  388  389  390  393  409  415  427  432  435  439  441  446  447
+     Y
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 289
+      |(Definition)     : 334  347  398
+      |(Reference)      : 357  408  415  432
+     ZZ
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 289
+      |(Definition)     : 355  399  434  438
+      |(Reference)      : 356  357  359  366  407  417  438  439  441  441  448  449
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         40  execution     (Definition) 307  
+                           (Reference)  306
+         50  execution     (Definition) 313  
+                           (Reference)  304  310
+         60  execution     (Definition) 318  
+                           (Reference)  430  451
+         70  execution     (Definition) 324  
+                           (Reference)  425
+         80  execution     (Definition) 330  
+                           (Reference)  324
+        100  execution     (Definition) 332  
+                           (Reference)  326  329
+        120  execution     (Definition) 343  
+                           (Reference)  342
+        130  execution     (Definition) 349  
+                           (Reference)  338
+        140  execution     (Definition) 368  
+                           (Reference)  353
+        150  execution     (Definition) 370  
+                           (Reference)  365  366
+        160  execution     (Definition) 376  
+                           (Reference)  372  374
+        170  execution     (Definition) 391  
+                           (Reference)  381
+        180  execution     (Definition) 395  
+                           (Reference)  392
+        190  execution     (Definition) 396  
+                           (Reference)  394
+        200  execution     (Definition) 408  
+                           (Reference)  405
+        210  execution     (Definition) 410  
+                           (Reference)  403
+        220  execution     (Definition) 419  
+                           (Reference)  416
+        230  execution     (Definition) 421  
+                           (Reference)  414
+        260  execution     (Definition) 423  
+                           (Reference)  379  387
+        270  execution     (Definition) 427  
+                           (Reference)  333
+        280  execution     (Definition) 432  
+                           (Reference)  336
+        320  execution     (Definition) 446  
+                           (Reference)  436
+        330  execution     (Definition) 450  
+                           (Reference)  444
+       1000  execution     (Definition) 454  
+                           (Reference)  337
+       1001  execution     (Definition) 455  
+                           (Reference)  318
+
+ External subroutine subprogram "HQR2"
+  (inc)(line-no.)(nest)(optimize)
+             457                     !
+             458                     !
+             459                           SUBROUTINE HQR2(NM,N,LOW,IGH,H,WR,WI,Z,IERR)
+             460                     !
+             461                           INTEGER I,J,K,L,M,N,EN,II,JJ,LL,MM,NA,NM,NN, &
+             462                                   IGH,ITS,LOW,MP2,ENM2,IERR
+             463                           REAL H(NM,N),WR(N),WI(N),Z(NM,N)
+             464                           REAL P,Q,R,S,T,W,X,Y,RA,SA,VI,VR,ZZ,NORM,MACHEP
+             465                     !      REAL SQRT,ABS,SIGN
+             466                     !      INTEGER MIN0
+             467                           LOGICAL NOLATS
+             468                           COMPLEX Z3
+             469                     !      COMPLEX CMPLX
+             470                     !      REAL REAL,AIMAG
+             471                     !
+             472                     ! ********************** MACHEP IS A MACHINE DEPENDENT PARAMETER SPACIFYING
+             473                     !                        THE RELATIVE PRECISION OF FLOATING POINT ARITHEMETIC
+             474                           MACHEP=2.**(-47)
+             475                     !
+             476                           IERR=0
+             477                           NORM=0.
+             478                           K=1
+             479                     ! ********************* STORE ROOTS ISOLATED BY BALANC
+             480                     !                       AND COMPUTE MATRIX NORM **********************
+             481     1                     DO 50 I=1,N
+             482     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1600
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             483     2  pp    v              DO 40 J=K,N
+             484     2   p    v        40    NORM=NORM+ABS(H(I,J))
+             485     1               !
+             486     1                       K=I
+             487     1                       IF (I.GE.LOW.AND.I.LE.IGH) GO TO 50
+             488     1                       WR(I)=H(I,I)
+             489     1                       WI(I)=0.
+             490     1                  50 CONTINUE
+             491                     !
+             492                           EN=IGH
+             493                           T=0.
+             494                     ! ********************* SEARCH FOR NEXT EIGENVALUES ******************
+             495                        60 IF (EN.LT.LOW) GO TO 340
+             496                           ITS=0
+             497                           NA=EN-1
+             498                           ENM2=NA-1
+             499                     ! ********************* LOOK FOR SINGLE SMALL SUB-DIAGONAL ELEMENT
+             500                     !                       FOR L=EN STEP -1 UNTIL LOW DO __ **************
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 0
+                                   <<<      SIMD&FP   : SPILL 1  FILL 1
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             501     1        s         70 DO 80 LL=LOW,EN
+             502     1        s             L=EN+LOW-LL
+             503     1        s             IF (L.EQ.LOW) GO TO 100
+             504     1        s             S=ABS(H(L-1,L-1))+ABS(H(L,L))
+             505     1        s             IF (S.EQ.0.) S=NORM
+             506     1        s             IF (ABS(H(L,L-1)).LE.MACHEP*S) GO TO 100
+             507     1        s         80 CONTINUE
+             508                     ! ******************** FORM SHIFT ***********************************
+             509                       100 X=H(EN,EN)
+             510                           IF (L.EQ.EN) GO TO 270
+             511                           Y=H(NA,NA)
+             512                           W=H(EN,NA)*H(NA,EN)
+             513                           IF (L.EQ.NA) GO TO 280
+             514                           IF (ITS.EQ.30) GO TO 1000
+             515                           IF (ITS.NE.10.AND.ITS.NE.20) GO TO 130
+             516                     ! ******************** FORM EXCEPTIONAL SHIFT ***********************
+             517                           T=T+X
+             518                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1231
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.18, ITR: 96, MVE: 2, POL: L)
+                                   <<< Loop-information  End >>>
+             519     1  pp   4v            DO 120 I=LOW,EN
+             520     1   p   4v        120 H(I,I)=H(I,I)-X
+             521                     !
+             522                           S=ABS(H(EN,NA))+ABS(H(NA,ENM2))
+             523                           X=0.75*S
+             524                           Y=X
+             525                           W=-0.4375*S*S
+             526                       130 ITS=ITS+1
+             527                     ! ******************** LOOK FOR TWO CONSECUTIVE SMALL
+             528                     !                      SUB-DIAGONAL ELEMENTS.
+             529                     !                      FOR m=EN-2 STEP -1 UNTIL L Do __ ************
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 0
+                                   <<<      SIMD&FP   : SPILL 1  FILL 1
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             530     1        s            DO 140 MM=L,ENM2
+             531     1        s            M=ENM2+L-MM
+             532     1        s            ZZ=H(M,M)
+             533     1        s            R=X-ZZ
+             534     1        s            S=Y-ZZ
+             535     1        s            P=(R*S-W)/H(M+1,M)+H(M,M+1)
+             536     1        s            Q=H(M+1,M+1)-ZZ-R-S
+             537     1        s            R=H(M+2,M+1)
+             538     1        s            S=ABS(P)+ABS(Q)+ABS(R)
+             539     1        s            P=P/S
+             540     1        s            Q=Q/S
+             541     1        s            R=R/S
+             542     1        s            IF (M.EQ.L) GO TO 150
+             543     1        s            IF (ABS(H(M,M-1))*(ABS(Q)+ABS(R)).LE.MACHEP*ABS(P)      &
+             544     1                      * (ABS(H(M-1,M-1))+ABS(ZZ)+ABS(H(M+1,M+1)))) GO TO 150
+             545     1        s        140 CONTINUE
+             546                     !
+             547                       150 MP2=M+2
+             548                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.62, ITR: 80, MVE: 2, POL: S)
+                                   <<< Loop-information  End >>>
+             549     1  pp   2v            DO 160 I=MP2,EN
+             550     1   p   2v              H(I,I-2)=0.
+             551     1   p   2v              IF (I.EQ.MP2) GO TO 160
+             552     1   p   2v              H(I,I-3)=0.
+             553     1   p   2v        160 CONTINUE
+             554                     ! ****************** DOUBLE QR STEP INVOLVING ROWS L TO EN AND
+             555                     !                    COLUMNS M TO EN *****************************
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      H, Z
+                                   <<< Loop-information  End >>>
+             556     1                     DO 260 K=M,NA
+             557     1                       NOLATS=K.NE.NA
+             558     1                       IF (K.EQ.M) GO TO 170
+             559     1                       P=H(K,K-1)
+             560     1                       Q=H(K+1,K-1)
+             561     1                       R=0.
+             562     1                       IF (NOLATS) R=H(K+2,K-1)
+             563     1                       X=ABS(P)+ABS(Q)+ABS(R)
+             564     1                       IF (X.EQ.0.) GO TO 260
+             565     1                       P=P/X
+             566     1                       Q=Q/X
+             567     1                       R=R/X
+             568     1                 170   S=SIGN(SQRT(P*P+Q*Q+R*R),P)
+             569     1                       IF (K.EQ.M) GO TO 180
+             570     1                       H(K,K-1)=-S*X
+             571     1                       GO TO 190
+             572     1                 180   IF (L.NE.M) H(K,K-1)=-H(K,K-1)
+             573     1                 190   P=P+S
+             574     1                       X=P/S
+             575     1                       Y=Q/S
+             576     1                       ZZ=R/S
+             577     1                       Q=Q/p
+             578     1                       R=R/P
+             579     1               ! ****************** ROW MODIFICATION *************************
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 458
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    UNSWITCHING
+                                   <<< Loop-information  End >>>
+             580     2  pp   2v              DO 210 J=K,N
+             581     2   p   2v                P=H(K,J)+Q*H(K+1,J)
+             582     2   p   2v                IF (.NOT.NOLATS) GO TO 200
+             583     2   p   2v                P=P+R*H(K+2,J)
+             584     2   p   2v                H(K+2,J)=H(K+2,J)-P*ZZ
+             585     2   p   2v        200     H(K+1,J)=H(K+1,J)-P*Y
+             586     2   p   2v                H(K,J)=H(K,J)-P*X
+             587     2   p   2v        210   CONTINUE
+             588     1               !
+             589     1                       J=MIN0(EN,K+3)
+             590     1               ! ****************** COLUMN MODIFICATION **********************
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 458
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 104, MVE: 7, POL: S)
+                                   <<<    UNSWITCHING
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      H
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 0
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 5
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             591     2  pp    v              DO 230 I=1,J
+             592     2   p    v                P=X*H(I,K)+Y*H(I,K+1)
+             593     2   p    v                IF (.NOT.NOLATS) GO TO 220
+             594     2   p    v                P=P+ZZ*H(I,K+2)
+             595     2   p    v                H(I,K+2)=H(I,K+2)-P*R
+             596     2   p    v        220     H(I,K+1)=H(I,K+1)-P*Q
+             597     2   p    v                H(I,K)=H(I,K)-P
+             598     2   p    v        230   CONTINUE
+             599     1               ! ****************** ACCUMULATE TRANSFORMATIONS ***************
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 458
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 104, MVE: 7, POL: S)
+                                   <<<    UNSWITCHING
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      Z
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 0
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 5
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             600     2  pp    v              DO 250 I=LOW,IGH
+             601     2   p    v                P=X*Z(I,K)+Y*Z(I,K+1)
+             602     2   p    v                IF (.NOT.NOLATS) GO TO 240
+             603     2   p    v                P=P+ZZ*Z(I,K+2)
+             604     2   p    v                Z(I,K+2)=Z(I,K+2)-P*R
+             605     2   p    v        240     Z(I,K+1)=Z(I,K+1)-P*Q
+             606     2   p    v                Z(I,K)=Z(I,K)-P
+             607     2   p    v        250   CONTINUE
+             608     1               !
+             609     1                 260 CONTINUE
+             610                     !
+             611                           GO TO 70
+             612                     ! ***************** ONE ROOT FOUND ******************************
+             613                       270 H(EN,EN)=X+T
+             614                           WR(EN)=H(EN,EN)
+             615                           WI(EN)=0.
+             616                           EN=NA
+             617                           GO TO 60
+             618                     ! ***************** TWO ROOTS FOUND *****************************
+             619                       280 P=(Y-X)/2.
+             620                           Q=P*P+W
+             621                           ZZ=SQRT(ABS(Q))
+             622                           H(EN,EN)=X+T
+             623                           X=H(EN,EN)
+             624                           H(NA,NA)=Y+T
+             625                           IF (Q.LT.0.) GO TO 320
+             626                     ! ****************** REAL PAIR ***********************************
+             627                           ZZ=P+SIGN(ZZ,P)
+             628                           WR(NA)=X+ZZ
+             629                           WR(EN)=WR(NA)
+             630                           IF (ZZ.NE.0.) WR(EN)=X-W/ZZ
+             631                           WI(NA)=0.
+             632                           WI(EN)=0.
+             633                           X=H(EN,NA)
+             634                           S=ABS(X)+ABS(ZZ)
+             635                           P=X/S
+             636                           Q=ZZ/S
+             637                           R=SQRT(P*P+Q*Q)
+             638                           P=P/R
+             639                           Q=Q/R
+             640                     ! ****************** ROW MODIFICATION ***************************
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 616
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             641     1  pp   2v            DO 290 J=NA,N
+             642     1   p   2v              ZZ=H(NA,J)
+             643     1   p   2v              H(NA,J)=Q*ZZ+P*H(EN,J)
+             644     1   p   2v              H(EN,J)=Q*H(EN,J)-P*ZZ
+             645     1   p   2v        290 CONTINUE
+             646                     ! ****************** COLUMN MODIFICATION ************************
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 616
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.62, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      H
+                                   <<< Loop-information  End >>>
+             647     1  pp   2v            DO 300 I=1,EN
+             648     1   p   2v              ZZ=H(I,NA)
+             649     1   p   2v              H(I,NA)=Q*ZZ+P*H(I,EN)
+             650     1   p   2v              H(I,EN)=Q*H(I,EN)-P*ZZ
+             651     1   p   2v        300 CONTINUE
+             652                     ! ****************** ACCUMULATE TRANSFORMATION *******************
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 616
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.62, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      Z
+                                   <<< Loop-information  End >>>
+             653     1  pp   2v            DO 310 I=LOW,IGH
+             654     1   p   2v              ZZ=Z(I,NA)
+             655     1   p   2v              Z(I,NA)=Q*ZZ+P*Z(I,EN)
+             656     1   p   2v              Z(I,EN)=Q*Z(I,EN)-P*ZZ
+             657     1   p   2v        310 CONTINUE
+             658                     !
+             659                           GO TO 330
+             660                     ! ***************** COMPLEX PAIR *********************************
+             661                       320 WR(NA)=X+P
+             662                           WR(EN)=X+P
+             663                           WI(NA)=ZZ
+             664                           WI(EN)=-ZZ
+             665                       330 EN=ENM2
+             666                           GO TO 60
+             667                     ! ***************** ALL ROOTS FOUND. BACKSUBSTITUDE TO FIND
+             668                     !                   VECTORS OF UPPER TRIANGULAR FORM *************
+             669                       340 IF (NORM.EQ.0.) GO TO 1001
+             670                     ! ***************** FOR EN=N STEP -1 UNTIL 1 DO __ ***************
+             671     1                     DO 800 NN=1,N
+             672     1                       EN=N+1-NN
+             673     1                       P=WR(EN)
+             674     1                       Q=WI(EN)
+             675     1                       NA=EN-1
+             676     1                       IF (Q) 710, 600, 800
+             677     1               ! ***************** REAL VECTOR **********************************
+             678     1                 600 M=EN
+             679     1                     H(EN,EN)=1.
+             680     1                     IF (NA.EQ.0) GO TO 800
+             681     1               ! ***************** FOR i=EN-1 STEP -1 UNTIL 1 DO __ *************
+             682     2                     DO 700 II=1,NA
+             683     2                       I=EN-II
+             684     2                       W=H(I,I)-P
+             685     2                       R=H(I,EN)
+             686     2                       IF (M.GT.NA) GO TO 620
+             687     2               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1143
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             688     3  pp    v              DO 610 J=M,NA
+             689     3   p    v        610   R=R+H(I,J)*H(J,EN)
+             690     2               !
+             691     2                 620   IF (WI(I).GE.0.) GO TO 630
+             692     2                       ZZ=W
+             693     2                       S=R
+             694     2                       GO TO 700
+             695     2                 630   M=I
+             696     2                       IF (WI(I).NE.0.) GO TO 640
+             697     2                       T=W
+             698     2                       IF (W.EQ.0.) T=MACHEP*NORM
+             699     2                       H(I,EN)=-R/T
+             700     2                       GO TO 700
+             701     2               ! *************** SOLVE REAL EQUATION *****************************
+             702     2                 640   X=H(I,I+1)
+             703     2                       Y=H(I+1,I)
+             704     2                       Q=(WR(I)-P)*(WR(I)-P)+WI(I)*WI(I)
+             705     2                       T=(X*S-ZZ*R)/Q
+             706     2                       H(I,EN)=T
+             707     2                       IF (ABS(X).LE.ABS(ZZ)) GO TO 650
+             708     2                       H(I+1,EN)=(-R-W*T)/X
+             709     2                       GO TO 700
+             710     2                 650   H(I+1,EN)=(-S-Y*T)/ZZ
+             711     2                 700 CONTINUE
+             712     1               ! *************** END REAL VECTOR *********************************
+             713     1                     GO TO 800
+             714     1               ! ************** COMPLEX VECOTR ***********************************
+             715     1                 710 M=NA
+             716     1               ! ************** LAST VECTOR COMPONENT CHOSEN IMAGINARY SO THAT
+             717     1               !                EIGEN VECTOR MATRIX IS TRINAUGULAR ***************
+             718     1                     IF (ABS(H(EN,NA)).LE.ABS(H(NA,EN))) GO TO 720
+             719     1                     H(NA,NA)=Q/H(EN,NA)
+             720     1                     H(NA,EN)=-(H(EN,EN)-P)/H(EN,NA)
+             721     1                     GO TO 730
+             722     1                 720 Z3=CMPLX(0.0,-H(NA,EN))/CMPLX(H(NA,NA)-P,Q)
+             723     1                     H(NA,NA)=REAL(Z3)
+             724     1                     H(NA,EN)=AIMAG(Z3)
+             725     1                 730 H(EN,NA)=0.0
+             726     1                     H(EN,EN)=1.
+             727     1                     ENM2=NA-1
+             728     1                     IF (ENM2.EQ.0) GO TO 800
+             729     1               ! ********************* FOR i=EN-2 STEP -1 UNTIL 1 DO __ ************
+             730     2                     DO 790 II=1,ENM2
+             731     2                       I=NA-II
+             732     2                       W=H(I,I)-P
+             733     2                       RA=0.
+             734     2                       SA=H(I,EN)
+             735     2               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 800
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             736     3  pp    v              DO 760 J=M,NA
+             737     3   p    v                RA=RA+H(I,J)*H(J,NA)
+             738     3   p    v                SA=SA+H(I,J)*H(J,EN)
+             739     3   p    v        760   CONTINUE
+             740     2               !
+             741     2                       IF (WI(I).GE.0.) GO TO 770
+             742     2                       ZZ=W
+             743     2                       R=RA
+             744     2                       S=SA
+             745     2                       GO TO 790
+             746     2                 770   M=I
+             747     2                       IF (WI(I).NE.0.) GO TO 780
+             748     2                       Z3=CMPLX(-RA,-SA)/CMPLX(W,Q)
+             749     2                       H(I,NA)=REAL(Z3)
+             750     2                       H(I,EN)=AIMAG(Z3)
+             751     2                       GO TO 790
+             752     2               ! ******************** SOLVE COMPLEX EQUATIONS *******************
+             753     2                 780   X=H(I,I+1)
+             754     2                       Y=H(I+1,I)
+             755     2                       VR=(WR(I)-P)*(WR(I)-P)+WI(I)*WI(I)-Q*Q
+             756     2                       VI=(WR(I)-P)*2.0*Q
+             757     2                       IF (VR.EQ.0.AND.VI.EQ.0.) VR=MACHEP*NORM    &
+             758     2                        * (ABS(W)+ABS(Q)+ABS(X)+ABS(Y)+ABS(ZZ))
+             759     2                       Z3=CMPLX(X*R-ZZ*RA+Q*SA,X*S-ZZ*SA-Q*RA)/CMPLX(VR,VI)
+             760     2                       H(I,NA)=REAL(Z3)
+             761     2                       H(I,EN)=AIMAG(Z3)
+             762     2                       IF (ABS(X).LE.ABS(ZZ)+ABS(Q)) GO TO 785
+             763     2                       H(I+1,NA)=(-RA-W*H(I,NA)+Q*H(I,EN))/X
+             764     2                       H(I+1,EN)=(-SA-W*H(I,EN)-Q*H(I,NA))/X
+             765     2                       GO TO 790
+             766     2                 785   Z3=CMPLX(-R-Y*H(I,NA),-S-Y*H(I,EN))/CMPLX(ZZ,Q)
+             767     2                       H(I+1,NA)=REAL(Z3)
+             768     2                       H(I+1,EN)=AIMAG(Z3)
+             769     2                 790 CONTINUE
+             770     1               ! ******************** END COMPLEX VECTOR ***************************
+             771     1                 800 CONTINUE
+             772                     ! ******************** END BACK SUBSTITUTION.
+             773                     !                      VECTORS OF ISOLATED ROOTS ********************
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<< Loop-information  End >>>
+             774     1  pp                 DO 840 I=1,N
+             775     1   p                   IF (I.GE.LOW.AND.I.LE.IGH) GO TO 840
+             776     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.77, ITR: 192, MVE: 3, POL: S)
+                                   <<< Loop-information  End >>>
+             777     2   p   4v              DO 820 J=1,N
+             778     2   p   4v        820   Z(I,J)=H(I,J)
+             779     1               !
+             780     1   p             840 CONTINUE
+             781                     ! ******************** MULTIPLY BY TRANSFORMATION MATRIX TO GIVE
+             782                     !                      VECTORS OF ORIGINAL FULL MATRIX.
+             783                     !                      FOR J=N STEP -1 UNTIL LOW DO __ **************
+             784     1                     DO 880 JJ=LOW,N
+             785     1                       J=N+LOW-JJ
+             786     1                       M=MIN0(J,IGH)
+             787     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      H
+                                   <<< Loop-information  End >>>
+             788     2  pp                   DO 880 I=LOW,IGH
+             789     2   p                     ZZ=0.
+             790     2               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.68, ITR: 192, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      H
+                                   <<< Loop-information  End >>>
+             791     3   p   8v                DO 860 K=LOW,M
+             792     3   p   8v        860     ZZ=ZZ+Z(I,K)*H(K,J)
+             793     2               !
+             794     2   p                     Z(I,J)=ZZ
+             795     1   p             880 CONTINUE
+             796                     !
+             797                           GO TO 1001
+             798                     ! ************** SET ERROR -- NO CONVERGENCE TO AN
+             799                     !                EIGENVALUE AFTER 30 ITERATIONS *********************
+             800                      1000 IERR=EN
+             801                      1001 RETURN
+             802                           END
+             803                     
+             804                     
+             805                     
+
+ Procedure information
+   Lines      : 349
+   Statements : 269
+   Stack(byte): 59248
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : HQR2
+   Attribute and Cross reference of name
+     ABS
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 484  504  504  506  522  522  538  538  538  543  543  543  543  543  543  543  563  563  563  621  634  634  707  707  718  718  757  757  757  757  757  762  762  762
+     AIMAG
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 724  750  761  768
+     CMPLX
+      |(Class and Type) : intrinsic function name, COMPLEX(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 722  722  748  748  759  759  766  766
+     EN
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 461
+      |(Definition)     : 492  616  665  672
+      |(Reference)      : 495  497  501  502  509  509  510  512  512  519  522  549  589  613  613  614  614  614  615  622  622  623  623  629  630  632  633  643  644  644  647  649  650  650  655  656  656  662  664  673  674  675  678  679  679  683  685  689  699  706  708  710  718  718  719  720  720  720  720  722  724  725  726  726  734  738  750  761  763  764  764  766  768  800
+     ENM2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 461
+      |(Definition)     : 498  727
+      |(Reference)      : 522  530  531  665  728  730
+     H
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 459  463
+      |(Definition)     : 520  550  552  570  572  584  585  586  595  596  597  613  622  624  643  644  649  650  679  699  706  708  710  719  720  723  724  725  726  749  750  760  761  763  764  767  768
+      |(Reference)      : 484  488  504  504  506  509  511  512  512  520  522  522  532  535  535  536  537  543  543  543  559  560  562  572  581  581  583  584  585  586  592  592  594  595  596  597  614  623  633  642  643  644  648  649  650  684  685  689  689  702  703  718  718  719  720  720  722  722  732  734  737  737  738  738  753  754  763  763  764  764  766  766  778  792
+     HQR2
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 459
+      |(Reference)      : 
+     I
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 461
+      |(Definition)     : 481  519  549  591  600  647  653  683  731  774  788
+      |(Reference)      : 484  486  487  487  488  488  488  489  520  520  520  520  550  550  551  552  552  592  592  594  595  595  596  596  597  597  601  601  603  604  604  605  605  606  606  648  649  649  650  650  654  655  655  656  656  684  684  685  689  691  695  696  699  702  702  703  703  704  704  704  704  706  708  710  732  732  734  737  738  741  746  747  749  750  753  753  754  754  755  755  755  755  756  760  761  763  763  763  764  764  764  766  766  767  768  775  775  778  778  792  794
+     IERR
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 459  461
+      |(Definition)     : 476  800
+      |(Reference)      : 
+     IGH
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 459  461
+      |(Definition)     : 
+      |(Reference)      : 487  492  600  653  775  786  788
+     II
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 461
+      |(Definition)     : 682  730
+      |(Reference)      : 683  731
+     ITS
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 461
+      |(Definition)     : 496  526
+      |(Reference)      : 514  515  515  526
+     J
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 461
+      |(Definition)     : 483  580  589  641  688  736  777  785
+      |(Reference)      : 484  581  581  583  584  584  585  585  586  586  591  642  643  643  644  644  689  689  737  737  738  738  778  778  786  792  794
+     JJ
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 461
+      |(Definition)     : 784
+      |(Reference)      : 785
+     K
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 461
+      |(Definition)     : 478  486  556  791
+      |(Reference)      : 483  557  558  559  559  560  560  562  562  569  570  570  572  572  572  572  580  581  581  583  584  584  585  585  586  586  589  592  592  594  595  595  596  596  597  597  601  601  603  604  604  605  605  606  606  792  792
+     L
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 461
+      |(Definition)     : 502
+      |(Reference)      : 503  504  504  504  504  506  506  510  513  530  531  542  572
+     LL
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 461
+      |(Definition)     : 501
+      |(Reference)      : 502
+     LOW
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 459  461
+      |(Definition)     : 
+      |(Reference)      : 487  495  501  502  503  519  600  653  775  784  785  788  791
+     M
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 461
+      |(Definition)     : 531  678  695  715  746  786
+      |(Reference)      : 532  532  535  535  535  535  536  536  537  537  542  543  543  543  543  543  543  547  556  558  569  572  686  688  736  791
+     MACHEP
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 464
+      |(Definition)     : 474
+      |(Reference)      : 506  543  698  757
+     MIN0
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 589  786
+     MM
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 461
+      |(Definition)     : 530
+      |(Reference)      : 531
+     MP2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 461
+      |(Definition)     : 547
+      |(Reference)      : 549  551
+     N
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 459  461
+      |(Definition)     : 
+      |(Reference)      : 463  463  463  463  481  483  580  641  671  672  774  777  784  785
+     NA
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 461
+      |(Definition)     : 497  675
+      |(Reference)      : 498  511  511  512  512  513  522  522  556  557  616  624  624  628  629  631  633  641  642  643  648  649  654  655  661  663  680  682  686  688  715  718  718  719  719  719  720  720  722  722  722  723  723  724  725  727  731  736  737  749  760  763  763  764  766  767
+     NM
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 459  461
+      |(Definition)     : 
+      |(Reference)      : 463  463
+     NN
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 461
+      |(Definition)     : 671
+      |(Reference)      : 672
+     NOLATS
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 467
+      |(Definition)     : 557
+      |(Reference)      : 562  582  593  602
+     NORM
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 464
+      |(Definition)     : 477  484
+      |(Reference)      : 484  505  669  698  757
+     P
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 464
+      |(Definition)     : 535  539  559  565  573  581  583  592  594  601  603  619  635  638  673
+      |(Reference)      : 538  539  543  563  565  568  568  568  573  574  577  578  583  584  585  586  594  595  596  597  603  604  605  606  620  620  627  627  637  637  638  643  644  649  650  655  656  661  662  684  704  704  720  722  732  755  755  756
+     Q
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 464
+      |(Definition)     : 536  540  560  566  577  620  636  639  674  704
+      |(Reference)      : 538  540  543  563  566  568  568  575  577  581  596  605  621  625  637  637  639  643  644  649  650  655  656  676  705  719  722  748  755  755  756  757  759  759  762  763  764  766
+     R
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 464
+      |(Definition)     : 533  537  541  561  562  567  578  637  685  689  743
+      |(Reference)      : 535  536  538  541  543  563  567  568  568  576  578  583  595  604  638  639  689  693  699  705  708  759  766
+     RA
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 464
+      |(Definition)     : 733  737
+      |(Reference)      : 737  743  748  759  759  763
+     REAL
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 723  749  760  767
+     S
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 464
+      |(Definition)     : 504  505  522  534  538  568  634  693  744
+      |(Reference)      : 505  506  523  525  525  535  536  539  540  541  570  573  574  575  576  635  636  705  710  759  766
+     SA
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 464
+      |(Definition)     : 734  738
+      |(Reference)      : 738  744  748  759  759  764
+     SIGN
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 568  627
+     SQRT
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 568  621  637
+     T
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 464
+      |(Definition)     : 493  517  697  698  705
+      |(Reference)      : 517  613  622  624  699  706  708  710
+     VI
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 464
+      |(Definition)     : 756
+      |(Reference)      : 757  759
+     VR
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 464
+      |(Definition)     : 755  757
+      |(Reference)      : 757  759
+     W
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 464
+      |(Definition)     : 512  525  684  732
+      |(Reference)      : 535  620  630  692  697  698  708  742  748  757  763  764
+     WI
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 459  463
+      |(Definition)     : 489  615  631  632  663  664
+      |(Reference)      : 674  691  696  704  704  741  747  755  755
+     WR
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 459  463
+      |(Definition)     : 488  614  628  629  630  661  662
+      |(Reference)      : 629  673  704  704  755  755  756
+     X
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 464
+      |(Definition)     : 509  523  563  574  623  633  702  753
+      |(Reference)      : 517  520  524  533  564  565  566  567  570  586  592  601  613  619  622  628  630  634  635  661  662  705  707  708  757  759  759  762  763  764
+     Y
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 464
+      |(Definition)     : 511  524  575  703  754
+      |(Reference)      : 534  585  592  601  619  624  710  757  766  766
+     Z
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 459  463
+      |(Definition)     : 604  605  606  655  656  778  794
+      |(Reference)      : 601  601  603  604  605  606  654  655  656  792
+     Z3
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : 
+      |(Declaration)    : 468
+      |(Definition)     : 722  748  759  766
+      |(Reference)      : 723  724  749  750  760  761  767  768
+     ZZ
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 464
+      |(Definition)     : 532  576  621  627  642  648  654  692  742  789  792
+      |(Reference)      : 533  534  536  543  584  594  603  627  628  630  630  634  636  643  644  649  650  655  656  663  664  705  707  710  757  759  759  762  766  792  794
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         40  execution     (Definition) 484  
+                           (Reference)  483
+         50  execution     (Definition) 490  
+                           (Reference)  481  487
+         60  execution     (Definition) 495  
+                           (Reference)  617  666
+         70  execution     (Definition) 501  
+                           (Reference)  611
+         80  execution     (Definition) 507  
+                           (Reference)  501
+        100  execution     (Definition) 509  
+                           (Reference)  503  506
+        120  execution     (Definition) 520  
+                           (Reference)  519
+        130  execution     (Definition) 526  
+                           (Reference)  515
+        140  execution     (Definition) 545  
+                           (Reference)  530
+        150  execution     (Definition) 547  
+                           (Reference)  542  543
+        160  execution     (Definition) 553  
+                           (Reference)  549  551
+        170  execution     (Definition) 568  
+                           (Reference)  558
+        180  execution     (Definition) 572  
+                           (Reference)  569
+        190  execution     (Definition) 573  
+                           (Reference)  571
+        200  execution     (Definition) 585  
+                           (Reference)  582
+        210  execution     (Definition) 587  
+                           (Reference)  580
+        220  execution     (Definition) 596  
+                           (Reference)  593
+        230  execution     (Definition) 598  
+                           (Reference)  591
+        240  execution     (Definition) 605  
+                           (Reference)  602
+        250  execution     (Definition) 607  
+                           (Reference)  600
+        260  execution     (Definition) 609  
+                           (Reference)  556  564
+        270  execution     (Definition) 613  
+                           (Reference)  510
+        280  execution     (Definition) 619  
+                           (Reference)  513
+        290  execution     (Definition) 645  
+                           (Reference)  641
+        300  execution     (Definition) 651  
+                           (Reference)  647
+        310  execution     (Definition) 657  
+                           (Reference)  653
+        320  execution     (Definition) 661  
+                           (Reference)  625
+        330  execution     (Definition) 665  
+                           (Reference)  659
+        340  execution     (Definition) 669  
+                           (Reference)  495
+        600  execution     (Definition) 678  
+                           (Reference)  676
+        610  execution     (Definition) 689  
+                           (Reference)  688
+        620  execution     (Definition) 691  
+                           (Reference)  686
+        630  execution     (Definition) 695  
+                           (Reference)  691
+        640  execution     (Definition) 702  
+                           (Reference)  696
+        650  execution     (Definition) 710  
+                           (Reference)  707
+        700  execution     (Definition) 711  
+                           (Reference)  682  694  700  709
+        710  execution     (Definition) 715  
+                           (Reference)  676
+        720  execution     (Definition) 722  
+                           (Reference)  718
+        730  execution     (Definition) 725  
+                           (Reference)  721
+        760  execution     (Definition) 739  
+                           (Reference)  736
+        770  execution     (Definition) 746  
+                           (Reference)  741
+        780  execution     (Definition) 753  
+                           (Reference)  747
+        785  execution     (Definition) 766  
+                           (Reference)  762
+        790  execution     (Definition) 769  
+                           (Reference)  730  745  751  765
+        800  execution     (Definition) 771  
+                           (Reference)  671  676  680  713  728
+        820  execution     (Definition) 778  
+                           (Reference)  777
+        840  execution     (Definition) 780  
+                           (Reference)  774  775
+        860  execution     (Definition) 792  
+                           (Reference)  791
+        880  execution     (Definition) 795  
+                           (Reference)  784  788
+       1000  execution     (Definition) 800  
+                           (Reference)  514
+       1001  execution     (Definition) 801  
+                           (Reference)  669  797
+
+ Total information
+   Procedures       : 7
+   Total lines      : 805
+   Total statements : 600
+   Total stack(byte): 108960
+   Total prefetch num: 0
+

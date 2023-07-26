@@ -1,0 +1,256 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jul 12 10:11:40 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/tco639l72/src_4cpl
+   Source file       : geostd.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "geostd"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine geostd (m,pin,phiin)
+               2                     !
+               3                     !  table lookup for standard atmosphere geopotentials as a function
+               4                     !  of pressure.  table has resolution of 10mbs below 100mb, 1mb
+               5                     !  from 100mbs to 1 mb.  interpolation is linear in log p.
+               6                     !
+               7                     !  *********************************************************************
+               8                     !
+               9                     !
+              10                           implicit  none
+              11                     
+              12                           integer   m
+              13                           real      pin(m),phiin(m)
+              14                           real      phi(230)
+              15                     
+              16                           integer   i,ii
+              17                           real      phix,pw2
+              18                     !
+              19                           data (phi(i),i=1,55) /                     &
+              20                             31055. ,26481. ,23849. ,22000. ,20576.   &
+              21                            ,19420. ,18442. ,17595. ,16848. ,16180.   &
+              22                            ,15576. ,15024. ,14516. ,14046. ,13608.   &
+              23                            ,13199. ,12815. ,12452. ,12110. ,11784.   &
+              24                            ,11475. ,11180. ,10898. ,10626. ,10363.   &
+              25                            ,10109. , 9862. , 9623. , 9390. , 9164.   &
+              26                            , 8944. , 8730. , 8521. , 8317. , 8117.   &
+              27                            , 7923. , 7733. , 7546. , 7364. , 7185.   &
+              28                            , 7011. , 6839. , 6671. , 6506. , 6344.   &
+              29                            , 6185. , 6028. , 5874. , 5723. , 5574.   &
+              30                            , 5428. , 5284. , 5143. , 5003. , 4865./
+              31                     !
+              32                           data (phi(i),i=56,115) /                   &
+              33                              4730. , 4596. , 4465. , 4335. , 4206.   &
+              34                            , 4080. , 3955. , 3832. , 3711. , 3591.   &
+              35                            , 3472. , 3355. , 3240. , 3125. , 3012.   &
+              36                            , 2901. , 2790. , 2681. , 2573. , 2466.   &
+              37                            , 2361. , 2256. , 2153. , 2050. , 1949.   &
+              38                            , 1849. , 1750. , 1651. , 1554. , 1457.   &
+              39                            , 1362. , 1267. , 1174. , 1081. ,  988.   &
+              40                            ,  897. ,  807. ,  717. ,  629. ,  540.   &
+              41                            ,  453. ,  367. ,  281. ,  195. ,  111.   &
+              42                            ,   27. ,  -55. , -137. , -219. , -301.   &
+              43                            , -381. , -461. , -540. , -619. , -698.   &
+              44                            , -775. , -852. , -928. ,-1004. ,-1080./
+              45                     !
+              46                           data (phi(i),i=116,170) /                  &
+              47                             47832. ,42451. ,39436. ,37360. ,35786.   &
+              48                            ,34520. ,33462. ,32554. ,31760. ,31055.   &
+              49                            ,30421. ,29843. ,29313. ,28824. ,28369.   &
+              50                            ,27944. ,27546. ,27171. ,26817. ,26481.   &
+              51                            ,26163. ,25860. ,25571. ,25294. ,25028.   &
+              52                            ,24775. ,24530. ,24295. ,24068. ,23849.   &
+              53                            ,23637. ,23433. ,23235. ,23043. ,22856.   &
+              54                            ,22675. ,22500. ,22329. ,22162. ,22000.   &
+              55                            ,21842. ,21688. ,21538. ,21391. ,21247.   &
+              56                            ,21107. ,20970. ,20836. ,20705. ,20576.   &
+              57                            ,20451. ,20327. ,20206. ,20088. ,19971./
+              58                     !
+              59                           data (phi(i),i=171,230) /                  &
+              60                             19857. ,19745. ,19634. ,19526. ,19420.   &
+              61                            ,19315. ,19211. ,19110. ,19010. ,18912.   &
+              62                            ,18815. ,18720. ,18626. ,18533. ,18442.   &
+              63                            ,18352. ,18263. ,18176. ,18090. ,18004.   &
+              64                            ,17920. ,17837. ,17756. ,17675. ,17595.   &
+              65                            ,17516. ,17439. ,17362. ,17286. ,17211.   &
+              66                            ,17136. ,17063. ,16991. ,16919. ,16848.   &
+              67                            ,16778. ,16709. ,16640. ,16572. ,16505.   &
+              68                            ,16439. ,16373. ,16308. ,16244. ,16180.   &
+              69                            ,16117. ,16054. ,15993. ,15931. ,15871.   &
+              70                            ,15810. ,15751. ,15692. ,15634. ,15576.   &
+              71                            ,15518. ,15461. ,15405. ,15349. ,15294./
+              72                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 22
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.94, ITR: 56, MVE: 3, POL: L)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      phiin, pin
+                                   <<< Loop-information  End >>>
+              73     1  pp    v            do 3 i=1,m
+              74     1   p    v            phix= pin(i)*0.1
+              75     1   p    v            if(pin(i).lt.100.0) phix= max(1.000001,pin(i))
+              76     1               !
+              77     1   p    v            ii= int(phix)
+              78     1   p    v            pw2= phix/float(ii)
+              79     1   p    v            phix= 1.0+1.0/float(ii)
+              80     1   p    v            if(pin(i).lt.100.0) ii= ii+115
+              81     1               !
+              82     1   p    v            phiin(i)= phi(ii)+(phi(1+ii)-phi(ii))*log(pw2)/log(phix)
+              83     1   p    v          3 continue
+              84                           return
+              85                           end
+
+ Procedure information
+   Lines      : 85
+   Statements : 22
+   Stack(byte): 752
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : geostd
+   Attribute and Cross reference of name
+     float
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 78  79
+     geostd
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 16
+      |(Definition)     : 19  32  46  59  73
+      |(Reference)      : 19  32  46  59  74  75  75  80  82
+     ii
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 16
+      |(Definition)     : 77  80
+      |(Reference)      : 78  79  80  82  82  82
+     int
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 77
+     log
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 82  82
+     m
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  12
+      |(Definition)     : 
+      |(Reference)      : 13  13  73
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 75
+     phi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 14  19  32  46  59
+      |(Definition)     : 
+      |(Reference)      : 82  82  82
+     phiin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  13
+      |(Definition)     : 82
+      |(Reference)      : 
+     phix
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 17
+      |(Definition)     : 74  75  79
+      |(Reference)      : 77  78  82
+     pin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  13
+      |(Definition)     : 
+      |(Reference)      : 74  75  75  80
+     pw2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 17
+      |(Definition)     : 78
+      |(Reference)      : 82
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+          3  execution     (Definition) 83  
+                           (Reference)  73
+
+ Total information
+   Procedures       : 1
+   Total lines      : 85
+   Total statements : 22
+   Total stack(byte): 752
+   Total prefetch num: 0
+

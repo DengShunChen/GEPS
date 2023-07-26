@@ -1,0 +1,1940 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jul 12 10:11:48 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/tco639l72/src_4cpl
+   Source file       : sfc_sice.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "sfc_sice"
+  (inc)(line-no.)(nest)(optimize)
+               1                     !-----------------------------------
+               2                           subroutine sfc_sice                                               &
+               3                     !...................................
+               4                     !  ---  inputs: &
+               5                                ( imj, im, km, ps, u1, v1, t1, q1, delt,                     &
+               6                                  sfcemis, dlwflx, sfcnsw, sfcdsw, srflag,                   &
+               7                                  cm, ch, prsl1, prslki, islimsk, ddvel,                     &
+               8                                  flag_iter, mom4ice, lsm,                                   &
+               9                     !    &       flag_iter, mom4ice, lsm, lprnt,ipr,                        &
+              10                     !  ---  input/outputs: &
+              11                                  hice, fice, tice, weasd, tskin, tprcp, stc, ep,            &
+              12                     !  ---  outputs:
+              13                     !    &       snwdph, qsurf, snowmt, gflux, cmm, chh, evap, hflx         &
+              14                                  snwdph, qsurf, snowmt, gflux, evap, hflx                   &
+              15                                )
+              16                     
+              17                     ! ===================================================================== !
+              18                     !  description:                                                         !
+              19                     !                                                                       !
+              20                     !  usage:                                                               !
+              21                     !                                                                       !
+              22                     !    call sfc_sice                                                      !
+              23                     !       inputs:                                                         !
+              24                     !          ( im, km, ps, u1, v1, t1, q1, delt,                          !
+              25                     !            sfcemis, dlwflx, sfcnsw, sfcdsw, srflag,                   !
+              26                     !            cm, ch, prsl1, prslki, islimsk, ddvel,                     !
+              27                     !            flag_iter, mom4ice, lsm,                                   !
+              28                     !       input/outputs:                                                  !
+              29                     !            hice, fice, tice, weasd, tskin, tprcp, stc, ep,            !
+              30                     !       outputs:                                                        !
+              31                     !            snwdph, qsurf, snowmt, gflux, cmm, chh, evap, hflx )       !
+              32                     !                                                                       !
+              33                     !  subprogram called:  ice3lay.                                         !
+              34                     !                                                                       !
+              35                     !  program history log:                                                 !
+              36                     !         2005  --  xingren wu created  from original progtm and added  !
+              37                     !                     two-layer ice model                               !
+              38                     !         200x  -- sarah lu    added flag_iter                          !
+              39                     !    oct  2006  -- h. wei      added cmm and chh to output              !
+              40                     !         2007  -- x. wu modified for mom4 coupling (i.e. mom4ice)      !
+              41                     !         2007  -- s. moorthi micellaneous changes                      !
+              42                     !    may  2009  -- y.-t. hou   modified to include surface emissivity   !
+              43                     !                     effect on lw radiation. replaced the confusing    !
+              44                     !                     slrad with sfc net sw sfcnsw (dn-up). reformatted !
+              45                     !                     the code and add program documentation block.     !
+              46                     !    sep  2009 -- s. moorthi removed rcl, changed pressure units and    !
+              47                     !                     further optimized                                 !
+              48                     !    jan  2015 -- x. wu change "cimin = 0.15" for both                  !
+              49                     !                              uncoupled and coupled case               !
+              50                     !                                                                       !
+              51                     !                                                                       !
+              52                     !  ====================  defination of variables  ====================  !
+              53                     !                                                                       !
+              54                     !  inputs:                                                       size   !
+              55                     !     im, km   - integer, horiz dimension and num of soil layers   1    !
+              56                     !     ps       - real, surface pressure                            im   !
+              57                     !     u1, v1   - real, u/v component of surface layer wind         im   !
+              58                     !     t1       - real, surface layer mean temperature ( k )        im   !
+              59                     !     q1       - real, surface layer mean specific humidity        im   !
+              60                     !     delt     - real, time interval (second)                      1    !
+              61                     !     sfcemis  - real, sfc lw emissivity ( fraction )              im   !
+              62                     !     dlwflx   - real, total sky sfc downward lw flux ( w/m**2 )   im   !
+              63                     !     sfcnsw   - real, total sky sfc netsw flx into ground(w/m**2) im   !
+              64                     !     sfcdsw   - real, total sky sfc downward sw flux ( w/m**2 )   im   !
+              65                     !     srflag   - real, snow/rain flag for precipitation            im   !
+              66                     !     cm       - real, surface exchange coeff for momentum (m/s)   im   !
+              67                     !     ch       - real, surface exchange coeff heat & moisture(m/s) im   !
+              68                     !     prsl1    - real, surface layer mean pressure                 im   !
+              69                     !     prslki   - real,                                             im   !
+              70                     !     islimsk  - integer, sea/land/ice mask (=0/1/2)               im   !
+              71                     !     ddvel    - real,                                             im   !
+              72                     !     flag_iter- logical,                                          im   !
+              73                     !     mom4ice  - logical,                                          im   !
+              74                     !     lsm      - integer, flag for land surface model scheme       1    !
+              75                     !                =0: use osu scheme; =1: use noah scheme                !
+              76                     !                                                                       !
+              77                     !  input/outputs:                                                       !
+              78                     !     hice     - real, sea-ice thickness                           im   !
+              79                     !     fice     - real, sea-ice concentration                       im   !
+              80                     !     tice     - real, sea-ice surface temperature                 im   !
+              81                     !     weasd    - real, water equivalent accumulated snow depth (mm)im   !
+              82                     !     tskin    - real, ground surface skin temperature ( k )       im   !
+              83                     !     tprcp    - real, total precipitation                         im   !
+              84                     !     stc      - real, soil temp (k)                              im,km !
+              85                     !     ep       - real, potential evaporation                       im   !
+              86                     !                                                                       !
+              87                     !  outputs:                                                             !
+              88                     !     snwdph   - real, water equivalent snow depth (mm)            im   !
+              89                     !     qsurf    - real, specific humidity at sfc                    im   !
+              90                     !     snowmt   - real, snow melt (m)                               im   !
+              91                     !     gflux    - real, soil heat flux (w/m**2)                     im   !
+              92                     !     cmm      - real,                                             im   !
+              93                     !     chh      - real,                                             im   !
+              94                     !     evap     - real, evaperation from latent heat flux           im   !
+              95                     !     hflx     - real, sensible heat flux                          im   !
+              96                     !                                                                       !
+              97                     ! ===================================================================== !
+              98                     !
+              99                           use machine , only : kind_phys
+             100                     !     use funcphys, only : fpvs
+             101                           use physcons, only : sbc => con_sbc, hvap => con_hvap,            &
+             102                                                tgice => con_tice, cp => con_cp,             &
+             103                                                eps => con_eps, epsm1 => con_epsm1,          &
+             104                                                grav => con_g, rvrdm1 => con_fvirt,          &
+             105                                                t0c => con_t0c, rd => con_rd
+             106                           use const,    only : RTYPE
+             107                     !
+             108                           implicit none
+             109                     !
+             110                     !  ---  constant parameters:
+             111                           integer,              parameter :: kmi   = 2        ! 2-layer of ice
+             112                           real(kind=kind_phys), parameter :: cpinv = 1.0/cp
+             113                           real(kind=kind_phys), parameter :: hvapi = 1.0/hvap
+             114                           real(kind=kind_phys), parameter :: elocp = hvap/cp
+             115                           real(kind=kind_phys), parameter :: himax = 8.0      ! maximum ice thickness allowed
+             116                           real(kind=kind_phys), parameter :: himin = 0.1      ! minimum ice thickness required
+             117                           real(kind=kind_phys), parameter :: hsmax = 2.0      ! maximum snow depth allowed
+             118                           real(kind=kind_phys), parameter :: timin = 173.0    ! minimum temperature allowed for snow/ice
+             119                           real(kind=kind_phys), parameter :: albfw = 0.06     ! albedo for lead
+             120                           real(kind=kind_phys), parameter :: dsi   = 1.0/0.33
+             121                     
+             122                     !  ---  inputs:
+             123                           integer, intent(in) :: im, km, lsm, imj
+             124                     !     logical, intent(in) :: lprnt
+             125                     
+             126                           real (kind=RTYPE), dimension(im), intent(in) :: u1, v1, t1, q1
+             127                           real (kind=kind_phys), dimension(im), intent(in) :: ps,           &
+             128                                  sfcemis, dlwflx, sfcnsw, sfcdsw, srflag, cm, ch,           &
+             129                                  prsl1, prslki, ddvel
+             130                     
+             131                           integer, dimension(im), intent(in) :: islimsk
+             132                           real (kind=kind_phys), intent(in)  :: delt
+             133                     
+             134                           logical, intent(in) :: flag_iter(im), mom4ice
+             135                     
+             136                     !  ---  input/outputs:
+             137                           real (kind=kind_phys), dimension(im), intent(inout) :: hice,      &
+             138                                  fice, tice, weasd, tskin, tprcp, ep
+             139                     
+             140                           real (kind=kind_phys), dimension(im,km), intent(inout) :: stc
+             141                     
+             142                     !  ---  outputs:
+             143                     !     real (kind=kind_phys), dimension(im), intent(out) :: snwdph,      &
+             144                           real (kind=kind_phys), dimension(im) :: snwdph,      &
+             145                                  qsurf, snowmt, gflux, cmm, chh, evap, hflx
+             146                     
+             147                     !  ---  locals:
+             148                           real (kind=kind_phys), dimension(im) :: ffw, evapi, evapw,        &
+             149                                  sneti, snetw, hfd, hfi,                                    &
+             150                     !    &       hflxi, hflxw, sneti, snetw, qssi, qssw, hfd, hfi, hfw,     &
+             151                                  focn, snof, hi_save, hs_save,                 rch, rho,    &
+             152                                  snowd, theta1, ttmp
+             153                     
+             154                           real (kind=kind_phys) :: t12, t14, tem, stsice(im,kmi) &
+             155                           ,                   hflxi, hflxw, q0, qs1, wind, qssi, qssw,fpvs
+             156                           real (kind=kind_phys), parameter :: cimin=0.15 !  --- minimum ice concentration
+             157                     
+             158                           integer :: i, k, ipr
+             159                     
+             160                           logical :: flag(im), lprnt
+             161                     !
+             162                     !===> ...  begin here
+             163                     !
+             164                     !  --- ...  set flag for sea-ice
+             165                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 552
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.60, ITR: 40, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      islimsk, flag_iter, flag, fice, hice
+                                   <<< Loop-information  End >>>
+             166     1  pp    v            do i = 1, imj
+             167     1   p    v              flag(i) = (islimsk(i) >= 2) .and. flag_iter(i)
+             168     2   p    v              if (flag_iter(i) .and. islimsk(i) < 2) then
+             169     2   p    v                hice(i) = 0.0
+             170     2   p    v                fice(i) = 0.0
+             171     2   p    v              endif
+             172     1   p    v            enddo
+             173                     
+             174                     !  --- ...  update sea ice temperature
+             175                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flag, stc, stsice
+                                   <<< Loop-information  End >>>
+             176     1  pp                 do k = 1, kmi
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 112, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      stc, flag, stsice
+                                   <<< Loop-information  End >>>
+             177     2   p   2v              do i = 1, imj
+             178     3   p   2v                if (flag(i)) then
+             179     3   p   2v                  stsice(i,k) = stc(i,k)
+             180     3   p   2v                endif
+             181     2   p   2v              enddo
+             182     1   p                 enddo
+             183                     !
+             184     1                     if (mom4ice) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 696
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.33, ITR: 112, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      hice, flag, weasd, hi_save, hs_save
+                                   <<< Loop-information  End >>>
+             185     2  pp   2v              do i = 1, imj
+             186     3   p   2v                if (flag(i)) then
+             187     3   p   2v                  hi_save(i) = hice(i)
+             188     3   p   2v                  hs_save(i) = weasd(i) * 0.001
+             189     3   p   2v                endif
+             190     2   p   2v              enddo
+             191     1                     elseif (lsm > 0) then           !  --- ...  snow-rain detection
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 500
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.77, ITR: 64, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      srflag, flag, ep, tprcp, weasd
+                                   <<< Loop-information  End >>>
+             192     2  pp    v              do i = 1, imj
+             193     3   p    v                if (flag(i)) then
+             194     4   p    v                  if (srflag(i) == 1.0) then
+             195     4   p    v                    ep(i) = 0.0
+             196     4   p    v                    weasd(i) = weasd(i) + 1.e3*tprcp(i)
+             197     4   p    v                    tprcp(i)  = 0.0
+             198     4   p    v                  endif
+             199     3   p    v                endif
+             200     2   p    v              enddo
+             201     1                     endif
+             202                     
+             203                     !  --- ...  initialize variables. all units are supposedly m.k.s. unless specifie
+             204                     !           psurf is in pascals, wind is wind speed, theta1 is adiabatic surface
+             205                     !           temp from level 1, rho is density, qs1 is sat. hum. at level1 and qss
+             206                     !           is sat. hum. at surface
+             207                     !           convert slrad to the civilized unit from langley minute-1 k-4
+             208                     
+             209     1                     do i = 1, imj
+             210     2                       if (flag(i)) then
+             211     2               !         psurf(i) = 1000.0 * ps(i)
+             212     2               !         ps1(i)   = 1000.0 * prsl1(i)
+             213     2               
+             214     2               !         dlwflx has been given a negative sign for downward longwave
+             215     2               !         sfcnsw is the net shortwave flux (direction: dn-up)
+             216     2               
+             217     2                         wind      = max(sqrt(u1(i)*u1(i) + v1(i)*v1(i))               &
+             218     2                                       + max(0.0, min(ddvel(i), 30.0)), 1.0)
+             219     2               
+             220     2                         q0        = max(q1(i), 1.0e-8)
+             221     2               !         tsurf(i)  = tskin(i)
+             222     2                         theta1(i) = t1(i) * prslki(i)
+             223     2                         rho(i)    = prsl1(i) / (rd*t1(i)*(1.0+rvrdm1*q0))
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2286
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ttmp
+                                   <<< Loop-information  End >>>
+             224     2  pp   4v                ttmp      = t1(i)
+             225     2                         qs1       = fpvs(ttmp)
+             226     2                         qs1       = max(eps*qs1 / (prsl1(i) + epsm1*qs1), 1.e-8)
+             227     2                         q0        = min(qs1, q0)
+             228     2               
+             229     2                         ffw(i)    = 1.0 - fice(i)
+             230     3                         if (fice(i) < cimin) then
+             231     3                           print *,'warning: ice fraction is low:', fice(i)
+             232     3                           fice(i) = cimin
+             233     3                           ffw (i) = 1.0 - fice(i)
+             234     3                           tice(i) = tgice
+             235     3                           tskin(i)= tgice
+             236     3                           print *,'fix ice fraction: reset it to:', fice(i)
+             237     3                         endif
+             238     2               
+             239     2                         qssi = fpvs(tice(i))
+             240     2                         qssi = eps*qssi / (ps(i) + epsm1*qssi)
+             241     2                         qssw = fpvs(tgice)
+             242     2                         qssw = eps*qssw / (ps(i) + epsm1*qssw)
+             243     2               
+             244     2               !  --- ...  snow depth in water equivalent is converted from mm to m unit
+             245     2               
+             246     3                         if (mom4ice) then
+             247     3                           snowd(i) = weasd(i) * 0.001 / fice(i)
+             248     3                         else
+             249     3                           snowd(i) = weasd(i) * 0.001
+             250     3                         endif
+             251     2               !         flagsnw(i) = .false.
+             252     2               
+             253     2               !  --- ...  when snow depth is less than 1 mm, a patchy snow is assumed and
+             254     2               !           soil is allowed to interact with the atmosphere.
+             255     2               !           we should eventually move to a linear combination of soil and
+             256     2               !           snow under the condition of patchy snow.
+             257     2               
+             258     2               !  --- ...  rcp = rho cp ch v
+             259     2               
+             260     2                         cmm(i) = cm(i)  * wind
+             261     2                         chh(i) = rho(i) * ch(i) * wind
+             262     2                         rch(i) = chh(i) * cp
+             263     2               
+             264     2               !  --- ...  sensible and latent heat flux over open water & sea ice
+             265     2               
+             266     2                         evapi(i) = elocp * rch(i) * (qssi - q0)
+             267     2                         evapw(i) = elocp * rch(i) * (qssw - q0)
+             268     2               !         evap(i)  = fice(i)*evapi(i) + ffw(i)*evapw(i)
+             269     2               
+             270     2               !     if (lprnt) write(0,*)' tice=',tice(ipr)
+             271     2               
+             272     2                         snetw(i) = sfcdsw(i) * (1.0 - albfw)
+             273     2                         snetw(i) = min(3.0*sfcnsw(i)/(1.0+2.0*ffw(i)), snetw(i))
+             274     2                         sneti(i) = (sfcnsw(i) - ffw(i)*snetw(i)) / fice(i)
+             275     2               
+             276     2                         t12 = tice(i) * tice(i)
+             277     2                         t14 = t12 * t12
+             278     2               
+             279     2               !  --- ...  hfi = net non-solar and upir heat flux @ ice surface
+             280     2               
+             281     2                         hfi(i) = -dlwflx(i) + sfcemis(i)*sbc*t14 + evapi(i)           &
+             282     2                                + rch(i)*(tice(i) - theta1(i))
+             283     2                         hfd(i) = 4.0*sfcemis(i)*sbc*tice(i)*t12                       &
+             284     2                                + (1.0 + elocp*eps*hvap*qs1/(rd*t12)) * rch(i)
+             285     2               
+             286     2                         t12 = tgice * tgice
+             287     2                         t14 = t12 * t12
+             288     2               
+             289     2               !  --- ...  hfw = net heat flux @ water surface (within ice)
+             290     2               
+             291     2               !         hfw(i) = -dlwflx(i) + sfcemis(i)*sbc*t14 + evapw(i)           &
+             292     2               !    &           + rch(i)*(tgice - theta1(i)) - snetw(i)
+             293     2               
+             294     2                         focn(i) = 2.0     ! heat flux from ocean - should be from ocn model
+             295     2                         snof(i) = 0.0     ! snowfall rate - snow accumulates in gbphys
+             296     2               
+             297     2                         hice(i) = max( min( hice(i), himax ), himin )
+             298     2                         snowd(i) = min( snowd(i), hsmax )
+             299     2               
+             300     3                         if (snowd(i) > (2.0*hice(i))) then
+             301     3                           print *, 'warning: too much snow :',snowd(i)
+             302     3                           snowd(i) = hice(i) + hice(i)
+             303     3                           print *,'fix: decrease snow depth to:',snowd(i)
+             304     3                         endif
+             305     2                       endif
+             306     1                     enddo
+             307                     
+             308                     !     if (lprnt) write(0,*)' tice2=',tice(ipr)
+             309                           call ice3lay
+             310                     !  ---  inputs:                                                         !
+             311                     !    &     ( imj, im, kmi, fice, flag, hfi, hfd, sneti, focn, delt,     !
+             312                     !  ---  outputs:                                                        !
+             313                     !    &       snowd, hice, stsice, tice, snof, snowmt, gflux )           !
+             314                     
+             315                     !     if (lprnt) write(0,*)' tice3=',tice(ipr)
+             316     1                     if (mom4ice) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 728
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.37, ITR: 128, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      hice, snowd, flag, hi_save, hs_save
+                                   <<< Loop-information  End >>>
+             317     2  pp   2v              do i = 1, imj
+             318     3   p   2v                if (flag(i)) then
+             319     3   p   2v                  hice(i)  = hi_save(i)
+             320     3   p   2v                  snowd(i) = hs_save(i)
+             321     3   p   2v                endif
+             322     2   p   2v              enddo
+             323     1                     endif
+             324                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flag
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 3  FILL 6
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             325     1   s    s            do i = 1, imj
+             326     2   p    m              if (flag(i)) then
+             327     3   p    s                if (tice(i) < timin) then
+             328     3   m    s                  print *,'warning: snow/ice temperature is too low:',tice(i) &
+             329     3                     ,' i=',i
+             330     3   s    s                  tice(i) = timin
+             331     3   s    s                  print *,'fix snow/ice temperature: reset it to:',tice(i)
+             332     3   p    s                endif
+             333     2               
+             334     3   p    s                if (stsice(i,1) < timin) then
+             335     3   m    s                  print *,'warning: layer 1 ice temp is too low:',stsice(i,1) &
+             336     3                     ,' i=',i
+             337     3   s    s                  stsice(i,1) = timin
+             338     3   s    s                  print *,'fix layer 1 ice temp: reset it to:',stsice(i,1)
+             339     3   p    s                endif
+             340     2               
+             341     3   p    s                if (stsice(i,2) < timin) then
+             342     3   m    s                  print *,'warning: layer 2 ice temp is too low:',stsice(i,2)
+             343     3   s    s                  stsice(i,2) = timin
+             344     3   s    s                  print *,'fix layer 2 ice temp: reset it to:',stsice(i,2)
+             345     3   p    s                endif
+             346     2               
+             347     2   p    s                tskin(i) = tice(i)*fice(i) + tgice*ffw(i)
+             348     2   p    v              endif
+             349     1   p    v            enddo
+             350                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flag, stsice, stc
+                                   <<< Loop-information  End >>>
+             351     1  pp                 do k = 1, kmi
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 112, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      stsice, flag, stc
+                                   <<< Loop-information  End >>>
+             352     2   p   2v              do i = 1, imj
+             353     3   p   2v                if (flag(i)) then
+             354     3   p   2v                  stc(i,k) = min(stsice(i,k), t0c)
+             355     3   p   2v                endif
+             356     2   p   2v              enddo
+             357     1   p                 enddo
+             358                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 198
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.39, ITR: 40, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ffw, evapw, rch, snowd, rho, theta1
+                                   <<<      tice, q1, flag, evapi, fice, qsurf
+                                   <<<      weasd, snwdph, hflx, evap
+                                   <<< Loop-information  End >>>
+             359     1  pp    v            do i = 1, imj
+             360     2   p    v              if (flag(i)) then
+             361     2               !  --- ...  calculate sensible heat flux (& evap over sea ice)
+             362     2               
+             363     2   p    v                hflxi    = rch(i) * (tice(i) - theta1(i))
+             364     2   p    v                hflxw    = rch(i) * (tgice - theta1(i))
+             365     2   p    v                hflx(i)  = fice(i)*hflxi    + ffw(i)*hflxw
+             366     2   p    v                evap(i)  = fice(i)*evapi(i) + ffw(i)*evapw(i)
+             367     2               !
+             368     2               !  --- ...  the rest of the output
+             369     2               
+             370     2   p    v                qsurf(i) = q1(i) + evap(i) / (elocp*rch(i))
+             371     2               
+             372     2               !  --- ...  convert snow depth back to mm of water equivalent
+             373     2               
+             374     2   p    v                weasd(i)  = snowd(i) * 1000.0
+             375     2   p    v                snwdph(i) = weasd(i) * dsi             ! snow depth in mm
+             376     2               
+             377     2   p    v                tem     = 1.0 / rho(i)
+             378     2   p    v                hflx(i) = hflx(i) * tem * cpinv
+             379     2   p    v                evap(i) = evap(i) * tem * hvapi
+             380     2   p    v              endif
+             381     1   p    v            enddo
+             382                     !
+             383                           return
+             384                     
+             385                     ! =================
+             386                           contains
+             387                     ! =================
+             388                     
+             389                     
+             390                     !-----------------------------------
+             391                           subroutine ice3lay
+             392                     !...................................
+             393                     !  ---  inputs:
+             394                     !    &     ( imj, im, kmi, fice, flag, hfi, hfd, sneti, focn, delt,          &
+             395                     !  ---  input/outputs:
+             396                     !    &       snowd, hice, stsice, tice, snof,                           &
+             397                     !  ---  outputs:
+             398                     !    &       snowmt, gflux                                              &
+             399                     !    &     )
+             400                     
+             401                     !**************************************************************************
+             402                     !                                                                         *
+             403                     !            three-layer sea ice vertical thermodynamics                  *
+             404                     !                                                                         *
+             405                     ! based on:  m. winton, "a reformulated three-layer sea ice model",       *
+             406                     ! journal of atmospheric and oceanic technology, 2000                     *
+             407                     !                                                                         *
+             408                     !                                                                         *
+             409                     !        -> +---------+ <- tice - diagnostic surface temperature ( <= 0c )*
+             410                     !       /   |         |                                                   *
+             411                     !   snowd   |  snow   | <- 0-heat capacity snow layer                     *
+             412                     !       \   |         |                                                   *
+             413                     !        => +---------+                                                   *
+             414                     !       /   |         |                                                   *
+             415                     !      /    |         | <- t1 - upper 1/2 ice temperature; this layer has *
+             416                     !     /     |         |         a variable (t/s dependent) heat capacity  *
+             417                     !   hice    |...ice...|                                                   *
+             418                     !     \     |         |                                                   *
+             419                     !      \    |         | <- t2 - lower 1/2 ice temp. (fixed heat capacity) *
+             420                     !       \   |         |                                                   *
+             421                     !        -> +---------+ <- base of ice fixed at seawater freezing temp.   *
+             422                     !                                                                         *
+             423                     !  =====================  defination of variables  =====================  !
+             424                     !                                                                         !
+             425                     !  inputs:                                                         size   !
+             426                     !     im, kmi  - integer, horiz dimension and num of ice layers      1    !
+             427                     !     fice     - real, sea-ice concentration                         im   !
+             428                     !     flag     - logical, ice mask flag                              1    !
+             429                     !     hfi      - real, net non-solar and heat flux @ surface(w/m^2)  im   !
+             430                     !     hfd      - real, heat flux derivatice @ sfc (w/m^2/deg-c)      im   !
+             431                     !     sneti    - real, net solar incoming at top  (w/m^2)            im   !
+             432                     !     focn     - real, heat flux from ocean    (w/m^2)               im   !
+             433                     !     delt     - real, timestep                (sec)                 1    !
+             434                     !                                                                         !
+             435                     !  input/outputs:                                                         !
+             436                     !     snowd    - real, surface pressure                              im   !
+             437                     !     hice     - real, sea-ice thickness                             im   !
+             438                     !     stsice   - real, temp @ midpt of ice levels  (deg c)          im,kmi!
+             439                     !     tice     - real, surface temperature     (deg c)               im   !
+             440                     !     snof     - real, snowfall rate           (m/sec)               im   !
+             441                     !                                                                         !
+             442                     !  outputs:                                                               !
+             443                     !     snowmt   - real, snow melt during delt   (m)                   im   !
+             444                     !     gflux    - real, conductive heat flux    (w/m^2)               im   !
+             445                     !                                                                         !
+             446                     !  locals:                                                                !
+             447                     !     hdi      - real, ice-water interface     (m)                        !
+             448                     !     hsni     - real, snow-ice                (m)                        !
+             449                     !                                                                         !
+             450                     ! ======================================================================= !
+             451                     !
+             452                     
+             453                     !  ---  constant parameters: (properties of ice, snow, and seawater)
+             454                           real (kind=kind_phys), parameter :: ds   = 330.0    ! snow (ov sea ice) density (kg/m^3)
+             455                           real (kind=kind_phys), parameter :: dw   =1000.0    ! fresh water density  (kg/m^3)
+             456                           real (kind=kind_phys), parameter :: dsdw = ds/dw
+             457                           real (kind=kind_phys), parameter :: dwds = dw/ds
+             458                           real (kind=kind_phys), parameter :: t0c  =273.15    ! freezing temp of fresh ice (k)
+             459                           real (kind=kind_phys), parameter :: ks   = 0.31     ! conductivity of snow   (w/mk)
+             460                           real (kind=kind_phys), parameter :: i0   = 0.3      ! ice surface penetrating solar fraction
+             461                           real (kind=kind_phys), parameter :: ki   = 2.03     ! conductivity of ice  (w/mk)
+             462                           real (kind=kind_phys), parameter :: di   = 917.0    ! density of ice   (kg/m^3)
+             463                           real (kind=kind_phys), parameter :: didw = di/dw
+             464                           real (kind=kind_phys), parameter :: dsdi = ds/di
+             465                           real (kind=kind_phys), parameter :: ci   = 2054.0   ! heat capacity of fresh ice (j/kg/k)
+             466                           real (kind=kind_phys), parameter :: li   = 3.34e5   ! latent heat of fusion (j/kg-ice)
+             467                           real (kind=kind_phys), parameter :: si   = 1.0      ! salinity of sea ice
+             468                           real (kind=kind_phys), parameter :: mu   = 0.054    ! relates freezing temp to salinity
+             469                           real (kind=kind_phys), parameter :: tfi  = -mu*si   ! sea ice freezing temp = -mu*salinity
+             470                           real (kind=kind_phys), parameter :: tfw  = -1.8     ! tfw - seawater freezing temp (c)
+             471                           real (kind=kind_phys), parameter :: tfi0 = tfi-0.0001
+             472                           real (kind=kind_phys), parameter :: dici = di*ci
+             473                           real (kind=kind_phys), parameter :: dili = di*li
+             474                           real (kind=kind_phys), parameter :: dsli = ds*li
+             475                           real (kind=kind_phys), parameter :: ki4  = ki*4.0
+             476                     
+             477                     !  ---  inputs:
+             478                     !     integer, intent(in) :: im, kmi
+             479                     
+             480                     !     real (kind=kind_phys), dimension(im), intent(in) :: fice, hfi,    &
+             481                     !    &       hfd, sneti, focn
+             482                     
+             483                     !     real (kind=kind_phys), intent(in) :: delt
+             484                     
+             485                     !     logical, dimension(im), intent(in) :: flag
+             486                     
+             487                     !  ---  input/outputs:
+             488                     !     real (kind=kind_phys), dimension(im), intent(inout) :: snowd,     &
+             489                     !    &       hice, tice, snof
+             490                     
+             491                     !     real (kind=kind_phys), dimension(im,kmi), intent(inout) :: stsice
+             492                     
+             493                     !  ---  outputs:
+             494                     !     real (kind=kind_phys), dimension(im), intent(out) :: snowmt,      &
+             495                     !    &       gflux
+             496                     
+             497                     !  ---  locals:
+             498                     
+             499                           real (kind=kind_phys) :: dt2, dt4, dt6, h1, h2, dh, wrk, wrk1,      &
+             500                                                    dt2i, hdi, hsni, ai, bi, a1, b1, a10, b10  &
+             501                           ,                        c1, ip, k12, k32, tsf, f1, tmelt, bmelt
+             502                     
+             503                           integer :: i
+             504                     !
+             505                     !===> ...  begin here
+             506                     !
+             507                           dt2  = 2.0 * delt
+             508                           dt4  = 4.0 * delt
+             509                           dt6  = 6.0 * delt
+             510                           dt2i = 1.0 / dt2
+             511                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 31
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flag, sneti, hfi, snowd, snof, hice
+                                   <<<      stsice, tice, hfd, snowmt, focn, gflux
+                                   <<<      fice
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 0
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 24
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             512     1  pp    v            do i = 1, imj
+             513     2   p    v              if (flag(i)) then
+             514     2   p    v                snowd(i) = snowd(i) * dwds
+             515     2   p    v                hdi      = (dsdw*snowd(i) + didw*hice(i))
+             516     2               
+             517     3   p    v                if (hice(i) < hdi) then
+             518     3   p    v                  snowd(i) = snowd(i) + hice(i) - hdi
+             519     3   p    v                  hsni     = (hdi - hice(i)) * dsdi
+             520     3   p    v                  hice (i) = hice(i) + hsni
+             521     3   p    v                endif
+             522     2               
+             523     2   p    v                snof(i)     = snof(i) * dwds
+             524     2   p    v                tice(i)     = tice(i) - t0c
+             525     2   p    v                stsice(i,1) = min(stsice(i,1)-t0c, tfi0)     ! degc
+             526     2   p    v                stsice(i,2) = min(stsice(i,2)-t0c, tfi0)     ! degc
+             527     2               
+             528     2   p    v                ip = i0 * sneti(i)         ! ip +v (in winton ip=-i0*sneti as sol -v)
+             529     3   p    v                if (snowd(i) > 0.0) then
+             530     3   p    v                  tsf = 0.0
+             531     3   p    v                  ip  = 0.0
+             532     3   p    v                else
+             533     3   p    v                  tsf = tfi
+             534     3   p    v                  ip  = i0 * sneti(i)      ! ip +v here (in winton ip=-i0*sneti)
+             535     3   p    v                endif
+             536     2   p    v                tice(i) = min(tice(i), tsf)
+             537     2               
+             538     2               !  --- ...  compute ice temperature
+             539     2               
+             540     2   p    v                bi   = hfd(i)
+             541     2   p    v                ai   = hfi(i) - sneti(i) + ip - tice(i)*bi  ! +v sol input here
+             542     2   p    v                k12  = ki4*ks / (ks*hice(i) + ki4*snowd(i))
+             543     2   p    v                k32  = (ki+ki) / hice(i)
+             544     2               
+             545     2   p    v                wrk    = 1.0 / (dt6*k32 + dici*hice(i))
+             546     2   p    v                a10    = dici*hice(i)*dt2i + k32*(dt4*k32 + dici*hice(i))*wrk
+             547     2   p    v                b10    = -di*hice(i) * (ci*stsice(i,1) + li*tfi/stsice(i,1))    &
+             548     2                                * dt2i - ip                                              &
+             549     2                                - k32*(dt4*k32*tfw + dici*hice(i)*stsice(i,2)) * wrk
+             550     2               
+             551     2   p    v                wrk1  = k12 / (k12 + bi)
+             552     2   p    v                a1    = a10 + bi * wrk1
+             553     2   p    v                b1    = b10 + ai * wrk1
+             554     2   p    v                c1    = dili * tfi * dt2i * hice(i)
+             555     2               
+             556     2   p    v                stsice(i,1) = -(sqrt(b1*b1 - 4.0*a1*c1) + b1)/(a1+a1)
+             557     2   p    v                tice(i) = (k12*stsice(i,1) - ai) / (k12 + bi)
+             558     2               
+             559     3   p    v                if (tice(i) > tsf) then
+             560     3   p    v                  a1 = a10 + k12
+             561     3   p    v                  b1 = b10 - k12*tsf
+             562     3   p    v                  stsice(i,1) = -(sqrt(b1*b1 - 4.0*a1*c1) + b1)/(a1+a1)
+             563     3   p    v                  tice(i) = tsf
+             564     3   p    v                  tmelt   = (k12*(stsice(i,1)-tsf) - (ai+bi*tsf)) * delt
+             565     3   p    v                else
+             566     3   p    v                  tmelt    = 0.0
+             567     3   p    v                  snowd(i) = snowd(i) + snof(i)*delt
+             568     3   p    v                endif
+             569     2               
+             570     2   p    v                stsice(i,2) = (dt2*k32*(stsice(i,1) + tfw + tfw)                &
+             571     2                                     +  dici*hice(i)*stsice(i,2)) * wrk
+             572     2               
+             573     2   p    v                bmelt = (focn(i) + ki4*(stsice(i,2) - tfw)/hice(i)) * delt
+             574     2               
+             575     2               !  --- ...  resize the ice ...
+             576     2               
+             577     2   p    v                h1 = 0.5 * hice(i)
+             578     2   p    v                h2 = 0.5 * hice(i)
+             579     2               
+             580     2               !  --- ...  top ...
+             581     2               
+             582     3   p    v                if (tmelt <= snowd(i)*dsli) then
+             583     3   p    v                  snowmt(i) = tmelt / dsli
+             584     3   p    v                  snowd (i) = snowd(i) - snowmt(i)
+             585     3   p    v                else
+             586     3   p    v                  snowmt(i) = snowd(i)
+             587     3   p    v                  h1 = h1 - (tmelt - snowd(i)*dsli)                             &
+             588     3                              / (di * (ci - li/stsice(i,1)) * (tfi - stsice(i,1)))
+             589     3   p    v                  snowd(i) = 0.0
+             590     3   p    v                endif
+             591     2               
+             592     2               !  --- ...  and bottom
+             593     2               
+             594     3   p    v                if (bmelt < 0.0) then
+             595     3   p    v                  dh = -bmelt / (dili + dici*(tfi - tfw))
+             596     3   p    v                  stsice(i,2) = (h2*stsice(i,2) + dh*tfw) / (h2 + dh)
+             597     3   p    v                  h2 = h2 + dh
+             598     3   p    v                else
+             599     3   p    v                  h2 = h2 - bmelt / (dili + dici*(tfi - stsice(i,2)))
+             600     3   p    v                endif
+             601     2               
+             602     2               !  --- ...  if ice remains, even up 2 layers, else, pass negative energy back in snow
+             603     2               
+             604     2   p    v                hice(i) = h1 + h2
+             605     2               
+             606     3   p    v                if (hice(i) > 0.0) then
+             607     4   p    v                  if (h1 > 0.5*hice(i)) then
+             608     4   p    v                    f1 = 1.0 - (h2+h2) / hice(i)
+             609     4   p    v                    stsice(i,2) = f1 * (stsice(i,1) + li*tfi/(ci*stsice(i,1)))  &
+             610     4                                         + (1.0 - f1)*stsice(i,2)
+             611     4               
+             612     5   p    v                    if (stsice(i,2) > tfi) then
+             613     5   p    v                      hice(i) = hice(i) - h2*ci*(stsice(i,2) - tfi)/ (li*delt)
+             614     5   p    v                      stsice(i,2) = tfi
+             615     5   p    v                    endif
+             616     4   p    v                  else
+             617     4   p    v                    f1 = (h1+h1) / hice(i)
+             618     4   p    v                    stsice(i,1) = f1 * (stsice(i,1) + li*tfi/(ci*stsice(i,1)))  &
+             619     4                                         + (1.0 - f1)*stsice(i,2)
+             620     4   p    v                    stsice(i,1) = (stsice(i,1) - sqrt(stsice(i,1)*stsice(i,1)   &
+             621     4                                         - 4.0*tfi*li/ci)) * 0.5
+             622     4   p    v                  endif
+             623     3               
+             624     3   p    v                  k12      = ki4*ks / (ks*hice(i) + ki4*snowd(i))
+             625     3   p    v                  gflux(i) = k12 * (stsice(i,1) - tice(i))
+             626     3   p    v                else
+             627     3   p    v                  snowd(i) = snowd(i) + (h1*(ci*(stsice(i,1) - tfi)             &
+             628     3                                    - li*(1.0 - tfi/stsice(i,1)))                        &
+             629     3                                    + h2*(ci*(stsice(i,2) - tfi) - li)) / li
+             630     3               
+             631     3   p    v                  hice(i)     = max(0.0, snowd(i)*dsdi)
+             632     3   p    v                  snowd(i)    = 0.0
+             633     3   p    v                  stsice(i,1) = tfw
+             634     3   p    v                  stsice(i,2) = tfw
+             635     3   p    v                  gflux(i)    = 0.0
+             636     3   p    v                endif   ! end if_hice_block
+             637     2               
+             638     2   p    v                gflux(i)    = fice(i) * gflux(i)
+             639     2   p    v                snowmt(i)   = snowmt(i) * dsdw
+             640     2   p    v                snowd(i)    = snowd(i) * dsdw
+             641     2   p    v                tice(i)     = tice(i) + t0c
+             642     2   p    v                stsice(i,1) = stsice(i,1) + t0c
+             643     2   p    v                stsice(i,2) = stsice(i,2) + t0c
+             644     2   p    v              endif   ! end if_flag_block
+             645     1   p    v            enddo   ! end do_i_loop
+             646                     
+             647                           return
+             648                     !...................................
+             649                           end subroutine ice3lay
+             650                     !-----------------------------------
+             651                     
+             652                     ! =========================== !
+             653                     !     end contain programs    !
+             654                     ! =========================== !
+             655                     
+             656                     !...................................
+             657                           end subroutine sfc_sice
+             658                     !-----------------------------------
+
+ Procedure information
+   Lines      : 658
+   Statements : 294
+   Stack(byte): 5136
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : sfc_sice
+   Attribute and Cross reference of name
+     albfw
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 119
+      |(Definition)     : 
+      |(Reference)      : 272
+     ch
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  127
+      |(Definition)     : 
+      |(Reference)      : 261
+     chh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 144
+      |(Definition)     : 261
+      |(Reference)      : 262
+     cimin
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 156
+      |(Definition)     : 
+      |(Reference)      : 230  232
+     cm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  127
+      |(Definition)     : 
+      |(Reference)      : 260
+     cmm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 144
+      |(Definition)     : 260
+      |(Reference)      : 
+     con_cp
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101
+     con_eps
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101
+     con_epsm1
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101
+     con_fvirt
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101
+     con_g
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101
+     con_hvap
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101
+     con_rd
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101
+     con_sbc
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101
+     con_t0c
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101
+     con_tice
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 106
+     cp
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101  112  114  262
+     cpinv
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 112
+      |(Definition)     : 
+      |(Reference)      : 378
+     ddvel
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  127
+      |(Definition)     : 
+      |(Reference)      : 217
+     delt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 2  132
+      |(Definition)     : 
+      |(Reference)      : 
+     dlwflx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  127
+      |(Definition)     : 
+      |(Reference)      : 281
+     dsi
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 120
+      |(Definition)     : 
+      |(Reference)      : 375
+     elocp
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 114
+      |(Definition)     : 
+      |(Reference)      : 266  267  283  283  370
+     ep
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 2  137
+      |(Definition)     : 195
+      |(Reference)      : 
+     eps
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101  226  240  242
+     epsm1
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101  226  240  242
+     evap
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  144
+      |(Definition)     : 366  379
+      |(Reference)      : 370  379
+     evapi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 148
+      |(Definition)     : 266
+      |(Reference)      : 281  366
+     evapw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 148
+      |(Definition)     : 267
+      |(Reference)      : 366
+     ffw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 148
+      |(Definition)     : 229  233
+      |(Reference)      : 273  274  347  365  366
+     fice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 2  137
+      |(Definition)     : 170  232
+      |(Reference)      : 229  230  231  233  236  247  274  347  365  366
+     flag
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 160
+      |(Definition)     : 167
+      |(Reference)      : 178  186  193  210  318  326  353  360
+     flag_iter
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  134
+      |(Definition)     : 
+      |(Reference)      : 167  168
+     focn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 148
+      |(Definition)     : 294
+      |(Reference)      : 
+     fpvs
+      |(Class and Type) : external function name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 225  239  241
+     fpvs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 154
+      |(Definition)     : 
+      |(Reference)      : 
+     gflux
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  144
+      |(Definition)     : 
+      |(Reference)      : 
+     grav
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101
+     hfd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 148
+      |(Definition)     : 283
+      |(Reference)      : 
+     hfi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 148
+      |(Definition)     : 281
+      |(Reference)      : 
+     hflx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  144
+      |(Definition)     : 365  378
+      |(Reference)      : 378
+     hflxi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 154
+      |(Definition)     : 363
+      |(Reference)      : 365
+     hflxw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 154
+      |(Definition)     : 364
+      |(Reference)      : 365
+     hi_save
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 148
+      |(Definition)     : 187
+      |(Reference)      : 319
+     hice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 2  137
+      |(Definition)     : 169  297  319
+      |(Reference)      : 187  297  300  302  302
+     himax
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 115
+      |(Definition)     : 
+      |(Reference)      : 297
+     himin
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 116
+      |(Definition)     : 
+      |(Reference)      : 297
+     hs_save
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 148
+      |(Definition)     : 188
+      |(Reference)      : 320
+     hsmax
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 117
+      |(Definition)     : 
+      |(Reference)      : 298
+     hvap
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101  113  114  283
+     hvapi
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 113
+      |(Definition)     : 
+      |(Reference)      : 379
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 158
+      |(Definition)     : 166  177  185  192  209  317  325  352  359
+      |(Reference)      : 167  167  167  168  168  169  170  178  179  179  186  187  187  188  188  193  194  195  196  196  196  197  210  217  217  217  217  217  220  222  222  222  223  223  223  224  226  229  229  230  231  232  233  233  234  235  236  239  240  242  247  247  247  249  249  260  260  261  261  261  262  262  266  266  267  267  272  272  273  273  273  273  274  274  274  274  274  276  276  281  281  281  281  281  281  281  283  283  283  283  294  295  297  297  298  298  300  300  301  302  302  302  303  318  319  319  320  320  326  327  328  328  330  331  334  335  335  337  338  341  342  343  344  347  347  347  347  353  354  354  360  363  363  363  364  364  365  365  365  366  366  366  366  366  370  370  370  370  374  374  375  375  377  378  378  379  379
+     ice3lay
+      |(Class and Type) : internal subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 309
+     im
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 2  123
+      |(Definition)     : 
+      |(Reference)      : 126  126  126  126  127  127  127  127  127  127  127  127  127  127  127  131  134  137  137  137  137  137  137  137  140  144  144  144  144  144  144  144  144  148  148  148  148  148  148  148  148  148  148  148  148  148  148  148  148  154  160
+     imj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 2  123
+      |(Definition)     : 
+      |(Reference)      : 166  177  185  192  209  317  325  352  359
+     ipr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 158
+      |(Definition)     : 
+      |(Reference)      : 
+     islimsk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  131
+      |(Definition)     : 
+      |(Reference)      : 167  168
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 158
+      |(Definition)     : 176  351
+      |(Reference)      : 179  179  354  354
+     kind_phys
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 99  112  113  114  115  116  117  118  119  120  127  132  137  140  144  148  154  156
+     km
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 2  123
+      |(Definition)     : 
+      |(Reference)      : 140
+     kmi
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 111
+      |(Definition)     : 
+      |(Reference)      : 154  176  351
+     lprnt
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 160
+      |(Definition)     : 
+      |(Reference)      : 
+     lsm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 2  123
+      |(Definition)     : 
+      |(Reference)      : 191
+     machine
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 99
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 217  217  220  226  297
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 217  227  273  297  298  354
+     mom4ice
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 2  134
+      |(Definition)     : 
+      |(Reference)      : 184  246  316
+     physcons
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101
+     prsl1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  127
+      |(Definition)     : 
+      |(Reference)      : 223  226
+     prslki
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  127
+      |(Definition)     : 
+      |(Reference)      : 222
+     ps
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  127
+      |(Definition)     : 
+      |(Reference)      : 240  242
+     q0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 154
+      |(Definition)     : 220  227
+      |(Reference)      : 223  227  266  267
+     q1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  126
+      |(Definition)     : 
+      |(Reference)      : 220  370
+     qs1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 154
+      |(Definition)     : 225  226
+      |(Reference)      : 226  226  227  283
+     qssi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 154
+      |(Definition)     : 239  240
+      |(Reference)      : 240  240  266
+     qssw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 154
+      |(Definition)     : 241  242
+      |(Reference)      : 242  242  267
+     qsurf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  144
+      |(Definition)     : 370
+      |(Reference)      : 
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 106  126
+     rch
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 148
+      |(Definition)     : 262
+      |(Reference)      : 266  267  281  283  363  364  370
+     rd
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101  223  283
+     rho
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 148
+      |(Definition)     : 223
+      |(Reference)      : 261  377
+     rvrdm1
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101  223
+     sbc
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101  281  283
+     sfc_sice
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 2
+      |(Reference)      : 657
+     sfcdsw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  127
+      |(Definition)     : 
+      |(Reference)      : 272
+     sfcemis
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  127
+      |(Definition)     : 
+      |(Reference)      : 281  283
+     sfcnsw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  127
+      |(Definition)     : 
+      |(Reference)      : 273  274
+     sneti
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 148
+      |(Definition)     : 274
+      |(Reference)      : 
+     snetw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 148
+      |(Definition)     : 272  273
+      |(Reference)      : 273  274
+     snof
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 148
+      |(Definition)     : 295
+      |(Reference)      : 
+     snowd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 148
+      |(Definition)     : 247  249  298  302  320
+      |(Reference)      : 298  300  301  303  374
+     snowmt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  144
+      |(Definition)     : 
+      |(Reference)      : 
+     snwdph
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  144
+      |(Definition)     : 375
+      |(Reference)      : 
+     sqrt
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 217
+     srflag
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  127
+      |(Definition)     : 
+      |(Reference)      : 194
+     stc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 2  140
+      |(Definition)     : 354
+      |(Reference)      : 179
+     stsice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 154
+      |(Definition)     : 179  337  343
+      |(Reference)      : 334  335  338  341  342  344  354
+     t0c
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101  354
+     t1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  126
+      |(Definition)     : 
+      |(Reference)      : 222  223  224
+     t12
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 154
+      |(Definition)     : 276  286
+      |(Reference)      : 277  277  283  283  287  287
+     t14
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 154
+      |(Definition)     : 277  287
+      |(Reference)      : 281
+     tem
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 154
+      |(Definition)     : 377
+      |(Reference)      : 378  379
+     tgice
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101  234  235  241  286  286  347  364
+     theta1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 148
+      |(Definition)     : 222
+      |(Reference)      : 281  363  364
+     tice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 2  137
+      |(Definition)     : 234  239  330
+      |(Reference)      : 276  276  281  283  327  328  331  347  363
+     timin
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 118
+      |(Definition)     : 
+      |(Reference)      : 327  330  334  337  341  343
+     tprcp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 2  137
+      |(Definition)     : 197
+      |(Reference)      : 196
+     tskin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 2  137
+      |(Definition)     : 235  347
+      |(Reference)      : 
+     ttmp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 148
+      |(Definition)     : 224  225
+      |(Reference)      : 
+     u1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  126
+      |(Definition)     : 
+      |(Reference)      : 217  217
+     v1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 2  126
+      |(Definition)     : 
+      |(Reference)      : 217  217
+     weasd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 2  137
+      |(Definition)     : 196  374
+      |(Reference)      : 188  196  247  249  375
+     wind
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 154
+      |(Definition)     : 217
+      |(Reference)      : 260  261
+
+ Scoping unit of internal sub-program : ice3lay
+   Attribute and Cross reference of name
+     a1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 552  560
+      |(Reference)      : 556  556  556  562  562  562
+     a10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 546
+      |(Reference)      : 552  560
+     ai
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 541
+      |(Reference)      : 553  557  564
+     b1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 553  561
+      |(Reference)      : 556  556  556  562  562  562
+     b10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 547
+      |(Reference)      : 553  561
+     bi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 540
+      |(Reference)      : 541  551  552  557  564
+     bmelt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 573
+      |(Reference)      : 594  595  599
+     c1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 554
+      |(Reference)      : 556  562
+     ci
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 465
+      |(Definition)     : 
+      |(Reference)      : 472  547  587  609  613  618  620  627  627
+     delt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 507  508  509  564  567  573  613
+     dh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 595
+      |(Reference)      : 596  596  597
+     di
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 462
+      |(Definition)     : 
+      |(Reference)      : 463  464  472  473  547  587
+     dici
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 472
+      |(Definition)     : 
+      |(Reference)      : 545  546  546  547  570  595  599
+     didw
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 463
+      |(Definition)     : 
+      |(Reference)      : 515
+     dili
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 473
+      |(Definition)     : 
+      |(Reference)      : 554  554  595  599
+     ds
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 454
+      |(Definition)     : 
+      |(Reference)      : 456  457  464  474
+     dsdi
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 464
+      |(Definition)     : 
+      |(Reference)      : 519  631
+     dsdw
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 456
+      |(Definition)     : 
+      |(Reference)      : 515  639  640
+     dsli
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 474
+      |(Definition)     : 
+      |(Reference)      : 582  583  587
+     dt2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 507
+      |(Reference)      : 510  570
+     dt2i
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 510
+      |(Reference)      : 546  547  554
+     dt4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 508
+      |(Reference)      : 546  547
+     dt6
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 509
+      |(Reference)      : 545
+     dw
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 455
+      |(Definition)     : 
+      |(Reference)      : 456  457  463
+     dwds
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 457
+      |(Definition)     : 
+      |(Reference)      : 514  523
+     f1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 608  617
+      |(Reference)      : 609  609  618  618
+     fice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 638
+     flag
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 513
+     focn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 573
+     gflux
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 625  635  638
+      |(Reference)      : 638
+     h1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 577  587
+      |(Reference)      : 587  604  607  617  617  627
+     h2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 578  597  599
+      |(Reference)      : 596  596  597  599  604  608  608  613  627
+     hdi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 515
+      |(Reference)      : 517  518  519
+     hfd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 540
+     hfi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 541
+     hice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 520  604  613  631
+      |(Reference)      : 515  517  518  519  520  542  543  545  546  546  547  547  554  570  573  577  578  606  607  608  613  617  624
+     hsni
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 519
+      |(Reference)      : 520
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 503
+      |(Definition)     : 512
+      |(Reference)      : 513  514  514  515  515  517  518  518  518  519  520  520  523  523  524  524  525  525  526  526  528  529  534  536  536  540  541  541  541  542  542  543  545  546  546  547  547  547  547  547  554  556  557  557  559  562  563  564  567  567  567  570  570  570  570  573  573  573  577  578  582  583  584  584  584  586  586  587  587  587  589  596  596  599  604  606  607  608  609  609  609  609  612  613  613  613  614  617  618  618  618  618  620  620  620  620  624  624  625  625  625  627  627  627  627  627  631  631  632  633  634  635  638  638  638  639  639  640  640  641  641  642  642  643  643
+     i0
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 460
+      |(Definition)     : 
+      |(Reference)      : 528  534
+     ice3lay
+      |(Class and Type) : internal subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 391
+      |(Reference)      : 649
+     imj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 512
+     ip
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 528  531  534
+      |(Reference)      : 541  547
+     k12
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 542  624
+      |(Reference)      : 551  551  557  557  560  561  564  625
+     k32
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 543
+      |(Reference)      : 545  546  546  547  547  570
+     ki
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 461
+      |(Definition)     : 
+      |(Reference)      : 475  543  543
+     ki4
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 475
+      |(Definition)     : 
+      |(Reference)      : 542  542  542  573  624  624  624
+     kind_phys
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 454  455  456  457  458  459  460  461  462  463  464  465  466  467  468  469  470  471  472  473  474  475  499
+     ks
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 459
+      |(Definition)     : 
+      |(Reference)      : 542  624
+     li
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 466
+      |(Definition)     : 
+      |(Reference)      : 473  474  547  547  587  609  609  613  618  618  620  627  627  627
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 631
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 525  526  536
+     mu
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 468
+      |(Definition)     : 
+      |(Reference)      : 469
+     si
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 467
+      |(Definition)     : 
+      |(Reference)      : 469
+     sneti
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 528  534  541
+     snof
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 523
+      |(Reference)      : 523  567
+     snowd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 514  518  567  584  589  627  632  640
+      |(Reference)      : 514  515  518  529  542  567  582  584  586  587  624  627  631  640
+     snowmt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 583  586  639
+      |(Reference)      : 584  639
+     sqrt
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 556  562  620
+     stsice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 525  526  556  562  570  596  609  614  618  620  633  634  642  643
+      |(Reference)      : 525  526  547  547  547  557  564  570  570  573  587  587  596  599  609  609  609  612  613  618  618  618  620  620  620  625  627  627  627  642  643
+     t0c
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 458
+      |(Definition)     : 
+      |(Reference)      : 524  525  526  641  642  643
+     tfi
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 469
+      |(Definition)     : 
+      |(Reference)      : 471  533  587  595  595  599  612  613  614  620  627  627  627
+     tfi0
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 471
+      |(Definition)     : 
+      |(Reference)      : 525  526
+     tfw
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 470
+      |(Definition)     : 
+      |(Reference)      : 547  570  570  573  596  633  634
+     tice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 524  536  557  563  641
+      |(Reference)      : 524  536  541  559  625  641
+     tmelt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 564  566
+      |(Reference)      : 582  583  587
+     tsf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 530  533
+      |(Reference)      : 536  559  561  563  564  564
+     wrk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 545
+      |(Reference)      : 546  547  570
+     wrk1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 499
+      |(Definition)     : 551
+      |(Reference)      : 552  553
+
+ Total information
+   Procedures       : 1
+   Total lines      : 658
+   Total statements : 294
+   Total stack(byte): 5136
+   Total prefetch num: 0
+
