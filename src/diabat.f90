@@ -675,6 +675,8 @@
               zice(i,jj)=0.
               cice(i,jj)=0.
               snr(i,jj) =0.
+              sndepth(i,jj)=0.
+              sncover(i,jj)=0.
               z0(i,jj)=ustar(i,jj)*ustar(i,jj)*0.014/grav
             endif
             if(.not. iceold(i,jj) .and. ice(i,jj)) then
@@ -682,6 +684,8 @@
               zice(i,jj)=0.15 ! from himin in sfc_sice 
               cice(i,jj)=0.15 ! from cimin in sfc_sice 
               snr(i,jj) =15.
+              sndepth(i,jj)=snr(i,jj)*8.
+              sncover(i,jj)=min(1., snr(i,jj)/400.)
               z0(i,jj)=0.0002 ! set new ice point to 0.0002
             endif
           endif ! if(ls(i,jj).eq.0) then

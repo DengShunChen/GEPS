@@ -497,6 +497,12 @@
                   icwarn = icwarn + 1 
                 endif
               endif            
+! set snow depth to zero on ocean point
+              if ( ocean(i,jj) ) then
+                snr(i,jj)    = 0.
+                sndepth(i,jj)= 0.
+                sncover(i,jj)= 0.
+              endif
             enddo             
           enddo
 !
