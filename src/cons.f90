@@ -82,7 +82,7 @@
                       , outrsm,rsmoutinv,rlon1,rlon2,rlat1,rlat2,rgrdsz,rsmsfcmgrhr &
 !
                       , cmbk,cgwd,nmmiph,spl1,spl2                      &
-                      , weightSIT,dSITdt_intv,af,mwhd,doclx,doslavepp
+                      , weightSIT,dSITdt_intv,af,mwhd,doclx,doslavepp   &
                       , outdms,outgrb2
 !
       real    si(lev+1)
