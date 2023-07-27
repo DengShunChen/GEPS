@@ -549,7 +549,7 @@
 !
       n_stable=0
       n_unstable=0
-      hfiltm=mwhd*hfilt
+
       if(dta.gt.720)then
 !!        dt_chg=1800.
         nc_stable=1
@@ -866,7 +866,7 @@
         enddo
       enddo
 !        
-
+      hfiltm=mwhd*hfiltx
       call whdiffu ( dth,my,my_max,nx,jtrun,jtmax,lev,ncld     &
                    ,hfiltm,rad,cosl,ut,vt,vormid,divmid,temmid     &
                    ,eps4,trefs)
