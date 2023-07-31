@@ -1,4 +1,3 @@
-#define GCE3_NUWRF
 #define EffectRad_GCE3
 !#define update_dp
 !--------------------------
@@ -124,11 +123,9 @@
                                      cloud_diagnosis_v3,                &
                                      sedi_w_v3 => do_sedi_w
 ! for Goddard (GCE) 3ICE MP
-#ifdef GCE3_NUWRF
       use module_mp_gsfcgce_3ice_nuwrf, only: gsfcgce_3ice_nuwrf
-#else
+      use module_mp_gsfcgce_3ice_cwb  , only: gsfcgce_3ice_cwb
       use module_mp_gsfcgce,   only: gsfcgce
-#endif
 ! for Goddard (GCE) 4ICE MP
       use module_mp_gce4ice,   only: gsfcgce_4ice_nuwrf
       use physcons,            only: con_rd,con_fvirt,con_g,con_eps
@@ -225,6 +222,7 @@
                 v3d,dp3d,dz3d,qvten3d,qcten3d,qrten3d,qiten3d,qsten3d,  &
                 qgten3d,cldten3d,uten3d,vten3d,tten3d
 ! Goddard (GCE) MP
+      integer nmgce3
       integer ihail,ICE2
       real    rhowater,rhosnow,dx
       real,dimension(:,:),allocatable ::                                &
@@ -989,6 +987,10 @@
           reh3d = 0.
         endif
 
+        nmgce3 = 2   ! nmgce3=1 : WRF
+                     ! nmgce3=2 : NASA Unified WRF
+                     ! nmgce3=3 : CWB WRF
+
         ihail = 0  !run gsfcgce with graupel option
         ICE2  = 0  !run gsfcgce with snow, ice and hail/graupel
 
@@ -1055,8 +1057,8 @@
           endif
         enddo
 
-        if ( nmmiph .eq. 15 )                                           &
-#ifdef GCE3_NUWRF
+        if ( nmmiph .eq. 15 ) then 
+          if ( nmgce3 .eq. 2 )                                          &
           call gsfcgce_3ice_nuwrf                                       &
                  ( th3d, qv3d, qc3d, qr3d, qi3d, qs3d,                  &
                    rho3d, pii3d, p3d, dta, z3d,                         &
@@ -1073,7 +1075,8 @@
                    .false., qg3d,                                       &
                    ihail, ice2,                                         &
                    rew3d, rer3d, rei3d, res3d, reg3d )
-#else
+
+          if ( nmgce3 .eq. 1 )                                          &
           call gsfcgce                                                  &
                  ( th3d, qv3d, qc3d, qr3d, qi3d, qs3d,                  &
                    rho3d, pii3d, p3d, dta, z3d,                         &
@@ -1094,7 +1097,25 @@
 #endif
                    .false., qg3d,                                       &
                    ihail, ice2 )
-#endif
+
+          if ( nmgce3 .eq. 3 )                                          &
+          call gsfcgce_3ice_cwb                                         &
+                 ( th3d, qv3d, qc3d, qr3d, qi3d, qs3d, qg3d,            &
+                   rho3d, pii3d, p3d, dta, z3d,                         &
+                   ht, dz3d, itimestep,                                 &
+!                   ids,ide, jds,jde, kds,kde,                           & ! domain dims
+                   1, nx , 1, 1, 1, lev,                                & ! memory dims
+                   1, nxj, 1, 1, 1, lev,                                & ! tile   dims
+                   sr2d, rainnc2d, rain2d,                              &
+                   snownc2d, snow2d, graupelnc2d, graupel2d,            &
+!#ifdef EffectRad_GCE3
+!                   land2d,                                              &
+!                   rew3d, rer3d, rei3d,                                 &
+!                   res3d, reg3d,                                        &
+!#endif
+                   land2d )
+
+        endif
 
         if ( nmmiph .eq. 16 )                                           &
           call gsfcgce_4ice_nuwrf                                       &
@@ -1149,18 +1170,18 @@
             tt(i,k) = th3d(i,kc,1)*pk(i,k)  !convert back to real temperature
 
             if ( nmmiph .eq. 15 ) then
-#if defined(EffectRad_GCE3) || defined(GCE3_NUWRF)
-              re_cloud(i,k) = rew3d(i,k,1)  !micron
-              re_rain (i,k) = rer3d(i,k,1)  !micron
-              re_ice  (i,k) = rei3d(i,k,1)  !micron
-              re_snow (i,k) = res3d(i,k,1)  !micron
-#else
+              if ( nmgce3 .eq. 3 ) then
               ! Goddard 3ICE with constant effective radii
-              re_cloud(i,k) = 10.0          !micron
-              re_rain (i,k) = 1000.0        !micron
-              re_ice  (i,k) = 50.0          !micron
-              re_snow (i,k) = 250.0         !micron
-#endif
+                re_cloud(i,k) = 10.0          !micron
+                re_rain (i,k) = 1000.0        !micron
+                re_ice  (i,k) = 50.0          !micron
+                re_snow (i,k) = 250.0         !micron
+              else
+                re_cloud(i,k) = rew3d(i,k,1)  !micron
+                re_rain (i,k) = rer3d(i,k,1)  !micron
+                re_ice  (i,k) = rei3d(i,k,1)  !micron
+                re_snow (i,k) = res3d(i,k,1)  !micron
+              endif
             endif
 
             if ( nmmiph .eq. 16 ) then
