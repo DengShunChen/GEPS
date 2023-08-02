@@ -32,7 +32,7 @@
 !helio>
       integer, dimension(:,:),allocatable,save :: ls_full(:,:)
       integer, dimension(:,:),allocatable,save :: ls_redu(:,:)
-      real, dimension(:,:,:),allocatable,save :: outp(:,:,:)
+      real(kind=RTYPE), dimension(:,:,:),allocatable,save :: outp(:,:,:)
 !helio<
 
       real, dimension(:,:),allocatable,save :: cof

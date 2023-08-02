@@ -36,8 +36,8 @@
 
       real(kind=RTYPE)::wrk1(nxp,my_max),work(nx,my)
 
-      real      cosl(my),                                       &
-                snr(nxp,my_max),gwr(nxp,my_max),                &
+      real(kind=RTYPE)      cosl(my)
+      real      snr(nxp,my_max),gwr(nxp,my_max),                &
                 tg(nxp,my_max),                                 &
                 smc(nxp,km,my_max),stc(nxp,km,my_max),          &
                 workr8(nx,my)
@@ -581,7 +581,8 @@
       endif
 #endif
 ! ***snr***
-      call unify_reduceintp(nx,my,my_max,snr,work)
+      wrk1=snr
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
 !
 #ifdef write_RSM
       if(myrank.eq.0) then
@@ -631,7 +632,8 @@
       endif
 #endif
 ! ***tg***
-      call unify_reduceintp(nx,my,my_max,tg,work)
+      wrk1=tg
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
 !
 #ifdef write_RSM
       if(myrank.eq.0) then

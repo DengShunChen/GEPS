@@ -68,12 +68,13 @@
       use rank
       use index
       use phygrid ,only : outp,ls_full,ls_redu
+      use const, only: RTYPE
 
       implicit none
 
       integer   i,j,k,h,jj,my
       integer   lonf,imp,lonfd !lonf=nx
-      real      a(lonf)
+      real(kind=RTYPE)      a(lonf)
       real      old(lonf),new(lonf)
 
 !for idw

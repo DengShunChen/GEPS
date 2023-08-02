@@ -1297,7 +1297,7 @@
               ntag=ntag+1
               call mpe_send_key(keydoit,ntag,istat)
           else
-            grbid=233  ! 231 outflds  232 out24  233 mfc
+            grbid=233
  133                    format( A  ,A ,I10.10 ,A       )
             write(grbfile,133 )trim(ifilout_grb),'/GFS_',idtg/100 ,'_0000.grb2'
             if(myrank==0) print*,'OutFileName= ',trim(grbfile)

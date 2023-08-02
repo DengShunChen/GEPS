@@ -14,8 +14,13 @@
 #endif
 
 #if defined(RSM) && defined(CWB_MPMD)
+#ifdef SP
+      call MPI_RECV( RBUF, n, MPI_REAL, root_gfs, &
+                     tag, MPI_COMM_gfs_all, ISTATUS,  IERR )
+#else
       call MPI_RECV( RBUF, n, MPI_DOUBLE_PRECISION, root_gfs, &
                      tag, MPI_COMM_gfs_all, ISTATUS,  IERR )
+#endif
 #else
 #ifdef SP
       call MPI_RECV( RBUF, n, MPI_REAL, root_gfs, &
