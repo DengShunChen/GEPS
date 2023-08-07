@@ -243,9 +243,9 @@ module module_mp_gfdl_v3
 
     integer :: isedi_w = 1  ! sedimentation scheme for cloud water
     integer :: isedi_i = 1  ! sedimentation scheme for cloud ice
-    integer :: isedi_r = 4  ! sedimentation scheme for rain
-    integer :: isedi_s = 4  ! sedimentation scheme for snow
-    integer :: isedi_g = 4  ! sedimentation scheme for graupel
+    integer :: isedi_r = 1  ! sedimentation scheme for rain
+    integer :: isedi_s = 1  ! sedimentation scheme for snow
+    integer :: isedi_g = 1  ! sedimentation scheme for graupel
     ! 1: time-implicit
     ! 2: time-explicit
     ! 3: PPM Lagrangian
@@ -305,6 +305,16 @@ module module_mp_gfdl_v3
 #ifdef PSD_paper_setting
     real :: n0w_sig = 1.2 ! intercept parameter (significand) of cloud water (Lin et al. 1983) (1/m^4) (Martin et al. 1994)
     real :: n0i_sig = 1.0 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (Fu 1996)
+!    real :: n0i_sig = 2.66 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (H02,NAMMA)
+!    real :: n0i_sig = 9.92 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (M15,NAMMA,IGF)
+!    real :: n0i_sig = 1.06 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (M15,NAMMA,DIGF)
+!    real :: n0i_sig = 7.81 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (M15,NAMMA,SGF)
+!    real :: n0i_sig = 6.93 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (M15,NAMMA,NGF)
+!    real :: n0i_sig = 1.11 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (H02,ISDAC)
+!    real :: n0i_sig = 4.93 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (M15,ISDAC,IGF)
+!    real :: n0i_sig = 5.90 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (M15,ISDAC,DIGF)
+!    real :: n0i_sig = 2.60 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (M15,ISDAC,SGF)
+!    real :: n0i_sig = 1.77 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (M15,ISDAC,NGF)
 #else
     real :: n0w_sig = 1.1 ! intercept parameter (significand) of cloud water (Lin et al. 1983) (1/m^4)
     !real :: n0w_sig = 1.4 ! intercept parameter (significand) of cloud water (Lin et al. 1983) (1/m^4)
@@ -319,6 +329,16 @@ module module_mp_gfdl_v3
 #ifdef PSD_paper_setting
     real :: n0w_exp = 66.0 ! intercept parameter (exponent) of cloud water (Lin et al. 1983) (1/m^4) (Martin et al. 1994)
     real :: n0i_exp = 10.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (Fu 1996)
+!    real :: n0i_exp = 11.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (H02,NAMMA)
+!    real :: n0i_exp = 10.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (M15,NAMMA,IGF)
+!    real :: n0i_exp = 11.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (M15,NAMMA,DIGF)
+!    real :: n0i_exp = 12.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (M15,NAMMA,SGF)
+!    real :: n0i_exp = 12.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (M15,NAMMA,NGF)
+!    real :: n0i_exp = 15.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (H02,ISDAC)
+!    real :: n0i_exp = 12.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (M15,ISDAC,IGF)
+!    real :: n0i_exp = 12.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (M15,ISDAC,DIGF)
+!    real :: n0i_exp = 13.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (M15,ISDAC,SGF)
+!    real :: n0i_exp = 13.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (M15,ISDAC,NGF)
 #else
     real :: n0w_exp = 41.0 ! intercept parameter (exponent) of cloud water (Lin et al. 1983) (1/m^4)
     !real :: n0w_exp = 91.0 ! intercept parameter (exponent) of cloud water (Lin et al. 1983) (1/m^4)
@@ -333,6 +353,16 @@ module module_mp_gfdl_v3
 #ifdef PSD_paper_setting
     real :: muw = 11.0 ! shape parameter of cloud water in Gamma distribution (Martin et al. 1994)
     real :: mui = 1.0 ! shape parameter of cloud ice in Gamma distribution (Fu 1996)
+!    real :: mui = 2.84 ! shape parameter of cloud ice in Gamma distribution (H02,NAMMA)
+!    real :: mui = 2.62 ! shape parameter of cloud ice in Gamma distribution (M15,NAMMA,IGF)
+!    real :: mui = 2.64 ! shape parameter of cloud ice in Gamma distribution (M15,NAMMA,DIGF)
+!    real :: mui = 3.54 ! shape parameter of cloud ice in Gamma distribution (M15,NAMMA,SGF)
+!    real :: mui = 3.60 ! shape parameter of cloud ice in Gamma distribution (M15,NAMMA,NGF)
+!    real :: mui = 3.07 ! shape parameter of cloud ice in Gamma distribution (H02,ISDAC)
+!    real :: mui = 2.01 ! shape parameter of cloud ice in Gamma distribution (M15,ISDAC,IGF)
+!    real :: mui = 2.04 ! shape parameter of cloud ice in Gamma distribution (M15,ISDAC,DIGF)
+!    real :: mui = 2.35 ! shape parameter of cloud ice in Gamma distribution (M15,ISDAC,SGF)
+!    real :: mui = 2.26 ! shape parameter of cloud ice in Gamma distribution (M15,ISDAC,NGF)
 #else
     real :: muw = 6.0 ! shape parameter of cloud water in Gamma distribution
     !real :: muw = 16.0 ! shape parameter of cloud water in Gamma distribution
@@ -345,22 +375,16 @@ module module_mp_gfdl_v3
     real :: muh = 1.0 ! shape parameter of hail in Gamma distribution (Federer and Waldvogel 1975)
     
     real :: alinw = 3.e7 ! "a" in Lin et al. (1983) for cloud water (Ikawa and Saito 1991)
-#ifdef PSD_paper_setting
     real :: alini = 11.72 ! "a" in Lin et al. (1983) for cloud ice (McFarquhar et al. 2015)
-#else
-    real :: alini = 7.e2 ! "a" in Lin et al. (1983) for cloud ice (Ikawa and Saita 1991)
-#endif
+    !real :: alini = 7.e2 ! "a" in Lin et al. (1983) for cloud ice (Ikawa and Saita 1991)
     real :: alinr = 842.0 ! "a" in Lin et al. (1983) for rain (Liu and Orville 1969)
     real :: alins = 4.8 ! "a" in Lin et al. (1983) for snow (straka 2009)
     real :: aling = 1.0 ! "a" in Lin et al. (1983), similar to a, but for graupel (Pruppacher and Klett 2010)
     real :: alinh = 1.0 ! "a" in Lin et al. (1983), similar to a, but for hail (Pruppacher and Klett 2010)
 
     real :: blinw = 2.0 ! "b" in Lin et al. (1983) for cloud water (Ikawa and Saito 1991)
-#ifdef PSD_paper_setting
     real :: blini = 0.41 ! "b" in Lin et al. (1983) for cloud ice (McFarquhar et al. 2015)
-#else
-    real :: blini = 1.0 ! "b" in Lin et al. (1983) for cloud ice (Ikawa and Saita 1991)
-#endif
+    !real :: blini = 1.0 ! "b" in Lin et al. (1983) for cloud ice (Ikawa and Saita 1991)
     real :: blinr = 0.8 ! "b" in Lin et al. (1983) for rain (Liu and Orville 1969)
     real :: blins = 0.25 ! "b" in Lin et al. (1983) for snow (straka 2009)
     real :: bling = 0.5 ! "b" in Lin et al. (1983), similar to b, but for graupel (Pruppacher and Klett 2010)
