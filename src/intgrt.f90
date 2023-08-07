@@ -62,7 +62,7 @@
       integer   nfxr
 !  for Semi-Lagrangian
 !
-      real(kind=RTYPE) ndsldta,ndsldtah,dth,dta,                   &
+      real(kind=RTYPE) ndsldtaq,ndsldtah,dtah,dta,dtaq,            &
                 diveng(nxp,lev,my_max),                            &
                 qm_sl(nx,levp*ncld,my_max),                        &
                 pten_sl(nx,levp,my_max),                           &
@@ -433,9 +433,10 @@
 !
       dta = dtx
       itter=1
-      ndsldta = 0.5*dta
-      ndsldtah= ndsldta/float(itter)
-      dth     = 0.5*dta
+      dtah = 0.5*dta
+      ndsldtah= dtah/float(itter)
+      dtaq     = 0.5*dtah
+      ndsldtaq= dtaq/float(itter)
 !
 !  compute initial moisture and potential temperature
 !
@@ -735,7 +736,7 @@
 !
 !      do itt = 1,itter
         call ndslfv_monoadvh_fgnl(uum_sl,vvm_sl,ttm_sl     &
-                             ,nxdef,dth,xy,levp,3,forward)
+                             ,nxdef,dtaq,xy,levp,3,forward)
 !      enddo
 !
       call mpe2d_transpose_ndsl_f2p(uum_sl,vdzonl, &
@@ -790,10 +791,10 @@
       enddo !jj = 1,jlistnum
 
 !CWB2021 ndsl single precision test
-      call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,dth,forward)
+      call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,dtaq,forward)
       do itt = 1,itter
         call ndslfv_monoadvv_fgnl(vdzonl,vdmerd,ddtemp,pdot,pt &
-                            ,nxjp,ndsldtah,3,forward)
+                            ,nxjp,ndsldtaq,3,forward)
       enddo
 
        forward = .false.
@@ -809,9 +810,9 @@
         nxj=nxdef_2d(j)
         do k = 1, lev
           do i = 1,nxj
-            vdzonl(i,k,jj) = ( vdzonl(i,k,jj) - ut(i,k,jj) ) / dth
-            vdmerd(i,k,jj) = ( vt(i,k,jj) - vdmerd(i,k,jj) ) / dth
-            ddtemp(i,k,jj) = ( ddtemp(i,k,jj) - tt(i,k,jj) ) / dth
+            vdzonl(i,k,jj) = ( vdzonl(i,k,jj) - ut(i,k,jj) ) / dtah
+            vdmerd(i,k,jj) = ( vt(i,k,jj) - vdmerd(i,k,jj) ) / dtah
+            ddtemp(i,k,jj) = ( ddtemp(i,k,jj) - tt(i,k,jj) ) / dtah
           enddo
         enddo
       enddo
@@ -823,7 +824,7 @@
       call rstrandz (jtrun,jtmax,nx,my,my_max,levp,vdmerd,vdzonl   &
                ,weight,cim,onocos,poly,dpoly,divten,vorten,nsizey)
       if (lsimpl) & 
-      call siimpl ( jtrun,jtmax,lev,dth,ptmeans,dsigma,spalm,eps4,eigval &
+      call siimpl ( jtrun,jtmax,lev,dtah,ptmeans,dsigma,spalm,eps4,eigval &
                   , evecin,evectr,arrhyd,arsddt,temnow,divnow,plnow      &
                   , temnow,divnow,plnow,temten,divten,plten,alphax)
 
@@ -857,17 +858,17 @@
         do n = mf, jtrun
           do i = 1, 2
             do k = 1, levp
-              vormid(k,i,n,m)= dth*vorten(k,i,n,m)+vornow(k,i,n,m)
-              divmid(k,i,n,m)= dth*divten(k,i,n,m)+divnow(k,i,n,m)
-              temmid(k,i,n,m)= dth*temten(k,i,n,m)+temnow(k,i,n,m)
+              vormid(k,i,n,m)= dtah*vorten(k,i,n,m)+vornow(k,i,n,m)
+              divmid(k,i,n,m)= dtah*divten(k,i,n,m)+divnow(k,i,n,m)
+              temmid(k,i,n,m)= dtah*temten(k,i,n,m)+temnow(k,i,n,m)
             enddo
-            plmid(n,m,i)= dth*plten(n,m,i)+plnow(n,m,i)
+            plmid(n,m,i)= dtah*plten(n,m,i)+plnow(n,m,i)
           enddo
         enddo
       enddo
 !        
       hfiltm=mwhd*hfiltx
-      call whdiffu ( dth,my,my_max,nx,jtrun,jtmax,lev,ncld     &
+      call whdiffu ( dtah,my,my_max,nx,jtrun,jtmax,lev,ncld        &
                    ,hfiltm,rad,cosl,ut,vt,vormid,divmid,temmid     &
                    ,eps4,trefs)
 
@@ -967,7 +968,7 @@
 
 !        do itt = 1,itter
         call ndslfv_monoadvh(ttm_sl,qm_sl,pten_sl,uum_sl,vvm_sl  &
-                             ,nxdef,ndsldta,xy,levp)
+                             ,nxdef,dtah,xy,levp)
 !        enddo
 
 !ch>
@@ -994,7 +995,7 @@
 !       update all horizontal informations
 !
 
-      call ndslfv_update(nxjp,ut,vt,vdzonlg,vdmerdg,ndsldta,forward)
+      call ndslfv_update(nxjp,ut,vt,vdzonlg,vdmerdg,dtah,forward)
 
 !CWB2021 ndsl single precision test
 !
