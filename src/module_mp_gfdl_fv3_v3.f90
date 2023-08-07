@@ -241,7 +241,11 @@ module module_mp_gfdl_v3
     ! 2: Smith et al. (1975), Tong and Xue (2005)
     ! 3: Marshall-Palmer formula (https://en.wikipedia.org/wiki/DBZ_(meteorology))
 
-    integer :: isedi = 1  ! sedimentation scheme
+    integer :: isedi_w = 1  ! sedimentation scheme for cloud water
+    integer :: isedi_i = 1  ! sedimentation scheme for cloud ice
+    integer :: isedi_r = 4  ! sedimentation scheme for rain
+    integer :: isedi_s = 4  ! sedimentation scheme for snow
+    integer :: isedi_g = 4  ! sedimentation scheme for graupel
     ! 1: time-implicit
     ! 2: time-explicit
     ! 3: PPM Lagrangian
@@ -535,7 +539,8 @@ module module_mp_gfdl_v3
         n0r_exp, n0s_exp, n0g_exp, n0h_exp, muw, mui, mur, mus, mug, muh, &
         alinw, alini, alinr, alins, aling, alinh, blinw, blini, blinr, blins, bling, blinh, &
         do_new_acc_water, do_new_acc_ice, is_fac, ss_fac, gs_fac, rh_fac, &
-        snow_grauple_combine
+        snow_grauple_combine, &
+        isedi_w, isedi_i, isedi_r, isedi_s, isedi_g
 
 contains
 
@@ -2321,6 +2326,8 @@ subroutine terminal_fall (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, den, 
     ! -----------------------------------------------------------------------
     
     integer :: k
+
+    integer :: isedi
     
     logical :: no_fall
     
@@ -2385,14 +2392,19 @@ subroutine terminal_fall (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, den, 
     select case (qflag)
         case ("ql")
             q = ql
+            isedi = isedi_w
         case ("qr")
             q = qr
+            isedi = isedi_r
         case ("qi")
             q = qi
+            isedi = isedi_i
         case ("qs")
             q = qs
+            isedi = isedi_s
         case ("qg")
             q = qg
+            isedi = isedi_g
         case default
             print *, "gfdl_mp: qflag error!"
     end select
