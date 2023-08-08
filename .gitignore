@@ -3,6 +3,11 @@ src/*.lst
 src/*.mod
 src/MT*
 src/bl_ysu.org.f90
+src_4cpl/*.o
+src_4cpl/*.lst
+src_4cpl/*.mod
+src_4cpl/MT*
+src_4cpl/bl_ysu.org.f90
 *.ksh
 run*
 TCo383L72_fx10*
