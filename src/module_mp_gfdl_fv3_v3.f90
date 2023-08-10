@@ -1,4 +1,4 @@
-!#define MERRA2_aeroclimfix
+#define MERRA2_aeroclimfix
 !#define oldmask
 #define PSD_paper_setting
 !***********************************************************************

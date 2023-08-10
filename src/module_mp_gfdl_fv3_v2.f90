@@ -1,4 +1,4 @@
-!#define MERRA2_aeroclimfix
+#define MERRA2_aeroclimfix
 !#define oldmask
 !***********************************************************************
 !*                   GNU Lesser General Public License
