@@ -241,7 +241,11 @@ module module_mp_gfdl_v3
     ! 2: Smith et al. (1975), Tong and Xue (2005)
     ! 3: Marshall-Palmer formula (https://en.wikipedia.org/wiki/DBZ_(meteorology))
 
-    integer :: isedi = 1  ! sedimentation scheme
+    integer :: isedi_w = 1  ! sedimentation scheme for cloud water
+    integer :: isedi_i = 1  ! sedimentation scheme for cloud ice
+    integer :: isedi_r = 1  ! sedimentation scheme for rain
+    integer :: isedi_s = 1  ! sedimentation scheme for snow
+    integer :: isedi_g = 1  ! sedimentation scheme for graupel
     ! 1: time-implicit
     ! 2: time-explicit
     ! 3: PPM Lagrangian
@@ -300,12 +304,22 @@ module module_mp_gfdl_v3
 
 #ifdef PSD_paper_setting
     real :: n0w_sig = 1.2 ! intercept parameter (significand) of cloud water (Lin et al. 1983) (1/m^4) (Martin et al. 1994)
-    real :: n0i_sig = 1.0 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (McFarquhar et al. 2015)
+    real :: n0i_sig = 1.0 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (Fu 1996)
+!    real :: n0i_sig = 2.66 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (H02,NAMMA)
+!    real :: n0i_sig = 9.92 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (M15,NAMMA,IGF)
+!    real :: n0i_sig = 1.06 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (M15,NAMMA,DIGF)
+!    real :: n0i_sig = 7.81 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (M15,NAMMA,SGF)
+!    real :: n0i_sig = 6.93 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (M15,NAMMA,NGF)
+!    real :: n0i_sig = 1.11 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (H02,ISDAC)
+!    real :: n0i_sig = 4.93 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (M15,ISDAC,IGF)
+!    real :: n0i_sig = 5.90 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (M15,ISDAC,DIGF)
+!    real :: n0i_sig = 2.60 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (M15,ISDAC,SGF)
+!    real :: n0i_sig = 1.77 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (M15,ISDAC,NGF)
 #else
-    real :: n0w_sig = 1.1 ! intercept parameter (significand) of cloud water (Lin et al. 1983) (1/m^4) (Martin et al. 1994)
-    !real :: n0w_sig = 1.4 ! intercept parameter (significand) of cloud water (Lin et al. 1983) (1/m^4) (Martin et al. 1994)
-    real :: n0i_sig = 1.3 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (McFarquhar et al. 2015)
-    !real :: n0i_sig = 9.4 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (McFarquhar et al. 2015)
+    real :: n0w_sig = 1.1 ! intercept parameter (significand) of cloud water (Lin et al. 1983) (1/m^4)
+    !real :: n0w_sig = 1.4 ! intercept parameter (significand) of cloud water (Lin et al. 1983) (1/m^4)
+    real :: n0i_sig = 1.3 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4)
+    !real :: n0i_sig = 9.4 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4)
 #endif
     real :: n0r_sig = 8.0 ! intercept parameter (significand) of rain (Lin et al. 1983) (1/m^4) (Marshall and Palmer 1948)
     real :: n0s_sig = 3.0 ! intercept parameter (significand) of snow (Lin et al. 1983) (1/m^4) (Gunn and Marshall 1958)
@@ -314,12 +328,22 @@ module module_mp_gfdl_v3
     
 #ifdef PSD_paper_setting
     real :: n0w_exp = 66.0 ! intercept parameter (exponent) of cloud water (Lin et al. 1983) (1/m^4) (Martin et al. 1994)
-    real :: n0i_exp = 10.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (McFarquhar et al. 2015)
+    real :: n0i_exp = 10.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (Fu 1996)
+!    real :: n0i_exp = 11.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (H02,NAMMA)
+!    real :: n0i_exp = 10.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (M15,NAMMA,IGF)
+!    real :: n0i_exp = 11.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (M15,NAMMA,DIGF)
+!    real :: n0i_exp = 12.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (M15,NAMMA,SGF)
+!    real :: n0i_exp = 12.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (M15,NAMMA,NGF)
+!    real :: n0i_exp = 15.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (H02,ISDAC)
+!    real :: n0i_exp = 12.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (M15,ISDAC,IGF)
+!    real :: n0i_exp = 12.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (M15,ISDAC,DIGF)
+!    real :: n0i_exp = 13.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (M15,ISDAC,SGF)
+!    real :: n0i_exp = 13.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (M15,ISDAC,NGF)
 #else
-    real :: n0w_exp = 41.0 ! intercept parameter (exponent) of cloud water (Lin et al. 1983) (1/m^4) (Martin et al. 1994)
-    !real :: n0w_exp = 91.0 ! intercept parameter (exponent) of cloud water (Lin et al. 1983) (1/m^4) (Martin et al. 1994)
-    real :: n0i_exp = 18.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (McFarquhar et al. 2015)
-    !real :: n0i_exp = 17.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (McFarquhar et al. 2015)
+    real :: n0w_exp = 41.0 ! intercept parameter (exponent) of cloud water (Lin et al. 1983) (1/m^4)
+    !real :: n0w_exp = 91.0 ! intercept parameter (exponent) of cloud water (Lin et al. 1983) (1/m^4)
+    real :: n0i_exp = 18.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4)
+    !real :: n0i_exp = 17.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4)
 #endif
     real :: n0r_exp = 6.0 ! intercept parameter (exponent) of rain (Lin et al. 1983) (1/m^4) (Marshall and Palmer 1948)
     real :: n0s_exp = 6.0 ! intercept parameter (exponent) of snow (Lin et al. 1983) (1/m^4) (Gunn and Marshall 1958)
@@ -328,35 +352,39 @@ module module_mp_gfdl_v3
     
 #ifdef PSD_paper_setting
     real :: muw = 11.0 ! shape parameter of cloud water in Gamma distribution (Martin et al. 1994)
-    real :: mui = 1.0 ! shape parameter of cloud ice in Gamma distribution (McFarquhar et al. 2015)
+    real :: mui = 1.0 ! shape parameter of cloud ice in Gamma distribution (Fu 1996)
+!    real :: mui = 2.84 ! shape parameter of cloud ice in Gamma distribution (H02,NAMMA)
+!    real :: mui = 2.62 ! shape parameter of cloud ice in Gamma distribution (M15,NAMMA,IGF)
+!    real :: mui = 2.64 ! shape parameter of cloud ice in Gamma distribution (M15,NAMMA,DIGF)
+!    real :: mui = 3.54 ! shape parameter of cloud ice in Gamma distribution (M15,NAMMA,SGF)
+!    real :: mui = 3.60 ! shape parameter of cloud ice in Gamma distribution (M15,NAMMA,NGF)
+!    real :: mui = 3.07 ! shape parameter of cloud ice in Gamma distribution (H02,ISDAC)
+!    real :: mui = 2.01 ! shape parameter of cloud ice in Gamma distribution (M15,ISDAC,IGF)
+!    real :: mui = 2.04 ! shape parameter of cloud ice in Gamma distribution (M15,ISDAC,DIGF)
+!    real :: mui = 2.35 ! shape parameter of cloud ice in Gamma distribution (M15,ISDAC,SGF)
+!    real :: mui = 2.26 ! shape parameter of cloud ice in Gamma distribution (M15,ISDAC,NGF)
 #else
-    real :: muw = 6.0 ! shape parameter of cloud water in Gamma distribution (Martin et al. 1994)
-    !real :: muw = 16.0 ! shape parameter of cloud water in Gamma distribution (Martin et al. 1994)
-    real :: mui = 3.35 ! shape parameter of cloud ice in Gamma distribution (McFarquhar et al. 2015)
-    !real :: mui = 3.54 ! shape parameter of cloud ice in Gamma distribution (McFarquhar et al. 2015)
+    real :: muw = 6.0 ! shape parameter of cloud water in Gamma distribution
+    !real :: muw = 16.0 ! shape parameter of cloud water in Gamma distribution
+    real :: mui = 3.35 ! shape parameter of cloud ice in Gamma distribution
+    !real :: mui = 3.54 ! shape parameter of cloud ice in Gamma distribution
 #endif
     real :: mur = 1.0 ! shape parameter of rain in Gamma distribution (Marshall and Palmer 1948)
     real :: mus = 1.0 ! shape parameter of snow in Gamma distribution (Gunn and Marshall 1958)
     real :: mug = 1.0 ! shape parameter of graupel in Gamma distribution (Houze et al. 1979)
     real :: muh = 1.0 ! shape parameter of hail in Gamma distribution (Federer and Waldvogel 1975)
     
-    real :: alinw = 3.e7 ! "a" in Lin et al. (1983) for cloud water (Ikawa and Saito 1990)
-#ifdef PSD_paper_setting
-    real :: alini = 11.72 ! "a" in Lin et al. (1983) for cloud ice (Ikawa and Saita 1990)
-#else
-    real :: alini = 7.e2 ! "a" in Lin et al. (1983) for cloud ice (Ikawa and Saita 1990)
-#endif
+    real :: alinw = 3.e7 ! "a" in Lin et al. (1983) for cloud water (Ikawa and Saito 1991)
+    real :: alini = 11.72 ! "a" in Lin et al. (1983) for cloud ice (McFarquhar et al. 2015)
+    !real :: alini = 7.e2 ! "a" in Lin et al. (1983) for cloud ice (Ikawa and Saita 1991)
     real :: alinr = 842.0 ! "a" in Lin et al. (1983) for rain (Liu and Orville 1969)
     real :: alins = 4.8 ! "a" in Lin et al. (1983) for snow (straka 2009)
     real :: aling = 1.0 ! "a" in Lin et al. (1983), similar to a, but for graupel (Pruppacher and Klett 2010)
     real :: alinh = 1.0 ! "a" in Lin et al. (1983), similar to a, but for hail (Pruppacher and Klett 2010)
 
-    real :: blinw = 2.0 ! "b" in Lin et al. (1983) for cloud water (Ikawa and Saito 1990)
-#ifdef PSD_paper_setting
-    real :: blini = 0.41 ! "b" in Lin et al. (1983) for cloud ice (Ikawa and Saita 1990)
-#else
-    real :: blini = 1.0 ! "b" in Lin et al. (1983) for cloud ice (Ikawa and Saita 1990)
-#endif
+    real :: blinw = 2.0 ! "b" in Lin et al. (1983) for cloud water (Ikawa and Saito 1991)
+    real :: blini = 0.41 ! "b" in Lin et al. (1983) for cloud ice (McFarquhar et al. 2015)
+    !real :: blini = 1.0 ! "b" in Lin et al. (1983) for cloud ice (Ikawa and Saita 1991)
     real :: blinr = 0.8 ! "b" in Lin et al. (1983) for rain (Liu and Orville 1969)
     real :: blins = 0.25 ! "b" in Lin et al. (1983) for snow (straka 2009)
     real :: bling = 0.5 ! "b" in Lin et al. (1983), similar to b, but for graupel (Pruppacher and Klett 2010)
@@ -535,7 +563,8 @@ module module_mp_gfdl_v3
         n0r_exp, n0s_exp, n0g_exp, n0h_exp, muw, mui, mur, mus, mug, muh, &
         alinw, alini, alinr, alins, aling, alinh, blinw, blini, blinr, blins, bling, blinh, &
         do_new_acc_water, do_new_acc_ice, is_fac, ss_fac, gs_fac, rh_fac, &
-        snow_grauple_combine
+        snow_grauple_combine, &
+        isedi_w, isedi_i, isedi_r, isedi_s, isedi_g
 
 contains
 
@@ -613,12 +642,13 @@ subroutine gfdl_cld_mp_driver                                              &
               land,                                                        &
               water,                                                       &
               rain, snow, ice, graupel, hydrostatic,                       &
-              is, ie, ks, ke, q_con, cappa, consv_te, te,                  &
+              is, ie, ks, ke, consv_te,                                    &
 #ifdef EXT_DIAG
+              q_con, cappa, te,                                            &
               prefluxw, prefluxr, prefluxi, prefluxs, prefluxg,            &
               condensation, deposition, evaporation, sublimation,          &
 #endif
-              rhc, last_step, do_inline_mp )
+              last_step, do_inline_mp )
     
     implicit none
     
@@ -635,22 +665,34 @@ subroutine gfdl_cld_mp_driver                                              &
     real, intent (in), dimension (is:ie) :: hs, gsize, land
     
     real, intent (in), dimension (is:ie, ks:ke) :: delz, qnl, qni
-    real, intent (in), dimension (is:ie, ks:ke) :: rhc
     
-    real, intent (inout), dimension (is:ie, ks:ke) :: delp, pt, ua, va, wa, te
+    real, intent (inout), dimension (is:ie, ks:ke) :: delp, pt, ua, va, wa
     real, intent (inout), dimension (is:ie, ks:ke) :: qv, ql, qr, qi, qs, qg, qa
-    
-    real, intent (inout), dimension (is:, ks:) :: q_con, cappa
     
     real, intent (inout), dimension (is:ie) :: water, rain, ice, snow, graupel
 #ifdef EXT_DIAG
+    real, intent (inout), dimension (is:ie, ks:ke) :: q_con, cappa, te
     real, intent (inout), dimension (is:ie, ks:ke) :: prefluxw, prefluxr, prefluxi, prefluxs, prefluxg
     real, intent (inout), dimension (is:ie) :: condensation, deposition
     real, intent (inout), dimension (is:ie) :: evaporation, sublimation
 #else
+    real, dimension (is:ie, ks:ke) :: q_con, cappa, te
     real, dimension (is:ie, ks:ke) :: prefluxw, prefluxr, prefluxi, prefluxs, prefluxg
     real, dimension (is:ie) :: condensation, deposition
     real, dimension (is:ie) :: evaporation, sublimation
+
+    q_con = 0.
+    cappa = 0.
+    te = 0.
+    prefluxw = 0.
+    prefluxr = 0.
+    prefluxi = 0.
+    prefluxs = 0.
+    prefluxg = 0.
+    condensation = 0.
+    deposition = 0.
+    evaporation = 0.
+    sublimation = 0.
 #endif
     
     ! -----------------------------------------------------------------------
@@ -670,7 +712,7 @@ subroutine gfdl_cld_mp_driver                                              &
 #endif
         gsize, hs, q_con, cappa, consv_te, te, prefluxw, prefluxr, prefluxi, &
         prefluxs, prefluxg, condensation, deposition, evaporation, sublimation, &
-        rhc, last_step, do_inline_mp, .false., .true.)
+        last_step, do_inline_mp, .false., .true.)
     
 end subroutine gfdl_cld_mp_driver
 
@@ -1087,7 +1129,7 @@ subroutine mpdrv (hydrostatic, ua, va, wa, delp, pt, qv, ql, qr, qi, qs, &
 #endif
         gsize, hs, q_con, cappa, consv_te, te, prefluxw, prefluxr, &
         prefluxi, prefluxs, prefluxg, condensation, deposition, evaporation, &
-        sublimation, rhc, last_step, do_inline_mp, do_mp_fast, do_mp_full)
+        sublimation, last_step, do_inline_mp, do_mp_fast, do_mp_full)
     
     implicit none
     
@@ -1108,7 +1150,6 @@ subroutine mpdrv (hydrostatic, ua, va, wa, delp, pt, qv, ql, qr, qi, qs, &
 #endif
     
     real, intent (in), dimension (is:ie, ks:ke) :: delz, qnl, qni
-    real, intent (in), dimension (is:ie, ks:ke) :: rhc
     
     real, intent (inout), dimension (is:ie, ks:ke) :: delp, pt, ua, va, wa
     real, intent (inout), dimension (is:ie, ks:ke) :: qv, ql, qr, qi, qs, qg, qa
@@ -1135,7 +1176,6 @@ subroutine mpdrv (hydrostatic, ua, va, wa, delp, pt, qv, ql, qr, qi, qs, &
     real, dimension (ks:ke) :: qvz, qlz, qrz, qiz, qsz, qgz, qaz
     real, dimension (ks:ke) :: den, pz, denfac, ccn, cin
     real, dimension (ks:ke) :: u, v, w
-    real, dimension (ks:ke) :: rhcz
     
     real (kind = r8) :: con_r8, c8
     
@@ -1247,8 +1287,6 @@ subroutine mpdrv (hydrostatic, ua, va, wa, delp, pt, qv, ql, qr, qi, qs, &
             den (k) = - dp (k) / (grav * dz (k))
             pz (k) = den (k) * rdgas * tz (k)
             
-            rhcz (k) = rhc (i, k)
-
             ! -----------------------------------------------------------------------
             ! for sedi_momentum transport
             ! -----------------------------------------------------------------------
@@ -1352,7 +1390,7 @@ subroutine mpdrv (hydrostatic, ua, va, wa, delp, pt, qv, ql, qr, qi, qs, &
         
         if (do_mp_fast) then
             
-            call mp_fast (ks, ke, tz, qvz, qlz, qrz, qiz, qsz, qgz, dtm, dp, den, rhcz, &
+            call mp_fast (ks, ke, tz, qvz, qlz, qrz, qiz, qsz, qgz, dtm, dp, den, &
                 ccn, cin, condensation (i), deposition (i), evaporation (i), &
                 sublimation (i), convt)
             
@@ -1364,7 +1402,7 @@ subroutine mpdrv (hydrostatic, ua, va, wa, delp, pt, qv, ql, qr, qi, qs, &
         
         if (do_mp_full) then
             
-            call mp_full (ks, ke, ntimes, tz, qvz, qlz, qrz, qiz, qsz, qgz, dp, dz, rhcz, &
+            call mp_full (ks, ke, ntimes, tz, qvz, qlz, qrz, qiz, qsz, qgz, dp, dz, &
                 u, v, w, den, denfac, ccn, cin, dts, rh_adj, rh_rain, h_var, dte (i), &
                 water (i), rain (i), ice (i), snow (i), graupel (i), prefluxw (i, :), &
                 prefluxr (i, :), prefluxi (i, :), prefluxs (i, :), prefluxg (i, :), &
@@ -1435,7 +1473,14 @@ subroutine mpdrv (hydrostatic, ua, va, wa, delp, pt, qv, ql, qr, qi, qs, &
             qiz (k) = qiz (k) * con_r8
             qsz (k) = qsz (k) * con_r8
             qgz (k) = qgz (k) * con_r8
+        enddo
             
+!xb141>>>
+        if (fix_negative) &
+            call neg_adj (ks, ke, tz, dp, qvz, qlz, qrz, qiz, qsz, qgz, cond)
+!xb141<<<
+
+        do k = ks, ke
             qv (i, k) = qvz (k)
             ql (i, k) = qlz (k)
             qr (i, k) = qrz (k)
@@ -1661,7 +1706,7 @@ end subroutine neg_adj
 ! full microphysics loop
 ! =======================================================================
 
-subroutine mp_full (ks, ke, ntimes, tz, qv, ql, qr, qi, qs, qg, dp, dz, rhc, u, v, w, &
+subroutine mp_full (ks, ke, ntimes, tz, qv, ql, qr, qi, qs, qg, dp, dz, u, v, w, &
         den, denfac, ccn, cin, dts, rh_adj, rh_rain, h_var, dte, water, rain, ice, &
         snow, graupel, prefluxw, prefluxr, prefluxi, prefluxs, prefluxg, &
         condensation, deposition, evaporation, sublimation, convt)
@@ -1677,7 +1722,6 @@ subroutine mp_full (ks, ke, ntimes, tz, qv, ql, qr, qi, qs, qg, dp, dz, rhc, u, 
     real, intent (in) :: dts, rh_adj, rh_rain, h_var, convt
     
     real, intent (in), dimension (ks:ke) :: dp, dz, den, denfac, ccn
-    real, intent (in), dimension (ks:ke) :: rhc
     
     real, intent (inout), dimension (ks:ke) :: qv, ql, qr, qi, qs, qg, u, v, w, cin
     real, intent (inout), dimension (ks:ke) :: prefluxw, prefluxr, prefluxi, prefluxs, prefluxg
@@ -1743,7 +1787,7 @@ subroutine mp_full (ks, ke, ntimes, tz, qv, ql, qr, qi, qs, qg, dp, dz, rhc, u, 
         ! -----------------------------------------------------------------------
         
         call subgrid_z_proc (ks, ke, den, denfac, dts, rh_adj, tz, qv, ql, &
-            qr, qi, qs, qg, dp, ccn, cin, cond, dep, reevap, sub, rhc)
+            qr, qi, qs, qg, dp, ccn, cin, cond, dep, reevap, sub)
         
         condensation = condensation + cond * convt
         deposition = deposition + dep * convt
@@ -1758,7 +1802,7 @@ end subroutine mp_full
 ! fast microphysics loop
 ! =======================================================================
 
-subroutine mp_fast (ks, ke, tz, qv, ql, qr, qi, qs, qg, dtm, dp, den, rhc, &
+subroutine mp_fast (ks, ke, tz, qv, ql, qr, qi, qs, qg, dtm, dp, den, &
         ccn, cin, condensation, deposition, evaporation, sublimation, convt)
     
     implicit none
@@ -1772,7 +1816,6 @@ subroutine mp_fast (ks, ke, tz, qv, ql, qr, qi, qs, qg, dtm, dp, den, rhc, &
     real, intent (in) :: dtm, convt
     
     real, intent (in), dimension (ks:ke) :: dp, den, ccn
-    real, intent (in), dimension (ks:ke) :: rhc
     
     real, intent (inout), dimension (ks:ke) :: qv, ql, qr, qi, qs, qg, cin
     
@@ -1830,7 +1873,7 @@ subroutine mp_fast (ks, ke, tz, qv, ql, qr, qi, qs, qg, dtm, dp, den, rhc, &
     ! -----------------------------------------------------------------------
     
     call pcond_pevap (ks, ke, dtm, qv, ql, qr, qi, qs, qg, tz, dp, cvm, te8, den, &
-        lcpk, icpk, tcpk, tcp3, cond, reevap, rhc)
+        lcpk, icpk, tcpk, tcp3, cond, reevap)
     
     condensation = condensation + cond * convt
     evaporation = evaporation + reevap * convt
@@ -2307,6 +2350,8 @@ subroutine terminal_fall (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, den, 
     ! -----------------------------------------------------------------------
     
     integer :: k
+
+    integer :: isedi
     
     logical :: no_fall
     
@@ -2371,14 +2416,19 @@ subroutine terminal_fall (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, den, 
     select case (qflag)
         case ("ql")
             q = ql
+            isedi = isedi_w
         case ("qr")
             q = qr
+            isedi = isedi_r
         case ("qi")
             q = qi
+            isedi = isedi_i
         case ("qs")
             q = qs
+            isedi = isedi_s
         case ("qg")
             q = qg
+            isedi = isedi_g
         case default
             print *, "gfdl_mp: qflag error!"
     end select
@@ -3692,7 +3742,7 @@ end subroutine pgacw_pgacr
 ! =======================================================================
 
 subroutine subgrid_z_proc (ks, ke, den, denfac, dts, rh_adj, tz, qv, ql, qr, &
-        qi, qs, qg, dp, ccn, cin, cond, dep, reevap, sub, rhc)
+        qi, qs, qg, dp, ccn, cin, cond, dep, reevap, sub)
     
     implicit none
     
@@ -3705,7 +3755,6 @@ subroutine subgrid_z_proc (ks, ke, den, denfac, dts, rh_adj, tz, qv, ql, qr, &
     real, intent (in) :: dts, rh_adj
     
     real, intent (in), dimension (ks:ke) :: den, denfac, ccn, dp
-    real, intent (in), dimension (ks:ke) :: rhc
     
     real, intent (inout), dimension (ks:ke) :: qv, ql, qr, qi, qs, qg, cin
     
@@ -3753,7 +3802,7 @@ subroutine subgrid_z_proc (ks, ke, den, denfac, dts, rh_adj, tz, qv, ql, qr, &
     ! -----------------------------------------------------------------------
     
     call pcond_pevap (ks, ke, dts, qv, ql, qr, qi, qs, qg, tz, dp, cvm, te8, den, &
-        lcpk, icpk, tcpk, tcp3, cond, reevap, rhc)
+        lcpk, icpk, tcpk, tcp3, cond, reevap)
     
     if (.not. do_warm_rain_mp) then
         
@@ -3889,7 +3938,7 @@ end subroutine pinst
 ! =======================================================================
 
 subroutine pcond_pevap (ks, ke, dts, qv, ql, qr, qi, qs, qg, tz, dp, cvm, te8, den, &
-        lcpk, icpk, tcpk, tcp3, cond, reevap, rhc)
+        lcpk, icpk, tcpk, tcp3, cond, reevap)
     
     implicit none
     
@@ -3902,7 +3951,6 @@ subroutine pcond_pevap (ks, ke, dts, qv, ql, qr, qi, qs, qg, tz, dp, cvm, te8, d
     real, intent (in) :: dts
     
     real, intent (in), dimension (ks:ke) :: den, dp
-    real, intent (in), dimension (ks:ke) :: rhc
     
     real (kind = r8), intent (in), dimension (ks:ke) :: te8
     
@@ -3927,8 +3975,7 @@ subroutine pcond_pevap (ks, ke, dts, qv, ql, qr, qi, qs, qg, tz, dp, cvm, te8, d
     do k = ks, ke
         
         tin = tz (k)
-!        qsw = wqs (tin, den (k), dqdt)
-        qsw = wqs (tin, den (k), dqdt) * rhc (k)  !xb141
+        qsw = wqs (tin, den (k), dqdt)
         qpz = qv (k) + ql (k) + qi (k)
         rh_tem = qpz / qsw
         dq = qsw - qv (k)
@@ -5331,7 +5378,7 @@ end subroutine sedi_heat
 subroutine fast_sat_adj (dtm, is, ie, ks, ke, hydrostatic, consv_te, &
         te, qv, ql, qr, qi, qs, qg, qa, qnl, qni, hs, delz, pt, delp, &
         q_con, cappa, gsize, last_step, condensation, evaporation, &
-        deposition, sublimation, rhc, do_sat_adj)
+        deposition, sublimation, do_sat_adj)
     
     implicit none
     
@@ -5348,7 +5395,6 @@ subroutine fast_sat_adj (dtm, is, ie, ks, ke, hydrostatic, consv_te, &
     real, intent (in), dimension (is:ie) :: hs, gsize
     
     real, intent (in), dimension (is:ie, ks:ke) :: delz, qnl, qni
-    real, intent (in), dimension (is:ie, ks:ke) :: rhc
     
     real, intent (inout), dimension (is:ie, ks:ke) :: delp, pt, te
     real, intent (inout), dimension (is:ie, ks:ke) :: qv, ql, qr, qi, qs, qg, qa
@@ -5399,7 +5445,7 @@ subroutine fast_sat_adj (dtm, is, ie, ks, ke, hydrostatic, consv_te, &
     call mpdrv (hydrostatic, ua, va, wa, delp, pt, qv, ql, qr, qi, qs, qg, qa, &
         qnl, qni, delz, is, ie, ks, ke, dtm, water, rain, ice, snow, graupel, &
         gsize, hs, q_con, cappa, consv_te, te, prefluxw, prefluxr, prefluxi, &
-        prefluxs, prefluxg, condensation, deposition, evaporation, sublimation, rhc, &
+        prefluxs, prefluxg, condensation, deposition, evaporation, sublimation, &
         last_step, .true., do_sat_adj, .false.)
     
 end subroutine fast_sat_adj

@@ -109,9 +109,11 @@ module module_mp_gfdl
     real, parameter :: d2ice = dc_vap + dc_ice !< - 126, isobaric heating / cooling
     real, parameter :: li2 = lv0 + li00 !< 2.86799816e6, sublimation latent heat coefficient at 0 deg k
     
-    real, parameter :: qrmin = 1.e-8 ! min value for ???
+!    real, parameter :: qrmin = 1.e-8 ! min value for ???
+    real, parameter :: qrmin = 1.e-15 ! min value for precipitating condensates
     real, parameter :: qvmin = 1.e-20 !< min value for water vapor (treated as zero)
-    real, parameter :: qcmin = 1.e-12 !< min value for cloud condensates
+!    real, parameter :: qcmin = 1.e-12 !< min value for cloud condensates
+    real, parameter :: qcmin = 1.e-15 !< min value for cloud condensates
     
     real, parameter :: vr_min = 1.e-3 !< min fall speed for rain
     real, parameter :: vf_min = 1.e-5 !< min fall speed for cloud ice, snow, graupel
@@ -1837,7 +1839,8 @@ subroutine icloud (ktop, kbot, tzk, p1, qvk, qlk, qrk, qik, qsk, qgk, dp1, &
             
             tc = tz - tice
             
-            if (qr > 1.e-7 .and. tc < 0.) then
+!            if (qr > 1.e-7 .and. tc < 0.) then
+            if (qr > qrmin .and. tc < 0.) then
                 
                 ! -----------------------------------------------------------------------
                 ! * sink * terms to qr: psacr + pgfr
