@@ -62,7 +62,7 @@
       integer   nfxr
 !  for Semi-Lagrangian
 !
-      real(kind=RTYPE) ndsldtaq,ndsldtah,dtah,dta,dtaq,            &
+      real(kind=RTYPE) ndsldtah,dtah,dta,                          &
                 diveng(nxp,lev,my_max),                            &
                 qm_sl(nx,levp*ncld,my_max),                        &
                 pten_sl(nx,levp,my_max),                           &
@@ -435,8 +435,6 @@
       itter=1
       dtah = 0.5*dta
       ndsldtah= dtah/float(itter)
-      dtaq     = 0.5*dtah
-      ndsldtaq= dtaq/float(itter)
 !
 !  compute initial moisture and potential temperature
 !
@@ -736,7 +734,7 @@
 !
 !      do itt = 1,itter
         call ndslfv_monoadvh_fgnl(uum_sl,vvm_sl,ttm_sl     &
-                             ,nxdef,dtaq,xy,levp,3,forward)
+                             ,nxdef,dtah,xy,levp,3,forward)
 !      enddo
 !
       call mpe2d_transpose_ndsl_f2p(uum_sl,vdzonl, &
@@ -791,10 +789,10 @@
       enddo !jj = 1,jlistnum
 
 !CWB2021 ndsl single precision test
-      call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,dtaq,forward)
+      call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,dtah,forward)
       do itt = 1,itter
         call ndslfv_monoadvv_fgnl(vdzonl,vdmerd,ddtemp,pdot,pt &
-                            ,nxjp,ndsldtaq,3,forward)
+                            ,nxjp,ndsldtah,3,forward)
       enddo
 
        forward = .false.

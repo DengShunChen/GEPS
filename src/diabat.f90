@@ -671,7 +671,7 @@
 !---------------------------------------------------------------------
 ! (3)  set ice thickness => not for couple
 !---------------------------------------------------------------------
-            if( .not. ice(i,jj)) then
+            if(iceold(i,jj) .and. .not. ice(i,jj)) then
               zice(i,jj)=0.
               cice(i,jj)=0.
               snr(i,jj) =0.
