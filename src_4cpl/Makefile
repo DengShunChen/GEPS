@@ -339,7 +339,7 @@ SRCS_f90  = \
   zimadv.f90 \
   zx.f90 
 
-CPL = /nwpr/gfs/xb169/code_update/coupler
+CPL = /nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler
 ifeq ($(strip $(TIMCOMCPL)),TRUE)
   SRCS_f90 := $(SRCS_f90) mod_gfscpl.f90
 endif
