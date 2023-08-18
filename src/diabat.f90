@@ -609,9 +609,9 @@
       if ( leap .eq. 0 ) yrd = 366
 !
       icrad = frad*3600.0/dt + 0.0001 ! frad =1.0 set in block.f
-      iter  = tau*3600.0/dt - 1. + 0.0001
+      iter  = tau*3600.0/dt  + 0.0001
       uprad = .false.
-      if ( (mod(iter,icrad).eq.0) .or. iter.eq.1 )  uprad = .true.
+      if ( (mod(iter,icrad).eq.0) .or. (iter.eq.1) )  uprad = .true.
       doozon = doozon .and. dorad
       uprad  = uprad  .and. dorad
 !
