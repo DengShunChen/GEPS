@@ -181,6 +181,7 @@
           allocate ( opgsst(nxp,my_max,0:13), stat=ierr)
              if (ierr/= 0) then
                  write(6,*) 'mod_opgsst : allocate fail 1 '
+                 call dmsexit(-1)
                  stop
              end if
 
@@ -918,9 +919,9 @@
           call mpe_bcast(istat,1,0,mpe_integer)
           if(istat.ne.0)then
             if(myrank.eq.0) print *,'dmsopn ocaf error'
-            stop
             call mpe_finalize
             call dmsexit(-1)
+            stop
           endif
 
 
@@ -1209,6 +1210,7 @@
                  WRITE(nerr,*) 'expected number of latitudes = ',ngl
                  WRITE(nerr,*) 'number of latitudes of ocean data = ',io_ngl
                  WRITE(nerr,*)  'read_godas','unexpected resolution'
+                 call dmsexit(-1)
                  stop
               END IF
               CALL io_inq_dimid  (woanc1%file_id, 'depth', io_var_id)
@@ -1231,6 +1233,7 @@
                    WRITE (message_text,*) 'Read nodepth error in file <',fn0,'>'
                    WRITE(nerr,*) '',message_text
                    WRITE(nerr,*) 'read_godas','unexpected resolution'
+                   call dmsexit(-1)
                    stop
                 END IF
               ENDIF
@@ -1244,6 +1247,7 @@
                    WRITE (message_text,*) 'Read nodepth error in file <',fn2,'>'
                    WRITE(nerr,*) '',message_text
                    WRITE(nerr,*) 'read_godas','unexpected resolution'
+                   call dmsexit(-1)
                    stop
                 ENDIF
               ENDIF
@@ -1598,6 +1602,7 @@
           WRITE (message_text,*) 'Could not open unit<',nwoa0,'>'
           WRITE(nerr,*) '',message_text
           WRITE(nerr,*) 'read_woa0', 'Could not open woa0 file'
+          call dmsexit(-1)
           stop
         ENDIF
         WRITE(nerr,'(/,A,I2)') ' Read WOA0 3.0 '
@@ -1613,6 +1618,7 @@
           WRITE(nerr,*) 'expected number of latitudes = ',ngl
          WRITE(nerr,*) 'number of latitudes of world ocean atlas data =',io_ngl
           WRITE(nerr,*) 'read_WOA0','unexpected resolution'
+          call dmsexit(-1)
           stop
         END IF
         CALL io_inq_dimid  (woa0nc1%file_id, 'depth', io_var_id)
@@ -1902,9 +1908,9 @@
        if (myrank.eq.3) print *,'myrank3 istat=',istat
        if(istat .ne. 0)then
         if(myrank.eq.0) print *,'read_godas_3days fn2',' terminated.'
-        stop
         call mpe_finalize
         call dmsexit(-1)
+        stop
        endif
         
 !       CALL p_bcast (nodepth, p_io)
@@ -2016,9 +2022,9 @@
        CALL mpe_bcast (istat, 1, 0, mpe_integer)
        if(istat .ne. 0)then
         if(myrank.eq.0) print *,'read_godas_3days.2', 'run terminated.'
-        stop
         call mpe_finalize
         call dmsexit(-1)
+        stop
        endif
 
        if(myrank .eq. 0) print*,'read to read_goads_dayp1' 
@@ -2116,9 +2122,9 @@
        CALL mpe_bcast (istat, 1, 0, mpe_integer)
        if(istat .ne. 0)then
          if(myrank.eq.0) print *,'read_dailygodas', 'run terminated.'
-         stop
          call mpe_finalize
          call dmsexit(-1)
+         stop
        endif
 
        CALL mpe_bcast(timevals_godas,3,0,mpe_double)
@@ -2428,9 +2434,9 @@
                print *,'ydate=',ydate,'timevals_godas(2)=',timevals_godas(2) &
                       ,'timevals_godas(3)=',timevals_godas(3) 
                print *,'time_weights', 'GODAS PENTAD Date not found'
-               stop
                CALL mpe_finalize
                CALL dmsexit(-1)
+               stop
              ENDIF
           !!! IF(wgtd(1).GT.1._dp .OR. wgtd(2).GT.1._dp )THEN
           !!!   WRITE(nerr,*) 'get_5dwgtd yr, mo, dy, hr, mn, se=',yr,
