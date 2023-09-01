@@ -227,9 +227,9 @@ subroutine tracking(tau,dt_trk,dt,nx,my,                                  &
           call xy2ll(rixtyp(ip),rjytyp(ip),tflon(nc,ip,n),tflat(nc,ip,n),tlon,tlat,nx,my)
           i=ixtyp(ip,n) ; j=jytyp(ip,n) 
           if(ip .eq. 4) then 
-            tensity(nc,ip,n)=field(i,j)+1457.0 
+            tensity(nc,ip,n)=field(i,j)!+1457.0 
           elseif(ip .eq. 5) then
-            tensity(nc,ip,n)=field(i,j)+5574.0
+            tensity(nc,ip,n)=field(i,j)!+5574.0
           else
             tensity(nc,ip,n)=field(i,j)
           endif
