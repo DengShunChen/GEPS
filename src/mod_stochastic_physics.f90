@@ -404,7 +404,7 @@ contains
     enddo
     deallocate(skeb_vloc)
     skeb_vwts(:,1)=1.0-skeb_vwts(:,2)
-    skeb_vpts(:,2)=skeb_vpts(:,1)+1.0
+    skeb_vpts(:,2)=skeb_vpts(:,1)+1
     if (myrank .eq. 0) then
       do k=1,lev
         print*,'skeb vpts ',skeb_vpts(k,1),skeb_vwts(k,2)
@@ -515,7 +515,7 @@ contains
         endif
       endif
 !     call mpe_bcast(count4,1,0,mpe_double) 
-      call mpe_bcast(count4,1,0,mpe_integer) 
+      call mpe_bcast(count4,1,0,mpe_integer)
       if (rpattern(n)%seed == -999 ) then
         rpattern(n)%seed = count4
       endif
@@ -707,8 +707,6 @@ contains
     real, intent(in) :: vfact(nlev) 
     type(random_pattern), intent(inout) :: rpattern(nscale)
     real(kind=RTYPE), intent(  out) :: n3du(nxp,nlev,my_max),n3dv(nxp,nlev,my_max)
-!local variable
-    integer::vpts1,vpts2
 
  
     n3du = 0.

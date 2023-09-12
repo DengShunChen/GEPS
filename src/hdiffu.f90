@@ -90,26 +90,6 @@
 !!        facv = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
 !!        fact = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
 !
-
-!  if doskeb = .true. estimate the dissipation of kinectic energy for SKEB
-!
-      if ( doskeb ) then
-        do m=1,mlistnum
-          mf=mlist(m)
-          do n=mf,jtrun
-            c1=1.+dta*facv*hfilt*eps4(n,m)**powd
-            if ( KL .le. hdk1 ) then
-              c2=1.+dta*facd*hfilt2*eps4(n,m)
-            else
-              c2=1.+dta*facd*hfilt*eps4(n,m)**powd
-            endif
-            vordiss(k,1,n,m)=(1.-1./c1)*vornow(k,1,n,m)
-            vordiss(k,2,n,m)=(1.-1./c1)*vornow(k,2,n,m)
-            divdiss(k,1,n,m)=(1.-1./c2)*divnow(k,1,n,m)
-            divdiss(k,2,n,m)=(1.-1./c2)*divnow(k,2,n,m)
-          enddo
-        enddo
-      endif 
 !
 !  difuse vorticity, divergence and temperature fields
 !
@@ -124,6 +104,14 @@
               c2=1.+dta*facd*hfilt2*eps4(n,m)+vd*exp(-0.5*(k-1))
             else
               c2=1.+dta*facd*hfilt*eps4(n,m)**powd
+            endif
+
+!for SKEB
+            if ( doskeb ) then
+            vordiss(k,1,n,m)=(1.-1./c1)*vornow(k,1,n,m)
+            vordiss(k,2,n,m)=(1.-1./c1)*vornow(k,2,n,m)
+            divdiss(k,1,n,m)=(1.-1./c2)*divnow(k,1,n,m)
+            divdiss(k,2,n,m)=(1.-1./c2)*divnow(k,2,n,m)
             endif
 
             vornow(k,1,n,m)=vornow(k,1,n,m)/c1

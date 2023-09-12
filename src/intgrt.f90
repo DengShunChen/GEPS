@@ -1339,8 +1339,8 @@
 !!          pltemp(n,m,2)= plnow(n,m,2)+sptm(n,m,2)
 !!        enddo
 !!      enddo
-      call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plnow &
-                   ,dlpl,dtpl,nsizey)
+!      call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plnow &
+!                   ,dlpl,dtpl,nsizey)
 !
 !  velocity components
 !
@@ -1358,7 +1358,8 @@
             do i=1,nxj
               diss_est(i,k,jj)=(um(i,k,jj)*ut(i,k,jj)                &
                                +vm(i,k,jj)*vt(i,k,jj))               &
-                               +0.5*(um(i,k,jj)**2.+vm(i,k,jj)**2.)
+                               +(um(i,k,jj)*um(i,k,jj)               &
+                               + vm(i,k,jj)*vm(i,k,jj))*0.5
             enddo
           enddo
         enddo
@@ -1388,13 +1389,26 @@
 !        if ( myrank .eq. 0 ) print *,'intgrt: keb(1,72,1)=',keb(1,72,1)
 !        if ( myrank .eq. 0 ) print *,'intgrt: kea(1,72,1)=',kea(1,72,1)
 
-        ! compute vorticity and divergence from u and v
-        call trandv ( jtrun,jtmax,nx,my,my_max,lev,ut,vt,weight,cim &
-                      ,onocos,poly,dpoly,vornow,divnow,nsizey)
       endif
+
+      ! compute vorticity and divergence from u and v
+      call trandv ( jtrun,jtmax,nx,my,my_max,lev,ut,vt,weight,cim &
+                      ,onocos,poly,dpoly,vornow,divnow,nsizey)
+
 !
 !  detact instability occure or not
 !
+!  zonal and meridional gradients of terrain pressure
+!
+      call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plnow &
+                   ,dlpl,dtpl,nsizey)
+!
+!  velocity components
+!
+      call tranuv (jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac &
+                  , poly,dpoly,vornow,divnow,ut,vt,nsizey)
+
+
       if(tau.gt.12.) then
 !        sptendmax2=0.409
 !        sptendmax1=0.379
