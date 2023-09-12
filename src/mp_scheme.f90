@@ -165,7 +165,7 @@
                                    re_snow(nx,lev),re_rain(nx,lev)
       real,     intent(inout)   :: rlsp(nx),sr(nx)
 !  ---  local arrays:
-      integer   kc,k,i
+      integer   kc,k,i,n
       real      prsl(nx,lev),del(nx,lev)
       real      ttc(nx,lev),qtc(nx,lev),qtr(nx,lev),qtrw(nx,lev),      &
                 qti(nx,lev),qtsw(nx,lev),qtgl(nx,lev),ntnc(nx,lev,2),  &
@@ -224,6 +224,8 @@
 ! Goddard (GCE) MP
       integer nmgce3
       integer ihail,ICE2
+      integer ntimes
+      real    mp_time,dts
       real    rhowater,rhosnow,dx
       real,dimension(:,:),allocatable ::                                &
               ht,hail2d,rainnc2d,snownc2d,graupelnc2d,hailnc2d,sr2d
@@ -1001,6 +1003,11 @@
         rhowater = 1000.            !water density (kg/m^3), but not used
         rhosnow = 100.              !snow density (kg/m^3), but not used
 
+        mp_time = 60.               !standard sub-cycle time step
+        ntimes = 1                  !number of sub-cycles
+        ntimes = max (ntimes, int (dta / min(dta, mp_time)))
+        dts = dta / real (ntimes)   !real sub-cycle time step
+
         do k = 1, lev
           kc = lev - k + 1
           do i = 1, nxj
@@ -1057,11 +1064,14 @@
           endif
         enddo
 
+        do n = 1, ntimes
+
         if ( nmmiph .eq. 15 ) then 
           if ( nmgce3 .eq. 2 )                                          &
           call gsfcgce_3ice_nuwrf                                       &
                  ( th3d, qv3d, qc3d, qr3d, qi3d, qs3d,                  &
-                   rho3d, pii3d, p3d, dta, z3d,                         &
+!                   rho3d, pii3d, p3d, dta, z3d,                         &
+                   rho3d, pii3d, p3d, dts, z3d,                         &
                    ht, dz3d, con_g, w3d,                                &
                    rhowater, rhosnow,                                   &
                    itimestep, land2d,                                   &
@@ -1079,7 +1089,8 @@
           if ( nmgce3 .eq. 1 )                                          &
           call gsfcgce                                                  &
                  ( th3d, qv3d, qc3d, qr3d, qi3d, qs3d,                  &
-                   rho3d, pii3d, p3d, dta, z3d,                         &
+!                   rho3d, pii3d, p3d, dta, z3d,                         &
+                   rho3d, pii3d, p3d, dts, z3d,                         &
                    ht, dz3d, con_g,                                     &
                    rhowater, rhosnow,                                   &
                    itimestep,                                           &
@@ -1101,7 +1112,8 @@
           if ( nmgce3 .eq. 3 )                                          &
           call gsfcgce_3ice_cwb                                         &
                  ( th3d, qv3d, qc3d, qr3d, qi3d, qs3d, qg3d,            &
-                   rho3d, pii3d, p3d, dta, z3d,                         &
+!                   rho3d, pii3d, p3d, dta, z3d,                         &
+                   rho3d, pii3d, p3d, dts, z3d,                         &
                    ht, dz3d, itimestep,                                 &
 !                   ids,ide, jds,jde, kds,kde,                           & ! domain dims
                    1, nx , 1, 1, 1, lev,                                & ! memory dims
@@ -1120,7 +1132,8 @@
         if ( nmmiph .eq. 16 )                                           &
           call gsfcgce_4ice_nuwrf                                       &
                  ( th3d, qv3d, qc3d, qr3d, qi3d, qs3d, qh3d, qg3d,      &
-                   rho3d, pii3d, p3d, dta, z3d,                         &
+!                   rho3d, pii3d, p3d, dta, z3d,                         &
+                   rho3d, pii3d, p3d, dts, z3d,                         &
                    ht, dz3d, con_g, w3d,                                &
                    rhowater, rhosnow,                                   &
                    itimestep, land2d, dx,                               &
@@ -1140,6 +1153,37 @@
                    preci3d, precs3d, precg3d, prech3d, precr3d,         &
 #endif
                    .false. )
+
+        do i = 1, nxj
+          rlsp(i) = rain2d(i,1)  !total large scale precipitation (kg/m^2=mm)
+          sr(i)   = sr2d(i,1)
+
+          do k = 1, lev
+            if ( convert_dry_q ) then
+              ! dry air density : rho = 0.622*p/(Rd*T*(0.622+qv))
+              rho3d(i,k,1) = con_eps*p3d(i,k,1)/(con_rd*                &
+                             th3d(i,k,1)*pk(i,k)*(con_eps+qv3d(i,k,1)))
+            else
+              ! moist air density : rho = p/(Rd*T*(1+0.608*qv))
+              rho3d(i,k,1) = p3d(i,k,1)/(con_rd*th3d(i,k,1)*pk(i,k)*    &
+                            (1+con_fvirt*qv3d(i,k,1)))
+            endif
+          enddo
+        enddo
+
+        rain2d = 0.
+        snow2d = 0.
+        graupel2d = 0.
+        rainnc2d = 0.
+        snownc2d = 0.
+        graupelnc2d = 0.
+        sr2d = 0.
+        if ( nmmiph .eq. 16 ) then
+          hail2d = 0.
+          hailnc2d = 0.
+        endif
+
+        enddo  !end of do n=1,ntimes
 
         do k = 1, lev
           kc = lev - k + 1
@@ -1194,10 +1238,10 @@
 
           enddo
         enddo
-        do i = 1, nxj
-          rlsp(i) = rain2d(i,1)  !total large scale precipitation (kg/m^2=mm)
-          sr(i)   = sr2d(i,1)
-        enddo
+!        do i = 1, nxj
+!          rlsp(i) = rain2d(i,1)  !total large scale precipitation (kg/m^2=mm)
+!          sr(i)   = sr2d(i,1)
+!        enddo
 
         deallocate                                                      &
          ( th3d,qv3d,qc3d,qr3d,qs3d,qi3d,qg3d,pii3d,p3d,z3d,dz3d,rho3d, &
