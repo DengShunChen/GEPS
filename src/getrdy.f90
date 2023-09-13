@@ -155,7 +155,8 @@
  107  format('global_idw.t',i3.3,'.',i4.4,'.',i3.3,'.dat')
  108  format('global_idw.t',i3.3,'.',i3.3,'.',i3.3,'.dat')
 
-      open(71,file=f71,form='unformatted',access='direct',recl=8*nx*my)
+      open(71,file=f71,form='unformatted',access='direct',    &
+           recl=8*nx*my,convert="big_endian")
 
       do k=1,8
         read(71,rec=k) ww1
@@ -492,6 +493,12 @@
                   icwarn = icwarn + 1 
                 endif
               endif            
+! set snow depth to zero on ocean point
+              if ( ocean(i,jj) ) then
+                snr(i,jj)    = 0.
+                sndepth(i,jj)= 0.
+                sncover(i,jj)= 0.
+              endif
             enddo             
           enddo
 !
