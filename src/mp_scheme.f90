@@ -1094,12 +1094,12 @@
                    rainnc2d, rain2d,                                    &
                    snownc2d, snow2d, sr2d,                              &
                    graupelnc2d, graupel2d,                              &
-#ifdef EXT_DIAG
-                   preci3d, precs3d, precg3d, precr3d,                  &
-#endif
                    refl_10cm, diagflag, do_radar_ref,                   &
                    .false., qg3d,                                       &
                    ihail, ice2,                                         &
+#ifdef EXT_DIAG
+                   preci3d, precs3d, precg3d, precr3d,                  &
+#endif
                    rew3d, rer3d, rei3d, res3d, reg3d )
 
           if ( nmgce3 .eq. 1 )                                          &
