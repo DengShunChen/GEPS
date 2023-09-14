@@ -236,7 +236,7 @@
       real,dimension(:,:,:),allocatable ::                              &
               physc, physe, physd, physs, physm, physf,                 &
               acphysc, acphyse, acphysd, acphyss, acphysm, acphysf,     &
-              preci3d, precs3d, precg3d, prech3d, precr3d
+              preci3d, precs3d, precg3d, precr3d, prech3d
 #endif
       convert_dry_q = .true.
       q_remove_cond = .false.
@@ -949,6 +949,11 @@
         allocate                                                        &
          ( rew3d(nx,lev,1),rer3d(nx,lev,1),rei3d(nx,lev,1),             &
            res3d(nx,lev,1),reg3d(nx,lev,1) )
+#ifdef EXT_DIAG
+        allocate                                                        &
+         ( preci3d(nxj,lev,1),precs3d(nxj,lev,1),precg3d(nxj,lev,1),    &
+           precr3d(nxj,lev,1),prech3d(nxj,lev,1) )
+#endif
 
         if ( nmmiph.eq.16 ) allocate                                    &
          ( qh3d(nx,lev,1),hailnc2d(nx,1),hail2d(nx,1),reh3d(nx,lev,1) )
@@ -981,6 +986,14 @@
         res3d = 0.
         reg3d = 0.
         w3d = 0.
+
+#ifdef EXT_DIAG
+        preci3d = 0.
+        precs3d = 0.
+        precg3d = 0.
+        precr3d = 0.
+        prech3d = 0.
+#endif
 
         if ( nmmiph .eq. 16 ) then
           qh3d = 0.
@@ -1081,6 +1094,9 @@
                    rainnc2d, rain2d,                                    &
                    snownc2d, snow2d, sr2d,                              &
                    graupelnc2d, graupel2d,                              &
+#ifdef EXT_DIAG
+                   preci3d, precs3d, precg3d, precr3d,                  &
+#endif
                    refl_10cm, diagflag, do_radar_ref,                   &
                    .false., qg3d,                                       &
                    ihail, ice2,                                         &
@@ -1148,9 +1164,9 @@
                    rew3d, rer3d, rei3d,                                 &
                    res3d, reg3d, reh3d,                                 &
 #ifdef EXT_DIAG
-                   physc, physe, physd, physs, physm, physf,            &
-                   acphysc, acphyse, acphysd, acphyss, acphysm, acphysf,&
-                   preci3d, precs3d, precg3d, prech3d, precr3d,         &
+                   physc, physe, physd, physs, physm, physf,            & !simultaneous diabatic heating rate
+                   acphysc, acphyse, acphysd, acphyss, acphysm,acphysf, & !accumulated diabatic heating rate
+                   preci3d, precs3d, precg3d, prech3d, precr3d,         & !precitation
 #endif
                    .false. )
 
@@ -1180,6 +1196,13 @@
         snownc2d = 0.
         graupelnc2d = 0.
         sr2d = 0.
+#ifdef EXT_DIAG
+        preci3d = 0.
+        precs3d = 0.
+        precg3d = 0.
+        precr3d = 0.
+        prech3d = 0.
+#endif
         if ( nmmiph .eq. 16 ) then
           hail2d = 0.
           hailnc2d = 0.
@@ -1249,6 +1272,10 @@
          ( th3d,qv3d,qc3d,qr3d,qs3d,qi3d,qg3d,pii3d,p3d,z3d,dz3d,rho3d, &
            rainnc2d,snownc2d,graupelnc2d,rain2d,snow2d,graupel2d,       &
            ht,sr2d,refl_10cm,land2d,w3d,rew3d,rer3d,rei3d,res3d,reg3d )
+#ifdef EXT_DIAG
+        deallocate                                                      &
+         ( preci3d,precs3d,precg3d,precr3d,prech3d )
+#endif
         if ( nmmiph .eq. 16 ) deallocate                                &
          ( qh3d,hailnc2d,hail2d,reh3d )
 

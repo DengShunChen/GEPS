@@ -163,8 +163,9 @@ CONTAINS
                       ,ihail, ice2                                 &
 !NUWRF BEGIN
 #ifdef EXT_DIAG
-                      ,physc, physe, physd, physs, physm, physf    &
-                      ,acphysc, acphyse, acphysd, acphyss, acphysm, acphysf &
+!                      ,physc, physe, physd, physs, physm, physf    &
+!                      ,acphysc, acphyse, acphysd, acphyss, acphysm, acphysf &
+                      ,preci3d, precs3d, precg3d, precr3d          &
 #endif
                       ,refc, refr, refi, refs, refg                & ! cloud effective radius
 #if ( WRF_CHEM == 1)
@@ -298,6 +299,19 @@ CONTAINS
  
   LOGICAL :: flag_qg
 
+#ifdef EXT_DIAG
+  REAL, DIMENSION( ims:ime , kms:kme , jms:jme ),                 &
+        INTENT(INOUT) ::                                          &
+!             physc, physe, physd, physs, physm, physf,                  &
+!             acphysc, acphyse, acphysd, acphyss, acphysm, acphysf,      &
+             preci3d, precs3d, precg3d, precr3d
+#else
+  REAL, DIMENSION( ims:ime , kms:kme , jms:jme ) ::                     &
+!             physc, physe, physd, physs, physm, physf,                  &
+!             acphysc, acphyse, acphysd, acphyss, acphysm, acphysf,      &
+             preci3d, precs3d, precg3d, precr3d
+#endif
+ 
 !NUWRF BEGIN
 #if ( WRF_CHEM == 1)
 ! EMK 2011/08/25
@@ -416,6 +430,7 @@ CONTAINS
                       rainncv, grav,itimestep,                &
                       snownc, snowncv, sr,                    &
                       graupelnc, graupelncv,                  &
+                      preci3d, precs3d, precg3d, precr3d,     &
                       ihail, ice2, improve,                   &
                       ims,ime, jms,jme, kms,kme,              & ! memory dims
                       its,ite, jts,jte, kts,kte               ) ! tile   dims
@@ -533,6 +548,7 @@ CONTAINS
                       rainncv, grav, itimestep,               &
                       snownc, snowncv, sr,                    &
                       graupelnc, graupelncv,                  &
+                      preci3d, precs3d, precg3d, precr3d,     &
                       ihail, ice2, improve,                   &
                       ims,ime, jms,jme, kms,kme,              & ! memory dims
                       its,ite, jts,jte, kts,kte               ) ! tile   dims
@@ -566,6 +582,9 @@ CONTAINS
   REAL,    DIMENSION( ims:ime , jms:jme ),                            &
            INTENT(IN   )               :: topo   
 
+  REAL,    DIMENSION( ims:ime , kms:kme , jms:jme ),                  &
+           INTENT(OUT)                 :: preci3d, precs3d, precg3d, precr3d
+
 ! temperary vars
  
   REAL,    DIMENSION( kts:kte )           :: fv
@@ -575,6 +594,7 @@ CONTAINS
   REAL,    DIMENSION( kts:kte )       :: qrz, qiz, qsz, qgz,      &
                                          zz, dzw, prez, rhoz,     &
                                          orhoz
+  REAL,    DIMENSION( kts:kte )       :: rsed, ised, ssed, gsed
   REAL,    DIMENSION( kts:kte )       :: thz, piz
 
    INTEGER                    :: k, i, j
@@ -691,6 +711,17 @@ CONTAINS
  j_loop:  do j = jts, jte
  i_loop:  do i = its, ite
 
+   do k = kts, kte
+      preci3d(i,k,j)=0.
+      precs3d(i,k,j)=0.
+      precg3d(i,k,j)=0.
+      precr3d(i,k,j)=0.
+      ised(k)=0.
+      ssed(k)=0.
+      gsed(k)=0.
+      rsed(k)=0.
+   end do
+
    pptrain = 0.
    pptsnow = 0.
    pptgraul = 0.
@@ -804,6 +835,7 @@ CONTAINS
             qrz(k)=dmax1(0.,qrz(k))
             qr(i,k,j)=qrz(k)
             fluxin=fluxout
+            rsed(k)=rsed(k)+fluxin
          enddo
          if (min_q .eq. 1) then
             pptrain=pptrain+fluxin*del_tv
@@ -902,6 +934,7 @@ CONTAINS
             qsz(k)=dmax1(0.,qsz(k))
             qs(i,k,j)=qsz(k)
             fluxin=fluxout
+            ssed(k)=ssed(k)+fluxin
          enddo
          if (min_q .eq. 1) then
             pptsnow=pptsnow+fluxin*del_tv
@@ -1026,6 +1059,7 @@ CONTAINS
             qgz(k)=dmax1(0.,qgz(k))
             qg(i,k,j)=qgz(k)
             fluxin=fluxout
+            gsed(k)=gsed(k)+fluxin
          enddo
          if (min_q .eq. 1) then
             pptgraul=pptgraul+fluxin*del_tv
@@ -1146,6 +1180,7 @@ CONTAINS
             qiz(k)=dmax1(0.,qiz(k))
             qi(i,k,j)=qiz(k)
             fluxin=fluxout
+            ised(k)=ised(k)+fluxin
          enddo
          if (min_q .eq. 1) then
             pptice=pptice+fluxin*del_tv
@@ -1160,6 +1195,13 @@ CONTAINS
       endif
 !
    ENDDO !notlast
+
+   do k = kts, kte
+            preci3d(i,k,j)=ised(k)
+            precs3d(i,k,j)=ssed(k)
+            precg3d(i,k,j)=gsed(k)
+            precr3d(i,k,j)=rsed(k)
+   end do
 
 !   prnc(i,j)=prnc(i,j)+pptrain
 !   psnowc(i,j)=psnowc(i,j)+pptsnow
