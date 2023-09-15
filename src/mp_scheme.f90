@@ -951,8 +951,8 @@
            res3d(nx,lev,1),reg3d(nx,lev,1) )
 #ifdef EXT_DIAG
         allocate                                                        &
-         ( preci3d(nxj,lev,1),precs3d(nxj,lev,1),precg3d(nxj,lev,1),    &
-           precr3d(nxj,lev,1),prech3d(nxj,lev,1) )
+         ( preci3d(nx,lev,1),precs3d(nx,lev,1),precg3d(nx,lev,1),       &
+           precr3d(nx,lev,1),prech3d(nx,lev,1) )
 #endif
 
         if ( nmmiph.eq.16 ) allocate                                    &
