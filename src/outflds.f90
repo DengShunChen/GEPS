@@ -20,8 +20,8 @@
       use index
       use mod_outflds
       use radn, only : ntcw,ntiw,ntoz
-      use const, only : RTYPE
-
+      use const, only : RTYPE,nmmiph
+      use raddiag, only:clds !cloud fraction on sigma levels
       implicit  none
 
       integer   itau,nx,my,my_max,lev,ncld,lmax,numout,ktrop,km
@@ -466,7 +466,8 @@
             ,whtlevq,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,ntoz,lwrite)
         endif
 !        
-!  output for combination of all cloud water and cloud ice
+!  output for combination of all condensates
+        if ( nmmiph .eq. 18 ) nclds = 6  !do not combine number concentraction for 2M Thompson
         tmp=0.
         do jj = 1, jlistnum
           j=jlist1(jj)
@@ -490,6 +491,8 @@
       endif
 !
       endif     ! end of moisture output
+
+
 !
 !  geopotential height output
 !
@@ -598,6 +601,28 @@
       if(myrank.eq.0)print*,' outfld : start dragout, lwrite = ',lwrite
         call dragout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num &
                   ,whtlev,pkout,plog,pllp,drag,bt1,pres3d,ggdef,lwrite)
+      endif
+!
+!!follow ECMWF output Fraction of cloud cover on pressure levels
+!!clouds output
+      labx='cld   '
+      call whtrec (labx,ntau,taudir,whtlev,num)
+      if(num.gt.0) then
+        tmp=0.
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          do k = 1, lev
+              do i = 1,nxj
+                tmp(i,k,jj)=clds(i,k,jj)
+              enddo
+          enddo
+          do i = 1,nxj
+            bt1(i,jj)=clds(i,lev,jj)
+          enddo
+        enddo
+          call cloudout(nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num &
+          ,whtlev,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,lwrite)
       endif
 !
       if(lwritesit) then

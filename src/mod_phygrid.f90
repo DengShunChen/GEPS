@@ -29,6 +29,12 @@
 
       integer, allocatable,save :: il(:,:),ib(:,:)
 
+!helio>
+      integer, dimension(:,:),allocatable,save :: ls_full(:,:)
+      integer, dimension(:,:),allocatable,save :: ls_redu(:,:)
+      real, dimension(:,:,:),allocatable,save :: outp(:,:,:)
+!helio<
+
       real, dimension(:,:),allocatable,save :: cof
       real, dimension(:,:),allocatable,save :: xlon
       real, dimension(:)  ,allocatable,save :: xlat
@@ -170,6 +176,19 @@
            dvshl = 0.
            dtlsp = 0.
 !
+
+!helio>
+           allocate (ls_full(nx,my_max),ls_redu(nx,my_max), stat=ierr)
+           allocate (outp(nx,my_max,8), stat=ierr)
+           if (ierr/= 0) then
+               write(6,*) 'mod_phygrid : allocate fail 9 '
+               stop
+           end if
+           ls_full = 0.
+           ls_redu = 0.
+           outp = 0.
+!helio<
+
            return
 
          end subroutine
@@ -192,6 +211,11 @@
            deallocate (rainlp6,raincu6,rainlp3,raincu3,rainlp1,raincu1)
            deallocate (tsflw)
            deallocate (dtcup,ducup,dvcup,dtshl,dushl,dvshl,dtlsp)
+!helio>
+           deallocate (ls_full,ls_redu)
+           deallocate (outp)
+!helio<
+
 
            return
 

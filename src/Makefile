@@ -150,9 +150,15 @@ SRCS_f90  = \
   module_bfmicrophysics.f90 \
   module_mp_radar.f90 \
   module_mp_thompson_gfs.f90 \
+  module_mp_thompson_gfs_new.f90 \
+  module_mp_thompson_make_NC.f90 \
   module_mp_wsm6_fv3.f90 \
   module_mp_gfdl_fv3_v16.f90 \
   module_mp_gfdl_fv3_v2.f90 \
+  module_mp_gfdl_fv3_v3.f90 \
+  module_mp_gsfcgce.f90 \
+  module_mp_gsfcgce_3ice_nuwrf.f90 \
+  module_mp_gsfcgce_4ice_nuwrf.f90 \
   cld_eff_rad.f90 \
   moninedmf.f90 \
   mpe2d.f90 \
@@ -249,6 +255,7 @@ SRCS_f90  = \
   rqkir.f90 \
   rrtmg.f90 \
   rsmout.f90 \
+  rsmout_sigp.f90 \
   rstrandz.f90 \
   rstrantq.f90 \
   samfdeepcnv.f90 \

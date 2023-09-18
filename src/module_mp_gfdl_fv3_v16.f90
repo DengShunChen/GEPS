@@ -109,9 +109,11 @@ module module_mp_gfdl
     real, parameter :: d2ice = dc_vap + dc_ice !< - 126, isobaric heating / cooling
     real, parameter :: li2 = lv0 + li00 !< 2.86799816e6, sublimation latent heat coefficient at 0 deg k
     
-    real, parameter :: qrmin = 1.e-8 ! min value for ???
+!    real, parameter :: qrmin = 1.e-8 ! min value for ???
+    real, parameter :: qrmin = 1.e-15 ! min value for precipitating condensates
     real, parameter :: qvmin = 1.e-20 !< min value for water vapor (treated as zero)
-    real, parameter :: qcmin = 1.e-12 !< min value for cloud condensates
+!    real, parameter :: qcmin = 1.e-12 !< min value for cloud condensates
+    real, parameter :: qcmin = 1.e-15 !< min value for cloud condensates
     
     real, parameter :: vr_min = 1.e-3 !< min fall speed for rain
     real, parameter :: vf_min = 1.e-5 !< min fall speed for cloud ice, snow, graupel
@@ -355,7 +357,7 @@ subroutine gfdl_cloud_microphys_driver                                    &
               pt_dt, pt, w, uin, vin, udt, vdt,                           &
               dz, delp, area, dt_in, land,                                &
               rain, snow, ice, graupel,                                   &
-              hydrostatic, phys_hydrostatic,                              & 
+              rhc, hydrostatic, phys_hydrostatic,                     &
 !              iis, iie, jjs, jje, kks, kke, ktop, kbot, seconds,          &  !FV3 v16
 !              p, lradar, refl_10cm, reset )
               iis, iie, jjs, jje, kks, kke, ktop, kbot )
@@ -370,6 +372,8 @@ subroutine gfdl_cloud_microphys_driver                                    &
 !    integer, intent (in) :: seconds
     
     real, intent (in) :: dt_in !< physics time step
+
+    real, intent (in), dimension (:, :) :: rhc
     
     real, intent (in), dimension (:, :) :: area !< cell area
     real, intent (in), dimension (:, :) :: land !< land fraction
@@ -487,7 +491,7 @@ subroutine gfdl_cloud_microphys_driver                                    &
             rain (:, j), snow (:, j), graupel (:, j), ice (:, j), m2_rain,     &
             m2_sol, cond (:, j), area (:, j), land (:, j), udt, vdt, pt_dt,    &
             qv_dt, ql_dt, qr_dt, qi_dt, qs_dt, qg_dt, qa_dt, w_var, vt_r,      &
-            vt_s, vt_g, vt_i, qn2)
+            vt_s, vt_g, vt_i, qn2, rhc)
     enddo
     
     ! -----------------------------------------------------------------------
@@ -677,7 +681,7 @@ subroutine mpdrv (hydrostatic, uin, vin, w, delp, pt, qv, ql, qr, qi, qs,     &
         qg, qa, qn, dz, is, ie, js, je, ks, ke, ktop, kbot, j, dt_in, ntimes, &
         rain, snow, graupel, ice, m2_rain, m2_sol, cond, area1, land,         &
         u_dt, v_dt, pt_dt, qv_dt, ql_dt, qr_dt, qi_dt, qs_dt, qg_dt, qa_dt,   &
-        w_var, vt_r, vt_s, vt_g, vt_i, qn2)
+        w_var, vt_r, vt_s, vt_g, vt_i, qn2, rhc)
     
     implicit none
     
@@ -687,6 +691,7 @@ subroutine mpdrv (hydrostatic, uin, vin, w, delp, pt, qv, ql, qr, qi, qs,     &
     integer, intent (in) :: ntimes, ktop, kbot
     
     real, intent (in) :: dt_in
+    real, intent (in), dimension (is:, ks:) :: rhc
     
     real, intent (in), dimension (is:) :: area1, land
     
@@ -712,6 +717,7 @@ subroutine mpdrv (hydrostatic, uin, vin, w, delp, pt, qv, ql, qr, qi, qs,     &
     real, dimension (ktop:kbot) :: t0, den, den0, tz, p1, denfac
     real, dimension (ktop:kbot) :: ccn, c_praut, m1_rain, m1_sol, m1
     real, dimension (ktop:kbot) :: u0, v0, u1, v1, w1
+    real, dimension (ktop:kbot) :: rhcz
     
     real :: cpaut, rh_adj, rh_rain
     real :: r1, s1, i1, g1, rdt, ccn0
@@ -764,6 +770,8 @@ subroutine mpdrv (hydrostatic, uin, vin, w, delp, pt, qv, ql, qr, qi, qs,     &
             tz (k) = t0 (k)
             dp1 (k) = delp (i, j, k)
             dp0 (k) = dp1 (k) ! moist air mass * grav
+
+            rhcz (k) = rhc (i, k)
             
             ! -----------------------------------------------------------------------
             ! convert moist mixing ratios to dry mixing ratios
@@ -957,7 +965,7 @@ subroutine mpdrv (hydrostatic, uin, vin, w, delp, pt, qv, ql, qr, qi, qs,     &
             ! -----------------------------------------------------------------------
             
             call icloud (ktop, kbot, tz, p1, qvz, qlz, qrz, qiz, qsz, qgz, dp1, den, &
-                denfac, vtsz, vtgz, vtrz, qaz, rh_adj, rh_rain, dts, h_var)
+                denfac, vtsz, vtgz, vtrz, qaz, rh_adj, rh_rain, dts, h_var, rhcz)
             
         enddo
         
@@ -1497,7 +1505,7 @@ end subroutine linear_prof
 ! =======================================================================
 
 subroutine icloud (ktop, kbot, tzk, p1, qvk, qlk, qrk, qik, qsk, qgk, dp1, &
-        den, denfac, vts, vtg, vtr, qak, rh_adj, rh_rain, dts, h_var)
+        den, denfac, vts, vtg, vtr, qak, rh_adj, rh_rain, dts, h_var, rhck)
     
     implicit none
     
@@ -1508,6 +1516,7 @@ subroutine icloud (ktop, kbot, tzk, p1, qvk, qlk, qrk, qik, qsk, qgk, dp1, &
     real, intent (inout), dimension (ktop:kbot) :: tzk, qvk, qlk, qrk, qik, qsk, qgk, qak
     
     real, intent (in) :: rh_adj, rh_rain, dts, h_var
+    real, intent (in), dimension (ktop:kbot) :: rhck
     
     real, dimension (ktop:kbot) :: lcpk, icpk, tcpk, di, lhl, lhi
     real, dimension (ktop:kbot) :: cvm, q_liq, q_sol
@@ -1830,7 +1839,8 @@ subroutine icloud (ktop, kbot, tzk, p1, qvk, qlk, qrk, qik, qsk, qgk, dp1, &
             
             tc = tz - tice
             
-            if (qr > 1.e-7 .and. tc < 0.) then
+!            if (qr > 1.e-7 .and. tc < 0.) then
+            if (qr > qrmin .and. tc < 0.) then
                 
                 ! -----------------------------------------------------------------------
                 ! * sink * terms to qr: psacr + pgfr
@@ -1972,7 +1982,7 @@ subroutine icloud (ktop, kbot, tzk, p1, qvk, qlk, qrk, qik, qsk, qgk, dp1, &
     ! -----------------------------------------------------------------------
     
     call subgrid_z_proc (ktop, kbot, p1, den, denfac, dts, rh_adj, tzk, qvk, &
-        qlk, qrk, qik, qsk, qgk, qak, h_var, rh_rain)
+        qlk, qrk, qik, qsk, qgk, qak, h_var, rhck, rh_rain)
     
 end subroutine icloud
 
@@ -1981,7 +1991,7 @@ end subroutine icloud
 ! =======================================================================
 
 subroutine subgrid_z_proc (ktop, kbot, p1, den, denfac, dts, rh_adj, tz, qv, &
-    ql, qr, qi, qs, qg, qa, h_var, rh_rain)
+    ql, qr, qi, qs, qg, qa, h_var, rhcz, rh_rain)
     
     implicit none
     
@@ -1990,6 +2000,7 @@ subroutine subgrid_z_proc (ktop, kbot, p1, den, denfac, dts, rh_adj, tz, qv, &
     real, intent (in), dimension (ktop:kbot) :: p1, den, denfac
     
     real, intent (in) :: dts, rh_adj, h_var, rh_rain
+    real, intent (in), dimension (ktop:kbot) :: rhcz
     
     real, intent (inout), dimension (ktop:kbot) :: tz, qv, ql, qr, qi, qs, qg, qa
     
@@ -2098,7 +2109,8 @@ subroutine subgrid_z_proc (ktop, kbot, p1, den, denfac, dts, rh_adj, tz, qv, &
         ! -----------------------------------------------------------------------
         
         qsw = wqs2 (tz (k), den (k), dwsdt)
-        dq0 = qsw - qv (k)
+!        dq0 = qsw - qv (k)
+        dq0 = qsw * rhcz (k) - qv (k)   !xb141
         if (dq0 > 0.) then
             ! SJL 20170703 added ql factor to prevent the situation of high ql and low RH
             ! factor = min (1., fac_l2v * sqrt (max (0., ql (k)) / 1.e-5) * 10. * dq0 / qsw)
@@ -4317,9 +4329,11 @@ subroutine qs_table3 (n)
             ! see smithsonian meteorological tables page 350.
             ! -----------------------------------------------------------------------
             aa = - 9.09718 * (table_ice / tem - 1.)
-            b = - 3.56654 * alog10 (table_ice / tem)
+!            b = - 3.56654 * alog10 (table_ice / tem)
+            b = - 3.56654 * dlog10 (table_ice / tem)
             c = 0.876793 * (1. - tem / table_ice)
-            e = alog10 (esbasi)
+!            e = alog10 (esbasi)
+            e = dlog10 (esbasi)
             table3 (i) = 0.1 * 10 ** (aa + b + c + e)
         else
             ! -----------------------------------------------------------------------
@@ -4327,10 +4341,12 @@ subroutine qs_table3 (n)
             ! see smithsonian meteorological tables page 350.
             ! -----------------------------------------------------------------------
             aa = - 7.90298 * (tbasw / tem - 1.)
-            b = 5.02808 * alog10 (tbasw / tem)
+!            b = 5.02808 * alog10 (tbasw / tem)
+            b = 5.02808 * dlog10 (tbasw / tem)
             c = - 1.3816e-7 * (10 ** ((1. - tem / tbasw) * 11.344) - 1.)
             d = 8.1328e-3 * (10 ** ((tbasw / tem - 1.) * (- 3.49149)) - 1.)
-            e = alog10 (esbasw)
+!            e = alog10 (esbasw)
+            e = dlog10 (esbasw)
             table3 (i) = 0.1 * 10 ** (aa + b + c + d + e)
         endif
     enddo
