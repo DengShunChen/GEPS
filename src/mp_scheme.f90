@@ -1179,10 +1179,12 @@
             if ( convert_dry_q ) then
               ! dry air density : rho = 0.622*p/(Rd*T*(0.622+qv))
               rho3d(i,k,1) = con_eps*p3d(i,k,1)/(con_rd*                &
-                             th3d(i,k,1)*pk(i,k)*(con_eps+qv3d(i,k,1)))
+                             th3d(i,k,1)*pii3d(i,k,1)*                  &
+                             (con_eps+qv3d(i,k,1)))
             else
               ! moist air density : rho = p/(Rd*T*(1+0.608*qv))
-              rho3d(i,k,1) = p3d(i,k,1)/(con_rd*th3d(i,k,1)*pk(i,k)*    &
+              rho3d(i,k,1) = p3d(i,k,1)/(con_rd*                        &
+                             th3d(i,k,1)*pii3d(i,k,1)*                  &
                             (1+con_fvirt*qv3d(i,k,1)))
             endif
             w3d(i,k,1) = -vvel(i,kc)*100./(rho3d(i,k,1)*con_g)  !(m/s)
