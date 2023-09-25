@@ -1,36 +1,20 @@
 #!/bin/bash
 
-. /nwpr/gfs/xb157/CWBSUMc2/4cpl/op_work_4cpl/00_setDate.sh
+. /nwpr/gfs/xb169/code_update/op_work_4cpl_t1/00_setDate.sh
 
-dmskeys='S00000
-         S00070
+dmskeys='B00100
+         B00200
+         B00210
+         B00510
          B10200
          B10210
-         S00420
-         S0042F
-         S00430
-         S0043F
-         S00310
-         S0031F
-         S00320
-         S0032F
-         S003X0
-         X00330
-         X0033F
-         X00340
-         X0034F
-         X00360
          B10100
          B10500
          B02100
          B02500
          B02510
          S00100
-         SSL010
-         B0062F
-         B00623
-         B00630
-         B00640'
+         SSL010'
 
 vars='h2o 
       phi 
@@ -55,7 +39,8 @@ levs2='  10
         400
         700
         850
-        925'
+        925
+       1000'
 
 
 ft_ini=0
