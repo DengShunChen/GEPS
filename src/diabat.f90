@@ -534,8 +534,8 @@
       ss_adj =0.
 ! for MP WSM6 & Thompson
       uni_cloud=.false. !if using SHOC scheme, it should be .true.
-      lmfshal=( nmshl .eq. 2 .or. nmshl .eq. 3 ) ! .true. if using mass-flux shallow convection
-      lmfdeep2=( nmcup .eq. 6 ) ! .true. if using scale-aware deep con
+      lmfshal=( nmshl .eq. 2 .or. nmshl .eq. 3 .or. nmshl .eq. 4 ) ! .true. if using mass-flux shallow convection
+      lmfdeep2=( nmcup .eq. 6 .or. nmcup .eq. 7 ) ! .true. if using scale-aware deep con
 
 
 !     define local constants
@@ -618,9 +618,9 @@
       if ( leap .eq. 0 ) yrd = 366
 !
       icrad = frad*3600.0/dt + 0.0001 ! frad =1.0 set in block.f
-      iter  = tau*3600.0/dt - 1. + 0.0001
+      iter  = tau*3600.0/dt  + 0.0001
       uprad = .false.
-      if ( (mod(iter,icrad).eq.0) )  uprad = .true.
+      if ( (mod(iter,icrad).eq.0) .or. (iter.eq.1) )  uprad = .true.
       doozon = doozon .and. dorad
       uprad  = uprad  .and. dorad
 !
@@ -672,10 +672,12 @@
 !---------------------------------------------------------------------
 ! (3)  set ice thickness => not for couple
 !---------------------------------------------------------------------
-            if( .not. ice(i,jj)) then
+            if(iceold(i,jj) .and. .not. ice(i,jj)) then
               zice(i,jj)=0.
               cice(i,jj)=0.
               snr(i,jj) =0.
+              sndepth(i,jj)=0.
+              sncover(i,jj)=0.
               z0(i,jj)=ustar(i,jj)*ustar(i,jj)*0.014/grav
             endif
             if(.not. iceold(i,jj) .and. ice(i,jj)) then
@@ -683,6 +685,8 @@
               zice(i,jj)=0.15 ! from himin in sfc_sice 
               cice(i,jj)=0.15 ! from cimin in sfc_sice 
               snr(i,jj) =15.
+              sndepth(i,jj)=snr(i,jj)*8.
+              sncover(i,jj)=min(1., snr(i,jj)/400.)
               z0(i,jj)=0.0002 ! set new ice point to 0.0002
             endif
           endif ! if(ls(i,jj).eq.0) then
@@ -951,17 +955,6 @@
       call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,ps(1,jj),  &
                           pkp,pk2p,pltp )
 !
-!     hydrostatic equation
-      do i = 1, nxj
-        phi(i,lev) = sgeo(i,jj)+ cp*tt(i,lev,jj)*(pk2(i,lev,jj)-pk(i,lev,jj))
-      enddo
-
-      do k = lev-1, 1, -1
-        do i = 1, nxj
-          phi(i,k) = phi(i,k+1) + cp*( tt(i,k,jj)  *( pk2(i,k,jj) - pk(i,k,jj)  )   &
-                                     + tt(i,k+1,jj)*( pk(i,k+1,jj)- pk2(i,k,jj) ) )
-        enddo
-      enddo
 
     !-----------------------------------------------------------------------------
     !  deweight u,v by cosl/radus, and
@@ -994,6 +987,12 @@
           enddo
         enddo
       endif ! end dosppt if stetement
+!
+!     compute phi by temperature
+!
+      call get_phi(nxjp(j),nxp,lev,ptop,cp,rgas,grav,sgeo(1,jj),      &
+                  pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),       &
+                  phii,phi)
 
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !
@@ -1192,25 +1191,25 @@
       if ( dopbl .and. (nmland.eq.2))                                         &
        call pbl_noah ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
-                      , sgeo(1,jj),phi,pst(1,jj),upp,vpp                      &
+                     , sgeo(1,jj),phi,phii,pst(1,jj),upp,vpp                  &
                      , ttpp,qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)                  &
                      , tt(1,1,jj),qt(1,1,jj),pk(1,1,jj),pk2(1,1,jj)           &
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
                      , eps(1,1,jj),hflux(1,jj),qflux(1,jj),itimestep          &
                      , gwclim(1,jj),tgclim(1,jj),ocean(1,jj),ice(1,jj)        &
 !                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),albx(1,jj)      &
-                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),sfalb(1,jj)      &
+                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),sfalb(1,jj)     &
                      , ipblmx(1,j),xkmx(1,j),ijdg(j),xkmd,itypbl              &
                      , t2(1,jj),q2(1,jj),rh2(1,jj),rh10(1,jj),u10(1,jj)       &
                      , v10(1,jj),fm(1,jj),fh(1,jj),fm10(1,jj),fh2(1,jj)       &
-                     , srflag(1,jj),rld_adj,stbo                            &
+                     , srflag(1,jj),rld_adj,stbo                              &
                      , km_soil,smc(1,1,jj),stc(1,1,jj),canopy(1,jj)           &
                      , runoff(1,jj),sigmaf(1,jj),istyp(1,jj),ivegtyp(1,jj)    &
                      , ncld,dsigma                                            &
                      , slopetyp(1,jj)                                         &
                      , slc(1,1,jj),sncover(1,jj),sndepth(1,jj)                &
                      , shdmax(1,jj),shdmin(1,jj),snoalb(1,jj),albedo2(1,jj)   &
-                     , sld_adj,zice(1,jj),cice(1,jj),xtice(1,jj)            &
+                     , sld_adj,zice(1,jj),cice(1,jj),xtice(1,jj)              &
                      , hpbl(1,jj),asl(1,1,jj),atl(1,1,jj),xmu(1,jj),gfx(1,jj) &
                      , kpbl(1,jj),nmpbl,nmmiph,j,isot,ivegsrc,sfemis(1,jj)    &
                      , dudtc,dvdtc,dtdtc,dqdtc,ustress(1,jj),vstress(1,jj)    &

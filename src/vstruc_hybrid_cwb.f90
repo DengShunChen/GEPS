@@ -79,12 +79,12 @@
 !  half level potential temperature, defined as weighted combination
 !  of full level thicknesses, not an interpolation
 !
-      that(i,k+1)= tt(i,k)-(tt(i,k)-tt(i,k+1))   &
+      that(i,k)= tt(i,k)-(tt(i,k)-tt(i,k+1))   &
        *(pk(i,k+1)-pk2(i,k))/(pk(i,k+1)-pk(i,k))
 !
 !  geopotential thicknesses
 !
-      phi(i,k)= that(i,k+1)*(pk(i,k+1)-pk(i,k))
+      phi(i,k)= that(i,k)*(pk(i,k+1)-pk(i,k))
 !
 !  energy conversion term for terrain pressure contribution to
 !  horizontal pressure gradient
