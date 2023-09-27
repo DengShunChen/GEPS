@@ -1016,7 +1016,7 @@
         rhowater = 1000.            !water density (kg/m^3), but not used
         rhosnow = 100.              !snow density (kg/m^3), but not used
 
-        mp_time = 60.               !standard sub-cycle time step
+        mp_time = 150.              !standard sub-cycle time step
         ntimes = 1                  !number of sub-cycles
         ntimes = max (ntimes, int (dta / min(dta, mp_time)))
         dts = dta / real (ntimes)   !real sub-cycle time step
