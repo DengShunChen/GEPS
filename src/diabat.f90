@@ -604,9 +604,10 @@
 
 
       rsolhr = hours
-      hours = hours + dt/3600.
-      if ( abs(24.-hours) .lt. 1.e-6 )  then
-         hours = 0. 
+      dtx_tau=dt/3600.
+      hours = hours + dtx_tau
+      if ( hours .gt. 24. .and. mod(hours,24.) .le. dtx_tau+0.0001 )  then
+         hours = mod ( hours,24.0 )
          julian= julian + 1
          if ( julian .gt. yrd ) julian = julian - yrd
          doozon = .true.
