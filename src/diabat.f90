@@ -596,8 +596,9 @@
 !     set hours, iter, icrad, julian, uprad, doozon
 !------------------------------------------------------------------------------
       rsolhr = hours
-      hours = hours + dt/3600.0
-      if ( hours .gt. 24.0 )  then
+      dtx_tau=dt/3600.
+      hours = hours + dtx_tau
+      if ( hours .gt. 24. .and. mod(hours,24.) .le. dtx_tau+0.0001 )  then
          hours = mod ( hours,24.0 )
          julian= julian + 1
          if ( julian .gt. yrd ) julian = julian - yrd
