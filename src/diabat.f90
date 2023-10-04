@@ -1110,11 +1110,11 @@
              asl_clr(1,1,jj),atl_clr(1,1,jj),cosz(1,jj),                   &
              asol_clr(1,jj),olr_clr(1,jj),ss_clr(1,jj),rs_clr(1,jj),       &
              sld_clr(1,jj),rld_clr(1,jj),sfalb(1,jj),sfemis(1,jj))
-          do k = 1, lev
-            do i = 1, nxj
-              dtrad(i,k,jj) = asl(i,k,jj) + atl(i,k,jj)
-            enddo
-          enddo
+!          do k = 1, lev
+!            do i = 1, nxj
+!              dtrad(i,k,jj) = asl(i,k,jj) + atl(i,k,jj)
+!            enddo
+!          enddo
       endif  ! for uprad .and. irad=2
 
       if ( dorad ) then
@@ -1132,6 +1132,8 @@
           rld_adj(i) = rld_adj(i) * sfemis(i,jj)
           rs_adj(i) = rs_adj(i) * sfemis(i,jj)
         enddo
+
+        if ( itimestep .le. 1 ) dtrad(:,:,jj) = dtradn(:,:)
       endif
 
 !xb110> save the variables for TDK before doing PBL parameterization
