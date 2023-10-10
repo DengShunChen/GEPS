@@ -29,7 +29,7 @@
             nnmiit,nnmivm,itypbl,                          &
             nmgwor,nmgwcv,mtnvar,                          &
             ktrop,ncpu,nmcup,nmpbl,nmland,numreduce,nmshl, &
-            nmmiph
+            nmmiph,itter
  
     common/constI/                                         &
             numout,ipadding,jm2,ksgeo,                     &
@@ -37,7 +37,7 @@
             nnmiit,nnmivm,itypbl,                          &
             nmgwor,nmgwcv,mtnvar,                          &
             ktrop,ncpu,nmcup,nmpbl,nmland,numreduce,nmshl, &
-            nmmiph
+            nmmiph,itter
  
 !    real, dimension(:), allocatable, save  ::              &
 !         weight,sinl,cosl,cor,onocos

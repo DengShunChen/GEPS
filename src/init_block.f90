@@ -107,6 +107,7 @@
       two_loop=.false.
 ! dy-core two time level
       ttl=.true.
+      itter=1
 ! dry air mass correction
       mass_dp=.true.
       dpprt  =.false.

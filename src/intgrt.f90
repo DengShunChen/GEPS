@@ -62,7 +62,7 @@
       integer   nfxr
 !  for Semi-Lagrangian
 !
-      real(kind=RTYPE) ndsldtah,dtah,dta,                          &
+      real(kind=RTYPE) ndsldtah,dtah,dtahi,dta,                    &
                 diveng(nxp,lev,my_max),                            &
                 qm_sl(nx,levp*ncld,my_max),                        &
                 pten_sl(nx,levp,my_max),                           &
@@ -79,7 +79,7 @@
                 rdivm(nxp,lev,my_max),ptm(nxp,my_max),             &
                 deldm(nxp,my_max),sdpbl(nxp,my_max)
 
-      integer   ierr,itter,ittw,itt,year,yrd
+      integer   ierr,ittw,itt,year,yrd
 !
       real(kind=RTYPE) glob(nx,my)
       real      hf24(nxp,my_max),qf24(nxp,my_max),ss24(nxp,my_max),rs24(nxp,my_max), &
@@ -432,9 +432,9 @@
       dtx=dt
 !
       dta = dtx
-      itter=1
       dtah = 0.5*dta
       ndsldtah= dtah/float(itter)
+      dtahi= dtah/float(itter)
 !
 !  compute initial moisture and potential temperature
 !
@@ -655,11 +655,15 @@
         do n=mf,jtrun
           do i = 1, 2
           plten(n,m,i) = 0.0
+          plmid(n,m,i) = plnow(n,m,i)
           do k = 1, levp
             divten(k,i,n,m) = 0.0
             vorten(k,i,n,m) = 0.0
             temten(k,i,n,m) = 0.0
             hldten(k,i,n,m) = 0.0
+            divmid(k,i,n,m) = divnow(k,i,n,m)
+            vormid(k,i,n,m) = vornow(k,i,n,m)
+            temmid(k,i,n,m) = temnow(k,i,n,m)
           enddo
           enddo
         enddo
@@ -676,6 +680,10 @@
             up(i,k,jj) = ut(i,k,jj)
             vp(i,k,jj) = vt(i,k,jj)
             ttp(i,k,jj)= tt(i,k,jj)
+            um(i,k,jj) = ut(i,k,jj)
+            vm(i,k,jj) = vt(i,k,jj)
+            tm(i,k,jj) = tt(i,k,jj)
+            rdivm(i,k,jj) = rdiv(i,k,jj)
           enddo
         enddo
         do k = 1, lev*ncld
@@ -685,6 +693,7 @@
         enddo
         do i = 1,nxj
           ptp(i,jj)= pt(i,jj)
+          ptm(i,jj)= pt(i,jj)
         enddo
       enddo
 
@@ -698,6 +707,9 @@
 !      call ujoinsr(cc,rdivm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
 !      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temmid,cc,1,nsizey)
 !      call ujoinsr(cc,tm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      forward = .true.
+      fwd= .true.
+      do itt = 1,itter
 !
 ! for Semi-Lagrangian advection
 !
@@ -712,17 +724,16 @@
        pten=0.
 
        deldm=0.
-       forward = .true.
-       fwd= .true.
+
 
 
 !
 !
 !     advet grid non-linear forcing from t-dt/2 to t+dt/2 via NDSL advection
 !
-      call mpe2d_transpose_ndsl_p2f(ut,ut_sl,    &
+      call mpe2d_transpose_ndsl_p2f(um,ut_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(vt,vt_sl,    &
+      call mpe2d_transpose_ndsl_p2f(vm,vt_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 
       call mpe2d_transpose_ndsl_p2f(ut,uum_sl,    &
@@ -734,7 +745,7 @@
 !
 !      do itt = 1,itter
         call ndslfv_monoadvh_fgnl(uum_sl,vvm_sl,ttm_sl     &
-                             ,nxdef,dtah,xy,levp,3,forward)
+                             ,nxdef,dtahi,xy,levp,3,forward)
 !      enddo
 !
       call mpe2d_transpose_ndsl_f2p(uum_sl,vdzonl, &
@@ -755,14 +766,14 @@
 !
 !   new p**capa quantities were computed in previous diabat call
 !
-        call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pt(1,jj), &
+        call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,ptm(1,jj), &
                                 pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
 !
 !
 !ndy        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld               &
         call gridnl_hybrid_ndsl (nxjp(j),nxp,lev,ncld                  &
-        , cp,radsq,ut(1,1,jj),vt(1,1,jj),rdiv(1,1,jj),tt(1,1,jj)       &
-        , qt(1,1,jj),phi(1,1,jj),pt(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
+        , cp,radsq,um(1,1,jj),vm(1,1,jj),rdivm(1,1,jj),tm(1,1,jj)      &
+        , qt(1,1,jj),phi(1,1,jj),ptm(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &
         , diveng(1,1,jj),vdmerdg(1,1,jj),vdzonlg(1,1,jj),pten(1,1,jj)  &
 !ndy        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj),2 )
@@ -789,31 +800,44 @@
       enddo !jj = 1,jlistnum
 
 !CWB2021 ndsl single precision test
-      call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,dtah,forward)
-      do itt = 1,itter
-        call ndslfv_monoadvv_fgnl(vdzonl,vdmerd,ddtemp,pdot,pt &
-                            ,nxjp,ndsldtah,3,forward)
-      enddo
+      call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,dtahi,forward)
+!      do itt = 1,itter
+        call ndslfv_monoadvv_fgnl(vdzonl,vdmerd,ddtemp,pdot,ptm &
+                            ,nxjp,dtahi,3,forward)
+!      enddo
 
-       forward = .false.
+
 !CWB2021 ndsl single precision test
 
 !
       call mpe2d_unify_nx(ww1,deldm)
       call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1         &
                   ,plten,nsizey)            
-
-      do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        do k = 1, lev
-          do i = 1,nxj
-            vdzonl(i,k,jj) = ( vdzonl(i,k,jj) - ut(i,k,jj) ) / dtah
-            vdmerd(i,k,jj) = ( vt(i,k,jj) - vdmerd(i,k,jj) ) / dtah
-            ddtemp(i,k,jj) = ( ddtemp(i,k,jj) - tt(i,k,jj) ) / dtah
+      if ( forward ) then
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          do k = 1, lev
+            do i = 1,nxj
+              vdzonl(i,k,jj) = ( vdzonl(i,k,jj) - um(i,k,jj) ) / dtahi
+              vdmerd(i,k,jj) = ( vm(i,k,jj) - vdmerd(i,k,jj) ) / dtahi
+              ddtemp(i,k,jj) = ( ddtemp(i,k,jj) - tm(i,k,jj) ) / dtahi
+            enddo
           enddo
         enddo
-      enddo
+      else
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          do k = 1, lev
+            do i = 1,nxj
+              vdzonl(i,k,jj) = ( vdzonl(i,k,jj) - ut(i,k,jj) ) / dtah
+              vdmerd(i,k,jj) = ( vt(i,k,jj) - vdmerd(i,k,jj) ) / dtah
+              ddtemp(i,k,jj) = ( ddtemp(i,k,jj) - tt(i,k,jj) ) / dtah
+            enddo
+          enddo
+        enddo
+      endif
 !
       call joinrs(cc,ddtemp,dummy,dummy,dummy,nx,my_max,lev    &
                ,jlistnum,1,1)
@@ -821,10 +845,17 @@
                ,temten,1,nsizey)
       call rstrandz (jtrun,jtmax,nx,my,my_max,levp,vdmerd,vdzonl   &
                ,weight,cim,onocos,poly,dpoly,divten,vorten,nsizey)
-      if (lsimpl) & 
-      call siimpl ( jtrun,jtmax,lev,dtah,ptmeans,dsigma,spalm,eps4,eigval &
-                  , evecin,evectr,arrhyd,arsddt,temnow,divnow,plnow      &
-                  , temnow,divnow,plnow,temten,divten,plten,alphax)
+      if ( forward ) then
+        if (lsimpl) & 
+        call siimpl ( jtrun,jtmax,lev,dtahi,ptmeans,dsigma,spalm,eps4,eigval &
+                    , evecin,evectr,arrhyd,arsddt,temmid,divmid,plmid      &
+                    , temmid,divmid,plmid,temten,divten,plten,alphax)
+      else
+        if (lsimpl) & 
+        call siimpl ( jtrun,jtmax,lev,dtah,ptmeans,dsigma,spalm,eps4,eigval &
+                    , evecin,evectr,arrhyd,arsddt,temnow,divnow,plnow      &
+                    , temmid,divmid,plmid,temten,divten,plten,alphax)
+      endif
 
 !      call trandv ( jtrun,jtmax,nx,my,my_max,lev,vdzonl,vdmerd,weight,cim &
 !                   ,onocos,poly,dpoly,vormid,divmid,nsizey)
@@ -851,25 +882,44 @@
          endif
       enddo
 !          
-      do m = 1, mlistnum
-        mf=mlist(m)
-        do n = mf, jtrun
-          do i = 1, 2
-            do k = 1, levp
-              vormid(k,i,n,m)= dtah*vorten(k,i,n,m)+vornow(k,i,n,m)
-              divmid(k,i,n,m)= dtah*divten(k,i,n,m)+divnow(k,i,n,m)
-              temmid(k,i,n,m)= dtah*temten(k,i,n,m)+temnow(k,i,n,m)
+      if ( forward ) then
+        do m = 1, mlistnum
+          mf=mlist(m)
+          do n = mf, jtrun
+            do i = 1, 2
+              do k = 1, levp
+                vormid(k,i,n,m)= dtahi*vorten(k,i,n,m)+vormid(k,i,n,m)
+                divmid(k,i,n,m)= dtahi*divten(k,i,n,m)+divmid(k,i,n,m)
+                temmid(k,i,n,m)= dtahi*temten(k,i,n,m)+temmid(k,i,n,m)
+              enddo
+              plmid(n,m,i)= dtahi*plten(n,m,i)+plmid(n,m,i)
             enddo
-            plmid(n,m,i)= dtah*plten(n,m,i)+plnow(n,m,i)
           enddo
         enddo
-      enddo
+        hfiltm=mwhd*hfiltx
+        call whdiffu ( dtahi,my,my_max,nx,jtrun,jtmax,lev,ncld       &
+                     ,hfiltm,rad,cosl,um,vm,vormid,divmid,temmid     &
+                     ,eps4,trefs)
+      else
+        do m = 1, mlistnum
+          mf=mlist(m)
+          do n = mf, jtrun
+            do i = 1, 2
+              do k = 1, levp
+                vormid(k,i,n,m)= dtah*vorten(k,i,n,m)+vornow(k,i,n,m)
+                divmid(k,i,n,m)= dtah*divten(k,i,n,m)+divnow(k,i,n,m)
+                temmid(k,i,n,m)= dtah*temten(k,i,n,m)+temnow(k,i,n,m)
+              enddo
+              plmid(n,m,i)= dtah*plten(n,m,i)+plnow(n,m,i)
+            enddo
+          enddo
+        enddo
+        hfiltm=mwhd*hfiltx
+        call whdiffu ( dtah,my,my_max,nx,jtrun,jtmax,lev,ncld        &
+                     ,hfiltm,rad,cosl,um,vm,vormid,divmid,temmid     &
+                     ,eps4,trefs)
+      endif
 !        
-      hfiltm=mwhd*hfiltx
-      call whdiffu ( dtah,my,my_max,nx,jtrun,jtmax,lev,ncld        &
-                   ,hfiltm,rad,cosl,ut,vt,vormid,divmid,temmid     &
-                   ,eps4,trefs)
-
 !      call hdiffu ( dth,my,my_max,nx,jtrun,jtmax,lev,ncld     &
 !                   ,hfiltm,rad,cosl,ut,vt,vormid,divmid,temmid  &
 !                   ,eps4,trefs)
@@ -886,6 +936,8 @@
       call transr1(jtrun,jtmax,nx,my,my_max,poly,plmid,ptm,nsizey)
       call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plmid      &
                  ,dlpl,dtpl,nsizey)
+      forward = .false.
+      enddo ! do itt=1,itter
 
 !
 !  the gaussian quadrature loop for spectral tendencies.  subroutine
@@ -893,6 +945,7 @@
 !  these non-linear contributions are then combined in 'rstran' using
 !  the symmetry properties of the spherical harmonics
 !
+      forward = .false.
       do jj = 1, jlistnum
 
         j=jlist1(jj)
@@ -1000,9 +1053,9 @@
 !       Vertical Advection
 !
 !       call ndslfv_monoadvv(ddtemp,qt,vdzonl,vdmerd,pdot,ptm      &
-      do itt = 1,itter
-        call ndslfv_monoadvv(tt,qt,ut,vt,pdot,ptm,nxjp,ndsldtah,forward)
-      enddo
+!      do itt = 1,itter
+        call ndslfv_monoadvv(tt,qt,ut,vt,pdot,ptm,nxjp,dtah,forward)
+!      enddo
 
 !CWB2021 ndsl single precision test
 
@@ -1020,10 +1073,10 @@
       enddo
       call transr1(jtrun,jtmax,nx,my,my_max,poly,pltemp,pt,nsizey)
 
-      if ( mass_dp ) then
-        call ptot(pdry,dpprt)
-        pcorr = (pdryi-pdry) * sqrt(2.)
-      endif
+!      if ( mass_dp ) then
+      call ptot(pdry,dpprt)
+      pcorr = (pdryi-pdry) * sqrt(2.)
+!      endif
 !
       if ( two_loop ) then
 !
@@ -1049,14 +1102,14 @@
         call rstrandz (jtrun,jtmax,nx,my,my_max,levp,vdmerd,vdzonl   &
                  ,weight,cim,onocos,poly,dpoly,divten,vorten,nsizey)
 
-        if ( mass_dp ) then
+!        if ( mass_dp ) then
         ! sureface pressure global mean correction
           mlst=ilist(1)
           if(mlst .ne. 0) then
             plten(1,mlst,1) = plten(1,mlst,1) + pcorr / dta
             plten(1,mlst,2) = plten(1,mlst,2) + pcorr / dta
           endif
-        endif
+!        endif
 !
         if (lsimpl)  then
 !
@@ -1072,13 +1125,13 @@
 !  zero out global mean tendencies for divergence, vorticity, and
 !  terrain pressure to ensure consistency with gauss's theorem.
 !
-        if ( .not. mass_dp ) then
-          mlst=ilist(1)
-          if(mlst .ne. 0) then
-            plten(1,mlst,1) = 0.0
-            plten(1,mlst,2) = 0.0
-          endif
-        endif
+!        if ( .not. mass_dp ) then
+!          mlst=ilist(1)
+!          if(mlst .ne. 0) then
+!            plten(1,mlst,1) = 0.0
+!            plten(1,mlst,2) = 0.0
+!          endif
+!        endif
         do m = 1, mlistnum
           mf=mlist(m)
           if ( mf.eq.1 ) then
@@ -1264,14 +1317,14 @@
         call rstrandz (jtrun,jtmax,nx,my,my_max,levp,vdmerd,vdzonl   &
                    ,weight,cim,onocos,poly,dpoly,divten,vorten,nsizey)
 
-        if ( mass_dp ) then
+!        if ( mass_dp ) then
         ! sureface pressure global mean correction
           mlst=ilist(1)
           if(mlst .ne. 0) then
             plten(1,mlst,1) = plten(1,mlst,1) + pcorr / dta
             plten(1,mlst,2) = plten(1,mlst,2) + pcorr / dta
           endif
-        endif
+!        endif
 !
         if (lsimpl)  then
 !
@@ -1287,13 +1340,13 @@
 !  zero out global mean tendencies for divergence, vorticity, and
 !  terrain pressure to ensure consistency with gauss's theorem.
 !
-        if ( .not. mass_dp ) then
-          mlst=ilist(1)
-          if(mlst .ne. 0) then
-            plten(1,mlst,1) = 0.0
-            plten(1,mlst,2) = 0.0
-          endif
-        endif
+!        if ( .not. mass_dp ) then
+!          mlst=ilist(1)
+!          if(mlst .ne. 0) then
+!            plten(1,mlst,1) = 0.0
+!            plten(1,mlst,2) = 0.0
+!          endif
+!        endif
         do m = 1, mlistnum
           mf=mlist(m)
           if ( mf.eq.1 ) then

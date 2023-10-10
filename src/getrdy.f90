@@ -931,7 +931,7 @@
 !                  
 !  computing global mean surface pressure at initial time
 !
-      if ( mass_dp .and. .not. restrt ) then
+      if ( .not. restrt ) then
         pdryi = 0.
         call ptot(pdryi,dpprt)
       endif
