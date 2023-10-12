@@ -2414,8 +2414,10 @@
           nxj=nxdef_2d(j)
           do i = 1,nxj
             totalp(i,jj) = (tau-dtau)* totalp(i,jj)
+            runoff(i,jj) = (tau-dtau)* runoff(i,jj)
           enddo
        enddo
+
       endif
 !
 !      call mpe_unify(totalp,nx,my,2,mpe_double)

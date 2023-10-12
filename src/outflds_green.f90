@@ -11,6 +11,7 @@
       use const ,only:aki,bki ,outdms ,outgrb2 ,ifilout_grb , &
                       RTYPE,kflag
       use mod_grb2_param  !for write grib2 data
+      use noah,only:runoff
 
       implicit  none
 
@@ -284,7 +285,16 @@
       if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,8,2,103,0,0.,1,6,glob)
 
-      endif
+      !runoff
+      wrk=runoff
+      call syslbl ('runoff',idtg,itau,ggdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
+      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+!     if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,2,0,5,2,103,0,0.,1,6,glob)
+      runoff(:,:)=0.0 !6 hr zero out
+
+      endif !mod(float(itau)+0.00001, 6. ) .lt. 0.01
 !
       if(outdms.gt.0)then
       if ( myrank .lt. nc )             &
