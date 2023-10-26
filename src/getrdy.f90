@@ -497,6 +497,7 @@
                   zice(i,jj) = max(zice(i,jj),1.*cice(i,jj))
                   icwarn = icwarn + 1 
                 endif
+                shdmax(i,jj) = cice(i,jj)
               endif            
 ! set snow depth to zero on ocean point
               if ( ocean(i,jj) ) then
