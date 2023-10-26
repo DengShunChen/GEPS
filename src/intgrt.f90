@@ -654,13 +654,8 @@
         mf=mlist(m)
         do n=mf,jtrun
           do i = 1, 2
-          plten(n,m,i) = 0.0
           plmid(n,m,i) = plnow(n,m,i)
           do k = 1, levp
-            divten(k,i,n,m) = 0.0
-            vorten(k,i,n,m) = 0.0
-            temten(k,i,n,m) = 0.0
-            hldten(k,i,n,m) = 0.0
             divmid(k,i,n,m) = divnow(k,i,n,m)
             vormid(k,i,n,m) = vornow(k,i,n,m)
             temmid(k,i,n,m) = temnow(k,i,n,m)
@@ -668,6 +663,12 @@
           enddo
         enddo
       enddo
+
+      plten=0.
+      divten=0.
+      vorten=0.
+      temten=0.
+      hldten=0.
  
 !     estimate all field at t+dt/2
         itt=min(itimestep,2)
