@@ -148,7 +148,7 @@
               z0max = 0.01
             else
               if (islimsk(i) == 2) then
-                z0max = exp( tem2*log(0.00001) + tem1*log(z0max) )
+                z0max = exp( tem2*log(0.0002) + tem1*log(z0max) )
               else
                 z0max = exp( tem2*log01 + tem1*log(z0max) )
               endif
