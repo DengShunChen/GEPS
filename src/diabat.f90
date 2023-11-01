@@ -679,9 +679,11 @@
               sndepth(i,jj)=0.
               sncover(i,jj)=0.
               shdmax(i,jj)=0.
+              z0(i,jj)=0.0002
 !              z0(i,jj)=ustar(i,jj)*ustar(i,jj)*0.014/grav
             endif
             if(.not. iceold(i,jj) .and. ice(i,jj)) then
+              tg(i,jj)=271.2
               xtice(i,jj)=tg(i,jj)
               zice(i,jj)=0.15 ! from himin in sfc_sice 
               cice(i,jj)=0.5 ! from cimin in sfc_sice 
@@ -689,7 +691,7 @@
               sndepth(i,jj)=snr(i,jj)*8.
               sncover(i,jj)=min(1., snr(i,jj)/400.)
               shdmax(i,jj)=cice(i,jj)
-!              z0(i,jj)=0.0002
+              z0(i,jj)=(1.-cice(i,jj))*z0ocn(i,jj)+cice(i,jj)*0.00001
             endif
           endif ! if(ls(i,jj).eq.0) then
         enddo
