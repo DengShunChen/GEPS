@@ -679,8 +679,7 @@
               sndepth(i,jj)=0.
               sncover(i,jj)=0.
               shdmax(i,jj)=0.
-              z0(i,jj)=0.0002
-!              z0(i,jj)=ustar(i,jj)*ustar(i,jj)*0.014/grav
+              z0(i,jj)=ustar(i,jj)*ustar(i,jj)*0.014/grav
             endif
             if(.not. iceold(i,jj) .and. ice(i,jj)) then
               tg(i,jj)=271.2
