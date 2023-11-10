@@ -202,7 +202,7 @@
 !  sponge layer 
       spl1=10.
       spl2=100.
-      vd=0.08
+      vd=0.02
       else if ( lev .eq. 72 ) then
 !
 ! L72 hybrid coordinate
@@ -251,7 +251,7 @@
 !  sponge layer 
       spl1=5.
       spl2=50.
-      vd=0.08
+      vd=0.02
       else if ( lev .eq. 128 ) then
 !
 ! L128 hybrid coordinate
@@ -328,7 +328,7 @@
 !  sponge layer 
       spl1=1.
       spl2=50.
-      vd=0.1
+      vd=0.03
       endif
 !
       tmeans=300.
