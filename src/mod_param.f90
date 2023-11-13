@@ -32,7 +32,7 @@
       integer  ncld
       common/comparam2/ncld
 !
-      real     af,alpha,mwhd
+      real     alpha,mwhd
 
 !
 ! for nmccup

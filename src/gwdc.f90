@@ -11,7 +11,6 @@
 !        ake johansson  --- aug 2005
 !***********************************************************************
 !lzl +add === #
-      use mpe
       use rank
       use index
       use const, only: RTYPE

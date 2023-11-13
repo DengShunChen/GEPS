@@ -56,8 +56,9 @@
          capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &
          ptop,dt,tau,taui,taue,tauo,                       &
          hours,frad,evaprh,qgini,                          &
-         tice,hice,cutfreq,taup,hfilt,                     &
-         taureg,cgw,domfc,otgreen,cgwd,cmbk,spl1,spl2
+         tice,hice,cutfreq,taup,hfilt,hfiltx,tfilt,        &
+         taureg,cgw,domfc,otgreen,cgwd,cmbk,spl1,spl2,     &
+         factop
     real(kind=RTYPE) :: ptmean,ptmeans,qmin
     !sit
     real :: fsit         !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
@@ -70,14 +71,15 @@
     common/constR/                                         &
          capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &
          ptop,ptmean,dt,tau,taui,taue,tauo,                &
-         hours,frad,evaprh,qgini,                          &
-         tice,hice,cutfreq,taup,hfilt,ptmeans,             &
-         taureg,cgw,fsit,domfc,otgreen,spl1,spl2,           &
+         hours,frad,evaprh,qgini,hfilt,hfiltx,             &
+         tice,hice,cutfreq,taup,ptmeans,                   &
+         taureg,cgw,fsit,domfc,otgreen,spl1,spl2,          &
          dSITdt_intv,weightSIT,updatetg
-    logical :: lsimpl,lzadv, yesdia,dopbl, docup, dorad,      &
+    logical :: lsimpl,lzadv, yesdia,dopbl, docup, dorad,   &
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &
             restrt,hdiff, cstar, update,doincr,hybrid,     &
-            doo3l, docgrav, doclx, tofd, doslavepp
+            doo3l, docgrav, doclx, tofd, doslavepp,        &
+            two_loop,ttl,mass_dp,dpprt
 
     ! for stochastic physics
     logical :: dosppt       =.false.
@@ -92,6 +94,12 @@
 
     !for Semi-Lagrangain
     logical :: ndsladvh2
+
+    !for Semi-implicit
+    real    :: alphax
+
+    !for mass conservation
+    real    :: pdryi,pdry,pcorr
 
 ! output data for RSM (Also, RSM compiling flag is necessary)
     !for RSM output
@@ -124,6 +132,7 @@
     !for output 
     integer :: outgrb2    !output grib2 format
     integer :: outdms     !output dmskey
+    logical :: outfv3     !output for fv3 at tau=6
 
     common/constL/lsimpl,lzadv,yesdia,dopbl,docup,dorad,   &
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &

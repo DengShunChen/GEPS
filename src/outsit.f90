@@ -225,7 +225,7 @@
       use mod_sitgrid,    only: sitwt24,sitws24,sitwu24,sitwv24 &
                                ,dtsit24,wtfn0,wsfn0,obswt,sitwt
       use mod_sit_control,only: xmissing,outsitlev
-      use mod_grb2_param,only: wrt_grb2
+      use mod_grb2_param,only: wrt_grb2_v2
       implicit none
 
       integer nx,my,my_max,lkvl,itau
@@ -239,6 +239,7 @@
       real(kind=RTYPE) tm1(nxp,my_max),tm2(nxp,my_max),tm3(nxp,my_max)
       real(kind=RTYPE) wk1(nx,my),pout(nx,my)
       integer ncnt
+      integer:: ptp0(9),ptp1(9) !save grib info
 
       tm1=xmissing
       tm2=xmissing
@@ -268,13 +269,20 @@
         write( lrec, '(i3.3,a3)' ) k,'WTF'
         call syslbl (lrec,idtg,itau,ggdef,ihdg)
         call unify_reduceintp(nx,my,my_max,tm1,wk1)
-        call split(nx,my,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
-        if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,10,3,0,2,168,0,float(k+1),wk1)
+        ptp0=(/10,3,0,2,168,0,(k+1),-999,-999/)
+        call split2(nx,my,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2,ptp0,ptp1)
 !        call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
    10 continue
-      if(outdms.gt.0)then
-      if(myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      if(myrank .lt. ncnt)then
+        if(outdms.gt.0)then
+          call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+        endif
+        if(outgrb2==1)then
+            call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+              ,ptp1(6),ptp1(7),pout,ihdg2)
+        endif
       endif
+      
      
       sitwt24=0.
       wtfn0=0.
@@ -968,8 +976,9 @@
 
       use mpe
       use index
-      use const,             only: kflag,RTYPE,outdms
+      use const,             only: kflag,RTYPE,outdms,outgrb2
       use mod_sitgrid,       only: tseadiffSIT24
+      use mod_grb2_param,only: wrt_grb2_v2
 
       implicit none
 
@@ -999,6 +1008,8 @@
       call syslbl ('w0002f',idtg,itau,ggdef,ihdg)
       if(outdms.gt.0) &
       call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
+      if( outgrb2==1.and.myrank==0 ) &
+      call wrt_grb2_v2(itau,10,3,199,6,168,0,1,glob,ihdg)
       tseadiffSIT24=0.
 
       call unify_reduceintp(nx,my,my_max,wrk2,glob)

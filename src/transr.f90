@@ -55,6 +55,7 @@
       integer   jlist_fj(my/2)
 
 !CWBinit
+      cc=0.
       wcc_fk=0.
 
       mlx= (jtrun/2)*((jtrun+1)/2)

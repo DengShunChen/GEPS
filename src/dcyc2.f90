@@ -101,6 +101,7 @@
 !
       use machine,         only : kind_phys
       use physcons,        only : con_pi, con_sbc
+      use const,           only : RTYPE
 
       implicit none
 !
@@ -116,8 +117,10 @@
 
 
       real(kind=kind_phys), dimension(ix), intent(in) ::               &
-           xlon, coszen, tsea, tf, tsflw, sfcdlw,                      &
+           xlon, coszen, tsea, tsflw, sfcdlw,                          &
            sfcdsw, sfcnsw
+      real(kind=RTYPE), dimension(ix), intent(in) ::                   &
+           tf
 
       real(kind=kind_phys), dimension(ix,levs), intent(in) :: swh, hlw
       real(kind=kind_phys), dimension(ix,levs), intent(in) :: swhc, hlwc

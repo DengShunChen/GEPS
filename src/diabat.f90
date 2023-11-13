@@ -1,5 +1,4 @@
-!#define update_dp
-      subroutine diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd      &
+      subroutine diabat ( fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd  &
                     , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw       &
                     , idg,jdg,ldiag,dt,tau,hours,julian,year,yrd               &
                     , frad,ozon,njump,itypbl,ktcup,ktpbl,ktshl,grav            &
@@ -30,7 +29,7 @@
 ! sit
                     , itimestep,lrun_sitvdiff,ic_sit                           &
 !xb110>
-                    , flash,tsflw,vvel)
+                    , flash,tsflw,vvel,totallp)
 !xb110<
 !--------------------------------------------------------------------------------
 !#######################################################################
@@ -189,7 +188,7 @@
 !
       use physcons, only :con_rd,con_fvirt,con_rerth,con_rv,con_pi
 ! for slavepp
-      use phygrid,  only :dtcup,ducup,dvcup,dtshl,dushl,dvshl,dtlsp
+      use phygrid,  only :dtcup,ducup,dvcup,dtshl,dushl,dvshl,dtlsp,dulsp,dvlsp
 ! for land_noah_new
       use namelist_soilveg, only :MAX_SLOPETYP,MAX_SOILTYP,MAX_VEGTYP
       use mod_stochastic_physics, only : sppt3d, shum3d, ssst3d
@@ -209,7 +208,7 @@
 
       logical   docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon,     &
                 land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max),  &
-                docgrav,tofd
+                docgrav,tofd,fwd
 
       real      tice,hice,qgini,thdai,tengi,ptop,                    &
                 hltm,evaprh,s0,stbo,cp,rgas,grav,frad,               &
@@ -227,7 +226,7 @@
                 e(nxp,lev,my_max),eps(nxp,lev,my_max),                    &
                 dtrad(nxp,lev,my_max),ss(nxp,my_max),                     &
                 rs(nxp,my_max),plt(nxp,lev,my_max),                       &
-                rainlp(nxp,my_max),                                       &
+                rainlp(nxp,my_max),totallp(nxp,my_max),                   &
                 gwclim(nxp,my_max),acld(lev,my),std(nxp,my_max),          &
                 asol(nxp,my_max),olr(nxp,my_max),drag(nxp,lev,my_max),    &
                 ugws(nxp,my_max),vgws(nxp,my_max),                        &
@@ -259,7 +258,7 @@
 
 ! new soil
 ! for noah
-      integer   slopetyp(nxp,my_max)
+      integer   slopetyp(nxp,my_max) ! class ofsurface slope
 
       real      slc(nxp,km_soil,my_max),zice(nxp,my_max),         &
                 cice(nxp,my_max),xtice(nxp,my_max),               &
@@ -323,6 +322,7 @@
                 ctot(nxp,my_max),chig(nxp,my_max),cmid(nxp,my_max),clow(nxp,my_max)
 
       ! for sppt
+      real(kind=RTYPE) :: cld_save_sppt(nxp,lev,my_max)
       real(kind=RTYPE) :: ut_save_sppt(nxp,lev,my_max)     
       real(kind=RTYPE) :: vt_save_sppt(nxp,lev,my_max)        
       real(kind=RTYPE) :: tt_save_sppt(nxp,lev,my_max)        
@@ -353,7 +353,8 @@
       real :: dtradc(nxp,lev,my_max)
       real :: dtradn(nxp,lev)
       integer :: zmtnblck(nxp)
-      real :: ru,vru,upert,vpert,tpert,qpert,qnew,dtdtr
+      real :: ru,vru,upert,vpert,tpert,qpert,qnew,dtdtr &
+              ,cldpert,cldnew
 
       integer itimestep,ii
 
@@ -515,6 +516,7 @@
       ptu = 0.
       pqu = 0.
       cnvwn = 0.
+      dtradn = 0.
 !xb110<
 !ps
 !CWB2015 
@@ -533,8 +535,8 @@
       ss_adj =0.
 ! for MP WSM6 & Thompson
       uni_cloud=.false. !if using SHOC scheme, it should be .true.
-      lmfshal=( nmshl .eq. 2 .or. nmshl .eq. 3 ) ! .true. if using mass-flux shallow convection
-      lmfdeep2=( nmcup .eq. 6 ) ! .true. if using scale-aware deep con
+      lmfshal=( nmshl .eq. 2 .or. nmshl .eq. 3 .or. nmshl .eq. 4 ) ! .true. if using mass-flux shallow convection
+      lmfdeep2=( nmcup .eq. 6 .or. nmcup .eq. 7 ) ! .true. if using scale-aware deep con
 
 
 !     define local constants
@@ -582,8 +584,14 @@
 !     define local control variables
 !
       fluxcl = .true.
-      dta    = dt
-      rainfc = 1.0
+      if (fwd) then
+        dta    = dt
+        rainfc = 1.0
+      else
+        dta    = 2.0*dt
+        rainfc = 0.5
+      endif
+!
       if (itimestep .le. 1) then
          doozon = .true.
          kdt    = 1
@@ -595,10 +603,12 @@
 !------------------------------------------------------------------------------
 !     set hours, iter, icrad, julian, uprad, doozon
 !------------------------------------------------------------------------------
+
+
       rsolhr = hours
-      hours = hours + dt/3600.0
-      if ( hours .gt. 24.0 )  then
-         hours = mod ( hours,24.0 )
+      hours = hours + dt/3600.
+      if ( abs(24.-hours) .lt. 1.e-6 )  then
+         hours = 0. 
          julian= julian + 1
          if ( julian .gt. yrd ) julian = julian - yrd
          doozon = .true.
@@ -611,7 +621,7 @@
       icrad = frad*3600.0/dt + 0.0001 ! frad =1.0 set in block.f
       iter  = tau*3600.0/dt  + 0.0001
       uprad = .false.
-      if ( (mod(iter-1,icrad).eq.0) )  uprad = .true.
+      if ( (mod(iter,icrad).eq.0) .or. (iter.eq.1) )  uprad = .true.
       doozon = doozon .and. dorad
       uprad  = uprad  .and. dorad
 !
@@ -646,11 +656,13 @@
 !---------------------------------------------------------------------
 ! (2)  tg replaced by climate sea surface temperature
 !---------------------------------------------------------------------
+!            if ( .not. do_sit )then
             if (ocean(i,jj)) tg(i,jj)=sstc(i,jj)
+!            endif
 !---------------------------------------------------------------------
 ! (3)  set ice thickness => not for couple
 !---------------------------------------------------------------------
-            if(iceold(i,jj)       .and. .not. ice(i,jj)) then
+            if(iceold(i,jj) .and. .not. ice(i,jj)) then
               zice(i,jj)=0.
               cice(i,jj)=0.
               snr(i,jj) =0.
@@ -672,6 +684,48 @@
         enddo
 
       endif ! doclxu
+
+!!     --- update ocean and seaice table  02nov2023 hcwei ---
+      if ( do_sit .and. (tau .ge. 24 ) )then !action for 10 days after
+        do jj = 1, jlistnum
+         j=jlist1(jj)
+         nxj=nxdef_2d(j)
+         do i=1,nxj
+          if( .not. land(i,jj) ) then
+           if( ocean(i,jj) )then !ocean to ice
+           if( tg(i,jj) .le. 271.35 )then ! -1.8 degC
+            ice    (i,jj) = .true.
+            ocean  (i,jj) = .false.
+            zice   (i,jj) = 0.15 ! from himin in sfc_sice 
+            cice   (i,jj) = max(0.15,cice(i,jj)) ! from cimin in sfc_sice 
+            snr    (i,jj) = 15.
+            sndepth(i,jj) = snr(i,jj)*8.
+            sncover(i,jj) = min(1., snr(i,jj)/400.)
+            z0     (i,jj) = 0.00002
+            tg     (i,jj) = 271.35
+            xtice  (i,jj) = tg(i,jj)
+           endif
+           endif !ocean
+           if( ice(i,jj) )then !ice to ocean
+           if( xtice(i,jj) .gt. 273.0 )then !-relates freezing temp to salinity (273.15 - 0.054)
+            if(  snr(i,jj).lt. 0.1 .and. zice(i,jj) .lt. 0.1 )then
+            print*,'i=',nxjstart(j)+i-1,'j=',j,' ice 2 ocean'
+            ice    (i,jj) =.false.
+            ocean  (i,jj) =.true.
+            zice   (i,jj) = 0.0
+            !cice   (i,jj) = 0.0
+            snr    (i,jj) = 0.0
+            sndepth(i,jj) = 0.0
+            sncover(i,jj) = 0.0
+            z0     (i,jj) =ustar(i,jj)*ustar(i,jj)*0.014/grav
+            endif
+           endif
+           endif
+          endif
+         enddo
+        enddo
+      endif
+
 !
 ! for nonorographic gravity wave drag
 !
@@ -917,12 +971,12 @@
         work1(i)    = max(0.0, min(1.0,work1(i)))
         work2(i)    = 1.0 - work1(i)
         garea(i)    = tem1*tem2
-        if(land(i,jj))slimsk(i)=1
-        if(ocean(i,jj))slimsk(i)=0
-        if(ice(i,jj))slimsk(i)=2
-        if(land(i,jj))islimsk(i)=1
+        if(land (i,jj))slimsk (i)=1
+        if(ocean(i,jj))slimsk (i)=0
+        if(ice  (i,jj))slimsk (i)=2
+        if(land (i,jj))islimsk(i)=1
         if(ocean(i,jj))islimsk(i)=0
-        if(ice(i,jj))islimsk(i)=2
+        if(ice  (i,jj))islimsk(i)=2
       enddo
 
     !    compute new time level p**kapa quantites
@@ -933,17 +987,6 @@
       call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,ps(1,jj),  &
                           pkp,pk2p,pltp )
 !
-!     hydrostatic equation
-      do i = 1, nxj
-        phi(i,lev) = sgeo(i,jj)+ cp*tt(i,lev,jj)*(pk2(i,lev,jj)-pk(i,lev,jj))
-      enddo
-
-      do k = lev-1, 1, -1
-        do i = 1, nxj
-          phi(i,k) = phi(i,k+1) + cp*( tt(i,k,jj)  *( pk2(i,k,jj) - pk(i,k,jj)  )   &
-                                     + tt(i,k+1,jj)*( pk(i,k+1,jj)- pk2(i,k,jj) ) )
-        enddo
-      enddo
 
     !-----------------------------------------------------------------------------
     !  deweight u,v by cosl/radus, and
@@ -973,9 +1016,16 @@
             vt_save_sppt(i,k,jj)=vt(i,k,jj)
             tt_save_sppt(i,k,jj)=tt(i,k,jj)
             qt_save_sppt(i,k,jj)=qt(i,k,jj)
+            cld_save_sppt(i,k,jj)=clds(i,k,jj)
           enddo
         enddo
       endif ! end dosppt if stetement
+!
+!     compute phi by temperature
+!
+      call get_phi(nxjp(j),nxp,lev,ptop,cp,rgas,grav,sgeo(1,jj),      &
+                  pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),       &
+                  phii,phi)
 
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !
@@ -1104,7 +1154,7 @@
         call dcyc2t3                                                  &
           !  ---  inputs:
           ( solhr,slag,sdec,cdec,sinl(j),cosl(j),                     &
-            xlonr(1,jj),cosz(1,jj),tg(1,jj),tpp(1,lev),tsflw(1,jj),   &
+            xlonr(1,jj),cosz(1,jj),tg(1,jj),tt(1,lev,jj),tsflw(1,jj), &
             sld(1,jj),ss(1,jj),rld(1,jj),asl(1,1,jj),atl(1,1,jj),     &
             asl_clr(1,1,jj),atl_clr(1,1,jj),nxp, nxjp(j), lev,        &
 !  ---  outputs:
@@ -1174,29 +1224,42 @@
       if ( dopbl .and. (nmland.eq.2))                                         &
        call pbl_noah ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
-                      , sgeo(1,jj),phi,pst(1,jj),upp,vpp                      &
+                     , sgeo(1,jj),phi,phii,pst(1,jj),upp,vpp                  &
                      , ttpp,qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)                  &
                      , tt(1,1,jj),qt(1,1,jj),pk(1,1,jj),pk2(1,1,jj)           &
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
                      , eps(1,1,jj),hflux(1,jj),qflux(1,jj),itimestep          &
                      , gwclim(1,jj),tgclim(1,jj),ocean(1,jj),ice(1,jj)        &
 !                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),albx(1,jj)      &
-                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),sfalb(1,jj)      &
+                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),sfalb(1,jj)     &
                      , ipblmx(1,j),xkmx(1,j),ijdg(j),xkmd,itypbl              &
                      , t2(1,jj),q2(1,jj),rh2(1,jj),rh10(1,jj),u10(1,jj)       &
                      , v10(1,jj),fm(1,jj),fh(1,jj),fm10(1,jj),fh2(1,jj)       &
-                     , srflag(1,jj),rld_adj,stbo                            &
+                     , srflag(1,jj),rld_adj,stbo                              &
                      , km_soil,smc(1,1,jj),stc(1,1,jj),canopy(1,jj)           &
                      , runoff(1,jj),sigmaf(1,jj),istyp(1,jj),ivegtyp(1,jj)    &
                      , ncld,dsigma                                            &
                      , slopetyp(1,jj)                                         &
                      , slc(1,1,jj),sncover(1,jj),sndepth(1,jj)                &
                      , shdmax(1,jj),shdmin(1,jj),snoalb(1,jj),albedo2(1,jj)   &
-                     , sld_adj,zice(1,jj),cice(1,jj),xtice(1,jj)            &
+                     , sld_adj,zice(1,jj),cice(1,jj),xtice(1,jj)              &
                      , hpbl(1,jj),asl(1,1,jj),atl(1,1,jj),xmu(1,jj),gfx(1,jj) &
                      , kpbl(1,jj),nmpbl,nmmiph,j,isot,ivegsrc,sfemis(1,jj)    &
                      , dudtc,dvdtc,dtdtc,dqdtc)
-
+!
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
+            tt(i,k,jj) = tt(i,k,jj) + dtdtc(i,kc)*dta
+            ut(i,k,jj) = ut(i,k,jj) + dudtc(i,kc)*dta
+            vt(i,k,jj) = vt(i,k,jj) + dvdtc(i,kc)*dta
+            qt(i,k,jj) = qt(i,k,jj) + dqdtc(i,kc)*dta
+          enddo
+        enddo
+        dtdtc=0.
+        dudtc=0.
+        dvdtc=0.
+        dqdtc=0.
 
 !
 !
@@ -1219,16 +1282,6 @@
 ! topograpic gravity wave drag
 !=======================================================================
       if(dograv .and. (nmgwor .eq. 1) ) then 
-        do k=1,lev
-          kc=lev-k+1
-          do i=1,nxj
-            tt(i,k,jj) = tt(i,k,jj) + dtdtc(i,kc)*dta
-            ut(i,k,jj) = ut(i,k,jj) + dudtc(i,kc)*dta
-            vt(i,k,jj) = vt(i,k,jj) + dvdtc(i,kc)*dta
-            qt(i,k,jj) = qt(i,k,jj) + dqdtc(i,kc)*dta
-          enddo
-        enddo
-
         call gwdp (j,nxjp(j),nxp,lev,                                   &
                   ut(1,1,jj),vt(1,1,jj),tt(1,1,jj),qt(1,1,jj),         &
                   plt(1,1,jj),pk(1,1,jj),pk2(1,1,jj),phi,std(1,jj),dta,&
@@ -1424,9 +1477,10 @@
         enddo
       endif    !(end if nmcup=5)
 
-      if ( docup .and. (nmcup.eq.2 .or. nmcup.eq.3 .or. nmcup.eq. 6) ) then
-        ! setting for nmcup=2,3 and new shallow convection
-        ! setting for nmcup=6 and scale-aware shallow convection
+      if ( docup .and. (nmcup.eq.2 .or. nmcup.eq.3 .or. nmcup.eq.6 .or. nmcup.eq.7) ) then
+        ! setting for nmcup=2,3 and new deep convection
+        ! setting for nmcup=6 and scale-aware deep convection
+        ! setting for nmcup=7 and K.H. scale-aware deep convection
         ! original :        
         !    call random_number(XKT2)
         ! CWB 2007-09-27 change random number seed dynamically >>>
@@ -1489,7 +1543,14 @@
 
         ! scale-aware SAS
         if( nmcup .eq. 6)                                 &
-          call samfdeepcnv(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil       &
+          call samfdeepcnv(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil        &
+            ,qtr,qti,qtc,ttc,utc,vtc,cldwrk(1,jj),rcup(1,jj),kbot(1,jj)  &
+            ,ktop(1,jj),kuo(1,jj),islimsk,garea,dotc,ncld,cnvw,cnvc      &
+            ,snow_flxn,ptun,pqun)
+
+        ! KH scale-aware SAS
+        if( nmcup .eq. 7)                                 &
+          call samfdeepcnv_kh(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil     &
             ,qtr,qti,qtc,ttc,utc,vtc,cldwrk(1,jj),rcup(1,jj),kbot(1,jj)  &
             ,ktop(1,jj),kuo(1,jj),islimsk,garea,dotc,ncld,cnvw,cnvc      &
             ,snow_flxn,ptun,pqun)
@@ -1629,7 +1690,7 @@
 !=======================================================================
 ! shallow convection 
 !=======================================================================
-      if( doshl .and. (nmshl.eq.2 .or. nmshl.eq.3) ) then
+      if( doshl .and. (nmshl.eq.2 .or. nmshl.eq.3 .or. nmshl.eq.4) ) then
         do i=1,nxj
           psfc(i)  = pst(i,jj)*0.1        ! change to cb
         enddo
@@ -1678,6 +1739,13 @@
         ! scale-aware shalcon
         if( nmshl.eq.3 ) then
           call samfshalcnv(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil,qtr   &
+            ,qti,qtc,ttc,utc,vtc,rcup2,kbot(1,jj),ktop(1,jj),kuo(1,jj)  &
+            ,islimsk,garea,dotc,ncld,hpbl(1,jj),cnvw,cnvc)
+        endif
+
+        ! KH scale-aware shalcon
+        if( nmshl.eq.4 ) then
+          call samfshalcnv_kh(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil,qtr&
             ,qti,qtc,ttc,utc,vtc,rcup2,kbot(1,jj),ktop(1,jj),kuo(1,jj)  &
             ,islimsk,garea,dotc,ncld,hpbl(1,jj),cnvw,cnvc)
         endif
@@ -1765,7 +1833,7 @@
 !            rhc(i,kc) = 0.999 * work1(i) + 0.85 * work2(i)
 !
 !!!            rhc(i,kc)=0.999-0.08*cos(d2r*arg)**2    !a3
-            rhc(i,kc)=0.98-0.07*cos(d2r*xlat(j))**2.0    !v3
+             rhc(i,kc)=0.98-0.07*cos(d2r*xlat(j))**2.0
 !            rhc(i,kc)=0.98-0.07*cos(d2r*arg)**2.0    !wsm6
 !            tem   = (max(min(plt(i,k,jj),900.)-700.,0.01) / 200.)
 !            rhc(i,kc)=tem*rhc(i,kc)+(1.-tem)*0.7
@@ -1813,7 +1881,7 @@
                       qtc,qtr,ttc,           &
                       ftp (1,1,jj),fqp (1,1,jj),fpsp (1,jj),&
                       ftp1(1,1,jj),fqp1(1,1,jj),fpsp1(1,jj),&
-                      rhc,lprnt)
+                      rhc,lprnt,fwd)
 !
           call precpd(nxjp(j),nxp,lev,dta,del,prsl,psfc, &
                       qtc, qtr, ttc,           &
@@ -1876,15 +1944,24 @@
       enddo
 #endif
 
-      call mp_scheme                                                   &
+! for slavepp
+        do k = 1, lev
+          do i = 1, nxj
+            ttc(i,k)  = tt(i,k,jj)
+            utc(i,k)  = ut(i,k,jj)
+            vtc(i,k)  = vt(i,k,jj)
+          enddo
+        enddo
+
+        call mp_scheme                                                 &
 !  ---  inputs:
            ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),ptop,             &
              dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,            &
              itimestep,sgeo(1,jj),phi,rhc_mp,pk(1,1,jj),               &
              snr(1,jj),                                                &
 !  ---  inputs/outputs:
-             tt(1,1,jj),qt(1,1,jj),clds(1,1,jj),                       &
-             ut(1,1,jj),vt(1,1,jj),vvel(1,1,jj),                       &
+             ttc       ,qt(1,1,jj),clds(1,1,jj),                       &
+             utc       ,vtc       ,vvel(1,1,jj),                       &
              pst(1,jj),                                                &
 !  ---  outputs:
              ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),fqp1(1,1,jj),        &
@@ -1897,6 +1974,26 @@
                             pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
       endif
 #endif
+!    
+        do k = 1, lev
+          do i = 1, nxj
+            dttmp = ttc(i,k)-tt(i,k,jj)
+            dutmp = utc(i,k)-ut(i,k,jj)
+            dvtmp = vtc(i,k)-vt(i,k,jj)
+            if ( kdt .eq. 1 .or. .not. doslavepp ) then
+              tt(i,k,jj) = ttc(i,k)
+              ut(i,k,jj) = utc(i,k)
+              vt(i,k,jj) = vtc(i,k)
+            else
+              tt(i,k,jj) = 0.5*( dttmp + dtlsp(i,k,jj) )+tt(i,k,jj)
+              ut(i,k,jj) = 0.5*( dutmp + dulsp(i,k,jj) )+ut(i,k,jj)
+              vt(i,k,jj) = 0.5*( dvtmp + dvlsp(i,k,jj) )+vt(i,k,jj)
+            endif
+            dtlsp(i,k,jj)  = dttmp
+            dulsp(i,k,jj)  = dutmp
+            dvlsp(i,k,jj)  = dvtmp
+          enddo
+        enddo
       endif
 
 !
@@ -2272,7 +2369,10 @@
             upert = ( ut(i,k,jj) - ut_save_sppt(i,k,jj) ) * ru
             vpert = ( vt(i,k,jj) - vt_save_sppt(i,k,jj) ) * ru
             tpert = ( tt(i,k,jj) - tt_save_sppt(i,k,jj) - dtdtr ) * ru
+            ru = (sppt3d(i,k,jj)*0.5 ) + 1. !test reduce q-perturb
             qpert = ( qt(i,k,jj) - qt_save_sppt(i,k,jj) ) * ru
+            !cloud fraction perturb
+            !cldpert = ( clds(i,k,jj) - cld_save_sppt(i,k,jj) ) * ru
 
             ut(i,k,jj) = ut_save_sppt(i,k,jj) + upert
             vt(i,k,jj) = vt_save_sppt(i,k,jj) + vpert
@@ -2283,6 +2383,11 @@
                qt(i,k,jj) = qnew
                tt(i,k,jj) = tt_save_sppt(i,k,jj) + tpert + dtdtr
             endif
+            !!!perturb cloud fraction
+            !cldnew = cld_save_sppt(i,k,jj) + cldpert
+            !if ( cldnew .ge. qmin ) then
+            !   clds(i,k,jj) = cldnew
+            !endif
           enddo
         enddo
       endif
@@ -2381,12 +2486,11 @@
         nxj=nxdef_2d(j)
         do i = 1,nxj
           totalp(i,jj) = (rcup(i,jj)  + rlsp(i,jj))*rainfc
+          totallp(i,jj)= rlsp(i,jj)*rainfc
           raincu(i,jj) = raincu(i,jj) + rcup(i,jj)*rainfc
           rainlp(i,jj) = rainlp(i,jj) + rlsp(i,jj)*rainfc
           raincu1(i,jj)= raincu1(i,jj)+ rcup(i,jj)*rainfc
           rainlp1(i,jj)= rainlp1(i,jj)+ rlsp(i,jj)*rainfc
-          raincu3(i,jj)= raincu3(i,jj)+ rcup(i,jj)*rainfc
-          rainlp3(i,jj)= rainlp3(i,jj)+ rlsp(i,jj)*rainfc
           raincu6(i,jj)= raincu6(i,jj)+ rcup(i,jj)*rainfc
           rainlp6(i,jj)= rainlp6(i,jj)+ rlsp(i,jj)*rainfc
           raintot(i,jj)= raintot(i,jj)+ totalp(i,jj)
@@ -2403,8 +2507,7 @@
             totalp(i,jj) = (tau-dtau)* totalp(i,jj)
             runoff(i,jj) = (tau-dtau)* runoff(i,jj)
           enddo
-       enddo
-
+        enddo
       endif
 !
 !      call mpe_unify(totalp,nx,my,2,mpe_double)

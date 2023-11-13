@@ -1,10 +1,10 @@
       subroutine out24 (nx,my,my_max,hf24,qf24,ss24,rs24,asol24,olr24  &
-                      ,rain24,dt24,ifilout,glob,itau,idtg,ggdef,flash24)
+                      ,rain24,rainlp24,dt24,ifilout,glob,itau,idtg,ggdef,flash24)
 !
       use index
       use rank
       use mpe
-      use mod_grb2_param  !for write grib2 data
+      use mod_grb2_param , only :ofdir,wrt_grb2_accu_v2
       use const ,only:outdms ,outgrb2 ,ifilout_grb, RTYPE,kflag &
                      ,do_sit,ldailyFCTsst,dailyClm_option,ldailyFCTicesndpt
       USE mo_netcdf,           ONLY:lkvl
@@ -19,7 +19,7 @@
 
       real      hf24(nxp,my_max),qf24(nxp,my_max),ss24(nxp,my_max),rs24(nxp,my_max), &
                 asol24(nxp,my_max),olr24(nxp,my_max),rain24(nxp,my_max)              &
-               ,flash24(nxp,my_max)
+               ,flash24(nxp,my_max),rainlp24(nxp,my_max)
 
       real(kind=RTYPE) glob(nx,my),wrk(nxp,my_max)
 !
@@ -34,6 +34,11 @@
       jmax=my
       lenc= imax*jmax
 !
+      if( outgrb2 == 1)then
+ 134                    format( A  ,A ,I10.10 , i4.4       )
+           write(ofdir,134 )trim(ifilout_grb),'/',idtg/100 ,itau
+           if(myrank==0) call system("mkdir -p "//trim(ofdir) )
+      endif
 !===
 !  Latent heat flux at the surface (W/m**2)
       do jj = 1,jlistnum
@@ -46,7 +51,7 @@
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       call syslbl ('s0043f',idtg,itau,ggdef,ihdg)
       if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,0,10,2,1,0,0.,0,24,glob)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,0,10,2,1,0,0,0,24,glob,ihdg)
 ! Sensible heat flux at the surface (W/m**2)
       do jj=1,jlistnum
          j=jlist1(jj)
@@ -58,7 +63,7 @@
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       call syslbl ('s0042f',idtg,itau,ggdef,ihdg)
       if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,0,11,2,1,0,0.,0,24,glob)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,0,11,2,1,0,0,0,24,glob,ihdg)
 ! Net shortwave (solar) flux at the surface (W/m**2) (positive : downward flux)
       do jj=1,jlistnum
          j=jlist1(jj)
@@ -70,7 +75,7 @@
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       call syslbl ('s0031f',idtg,itau,ggdef,ihdg)
       if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,4,9,2,1,0,0.,0,24,glob)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,4,9,2,1,0,0,0,24,glob,ihdg)
 ! net surface longwave radiation
       do jj=1,jlistnum
          j=jlist1(jj)
@@ -82,7 +87,7 @@
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       call syslbl ('s0032f',idtg,itau,ggdef,ihdg)
       if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,5,5,2,1,0,0.,0,24,glob)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,5,5,2,1,0,0,0,24,glob,ihdg)
 !
 !  Total precipitation  24-hours
       do jj=1,jlistnum
@@ -95,7 +100,19 @@
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       call syslbl ('b00626',idtg,itau,ggdef,ihdg)
       if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,1,8,2,103,0,0.,1,24,glob)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,1,8,2,103,0,0,1,24,glob,ihdg)
+!
+!  Total precipitation  24-hours
+      do jj=1,jlistnum
+         j=jlist1(jj)
+         nxj=nxdef_2d(j)
+         do i=1,nxj
+          wrk(i,jj)=rainlp24(i,jj)
+         enddo
+      enddo
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
+      call syslbl ('b00646',idtg,itau,ggdef,ihdg)
+      if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
 
 !  The average of latent heat flux release for total precipitation within 24-hours
       do jj=1,jlistnum
@@ -120,7 +137,7 @@
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       call syslbl ('x0033f',idtg,itau,ggdef,ihdg)
       if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,4,1,2,8,0,0.,0,24,glob)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,4,1,2,8,0,0,0,24,glob,ihdg)
 
 ! model top of Outgoing longwave radiation (OLR)
       do jj=1,jlistnum
@@ -133,20 +150,21 @@
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       call syslbl ('x0034f',idtg,itau,ggdef,ihdg)
       if(outdms.gt.0)  call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,5,5,2,8,0,0.,0,24,glob)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2_accu_v2(itau,0,5,5,2,8,0,0,0,24,glob,ihdg)
 !
 !xb110>>
+! 24hr average flash density (km-2day-1)
       do jj = 1,jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
         do i=1,nxj
-         wrk(i,jj)=flash24(i,jj)/dt24 !xb110, 24hr average flash density (km-2day-1)
+         wrk(i,jj)=flash24(i,jj)/dt24 
         enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       call syslbl ('x00999',idtg,itau,ggdef,ihdg)
       if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,17,4,6,10,0,0.,0,24,glob)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,17,4,6,10,0,0,0,24,glob,ihdg)
 !xb110<<
 
 !Ocean SIT daily mean output

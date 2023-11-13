@@ -407,7 +407,8 @@
 !c         
 !c  vectorized periodic gaussian elimination solver
 !c         
-      dimension y(m,n),work(10000) 
+!      dimension y(m,n),work(10000)
+      dimension y(m,n),work(m+3*n)  ! wei 20231019 
 !c         
 !c gaussian elimination        
 !c         
@@ -577,12 +578,15 @@
 
       subroutine phi2pt(nx,my,lmax,zz,anlslp,t1000,puvphi,sgeo,pt)
 !c
+      use const, only: RTYPE
+!c
       dimension sgeo(nx,my),pt(nx,my),zz(nx,my,lmax)
       dimension fld1(nx,lmax+2,my),fld2(nx,lmax+2,my),t1000(nx,my) &
-             , anlslp(nx,my),presp(nx,lmax+2,my)                   & 
-             , pdiff(nx,my),hld1(nx,my),hld2(nx,my)                &
+             , anlslp(nx,my)                                       & 
+             , hld1(nx,my),hld2(nx,my)                             &
              , tens(lmax+2)
-      dimension phistd(lmax),puvphi(lmax)
+      dimension phistd(lmax),puvphi(lmax),pdiff(nx,my)
+      real(kind=RTYPE) presp(nx,lmax+2,my)
 !c
       data cp/1004.24/, grav/9.80616/
 !c

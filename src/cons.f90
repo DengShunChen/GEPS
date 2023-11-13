@@ -82,9 +82,10 @@
                       , outrsm,rsmoutinv,rlon1,rlon2,rlat1,rlat2,rgrdsz,rsmsfcmgrhr &
 !
                       , cmbk,cgwd,nmmiph,spl1,spl2                      &
-                      , weightSIT,dSITdt_intv,af,mwhd,doclx,doslavepp   &
-                      , outdms,outgrb2
-!
+                      , weightSIT,dSITdt_intv,mwhd,doclx,doslavepp      &
+                      , outdms,outgrb2,alpha,two_loop,ttl,tfilt,factop  &
+                      , mass_dp,dpprt,outfv3
+!                       
       real    si(lev+1)
       logical flag
       character*10 fulldtg,Wfulldtg
@@ -339,8 +340,8 @@
         prslp=sigma(k,2)+sigma(k,1)*1000.+ptop
         if ( prslp .le. spl1  ) hdk1=k
         if ( prslp .le. spl2  ) hdk2(1)=k
-        if ( prslp .le. 200.  ) hdk2(2)=k
-        if ( prslp .le. 400.  ) hdk2(3)=k
+        if ( prslp .le.  50.  ) hdk2(2)=k
+        if ( prslp .le. 200.  ) hdk2(3)=k
       enddo
 !
 !

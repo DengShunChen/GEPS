@@ -512,9 +512,9 @@
                       iitemp=itemp
                     endif
                     if (jtemp .eq. 0) then
-                      jjtemp=my
+                      jjtemp=1 
                     elseif (jtemp .gt. my) then
-                      jjtemp=1
+                      jjtemp=my
                     else
                       jjtemp=jtemp
                     endif
@@ -717,6 +717,7 @@
           REAL wweight
           REAL plon(nx,my_max),plat(my)
           LOGICAL locean(nxp,my_max)
+          real::ssttend
 
           write(cdtg,'(i12)') idtg1
           read(cdtg,'(i4.4,i2.2,i2.2,i2.2,i2.2)') iyyyy,imm,idd,ihh,imn
@@ -763,10 +764,11 @@
               call reducepickr(sstFCT(1,j),nxdef(j),nx,1)
             end if
             DO ii=1,nxj
-              wweight=0.
-              i=nxjstart(j)+ii-1
-              dailyClmANAsst(ii,jj,2)=sstANA(i,j)
-              if(locean(ii,jj) .AND. dailyClm_option .eq. 1) then   !dailyClm_option=1
+             wweight=0.
+             i=nxjstart(j)+ii-1
+             dailyClmANAsst(ii,jj,2)=sstANA(i,j)
+             if(locean(ii,jj) )then
+              if( dailyClm_option .eq. 1) then   !dailyClm_option=1
                 if(ldailyFCTsst)then
                 !similar to (Yuejian Zhu, operational)             
                 !  wweight=min(float(itau)/24./35.,1.)
@@ -784,8 +786,7 @@
                   dailyFCTsst(ii,jj,2)=wweight*(ANAsstT0(ii,jj)-dailyClmANAsst(ii,jj,0))  &
                                        +dailyClmANAsst(ii,jj,2)
                 endif
-              endif
-              if(ldailyFCTsst .AND. locean(ii,jj) .AND. dailyClm_option .eq. 2) then   !dailyClm_option=2
+              elseif( ldailyFCTsst .AND. dailyClm_option .eq. 2) then   !dailyClm_option=2
                 dailyClmFCTsst(ii,jj,2)=sstFCT(i,j)
                 !idea from Yuejian Zhu(2018 JGR)
                  wweight=min(max(float(itau)/24./35.,0.),1.)
@@ -793,12 +794,15 @@
                      +dailyClmANAsst(ii,jj,2))+wweight*(dailyFCTsst(ii,jj,2)    &
                      -(dailyClmFCTsst(ii,jj,2)-dailyClmANAsst(ii,jj,2)))
               endif
-              if(locean(ii,jj) .AND. dailyFCTsst(ii,jj,1).ge.sstmin &
-                .AND. dailyFCTsst(ii,jj,2).ge.sstmin)then
-                dFCTsstdt(ii,jj)=(dailyFCTsst(ii,jj,2)-dailyFCTsst(ii,jj,1))/(24.*3600.)
+              if( dailyFCTsst(ii,jj,1).ge.sstmin .AND. &
+                  dailyFCTsst(ii,jj,2).ge.sstmin )then
+                ssttend =  dailyFCTsst(ii,jj,2)-dailyFCTsst(ii,jj,1)
+                ssttend = min( 10. , max( -10. , ssttend ))
+                dFCTsstdt(ii,jj)=ssttend/(24.*3600.)
               else
                 dFCTsstdt(ii,jj)=0.
               endif
+             endif !if locean
 
             ENDDO
           ENDDO
@@ -814,7 +818,8 @@
 
       use index 
       use mpe
-      use const, only: kflag,RTYPE,outdms
+      use const, only: kflag,RTYPE,outdms,outgrb2
+      use mod_grb2_param,only: wrt_grb2_v2
 
       implicit none
 
@@ -842,6 +847,8 @@
       call syslbl ('w0001f',idtg,itau,ggdef,ihdg)
       if(outdms.gt.0) &
       call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
+      if( outgrb2==1.and.myrank==0 ) &
+      call wrt_grb2_v2(itau,10,3,199,6,168,0,2,glob,ihdg)
       tseadiffFCT24=0.
 
       END SUBROUTINE 
