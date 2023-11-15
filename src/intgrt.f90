@@ -1263,7 +1263,7 @@
         if ( two_loop ) then
           ! adjustmen of surface pressure, virtual potential
           ! temperature and all tracers 
-          if ( mass_dp ) call adjptq(plnow)
+          if ( mass_dp ) call adjptq(dta,plnow,pltemp)
           call joinrs(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
           call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc   &
                      ,temnow,1,nsizey)
@@ -1273,19 +1273,8 @@
         else
           ! adjustmen of surface pressure, virtual potential
           ! temperature and all tracers for one loop 
-          if ( mass_dp ) then
+          if ( mass_dp ) call adjptq(dta,pltemp,plten)
 
-            call adjptq(pltemp)
-
-            do i = 1, 2
-              do m = 1, mlistnum
-                mf=mlist(m)
-                do n = mf, jtrun
-                  plten(n,m,i) = (pltemp(n,m,i)-plnow(n,m,i))/dta
-                enddo
-              enddo
-            enddo
-          endif
         endif ! two_loop
 
       endif    ! end of (yesdia)
