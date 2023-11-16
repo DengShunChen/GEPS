@@ -1,3 +1,4 @@
+!#define SL_sedi
 !WRF:MODEL_LAYER:PHYSICS
 !
 
@@ -648,6 +649,11 @@ CONTAINS
   INTEGER                       :: min_q, max_q
   REAL                          :: t_del_tv, del_tv, flux, fluxin, fluxout ,tmpqrz
   LOGICAL                       :: notlast
+#ifdef SL_sedi
+  integer                       :: n,ntimes
+  real                          :: dtcfl,precip
+  real , dimension(kts:kte)     :: qden
+#endif
 
   if (improve.eq.3) igce=1
 
@@ -757,6 +763,35 @@ CONTAINS
 !
 !-- rain
 !
+#ifdef SL_sedi
+    ntimes = 4
+    dtcfl = dtb/real(ntimes)
+
+    do n = 1 , ntimes
+       vtr(:) = 0.
+       qden(:) = 0.
+       precip = 0.
+       do k = kts , kte
+          qden(k) = qrz(k) * rhoz(k)
+          ! new codes from Steve's in cgs
+          r00 = rhoz(k) * 0.001  ! rhoz(k) need to be in CGS
+          call vqrqi(1,improve,r00,fv(k),qrz(k),vtr(k))
+          vtr(k) = vtr(k) * 0.01  ! convert back to MKS
+          if (.not. vtr(k) .gt. 0.0) cycle ! EMK NUWRF Bug fix
+       enddo
+
+       call semi_lagrange_sedim(kte,dzw,vtr,qden,precip,dtcfl,1.E-15)
+
+       do k = kts , kte
+          qrz(k) = qden(k) / rhoz(k)
+       enddo
+       pptrain = pptrain + precip
+    enddo
+
+    do k = kts , kte
+       qr(i,k,j) = qrz(k)
+    enddo
+#else
     t_del_tv=0.
     del_tv=dtb
     notlast=.true.
@@ -849,10 +884,50 @@ CONTAINS
          notlast=.false.
       endif
     ENDDO
+#endif
 
 !
 !-- snow
 !
+#ifdef SL_sedi
+    ntimes = 2
+    dtcfl = dtb/real(ntimes)
+
+    do n = 1 , ntimes
+       vts(:) = 0.
+       qden(:) = 0.
+       precip = 0.
+       do k = kts , kte
+          qden(k) = qsz(k) * rhoz(k)
+          ! new codes from Steve's in cgs
+          y1 = qsz(k)             
+          r00= rhoz(k) * 0.001   ! rhoz(k) need to be in CGS
+          vscf=vsc*fv(k)
+
+          ftns=1.
+          ftns0=1.
+          if (improve.eq.3)then
+             tair=thz(k)*piz(k)
+             tairc=tair-t0
+             call sgmap(1,y1,r00,tairc,ftns0)
+             ftns=ftns0**bsq
+          endif
+          vts(k)=max(vscf*(r00*y1)**bsq/ftns, 0.0)
+          vts(k)=vts(k) * 0.01  ! convert back to MKS  
+       enddo
+
+       call semi_lagrange_sedim(kte,dzw,vts,qden,precip,dtcfl,1.E-15)
+
+       do k = kts , kte
+          qsz(k) = qden(k) / rhoz(k)
+       enddo
+       pptsnow = pptsnow + precip
+    enddo
+
+    do k = kts , kte
+       qs(i,k,j) = qsz(k)
+    enddo
+#else
     t_del_tv=0.
     del_tv=dtb
     notlast=.true.
@@ -949,6 +1024,7 @@ CONTAINS
       endif
 
     ENDDO
+#endif
 
 !
 !   ice2=0 --- with hail/graupel 
@@ -964,6 +1040,65 @@ CONTAINS
 !       rhograul = rhohail
 !    endif
 
+#ifdef SL_sedi
+    ntimes = 2
+    dtcfl = dtb/real(ntimes)
+
+    do n = 1 , ntimes
+       vtg(:) = 0.
+       qden(:) = 0.
+       precip = 0.
+       do k = kts , kte
+          qden(k) = qgz(k) * rhoz(k)
+          if (ihail .eq. 1) then
+             ! for hail, based on Lin et al (1983)
+             tmp1=sqrt(pi*rhohail*xnoh/rhoz(k)/qgz(k))
+             tmp1=sqrt(tmp1)
+             term0=sqrt(4.*grav*rhohail/3./rhoz(k)/cdrag)
+             vtg(k)=gam4pt5*term0*sqrt(1./tmp1)
+             vtg(k)=vtg(k)/6.
+          else
+             ! for graupel, based on RH (1984)
+             igce = 1
+             if (igce.ne.1) then
+                ! old codes from Chern's in MKS
+                tmp1=sqrt(pi*rhograul*xnog/rhoz(k)/qgz(k))
+                tmp1=sqrt(tmp1)
+                tmp1=tmp1**bbar
+                tmp1=1./tmp1
+                term0=abar*gam4bbar/6.
+                vtg(k)=term0*tmp1*(p0/prez(k))**0.4
+             else
+                ! new codes from Steve's in cgs
+                y1 = qgz(k)             
+                r00= rhoz(k) * 0.001      ! rhoz(k) need to be in CGS
+                vgcr=vgc*fv(k)
+                ftng=1.
+                ftng0=1.
+                if (improve.gt.2) then
+                   tair=thz(k)*piz(k)
+                   tairc=tair-t0
+                   call sgmap(2,y1,r00,tairc,ftng0)
+                   ftng=ftng0**bgq
+                endif
+                vtg(k)=dmax1(vgcr*(r00*y1)**bgq/ftng, 0.0)
+                vtg(k)=vtg(k) * 0.01  ! convert back to MKS
+             endif  !igce
+          endif !ihail
+       enddo
+
+       call semi_lagrange_sedim(kte,dzw,vtg,qden,precip,dtcfl,1.E-15)
+
+       do k = kts , kte
+          qgz(k) = qden(k) / rhoz(k)
+       enddo
+       pptgraul = pptgraul + precip
+    enddo
+
+    do k = kts , kte
+       qg(i,k,j) = qgz(k)
+    enddo
+#else
     t_del_tv=0.
     del_tv=dtb
     notlast=.true.
@@ -1074,11 +1209,40 @@ CONTAINS
       endif
 !
     ENDDO
+#endif
  ENDIF !ice2
 !
 !-- cloud ice  (03/21/02) follow Vaughan T.J. Phillips at GFDL
 !
 
+#ifdef SL_sedi
+    ntimes = 1
+    dtcfl = dtb/real(ntimes)
+
+    do n = 1 , ntimes
+       vti(:) = 0.
+       qden(:) = 0.
+       precip = 0.
+       do k = kts , kte
+          qden(k) = qiz(k) * rhoz(k)
+          ! new codes from Steve's in cgs
+          r00 = rhoz(k) * 0.001  ! rhoz(k) need to be in CGS
+          call vqrqi(2,improve,r00,fv(k),qiz(k),vti(k))
+          vti(k) = vti(k) * 0.01  ! convert back to MKS
+       enddo
+
+       call semi_lagrange_sedim(kte,dzw,vti,qden,precip,dtcfl,1.E-15)
+
+       do k = kts , kte
+          qiz(k) = qden(k) / rhoz(k)
+       enddo
+       pptice = pptice + precip
+    enddo
+
+    do k = kts , kte
+       qi(i,k,j) = qiz(k)
+    enddo
+#else
     t_del_tv=0.
     del_tv=dtb
     notlast=.true.
@@ -1195,6 +1359,7 @@ CONTAINS
       endif
 !
    ENDDO !notlast
+#endif
 
    do k = kts, kte
             preci3d(i,k,j)=ised(k)
@@ -5491,6 +5656,230 @@ CONTAINS
        eff_rad = 1.5e0 / (lambda*100.) * 1.0e+6  ! [micron]
    return
    end function eff_rad
+
+!-------------------------------------------------------------------
+      SUBROUTINE semi_lagrange_sedim(km,dzl,wwl,rql,precip,dt,R1)
+!-------------------------------------------------------------------
+!
+! This routine is a semi-Lagrangain forward advection for hydrometeors
+! with mass conservation and positive definite advection
+! 2nd order interpolation with monotonic piecewise parabolic method is used.
+! This routine is under assumption of decfl < 1 for semi_Lagrangian
+!
+! dzl    depth of model layer (m)
+! wwl    terminal velocity at model layer (m/s)
+! rql    dry mixing ratio of condensate * dry air density (kg/m^3)
+! precip total precipitation at surface (mm)
+! dt     time step (sec)
+!
+! author: hann-ming henry juang <henry.juang@noaa.gov>
+!         implemented by song-you hong
+! reference: Juang, H.-M., and S.-Y. Hong, 2010: Forward semi-Lagrangian advection
+!         with mass conservation and positive definiteness for falling
+!         hydrometeors. *Mon.  Wea. Rev.*, *138*, 1778-1791
+!
+      implicit none
+
+      integer, intent(in) :: km
+      real, intent(in) ::  dt, R1
+      real, intent(in) :: dzl(km),wwl(km)
+      real, intent(out) :: precip
+      real, intent(inout) :: rql(km)
+      integer  k,m,kk,kb,kt
+      real  tl,tl2,qql,dql,qqd
+      real  th,th2,qqh,dqh
+      real  zsum,qsum,dim,dip,con1,fa1,fa2
+      real  allold, decfl
+      real  dz(km), ww(km), qq(km)
+      real  wi(km+1), zi(km+1), za(km+2)
+      real  qn(km)
+      real  dza(km+1), qa(km+1), qmi(km+1), qpi(km+1)
+!
+      precip = 0.0
+      qa(:) = 0.0
+      qq(:) = 0.0
+      dz(:) = dzl(:)
+      ww(:) = wwl(:)
+      do k = 1,km
+        if(rql(k).gt.R1) then 
+          qq(k) = rql(k)
+        else
+          ww(k) = 0.0 
+        endif
+      enddo
+! skip for no precipitation for all layers
+      allold = 0.0
+      do k=1,km
+        allold = allold + qq(k)
+      enddo
+      if(allold.le.0.0) then
+         return 
+      endif
+!
+! compute interface values
+      zi(1)=0.0
+      do k=1,km
+        zi(k+1) = zi(k)+dz(k)
+      enddo
+!     n=1
+! plm is 2nd order, we can use 2nd order wi or 3rd order wi
+! 2nd order interpolation to get wi
+      wi(1) = ww(1)
+      wi(km+1) = ww(km)
+      do k=2,km
+        wi(k) = (ww(k)*dz(k-1)+ww(k-1)*dz(k))/(dz(k-1)+dz(k))
+      enddo
+! 3rd order interpolation to get wi
+      fa1 = 9./16.
+      fa2 = 1./16.
+      wi(1) = ww(1)
+      wi(2) = 0.5*(ww(2)+ww(1))
+      do k=3,km-1
+        wi(k) = fa1*(ww(k)+ww(k-1))-fa2*(ww(k+1)+ww(k-2))
+      enddo
+      wi(km) = 0.5*(ww(km)+ww(km-1))
+      wi(km+1) = ww(km)
+
+! terminate of top of raingroup
+      do k=2,km
+        if( ww(k).eq.0.0 ) wi(k)=ww(k-1)
+      enddo
+
+! diffusivity of wi
+      con1 = 0.05
+      do k=km,1,-1
+        decfl = (wi(k+1)-wi(k))*dt/dz(k)
+        if( decfl .gt. con1 ) then
+          wi(k) = wi(k+1) - con1*dz(k)/dt
+        endif
+      enddo
+! compute arrival point
+      do k=1,km+1
+        za(k) = zi(k) - wi(k)*dt
+      enddo
+      za(km+2) = zi(km+1)
+
+      do k=1,km+1
+        dza(k) = za(k+1)-za(k)
+      enddo
+
+! computer deformation at arrival point
+      do k=1,km
+        qa(k) = qq(k)*dz(k)/dza(k)
+      enddo
+      qa(km+1) = 0.0
+
+! estimate values at arrival cell interface with monotone
+      do k=2,km
+        dip=(qa(k+1)-qa(k))/(dza(k+1)+dza(k))
+        dim=(qa(k)-qa(k-1))/(dza(k-1)+dza(k))
+        if( dip*dim.le.0.0 ) then
+          qmi(k)=qa(k)
+          qpi(k)=qa(k)
+        else
+          qpi(k)=qa(k)+0.5*(dip+dim)*dza(k)
+          qmi(k)=2.0*qa(k)-qpi(k)
+          if( qpi(k).lt.0.0 .or. qmi(k).lt.0.0 ) then
+            qpi(k) = qa(k)
+            qmi(k) = qa(k)
+          endif
+        endif
+      enddo
+      qpi(1)=qa(1)
+      qmi(1)=qa(1)
+      qmi(km+1)=qa(km+1)
+      qpi(km+1)=qa(km+1)
+
+! interpolation to regular point
+      qn = 0.0
+      kb=1
+      kt=1
+      intp : do k=1,km
+             kb=max(kb-1,1)
+             kt=max(kt-1,1)
+! find kb and kt
+             if( zi(k).ge.za(km+1) ) then
+               exit intp
+             else
+               find_kb : do kk=kb,km
+                         if( zi(k).le.za(kk+1) ) then
+                           kb = kk
+                           exit find_kb
+                         else
+                           cycle find_kb
+                         endif
+               enddo find_kb
+               find_kt : do kk=kt,km+2
+                         if( zi(k+1).le.za(kk) ) then
+                           kt = kk
+                           exit find_kt
+                         else
+                           cycle find_kt
+                         endif
+               enddo find_kt
+               kt = kt - 1
+! compute q with piecewise constant method
+               if( kt.eq.kb ) then
+                 tl=(zi(k)-za(kb))/dza(kb)
+                 th=(zi(k+1)-za(kb))/dza(kb)
+                 tl2=tl*tl
+                 th2=th*th
+                 qqd=0.5*(qpi(kb)-qmi(kb))
+                 qqh=qqd*th2+qmi(kb)*th
+                 qql=qqd*tl2+qmi(kb)*tl
+                 qn(k) = (qqh-qql)/(th-tl)
+               else if( kt.gt.kb ) then
+                 tl=(zi(k)-za(kb))/dza(kb)
+                 tl2=tl*tl
+                 qqd=0.5*(qpi(kb)-qmi(kb))
+                 qql=qqd*tl2+qmi(kb)*tl
+                 dql = qa(kb)-qql
+                 zsum  = (1.-tl)*dza(kb)
+                 qsum  = dql*dza(kb)
+                 if( kt-kb.gt.1 ) then
+                 do m=kb+1,kt-1
+                   zsum = zsum + dza(m)
+                   qsum = qsum + qa(m) * dza(m)
+                 enddo
+                 endif
+                 th=(zi(k+1)-za(kt))/dza(kt)
+                 th2=th*th
+                 qqd=0.5*(qpi(kt)-qmi(kt))
+                 dqh=qqd*th2+qmi(kt)*th
+                 zsum  = zsum + th*dza(kt)
+                 qsum  = qsum + dqh*dza(kt)
+                 qn(k) = qsum/zsum
+               endif
+               cycle intp
+             endif
+
+       enddo intp
+
+! rain out (unit:kg/m^2=mm)
+       sum_precip: do k=1,km
+          if ( za(k).lt.0.0 .and. za(k+1).le.0.0 ) then
+             precip = precip + qa(k)*dza(k)
+             cycle sum_precip
+          else if ( za(k).lt.0.0 .and. za(k+1).gt.0.0 ) then
+             ! from Thompson MP :
+             th = (0.0-za(k))/dza(k)
+             th2 = th*th
+             qqd = 0.5*(qpi(k)-qmi(k))
+             qqh = qqd*th2+qmi(k)*th
+             precip = precip + qqh*dza(k)
+!             ! from WSM6 MP : 
+!             precip = precip + qa(k)*(0.-za(k))
+             exit sum_precip
+          endif
+          exit sum_precip
+       enddo sum_precip
+
+! replace the new values
+       do k = 1,km
+          rql(k) = max(qn(k),R1)
+       enddo
+
+       END SUBROUTINE semi_lagrange_sedim
 
 END MODULE  module_mp_gsfcgce_3ice_nuwrf
 
