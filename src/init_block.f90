@@ -107,9 +107,9 @@
       two_loop=.false.
 ! dy-core two time level
       ttl=.true.
-      itter=1
+      itter=2
 ! dry air mass correction
-      mass_dp=.true.
+      mass_dp=.false.
       dpprt  =.false.
 ! output data for RSM (Also, RSM compiling flag is necessary)
       outrsm=.false.
@@ -202,7 +202,7 @@
 !  sponge layer 
       spl1=10.
       spl2=100.
-      vd=0.02
+      vd=0.01
       else if ( lev .eq. 72 ) then
 !
 ! L72 hybrid coordinate
@@ -251,7 +251,7 @@
 !  sponge layer 
       spl1=5.
       spl2=50.
-      vd=0.02
+      vd=0.01
       else if ( lev .eq. 128 ) then
 !
 ! L128 hybrid coordinate
@@ -328,7 +328,7 @@
 !  sponge layer 
       spl1=1.
       spl2=50.
-      vd=0.03
+      vd=0.005
       endif
 !
       tmeans=300.
