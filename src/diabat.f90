@@ -322,7 +322,7 @@
                 ctot(nxp,my_max),chig(nxp,my_max),cmid(nxp,my_max),clow(nxp,my_max)
 
       ! for sppt
-      real(kind=RTYPE) :: cld_save_sppt(nxp,lev,my_max)
+      !real(kind=RTYPE) :: cld_save_sppt(nxp,lev,my_max)
       real(kind=RTYPE) :: ut_save_sppt(nxp,lev,my_max)     
       real(kind=RTYPE) :: vt_save_sppt(nxp,lev,my_max)        
       real(kind=RTYPE) :: tt_save_sppt(nxp,lev,my_max)        
@@ -686,45 +686,45 @@
       endif ! doclxu
 
 !!     --- update ocean and seaice table  02nov2023 hcwei ---
-      if ( do_sit .and. (tau .ge. 24 ) )then !action for 10 days after
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         nxj=nxdef_2d(j)
-         do i=1,nxj
-          if( .not. land(i,jj) ) then
-           if( ocean(i,jj) )then !ocean to ice
-           if( tg(i,jj) .le. 271.35 )then ! -1.8 degC
-            ice    (i,jj) = .true.
-            ocean  (i,jj) = .false.
-            zice   (i,jj) = 0.15 ! from himin in sfc_sice 
-            cice   (i,jj) = max(0.15,cice(i,jj)) ! from cimin in sfc_sice 
-            snr    (i,jj) = 15.
-            sndepth(i,jj) = snr(i,jj)*8.
-            sncover(i,jj) = min(1., snr(i,jj)/400.)
-            z0     (i,jj) = 0.00002
-            tg     (i,jj) = 271.35
-            xtice  (i,jj) = tg(i,jj)
-           endif
-           endif !ocean
-           if( ice(i,jj) )then !ice to ocean
-           if( xtice(i,jj) .gt. 273.0 )then !-relates freezing temp to salinity (273.15 - 0.054)
-            if(  snr(i,jj).lt. 0.1 .and. zice(i,jj) .lt. 0.1 )then
-            print*,'i=',nxjstart(j)+i-1,'j=',j,' ice 2 ocean'
-            ice    (i,jj) =.false.
-            ocean  (i,jj) =.true.
-            zice   (i,jj) = 0.0
-            !cice   (i,jj) = 0.0
-            snr    (i,jj) = 0.0
-            sndepth(i,jj) = 0.0
-            sncover(i,jj) = 0.0
-            z0     (i,jj) =ustar(i,jj)*ustar(i,jj)*0.014/grav
-            endif
-           endif
-           endif
-          endif
-         enddo
-        enddo
-      endif
+!      if ( do_sit .and. (tau .ge. 24 ) )then !action for 10 days after
+!        do jj = 1, jlistnum
+!         j=jlist1(jj)
+!         nxj=nxdef_2d(j)
+!         do i=1,nxj
+!          if( .not. land(i,jj) ) then
+!           if( ocean(i,jj) )then !ocean to ice
+!           if( tg(i,jj) .le. 271.35 )then ! -1.8 degC
+!            ice    (i,jj) = .true.
+!            ocean  (i,jj) = .false.
+!            zice   (i,jj) = 0.15 ! from himin in sfc_sice 
+!            cice   (i,jj) = max(0.15,cice(i,jj)) ! from cimin in sfc_sice 
+!            snr    (i,jj) = 15.
+!            sndepth(i,jj) = snr(i,jj)*8.
+!            sncover(i,jj) = min(1., snr(i,jj)/400.)
+!            z0     (i,jj) = 0.00002
+!            tg     (i,jj) = 271.35
+!            xtice  (i,jj) = tg(i,jj)
+!           endif
+!           endif !ocean
+!           if( ice(i,jj) )then !ice to ocean
+!           if( xtice(i,jj) .gt. 273.0 )then !-relates freezing temp to salinity (273.15 - 0.054)
+!            if(  snr(i,jj).lt. 0.1 .and. zice(i,jj) .lt. 0.1 )then
+!            print*,'i=',nxjstart(j)+i-1,'j=',j,' ice 2 ocean'
+!            ice    (i,jj) =.false.
+!            ocean  (i,jj) =.true.
+!            zice   (i,jj) = 0.0
+!            !cice   (i,jj) = 0.0
+!            snr    (i,jj) = 0.0
+!            sndepth(i,jj) = 0.0
+!            sncover(i,jj) = 0.0
+!            z0     (i,jj) =ustar(i,jj)*ustar(i,jj)*0.014/grav
+!            endif
+!           endif
+!           endif
+!          endif
+!         enddo
+!        enddo
+!      endif
 
 !
 ! for nonorographic gravity wave drag
@@ -1016,7 +1016,7 @@
             vt_save_sppt(i,k,jj)=vt(i,k,jj)
             tt_save_sppt(i,k,jj)=tt(i,k,jj)
             qt_save_sppt(i,k,jj)=qt(i,k,jj)
-            cld_save_sppt(i,k,jj)=clds(i,k,jj)
+            !cld_save_sppt(i,k,jj)=clds(i,k,jj)
           enddo
         enddo
       endif ! end dosppt if stetement
