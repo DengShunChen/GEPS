@@ -843,6 +843,7 @@
        qflux(i)=qflux(i)*ro2(i)*hltm        ! transfer to W/m2
        tstar(i)=-heat(i)/ustar(i)
        qstar(i)=-evap(i)/ustar(i)
+       runoff(i)=(drain(i)+runof(i))*dth + runoff(i) !wei add at 20231012
        enddo
 !     if(jj.eq.jo)then
 !     print*,'after mixpbl -----------------'

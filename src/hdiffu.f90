@@ -126,10 +126,10 @@
             vornow(k,2,n,m)=vornow(k,2,n,m)/c1
             divnow(k,1,n,m)=divnow(k,1,n,m)/c2
             divnow(k,2,n,m)=divnow(k,2,n,m)/c2
-            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
-            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
-!            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
-!            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
+!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
+!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
+            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
+            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
           enddo
         enddo
  100  continue
@@ -273,10 +273,10 @@
             vornow(k,2,n,m)=vornow(k,2,n,m)/c1
             divnow(k,1,n,m)=divnow(k,1,n,m)/c2
             divnow(k,2,n,m)=divnow(k,2,n,m)/c2
-            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
-            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
-!            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
-!            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
+!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
+!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
+            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
+            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
           enddo
         enddo
  100  continue
@@ -563,10 +563,10 @@
             vornow(k,2,n,m)=vornow(k,2,n,m)/c1
             divnow(k,1,n,m)=divnow(k,1,n,m)/c2
             divnow(k,2,n,m)=divnow(k,2,n,m)/c2
-            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
-            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
-!            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
-!            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
+!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
+!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
+            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
+            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
           enddo
         enddo
  100  continue

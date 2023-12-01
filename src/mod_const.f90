@@ -132,6 +132,7 @@
     !for output 
     integer :: outgrb2    !output grib2 format
     integer :: outdms     !output dmskey
+    logical :: outfv3     !output for fv3 at tau=6
 
     common/constL/lsimpl,lzadv,yesdia,dopbl,docup,dorad,   &
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &
