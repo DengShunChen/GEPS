@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Tue Aug 29 14:57:29 2023
+ Fujitsu Fortran Version 4.6.1  Fri Dec  1 17:11:08 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72/src_4cpl
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_4cpl
    Source file       : init_block.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -114,555 +114,559 @@
               52                     !!      hice=3.336e5
               53                           evaprh=0.98
               54                           hfilt=1.
-              55                     
-              56                           nnmiit=3
-              57                           nnmivm=3
-              58                           cutfreq=1.0
-              59                           itypbl=0
-              60                     
-              61                           taup=6.
-              62                           ktrop=8
-              63                           taureg=6.
-              64                     !
-              65                           lsimpl=.true.
-              66                           yesdia=.true.
-              67                     
-              68                           dopbl=.true.
-              69                           docup=.true.
-              70                           dorad=.true.
-              71                     
-              72                           dolsp=.true.
-              73                           dograv=.true.
-              74                           docgrav=.true.
-              75                           doshl=.true.
-              76                     
-              77                           donnmi=.true.
-              78                           dodry=.false.
-              79                           ozon=.true.
-              80                     
-              81                           hdiff=.true.
-              82                           cstar=.false.
-              83                     
-              84                           update=.true.
-              85                           doincr=.true.
-              86                     !
-              87                           doo3l=.true.
-              88                     ! about of input and output set
-              89                           domfc    =    384.
-              90                           otgreen  =      6.
-              91                           out_green= .false.
-              92                           out_hp   = .false.
-              93                           outgrb2  =      0  !output grib2 format
-              94                           outdms   =      1  !output dmskey 1:real-8  ,2:real-4
-              95                     ! pdf cloud
-              96                           pdfcloud=.false.
-              97                     ! stochastic physics
-              98                           dosppt=.false.
-              99                           dospptout=.false.
-             100                           doshum=.false.
-             101                     ! update low boundary condition
-             102                           doclx=.false.
-             103                     ! Semi-Lagrangian Averaging of Physical Parametrizations
-             104                           doslavepp=.false.
-             105                     ! dy-core two loop sequence
-             106                           two_loop=.false.
-             107                     ! dy-core two time level
-             108                           ttl=.true.
-             109                     ! output data for RSM (Also, RSM compiling flag is necessary)
-             110                           outrsm=.false.
-             111                           rsmoutinv=6
-             112                           rlon1=100.
-             113                           rlon2=150.
-             114                           rlat1=5.
-             115                           rlat2=40.
-             116                           rgrdsz=0.25
-             117                           rsmsfcmgrhr=24
-             118                     !---------------------------------------------------------------------------
-             119                     !
-             120                     ! specify the default option for cup and pbl
-             121                     !
-             122                           nmcup=6
-             123                           nmpbl=4
-             124                           nmland=2
-             125                           nmshl=3
-             126                     
-             127                           cgw=1.0e-4
-             128                     !
-             129                     !---for using forecast daily sst, sea ice fraction, snow depth
-             130                           ldailyFCTsst=.false.
-             131                           ldailyFCTicesndpt=.false.
-             132                           lFCTweight=.false.
-             133                           lopgsst=.false.
-             134                           dailyClm_option=-99
-             135                     !--for SIT
-             136                           do_sit=.false.
-             137                           fsit=-99.
-             138                           dSITdt_intv=-99.
-             139                           weightSIT=1.
-             140                           updatetg=24.
-             141                     !
-             142                     ! specify the default option for orographic and convective gwd
-             143                     !
-             144                           nmgwor=2
-             145                           tofd=.false.
-             146                           nmgwcv=2
-             147                           mtnvar=14
-             148                           cmbk = 1.0
-             149                           cgwd = 1.2
-             150                     !-for Cloud Micro Physics
-             151                           nmmiph=2
-             152                           ntinc=7   ! tracer index for ice number concentration
-             153                           ntrnc=8   ! tracer index for rain number concentration
-             154                     !     ntlnc=9   ! tracer index for liquid number concentration
-             155                     !
-             156                     ! specify the default option for reduced grids
-             157                     ! numreduce : -99 for full grids, 1 to 4 proper for reduced grids
-             158                     !
-             159                           numreduce=-99
-             160     1                     if ( lev .eq. 60 ) then
-             161     1               !
-             162     1               ! L60 hybrid coordinate(op7)
+              55                           factop=60.
+              56                     
+              57                           nnmiit=3
+              58                           nnmivm=3
+              59                           cutfreq=1.0
+              60                           itypbl=0
+              61                     
+              62                           taup=6.
+              63                           ktrop=8
+              64                           taureg=6.
+              65                     !
+              66                           lsimpl=.true.
+              67                           yesdia=.true.
+              68                     
+              69                           dopbl=.true.
+              70                           docup=.true.
+              71                           dorad=.true.
+              72                     
+              73                           dolsp=.true.
+              74                           dograv=.true.
+              75                           docgrav=.true.
+              76                           doshl=.true.
+              77                     
+              78                           donnmi=.true.
+              79                           dodry=.false.
+              80                           ozon=.true.
+              81                     
+              82                           hdiff=.true.
+              83                           cstar=.false.
+              84                     
+              85                           update=.true.
+              86                           doincr=.true.
+              87                     !
+              88                           doo3l=.true.
+              89                     ! about of input and output set
+              90                           domfc    =    384.
+              91                           otgreen  =      6.
+              92                           out_green= .false.
+              93                           out_hp   = .false.
+              94                           outgrb2  =      0  !output grib2 format
+              95                           outdms   =      1  !output dmskey
+              96                           outfv3   = .false.
+              97                     ! pdf cloud
+              98                           pdfcloud=.false.
+              99                     ! stochastic physics
+             100                           dosppt=.false.
+             101                           dospptout=.false.
+             102                           doshum=.false.
+             103                     ! update low boundary condition
+             104                           doclx=.false.
+             105                     ! Semi-Lagrangian Averaging of Physical Parametrizations
+             106                           doslavepp=.false.
+             107                     ! dy-core two loop sequence
+             108                           two_loop=.false.
+             109                     ! dy-core two time level
+             110                           ttl=.true.
+             111                     ! dry air mass correction
+             112                           mass_dp=.true.
+             113                           dpprt  =.false.
+             114                     ! output data for RSM (Also, RSM compiling flag is necessary)
+             115                           outrsm=.false.
+             116                           rsmoutinv=6
+             117                           rlon1=100.
+             118                           rlon2=150.
+             119                           rlat1=5.
+             120                           rlat2=40.
+             121                           rgrdsz=0.25
+             122                           rsmsfcmgrhr=24
+             123                     !---------------------------------------------------------------------------
+             124                     !
+             125                     ! specify the default option for cup and pbl
+             126                     !
+             127                           nmcup=6
+             128                           nmpbl=4
+             129                           nmland=2
+             130                           nmshl=3
+             131                     
+             132                           cgw=1.0e-4
+             133                     !
+             134                     !---for using forecast daily sst, sea ice fraction, snow depth
+             135                           ldailyFCTsst=.false.
+             136                           ldailyFCTicesndpt=.false.
+             137                           lFCTweight=.false.
+             138                           lopgsst=.false.
+             139                           dailyClm_option=-99
+             140                     !--for SIT
+             141                           do_sit=.false.
+             142                           fsit=-99.
+             143                           dSITdt_intv=-99.
+             144                           weightSIT=1.
+             145                           updatetg=24.
+             146                     !
+             147                     ! specify the default option for orographic and convective gwd
+             148                     !
+             149                           nmgwor=2
+             150                           tofd=.false.
+             151                           nmgwcv=2
+             152                           mtnvar=14
+             153                           cmbk = 1.0
+             154                           cgwd = 1.2
+             155                     !-for Cloud Micro Physics
+             156                           nmmiph=2
+             157                           ntinc=7   ! tracer index for ice number concentration
+             158                           ntrnc=8   ! tracer index for rain number concentration
+             159                     !     ntlnc=9   ! tracer index for liquid number concentration
+             160                     !
+             161                     ! specify the default option for reduced grids
+             162                     ! numreduce : -99 for full grids, 1 to 4 proper for reduced grids
+             163                     !
+             164                           numreduce=-99
+             165     1                     if ( lev .eq. 60 ) then
+             166     1               !
+             167     1               ! L60 hybrid coordinate(op7)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 1600
+                                   <<<    Standard iteration count: 1231
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
                                    <<<    FULL UNROLLING
                                    <<< Loop-information  End >>>
-             163     1   s   fv               tmean=(/272.1, 265.1, 253.9, 245.4, 238.7, 234.5, 230.7, 227.6, &
-             164     1                                226.2, 225.0, 223.9, 222.8, 221.7, 220.7, 219.8, 218.8, &
-             165     1                                217.9, 217.0, 216.7, 216.7, 216.7, 216.7, 216.7, 216.7, &
-             166     1                                216.7, 216.7, 216.7, 216.7, 216.7, 217.0, 220.6, 224.9, &
-             167     1                                229.1, 233.2, 237.2, 241.0, 244.8, 248.4, 251.8, 255.1, &
-             168     1                                258.2, 261.1, 263.9, 266.4, 268.8, 271.0, 273.0, 274.9, &
-             169     1                                276.6, 278.1, 279.5, 280.8, 281.9, 283.0, 283.9, 284.7, &
-             170     1                                285.4, 286.1, 286.7, 287.2/)
-             171     1               !
-             172     1               ! L60: hybrid coordinate(op7)
+             168     1   s   fv               tmean=(/272.1, 265.1, 253.9, 245.4, 238.7, 234.5, 230.7, 227.6, &
+             169     1                                226.2, 225.0, 223.9, 222.8, 221.7, 220.7, 219.8, 218.8, &
+             170     1                                217.9, 217.0, 216.7, 216.7, 216.7, 216.7, 216.7, 216.7, &
+             171     1                                216.7, 216.7, 216.7, 216.7, 216.7, 217.0, 220.6, 224.9, &
+             172     1                                229.1, 233.2, 237.2, 241.0, 244.8, 248.4, 251.8, 255.1, &
+             173     1                                258.2, 261.1, 263.9, 266.4, 268.8, 271.0, 273.0, 274.9, &
+             174     1                                276.6, 278.1, 279.5, 280.8, 281.9, 283.0, 283.9, 284.7, &
+             175     1                                285.4, 286.1, 286.7, 287.2/)
+             176     1               !
+             177     1               ! L60: hybrid coordinate(op7)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 1000
+                                   <<<    Standard iteration count: 728
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
                                    <<<    FULL UNROLLING
                                    <<< Loop-information  End >>>
-             173     1   s   fv                aki=(/  .00000,   .85400,  1.82570,  2.93106,  4.18811,  5.61725 &
-             174     1                           ,    7.24145,  9.08662, 11.18186, 13.55986, 16.25721, 19.31478 &
-             175     1                           ,   22.77809, 26.69766, 31.12936, 36.13468, 41.78099, 48.14158 &
-             176     1                           ,   55.29569, 63.32831, 72.32859, 82.26131, 92.84074,103.75080 &
-             177     1                           ,  114.67568,125.30212,135.32210,144.43608,152.35664,158.81248 &
-             178     1                           ,  163.55255,166.35379,167.12546,165.92496,162.84922,158.02912 &
-             179     1                           ,  151.62865,143.84211,134.88958,125.01073,114.45724,103.48445 &
-             180     1                           ,   92.34269, 81.26901, 70.47979, 60.16483, 50.48301, 41.55990 &
-             181     1                           ,   33.48706, 26.32304, 20.09558, 14.80485, 10.42730,  6.91977 &
-             182     1                           ,    4.22363,  2.26873,   .97701,   .26557,   .02193,   .00000 &
-             183     1                           ,    0.00000/)
-             184     1               !
-             185     1   p   fv                bki=(/.00000000,.00000000,.00000000,.00000000,.00000000,.00000000 &
-             186     1                           ,  .00000000,.00000000,.00000000,.00000000,.00000000,.00000000  &
-             187     1                           ,  .00000000,.00000000,.00000000,.00000000,.00000000,.00000000  &
-             188     1                           ,  .00000000,.00000000,.00000104,.00013304,.00077978,.00235711  &
-             189     1                           ,  .00528030,.00995912,.01679191,.02615862,.03841285,.05387320  &
-             190     1                           ,  .07281429,.09545413,.12184549,.15185637,.18527624,.22182071  &
-             191     1                           ,  .26113359,.30279276,.34632012,.39119502,.43687069,.48279246  &
-             192     1                           ,  .52841650,.57322786,.61675643,.65858995,.69838324,.73586353  &
-             193     1                           ,  .77083188,.80316112,.83279100,.85972113,.88400268,.90572942  &
-             194     1                           ,  .92502870,.94205290,.95697164,.96996497,.98124505,.99058760  &
-             195     1                           ,  1.00000000/)
-             196     1                     ptop=0.1
-             197     1               !  sponge layer
-             198     1                     spl1=10.
-             199     1                     spl2=100.
-             200     1                     vd=0.08
-             201     1                     else if ( lev .eq. 72 ) then
-             202     1               !
-             203     1               ! L72 hybrid coordinate
+             178     1   s   fv                aki=(/  .00000,   .85400,  1.82570,  2.93106,  4.18811,  5.61725 &
+             179     1                           ,    7.24145,  9.08662, 11.18186, 13.55986, 16.25721, 19.31478 &
+             180     1                           ,   22.77809, 26.69766, 31.12936, 36.13468, 41.78099, 48.14158 &
+             181     1                           ,   55.29569, 63.32831, 72.32859, 82.26131, 92.84074,103.75080 &
+             182     1                           ,  114.67568,125.30212,135.32210,144.43608,152.35664,158.81248 &
+             183     1                           ,  163.55255,166.35379,167.12546,165.92496,162.84922,158.02912 &
+             184     1                           ,  151.62865,143.84211,134.88958,125.01073,114.45724,103.48445 &
+             185     1                           ,   92.34269, 81.26901, 70.47979, 60.16483, 50.48301, 41.55990 &
+             186     1                           ,   33.48706, 26.32304, 20.09558, 14.80485, 10.42730,  6.91977 &
+             187     1                           ,    4.22363,  2.26873,   .97701,   .26557,   .02193,   .00000 &
+             188     1                           ,    0.00000/)
+             189     1               !
+             190     1   p   fv                bki=(/.00000000,.00000000,.00000000,.00000000,.00000000,.00000000 &
+             191     1                           ,  .00000000,.00000000,.00000000,.00000000,.00000000,.00000000  &
+             192     1                           ,  .00000000,.00000000,.00000000,.00000000,.00000000,.00000000  &
+             193     1                           ,  .00000000,.00000000,.00000104,.00013304,.00077978,.00235711  &
+             194     1                           ,  .00528030,.00995912,.01679191,.02615862,.03841285,.05387320  &
+             195     1                           ,  .07281429,.09545413,.12184549,.15185637,.18527624,.22182071  &
+             196     1                           ,  .26113359,.30279276,.34632012,.39119502,.43687069,.48279246  &
+             197     1                           ,  .52841650,.57322786,.61675643,.65858995,.69838324,.73586353  &
+             198     1                           ,  .77083188,.80316112,.83279100,.85972113,.88400268,.90572942  &
+             199     1                           ,  .92502870,.94205290,.95697164,.96996497,.98124505,.99058760  &
+             200     1                           ,  1.00000000/)
+             201     1                     ptop=0.1
+             202     1               !  sponge layer
+             203     1                     spl1=10.
+             204     1                     spl2=100.
+             205     1                     vd=0.08
+             206     1                     else if ( lev .eq. 72 ) then
+             207     1               !
+             208     1               ! L72 hybrid coordinate
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 1600
+                                   <<<    Standard iteration count: 1231
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
                                    <<<    FULL UNROLLING
                                    <<< Loop-information  End >>>
-             204     1   s   fv         tmean=(/ 272.07001,270.56509,260.00107,252.01338,245.39818,239.86288, &
-             205     1                           235.97810,232.73827,229.76340,227.40314,226.29744,225.25049, &
-             206     1                           224.25146,223.29295,222.36887,221.47464,220.60663,219.76190, &
-             207     1                           218.93806,218.13326,217.34613,216.64999,216.64999,216.64999, &
-             208     1                           216.64999,216.64999,216.64999,216.64999,216.64999,216.64999, &
-             209     1                           216.64999,216.64999,216.64999,216.64999,216.95261,220.14218, &
-             210     1                           223.91943,227.64014,231.29068,234.86462,238.34796,241.73264, &
-             211     1                           245.00887,248.16821,251.20274,254.10707,256.87320,259.49893, &
-             212     1                           261.98141,264.31860,266.51178,268.55948,270.46774,272.23737, &
-             213     1                           273.87387,275.38428,276.76971,278.04099,279.20291,280.26285, &
-             214     1                           281.22516,282.10135,282.89340,283.61090,284.25690,284.84167, &
-             215     1                           285.36823,285.83975,286.26508,286.64282,286.98969,287.29077 /)
-             216     1               !
-             217     1               ! L72: hybrid coordinate
+             209     1   s   fv         tmean=(/ 272.07001,270.56509,260.00107,252.01338,245.39818,239.86288, &
+             210     1                           235.97810,232.73827,229.76340,227.40314,226.29744,225.25049, &
+             211     1                           224.25146,223.29295,222.36887,221.47464,220.60663,219.76190, &
+             212     1                           218.93806,218.13326,217.34613,216.64999,216.64999,216.64999, &
+             213     1                           216.64999,216.64999,216.64999,216.64999,216.64999,216.64999, &
+             214     1                           216.64999,216.64999,216.64999,216.64999,216.95261,220.14218, &
+             215     1                           223.91943,227.64014,231.29068,234.86462,238.34796,241.73264, &
+             216     1                           245.00887,248.16821,251.20274,254.10707,256.87320,259.49893, &
+             217     1                           261.98141,264.31860,266.51178,268.55948,270.46774,272.23737, &
+             218     1                           273.87387,275.38428,276.76971,278.04099,279.20291,280.26285, &
+             219     1                           281.22516,282.10135,282.89340,283.61090,284.25690,284.84167, &
+             220     1                           285.36823,285.83975,286.26508,286.64282,286.98969,287.29077 /)
+             221     1               !
+             222     1               ! L72: hybrid coordinate
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 1000
+                                   <<<    Standard iteration count: 728
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
                                    <<<    FULL UNROLLING
                                    <<< Loop-information  End >>>
-             218     1   s   fv          aki=(/   0.00000,  0.63614,  1.35033,  2.15204,  3.05182,  4.06147,  &
-             219     1                            5.19414,  6.46451,  7.88892,  9.48552, 11.27451, 13.27825,  &
-             220     1                           15.52153, 18.03171, 20.83899, 23.97656, 27.48082, 31.39157,  &
-             221     1                           35.75213, 40.60953, 46.01449, 52.02149, 58.68863, 66.07746,  &
-             222     1                           74.24635, 83.11719, 92.47566,102.10102,111.77279,121.27200,  &
-             223     1                          130.38263,138.89340,146.59965,153.30553,158.82621,162.99021,  &
-             224     1                          165.64246,166.70406,166.20951,164.22232,160.82692,156.12838,  &
-             225     1                          150.25131,143.33774,135.54422,127.03812,117.99331,108.58553,  &
-             226     1                           98.98758, 89.36473, 79.87055, 70.64337, 61.80350, 53.45145,  &
-             227     1                           45.66689, 38.50863, 32.01524, 26.20638, 21.08455, 16.63717,  &
-             228     1                           12.83884,  9.65364,  7.03738,  4.93965,  3.30576,  2.07840,  &
-             229     1                            1.19905,  0.60919,  0.25125,  0.06934,  0.00691,  0.00000,  &
-             230     1                            0.00000 /)
-             231     1               
-             232     1   p   fv          bki=(/ .00000000,.00000000,.00000000,.00000000,.00000000,.00000000,  &
-             233     1                          .00000000,.00000000,.00000000,.00000000,.00000000,.00000000,  &
-             234     1                          .00000000,.00000000,.00000000,.00000000,.00000000,.00000000,  &
-             235     1                          .00000000,.00000000,.00000000,.00000000,.00000000,.00000000,  &
-             236     1                          .00000624,.00016402,.00075667,.00207486,.00440868,.00804493,  &
-             237     1                          .01326388,.02033548,.02951509,.04103882,.05511859,.07193703,  &
-             238     1                          .09164181,.11428347,.13977611,.16798052,.19871153,.23173872,  &
-             239     1                          .26678885,.30355047,.34168025,.38081121,.42056203,.46054736,  &
-             240     1                          .50038827,.53972232,.57821275,.61555624,.65148892,.68579044,  &
-             241     1                          .71828604,.74884679,.77738809,.80386683,.82827754,.85064780,  &
-             242     1                          .87103331,.88951283,.90618329,.92115521,.93454851,.94648889,  &
-             243     1                          .95710466,.96652416,.97487364,.98227564,.98885067,.99472349,  &
-             244     1                          1.0000000 /)
-             245     1                     ptop=0.1
-             246     1               !  sponge layer
-             247     1                     spl1=5.
-             248     1                     spl2=50.
-             249     1                     vd=0.08
-             250     1                     else if ( lev .eq. 128 ) then
-             251     1               !
-             252     1               ! L128 hybrid coordinate
+             223     1   s   fv          aki=(/   0.00000,  0.63614,  1.35033,  2.15204,  3.05182,  4.06147,  &
+             224     1                            5.19414,  6.46451,  7.88892,  9.48552, 11.27451, 13.27825,  &
+             225     1                           15.52153, 18.03171, 20.83899, 23.97656, 27.48082, 31.39157,  &
+             226     1                           35.75213, 40.60953, 46.01449, 52.02149, 58.68863, 66.07746,  &
+             227     1                           74.24635, 83.11719, 92.47566,102.10102,111.77279,121.27200,  &
+             228     1                          130.38263,138.89340,146.59965,153.30553,158.82621,162.99021,  &
+             229     1                          165.64246,166.70406,166.20951,164.22232,160.82692,156.12838,  &
+             230     1                          150.25131,143.33774,135.54422,127.03812,117.99331,108.58553,  &
+             231     1                           98.98758, 89.36473, 79.87055, 70.64337, 61.80350, 53.45145,  &
+             232     1                           45.66689, 38.50863, 32.01524, 26.20638, 21.08455, 16.63717,  &
+             233     1                           12.83884,  9.65364,  7.03738,  4.93965,  3.30576,  2.07840,  &
+             234     1                            1.19905,  0.60919,  0.25125,  0.06934,  0.00691,  0.00000,  &
+             235     1                            0.00000 /)
+             236     1               
+             237     1   p   fv          bki=(/ .00000000,.00000000,.00000000,.00000000,.00000000,.00000000,  &
+             238     1                          .00000000,.00000000,.00000000,.00000000,.00000000,.00000000,  &
+             239     1                          .00000000,.00000000,.00000000,.00000000,.00000000,.00000000,  &
+             240     1                          .00000000,.00000000,.00000000,.00000000,.00000000,.00000000,  &
+             241     1                          .00000624,.00016402,.00075667,.00207486,.00440868,.00804493,  &
+             242     1                          .01326388,.02033548,.02951509,.04103882,.05511859,.07193703,  &
+             243     1                          .09164181,.11428347,.13977611,.16798052,.19871153,.23173872,  &
+             244     1                          .26678885,.30355047,.34168025,.38081121,.42056203,.46054736,  &
+             245     1                          .50038827,.53972232,.57821275,.61555624,.65148892,.68579044,  &
+             246     1                          .71828604,.74884679,.77738809,.80386683,.82827754,.85064780,  &
+             247     1                          .87103331,.88951283,.90618329,.92115521,.93454851,.94648889,  &
+             248     1                          .95710466,.96652416,.97487364,.98227564,.98885067,.99472349,  &
+             249     1                          1.0000000 /)
+             250     1                     ptop=0.1
+             251     1               !  sponge layer
+             252     1                     spl1=5.
+             253     1                     spl2=50.
+             254     1                     vd=0.08
+             255     1                     else if ( lev .eq. 128 ) then
+             256     1               !
+             257     1               ! L128 hybrid coordinate
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 1600
+                                   <<<    Standard iteration count: 1231
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 1.37, ITR: 128, MVE: 2, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.80, ITR: 112, MVE: 4, POL: S)
                                    <<<    FULL UNROLLING
                                    <<< Loop-information  End >>>
-             253     1   s   4v         tmean=(/ 272.07000,272.07000,272.07000,272.07000,272.07000,272.07000, &
-             254     1                           272.07000,272.07000,272.07000,272.07000,272.07000,272.07000, &
-             255     1                           270.87453,266.82119,262.94369,259.24990,255.53608,251.95015, &
-             256     1                           248.51807,245.20174,242.11459,239.25858,237.08906,235.17648, &
-             257     1                           233.34808,231.61195,229.94067,228.32980,227.31186,226.67073, &
-             258     1                           226.04708,225.43891,224.84470,224.26301,223.69289,223.13332, &
-             259     1                           222.58351,222.04276,221.51039,220.98583,220.46863,219.95843, &
-             260     1                           219.45476,218.95740,218.46592,217.98024,217.50008,217.02529, &
-             261     1                           216.65000,216.65000,216.65000,216.65000,216.65000,216.65000, &
-             262     1                           216.65000,216.65000,216.65000,216.65000,216.65000,216.65000, &
-             263     1                           216.65000,216.65000,216.65000,216.65000,216.65000,216.65000, &
-             264     1                           216.65000,216.65000,216.65000,216.98519,218.79468,221.16790, &
-             265     1                           223.52246,225.85513,228.16483,230.44784,232.70132,234.92467, &
-             266     1                           237.11320,239.26497,241.37789,243.45012,245.47867,247.46152, &
-             267     1                           249.39684,251.28284,253.11786,254.90058,256.62974,258.30419, &
-             268     1                           259.92348,261.48677,262.99365,264.44381,265.83740,267.17456, &
-             269     1                           268.45597,269.68204,270.85337,271.97115,273.03641,274.05008, &
-             270     1                           275.01374,275.92862,276.79607,277.61809,278.39579,279.13099, &
-             271     1                           279.82524,280.48027,281.09786,281.67957,282.22703,282.74192, &
-             272     1                           283.22576,283.68006,284.10634,284.50642,284.88135,285.23245, &
-             273     1                           285.56147,285.86927,286.15730,286.42657,286.67835,286.91348, &
-             274     1                           287.13331,287.33843 /)
-             275     1               !
-             276     1               ! L128: hybrid coordinate
+             258     1   s   2v         tmean=(/ 272.07000,272.07000,272.07000,272.07000,272.07000,272.07000, &
+             259     1                           272.07000,272.07000,272.07000,272.07000,272.07000,272.07000, &
+             260     1                           270.87453,266.82119,262.94369,259.24990,255.53608,251.95015, &
+             261     1                           248.51807,245.20174,242.11459,239.25858,237.08906,235.17648, &
+             262     1                           233.34808,231.61195,229.94067,228.32980,227.31186,226.67073, &
+             263     1                           226.04708,225.43891,224.84470,224.26301,223.69289,223.13332, &
+             264     1                           222.58351,222.04276,221.51039,220.98583,220.46863,219.95843, &
+             265     1                           219.45476,218.95740,218.46592,217.98024,217.50008,217.02529, &
+             266     1                           216.65000,216.65000,216.65000,216.65000,216.65000,216.65000, &
+             267     1                           216.65000,216.65000,216.65000,216.65000,216.65000,216.65000, &
+             268     1                           216.65000,216.65000,216.65000,216.65000,216.65000,216.65000, &
+             269     1                           216.65000,216.65000,216.65000,216.98519,218.79468,221.16790, &
+             270     1                           223.52246,225.85513,228.16483,230.44784,232.70132,234.92467, &
+             271     1                           237.11320,239.26497,241.37789,243.45012,245.47867,247.46152, &
+             272     1                           249.39684,251.28284,253.11786,254.90058,256.62974,258.30419, &
+             273     1                           259.92348,261.48677,262.99365,264.44381,265.83740,267.17456, &
+             274     1                           268.45597,269.68204,270.85337,271.97115,273.03641,274.05008, &
+             275     1                           275.01374,275.92862,276.79607,277.61809,278.39579,279.13099, &
+             276     1                           279.82524,280.48027,281.09786,281.67957,282.22703,282.74192, &
+             277     1                           283.22576,283.68006,284.10634,284.50642,284.88135,285.23245, &
+             278     1                           285.56147,285.86927,286.15730,286.42657,286.67835,286.91348, &
+             279     1                           287.13331,287.33843 /)
+             280     1               !
+             281     1               ! L128: hybrid coordinate
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 1000
+                                   <<<    Standard iteration count: 728
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.16, ITR: 80, MVE: 3, POL: S)
-                                   <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      bki, aki, (unknown)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.83, ITR: 112, MVE: 4, POL: S)
+                                   <<<    FULL UNROLLING
                                    <<< Loop-information  End >>>
-             277     1   s   2v          aki=(/   0.00000,  0.02197,  0.03378,  0.05082,  0.07487,  0.10809,  &
-             278     1                            0.15305,  0.21268,  0.29024,  0.38929,  0.51353,  0.66674,  &
-             279     1                            0.85264,  1.07473,  1.33621,  1.63986,  1.98794,  2.38224,  &
-             280     1                            2.82398,  3.31398,  3.85267,  4.44029,  5.07708,  5.76344,  &
-             281     1                            6.50025,  7.28907,  8.13245,  9.03427, 10.00000, 11.03644,  &
-             282     1                           12.14921, 13.34374, 14.62584, 16.00168, 17.47782, 19.06127,  &
-             283     1                           20.75943, 22.58019, 24.53192, 26.62347, 28.86419, 31.26399,  &
-             284     1                           33.83330, 36.58312, 39.52499, 42.67106, 46.03402, 49.62714,  &
-             285     1                           53.46428, 57.55980, 61.92864, 66.58620, 71.54836, 76.82692,  &
-             286     1                           82.39076, 88.18442, 94.15203,100.23763,106.38533,112.53935,  &
-             287     1                          118.64421,124.64488,130.48688,136.11654,141.48113,146.52906,  &
-             288     1                          151.21015,155.47579,159.27919,162.57562,165.32260,167.48016,  &
-             289     1                          169.01158,169.90105,170.15713,169.79275,168.82412,167.27074,  &
-             290     1                          165.15541,162.50417,159.34622,155.71373,151.64165,147.16742,  &
-             291     1                          142.33063,137.17270,131.73642,126.06555,120.20433,114.19705,  &
-             292     1                          108.08753,101.91870, 95.73212, 89.56761, 83.46284, 77.45304,  &
-             293     1                           71.57067, 65.84527, 60.30320, 54.96762, 49.85837, 44.99199,  &
-             294     1                           40.38177, 36.03782, 31.96720, 28.17408, 24.65992, 21.42367,  &
-             295     1                           18.46199, 15.76946, 13.33883, 11.16123,  9.22638,  7.52284,  &
-             296     1                            6.03817,  4.75916,  3.67197,  2.76235,  2.01571,  1.41732,  &
-             297     1                            0.95190,  0.60249,  0.35193,  0.18327,  0.07986,  0.02538,  &
-             298     1                            0.00393,  0.00001,  0.00000 /)
-             299     1               
-             300     1   p   2v          bki=(/ .00000000,.00000000,.00000000,.00000000,.00000000,.00000000,  &
-             301     1                          .00000000,.00000000,.00000000,.00000000,.00000000,.00000000,  &
-             302     1                          .00000000,.00000000,.00000000,.00000000,.00000000,.00000000,  &
-             303     1                          .00000000,.00000000,.00000000,.00000000,.00000000,.00000000,  &
-             304     1                          .00000000,.00000000,.00000000,.00000000,.00000000,.00000000,  &
-             305     1                          .00000000,.00000000,.00000000,.00000000,.00000000,.00000000,  &
+             282     1   s   2v          aki=(/   0.00000,  0.02197,  0.03378,  0.05082,  0.07487,  0.10809,  &
+             283     1                            0.15305,  0.21268,  0.29024,  0.38929,  0.51353,  0.66674,  &
+             284     1                            0.85264,  1.07473,  1.33621,  1.63986,  1.98794,  2.38224,  &
+             285     1                            2.82398,  3.31398,  3.85267,  4.44029,  5.07708,  5.76344,  &
+             286     1                            6.50025,  7.28907,  8.13245,  9.03427, 10.00000, 11.03644,  &
+             287     1                           12.14921, 13.34374, 14.62584, 16.00168, 17.47782, 19.06127,  &
+             288     1                           20.75943, 22.58019, 24.53192, 26.62347, 28.86419, 31.26399,  &
+             289     1                           33.83330, 36.58312, 39.52499, 42.67106, 46.03402, 49.62714,  &
+             290     1                           53.46428, 57.55980, 61.92864, 66.58620, 71.54836, 76.82692,  &
+             291     1                           82.39076, 88.18442, 94.15203,100.23763,106.38533,112.53935,  &
+             292     1                          118.64421,124.64488,130.48688,136.11654,141.48113,146.52906,  &
+             293     1                          151.21015,155.47579,159.27919,162.57562,165.32260,167.48016,  &
+             294     1                          169.01158,169.90105,170.15713,169.79275,168.82412,167.27074,  &
+             295     1                          165.15541,162.50417,159.34622,155.71373,151.64165,147.16742,  &
+             296     1                          142.33063,137.17270,131.73642,126.06555,120.20433,114.19705,  &
+             297     1                          108.08753,101.91870, 95.73212, 89.56761, 83.46284, 77.45304,  &
+             298     1                           71.57067, 65.84527, 60.30320, 54.96762, 49.85837, 44.99199,  &
+             299     1                           40.38177, 36.03782, 31.96720, 28.17408, 24.65992, 21.42367,  &
+             300     1                           18.46199, 15.76946, 13.33883, 11.16123,  9.22638,  7.52284,  &
+             301     1                            6.03817,  4.75916,  3.67197,  2.76235,  2.01571,  1.41732,  &
+             302     1                            0.95190,  0.60249,  0.35193,  0.18327,  0.07986,  0.02538,  &
+             303     1                            0.00393,  0.00001,  0.00000 /)
+             304     1               
+             305     1   p   2v          bki=(/ .00000000,.00000000,.00000000,.00000000,.00000000,.00000000,  &
              306     1                          .00000000,.00000000,.00000000,.00000000,.00000000,.00000000,  &
              307     1                          .00000000,.00000000,.00000000,.00000000,.00000000,.00000000,  &
-             308     1                          .00000000,.00000000,.00000000,.00000000,.00000000,.00000447,  &
-             309     1                          .00006115,.00024241,.00062120,.00127063,.00226373,.00367320,  &
-             310     1                          .00557114,.00802871,.01111581,.01490065,.01944939,.02482570,  &
-             311     1                          .03109023,.03830025,.04650905,.05576552,.06611363,.07759200,  &
-             312     1                          .09023283,.10404410,.11900588,.13509022,.15226209,.17047936,  &
-             313     1                          .18969276,.20984599,.23087597,.25271315,.27528202,.29850170,  &
-             314     1                          .32228657,.34654717,.37119100,.39612350,.42124904,.44647195,  &
-             315     1                          .47169749,.49683292,.52178840,.54647788,.57081995,.59473849,  &
-             316     1                          .61816332,.64103066,.66328347,.68487175,.70575261,.72589030,  &
-             317     1                          .74525610,.76382818,.78159126,.79853634,.81466026,.82996528,  &
-             318     1                          .84445864,.85815203,.87106113,.88320512,.89460619,.90528910,  &
-             319     1                          .91528070,.92460955,.93330554,.94139951,.94892295,.95590771,  &
-             320     1                          .96238622,.96839253,.97396074,.97912445,.98391663,.98836950,  &
-             321     1                          .99251445,.99638192,1.0000000 /)
-             322     1                     ptop=0.01
-             323     1               !  sponge layer
-             324     1                     spl1=20.
-             325     1                     spl2=100.
-             326     1                     vd=0.1
-             327     1                     endif
-             328                     !
+             308     1                          .00000000,.00000000,.00000000,.00000000,.00000000,.00000000,  &
+             309     1                          .00000000,.00000000,.00000000,.00000000,.00000000,.00000000,  &
+             310     1                          .00000000,.00000000,.00000000,.00000000,.00000000,.00000000,  &
+             311     1                          .00000000,.00000000,.00000000,.00000000,.00000000,.00000000,  &
+             312     1                          .00000000,.00000000,.00000000,.00000000,.00000000,.00000000,  &
+             313     1                          .00000000,.00000000,.00000000,.00000000,.00000000,.00000447,  &
+             314     1                          .00006115,.00024241,.00062120,.00127063,.00226373,.00367320,  &
+             315     1                          .00557114,.00802871,.01111581,.01490065,.01944939,.02482570,  &
+             316     1                          .03109023,.03830025,.04650905,.05576552,.06611363,.07759200,  &
+             317     1                          .09023283,.10404410,.11900588,.13509022,.15226209,.17047936,  &
+             318     1                          .18969276,.20984599,.23087597,.25271315,.27528202,.29850170,  &
+             319     1                          .32228657,.34654717,.37119100,.39612350,.42124904,.44647195,  &
+             320     1                          .47169749,.49683292,.52178840,.54647788,.57081995,.59473849,  &
+             321     1                          .61816332,.64103066,.66328347,.68487175,.70575261,.72589030,  &
+             322     1                          .74525610,.76382818,.78159126,.79853634,.81466026,.82996528,  &
+             323     1                          .84445864,.85815203,.87106113,.88320512,.89460619,.90528910,  &
+             324     1                          .91528070,.92460955,.93330554,.94139951,.94892295,.95590771,  &
+             325     1                          .96238622,.96839253,.97396074,.97912445,.98391663,.98836950,  &
+             326     1                          .99251445,.99638192,1.0000000 /)
+             327     1                     ptop=0.01
+             328     1               !  sponge layer
+             329     1                     spl1=1.
+             330     1                     spl2=50.
+             331     1                     vd=0.1
+             332     1                     endif
+             333                     !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2286
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tmeans
                                    <<< Loop-information  End >>>
-             329        pp   4v            tmeans=300.
-             330                     !      tmeans=350.
-             331                     
-             332                     !-- for hybrid coordinates, ptmeans reset for numerical stability
-             333                     !      ptmeans=800.
-             334                           ptmeans=600.
-             335                     !
-             336                     ! for forward weighting Semi-Implicit
-             337                     !
-             338                           alpha=0.7
-             339                     !
-             340                     ! for Robert time filter in three time level
-             341                     !
-             342                           tfilt=0.04
-             343                     !
-             344                     ! for two time level
-             345                     !
-             346                     !    coefficient of horizontal difussion for mid-point wind
-             347                     !
-             348                           mwhd=1.
-             349                     
+             334        pp   4v            tmeans=300.
+             335                     !      tmeans=350.
+             336                     
+             337                     !-- for hybrid coordinates, ptmeans reset for numerical stability
+             338                     !      ptmeans=800.
+             339                           ptmeans=600.
+             340                     !
+             341                     ! for forward weighting Semi-Implicit
+             342                     !
+             343                           alpha=0.7
+             344                     !
+             345                     ! for Robert time filter in three time level
+             346                     !
+             347                           tfilt=0.04
+             348                     !
+             349                     ! for two time level
              350                     !
-             351                           ifilin ='ifilin'
-             352                           ifilout='ifilout'
-             353                           cwbout ='cwbout'
-             354                           bckfile='bckfile'
-             355                           phyout ='phyout'
-             356                           namlsts='namlsts'
-             357                           crdate ='crdate'
-             358                           ocards ='ocards'
-             359                           cntrl  ='gfsctl'
-             360                     !-- for sit
-             361                           ifilin_ncep   = 'ifilin_ncep'
-             362                           ifilin_sst    = 'ifilin_sst'
-             363                           ifilin_nc     = '.' ! 'ifilin_nc'  change to path
-             364                           ifilin_ClmANA = 'ifilin_ClmANA'
-             365                           ifilin_ClmFCT = 'ifilin_ClmFCT'
-             366                     !-- for grib2 output path
-             367                           ifilout_grb  = '.'
-             368                     !
-             369                     !dms
-             370                     !t512l60
-             371                           ggdef='gh0g'
-             372                           gmdef='ghmg'
-             373                           gsdef='gh0s'
-             374                     !soil
-             375                     !      tsat=(/.421,.464,.468,.434,.406,.465,.404,.439,.421/)
-             376                     !      ref=(/.283,.387,.412,.312,.338,.382,.315,.329,.283/)
-             377                     !      wlt=(/.029,.119,.139,.047,.100,.103,.069,.066,.029/)
-             378                     !---------------------------------------------------------------------------
-             379                     ! Default values for some radiation controls
-             380                     !---------------------------------------------------------------------------
-             381                     ! radiation NCEP-RRTMG scheme
-             382                     !     levr     = 60 ! vertical layers for radiation scheme
-             383                     !     ictm     = 1  ! ictm=0 => use data at initial cond time, if not
-             384                     !                   !           available, use latest, no extrapolation.
-             385                     !                   ! ictm=1 => use data at the forecast time, if
-             386                     !                   !           not available, use latest and extrapolation.
-             387                     !                   ! ictm=yyyy0 => use yyyy data for the forecast time,
-             388                     !                   !               no further data extrapolation.
-             389                     !                   ! ictm=yyyy1 => use yyyy data for the fcst. if needed,
-             390                     !                   !               do extrapolation to match the fcst time.
-             391                     !                   ! ictm=-1 => use user provided external data.
-             392                     !                   !            for the fcst time, no extrapolation.
-             393                     !                   ! ictm=-2 => same as ictm=0, but add seasonal cycle
-             394                     !                   !            from climatology. no extrapolation.
-             395                     !                   !
-             396                     !     isol     = 1  ! use noaa old yearly solar constant table with 11-year
-             397                     !                   ! cycle (range : 1944-2006)
-             398                     !     ico2     = 2  ! use observed co2 monthly 2-D data table in 15 degree
-             399                     !                   ! horizontal resolution
-             400                     !     iaer     =111 ! opac-climatology aerosol scheme, include recorded
-             401                     !                   ! stratospheric volcanic aerosol effect and
-             402                     !                   ! toposperic sw/lw areosol effects.
-             403                     !     ialb     = 0  ! ialb=0, surface vegetation type based climatology scheme,
-             404                     !                   !         monthly data in 1 degree horizontal resolution.
-             405                     !                   ! ialb=1, use modis based alb
-             406                     !     iems     = 1  ! surface type based on climatology in 1 degree horizontal
-             407                     !                   ! resolution.
-             408                     !     ntcw     = 1  ! ntcw=0, no cloud condensate calculated
-             409                     !                   ! ntcw>0, include microphysics cloud scheme
-             410                     !     num_p3d  = 4  ! num_p3d=4, Zhao Microphysics cloud scheme (default)
-             411                     !              = 3  ! num_p3d=3, Brad Ferrier's Microphysics cloud scheme
-             412                     !              = 5  ! num_p3d=5, WSM6 Microphysics cloud scheme
-             413                     !              = 5  ! num_p3d=5, GFDL Microphysics cloud scheme with effective radii
-             414                     !     ntoz     = 0  ! use climatological ozone profile
-             415                     !              > 0  ! use interactive ozone profile
-             416                     !     iovr_sw  = 1  ! sw: maximum-random overlapping vertical cloud layer
-             417                     !     iovr_lw  = 1  ! lw: maximum-random overlapping vertical cloud layer
-             418                     !     isubc_sw = 2  ! sw with mcica sub-col approximation provided random seed
-             419                     !     isubc_lw = 2  ! lw with mcica sub-col approximation provided random seed
-             420                     !                   ! =1 => sub-grid cloud with prescribed seeds
-             421                     !                   ! =2 => sub-grid cloud with randomly generated
-             422                     !     icice_sw = 3  ! sw cloud optical property for cloud ice
-             423                     !     icice_lw = 3  ! lw cloud optical property for cloud ice
-             424                     !                   ! =1 ,ebert & curry (1992) method
-             425                     !                   ! =2 ,streamer v3 (2001) method
-             426                     !                   ! =3 ,fu (1996) method
-             427                     !     icliq_sw = 1  ! sw cloud optical property for cloud water
-             428                     !     icliq_lw = 1  ! lw cloud optical property for cloud water
-             429                     !                   ! =0 ,diagnostic cld opt depth
-             430                     !                   ! =1 ,hu & stamnes (1993) method
-             431                     !     idate(8)      ! ncep absolute date and time of initial conditions
-             432                     !     iflip    = 0  ! = 0 ; index from toa to surface
-             433                     !              = 1  ! = 1 ; index from surface to toa
-             434                     !     me       = 0  ! = 0 ; print out control flag 'on'
-             435                     !              = 1  ! = 1 ; print out control flag 'off'
-             436                     !     ioutsigr = 0  ! = 0 ; output radiation sigma parameters
-             437                     !              = 1  ! = 1 ; not output
-             438                     !     sashal       = .true
-             439                     !     crick_proof  = .false.
-             440                     !     ccnorm       = .false.
-             441                     !     norad_precip = .false.   ! This is effective only for
-             442                     !     Ferrier/Moorthi
-             443                     !
-             444                     !---------------------------------------------------------------------------
-             445                           levr=lev
-             446                           ictm=1
-             447                           isol=1
-             448                           ico2=2
-             449                           iaer=111
-             450                           ialb=0
-             451                           iems=1
-             452                           ntcw=2
-             453                           me=1
-             454                     !---------------------------------------------------------------------------
-             455                           irad=2
-             456                           iflip=1
-             457                           iovr_sw  = 1  ! sw: maximum-random overlapping vertical cloud layer
-             458                           iovr_lw  = 1  ! lw: maximum-random overlapping vertical cloud layer
-             459                           isubc_sw = 0  ! sw with mcica sub-col approximation provided random seed
-             460                           isubc_lw = 0  ! lw with mcica sub-col approximation provided random seed
-             461                           icice_sw = 3  ! sw cloud optical property for cloud ice
-             462                           icice_lw = 3  ! lw cloud optical property for cloud ice
-             463                           icliq_sw = 1  ! sw cloud optical property for cloud water
-             464                           icliq_lw = 1  ! lw cloud optical property for cloud water
-             465                           ntrw=3
-             466                           ntiw=4
-             467                           ntsw=5
-             468                           ntgl=6
-             469                           nthl=7  ! hail
-             470                           ntoz=3
-             471                           ioutsigr=0
-             472                     !---------------------------------------------------------------------------
-             473                           idate(1)=0
-             474                           idate(2)=0
-             475                           idate(3)=0
-             476                           idate(4)=0
-             477                           idate(5)=0
-             478                           idate(6)=0
-             479                           idate(7)=0
-             480                           idate(8)=0
-             481                     !---------------------------------------------------------------------------
-             482                           sashal=.true.
-             483                           crick_proof=.false.
-             484                           ccnorm=.false.
-             485                           norad_precip=.false.
+             351                     !    coefficient of horizontal difussion for mid-point wind
+             352                     !
+             353                           mwhd=1.
+             354                     
+             355                     !
+             356                           ifilin ='ifilin'
+             357                           ifilout='ifilout'
+             358                           cwbout ='cwbout'
+             359                           bckfile='bckfile'
+             360                           phyout ='phyout'
+             361                           namlsts='namlsts'
+             362                           crdate ='crdate'
+             363                           ocards ='ocards'
+             364                           cntrl  ='gfsctl'
+             365                     !-- for sit
+             366                           ifilin_ncep   = 'ifilin_ncep'
+             367                           ifilin_sst    = 'ifilin_sst'
+             368                           ifilin_nc     = '.' ! 'ifilin_nc'  change to path
+             369                           ifilin_ClmANA = 'ifilin_ClmANA'
+             370                           ifilin_ClmFCT = 'ifilin_ClmFCT'
+             371                     !-- for grib2 output path
+             372                           ifilout_grb  = '.'
+             373                     !
+             374                     !dms
+             375                     !t512l60
+             376                           ggdef='gh0g'
+             377                           gmdef='ghmg'
+             378                           gsdef='gh0s'
+             379                     !soil
+             380                     !      tsat=(/.421,.464,.468,.434,.406,.465,.404,.439,.421/)
+             381                     !      ref=(/.283,.387,.412,.312,.338,.382,.315,.329,.283/)
+             382                     !      wlt=(/.029,.119,.139,.047,.100,.103,.069,.066,.029/)
+             383                     !---------------------------------------------------------------------------
+             384                     ! Default values for some radiation controls
+             385                     !---------------------------------------------------------------------------
+             386                     ! radiation NCEP-RRTMG scheme
+             387                     !     levr     = 60 ! vertical layers for radiation scheme
+             388                     !     ictm     = 1  ! ictm=0 => use data at initial cond time, if not
+             389                     !                   !           available, use latest, no extrapolation.
+             390                     !                   ! ictm=1 => use data at the forecast time, if
+             391                     !                   !           not available, use latest and extrapolation.
+             392                     !                   ! ictm=yyyy0 => use yyyy data for the forecast time,
+             393                     !                   !               no further data extrapolation.
+             394                     !                   ! ictm=yyyy1 => use yyyy data for the fcst. if needed,
+             395                     !                   !               do extrapolation to match the fcst time.
+             396                     !                   ! ictm=-1 => use user provided external data.
+             397                     !                   !            for the fcst time, no extrapolation.
+             398                     !                   ! ictm=-2 => same as ictm=0, but add seasonal cycle
+             399                     !                   !            from climatology. no extrapolation.
+             400                     !                   !
+             401                     !     isol     = 1  ! use noaa old yearly solar constant table with 11-year
+             402                     !                   ! cycle (range : 1944-2006)
+             403                     !     ico2     = 2  ! use observed co2 monthly 2-D data table in 15 degree
+             404                     !                   ! horizontal resolution
+             405                     !     iaer     =111 ! opac-climatology aerosol scheme, include recorded
+             406                     !                   ! stratospheric volcanic aerosol effect and
+             407                     !                   ! toposperic sw/lw areosol effects.
+             408                     !     ialb     = 0  ! ialb=0, surface vegetation type based climatology scheme,
+             409                     !                   !         monthly data in 1 degree horizontal resolution.
+             410                     !                   ! ialb=1, use modis based alb
+             411                     !     iems     = 1  ! surface type based on climatology in 1 degree horizontal
+             412                     !                   ! resolution.
+             413                     !     ntcw     = 1  ! ntcw=0, no cloud condensate calculated
+             414                     !                   ! ntcw>0, include microphysics cloud scheme
+             415                     !     num_p3d  = 4  ! num_p3d=4, Zhao Microphysics cloud scheme (default)
+             416                     !              = 3  ! num_p3d=3, Brad Ferrier's Microphysics cloud scheme
+             417                     !              = 5  ! num_p3d=5, WSM6 Microphysics cloud scheme
+             418                     !              = 5  ! num_p3d=5, GFDL Microphysics cloud scheme with effective radii
+             419                     !     ntoz     = 0  ! use climatological ozone profile
+             420                     !              > 0  ! use interactive ozone profile
+             421                     !     iovr_sw  = 1  ! sw: maximum-random overlapping vertical cloud layer
+             422                     !     iovr_lw  = 1  ! lw: maximum-random overlapping vertical cloud layer
+             423                     !     isubc_sw = 2  ! sw with mcica sub-col approximation provided random seed
+             424                     !     isubc_lw = 2  ! lw with mcica sub-col approximation provided random seed
+             425                     !                   ! =1 => sub-grid cloud with prescribed seeds
+             426                     !                   ! =2 => sub-grid cloud with randomly generated
+             427                     !     icice_sw = 3  ! sw cloud optical property for cloud ice
+             428                     !     icice_lw = 3  ! lw cloud optical property for cloud ice
+             429                     !                   ! =1 ,ebert & curry (1992) method
+             430                     !                   ! =2 ,streamer v3 (2001) method
+             431                     !                   ! =3 ,fu (1996) method
+             432                     !     icliq_sw = 1  ! sw cloud optical property for cloud water
+             433                     !     icliq_lw = 1  ! lw cloud optical property for cloud water
+             434                     !                   ! =0 ,diagnostic cld opt depth
+             435                     !                   ! =1 ,hu & stamnes (1993) method
+             436                     !     idate(8)      ! ncep absolute date and time of initial conditions
+             437                     !     iflip    = 0  ! = 0 ; index from toa to surface
+             438                     !              = 1  ! = 1 ; index from surface to toa
+             439                     !     me       = 0  ! = 0 ; print out control flag 'on'
+             440                     !              = 1  ! = 1 ; print out control flag 'off'
+             441                     !     ioutsigr = 0  ! = 0 ; output radiation sigma parameters
+             442                     !              = 1  ! = 1 ; not output
+             443                     !     sashal       = .true
+             444                     !     crick_proof  = .false.
+             445                     !     ccnorm       = .false.
+             446                     !     norad_precip = .false.   ! This is effective only for
+             447                     !     Ferrier/Moorthi
+             448                     !
+             449                     !---------------------------------------------------------------------------
+             450                           levr=lev
+             451                           ictm=1
+             452                           isol=1
+             453                           ico2=2
+             454                           iaer=111
+             455                           ialb=0
+             456                           iems=1
+             457                           ntcw=2
+             458                           me=1
+             459                     !---------------------------------------------------------------------------
+             460                           irad=2
+             461                           iflip=1
+             462                           iovr_sw  = 1  ! sw: maximum-random overlapping vertical cloud layer
+             463                           iovr_lw  = 1  ! lw: maximum-random overlapping vertical cloud layer
+             464                           isubc_sw = 0  ! sw with mcica sub-col approximation provided random seed
+             465                           isubc_lw = 0  ! lw with mcica sub-col approximation provided random seed
+             466                           icice_sw = 3  ! sw cloud optical property for cloud ice
+             467                           icice_lw = 3  ! lw cloud optical property for cloud ice
+             468                           icliq_sw = 1  ! sw cloud optical property for cloud water
+             469                           icliq_lw = 1  ! lw cloud optical property for cloud water
+             470                           ntrw=3
+             471                           ntiw=4
+             472                           ntsw=5
+             473                           ntgl=6
+             474                           nthl=7  ! hail
+             475                           ntoz=3
+             476                           ioutsigr=0
+             477                     !---------------------------------------------------------------------------
+             478                           idate(1)=0
+             479                           idate(2)=0
+             480                           idate(3)=0
+             481                           idate(4)=0
+             482                           idate(5)=0
+             483                           idate(6)=0
+             484                           idate(7)=0
+             485                           idate(8)=0
              486                     !---------------------------------------------------------------------------
-             487                           return
-             488                           end
+             487                           sashal=.true.
+             488                           crick_proof=.false.
+             489                           ccnorm=.false.
+             490                           norad_precip=.false.
+             491                     !---------------------------------------------------------------------------
+             492                           return
+             493                           end
 
  Procedure information
-   Lines      : 488
-   Statements : 190
+   Lines      : 493
+   Statements : 194
    Stack(byte): 720
    Prefetch num: 0
 
  Scoping unit of external sub-program : init_block
    Attribute and Cross reference of name
      aki
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 173  218  277
+      |(Definition)     : 178  223  282
       |(Reference)      : 
      alpha
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 338
+      |(Definition)     : 343
       |(Reference)      : 
      bckfile
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 354
+      |(Definition)     : 359
       |(Reference)      : 
      bki
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 185  232  300
+      |(Definition)     : 190  237  305
       |(Reference)      : 
      ccnorm
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 484
+      |(Definition)     : 489
       |(Reference)      : 
      cgw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 127
+      |(Definition)     : 132
       |(Reference)      : 
      cgwd
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 149
+      |(Definition)     : 154
       |(Reference)      : 
      cmbk
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 148
+      |(Definition)     : 153
       |(Reference)      : 
      cntrl
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 359
+      |(Definition)     : 364
       |(Reference)      : 
      con_cp
       |(Class and Type) : named constant, REAL(8)
@@ -734,151 +738,157 @@
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 357
+      |(Definition)     : 362
       |(Reference)      : 
      crick_proof
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 483
+      |(Definition)     : 488
       |(Reference)      : 
      cstar
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 82
+      |(Definition)     : 83
       |(Reference)      : 
      cutfreq
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 58
+      |(Definition)     : 59
       |(Reference)      : 
      cwbout
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 353
+      |(Definition)     : 358
       |(Reference)      : 
      dSITdt_intv
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 138
+      |(Definition)     : 143
       |(Reference)      : 
      dailyClm_option
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 134
+      |(Definition)     : 139
       |(Reference)      : 
      do_sit
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 136
+      |(Definition)     : 141
       |(Reference)      : 
      docgrav
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 74
+      |(Definition)     : 75
       |(Reference)      : 
      doclx
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 102
+      |(Definition)     : 104
       |(Reference)      : 
      docup
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 69
+      |(Definition)     : 70
       |(Reference)      : 
      dodry
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 78
+      |(Definition)     : 79
       |(Reference)      : 
      dograv
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 74
       |(Reference)      : 
      doincr
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 85
+      |(Definition)     : 86
       |(Reference)      : 
      dolsp
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 72
+      |(Definition)     : 73
       |(Reference)      : 
      domfc
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 89
+      |(Definition)     : 90
       |(Reference)      : 
      donnmi
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 77
+      |(Definition)     : 78
       |(Reference)      : 
      doo3l
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 87
+      |(Definition)     : 88
       |(Reference)      : 
      dopbl
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 68
+      |(Definition)     : 69
       |(Reference)      : 
      dorad
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 70
+      |(Definition)     : 71
       |(Reference)      : 
      doshl
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 75
+      |(Definition)     : 76
       |(Reference)      : 
      doshum
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 100
+      |(Definition)     : 102
       |(Reference)      : 
      doslavepp
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 104
+      |(Definition)     : 106
       |(Reference)      : 
      dosppt
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 98
+      |(Definition)     : 100
       |(Reference)      : 
      dospptout
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 99
+      |(Definition)     : 101
+      |(Reference)      : 
+     dpprt
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 113
       |(Reference)      : 
      dt
       |(Class and Type) : variable name, REAL(8)
@@ -892,6 +902,12 @@
       |(Declaration)    : 
       |(Definition)     : 53
       |(Reference)      : 
+     factop
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 55
+      |(Reference)      : 
      frad
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : common-block-object, use-associated
@@ -902,19 +918,19 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 137
+      |(Definition)     : 142
       |(Reference)      : 
      ggdef
       |(Class and Type) : variable name, CHARACTER(4,1)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 371
+      |(Definition)     : 376
       |(Reference)      : 
      gmdef
       |(Class and Type) : variable name, CHARACTER(4,1)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 372
+      |(Definition)     : 377
       |(Reference)      : 
      grav
       |(Class and Type) : variable name, REAL(8)
@@ -926,13 +942,13 @@
       |(Class and Type) : variable name, CHARACTER(4,1)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 373
+      |(Definition)     : 378
       |(Reference)      : 
      hdiff
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 81
+      |(Definition)     : 82
       |(Reference)      : 
      hfilt
       |(Class and Type) : variable name, REAL(8)
@@ -962,55 +978,55 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 449
+      |(Definition)     : 454
       |(Reference)      : 
      ialb
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 450
+      |(Definition)     : 455
       |(Reference)      : 
      icice_lw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 462
+      |(Definition)     : 467
       |(Reference)      : 
      icice_sw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 461
+      |(Definition)     : 466
       |(Reference)      : 
      icliq_lw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 464
+      |(Definition)     : 469
       |(Reference)      : 
      icliq_sw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 463
+      |(Definition)     : 468
       |(Reference)      : 
      ico2
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 448
+      |(Definition)     : 453
       |(Reference)      : 
      ictm
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 446
+      |(Definition)     : 451
       |(Reference)      : 
      idate
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 473  474  475  476  477  478  479  480
+      |(Definition)     : 478  479  480  481  482  483  484  485
       |(Reference)      : 
      idg
       |(Class and Type) : variable name, INTEGER(4)
@@ -1022,61 +1038,61 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 451
+      |(Definition)     : 456
       |(Reference)      : 
      ifilin
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 351
+      |(Definition)     : 356
       |(Reference)      : 
      ifilin_ClmANA
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 364
+      |(Definition)     : 369
       |(Reference)      : 
      ifilin_ClmFCT
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 365
+      |(Definition)     : 370
       |(Reference)      : 
      ifilin_nc
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 363
+      |(Definition)     : 368
       |(Reference)      : 
      ifilin_ncep
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 361
+      |(Definition)     : 366
       |(Reference)      : 
      ifilin_sst
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 362
+      |(Definition)     : 367
       |(Reference)      : 
      ifilout
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 352
+      |(Definition)     : 357
       |(Reference)      : 
      ifilout_grb
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 367
+      |(Definition)     : 372
       |(Reference)      : 
      iflip
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 456
+      |(Definition)     : 461
       |(Reference)      : 
      init_block
       |(Class and Type) : external subroutine name
@@ -1088,49 +1104,49 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 471
+      |(Definition)     : 476
       |(Reference)      : 
      iovr_lw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 458
+      |(Definition)     : 463
       |(Reference)      : 
      iovr_sw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 457
+      |(Definition)     : 462
       |(Reference)      : 
      irad
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 455
+      |(Definition)     : 460
       |(Reference)      : 
      isol
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 447
+      |(Definition)     : 452
       |(Reference)      : 
      isubc_lw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 460
+      |(Definition)     : 465
       |(Reference)      : 
      isubc_sw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 459
+      |(Definition)     : 464
       |(Reference)      : 
      itypbl
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 59
+      |(Definition)     : 60
       |(Reference)      : 
      jdg
       |(Class and Type) : variable name, INTEGER(4)
@@ -1160,7 +1176,7 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 62
+      |(Definition)     : 63
       |(Reference)      : 
      ktshl
       |(Class and Type) : variable name, INTEGER(4)
@@ -1172,19 +1188,19 @@
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 132
+      |(Definition)     : 137
       |(Reference)      : 
      ldailyFCTicesndpt
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 131
+      |(Definition)     : 136
       |(Reference)      : 
      ldailyFCTsst
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 130
+      |(Definition)     : 135
       |(Reference)      : 
      ldiag
       |(Class and Type) : variable name, INTEGER(4)
@@ -1197,48 +1213,54 @@
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 160  201  250  445
+      |(Reference)      : 165  206  255  450
      levr
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 445
+      |(Definition)     : 450
       |(Reference)      : 
      lopgsst
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 133
+      |(Definition)     : 138
       |(Reference)      : 
      lsimpl
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 65
+      |(Definition)     : 66
+      |(Reference)      : 
+     mass_dp
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 112
       |(Reference)      : 
      me
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 453
+      |(Definition)     : 458
       |(Reference)      : 
      mtnvar
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 147
+      |(Definition)     : 152
       |(Reference)      : 
      mwhd
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 348
+      |(Definition)     : 353
       |(Reference)      : 
      namlsts
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 356
+      |(Definition)     : 361
       |(Reference)      : 
      njump
       |(Class and Type) : variable name, INTEGER(4)
@@ -1250,55 +1272,55 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 122
+      |(Definition)     : 127
       |(Reference)      : 
      nmgwcv
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 146
+      |(Definition)     : 151
       |(Reference)      : 
      nmgwor
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 144
+      |(Definition)     : 149
       |(Reference)      : 
      nmland
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 124
+      |(Definition)     : 129
       |(Reference)      : 
      nmmiph
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 151
+      |(Definition)     : 156
       |(Reference)      : 
      nmpbl
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 123
+      |(Definition)     : 128
       |(Reference)      : 
      nmshl
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 125
+      |(Definition)     : 130
       |(Reference)      : 
      nnmiit
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 56
+      |(Definition)     : 57
       |(Reference)      : 
      nnmivm
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 57
+      |(Definition)     : 58
       |(Reference)      : 
      noah
       |(Class and Type) : module name
@@ -1310,73 +1332,73 @@
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 485
+      |(Definition)     : 490
       |(Reference)      : 
      ntcw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 452
+      |(Definition)     : 457
       |(Reference)      : 
      ntgl
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 468
+      |(Definition)     : 473
       |(Reference)      : 
      nthl
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 469
+      |(Definition)     : 474
       |(Reference)      : 
      ntinc
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 152
+      |(Definition)     : 157
       |(Reference)      : 
      ntiw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 466
+      |(Definition)     : 471
       |(Reference)      : 
      ntoz
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 470
+      |(Definition)     : 475
       |(Reference)      : 
      ntrnc
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 153
+      |(Definition)     : 158
       |(Reference)      : 
      ntrw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 465
+      |(Definition)     : 470
       |(Reference)      : 
      ntsw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 467
+      |(Definition)     : 472
       |(Reference)      : 
      numreduce
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 159
+      |(Definition)     : 164
       |(Reference)      : 
      ocards
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 358
+      |(Definition)     : 363
       |(Reference)      : 
      omega
       |(Class and Type) : variable name, REAL(8)
@@ -1388,43 +1410,49 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 90
+      |(Definition)     : 91
       |(Reference)      : 
      out_green
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 91
+      |(Definition)     : 92
       |(Reference)      : 
      out_hp
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 92
+      |(Definition)     : 93
       |(Reference)      : 
      outdms
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 94
+      |(Definition)     : 95
+      |(Reference)      : 
+     outfv3
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 96
       |(Reference)      : 
      outgrb2
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 93
+      |(Definition)     : 94
       |(Reference)      : 
      outrsm
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 110
+      |(Definition)     : 115
       |(Reference)      : 
      ozon
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 79
+      |(Definition)     : 80
       |(Reference)      : 
      param
       |(Class and Type) : module name
@@ -1436,13 +1464,13 @@
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 96
+      |(Definition)     : 98
       |(Reference)      : 
      phyout
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 355
+      |(Definition)     : 360
       |(Reference)      : 
      physcons
       |(Class and Type) : module name
@@ -1451,25 +1479,25 @@
       |(Definition)     : 
       |(Reference)      : 9
      ptmean
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 35
       |(Reference)      : 
      ptmeans
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 334
+      |(Definition)     : 339
       |(Reference)      : 
      ptop
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 196  245  322
+      |(Definition)     : 201  250  327
       |(Reference)      : 
      qmin
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 45
@@ -1490,43 +1518,43 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 116
+      |(Definition)     : 121
       |(Reference)      : 
      rlat1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 114
+      |(Definition)     : 119
       |(Reference)      : 
      rlat2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 115
+      |(Definition)     : 120
       |(Reference)      : 
      rlon1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 112
+      |(Definition)     : 117
       |(Reference)      : 
      rlon2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 113
+      |(Definition)     : 118
       |(Reference)      : 
      rsmoutinv
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 111
+      |(Definition)     : 116
       |(Reference)      : 
      rsmsfcmgrhr
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 117
+      |(Definition)     : 122
       |(Reference)      : 
      s0
       |(Class and Type) : variable name, REAL(8)
@@ -1538,19 +1566,19 @@
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 482
+      |(Definition)     : 487
       |(Reference)      : 
      spl1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 198  247  324
+      |(Definition)     : 203  252  329
       |(Reference)      : 
      spl2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 199  248  325
+      |(Definition)     : 204  253  330
       |(Reference)      : 
      stbo
       |(Class and Type) : variable name, REAL(8)
@@ -1562,19 +1590,19 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 61
+      |(Definition)     : 62
       |(Reference)      : 
      taureg
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 63
+      |(Definition)     : 64
       |(Reference)      : 
      tfilt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 342
+      |(Definition)     : 347
       |(Reference)      : 
      tice
       |(Class and Type) : variable name, REAL(8)
@@ -1583,70 +1611,70 @@
       |(Definition)     : 22
       |(Reference)      : 
      tmean
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 163  204  253
+      |(Definition)     : 168  209  258
       |(Reference)      : 
      tmeans
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 329
+      |(Definition)     : 334
       |(Reference)      : 
      tofd
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 145
+      |(Definition)     : 150
       |(Reference)      : 
      ttl
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 108
+      |(Definition)     : 110
       |(Reference)      : 
      two_loop
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 106
+      |(Definition)     : 108
       |(Reference)      : 
      update
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 84
+      |(Definition)     : 85
       |(Reference)      : 
      updatetg
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 140
+      |(Definition)     : 145
       |(Reference)      : 
      vd
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 200  249  326
+      |(Definition)     : 205  254  331
       |(Reference)      : 
      weightSIT
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 139
+      |(Definition)     : 144
       |(Reference)      : 
      yesdia
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 66
+      |(Definition)     : 67
       |(Reference)      : 
 
  Total information
    Procedures       : 1
-   Total lines      : 488
-   Total statements : 190
+   Total lines      : 493
+   Total statements : 194
    Total stack(byte): 720
    Total prefetch num: 0
 

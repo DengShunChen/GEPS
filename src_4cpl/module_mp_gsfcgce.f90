@@ -1,4 +1,5 @@
 #define EffectRad_GCE3
+!#define vti_DM08
 !WRF:MODEL_LAYER:PHYSICS
 !
 
@@ -193,7 +194,10 @@ CONTAINS
 
 !jjs  REAL, DIMENSION( its:ite , jts:jte )                            &
 !jjs                               ::        rain, snow, graupel,ice
-
+#ifdef vti_DM08
+!xb141: for cloud ice terminal velocity (DM08) in fall_flux
+  REAL, DIMENSION( ims:ime , kms:kme , jms:jme ) :: tt
+#endif
 !
 !  INTEGER :: IHAIL, itaobraun, ice2, istatmin, new_ice_sat, id
   INTEGER ::  itaobraun, istatmin, new_ice_sat, id
@@ -299,9 +303,23 @@ CONTAINS
 !      CALL wrf_error_fatal3 ( "module_mp_lin.b" , 130 ,  'module_mp_lin: Improper use of Lin et al scheme; no ice phase. Please chose another one.')
 !   ENDIF
 
+#ifdef vti_DM08
+!xb141: for cloud ice terminal velocity (DM08) in fall_flux
+   do i = ims, ime
+     do k = kms, kme
+       do j = jms, jme
+         tt(i,k,j) = th(i,k,j) * pii(i,k,j)  !convert to real temperature
+       enddo
+     enddo
+   enddo
+#endif
+
 ! calculte fallflux and precipiation in MKS system
 
    call fall_flux(dt_in, qr, qi, qs, qg, p,                   &
+#ifdef vti_DM08
+                      tt,                                     &
+#endif
                       rho, z, dz8w, ht, rainnc,               &
                       rainncv, grav,itimestep,                &
                       rhowater, rhosnow,                      &
@@ -370,6 +388,9 @@ CONTAINS
 
 !-----------------------------------------------------------------------
    SUBROUTINE fall_flux ( dt, qr, qi, qs, qg, p,              &
+#ifdef vti_DM08
+                      tt,                                     &
+#endif
                       rho, z, dz8w, topo, rainnc,             &
                       rainncv, grav, itimestep,               &
                       rhowater, rhosnow,                      &
@@ -396,6 +417,10 @@ CONTAINS
                                           graupelnc, graupelncv
   REAL,    DIMENSION( ims:ime , kms:kme , jms:jme ),                  &
            INTENT(IN   )               :: rho, z, dz8w, p
+#ifdef vti_DM08
+  REAL,    DIMENSION( ims:ime , kms:kme , jms:jme ),                  &
+           INTENT(IN   )               :: tt
+#endif
 
   REAL,    INTENT(IN   )               :: dt, grav, rhowater, rhosnow
 
@@ -447,6 +472,16 @@ CONTAINS
   INTEGER                       :: min_q, max_q
   REAL                          :: t_del_tv, del_tv, flux, fluxin, fluxout ,tmpqrz
   LOGICAL                       :: notlast
+
+#ifdef vti_DM08
+! for velocity constants :
+    real, parameter :: aa = - 4.14122e-5
+    real, parameter :: bb = - 0.00538922
+    real, parameter :: cc = - 0.0516344
+    real, parameter :: dd = 0.00216078
+    real, parameter :: ee = 1.9714
+    real            :: tc
+#endif
 
 !  if (itimestep.eq.1) then
 !     write(6, *) 'in fall_flux'
@@ -542,9 +577,11 @@ CONTAINS
             vtr(k)=consta*gambp4*sqrhoz(k)/tmp1**constb
             vtr(k)=vtr(k)/6.
             if (k .eq. 1) then
-               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtr(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtr(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vtr(k))
             else
-               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtr(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtr(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vtr(k))
             endif
          else
             vtr(k)=0.
@@ -573,7 +610,8 @@ CONTAINS
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
 !            tmpqrz=qrz(k)
             qrz(k)=qrz(k)+del_tv*flux
-            qrz(k)=amax1(0.,qrz(k))
+!            qrz(k)=amax1(0.,qrz(k))
+            qrz(k)=dmax1(0.,qrz(k))
             qr(i,k,j)=qrz(k)
             fluxin=fluxout
          enddo
@@ -611,9 +649,11 @@ CONTAINS
             vts(k)=constc*gamdp4*sqrhoz(k)/tmp1**constd
             vts(k)=vts(k)/6.
             if (k .eq. 1) then
-               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vts(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vts(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vts(k))
             else
-               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vts(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vts(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vts(k))
             endif
          else
             vts(k)=0.
@@ -642,7 +682,8 @@ CONTAINS
             fluxout=rhoz(k)*vts(k)*qsz(k)
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
             qsz(k)=qsz(k)+del_tv*flux
-            qsz(k)=amax1(0.,qsz(k))
+!            qsz(k)=amax1(0.,qsz(k))
+            qsz(k)=dmax1(0.,qsz(k))
             qs(i,k,j)=qsz(k)
             fluxin=fluxout
          enddo
@@ -695,9 +736,11 @@ CONTAINS
               vtg(k)=gam4pt5*term0*sqrt(1./tmp1)
               vtg(k)=vtg(k)/6.
               if (k .eq. 1) then
-                 del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtg(k))
+!                 del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtg(k))
+                 del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vtg(k))
               else
-                 del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtg(k))
+!                 del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtg(k))
+                 del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vtg(k))
               endif !k
             else
 ! added by JJS
@@ -711,9 +754,11 @@ CONTAINS
               term0=abar*gam4bbar/6.
               vtg(k)=term0*tmp1*(p0/prez(k))**0.4
               if (k .eq. 1) then
-                 del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtg(k))
+!                 del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtg(k))
+                 del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vtg(k))
               else
-                 del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtg(k))
+!                 del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtg(k))
+                 del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vtg(k))
               endif !k
             endif !ihail
          else
@@ -743,7 +788,8 @@ CONTAINS
             fluxout=rhoz(k)*vtg(k)*qgz(k)
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
             qgz(k)=qgz(k)+del_tv*flux
-            qgz(k)=amax1(0.,qgz(k))
+!            qgz(k)=amax1(0.,qgz(k))
+            qgz(k)=dmax1(0.,qgz(k))
             qg(i,k,j)=qgz(k)
             fluxin=fluxout
          enddo
@@ -778,11 +824,21 @@ CONTAINS
          if (qiz(k) .gt. 1.0e-8) then
             min_q=min0(min_q,k)
             max_q=max0(max_q,k)
+#ifdef vti_DM08
+!xb141 >>> Deng and Mace (2008, grl), which gives smaller fall speed than HD90 formula
+            tc = tt(i,k,j) - 273.16
+            vti(k) = (3. + log10(rhoz(k)*qiz(k))) * (tc*(aa*tc + bb)+cc) + dd*tc + ee
+            vti(k) = 0.01 * 0.9 * exp(log(10.)*vti(k))
+!xb141 <<<
+#else
             vti(k)= 3.29 * (rhoz(k)* qiz(k))** 0.16  ! Heymsfield and Donner
+#endif
             if (k .eq. 1) then
-               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vti(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vti(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vti(k))
             else
-               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vti(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vti(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vti(k))
             endif
          else
             vti(k)=0.
@@ -812,7 +868,8 @@ CONTAINS
             fluxout=rhoz(k)*vti(k)*qiz(k)
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
             qiz(k)=qiz(k)+del_tv*flux
-            qiz(k)=amax1(0.,qiz(k))
+!            qiz(k)=amax1(0.,qiz(k))
+            qiz(k)=dmax1(0.,qiz(k))
             qi(i,k,j)=qiz(k)
             fluxin=fluxout
          enddo
@@ -966,7 +1023,8 @@ CONTAINS
      do k=kts,kte
         do j=jts,jte
            do i=its,ite
-           X(i,k,j)=A0*AMAX1(X(i,k,j), 0.0)
+!           X(i,k,j)=A0*AMAX1(X(i,k,j), 0.0)
+           X(i,k,j)=A0*DMAX1(X(i,k,j), 0.0)
            enddo
         enddo
      enddo

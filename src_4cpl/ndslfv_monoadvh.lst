@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Tue Aug 29 14:57:18 2023
+ Fujitsu Fortran Version 4.6.1  Fri Dec  1 17:11:10 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72/src_4cpl
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_4cpl
    Source file       : ndslfv_monoadvh.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -97,13 +97,13 @@
       |(Definition)     : 
       |(Reference)      : 4
      ddtemp
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  7
       |(Definition)     : 13  15  17
       |(Reference)      : 
      deltim
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 1  10
       |(Definition)     : 
@@ -175,13 +175,13 @@
       |(Definition)     : 
       |(Reference)      : 3
      pten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  6
       |(Definition)     : 13  15  17
       |(Reference)      : 
      qvadv
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  7
       |(Definition)     : 13  15  17
@@ -193,13 +193,13 @@
       |(Definition)     : 
       |(Reference)      : 4  6  7  8  10
      vdmerd
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  8
       |(Definition)     : 13  15  17
       |(Reference)      : 
      vdzonl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  8
       |(Definition)     : 13  15  17
@@ -251,13 +251,13 @@
       |(Definition)     : 
       |(Reference)      : 26
      ddtemp
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 23  29
       |(Definition)     : 35  37  39
       |(Reference)      : 
      deltim
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 23  31
       |(Definition)     : 
@@ -341,13 +341,13 @@
       |(Definition)     : 
       |(Reference)      : 26  28  29  31
      vdmerd
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 23  28
       |(Definition)     : 35  37  39
       |(Reference)      : 
      vdzonl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 23  28
       |(Definition)     : 35  37  39
@@ -422,7 +422,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      rrlon, qqlon
                                    <<< Loop-information  End >>>
@@ -432,7 +432,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      vvlon, uulon
                                    <<< Loop-information  End >>>
@@ -484,8 +484,8 @@
              143     2   p                     kk=levs-k+1
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 112, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 224, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      uulon, ut_sl, vt_sl, vvlon
                                    <<< Loop-information  End >>>
@@ -525,8 +525,8 @@
              172     2               !ch<
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 48, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 96, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlon, vdmerd, vdzonl, ddtemp
                                    <<< Loop-information  End >>>
@@ -555,8 +555,8 @@
              190     3   p                     kk=levs-k+1+(n-1)*levs
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qvadv, qqlon
                                    <<< Loop-information  End >>>
@@ -656,8 +656,8 @@
              284     1               
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 320, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlon, rrlon
                                    <<< Loop-information  End >>>
@@ -729,7 +729,7 @@
              350     2   p                     kv=kvv+k-1
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlat, rrlat
                                    <<< Loop-information  End >>>
@@ -787,7 +787,7 @@
              402     2   p                     kv=kvv+k-1
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlat, rrlat
                                    <<< Loop-information  End >>>
@@ -861,8 +861,8 @@
              465     2   p                   do k=1,nlevs
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 272, MVE: 9, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 544, MVE: 9, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlon, rrlon
                                    <<< Loop-information  End >>>
@@ -936,8 +936,8 @@
              528     2               !ch<
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 48, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 96, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ddtemp, qqlon, vdmerd, vdzonl
                                    <<< Loop-information  End >>>
@@ -968,8 +968,8 @@
              548     3   p                     kq=kqq+k-1+(n-1)*levs
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlon, qvadv
                                    <<< Loop-information  End >>>
@@ -1016,13 +1016,13 @@
  Scoping unit of external sub-program : ndslfv_monoadvh2
    Attribute and Cross reference of name
      cons0
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 83
       |(Definition)     : 99
       |(Reference)      : 
      cons1
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 83
       |(Definition)     : 100
@@ -1034,7 +1034,7 @@
       |(Definition)     : 
       |(Reference)      : 58
      cosl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
@@ -1058,13 +1058,13 @@
       |(Definition)     : 
       |(Reference)      : 365  384
      ddtemp
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 45  64
       |(Definition)     : 538
       |(Reference)      : 181
      deltim
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 45  69
       |(Definition)     : 
@@ -1352,31 +1352,31 @@
       |(Definition)     : 
       |(Reference)      : 55
      pi
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 83
       |(Definition)     : 
       |(Reference)      : 
      pten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 45  63
       |(Definition)     : 
       |(Reference)      : 
      qqlat
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 77
       |(Definition)     : 321  354  355  384  406  407  423
       |(Reference)      : 354  355  406  407
      qqlon
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 73
       |(Definition)     : 101  179  180  181  193  295  321  423  450  456  467
       |(Reference)      : 285  467  536  537  538  551
      qvadv
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 45  64
       |(Definition)     : 551
@@ -1394,103 +1394,103 @@
       |(Definition)     : 
       |(Reference)      : 59
      rdt2
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 83
       |(Definition)     : 121
       |(Reference)      : 
      rkt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 83
       |(Definition)     : 
       |(Reference)      : 
      rm2a
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 83
       |(Definition)     : 139
       |(Reference)      : 128  146
      rma
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 83
       |(Definition)     : 138
       |(Reference)      : 128  139  153
      rrlat
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 78
       |(Definition)     : 320  352  353  365  404  405  422
       |(Reference)      : 352  353  404  405
      rrlon
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 74
       |(Definition)     : 102  285  289  294  320  422  451
       |(Reference)      : 467
      sumrq
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 81
       |(Definition)     : 
       |(Reference)      : 
      ut_sl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 146
      uulon
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 71
       |(Definition)     : 103  146  289  456
       |(Reference)      : 
      vdmerd
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 45  65
       |(Definition)     : 537
       |(Reference)      : 180
      vdzonl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 45  65
       |(Definition)     : 536
       |(Reference)      : 179
      vt_sl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 153
      vvlat
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 76
       |(Definition)     : 319  365  384
       |(Reference)      : 
      vvlon
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 72
       |(Definition)     : 104  153  296  319
       |(Reference)      : 
      xcp
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 80
       |(Definition)     : 
       |(Reference)      : 
      xkappa
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 82
       |(Definition)     : 
       |(Reference)      : 
      xr
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 79
       |(Definition)     : 
@@ -1560,7 +1560,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlon
                                    <<< Loop-information  End >>>
@@ -1569,7 +1569,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      vvlon, uulon
                                    <<< Loop-information  End >>>
@@ -1621,8 +1621,8 @@
              681     2   p                     kk=levs-k+1
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 112, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 224, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      uulon, ut_sl, vt_sl, vvlon
                                    <<< Loop-information  End >>>
@@ -1662,8 +1662,8 @@
              710     2               !ch<
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 48, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 96, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlon, vdmerd, vdzonl, ddtemp
                                    <<< Loop-information  End >>>
@@ -1692,8 +1692,8 @@
              728     3   p                     kk=levs-k+1+(n-1)*levs
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qvadv, qqlon
                                    <<< Loop-information  End >>>
@@ -1860,7 +1860,7 @@
              889     2   p                     kv=kvv+k-1
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlat
                                    <<< Loop-information  End >>>
@@ -1914,7 +1914,7 @@
              937     2   p                     kv=kvv+k-1
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlat
                                    <<< Loop-information  End >>>
@@ -2050,8 +2050,8 @@
             1062     2               !ch<
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 48, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 96, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ddtemp, qqlon, vdmerd, vdzonl
                                    <<< Loop-information  End >>>
@@ -2082,8 +2082,8 @@
             1082     3   p                     kq=kqq+k-1+(n-1)*levs
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlon, qvadv
                                    <<< Loop-information  End >>>
@@ -2130,13 +2130,13 @@
  Scoping unit of external sub-program : ndslfv_monoadvh2_xy
    Attribute and Cross reference of name
      cons0
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 622
       |(Definition)     : 638
       |(Reference)      : 
      cons1
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 622
       |(Definition)     : 639
@@ -2148,7 +2148,7 @@
       |(Definition)     : 
       |(Reference)      : 597
      cosl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
@@ -2172,13 +2172,13 @@
       |(Definition)     : 
       |(Reference)      : 918
      ddtemp
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 584  603
       |(Definition)     : 1072
       |(Reference)      : 719
      deltim
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 584  608
       |(Definition)     : 
@@ -2466,31 +2466,31 @@
       |(Definition)     : 
       |(Reference)      : 594
      pi
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 622
       |(Definition)     : 
       |(Reference)      : 
      pten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 584  602
       |(Definition)     : 
       |(Reference)      : 
      qqlat
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 616
       |(Definition)     : 859  891  892  918  939  940  957
       |(Reference)      : 891  892  939  940
      qqlon
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 612
       |(Definition)     : 640  717  718  719  731  827  833  859  957  984
       |(Reference)      : 1070  1071  1072  1085
      qvadv
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 584  603
       |(Definition)     : 1085
@@ -2508,91 +2508,91 @@
       |(Definition)     : 
       |(Reference)      : 598
      rdt2
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 622
       |(Definition)     : 659
       |(Reference)      : 
      rkt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 622
       |(Definition)     : 
       |(Reference)      : 
      rm2a
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 622
       |(Definition)     : 677
       |(Reference)      : 666  684
      rma
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 622
       |(Definition)     : 676
       |(Reference)      : 666  677  691
      sumrq
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 620
       |(Definition)     : 
       |(Reference)      : 
      ut_sl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 684
      uulon
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 610
       |(Definition)     : 641  684  827
       |(Reference)      : 
      vdmerd
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 584  604
       |(Definition)     : 1071
       |(Reference)      : 718
      vdzonl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 584  604
       |(Definition)     : 1070
       |(Reference)      : 717
      vt_sl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 691
      vvlat
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 615
       |(Definition)     : 857  918
       |(Reference)      : 
      vvlon
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 611
       |(Definition)     : 642  691  834  857
       |(Reference)      : 
      xcp
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 619
       |(Definition)     : 
       |(Reference)      : 
      xkappa
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 621
       |(Definition)     : 
       |(Reference)      : 
      xr
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 618
       |(Definition)     : 
@@ -2662,7 +2662,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlon
                                    <<< Loop-information  End >>>
@@ -2671,7 +2671,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      vvlon, uulon
                                    <<< Loop-information  End >>>
@@ -2723,8 +2723,8 @@
             1215     2   p                     kk=levs-k+1
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 112, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 224, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      uulon, ut_sl, vt_sl, vvlon
                                    <<< Loop-information  End >>>
@@ -2764,8 +2764,8 @@
             1244     2               !ch<
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 48, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 96, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlon, vdmerd, vdzonl, ddtemp
                                    <<< Loop-information  End >>>
@@ -2794,8 +2794,8 @@
             1262     3   p                     kk=levs-k+1+(n-1)*levs
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qvadv, qqlon
                                    <<< Loop-information  End >>>
@@ -2962,7 +2962,7 @@
             1423     2   p                     kv=kvv+k-1
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlat
                                    <<< Loop-information  End >>>
@@ -3016,7 +3016,7 @@
             1471     2   p                     kv=kvv+k-1
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlat
                                    <<< Loop-information  End >>>
@@ -3152,8 +3152,8 @@
             1596     2               !ch<
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 48, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 96, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ddtemp, qqlon, vdmerd, vdzonl
                                    <<< Loop-information  End >>>
@@ -3184,8 +3184,8 @@
             1616     3   p                     kq=kqq+k-1+(n-1)*levs
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlon, qvadv
                                    <<< Loop-information  End >>>
@@ -3232,13 +3232,13 @@
  Scoping unit of external sub-program : ndslfv_monoadvh2_yx
    Attribute and Cross reference of name
      cons0
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 1156
       |(Definition)     : 1172
       |(Reference)      : 
      cons1
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 1156
       |(Definition)     : 1173
@@ -3250,7 +3250,7 @@
       |(Definition)     : 
       |(Reference)      : 1131
      cosl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
@@ -3274,13 +3274,13 @@
       |(Definition)     : 
       |(Reference)      : 1453
      ddtemp
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1118  1137
       |(Definition)     : 1606
       |(Reference)      : 1253
      deltim
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 1118  1142
       |(Definition)     : 
@@ -3568,31 +3568,31 @@
       |(Definition)     : 
       |(Reference)      : 1128
      pi
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 1156
       |(Definition)     : 
       |(Reference)      : 
      pten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1118  1136
       |(Definition)     : 
       |(Reference)      : 
      qqlat
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 1150
       |(Definition)     : 1393  1425  1426  1453  1473  1474  1491
       |(Reference)      : 1425  1426  1473  1474
      qqlon
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 1146
       |(Definition)     : 1174  1251  1252  1253  1265  1367  1393  1491  1518  1524
       |(Reference)      : 1604  1605  1606  1619
      qvadv
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1118  1137
       |(Definition)     : 1619
@@ -3610,91 +3610,91 @@
       |(Definition)     : 
       |(Reference)      : 1132
      rdt2
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 1156
       |(Definition)     : 1193
       |(Reference)      : 
      rkt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 1156
       |(Definition)     : 
       |(Reference)      : 
      rm2a
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 1156
       |(Definition)     : 1211
       |(Reference)      : 1200  1218
      rma
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 1156
       |(Definition)     : 1210
       |(Reference)      : 1200  1211  1225
      sumrq
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 1154
       |(Definition)     : 
       |(Reference)      : 
      ut_sl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 1218
      uulon
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 1144
       |(Definition)     : 1175  1218  1524
       |(Reference)      : 
      vdmerd
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1118  1138
       |(Definition)     : 1605
       |(Reference)      : 1252
      vdzonl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1118  1138
       |(Definition)     : 1604
       |(Reference)      : 1251
      vt_sl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 1225
      vvlat
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 1149
       |(Definition)     : 1391  1453
       |(Reference)      : 
      vvlon
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 1145
       |(Definition)     : 1176  1225  1368  1391
       |(Reference)      : 
      xcp
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 1153
       |(Definition)     : 
       |(Reference)      : 
      xkappa
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 1155
       |(Definition)     : 
       |(Reference)      : 
      xr
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 1152
       |(Definition)     : 
@@ -3802,8 +3802,8 @@
             1742     2   p                     kk=levs-k+1
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 112, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 224, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      uulon, ut_sl, vt_sl, vvlon
                                    <<< Loop-information  End >>>
@@ -3842,8 +3842,8 @@
             1770     2               !ch<
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 48, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 96, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlon, vdmerd, vdzonl, ddtemp
                                    <<< Loop-information  End >>>
@@ -3949,8 +3949,8 @@
             1870     1               
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 320, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlon, rrlon
                                    <<< Loop-information  End >>>
@@ -4022,7 +4022,7 @@
             1936     2   p                     kv=kvv+k-1
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlat, rrlat
                                    <<< Loop-information  End >>>
@@ -4080,7 +4080,7 @@
             1988     2   p                     kv=kvv+k-1
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlat, rrlat
                                    <<< Loop-information  End >>>
@@ -4154,8 +4154,8 @@
             2051     2   p                   do k=1,nlevs
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 272, MVE: 9, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 544, MVE: 9, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlon, rrlon
                                    <<< Loop-information  End >>>
@@ -4229,8 +4229,8 @@
             2114     2               !ch<
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 48, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 96, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ddtemp, qqlon, vdmerd, vdzonl
                                    <<< Loop-information  End >>>
@@ -4285,13 +4285,13 @@
  Scoping unit of external sub-program : ndslfv_monoadvh2_fgnl
    Attribute and Cross reference of name
      cons0
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 1687
       |(Definition)     : 1704
       |(Reference)      : 
      cons1
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 1687
       |(Definition)     : 1705
@@ -4303,7 +4303,7 @@
       |(Definition)     : 
       |(Reference)      : 1664
      cosl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
@@ -4327,13 +4327,13 @@
       |(Definition)     : 
       |(Reference)      : 1951  1970
      ddtemp
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1651  1670
       |(Definition)     : 2124
       |(Reference)      : 1779
      deltim
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 1651  1673
       |(Definition)     : 
@@ -4603,19 +4603,19 @@
       |(Definition)     : 
       |(Reference)      : 1661
      pi
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 1687
       |(Definition)     : 
       |(Reference)      : 
      qqlat
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 1681
       |(Definition)     : 1907  1940  1941  1970  1992  1993  2009
       |(Reference)      : 1940  1941  1992  1993
      qqlon
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 1677
       |(Definition)     : 1777  1778  1779  1881  1907  2009  2036  2042  2053
@@ -4633,103 +4633,103 @@
       |(Definition)     : 
       |(Reference)      : 1665
      rdt2
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 1687
       |(Definition)     : 1720
       |(Reference)      : 
      rkt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 1687
       |(Definition)     : 
       |(Reference)      : 
      rm2a
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 1687
       |(Definition)     : 1738
       |(Reference)      : 1727  1745
      rma
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 1687
       |(Definition)     : 1737
       |(Reference)      : 1727  1738  1752
      rrlat
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 1682
       |(Definition)     : 1906  1938  1939  1951  1990  1991  2008
       |(Reference)      : 1938  1939  1990  1991
      rrlon
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 1678
       |(Definition)     : 1871  1875  1880  1906  2008  2037
       |(Reference)      : 2053
      sumrq
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 1685
       |(Definition)     : 
       |(Reference)      : 
      ut_sl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 1745
      uulon
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 1675
       |(Definition)     : 1745  1875  2042
       |(Reference)      : 
      vdmerd
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1651  1671
       |(Definition)     : 2123
       |(Reference)      : 1778
      vdzonl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1651  1671
       |(Definition)     : 2122
       |(Reference)      : 1777
      vt_sl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 1752
      vvlat
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 1680
       |(Definition)     : 1905  1951  1970
       |(Reference)      : 
      vvlon
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 1676
       |(Definition)     : 1752  1882  1905
       |(Reference)      : 
      xcp
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 1684
       |(Definition)     : 
       |(Reference)      : 
      xkappa
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 1686
       |(Definition)     : 
       |(Reference)      : 
      xr
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 1683
       |(Definition)     : 
@@ -4837,8 +4837,8 @@
             2248     2   p                     kk=levs-k+1
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 112, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 224, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      uulon, ut_sl, vt_sl, vvlon
                                    <<< Loop-information  End >>>
@@ -4877,8 +4877,8 @@
             2276     2               !ch<
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 48, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 96, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlon, vdmerd, vdzonl, ddtemp
                                    <<< Loop-information  End >>>
@@ -5050,7 +5050,7 @@
             2442     2   p                     kv=kvv+k-1
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlat
                                    <<< Loop-information  End >>>
@@ -5108,7 +5108,7 @@
             2494     2   p                     kv=kvv+k-1
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlat
                                    <<< Loop-information  End >>>
@@ -5245,8 +5245,8 @@
             2620     2               !ch<
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 48, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 96, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ddtemp, qqlon, vdmerd, vdzonl
                                    <<< Loop-information  End >>>
@@ -5301,13 +5301,13 @@
  Scoping unit of external sub-program : ndslfv_monoadvh2_fgnl_xy
    Attribute and Cross reference of name
      cons0
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 2193
       |(Definition)     : 2210
       |(Reference)      : 
      cons1
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 2193
       |(Definition)     : 2211
@@ -5319,7 +5319,7 @@
       |(Definition)     : 
       |(Reference)      : 2170
      cosl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
@@ -5343,13 +5343,13 @@
       |(Definition)     : 
       |(Reference)      : 2476
      ddtemp
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 2157  2176
       |(Definition)     : 2630
       |(Reference)      : 2285
      deltim
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2157  2179
       |(Definition)     : 
@@ -5619,19 +5619,19 @@
       |(Definition)     : 
       |(Reference)      : 2167
      pi
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 2193
       |(Definition)     : 
       |(Reference)      : 
      qqlat
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 2187
       |(Definition)     : 2413  2446  2447  2476  2498  2499  2515
       |(Reference)      : 2446  2447  2498  2499
      qqlon
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 2183
       |(Definition)     : 2283  2284  2285  2381  2387  2413  2515  2542
@@ -5649,91 +5649,91 @@
       |(Definition)     : 
       |(Reference)      : 2171
      rdt2
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 2193
       |(Definition)     : 2226
       |(Reference)      : 
      rkt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 2193
       |(Definition)     : 
       |(Reference)      : 
      rm2a
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 2193
       |(Definition)     : 2244
       |(Reference)      : 2233  2251
      rma
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 2193
       |(Definition)     : 2243
       |(Reference)      : 2233  2244  2258
      sumrq
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 2191
       |(Definition)     : 
       |(Reference)      : 
      ut_sl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 2251
      uulon
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 2181
       |(Definition)     : 2251  2381
       |(Reference)      : 
      vdmerd
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 2157  2177
       |(Definition)     : 2629
       |(Reference)      : 2284
      vdzonl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 2157  2177
       |(Definition)     : 2628
       |(Reference)      : 2283
      vt_sl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 2258
      vvlat
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 2186
       |(Definition)     : 2411  2476
       |(Reference)      : 
      vvlon
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 2182
       |(Definition)     : 2258  2388  2411
       |(Reference)      : 
      xcp
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 2190
       |(Definition)     : 
       |(Reference)      : 
      xkappa
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 2192
       |(Definition)     : 
       |(Reference)      : 
      xr
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 2189
       |(Definition)     : 
@@ -5841,8 +5841,8 @@
             2754     2   p                     kk=levs-k+1
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 112, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 224, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      uulon, ut_sl, vt_sl, vvlon
                                    <<< Loop-information  End >>>
@@ -5869,7 +5869,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      vdzonl, vdmerd, ddtemp, qqlon
+                                   <<<      ddtemp, vdzonl, vdmerd, qqlon
                                    <<< Loop-information  End >>>
             2775     2   p                   do k=1,levs
             2776     2   p                     ku=kuu+k-1
@@ -5881,8 +5881,8 @@
             2782     2               !ch<
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 48, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 96, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlon, vdmerd, vdzonl, ddtemp
                                    <<< Loop-information  End >>>
@@ -6054,7 +6054,7 @@
             2948     2   p                     kv=kvv+k-1
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlat
                                    <<< Loop-information  End >>>
@@ -6112,7 +6112,7 @@
             3000     2   p                     kv=kvv+k-1
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qqlat
                                    <<< Loop-information  End >>>
@@ -6249,8 +6249,8 @@
             3126     2               !ch<
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 48, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 96, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ddtemp, qqlon, vdmerd, vdzonl
                                    <<< Loop-information  End >>>
@@ -6305,13 +6305,13 @@
  Scoping unit of external sub-program : ndslfv_monoadvh2_fgnl_yx
    Attribute and Cross reference of name
      cons0
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 2699
       |(Definition)     : 2716
       |(Reference)      : 
      cons1
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 2699
       |(Definition)     : 2717
@@ -6323,7 +6323,7 @@
       |(Definition)     : 
       |(Reference)      : 2676
      cosl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
@@ -6347,13 +6347,13 @@
       |(Definition)     : 
       |(Reference)      : 2982
      ddtemp
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 2663  2682
       |(Definition)     : 3136
       |(Reference)      : 2791
      deltim
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2663  2685
       |(Definition)     : 
@@ -6623,19 +6623,19 @@
       |(Definition)     : 
       |(Reference)      : 2673
      pi
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 2699
       |(Definition)     : 
       |(Reference)      : 
      qqlat
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 2693
       |(Definition)     : 2919  2952  2953  2982  3004  3005  3021
       |(Reference)      : 2952  2953  3004  3005
      qqlon
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 2689
       |(Definition)     : 2789  2790  2791  2893  2919  3021  3048  3054
@@ -6653,91 +6653,91 @@
       |(Definition)     : 
       |(Reference)      : 2677
      rdt2
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 2699
       |(Definition)     : 2732
       |(Reference)      : 
      rkt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 2699
       |(Definition)     : 
       |(Reference)      : 
      rm2a
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 2699
       |(Definition)     : 2750
       |(Reference)      : 2739  2757
      rma
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 2699
       |(Definition)     : 2749
       |(Reference)      : 2739  2750  2764
      sumrq
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 2697
       |(Definition)     : 
       |(Reference)      : 
      ut_sl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 2757
      uulon
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 2687
       |(Definition)     : 2757  3054
       |(Reference)      : 
      vdmerd
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 2663  2683
       |(Definition)     : 3135
       |(Reference)      : 2790
      vdzonl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 2663  2683
       |(Definition)     : 3134
       |(Reference)      : 2789
      vt_sl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 2764
      vvlat
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 2692
       |(Definition)     : 2917  2982
       |(Reference)      : 
      vvlon
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 2688
       |(Definition)     : 2764  2894  2917
       |(Reference)      : 
      xcp
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 2696
       |(Definition)     : 
       |(Reference)      : 
      xkappa
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 2698
       |(Definition)     : 
       |(Reference)      : 
      xr
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 2695
       |(Definition)     : 

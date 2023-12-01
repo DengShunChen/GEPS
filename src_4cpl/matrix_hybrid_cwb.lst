@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Tue Aug 29 14:57:14 2023
+ Fujitsu Fortran Version 4.6.1  Fri Dec  1 17:10:52 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72/src_4cpl
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_4cpl
    Source file       : matrix_hybrid_cwb.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -119,16 +119,16 @@
               57                           capap1= 1.0+capa
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 44
+                                   <<<    Standard iteration count: 42
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 1.20, ITR: 72, MVE: 4, POL: L)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.28, ITR: 80, MVE: 4, POL: L)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      p2, phatk, sigma
+                                   <<<      phatk, p2, sigma
                                    <<<    SPILLS :
                                    <<<      GENERAL   : SPILL 0  FILL 0
                                    <<<      SIMD&FP   : SPILL 0  FILL 0
-                                   <<<      SCALABLE  : SPILL 0  FILL 36
+                                   <<<      SCALABLE  : SPILL 0  FILL 40
                                    <<<      PREDICATE : SPILL 0  FILL 0
                                    <<< Loop-information  End >>>
               58     1  pp    v            do 135 k=1,lev+1
@@ -140,13 +140,13 @@
               64                     !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 263
+                                   <<<    Standard iteration count: 211
                                    <<<  [OPTIMIZATION]
                                    <<<    FUSED(lines: 65,71)
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 0.35, ITR: 32, MVE: 2, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.41, ITR: 56, MVE: 4, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      phatk, sigma, tmean, p2, spalm, pko, dp
+                                   <<<      p2, phatk, tmean, sigma, spalm, pko, dp
                                    <<< Loop-information  End >>>
               65     1  pp    v            do 145 k=1,lev
               66     1   p    v            dp(k)= p2(k+1)-p2(k)
@@ -167,12 +167,12 @@
               77     1                 120 continue
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 485
+                                   <<<    Standard iteration count: 356
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 0.36, ITR: 32, MVE: 2, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.46, ITR: 32, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      phatk, pko, tmean, thatm
+                                   <<<      tmean, pko, phatk, thatm
                                    <<< Loop-information  End >>>
               78     1  pp    v            do 140 k=1,lev-1
               79     1   p    v            at= (phatk(k+1)-pko(k))/(pko(k+1)-pko(k))
@@ -185,10 +185,10 @@
               86                           call zilch (b,lev*lev)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 517
+                                   <<<    Standard iteration count: 373
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.83, ITR: 64, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 80, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      pko, phatk
                                    <<< Loop-information  End >>>
@@ -210,10 +210,10 @@
              102                           call zilch (a,lev*lev)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 381
+                                   <<<    Standard iteration count: 297
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 0.53, ITR: 24, MVE: 2, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.63, ITR: 40, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tmean, thatm, dp
                                    <<< Loop-information  End >>>
@@ -224,7 +224,7 @@
              107                           call zilch (asd,lev*lev)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 3
+                                   <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      dp
@@ -234,7 +234,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 112, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.40, ITR: 144, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      dp
                                    <<< Loop-information  End >>>
@@ -244,7 +244,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 112, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.40, ITR: 144, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      dp
                                    <<< Loop-information  End >>>
@@ -263,12 +263,12 @@
              125                           call zilch (csrtn,lev*lev)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 1000
+                                   <<<    Standard iteration count: 728
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 192, MVE: 7, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.20, ITR: 272, MVE: 9, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      spalm, dcdp
+                                   <<<      dcdp, spalm
                                    <<< Loop-information  End >>>
              126     1  pp   2v            do 10 j=1,lev
              127     1   p   2v            spalm(j)= dcdp(j)+cp*spalm(j)
@@ -278,15 +278,15 @@
                                    <<<    Standard iteration count: 3
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      a, spalm, csrtn
+                                   <<<      spalm, a, csrtn
                                    <<< Loop-information  End >>>
              129     1  pp                 do 11 i=1,lev
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 144, MVE: 4, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.85, ITR: 112, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      a, spalm, csrtn
+                                   <<<      spalm, a, csrtn
                                    <<< Loop-information  End >>>
              130     2   p   2v            do 11 j=1,lev
              131     1   p   2v         11 csrtn(j,i)= a(j,i)+spalm(j)*dp(i)
@@ -295,8 +295,8 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 1455
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 320, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      csrtn, evecin
                                    <<< Loop-information  End >>>
@@ -339,8 +339,8 @@
              162     1   p                 eigval(jj)   = a(ipp(j),1)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      b, evectr
                                    <<< Loop-information  End >>>
@@ -359,8 +359,8 @@
              168     1   p                 enorm(i)= 0.0
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.34, ITR: 192, MVE: 2, POL: L)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.34, ITR: 384, MVE: 2, POL: L)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      evectr, dsigma
                                    <<< Loop-information  End >>>
@@ -382,8 +382,8 @@
              177     1  pp                 do 55 i=1,lev
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 256, MVE: 9, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 512, MVE: 9, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      evectr
                                    <<< Loop-information  End >>>
@@ -411,7 +411,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 1.81, ITR: 192, MVE: 2, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.76, ITR: 192, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      b, dp
                                    <<< Loop-information  End >>>
@@ -431,37 +431,37 @@
  Procedure information
    Lines      : 203
    Statements : 92
-   Stack(byte): 3584
+   Stack(byte): 3568
    Prefetch num: 0
 
  Scoping unit of external sub-program : matrix_hybrid_cwb
    Attribute and Cross reference of name
      a
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 47
-      |(Definition)     : 85  88  89  93  96  102  104  105  106  116  124  146  155
+      |(Definition)     : 85  88  89  93  96  102  104  105  106  116  124  144  155
       |(Reference)      : 131  162
      ai
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 47
       |(Definition)     : 96  97  99
       |(Reference)      : 
      arrhyd
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  38
       |(Definition)     : 97  124
       |(Reference)      : 
      arsddt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  38
       |(Definition)     : 116  124  197
       |(Reference)      : 
      asd
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 47
       |(Definition)     : 107  111  114  116
@@ -473,10 +473,10 @@
       |(Definition)     : 79
       |(Reference)      : 80  80
      b
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 47
-      |(Definition)     : 86  90  91  94  97  146  188  197
+      |(Definition)     : 86  90  91  94  97  144  188  197
       |(Reference)      : 164  193
      capa
       |(Class and Type) : variable name, REAL(8)
@@ -503,7 +503,7 @@
       |(Definition)     : 99
       |(Reference)      : 90  91  94  127
      csrtn
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 47
       |(Definition)     : 125  131  188
@@ -527,31 +527,37 @@
       |(Definition)     : 66
       |(Reference)      : 68  73  104  105  106  111  114  131  193
      dsigma
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  38
       |(Definition)     : 
       |(Reference)      : 170  170
+     eig1
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 144
      eigval
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  38
-      |(Definition)     : 146  162
+      |(Definition)     : 144  162
       |(Reference)      : 
      enorm
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 47
-      |(Definition)     : 146  168  170  174
+      |(Definition)     : 144  168  170  174
       |(Reference)      : 170  174  179
      evecin
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  38
-      |(Definition)     : 134  146  181
+      |(Definition)     : 134  144  181
       |(Reference)      : 
      evectr
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  38
       |(Definition)     : 164  179  181
@@ -566,7 +572,7 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 53
-      |(Definition)     : 96  146  181  188
+      |(Definition)     : 96  144  181  188
       |(Reference)      : 
      indexx
       |(Class and Type) : external subroutine name
@@ -590,7 +596,7 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 43
-      |(Definition)     : 146
+      |(Definition)     : 
       |(Reference)      : 
      j
       |(Class and Type) : variable name, INTEGER(4)
@@ -620,7 +626,7 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 96  96  96  97  116  124  146  146  155  181  181  181  188  188  188  197
+      |(Definition)     : 96  96  96  97  116  124  144  144  155  181  181  181  188  188  188  197
       |(Reference)      : 38  38  38  38  38  38  38  38  38  38  38  38  38  38  38  38  43  43  45  45  47  47  47  47  47  47  47  47  47  47  47  47  47  47  47  47  58  65  71  78  85  85  86  86  87  93  93  94  94  94  94  102  102  103  106  106  106  106  106  107  107  108  110  125  125  126  129  130  133  133  160  161  163  167  169  177  178  190  192
      matrix_hybrid_cwb
       |(Class and Type) : external subroutine name
@@ -635,7 +641,7 @@
       |(Definition)     : 
       |(Reference)      : 97  116  124  197
      p2
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 47
       |(Definition)     : 59
@@ -647,13 +653,13 @@
       |(Definition)     : 
       |(Reference)      : 32
      phatk
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 47
       |(Definition)     : 61  99
       |(Reference)      : 68  68  73  73  79  90  91  94
      pko
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 47
       |(Definition)     : 68
@@ -665,13 +671,13 @@
       |(Definition)     : 
       |(Reference)      : 99
      pmcor
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  38
       |(Definition)     : 191  193
       |(Reference)      : 193
      ptmean
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  38
       |(Definition)     : 99
@@ -688,50 +694,44 @@
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 33  38  47
-     rg
-      |(Class and Type) : external subroutine name
-      |(Attributes)     : 
-      |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 146
      sigma
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  38
       |(Definition)     : 99
       |(Reference)      : 59  59  73  73  111  114
      spalm
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  38
       |(Definition)     : 73  99  127
       |(Reference)      : 127  131
      sqrt
-      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Class and Type) : intrinsic function name, REAL(4)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 174
      thatm
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 47
       |(Definition)     : 80
       |(Reference)      : 104  105  106
      tmcor
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  38
       |(Definition)     : 197
       |(Reference)      : 
      tmean
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  38
       |(Definition)     : 72  99
       |(Reference)      : 72  73  80  80  104  105  106
      tmp
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 47
       |(Definition)     : 
@@ -782,6 +782,6 @@
    Procedures       : 1
    Total lines      : 203
    Total statements : 92
-   Total stack(byte): 3584
+   Total stack(byte): 3568
    Total prefetch num: 0
 

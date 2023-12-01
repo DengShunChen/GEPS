@@ -27,6 +27,7 @@
 !
 !  ****************************************
 !
+      use const, only : RTYPE
       use index
 !     use paramt
       use fftcom
@@ -41,26 +42,26 @@
 
       real      sa00,sa10,sa20,sa30,dummy
 !
-      real      onocos(my),wcfac(jtrun,jtmax),wdfac(jtrun,jtmax)  &
+      real(kind=RTYPE) onocos(my),wcfac(jtrun,jtmax),wdfac(jtrun,jtmax)   &
                ,poly(jtrun,my/2,jtmax),dpoly(jtrun,my/2,jtmax)    &
-               ,vor(jtrun,jtmax,2),div(jtrun,jtmax,2)     &
+               ,vor(jtrun,jtmax,2),div(jtrun,jtmax,2)             &
                ,ut(nxp,my_max),vt(nxp,my_max)
 !
-      real       gwk1(nx+2,lev,2,my_max)
-      real      wcc_fk (lev,2,2,jtmax,my_max*nsize)
-      real      twcc_fk(lev,2,2,jtmax*nsize,my_max)
-      real      cc(nx+2,lev,2,my_max)
-      real      tcc(lev,2,2,my)
-      real      ws3(lev,2,2,jtrun)
-      real      ws4(lev,2,2,jtrun)
+      real(kind=RTYPE)      gwk1(nx+2,lev,2,my_max)
+      real(kind=RTYPE)      wcc_fk (lev,2,2,jtmax,my_max*nsize)
+      real(kind=RTYPE)     twcc_fk(lev,2,2,jtmax*nsize,my_max)
+      real(kind=RTYPE)     cc(nx+2,lev,2,my_max)
+      real(kind=RTYPE)      tcc(lev,2,2,my)
+      real(kind=RTYPE)      ws3(lev,2,2,jtrun)
+      real(kind=RTYPE)      ws4(lev,2,2,jtrun)
 !
-      real      tc2(lev,2,2,my)
-      real      wc(jtrun,my/2),wd(jtrun,my/2)
+      real(kind=RTYPE)      tc2(lev,2,2,my)
+      real(kind=RTYPE)      wc(jtrun,my/2),wd(jtrun,my/2)
 
 !CWB2015
 !     real      coslr(jm)
 !     save coslr
-      real, dimension(:), allocatable, save ::  coslr
+      real(kind=RTYPE), dimension(:), allocatable, save ::  coslr
 
 !
       logical lfirst
@@ -369,7 +370,8 @@
 
 
 !ch   call mpe_transpose_sr(wcc_fk,twcc_fk,lev*2*2,jtmax,my_max,nsize)
-      call mpe_transpose_sr(wcc_fk,twcc_fk,lev*2*2,jtmax,my_max,nsize,col_comm)
+!     call mpe_transpose_sr(wcc_fk,twcc_fk,lev*2*2,jtmax,my_max,nsize,col_comm)
+      call mpe_transpose_sr_sp(wcc_fk,twcc_fk,lev*2*2,jtmax,my_max,nsize,col_comm)
 
       do jj=1,jlistnum
 
@@ -429,8 +431,12 @@
       enddo
 !
       if( length_fft .eq. 0 .and. lreduce.eq.0 )then
+#ifdef SP
+      call rfftmlt_sp(cc,gwk1,trigs,ifax,1,nx+2,nx,lev*jlistnum*2,1) ! CWB2015
+#else
 !     call rfftmlt(cc,gwk1,trigs,ifax,1,nx+2,nx,lev*jlistnum*num,1)
       call rfftmlt(cc,gwk1,trigs,ifax,1,nx+2,nx,lev*jlistnum*2,1) ! CWB2015
+#endif
       else
 !$omp  parallel do default(none)                            &
 !$omp  private(jj,j,nxj,gwk1)                               &
@@ -439,8 +445,13 @@
       do jj = 1, jlistnum
         j= jlist1(jj)
         nxj=nxdef(j)
+#ifdef SP
+        call rfftmlt_sp(cc(1,1,1,jj),gwk1(1,1,1,jj),trigsj(1,j),ifaxj(1,j), &
+                     1,nx+2,nxj,lev*2,1)
+#else
         call rfftmlt(cc(1,1,1,jj),gwk1(1,1,1,jj),trigsj(1,j),ifaxj(1,j), &
                      1,nx+2,nxj,lev*2,1)
+#endif
       end do
 !$omp end parallel do
       end if

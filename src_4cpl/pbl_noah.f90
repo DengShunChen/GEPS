@@ -1,10 +1,10 @@
       subroutine pbl_noah (nxj,nx,lev,ktpbl,dt,g,r,cp,xkapa,hltm,ptop   &
-                        , tice,hice,tg,z0,land,topo,phi,pss,u,v,t,q,ut  &
-                        , vt,tt,qt,pk,pk2,ustar,tstar,qstar,e,eps,hflux &
-                        , qflux,itstp,gwclim,tgclim,ocean,ice,sheleg    &
-                        , totalp,ss,rs,alb,imx,xkmx,idg,xkmd,itype      &
-                        , t2,q2,rh2,rh10,u10,v10,fm,fh,fm10,fh2,srflag  &
-                        , rld,stbo                                      &
+                        , tice,hice,tg,z0,land,topo,phi,phii,pss,u,v,t  &
+                        , q,ut,vt,tt,qt,pk,pk2,ustar,tstar,qstar,e,eps  &
+                        , hflux,qflux,itstp,gwclim,tgclim,ocean,ice     &
+                        , sheleg,totalp,ss,rs,alb,imx,xkmx,idg,xkmd     &
+                        , itype,t2,q2,rh2,rh10,u10,v10,fm,fh,fm10,fh2   &
+                        , srflag,rld,stbo                               &
                         , km,smc,stc,canopy,runoff,sigmaf,istyp,ivegtyp &
                         , ncld,dsigma,islopetyp,slc,sncover,snwdph      &
                         , shdmax,shdmin,snoalb,albedo2                  &
@@ -193,7 +193,7 @@
 !ch   real     hgt(im,lm),xkm(im,lm),xkh(im,lm),ts(im),                    &
 !ch            qsfc(im),zl(im),czh(im),ps(im),sfcw(im),                    &
 !ch            dhgt(im,lm),ro2(im,lm),dhgtz(im,lm)
-      real     hgt(nx),xkm(nx,lev),xkh(nx,lev),ts(nx),                     &
+      real     hgt(nx),xkm(nx,lev),xkh(nx,lev),                            &
                qsfc(nx),zl(nx),czh(nx),ps(nx),sfcw(nx),                    &
                dhgt,ro2(nx),dhgtz(nx,lev)
 !soil
@@ -292,12 +292,6 @@
 !
 ! --- compute surface pres and surface air temp at current time level
 !
-      do 50 i = 1, nxj
-      ps(i) = pss(i) + ptop
-      ttt = tt(i,lev)*(1.+0.608*qt(i,lev))
-      ts(i) = ttt/pk(i,lev)*pk2(i,lev)
-  50  continue
-!
       do k=1,lev
       pkd(:) =pk(:,k)
       pk2d(:)=pk2(:,k)
@@ -311,34 +305,11 @@
       call vexp(pkx(1,k), pkx(1,k), nxj)
       enddo
 !
-!      do 100 k = 1, lev
-      do 100 i = 1, nxj
-!      hgt(i,k) = (phi(i,k) - topo(i) ) / g
-       hgt(i) = (phi(i,lev) - topo(i) ) / g
-  100 continue
-
+      do 50 i = 1, nxj
+      ps(i)  = pss(i) + ptop
+      hgt(i) = (phi(i,lev) - topo(i) ) / g
+  50  continue
 !
-      do 105 i = 1, nxj
-      ppd = pk2x(i,1) * 1000.
-      dhgt= ( ppd - ptop ) * 100. / g
-!byl      ppp = pkx(i,1) * 1000.+ptop
-      ppp = pkx(i,1) * 1000.
-      ttt = tt(i,1)*(1.+0.608*qt(i,1))
-      dhgtz(i,1)= dhgt * r * ttt / (100.*ppp)
-  105 continue
-!
-      do 110 k=2, lev
-      do 110 i=1, nxj
-      ppu = pk2x(i,k-1) * 1000.
-      ppd = pk2x(i,k) * 1000.
-!byl      dhgt(i,k) = ( ppd - ppu ) * 100. / g
-      dhgt= ( ppd - ppu ) * 100. / g
-!byl      ppp = pkx(i,k) * 1000.+ptop
-      ppp = pkx(i,k) * 1000.
-      ttt = tt(i,k)*(1.+0.608*qt(i,k))
-      dhgtz(i,k)= dhgt * r * ttt / (100.*ppp)
-  110 continue
-
       do 120 i = 1, nxj
       qqq = max(qt(i,lev), 1.0e-8)
       ttt = tt(i,lev)*(1.+0.608*qqq)
@@ -600,17 +571,6 @@
 !                                                                      c
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !
-      do i=1,nxj
-!byl         phi2(i,lev+1)=0.
-         phii(i,1)=0.
-      enddo
-       do k=lev,1,-1
-          kc=lev-k+2
-       do i = 1, nxj
-!byl          phi2(i,k)=phi2(i,k+1)+dhgtz(i,k)*g
-          phii(i,kc)=phii(i,kc-1)+dhgtz(i,k)*g
-      enddo
-      enddo
 !
       if ( nmmiph .eq. 6 ) then  !WSM6
         do k=1,lev
@@ -883,6 +843,7 @@
        qflux(i)=qflux(i)*ro2(i)*hltm        ! transfer to W/m2
        tstar(i)=-heat(i)/ustar(i)
        qstar(i)=-evap(i)/ustar(i)
+       runoff(i)=(drain(i)+runof(i))*dth + runoff(i) !wei add at 20231012
        enddo
 !     if(jj.eq.jo)then
 !     print*,'after mixpbl -----------------'

@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Tue Aug 29 14:58:11 2023
+ Fujitsu Fortran Version 4.6.1  Fri Dec  1 17:11:49 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72/src_4cpl
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_4cpl
    Source file       : rsmout_sigp.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -82,157 +82,160 @@
               20                     #else
               21                           use rank, only : myrank
               22                     #endif
-              23                           use const, only: rlon1, rlon2, rlat1, rlat2, rgrdsz, rsmsfcmgrhr
-              24                     
-              25                           implicit  none
-              26                     
-              27                           logical   ldosfc
-              28                     
-              29                           integer   itau,nx,my,my_max,lev,ncld,km
-              30                     
-              31                           real      ptop,rad,grav
-              32                     
-              33                           real      cosl(my),pt(nxp,my_max),sgeo(nxp,my_max),        &
-              34                                     snr(nxp,my_max),gwr(nxp,my_max),                &
-              35                                     tg(nxp,my_max),pk(nxp,lev,my_max),              &
-              36                                     ut(nxp,lev,my_max),         &
-              37                                     vt(nxp,lev,my_max),tt(nxp,lev,my_max),          &
-              38                                     qt(nxp,lev*ncld,my_max),                        &
-              39                                     work(nx,my),               &
-              40                                     smc(nxp,km,my_max),stc(nxp,km,my_max),          &
-              41                                     wrk1(nxp,my_max)
-              42                     
-              43                           logical   land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max)
-              44                     
-              45                           real      xlon(nx,my_max),xlat(my)
-              46                           real      dx,dy
+              23                           use const, only: rlon1, rlon2, rlat1, rlat2, rgrdsz, rsmsfcmgrhr &
+              24                                     ,RTYPE
+              25                     
+              26                           implicit  none
+              27                     
+              28                           logical   ldosfc
+              29                     
+              30                           integer   itau,nx,my,my_max,lev,ncld,km
+              31                     
+              32                           real      ptop,rad,grav
+              33                     
+              34                           real(kind=RTYPE)::ut(nxp,lev,my_max),vt(nxp,lev,my_max) &
+              35                               ,tt(nxp,lev,my_max),qt(nxp,lev*ncld,my_max)         &
+              36                               ,pt(nxp,my_max),pk(nxp,lev,my_max),sgeo(nxp,my_max)
+              37                     
+              38                           real(kind=RTYPE)::wrk1(nxp,my_max),work(nx,my)
+              39                     
+              40                           real(kind=RTYPE)      cosl(my)
+              41                           real      snr(nxp,my_max),gwr(nxp,my_max),                &
+              42                                     tg(nxp,my_max),                                 &
+              43                                     smc(nxp,km,my_max),stc(nxp,km,my_max),          &
+              44                                     workr8(nx,my)
+              45                     
+              46                           logical   land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max)
               47                     
-              48                           integer*8 idtg
-              49                     !
-              50                     ! local array
-              51                           integer   i,k,ii,jj,j,nxj,kk,ntrac,nclds
-              52                           real      xx
-              53                     !
-              54                           integer   nxmy, nxmyl, nxmys
-              55                           integer   nxs, mys, len2
-              56                           integer   x1, x2, y1, y2
-              57                     #ifdef send_RSM
-              58                           real,allocatable ::  g3send(:,:,:),g2send(:,:)
-              59                     #endif
-              60                           integer   ierr
-              61                     
-              62                           integer   nsig, ndig, recsize
-              63                           character cfhour*16,cform*40,cidtg*12
+              48                           real      xlon(nx,my_max),xlat(my)
+              49                           real      dx,dy
+              50                     
+              51                           integer*8 idtg
+              52                     !
+              53                     ! local array
+              54                           integer   i,k,ii,jj,j,nxj,kk,ntrac,nclds
+              55                           real      xx
+              56                     !
+              57                           integer   nxmy, nxmyl, nxmys
+              58                           integer   nxs, mys, len2
+              59                           integer   x1, x2, y1, y2
+              60                     #ifdef send_RSM
+              61                           real,allocatable ::  g3send(:,:,:),g2send(:,:)
+              62                     #endif
+              63                           integer   ierr
               64                     
-              65                           integer   itag0
-              66                     
-              67                     ! output record
-              68                           integer   kfh,knt,ktt,ksgeo,ksfcp,kuu,kvv
-              69                           integer   kqt,kcw,krw,kiw,ksw,kgl,koz
-              70                           integer   ktg,ksmc,ksnr,kstc,ksimk,kslmk
-              71                           integer   ktrace,kend,krec
-              72                           integer   klon,klat
-              73                           integer   ntindex(7)
-              74                     
-              75                           ldosfc=mod(float(itau)+0.00001, float(rsmsfcmgrhr) ).lt.0.01
-              76                     
-              77                     ! local variable initization
-              78                           nxmy=nx*my
-              79                           nxmyl=nx*my*lev
-              80                           nxmys=nx*my*km
+              65                           integer   nsig, ndig, recsize
+              66                           character cfhour*16,cform*40,cidtg*12
+              67                     
+              68                           integer   itag0
+              69                     
+              70                     ! output record
+              71                           integer   kfh,knt,ktt,ksgeo,ksfcp,kuu,kvv
+              72                           integer   kqt,kcw,krw,kiw,ksw,kgl,koz
+              73                           integer   ktg,ksmc,ksnr,kstc,ksimk,kslmk
+              74                           integer   ktrace,kend,krec
+              75                           integer   klon,klat
+              76                           integer   ntindex(7)
+              77                     
+              78                           ldosfc=mod(float(itau)+0.00001, float(rsmsfcmgrhr) ).lt.0.01
+              79                     
+              80                     ! local variable initization
+              81                           nxmy=nx*my
+              82                           nxmyl=nx*my*lev
+              83                           nxmys=nx*my*km
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2000
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      work
                                    <<< Loop-information  End >>>
-              81     1  pp   4v            do i = 1, nxmy
-              82     1   p   4v             work(i,1) = 0.
-              83     1   p   4v            enddo
-              84                     !
-              85                           if(myrank .eq. 0) print *,' rsmout_sigp : ntoz=',ntoz
-              86     1                     if ( ntoz .gt. 0 ) then
-              87     1                       nclds=ntoz-1
-              88     1                     else
-              89     1                       nclds=ncld
-              90     1                     endif
-              91                           if(myrank .eq. 0) print *,' rsmout_sigp : nclds=',nclds
-              92                     
-              93                           if(myrank .eq. 0) print *,' rsmout_sigp : ',                     &
-              94                                                     'ntoz,ntcw,ntrw,ntiw,ntsw,ntgl=',      &
-              95                                                      ntoz,ntcw,ntrw,ntiw,ntsw,ntgl
-              96                     ! list tracer index
-              97                             ntindex(1)=nclds
-              98                             ntindex(2)=ntoz
-              99                             ntindex(3)=ntcw
-             100                             ntindex(4)=ntrw
-             101                             ntindex(5)=ntiw
-             102                             ntindex(6)=ntsw
-             103                             ntindex(7)=ntgl
-             104                     
-             105                     #ifdef write_RSM
-             106                     ! output file name
-             107                           nsig=21
-             108                     #endif
-             109                           ndig=max(log10(itau+0.5)+1.,3.)
-             110                           write(cform,'("(i",i1,".",i1,")")') ndig,ndig
-             111                           write(cfhour,cform) itau
-             112                           write(cidtg,'(I12.12)') idtg
-             113                     
-             114                     ! output record sequence
-             115                           ktrace=-999
-             116                     !lat/lon
-             117                           klon=2
-             118                           klat=3
-             119                           kfh=1
-             120                           knt=kfh+1
-             121                           ksgeo=knt+1
-             122                           ksfcp=ksgeo+1
-             123                           ktt=ksfcp+1
-             124                           kuu=ktt+lev
-             125                           kvv=kuu+lev
-             126                           kqt=kvv+lev
-             127                           kcw=kqt+lev
-             128                           koz=kcw+lev
-             129                           kslmk=koz+lev
-             130                           ksnr=kslmk+1
-             131                           ksimk=ksnr+1
-             132                           ktg=ksimk+1
-             133                           ksmc=ktg+1
-             134                           kstc=ksmc+4
-             135                           krw=kstc+4
-             136                           kiw=krw+lev
-             137                           ksw=kiw+lev
-             138                           kgl=ksw+lev
-             139                           kend=kgl+lev
-             140                     
-             141     1                     if(myrank.eq.0) then
-             142     1                       print*,'klon,klat='
-             143     1                       print*,klon,klat
-             144     1                       print*,'ktrace,kfh,knt,ktt,ksgeo,ksfcp,kuu,kvv,kqt,kcw,koz='
-             145     1                       print*,ktrace,kfh,knt,ktt,ksgeo,ksfcp,kuu,kvv,kqt,kcw,koz
-             146     1                       print*,'ktg,ksmc,ksnr,kstc,ksimk,kslmk,krw,kiw,ksw,kgl,kend='
-             147     1                       print*,ktg,ksmc,ksnr,kstc,ksimk,kslmk,krw,kiw,ksw,kgl,kend
-             148     1                     endif
-             149                     !
-             150                     ! output record, regional domain
-             151                           dx=xlon(2,1)-xlon(1,1)
-             152                           dy=xlat(2)-xlat(1)
-             153                           rgrdsz=min(dx,dy)
-             154                           if (myrank.eq.0) print*,'rgrdsz=',rgrdsz
-             155                           nxs=nint((rlon2-rlon1)/rgrdsz+1.)
-             156                           mys=nint((rlat2-rlat1)/rgrdsz+1.)
-             157                           x1=nint(  (rlon1-0.)     /rgrdsz+1.)
-             158                           x2=nxs-1+x1
-             159                           y1=nint(  (rlat1-(-90.)) /rgrdsz+1.)
-             160                           y2=mys-1+y1
-             161                           len2=nxs*mys
-             162                     !
-             163                     ! print/output information of regional domain at itau=0
-             164                     !
-             165     1                     if(itau.eq.0) then
+              84     1  pp   4v            do i = 1, nxmy
+              85     1   p   4v             work(i,1) = 0.
+              86     1   p   4v            enddo
+              87                     !
+              88                           if(myrank .eq. 0) print *,' rsmout_sigp : ntoz=',ntoz
+              89     1                     if ( ntoz .gt. 0 ) then
+              90     1                       nclds=ntoz-1
+              91     1                     else
+              92     1                       nclds=ncld
+              93     1                     endif
+              94                           if(myrank .eq. 0) print *,' rsmout_sigp : nclds=',nclds
+              95                     
+              96                           if(myrank .eq. 0) print *,' rsmout_sigp : ',                     &
+              97                                                     'ntoz,ntcw,ntrw,ntiw,ntsw,ntgl=',      &
+              98                                                      ntoz,ntcw,ntrw,ntiw,ntsw,ntgl
+              99                     ! list tracer index
+             100                             ntindex(1)=nclds
+             101                             ntindex(2)=ntoz
+             102                             ntindex(3)=ntcw
+             103                             ntindex(4)=ntrw
+             104                             ntindex(5)=ntiw
+             105                             ntindex(6)=ntsw
+             106                             ntindex(7)=ntgl
+             107                     
+             108                     #ifdef write_RSM
+             109                     ! output file name
+             110                           nsig=21
+             111                     #endif
+             112                           ndig=max(log10(itau+0.5)+1.,3.)
+             113                           write(cform,'("(i",i1,".",i1,")")') ndig,ndig
+             114                           write(cfhour,cform) itau
+             115                           write(cidtg,'(I12.12)') idtg
+             116                     
+             117                     ! output record sequence
+             118                           ktrace=-999
+             119                     !lat/lon
+             120                           klon=2
+             121                           klat=3
+             122                           kfh=1
+             123                           knt=kfh+1
+             124                           ksgeo=knt+1
+             125                           ksfcp=ksgeo+1
+             126                           ktt=ksfcp+1
+             127                           kuu=ktt+lev
+             128                           kvv=kuu+lev
+             129                           kqt=kvv+lev
+             130                           kcw=kqt+lev
+             131                           koz=kcw+lev
+             132                           kslmk=koz+lev
+             133                           ksnr=kslmk+1
+             134                           ksimk=ksnr+1
+             135                           ktg=ksimk+1
+             136                           ksmc=ktg+1
+             137                           kstc=ksmc+4
+             138                           krw=kstc+4
+             139                           kiw=krw+lev
+             140                           ksw=kiw+lev
+             141                           kgl=ksw+lev
+             142                           kend=kgl+lev
+             143                     
+             144     1                     if(myrank.eq.0) then
+             145     1                       print*,'klon,klat='
+             146     1                       print*,klon,klat
+             147     1                       print*,'ktrace,kfh,knt,ktt,ksgeo,ksfcp,kuu,kvv,kqt,kcw,koz='
+             148     1                       print*,ktrace,kfh,knt,ktt,ksgeo,ksfcp,kuu,kvv,kqt,kcw,koz
+             149     1                       print*,'ktg,ksmc,ksnr,kstc,ksimk,kslmk,krw,kiw,ksw,kgl,kend='
+             150     1                       print*,ktg,ksmc,ksnr,kstc,ksimk,kslmk,krw,kiw,ksw,kgl,kend
+             151     1                     endif
+             152                     !
+             153                     ! output record, regional domain
+             154                           dx=xlon(2,1)-xlon(1,1)
+             155                           dy=xlat(2)-xlat(1)
+             156                           rgrdsz=min(dx,dy)
+             157                           if (myrank.eq.0) print*,'rgrdsz=',rgrdsz
+             158                           nxs=nint((rlon2-rlon1)/rgrdsz+1.)
+             159                           mys=nint((rlat2-rlat1)/rgrdsz+1.)
+             160                           x1=nint(  (rlon1-0.)     /rgrdsz+1.)
+             161                           x2=nxs-1+x1
+             162                           y1=nint(  (rlat1-(-90.)) /rgrdsz+1.)
+             163                           y2=mys-1+y1
+             164                           len2=nxs*mys
+             165                     !
+             166                     ! print/output information of regional domain at itau=0
+             167                     !
+             168     1                     if(itau.eq.0) then
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 3
@@ -240,107 +243,117 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      xlon, wrk1
                                    <<< Loop-information  End >>>
-             166     2  pp                   do jj = 1, jlistnum
-             167     2   p                    j=jlist1(jj)
-             168     2   p                    nxj=nxdef_2d(j)
-             169     2   p                    ii=nxjstart(j)
+             169     2  pp                   do jj = 1, jlistnum
+             170     2   p                    j=jlist1(jj)
+             171     2   p                    nxj=nxdef_2d(j)
+             172     2   p                    ii=nxjstart(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.50, ITR: 128, MVE: 4, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.16, ITR: 192, MVE: 6, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      wrk1, xlon
+                                   <<<      xlon, wrk1
                                    <<< Loop-information  End >>>
-             170     3   p   2v              do i = 1, nxj
-             171     3   p   2v                 wrk1(i,jj)=xlon(ii,jj)
-             172     3   p   2v                 if (xlon(ii,jj).lt. 0) wrk1(i,jj)=(xlon(ii,jj)+360.)
-             173     3   p   2v                 ii=ii+1
-             174     3   p   2v              enddo
-             175     2   p                   enddo
-             176     1                       call unify_reduceintp(nx,my,my_max,wrk1,work)
-             177     1               
-             178     2                       if(myrank.eq.0) then
-             179     2                         open(99,file='rsm_xlon_'//cidtg//'.txt',status='unknown', &
-             180     2                             form='formatted',iostat=ierr)
-             181     2                         if (ierr/=0) stop "rsmout_sigp: open file xlon fail"
-             182     2                         write(99,*) work(x1:x2,1)
-             183     2               #ifdef send_RSM
-             184     2                       itag=klon
-             185     2                       call mpmd_send(work(x1:x2,1),nxs,root_rsm,itag,'R')
-             186     2               #endif
-             187     2                         close(99)
-             188     2                         open(98,file='rsm_xlat_'//cidtg//'.txt',status='unknown', &
-             189     2                             form='formatted',iostat=ierr)
-             190     2                         if (ierr/=0) stop "rsmout_sigp: open file xlat fail"
-             191     2                         write(98,*) xlat(y1:y2)
-             192     2               #ifdef send_RSM
-             193     2                       itag=klat
-             194     2                       call mpmd_send(xlat(y1:y2),mys,root_rsm,itag,'R')
-             195     2               #endif
-             196     2                         close(98)
-             197     2                         print*,'-----output data for rsm-----'
-             198     2                         print*,'--nxs, mys, x1, x2, y1, y2=--'
-             199     2                         print*,'-',nxs, mys, x1, x2, y1, y2,'-'
-             200     2                       endif
-             201     1                     endif  !endif (itau=0)
-             202                     
-             203                     #ifdef send_RSM
-             204     1                     if(myrank.eq.0) then
-             205     1               ! mpmd send tag
-             206     1                     itag0=itag
-             207     1                     endif
-             208                     #endif
-             209                     
-             210                     
-             211                     ! allocate temporary
-             212                     #ifdef send_RSM
-             213                           allocate(g3send(nxs,mys,lev),g2send(nxs,mys), &
-             214                                    stat=ierr)
-             215                           if (ierr/=0) stop "rsmout_sigp: allocate fail"
-             216                           if (ierr/=0) call mpe_finalize
-             217                     #endif
-             218                     
-             219                     
-             220                     #ifdef write_RSM
-             221                           if(myrank.eq.0) then
-             222                             inquire(iolength=recsize) work(x1:x2,y1:y2)
-             223                             open(nsig,file='rsm_data_'//cidtg//'.f'//cfhour,status='unknown', &
-             224                                 form='unformatted',access='direct',recl=recsize,iostat=ierr)
-             225                             if (ierr/=0) stop "rsmout_sigp: open file fail"
-             226                           endif
-             227                     #endif
-             228                     
-             229                     #ifdef write_RSM
-             230                           if(myrank.eq.0) then
-             231                             krec=kfh
-             232                             write(nsig,rec=krec) float(itau)
-             233                           endif
-             234                     #endif
-             235                     #ifdef send_RSM
-             236     1                     if(myrank.eq.0) then
-             237     1                       itag=itag0+kfh
-             238     1                       call mpmd_send(float(itau),1,root_rsm,itag,'R')
-             239     1                       print*,'gfs kfh itag=',itag
-             240     1                     endif
-             241                     #endif
-             242                     
-             243                     ! gfs tracer index
-             244                     #ifdef write_RSM
-             245                           if(myrank.eq.0) then
-             246                             krec=knt
-             247                             write(nsig,rec=krec) ntindex
-             248                           endif
-             249                     #endif
-             250                     #ifdef send_RSM
-             251     1                     if(myrank.eq.0) then
-             252     1                       itag=itag0+knt
-             253     1                       call mpmd_send(ntindex,7,root_rsm,itag,'I')
-             254     1                       print*,'gfs knt itag=',itag
-             255     1                     endif
-             256                     #endif
-             257                     !
-             258                     !  convert terrain geopotential to terrain geopotential hight
-             259                     !
+             173     3   p   2v              do i = 1, nxj
+             174     3   p   2v                 wrk1(i,jj)=xlon(ii,jj)
+             175     3   p   2v                 if (xlon(ii,jj).lt. 0) wrk1(i,jj)=(xlon(ii,jj)+360.)
+             176     3   p   2v                 ii=ii+1
+             177     3   p   2v              enddo
+             178     2   p                   enddo
+             179     1                       call unify_reduceintp(nx,my,my_max,wrk1,work)
+             180     1               
+             181     2                       if(myrank.eq.0) then
+             182     2                         open(99,file='rsm_xlon_'//cidtg//'.txt',status='unknown', &
+             183     2                             form='formatted',iostat=ierr)
+             184     2                         if (ierr/=0) stop "rsmout_sigp: open file xlon fail"
+             185     2                         write(99,*) work(x1:x2,1)
+             186     2               #ifdef send_RSM
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      work, workr8
+                                   <<< Loop-information  End >>>
+             187     2  pp   2v              workr8=work
+             188     2                       itag=klon
+             189     2                       call mpmd_send(workr8(x1:x2,1),nxs,root_rsm,itag,'R')
+             190     2               #endif
+             191     2                         close(99)
+             192     2                         open(98,file='rsm_xlat_'//cidtg//'.txt',status='unknown', &
+             193     2                             form='formatted',iostat=ierr)
+             194     2                         if (ierr/=0) stop "rsmout_sigp: open file xlat fail"
+             195     2                         write(98,*) xlat(y1:y2)
+             196     2               #ifdef send_RSM
+             197     2                       itag=klat
+             198     2                       call mpmd_send(xlat(y1:y2),mys,root_rsm,itag,'R')
+             199     2               #endif
+             200     2                         close(98)
+             201     2                         print*,'-----output data for rsm-----'
+             202     2                         print*,'--nxs, mys, x1, x2, y1, y2=--'
+             203     2                         print*,'-',nxs, mys, x1, x2, y1, y2,'-'
+             204     2                       endif
+             205     1                     endif  !endif (itau=0)
+             206                     
+             207                     #ifdef send_RSM
+             208     1                     if(myrank.eq.0) then
+             209     1               ! mpmd send tag
+             210     1                     itag0=itag
+             211     1                     endif
+             212                     #endif
+             213                     
+             214                     
+             215                     ! allocate temporary
+             216                     #ifdef send_RSM
+             217                           allocate(g3send(nxs,mys,lev),g2send(nxs,mys), &
+             218                                    stat=ierr)
+             219                           if (ierr/=0) stop "rsmout_sigp: allocate fail"
+             220                           if (ierr/=0) call mpe_finalize
+             221                     #endif
+             222                     
+             223                     
+             224                     #ifdef write_RSM
+             225                           if(myrank.eq.0) then
+             226                             inquire(iolength=recsize) workr8(x1:x2,y1:y2)
+             227                             open(nsig,file='rsm_data_'//cidtg//'.f'//cfhour,status='unknown', &
+             228                                 form='unformatted',access='direct',recl=recsize,iostat=ierr)
+             229                             if (ierr/=0) stop "rsmout_sigp: open file fail"
+             230                           endif
+             231                     #endif
+             232                     
+             233                     #ifdef write_RSM
+             234                           if(myrank.eq.0) then
+             235                             krec=kfh
+             236                             write(nsig,rec=krec) float(itau)
+             237                           endif
+             238                     #endif
+             239                     #ifdef send_RSM
+             240     1                     if(myrank.eq.0) then
+             241     1                       itag=itag0+kfh
+             242     1                       call mpmd_send(float(itau),1,root_rsm,itag,'R')
+             243     1                       print*,'gfs kfh itag=',itag
+             244     1                     endif
+             245                     #endif
+             246                     
+             247                     ! gfs tracer index
+             248                     #ifdef write_RSM
+             249                           if(myrank.eq.0) then
+             250                             krec=knt
+             251                             write(nsig,rec=krec) ntindex
+             252                           endif
+             253                     #endif
+             254                     #ifdef send_RSM
+             255     1                     if(myrank.eq.0) then
+             256     1                       itag=itag0+knt
+             257     1                       call mpmd_send(ntindex,7,root_rsm,itag,'I')
+             258     1                       print*,'gfs knt itag=',itag
+             259     1                     endif
+             260                     #endif
+             261                     !
+             262                     !  convert terrain geopotential to terrain geopotential hight
+             263                     !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 3
@@ -348,149 +361,151 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      sgeo, wrk1
                                    <<< Loop-information  End >>>
-             260     1  pp                 do 28 jj = 1, jlistnum
-             261     1   p                  j=jlist1(jj)
-             262     1   p                  nxj=nxdef_2d(j)
+             264     1  pp                 do 28 jj = 1, jlistnum
+             265     1   p                  j=jlist1(jj)
+             266     1   p                  nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 192, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 192, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      sgeo, wrk1
                                    <<< Loop-information  End >>>
-             263     2   p   2v            do 28 i=1,nxj
-             264     2   p   2v              wrk1(i,jj)=sgeo(i,jj)/grav
-             265     1   p   2v       28   continue
-             266                           call unify_reduceintp(nx,my,my_max,wrk1,work)
-             267                     !
-             268                     #ifdef write_RSM
-             269                           if(myrank.eq.0) then
-             270                             krec=ksgeo
-             271                             write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
-             272                           endif
-             273                     #endif
-             274                     #ifdef send_RSM
-             275     1                     if(myrank.eq.0) then
+             267     2   p   2v            do 28 i=1,nxj
+             268     2   p   2v              wrk1(i,jj)=sgeo(i,jj)/grav
+             269     1   p   2v       28   continue
+             270                           call unify_reduceintp(nx,my,my_max,wrk1,work)
+             271                     !
+             272                     #ifdef write_RSM
+             273                           if(myrank.eq.0) then
+             274                             workr8=work
+             275                             write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
+             276                           endif
+             277                     #endif
+             278                     #ifdef send_RSM
+             279     1                     if(myrank.eq.0) then
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      work, g2send
                                    <<< Loop-information  End >>>
-             276     1  pp   2v              g2send(:,:)=work(x1:x2,y1:y2)
-             277     1                     endif
-             278                     #endif
-             279                     #ifdef send_RSM
-             280     1                     if(myrank.eq.0) then
-             281     1                       itag=itag0+ksgeo
-             282     1                       call mpmd_send(g2send,len2,root_rsm,itag,'R')
-             283     1                       print*,'gfs ksgeo itag=',itag
-             284     1                     endif
-             285                     #endif
-             286                     !
-             287                     ! surface pressure
-             288                     !
+             280     1  pp   2v              g2send(:,:)=work(x1:x2,y1:y2)
+             281     1                     endif
+             282                     #endif
+             283                     #ifdef send_RSM
+             284     1                     if(myrank.eq.0) then
+             285     1                       itag=itag0+ksgeo
+             286     1                       call mpmd_send(g2send,len2,root_rsm,itag,'R')
+             287     1                       print*,'gfs ksgeo itag=',itag
+             288     1                     endif
+             289                     #endif
+             290                     !
+             291                     ! surface pressure
+             292                     !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 4
+                                   <<<    Standard iteration count: 3
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      pt, wrk1
                                    <<< Loop-information  End >>>
-             289     1  pp                 do 31 jj = 1, jlistnum
-             290     1   p                  j=jlist1(jj)
-             291     1   p                  nxj=nxdef_2d(j)
+             293     1  pp                 do 31 jj = 1, jlistnum
+             294     1   p                  j=jlist1(jj)
+             295     1   p                  nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 192, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 192, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      pt, wrk1
                                    <<< Loop-information  End >>>
-             292     2   p   2v            do 31 i = 1,nxj
-             293     2   p   2v             wrk1(i,jj)=pt(i,jj)+ptop
-             294     1   p   2v       31   continue
-             295                           call unify_reduceintp(nx,my,my_max,wrk1,work)
-             296                     !
-             297                     #ifdef write_RSM
-             298                           if(myrank.eq.0) then
-             299                             krec=ksfcp
-             300                             write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
-             301                           endif
-             302                     #endif
-             303                     #ifdef send_RSM
-             304     1                     if(myrank.eq.0) then
-                                   <<< Loop-information Start >>>
-                                   <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 5
-                                   <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
-                                   <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      work, g2send
-                                   <<< Loop-information  End >>>
-             305     1  pp   2v              g2send(:,:)=work(x1:x2,y1:y2)
-             306     1                     endif
+             296     2   p   2v            do 31 i = 1,nxj
+             297     2   p   2v             wrk1(i,jj)=pt(i,jj)+ptop
+             298     1   p   2v       31   continue
+             299                           call unify_reduceintp(nx,my,my_max,wrk1,work)
+             300                     !
+             301                     #ifdef write_RSM
+             302                           if(myrank.eq.0) then
+             303                             workr8=work
+             304                             krec=ksfcp
+             305                             write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
+             306                           endif
              307                     #endif
              308                     #ifdef send_RSM
              309     1                     if(myrank.eq.0) then
-             310     1                       itag=itag0+ksfcp
-             311     1                       call mpmd_send(g2send,len2,root_rsm,itag,'R')
-             312     1                       print*,'gfs ksfcp itag=',itag
-             313     1                     endif
-             314                     #endif
-             315                     !
-             316                     !  convert virture potential temperature to temperature
-             317                     !
-             318     1                     do k=1,lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      work, g2send
+                                   <<< Loop-information  End >>>
+             310     1  pp   2v              g2send(:,:)=work(x1:x2,y1:y2)
+             311     1                     endif
+             312                     #endif
+             313                     #ifdef send_RSM
+             314     1                     if(myrank.eq.0) then
+             315     1                       itag=itag0+ksfcp
+             316     1                       call mpmd_send(g2send,len2,root_rsm,itag,'R')
+             317     1                       print*,'gfs ksfcp itag=',itag
+             318     1                     endif
+             319                     #endif
+             320                     !
+             321                     !  convert virture potential temperature to temperature
+             322                     !
+             323     1                     do k=1,lev
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      tt, pk, qt, wrk1
-                                   <<< Loop-information  End >>>
-             319     2  pp                   do 20 jj = 1, jlistnum
-             320     2   p                     j=jlist1(jj)
-             321     2   p                     nxj=nxdef_2d(j)
-                                   <<< Loop-information Start >>>
-                                   <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 0.53, ITR: 48, MVE: 2, POL: S)
-                                   <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      pk, tt, qt, wrk1
                                    <<< Loop-information  End >>>
-             322     3   p   2v              do 20 i = 1,nxj
-             323     3   p   2v                wrk1(i,jj)=tt(i,k,jj)*pk(i,k,jj)/(1.0+0.608*qt(i,k,jj))
-             324     2   p   2v       20     continue
-             325     1                       call unify_reduceintp(nx,my,my_max,wrk1,work)
-             326     1               !
-             327     1               #ifdef write_RSM
-             328     1                     if(myrank.eq.0) then
-             329     1                       krec=ktt-1+(lev-k+1)
-             330     1                       write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
-             331     1                     endif
-             332     1               #endif
-             333     1               #ifdef send_RSM
-             334     2                     if(myrank.eq.0) then
+             324     2  pp                   do 20 jj = 1, jlistnum
+             325     2   p                     j=jlist1(jj)
+             326     2   p                     nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.68, ITR: 64, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qt, pk, tt, wrk1
+                                   <<< Loop-information  End >>>
+             327     3   p   2v              do 20 i = 1,nxj
+             328     3   p   2v                wrk1(i,jj)=tt(i,k,jj)*pk(i,k,jj)/(1.0+0.608*qt(i,k,jj))
+             329     2   p   2v       20     continue
+             330     1                       call unify_reduceintp(nx,my,my_max,wrk1,work)
+             331     1               !
+             332     1               #ifdef write_RSM
+             333     1                     if(myrank.eq.0) then
+             334     1                       workr8=work
+             335     1                       krec=ktt-1+(lev-k+1)
+             336     1                       write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
+             337     1                     endif
+             338     1               #endif
+             339     1               #ifdef send_RSM
+             340     2                     if(myrank.eq.0) then
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      work, g3send
                                    <<< Loop-information  End >>>
-             335     2  pp   2v              g3send(:,:,lev-k+1)=work(x1:x2,y1:y2)
-             336     2                     endif
-             337     1               #endif
-             338     1                     enddo
-             339                     #ifdef send_RSM
-             340     1                     if(myrank.eq.0) then
+             341     2  pp   2v              g3send(:,:,lev-k+1)=work(x1:x2,y1:y2)
+             342     2                     endif
+             343     1               #endif
+             344     1                     enddo
+             345                     #ifdef send_RSM
+             346     1                     if(myrank.eq.0) then
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SPILLS :
@@ -499,20 +514,20 @@
                                    <<<      SCALABLE  : SPILL 0  FILL 0
                                    <<<      PREDICATE : SPILL 0  FILL 0
                                    <<< Loop-information  End >>>
-             341     2   s                 do k=1,lev
-             342     2   s                   itag=itag0+ktt-1+k
-             343     2   s                   call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
-             344     2   s                 enddo
-             345     1                     endif
-             346                     #endif
-             347                     
-             348                     !
-             349                     !  convert gaussain u,v component to normal u,v component
-             350                     !
-             351                     !
-             352                     ! u
-             353                     !
-             354     1                     do k=1,lev
+             347     2   s                 do k=1,lev
+             348     2   s                   itag=itag0+ktt-1+k
+             349     2   s                   call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
+             350     2   s                 enddo
+             351     1                     endif
+             352                     #endif
+             353                     
+             354                     !
+             355                     !  convert gaussain u,v component to normal u,v component
+             356                     !
+             357                     !
+             358                     ! u
+             359                     !
+             360     1                     do k=1,lev
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 3
@@ -520,109 +535,46 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ut, wrk1
                                    <<< Loop-information  End >>>
-             355     2  pp                   do 21 jj = 1, jlistnum
-             356     2   p                     j=jlist1(jj)
-             357     2   p                     nxj=nxdef_2d(j)
-             358     2   p                     xx = rad/cosl(j)
+             361     2  pp                   do 21 jj = 1, jlistnum
+             362     2   p                     j=jlist1(jj)
+             363     2   p                     nxj=nxdef_2d(j)
+             364     2   p                     xx = rad/cosl(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.75, ITR: 192, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ut, wrk1
                                    <<< Loop-information  End >>>
-             359     3   p   2v              do 21 i = 1,nxj
-             360     3   p   2v                wrk1(i,jj)=ut(i,k,jj)*xx
-             361     2   p   2v       21     continue
-             362     1                       call unify_reduceintp(nx,my,my_max,wrk1,work)
-             363     1               !
-             364     1               #ifdef write_RSM
-             365     1                     if(myrank.eq.0) then
-             366     1                       krec=kuu-1+(lev-k+1)
-             367     1                       write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
-             368     1                     endif
-             369     1               #endif
-             370     1               #ifdef send_RSM
-             371     2                     if(myrank.eq.0) then
+             365     3   p   2v              do 21 i = 1,nxj
+             366     3   p   2v                wrk1(i,jj)=ut(i,k,jj)*xx
+             367     2   p   2v       21     continue
+             368     1                       call unify_reduceintp(nx,my,my_max,wrk1,work)
+             369     1               !
+             370     1               #ifdef write_RSM
+             371     1                     if(myrank.eq.0) then
+             372     1                       workr8=work
+             373     1                       krec=kuu-1+(lev-k+1)
+             374     1                       write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
+             375     1                     endif
+             376     1               #endif
+             377     1               #ifdef send_RSM
+             378     2                     if(myrank.eq.0) then
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 5
-                                   <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
-                                   <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      work, g3send
-                                   <<< Loop-information  End >>>
-             372     2  pp   2v              g3send(:,:,lev-k+1)=work(x1:x2,y1:y2)
-             373     2                     endif
-             374     1               #endif
-             375     1                     enddo
-             376                     #ifdef send_RSM
-             377     1                     if(myrank.eq.0) then
-                                   <<< Loop-information Start >>>
-                                   <<<  [OPTIMIZATION]
-                                   <<<    SPILLS :
-                                   <<<      GENERAL   : SPILL 0  FILL 2
-                                   <<<      SIMD&FP   : SPILL 0  FILL 0
-                                   <<<      SCALABLE  : SPILL 0  FILL 0
-                                   <<<      PREDICATE : SPILL 0  FILL 0
-                                   <<< Loop-information  End >>>
-             378     2   s                 do k=1,lev
-             379     2   s                   itag=itag0+kuu-1+k
-             380     2   s                   call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
-             381     2   s                 enddo
-             382     1                     endif
-             383                     #endif
-             384                     !
-             385                     ! v
-             386                     !
-             387     1                     do k=1,lev
-                                   <<< Loop-information Start >>>
-                                   <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 3
-                                   <<<  [OPTIMIZATION]
-                                   <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      vt, wrk1
-                                   <<< Loop-information  End >>>
-             388     2  pp                   do 22 jj = 1, jlistnum
-             389     2   p                     j=jlist1(jj)
-             390     2   p                     nxj=nxdef_2d(j)
-             391     2   p                     xx = rad/cosl(j)
-                                   <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
                                    <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      vt, wrk1
-                                   <<< Loop-information  End >>>
-             392     3   p   2v              do 22 i = 1,nxj
-             393     3   p   2v                wrk1(i,jj)=vt(i,k,jj)*xx
-             394     2   p   2v       22     continue
-             395     1                       call unify_reduceintp(nx,my,my_max,wrk1,work)
-             396     1               !
-             397     1               #ifdef write_RSM
-             398     1                     if(myrank.eq.0) then
-             399     1                       krec=kvv-1+(lev-k+1)
-             400     1                       write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
-             401     1                     endif
-             402     1               #endif
-             403     1               #ifdef send_RSM
-             404     2                     if(myrank.eq.0) then
-                                   <<< Loop-information Start >>>
-                                   <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 5
-                                   <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
-                                   <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      work, g3send
                                    <<< Loop-information  End >>>
-             405     2  pp   2v              g3send(:,:,lev-k+1)=work(x1:x2,y1:y2)
-             406     2                     endif
-             407     1               #endif
-             408     1                     enddo
-             409                     #ifdef send_RSM
-             410     1                     if(myrank.eq.0) then
+             379     2  pp   2v              g3send(:,:,lev-k+1)=work(x1:x2,y1:y2)
+             380     2                     endif
+             381     1               #endif
+             382     1                     enddo
+             383                     #ifdef send_RSM
+             384     1                     if(myrank.eq.0) then
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SPILLS :
@@ -631,142 +583,63 @@
                                    <<<      SCALABLE  : SPILL 0  FILL 0
                                    <<<      PREDICATE : SPILL 0  FILL 0
                                    <<< Loop-information  End >>>
-             411     2   s                 do k=1,lev
-             412     2   s                   itag=itag0+kvv-1+k
-             413     2   s                   call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
-             414     2   s                 enddo
-             415     1                     endif
-             416                     #endif
-             417                     !
-             418                     ! specific humidity
-             419                     !
-             420     1                     do k=1,lev
+             385     2   s                 do k=1,lev
+             386     2   s                   itag=itag0+kuu-1+k
+             387     2   s                   call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
+             388     2   s                 enddo
+             389     1                     endif
+             390                     #endif
+             391                     !
+             392                     ! v
+             393                     !
+             394     1                     do k=1,lev
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 3
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      qt, wrk1
+                                   <<<      vt, wrk1
                                    <<< Loop-information  End >>>
-             421     2  pp                   do 23 jj = 1, jlistnum
-             422     2   p                     j=jlist1(jj)
-             423     2   p                     nxj=nxdef_2d(j)
+             395     2  pp                   do 22 jj = 1, jlistnum
+             396     2   p                     j=jlist1(jj)
+             397     2   p                     nxj=nxdef_2d(j)
+             398     2   p                     xx = rad/cosl(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.75, ITR: 192, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      qt, wrk1
+                                   <<<      vt, wrk1
                                    <<< Loop-information  End >>>
-             424     3   p   2v              do 23 i = 1,nxj
-             425     3   p   2v                wrk1(i,jj)=qt(i,k,jj)
-             426     2   p   2v       23     continue
-             427     1                       call unify_reduceintp(nx,my,my_max,wrk1,work)
-             428     1               !
-             429     1               #ifdef write_RSM
-             430     1                     if(myrank.eq.0) then
-             431     1                       krec=kqt-1+(lev-k+1)
-             432     1                       write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
-             433     1                     endif
-             434     1               #endif
-             435     1               #ifdef send_RSM
-             436     2                     if(myrank.eq.0) then
+             399     3   p   2v              do 22 i = 1,nxj
+             400     3   p   2v                wrk1(i,jj)=vt(i,k,jj)*xx
+             401     2   p   2v       22     continue
+             402     1                       call unify_reduceintp(nx,my,my_max,wrk1,work)
+             403     1               !
+             404     1               #ifdef write_RSM
+             405     1                     if(myrank.eq.0) then
+             406     1                       workr8=work
+             407     1                       krec=kvv-1+(lev-k+1)
+             408     1                       write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
+             409     1                     endif
+             410     1               #endif
+             411     1               #ifdef send_RSM
+             412     2                     if(myrank.eq.0) then
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      work, g3send
                                    <<< Loop-information  End >>>
-             437     2  pp   2v              g3send(:,:,lev-k+1)=work(x1:x2,y1:y2)
-             438     2                     endif
-             439     1               #endif
-             440     1                     enddo
-             441                     #ifdef send_RSM
-             442     1                     if(myrank.eq.0) then
-                                   <<< Loop-information Start >>>
-                                   <<<  [OPTIMIZATION]
-                                   <<<    SPILLS :
-                                   <<<      GENERAL   : SPILL 0  FILL 2
-                                   <<<      SIMD&FP   : SPILL 0  FILL 0
-                                   <<<      SCALABLE  : SPILL 0  FILL 0
-                                   <<<      PREDICATE : SPILL 0  FILL 0
-                                   <<< Loop-information  End >>>
-             443     2   s                 do k=1,lev
-             444     2   s                   itag=itag0+kqt-1+k
-             445     2   s                   call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
-             446     2   s                 enddo
-             447     1                     endif
-             448                     #endif
-             449                     !
-             450                     ! output all hydrometeors and ozone one by one
-             451                     !
-             452     1                     if( nclds .ge. 2 ) then
-             453     2                       do ntrac=2,nclds
-             454     2                         if(myrank .eq. 0) print *,' rsmout_sigp : ntrac=',ntrac
-             455     3                         do k=1,lev
-             456     3                           kk = (ntrac-1)*lev+k
-                                   <<< Loop-information Start >>>
-                                   <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 3
-                                   <<<  [OPTIMIZATION]
-                                   <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      qt, wrk1
-                                   <<< Loop-information  End >>>
-             457     4  pp                       do 26 jj = 1, jlistnum
-             458     4   p                         j=jlist1(jj)
-             459     4   p                         nxj=nxdef_2d(j)
-                                   <<< Loop-information Start >>>
-                                   <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
-                                   <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      qt, wrk1
-                                   <<< Loop-information  End >>>
-             460     5   p   2v                  do 26 i = 1,nxj
-             461     5   p   2v                    wrk1(i,jj)=qt(i,kk,jj)
-             462     4   p   2v       26         continue
-             463     3                           call unify_reduceintp(nx,my,my_max,wrk1,work)
-             464     3               !
-             465     4                           if(ntrac.eq.ntcw)then
-             466     4                             ktrace=kcw                                ! cloud liquid water content
-             467     4                           else if(ntrac.eq.ntiw)then
-             468     4                             ktrace=kiw                                ! cloud ice content
-             469     4                           else if(ntrac.eq.ntrw)then
-             470     4                             ktrace=krw                                ! rain
-             471     4                           else if(ntrac.eq.ntsw)then
-             472     4                             ktrace=ksw                                ! snow
-             473     4                           else if(ntrac.eq.ntgl)then
-             474     4                             ktrace=kgl                                ! graupel
-             475     4                           else
-             476     4                             stop "ERROR: rsmout_sigp: wrong tracer index found !"
-             477     4                             call mpe_finalize
-             478     4                           endif
-             479     3               #ifdef write_RSM
-             480     3                           if(myrank.eq.0) then
-             481     3                             krec=ktrace-1+(lev-k+1)
-             482     3                             write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
-             483     3                           endif
-             484     3               #endif
-             485     3               #ifdef send_RSM
-             486     4                           if(myrank.eq.0) then
-                                   <<< Loop-information Start >>>
-                                   <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 5
-                                   <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
-                                   <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      work, g3send
-                                   <<< Loop-information  End >>>
-             487     4  pp   2v                    g3send(:,:,lev-k+1)=work(x1:x2,y1:y2)
-             488     4                           endif
-             489     3               #endif
-             490     3                           enddo   !enddo k=1,lev
-             491     2               #ifdef send_RSM
-             492     3                           if(myrank.eq.0) then
+             413     2  pp   2v              g3send(:,:,lev-k+1)=work(x1:x2,y1:y2)
+             414     2                     endif
+             415     1               #endif
+             416     1                     enddo
+             417                     #ifdef send_RSM
+             418     1                     if(myrank.eq.0) then
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SPILLS :
@@ -775,20 +648,16 @@
                                    <<<      SCALABLE  : SPILL 0  FILL 0
                                    <<<      PREDICATE : SPILL 0  FILL 0
                                    <<< Loop-information  End >>>
-             493     4   s                       do k=1,lev
-             494     4   s                         itag=itag0+ktrace-1+k
-             495     4   s                         call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
-             496     4   s                       enddo
-             497     3                           endif
-             498     2               #endif
-             499     2               !
-             500     2                       enddo   !enddo ntrac=2,nclds
-             501     1                     end if    !endif (nclds.gt.2)
-             502                     !
-             503                     ! output ozone
-             504                     !
-             505     1                     if ( ntoz .eq. ncld ) then
-             506     2                       do k=1,lev
+             419     2   s                 do k=1,lev
+             420     2   s                   itag=itag0+kvv-1+k
+             421     2   s                   call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
+             422     2   s                 enddo
+             423     1                     endif
+             424                     #endif
+             425                     !
+             426                     ! specific humidity
+             427                     !
+             428     1                     do k=1,lev
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 3
@@ -796,45 +665,45 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qt, wrk1
                                    <<< Loop-information  End >>>
-             507     3  pp                     do jj = 1, jlistnum
-             508     3   p                       j=jlist1(jj)
-             509     3   p                       nxj=nxdef_2d(j)
+             429     2  pp                   do 23 jj = 1, jlistnum
+             430     2   p                     j=jlist1(jj)
+             431     2   p                     nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qt, wrk1
                                    <<< Loop-information  End >>>
-             510     4   p   2v                  do i = 1,nxj
-             511     4   p   2v                    wrk1(i,jj)=qt(i,k+(ntoz-1)*lev,jj)
-             512     4   p   2v                  enddo
-             513     3   p                     enddo
-             514     2                         call unify_reduceintp(nx,my,my_max,wrk1,work)
-             515     2               !
-             516     2               #ifdef write_RSM
-             517     2                     if(myrank.eq.0) then
-             518     2                       krec=koz-1+(lev-k+1)
-             519     2                       write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
-             520     2                     endif
-             521     2               #endif
-             522     2               #ifdef send_RSM
-             523     3                     if(myrank.eq.0) then
+             432     3   p   2v              do 23 i = 1,nxj
+             433     3   p   2v                wrk1(i,jj)=qt(i,k,jj)
+             434     2   p   2v       23     continue
+             435     1                       call unify_reduceintp(nx,my,my_max,wrk1,work)
+             436     1               !
+             437     1               #ifdef write_RSM
+             438     1                     if(myrank.eq.0) then
+             439     1                       workr8=work
+             440     1                       krec=kqt-1+(lev-k+1)
+             441     1                       write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
+             442     1                     endif
+             443     1               #endif
+             444     1               #ifdef send_RSM
+             445     2                     if(myrank.eq.0) then
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      work, g3send
                                    <<< Loop-information  End >>>
-             524     3  pp   2v              g3send(:,:,lev-k+1)=work(x1:x2,y1:y2)
-             525     3                     endif
-             526     2               #endif
-             527     2                     enddo
-             528     1               #ifdef send_RSM
-             529     2                     if(myrank.eq.0) then
+             446     2  pp   2v              g3send(:,:,lev-k+1)=work(x1:x2,y1:y2)
+             447     2                     endif
+             448     1               #endif
+             449     1                     enddo
+             450                     #ifdef send_RSM
+             451     1                     if(myrank.eq.0) then
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SPILLS :
@@ -843,29 +712,180 @@
                                    <<<      SCALABLE  : SPILL 0  FILL 0
                                    <<<      PREDICATE : SPILL 0  FILL 0
                                    <<< Loop-information  End >>>
-             530     3   s                 do k=1,lev
-             531     3   s                   itag=itag0+koz-1+k
-             532     3   s                   call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
-             533     3   s                 enddo
-             534     2                     endif
-             535     1               #endif
-             536     1               !
-             537     1                     endif
-             538                     !
-             539                     !----- start to output surface data ------
-             540     1                     if (ldosfc) then
-             541     1               
-             542     1                     if(myrank .eq. 0) print *,' rsmout_sigp : output surface file'
-             543     1               ! ***land and sea mask***(land=1,sea=0)***
+             452     2   s                 do k=1,lev
+             453     2   s                   itag=itag0+kqt-1+k
+             454     2   s                   call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
+             455     2   s                 enddo
+             456     1                     endif
+             457                     #endif
+             458                     !
+             459                     ! output all hydrometeors and ozone one by one
+             460                     !
+             461     1                     if( nclds .ge. 2 ) then
+             462     2                       do ntrac=2,nclds
+             463     2                         if(myrank .eq. 0) print *,' rsmout_sigp : ntrac=',ntrac
+             464     3                         do k=1,lev
+             465     3                           kk = (ntrac-1)*lev+k
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qt, wrk1
+                                   <<< Loop-information  End >>>
+             466     4  pp                       do 26 jj = 1, jlistnum
+             467     4   p                         j=jlist1(jj)
+             468     4   p                         nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qt, wrk1
+                                   <<< Loop-information  End >>>
+             469     5   p   2v                  do 26 i = 1,nxj
+             470     5   p   2v                    wrk1(i,jj)=qt(i,kk,jj)
+             471     4   p   2v       26         continue
+             472     3                           call unify_reduceintp(nx,my,my_max,wrk1,work)
+             473     3               !
+             474     4                           if(ntrac.eq.ntcw)then
+             475     4                             ktrace=kcw                                ! cloud liquid water content
+             476     4                           else if(ntrac.eq.ntiw)then
+             477     4                             ktrace=kiw                                ! cloud ice content
+             478     4                           else if(ntrac.eq.ntrw)then
+             479     4                             ktrace=krw                                ! rain
+             480     4                           else if(ntrac.eq.ntsw)then
+             481     4                             ktrace=ksw                                ! snow
+             482     4                           else if(ntrac.eq.ntgl)then
+             483     4                             ktrace=kgl                                ! graupel
+             484     4                           else
+             485     4                             stop "ERROR: rsmout_sigp: wrong tracer index found !"
+             486     4                             call mpe_finalize
+             487     4                           endif
+             488     3               #ifdef write_RSM
+             489     3                           if(myrank.eq.0) then
+             490     3                             workr8=work
+             491     3                             krec=ktrace-1+(lev-k+1)
+             492     3                             write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
+             493     3                           endif
+             494     3               #endif
+             495     3               #ifdef send_RSM
+             496     4                           if(myrank.eq.0) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      work, g3send
+                                   <<< Loop-information  End >>>
+             497     4  pp   2v                    g3send(:,:,lev-k+1)=work(x1:x2,y1:y2)
+             498     4                           endif
+             499     3               #endif
+             500     3                           enddo   !enddo k=1,lev
+             501     2               #ifdef send_RSM
+             502     3                           if(myrank.eq.0) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 3
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             503     4   s                       do k=1,lev
+             504     4   s                         itag=itag0+ktrace-1+k
+             505     4   s                         call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
+             506     4   s                       enddo
+             507     3                           endif
+             508     2               #endif
+             509     2               !
+             510     2                       enddo   !enddo ntrac=2,nclds
+             511     1                     end if    !endif (nclds.gt.2)
+             512                     !
+             513                     ! output ozone
+             514                     !
+             515     1                     if ( ntoz .eq. ncld ) then
+             516     2                       do k=1,lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qt, wrk1
+                                   <<< Loop-information  End >>>
+             517     3  pp                     do jj = 1, jlistnum
+             518     3   p                       j=jlist1(jj)
+             519     3   p                       nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qt, wrk1
+                                   <<< Loop-information  End >>>
+             520     4   p   2v                  do i = 1,nxj
+             521     4   p   2v                    wrk1(i,jj)=qt(i,k+(ntoz-1)*lev,jj)
+             522     4   p   2v                  enddo
+             523     3   p                     enddo
+             524     2                         call unify_reduceintp(nx,my,my_max,wrk1,work)
+             525     2               !
+             526     2               #ifdef write_RSM
+             527     2                     if(myrank.eq.0) then
+             528     2                       workr8=work
+             529     2                       krec=koz-1+(lev-k+1)
+             530     2                       write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
+             531     2                     endif
+             532     2               #endif
+             533     2               #ifdef send_RSM
+             534     3                     if(myrank.eq.0) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      work, g3send
+                                   <<< Loop-information  End >>>
+             535     3  pp   2v              g3send(:,:,lev-k+1)=work(x1:x2,y1:y2)
+             536     3                     endif
+             537     2               #endif
+             538     2                     enddo
+             539     1               #ifdef send_RSM
+             540     2                     if(myrank.eq.0) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 2
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             541     3   s                 do k=1,lev
+             542     3   s                   itag=itag0+koz-1+k
+             543     3   s                   call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
+             544     3   s                 enddo
+             545     2                     endif
+             546     1               #endif
+             547     1               !
+             548     1                     endif
+             549                     !
+             550                     !----- start to output surface data ------
+             551     1                     if (ldosfc) then
+             552     1               
+             553     1                     if(myrank .eq. 0) print *,' rsmout_sigp : output surface file'
+             554     1               ! ***land and sea mask***(land=1,sea=0)***
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 9
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      wrk1
                                    <<< Loop-information  End >>>
-             544     1  pp   4v            wrk1(:,:)=0.0
+             555     1  pp   4v            wrk1(:,:)=0.0
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 3
@@ -873,88 +893,100 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      land, ocean, wrk1
                                    <<< Loop-information  End >>>
-             545     2  pp                 do jj=1,jlistnum
-             546     2   p                   j=jlist1(jj)
-             547     2   p                   nxj=nxdef_2d(j)
+             556     2  pp                 do jj=1,jlistnum
+             557     2   p                   j=jlist1(jj)
+             558     2   p                   nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 64, MVE: 2, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.88, ITR: 128, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ocean, land, wrk1
                                    <<< Loop-information  End >>>
-             548     3   p   2v            do i=1,nxj
-             549     3   p   2v              if(land(i,jj))wrk1(i,jj)=1.0
-             550     3   p   2v              if(ocean(i,jj))wrk1(i,jj)=0.0
-             551     3   p   2v            enddo
-             552     2   p                 enddo
-             553     1                     call unify_reduceintp(nx,my,my_max,wrk1,work)
-             554     1               !
-             555     1               #ifdef write_RSM
-             556     1                     if(myrank.eq.0) then
-             557     1                       krec=kslmk
-             558     1                       write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
-             559     1                     endif
-             560     1               #endif
-             561     1               #ifdef send_RSM
-             562     2                     if(myrank.eq.0) then
+             559     3   p   2v            do i=1,nxj
+             560     3   p   2v              if(land(i,jj))wrk1(i,jj)=1.0
+             561     3   p   2v              if(ocean(i,jj))wrk1(i,jj)=0.0
+             562     3   p   2v            enddo
+             563     2   p                 enddo
+             564     1                     call unify_reduceintp(nx,my,my_max,wrk1,work)
+             565     1               !
+             566     1               #ifdef write_RSM
+             567     1                     if(myrank.eq.0) then
+             568     1                       workr8=work
+             569     1                       krec=kslmk
+             570     1                       write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
+             571     1                     endif
+             572     1               #endif
+             573     1               #ifdef send_RSM
+             574     2                     if(myrank.eq.0) then
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      work, g2send
                                    <<< Loop-information  End >>>
-             563     2  pp   2v              g2send(:,:)=work(x1:x2,y1:y2)
-             564     2                     endif
-             565     1               #endif
-             566     1               #ifdef send_RSM
-             567     2                     if(myrank.eq.0) then
-             568     2                       itag=itag0+kslmk
-             569     2                       call mpmd_send(g2send,len2,root_rsm,itag,'R')
-             570     2                     endif
-             571     1               #endif
-             572     1               ! ***snr***
-             573     1                     call unify_reduceintp(nx,my,my_max,snr,work)
-             574     1               !
-             575     1               #ifdef write_RSM
-             576     1                     if(myrank.eq.0) then
-             577     1                       krec=ksnr
-             578     1                       write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
-             579     1                     endif
-             580     1               #endif
-             581     1               #ifdef send_RSM
-             582     2                     if(myrank.eq.0) then
+             575     2  pp   2v              g2send(:,:)=work(x1:x2,y1:y2)
+             576     2                     endif
+             577     1               #endif
+             578     1               #ifdef send_RSM
+             579     2                     if(myrank.eq.0) then
+             580     2                       itag=itag0+kslmk
+             581     2                       call mpmd_send(g2send,len2,root_rsm,itag,'R')
+             582     2                     endif
+             583     1               #endif
+             584     1               ! ***snr***
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      snr, wrk1
+                                   <<< Loop-information  End >>>
+             585     1  pp   2v            wrk1=snr
+             586     1                     call unify_reduceintp(nx,my,my_max,wrk1,work)
+             587     1               !
+             588     1               #ifdef write_RSM
+             589     1                     if(myrank.eq.0) then
+             590     1                       workr8=work
+             591     1                       krec=ksnr
+             592     1                       write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
+             593     1                     endif
+             594     1               #endif
+             595     1               #ifdef send_RSM
+             596     2                     if(myrank.eq.0) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      work, g2send
                                    <<< Loop-information  End >>>
-             583     2  pp   2v              g2send(:,:)=work(x1:x2,y1:y2)
-             584     2                     endif
-             585     1               #endif
-             586     1               #ifdef send_RSM
-             587     2                     if(myrank.eq.0) then
-             588     2                       itag=itag0+ksnr
-             589     2                       call mpmd_send(g2send,len2,root_rsm,itag,'R')
-             590     2                     endif
-             591     1               #endif
-             592     1               !! ***ice***(simk in RSM-csfcfld(:,13))
+             597     2  pp   2v              g2send(:,:)=work(x1:x2,y1:y2)
+             598     2                     endif
+             599     1               #endif
+             600     1               #ifdef send_RSM
+             601     2                     if(myrank.eq.0) then
+             602     2                       itag=itag0+ksnr
+             603     2                       call mpmd_send(g2send,len2,root_rsm,itag,'R')
+             604     2                     endif
+             605     1               #endif
+             606     1               !! ***ice***(simk in RSM-csfcfld(:,13))
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 9
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      wrk1
                                    <<< Loop-information  End >>>
-             593     1  pp   4v            wrk1(:,:)=0.0
+             607     1  pp   4v            wrk1(:,:)=0.0
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 4
@@ -962,84 +994,96 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ice, wrk1
                                    <<< Loop-information  End >>>
-             594     2  pp                 do jj=1,jlistnum
-             595     2   p                   j=jlist1(jj)
-             596     2   p                   nxj=nxdef_2d(j)
+             608     2  pp                 do jj=1,jlistnum
+             609     2   p                   j=jlist1(jj)
+             610     2   p                   nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.75, ITR: 144, MVE: 4, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.50, ITR: 288, MVE: 4, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      wrk1, ice
                                    <<< Loop-information  End >>>
-             597     3   p   2v            do i=1,nxj
-             598     3   p   2v              if(ice(i,jj))wrk1(i,jj)=2.0
-             599     3   p   2v            enddo
-             600     2   p                 enddo
-             601     1                     call unify_reduceintp(nx,my,my_max,wrk1,work)
-             602     1               !
-             603     1               #ifdef write_RSM
-             604     1                     if(myrank.eq.0) then
-             605     1                       krec=ksimk
-             606     1                       write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
-             607     1                     endif
-             608     1               #endif
-             609     1               #ifdef send_RSM
-             610     2                     if(myrank.eq.0) then
+             611     3   p   2v            do i=1,nxj
+             612     3   p   2v              if(ice(i,jj))wrk1(i,jj)=2.0
+             613     3   p   2v            enddo
+             614     2   p                 enddo
+             615     1                     call unify_reduceintp(nx,my,my_max,wrk1,work)
+             616     1               !
+             617     1               #ifdef write_RSM
+             618     1                     if(myrank.eq.0) then
+             619     1                       workr8=work
+             620     1                       krec=ksimk
+             621     1                       write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
+             622     1                     endif
+             623     1               #endif
+             624     1               #ifdef send_RSM
+             625     2                     if(myrank.eq.0) then
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      work, g2send
                                    <<< Loop-information  End >>>
-             611     2  pp   2v              g2send(:,:)=work(x1:x2,y1:y2)
-             612     2                     endif
-             613     1               #endif
-             614     1               #ifdef send_RSM
-             615     2                     if(myrank.eq.0) then
-             616     2                       itag=itag0+ksimk
-             617     2                       call mpmd_send(g2send,len2,root_rsm,itag,'R')
-             618     2                     endif
-             619     1               #endif
-             620     1               ! ***tg***
-             621     1                     call unify_reduceintp(nx,my,my_max,tg,work)
-             622     1               !
-             623     1               #ifdef write_RSM
-             624     1                     if(myrank.eq.0) then
-             625     1                       krec=ktg
-             626     1                       write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
-             627     1                     endif
+             626     2  pp   2v              g2send(:,:)=work(x1:x2,y1:y2)
+             627     2                     endif
              628     1               #endif
              629     1               #ifdef send_RSM
              630     2                     if(myrank.eq.0) then
+             631     2                       itag=itag0+ksimk
+             632     2                       call mpmd_send(g2send,len2,root_rsm,itag,'R')
+             633     2                     endif
+             634     1               #endif
+             635     1               ! ***tg***
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tg, wrk1
+                                   <<< Loop-information  End >>>
+             636     1  pp   2v            wrk1=tg
+             637     1                     call unify_reduceintp(nx,my,my_max,wrk1,work)
+             638     1               !
+             639     1               #ifdef write_RSM
+             640     1                     if(myrank.eq.0) then
+             641     1                       workr8=work
+             642     1                       krec=ktg
+             643     1                       write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
+             644     1                     endif
+             645     1               #endif
+             646     1               #ifdef send_RSM
+             647     2                     if(myrank.eq.0) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      work, g2send
                                    <<< Loop-information  End >>>
-             631     2  pp   2v              g2send(:,:)=work(x1:x2,y1:y2)
-             632     2                     endif
-             633     1               #endif
-             634     1               #ifdef send_RSM
-             635     2                     if(myrank.eq.0) then
-             636     2                       itag=itag0+ktg
-             637     2                       call mpmd_send(g2send,len2,root_rsm,itag,'R')
-             638     2                     endif
-             639     1               #endif
-             640     1               !
-             641     1               ! ***0-0.1m soil moisture content [fraction]***
-             642     1               ! ***0.1-0.4m soil moisture content [fraction]***
-             643     1               ! ***0.4-1m soil moisture content [fraction]***
-             644     1               ! ***below 1m soil moisture content [fraction]***
-             645     1                     if (km/=4) stop "wrong soil layers, should be 4 layers NOAHLSM"
-             646     2                     do k=1,km
+             648     2  pp   2v              g2send(:,:)=work(x1:x2,y1:y2)
+             649     2                     endif
+             650     1               #endif
+             651     1               #ifdef send_RSM
+             652     2                     if(myrank.eq.0) then
+             653     2                       itag=itag0+ktg
+             654     2                       call mpmd_send(g2send,len2,root_rsm,itag,'R')
+             655     2                     endif
+             656     1               #endif
+             657     1               !
+             658     1               ! ***0-0.1m soil moisture content [fraction]***
+             659     1               ! ***0.1-0.4m soil moisture content [fraction]***
+             660     1               ! ***0.4-1m soil moisture content [fraction]***
+             661     1               ! ***below 1m soil moisture content [fraction]***
+             662     1                     if (km/=4) stop "wrong soil layers, should be 4 layers NOAHLSM"
+             663     2                     do k=1,km
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 3
@@ -1047,65 +1091,66 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      smc, wrk1
                                    <<< Loop-information  End >>>
-             647     3  pp                 do jj = 1, jlistnum
-             648     3   p                  j=jlist1(jj)
-             649     3   p                  nxj=nxdef_2d(j)
+             664     3  pp                 do jj = 1, jlistnum
+             665     3   p                  j=jlist1(jj)
+             666     3   p                  nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      smc, wrk1
                                    <<< Loop-information  End >>>
-             650     4   p   2v            do i = 1,nxj
-             651     4   p   2v             wrk1(i,jj)=smc(i,k,jj)
-             652     4   p   2v            enddo
-             653     3   p                 enddo
-             654     2                     call unify_reduceintp(nx,my,my_max,wrk1,work)
-             655     2               !
-             656     2               #ifdef write_RSM
-             657     2                     if(myrank.eq.0) then
-             658     2                       krec=ksmc-1+k
-             659     2                       write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
-             660     2                     endif
-             661     2               #endif
-             662     2               #ifdef send_RSM
-             663     3                     if(myrank.eq.0) then
+             667     4   p   2v            do i = 1,nxj
+             668     4   p   2v             wrk1(i,jj)=smc(i,k,jj)
+             669     4   p   2v            enddo
+             670     3   p                 enddo
+             671     2                     call unify_reduceintp(nx,my,my_max,wrk1,work)
+             672     2               !
+             673     2               #ifdef write_RSM
+             674     2                     if(myrank.eq.0) then
+             675     2                       workr8=work
+             676     2                       krec=ksmc-1+k
+             677     2                       write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
+             678     2                     endif
+             679     2               #endif
+             680     2               #ifdef send_RSM
+             681     3                     if(myrank.eq.0) then
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      work, g3send
                                    <<< Loop-information  End >>>
-             664     3  pp   2v              g3send(:,:,k)=work(x1:x2,y1:y2)
-             665     3                     endif
-             666     2               #endif
-             667     2                     enddo
-             668     1               #ifdef send_RSM
-             669     2                     if(myrank.eq.0) then
+             682     3  pp   2v              g3send(:,:,k)=work(x1:x2,y1:y2)
+             683     3                     endif
+             684     2               #endif
+             685     2                     enddo
+             686     1               #ifdef send_RSM
+             687     2                     if(myrank.eq.0) then
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SPILLS :
-                                   <<<      GENERAL   : SPILL 0  FILL 2
+                                   <<<      GENERAL   : SPILL 0  FILL 3
                                    <<<      SIMD&FP   : SPILL 0  FILL 0
                                    <<<      SCALABLE  : SPILL 0  FILL 0
                                    <<<      PREDICATE : SPILL 0  FILL 0
                                    <<< Loop-information  End >>>
-             670     3   s                 do k=1,km
-             671     3   s                   itag=itag0+ksmc-1+k
-             672     3   s                   call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
-             673     3   s                 enddo
-             674     2                     endif
-             675     1               #endif
-             676     1               !
-             677     1               ! ***0-0.1m soil temperature***
-             678     1               ! ***0.1-0.4m soil temperature***
-             679     1               ! ***0.4-1m soil temperature***
-             680     1               ! ***below 1m soil temperature***
-             681     2                     do k=1,km
+             688     3   s                 do k=1,km
+             689     3   s                   itag=itag0+ksmc-1+k
+             690     3   s                   call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
+             691     3   s                 enddo
+             692     2                     endif
+             693     1               #endif
+             694     1               !
+             695     1               ! ***0-0.1m soil temperature***
+             696     1               ! ***0.1-0.4m soil temperature***
+             697     1               ! ***0.4-1m soil temperature***
+             698     1               ! ***below 1m soil temperature***
+             699     2                     do k=1,km
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 3
@@ -1113,78 +1158,87 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      stc, wrk1
                                    <<< Loop-information  End >>>
-             682     3  pp                 do jj = 1, jlistnum
-             683     3   p                  j=jlist1(jj)
-             684     3   p                  nxj=nxdef_2d(j)
+             700     3  pp                 do jj = 1, jlistnum
+             701     3   p                  j=jlist1(jj)
+             702     3   p                  nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      stc, wrk1
                                    <<< Loop-information  End >>>
-             685     4   p   2v            do i = 1,nxj
-             686     4   p   2v             wrk1(i,jj)=stc(i,k,jj)
-             687     4   p   2v            enddo
-             688     3   p                 enddo
-             689     2                     call unify_reduceintp(nx,my,my_max,wrk1,work)
-             690     2               !
-             691     2               #ifdef write_RSM
-             692     2                     if(myrank.eq.0) then
-             693     2                       krec=kstc-1+k
-             694     2                       write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
-             695     2                     endif
-             696     2               #endif
-             697     2               #ifdef send_RSM
-             698     3                     if(myrank.eq.0) then
+             703     4   p   2v            do i = 1,nxj
+             704     4   p   2v             wrk1(i,jj)=stc(i,k,jj)
+             705     4   p   2v            enddo
+             706     3   p                 enddo
+             707     2                     call unify_reduceintp(nx,my,my_max,wrk1,work)
+             708     2               !
+             709     2               #ifdef write_RSM
+             710     2                     if(myrank.eq.0) then
+             711     2                       workr8=work
+             712     2                       krec=kstc-1+k
+             713     2                       write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
+             714     2                     endif
+             715     2               #endif
+             716     2               #ifdef send_RSM
+             717     3                     if(myrank.eq.0) then
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      work, g3send
                                    <<< Loop-information  End >>>
-             699     3  pp   2v              g3send(:,:,k)=work(x1:x2,y1:y2)
-             700     3                     endif
-             701     2               #endif
-             702     2                     enddo
-             703     1               #ifdef send_RSM
-             704     2                     if(myrank.eq.0) then
-             705     3   s                 do k=1,km
-             706     3   s                   itag=itag0+kstc-1+k
-             707     3   s                   call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
-             708     3   s                 enddo
-             709     2                     endif
-             710     1               #endif
-             711     1                     endif ! (ldosfc)
-             712                     
-             713                     !--------------
-             714                     !
-             715                     #ifdef write_RSM
-             716                           if(myrank.eq.0) then
-             717                             close(nsig)
-             718                           endif
-             719                     #endif
-             720                     #ifdef send_RSM
-             721                     ! mpmd send tag
-             722                           itag=itag0+kend
-             723                     #endif
-             724                     !
-             725                     #ifdef send_RSM
-             726                           deallocate(g3send,g2send,stat=ierr)
-             727                           if (ierr/=0) stop "rsmout_sigp: deallocate fail"
-             728                     #endif
-             729                     
-             730                     #endif
-             731                           return
-             732                           end
+             718     3  pp   2v              g3send(:,:,k)=work(x1:x2,y1:y2)
+             719     3                     endif
+             720     2               #endif
+             721     2                     enddo
+             722     1               #ifdef send_RSM
+             723     2                     if(myrank.eq.0) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 1
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             724     3   s                 do k=1,km
+             725     3   s                   itag=itag0+kstc-1+k
+             726     3   s                   call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
+             727     3   s                 enddo
+             728     2                     endif
+             729     1               #endif
+             730     1                     endif ! (ldosfc)
+             731                     
+             732                     !--------------
+             733                     !
+             734                     #ifdef write_RSM
+             735                           if(myrank.eq.0) then
+             736                             close(nsig)
+             737                           endif
+             738                     #endif
+             739                     #ifdef send_RSM
+             740                     ! mpmd send tag
+             741                           itag=itag0+kend
+             742                     #endif
+             743                     !
+             744                     #ifdef send_RSM
+             745                           deallocate(g3send,g2send,stat=ierr)
+             746                           if (ierr/=0) stop "rsmout_sigp: deallocate fail"
+             747                     #endif
+             748                     
+             749                     #endif
+             750                           return
+             751                           end
 
  Procedure information
-   Lines      : 732
-   Statements : 405
-   Stack(byte): 17168
+   Lines      : 751
+   Statements : 411
+   Stack(byte): 18288
    Prefetch num: 0
 
  Scoping unit of external sub-program : rsmout_sigp
@@ -1192,21 +1246,21 @@
      cfhour
       |(Class and Type) : variable name, CHARACTER(16,1)
       |(Attributes)     : 
-      |(Declaration)    : 63
-      |(Definition)     : 111
+      |(Declaration)    : 66
+      |(Definition)     : 114
       |(Reference)      : 
      cform
       |(Class and Type) : variable name, CHARACTER(40,1)
       |(Attributes)     : 
-      |(Declaration)    : 63
-      |(Definition)     : 110
-      |(Reference)      : 111
+      |(Declaration)    : 66
+      |(Definition)     : 113
+      |(Reference)      : 114
      cidtg
       |(Class and Type) : variable name, CHARACTER(12,1)
       |(Attributes)     : 
-      |(Declaration)    : 63
-      |(Definition)     : 112
-      |(Reference)      : 179  188
+      |(Declaration)    : 66
+      |(Definition)     : 115
+      |(Reference)      : 182  192
      const
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -1214,83 +1268,83 @@
       |(Definition)     : 
       |(Reference)      : 23
      cosl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  33
+      |(Declaration)    : 1  40
       |(Definition)     : 
-      |(Reference)      : 358  391
+      |(Reference)      : 364  398
      dx
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 46
-      |(Definition)     : 151
-      |(Reference)      : 153
+      |(Declaration)    : 49
+      |(Definition)     : 154
+      |(Reference)      : 156
      dy
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 46
-      |(Definition)     : 152
-      |(Reference)      : 153
+      |(Declaration)    : 49
+      |(Definition)     : 155
+      |(Reference)      : 156
      float
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 75  75  238
+      |(Reference)      : 78  78  242
      g2send
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION
-      |(Declaration)    : 58
-      |(Definition)     : 213  276  282  305  311  563  569  583  589  611  617  631  637  726
+      |(Declaration)    : 61
+      |(Definition)     : 217  280  286  310  316  575  581  597  603  626  632  648  654  745
       |(Reference)      : 
      g3send
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION
-      |(Declaration)    : 58
-      |(Definition)     : 213  335  343  372  380  405  413  437  445  487  495  524  532  664  672  699  707  726
+      |(Declaration)    : 61
+      |(Definition)     : 217  341  349  379  387  413  421  446  454  497  505  535  543  682  690  718  726  745
       |(Reference)      : 
      grav
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  31
+      |(Declaration)    : 1  32
       |(Definition)     : 
-      |(Reference)      : 264
+      |(Reference)      : 268
      gwr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  33
+      |(Declaration)    : 1  41
       |(Definition)     : 
       |(Reference)      : 
      i
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 51
-      |(Definition)     : 81  170  263  292  322  359  392  424  460  510  548  597  650  685
-      |(Reference)      : 82  171  172  264  264  293  293  323  323  323  323  360  360  393  393  425  425  461  461  511  511  549  549  550  550  598  598  651  651  686  686
+      |(Declaration)    : 54
+      |(Definition)     : 84  173  267  296  327  365  399  432  469  520  559  611  667  703
+      |(Reference)      : 85  174  175  268  268  297  297  328  328  328  328  366  366  400  400  433  433  470  470  521  521  560  560  561  561  612  612  668  668  704  704
      ice
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  43
+      |(Declaration)    : 1  46
       |(Definition)     : 
-      |(Reference)      : 598
+      |(Reference)      : 612
      idtg
       |(Class and Type) : variable name, INTEGER(8)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  48
+      |(Declaration)    : 1  51
       |(Definition)     : 
-      |(Reference)      : 112
+      |(Reference)      : 115
      ierr
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 60
-      |(Definition)     : 179  188  213  726
-      |(Reference)      : 181  190  215  216  727
+      |(Declaration)    : 63
+      |(Definition)     : 182  192  217  745
+      |(Reference)      : 184  194  219  220  746
      ii
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 51
-      |(Definition)     : 169  173
-      |(Reference)      : 171  172  172  173
+      |(Declaration)    : 54
+      |(Definition)     : 172  176
+      |(Reference)      : 174  175  175  176
      index
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -1301,260 +1355,260 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 184  185  193  194  237  238  252  253  281  282  310  311  342  343  379  380  412  413  444  445  494  495  531  532  568  569  588  589  616  617  636  637  671  672  706  707  722
-      |(Reference)      : 206  239  254  283  312
+      |(Definition)     : 188  189  197  198  241  242  256  257  285  286  315  316  348  349  386  387  420  421  453  454  504  505  542  543  580  581  602  603  631  632  653  654  689  690  725  726  741
+      |(Reference)      : 210  243  258  287  317
      itag0
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 65
-      |(Definition)     : 206
-      |(Reference)      : 237  252  281  310  342  379  412  444  494  531  568  588  616  636  671  706  722
+      |(Declaration)    : 68
+      |(Definition)     : 210
+      |(Reference)      : 241  256  285  315  348  386  420  453  504  542  580  602  631  653  689  725  741
      itau
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  29
+      |(Declaration)    : 1  30
       |(Definition)     : 
-      |(Reference)      : 75  109  111  165  238
+      |(Reference)      : 78  112  114  168  242
      j
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 51
-      |(Definition)     : 167  261  290  320  356  389  422  458  508  546  595  648  683
-      |(Reference)      : 168  169  262  291  321  357  358  390  391  423  459  509  547  596  649  684
+      |(Declaration)    : 54
+      |(Definition)     : 170  265  294  325  362  396  430  467  518  557  609  665  701
+      |(Reference)      : 171  172  266  295  326  363  364  397  398  431  468  519  558  610  666  702
      jj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 51
-      |(Definition)     : 166  260  289  319  355  388  421  457  507  545  594  647  682
-      |(Reference)      : 167  171  171  172  172  172  261  264  264  290  293  293  320  323  323  323  323  356  360  360  389  393  393  422  425  425  458  461  461  508  511  511  546  549  549  550  550  595  598  598  648  651  651  683  686  686
+      |(Declaration)    : 54
+      |(Definition)     : 169  264  293  324  361  395  429  466  517  556  608  664  700
+      |(Reference)      : 170  174  174  175  175  175  265  268  268  294  297  297  325  328  328  328  328  362  366  366  396  400  400  430  433  433  467  470  470  518  521  521  557  560  560  561  561  609  612  612  665  668  668  701  704  704
      jlist1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 167  261  290  320  356  389  422  458  508  546  595  648  683
+      |(Reference)      : 170  265  294  325  362  396  430  467  518  557  609  665  701
      jlistnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 166  260  289  319  355  388  421  457  507  545  594  647  682
+      |(Reference)      : 169  264  293  324  361  395  429  466  517  556  608  664  700
      k
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 51
-      |(Definition)     : 318  341  354  378  387  411  420  443  455  493  506  530  646  670  681  705
-      |(Reference)      : 323  323  323  335  342  343  360  372  379  380  393  405  412  413  425  437  444  445  456  487  494  495  511  524  531  532  651  664  671  672  686  699  706  707
+      |(Declaration)    : 54
+      |(Definition)     : 323  347  360  385  394  419  428  452  464  503  516  541  663  688  699  724
+      |(Reference)      : 328  328  328  341  348  349  366  379  386  387  400  413  420  421  433  446  453  454  465  497  504  505  521  535  542  543  668  682  689  690  704  718  725  726
      kcw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 69
-      |(Definition)     : 127
-      |(Reference)      : 128  145  466
+      |(Declaration)    : 72
+      |(Definition)     : 130
+      |(Reference)      : 131  148  475
      kend
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 71
-      |(Definition)     : 139
-      |(Reference)      : 147  722
+      |(Declaration)    : 74
+      |(Definition)     : 142
+      |(Reference)      : 150  741
      kfh
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 68
-      |(Definition)     : 119
-      |(Reference)      : 120  145  237
+      |(Declaration)    : 71
+      |(Definition)     : 122
+      |(Reference)      : 123  148  241
      kgl
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 69
-      |(Definition)     : 138
-      |(Reference)      : 139  147  474
+      |(Declaration)    : 72
+      |(Definition)     : 141
+      |(Reference)      : 142  150  483
      kiw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 69
-      |(Definition)     : 136
-      |(Reference)      : 137  147  468
+      |(Declaration)    : 72
+      |(Definition)     : 139
+      |(Reference)      : 140  150  477
      kk
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 51
-      |(Definition)     : 456
-      |(Reference)      : 461
+      |(Declaration)    : 54
+      |(Definition)     : 465
+      |(Reference)      : 470
      klat
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 72
-      |(Definition)     : 118
-      |(Reference)      : 143  193
+      |(Declaration)    : 75
+      |(Definition)     : 121
+      |(Reference)      : 146  197
      klon
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 72
-      |(Definition)     : 117
-      |(Reference)      : 143  184
+      |(Declaration)    : 75
+      |(Definition)     : 120
+      |(Reference)      : 146  188
      km
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  29
+      |(Declaration)    : 1  30
       |(Definition)     : 
-      |(Reference)      : 33  33  80  645  646  670  681  705
+      |(Reference)      : 41  41  83  662  663  688  699  724
      knt
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 68
-      |(Definition)     : 120
-      |(Reference)      : 121  145  252
+      |(Declaration)    : 71
+      |(Definition)     : 123
+      |(Reference)      : 124  148  256
      koz
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 69
-      |(Definition)     : 128
-      |(Reference)      : 129  145  531
+      |(Declaration)    : 72
+      |(Definition)     : 131
+      |(Reference)      : 132  148  542
      kqt
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 69
-      |(Definition)     : 126
-      |(Reference)      : 127  145  444
+      |(Declaration)    : 72
+      |(Definition)     : 129
+      |(Reference)      : 130  148  453
      krec
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 71
+      |(Declaration)    : 74
       |(Definition)     : 
       |(Reference)      : 
      krw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 69
-      |(Definition)     : 135
-      |(Reference)      : 136  147  470
+      |(Declaration)    : 72
+      |(Definition)     : 138
+      |(Reference)      : 139  150  479
      ksfcp
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 68
-      |(Definition)     : 122
-      |(Reference)      : 123  145  310
+      |(Declaration)    : 71
+      |(Definition)     : 125
+      |(Reference)      : 126  148  315
      ksgeo
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 68
-      |(Definition)     : 121
-      |(Reference)      : 122  145  281
+      |(Declaration)    : 71
+      |(Definition)     : 124
+      |(Reference)      : 125  148  285
      ksimk
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 70
-      |(Definition)     : 131
-      |(Reference)      : 132  147  616
+      |(Declaration)    : 73
+      |(Definition)     : 134
+      |(Reference)      : 135  150  631
      kslmk
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 70
-      |(Definition)     : 129
-      |(Reference)      : 130  147  568
+      |(Declaration)    : 73
+      |(Definition)     : 132
+      |(Reference)      : 133  150  580
      ksmc
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 70
-      |(Definition)     : 133
-      |(Reference)      : 134  147  671
+      |(Declaration)    : 73
+      |(Definition)     : 136
+      |(Reference)      : 137  150  689
      ksnr
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 70
-      |(Definition)     : 130
-      |(Reference)      : 131  147  588
+      |(Declaration)    : 73
+      |(Definition)     : 133
+      |(Reference)      : 134  150  602
      kstc
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 70
-      |(Definition)     : 134
-      |(Reference)      : 135  147  706
+      |(Declaration)    : 73
+      |(Definition)     : 137
+      |(Reference)      : 138  150  725
      ksw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 69
-      |(Definition)     : 137
-      |(Reference)      : 138  147  472
+      |(Declaration)    : 72
+      |(Definition)     : 140
+      |(Reference)      : 141  150  481
      ktg
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 70
-      |(Definition)     : 132
-      |(Reference)      : 133  147  636
+      |(Declaration)    : 73
+      |(Definition)     : 135
+      |(Reference)      : 136  150  653
      ktrace
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 71
-      |(Definition)     : 115  466  468  470  472  474
-      |(Reference)      : 145  494
+      |(Declaration)    : 74
+      |(Definition)     : 118  475  477  479  481  483
+      |(Reference)      : 148  504
      ktt
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 68
-      |(Definition)     : 123
-      |(Reference)      : 124  145  342
+      |(Declaration)    : 71
+      |(Definition)     : 126
+      |(Reference)      : 127  148  348
      kuu
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 68
-      |(Definition)     : 124
-      |(Reference)      : 125  145  379
+      |(Declaration)    : 71
+      |(Definition)     : 127
+      |(Reference)      : 128  148  386
      kvv
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 68
-      |(Definition)     : 125
-      |(Reference)      : 126  145  412
+      |(Declaration)    : 71
+      |(Definition)     : 128
+      |(Reference)      : 129  148  420
      land
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  43
+      |(Declaration)    : 1  46
       |(Definition)     : 
-      |(Reference)      : 549
+      |(Reference)      : 560
      ldosfc
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : 
-      |(Declaration)    : 27
-      |(Definition)     : 75
-      |(Reference)      : 540
+      |(Declaration)    : 28
+      |(Definition)     : 78
+      |(Reference)      : 551
      len2
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 55
-      |(Definition)     : 161  282  311  343  380  413  445  495  532  569  589  617  637  672  707
+      |(Declaration)    : 58
+      |(Definition)     : 164  286  316  349  387  421  454  505  543  581  603  632  654  690  726
       |(Reference)      : 
      lev
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  29
+      |(Declaration)    : 1  30
       |(Definition)     : 
-      |(Reference)      : 33  33  33  33  33  79  124  125  126  127  128  129  136  137  138  139  213  318  335  341  354  372  378  387  405  411  420  437  443  455  456  487  493  506  511  524  530
+      |(Reference)      : 34  34  34  34  34  82  127  128  129  130  131  132  139  140  141  142  217  323  341  347  360  379  385  394  413  419  428  446  452  464  465  497  503  516  521  535  541
      log10
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 109
+      |(Reference)      : 112
      max
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 109
+      |(Reference)      : 112
      min
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 153
+      |(Reference)      : 156
      mod
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 75
+      |(Reference)      : 78
      mpe
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -1566,65 +1620,65 @@
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 216  477
+      |(Reference)      : 220  486
      mpmd_send
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 185  194  238  253  282  311  343  380  413  445  495  532  569  589  617  637  672  707
+      |(Reference)      : 189  198  242  257  286  316  349  387  421  454  505  543  581  603  632  654  690  726
      my
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  29
-      |(Definition)     : 176  266  295  325  362  395  427  463  514  553  573  601  621  654  689
-      |(Reference)      : 33  33  45  78  79  80
+      |(Declaration)    : 1  30
+      |(Definition)     : 179  270  299  330  368  402  435  472  524  564  586  615  637  671  707
+      |(Reference)      : 38  40  41  48  81  82  83
      my_max
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  29
-      |(Definition)     : 176  266  295  325  362  395  427  463  514  553  573  601  621  654  689
-      |(Reference)      : 33  33  33  33  33  33  33  33  33  33  33  33  33  43  43  43  45
+      |(Declaration)    : 1  30
+      |(Definition)     : 179  270  299  330  368  402  435  472  524  564  586  615  637  671  707
+      |(Reference)      : 34  34  34  34  34  34  34  38  41  41  41  41  41  46  46  46  48
      myrank
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 85  91  93  141  154  178  204  236  251  275  280  304  309  334  340  371  377  404  410  436  442  454  486  492  523  529  542  562  567  582  587  610  615  630  635  663  669  698  704
+      |(Reference)      : 88  94  96  144  157  181  208  240  255  279  284  309  314  340  346  378  384  412  418  445  451  463  496  502  534  540  553  574  579  596  601  625  630  647  652  681  687  717  723
      mys
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 55
-      |(Definition)     : 156  194
-      |(Reference)      : 160  161  199  213  213
+      |(Declaration)    : 58
+      |(Definition)     : 159  198
+      |(Reference)      : 163  164  203  217  217
      ncld
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  29
+      |(Declaration)    : 1  30
       |(Definition)     : 
-      |(Reference)      : 33  89  505
+      |(Reference)      : 34  92  515
      nclds
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 51
-      |(Definition)     : 87  89
-      |(Reference)      : 91  97  452  453
+      |(Declaration)    : 54
+      |(Definition)     : 90  92
+      |(Reference)      : 94  100  461  462
      ndig
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 62
-      |(Definition)     : 109
-      |(Reference)      : 110  110
+      |(Declaration)    : 65
+      |(Definition)     : 112
+      |(Reference)      : 113  113
      nint
       |(Class and Type) : intrinsic function name, INTEGER(4)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 155  156  157  159
+      |(Reference)      : 158  159  160  162
      nsig
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 62
+      |(Declaration)    : 65
       |(Definition)     : 
       |(Reference)      : 
      ntcw
@@ -1632,139 +1686,145 @@
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 16  93  99  465
+      |(Reference)      : 16  96  102  474
      ntgl
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 16  93  103  473
+      |(Reference)      : 16  96  106  482
      ntindex
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 73
-      |(Definition)     : 97  98  99  100  101  102  103  253
+      |(Declaration)    : 76
+      |(Definition)     : 100  101  102  103  104  105  106  257
       |(Reference)      : 
      ntiw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 16  93  101  467
+      |(Reference)      : 16  96  104  476
      ntoz
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 16  85  86  87  93  98  505  511
+      |(Reference)      : 16  88  89  90  96  101  515  521
      ntrac
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 51
-      |(Definition)     : 453
-      |(Reference)      : 454  456  465  467  469  471  473
+      |(Declaration)    : 54
+      |(Definition)     : 462
+      |(Reference)      : 463  465  474  476  478  480  482
      ntrw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 16  93  100  469
+      |(Reference)      : 16  96  103  478
      ntsw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 16  93  102  471
+      |(Reference)      : 16  96  105  480
      nx
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  29
-      |(Definition)     : 176  266  295  325  362  395  427  463  514  553  573  601  621  654  689
-      |(Reference)      : 33  45  78  79  80
+      |(Declaration)    : 1  30
+      |(Definition)     : 179  270  299  330  368  402  435  472  524  564  586  615  637  671  707
+      |(Reference)      : 38  41  48  81  82  83
      nxdef_2d
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 168  262  291  321  357  390  423  459  509  547  596  649  684
+      |(Reference)      : 171  266  295  326  363  397  431  468  519  558  610  666  702
      nxj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 51
-      |(Definition)     : 168  262  291  321  357  390  423  459  509  547  596  649  684
-      |(Reference)      : 170  263  292  322  359  392  424  460  510  548  597  650  685
+      |(Declaration)    : 54
+      |(Definition)     : 171  266  295  326  363  397  431  468  519  558  610  666  702
+      |(Reference)      : 173  267  296  327  365  399  432  469  520  559  611  667  703
      nxjstart
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 169
+      |(Reference)      : 172
      nxmy
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 54
-      |(Definition)     : 78
-      |(Reference)      : 81
+      |(Declaration)    : 57
+      |(Definition)     : 81
+      |(Reference)      : 84
      nxmyl
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 54
-      |(Definition)     : 79
+      |(Declaration)    : 57
+      |(Definition)     : 82
       |(Reference)      : 
      nxmys
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 54
-      |(Definition)     : 80
+      |(Declaration)    : 57
+      |(Definition)     : 83
       |(Reference)      : 
      nxp
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 33  33  33  33  33  33  33  33  33  33  33  33  33  43  43  43
+      |(Reference)      : 34  34  34  34  34  34  34  38  41  41  41  41  41  46  46  46
      nxs
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 55
-      |(Definition)     : 155  185
-      |(Reference)      : 158  161  199  213  213
+      |(Declaration)    : 58
+      |(Definition)     : 158  189
+      |(Reference)      : 161  164  203  217  217
      ocean
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  43
+      |(Declaration)    : 1  46
       |(Definition)     : 
-      |(Reference)      : 550
+      |(Reference)      : 561
      pk
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  33
+      |(Declaration)    : 1  34
       |(Definition)     : 
-      |(Reference)      : 323
+      |(Reference)      : 328
      pt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  33
+      |(Declaration)    : 1  34
       |(Definition)     : 
-      |(Reference)      : 293
+      |(Reference)      : 297
      ptop
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  31
+      |(Declaration)    : 1  32
       |(Definition)     : 
-      |(Reference)      : 293
+      |(Reference)      : 297
      qt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  33
+      |(Declaration)    : 1  34
       |(Definition)     : 
-      |(Reference)      : 323  425  461  511
+      |(Reference)      : 328  433  470  521
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 23  34  38  40
      rad
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  31
+      |(Declaration)    : 1  32
       |(Definition)     : 
-      |(Reference)      : 358  391
+      |(Reference)      : 364  398
      radn
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -1780,44 +1840,44 @@
      recsize
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 62
+      |(Declaration)    : 65
       |(Definition)     : 
       |(Reference)      : 
      rgrdsz
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : use-associated
       |(Declaration)    : 
-      |(Definition)     : 153
-      |(Reference)      : 23  154  155  156  157  159
+      |(Definition)     : 156
+      |(Reference)      : 23  157  158  159  160  162
      rlat1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 23  156  159
+      |(Reference)      : 23  159  162
      rlat2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 23  156
+      |(Reference)      : 23  159
      rlon1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 23  155  157
+      |(Reference)      : 23  158  160
      rlon2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 23  155
+      |(Reference)      : 23  158
      root_rsm
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 185  194  238  253  282  311  343  380  413  445  495  532  569  589  617  637  672  707
+      |(Definition)     : 189  198  242  257  286  316  349  387  421  454  505  543  581  603  632  654  690  726
       |(Reference)      : 
      rsmout_sigp
       |(Class and Type) : external subroutine name
@@ -1830,137 +1890,143 @@
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 23  75
+      |(Reference)      : 23  78
      sgeo
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  33
+      |(Declaration)    : 1  34
       |(Definition)     : 
-      |(Reference)      : 264
+      |(Reference)      : 268
      smc
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  33
+      |(Declaration)    : 1  41
       |(Definition)     : 
-      |(Reference)      : 651
+      |(Reference)      : 668
      snr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  33
-      |(Definition)     : 573
-      |(Reference)      : 
+      |(Declaration)    : 1  41
+      |(Definition)     : 
+      |(Reference)      : 585
      stc
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  33
+      |(Declaration)    : 1  41
       |(Definition)     : 
-      |(Reference)      : 686
+      |(Reference)      : 704
      tg
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  33
-      |(Definition)     : 621
-      |(Reference)      : 
-     tt
-      |(Class and Type) : variable name, REAL(8)
-      |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  33
+      |(Declaration)    : 1  41
       |(Definition)     : 
-      |(Reference)      : 323
+      |(Reference)      : 636
+     tt
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  34
+      |(Definition)     : 
+      |(Reference)      : 328
      unify_reduceintp
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 176  266  295  325  362  395  427  463  514  553  573  601  621  654  689
+      |(Reference)      : 179  270  299  330  368  402  435  472  524  564  586  615  637  671  707
      ut
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  33
+      |(Declaration)    : 1  34
       |(Definition)     : 
-      |(Reference)      : 360
+      |(Reference)      : 366
      vt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  33
+      |(Declaration)    : 1  34
       |(Definition)     : 
-      |(Reference)      : 393
+      |(Reference)      : 400
      work
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 38
+      |(Definition)     : 85  179  270  299  330  368  402  435  472  524  564  586  615  637  671  707
+      |(Reference)      : 185  187  280  310  341  379  413  446  497  535  575  597  626  648  682  718
+     workr8
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 33
-      |(Definition)     : 82  176  185  266  295  325  362  395  427  463  514  553  573  601  621  654  689
-      |(Reference)      : 182  276  305  335  372  405  437  487  524  563  583  611  631  664  699
+      |(Declaration)    : 41
+      |(Definition)     : 187  189
+      |(Reference)      : 
      wrk1
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 33
-      |(Definition)     : 171  172  176  264  266  293  295  323  325  360  362  393  395  425  427  461  463  511  514  544  549  550  553  593  598  601  651  654  686  689
+      |(Declaration)    : 38
+      |(Definition)     : 174  175  179  268  270  297  299  328  330  366  368  400  402  433  435  470  472  521  524  555  560  561  564  585  586  607  612  615  636  637  668  671  704  707
       |(Reference)      : 
      x1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 56
-      |(Definition)     : 157
-      |(Reference)      : 158  182  185  199  276  305  335  372  405  437  487  524  563  583  611  631  664  699
+      |(Declaration)    : 59
+      |(Definition)     : 160
+      |(Reference)      : 161  185  189  203  280  310  341  379  413  446  497  535  575  597  626  648  682  718
      x2
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 56
-      |(Definition)     : 158
-      |(Reference)      : 182  185  199  276  305  335  372  405  437  487  524  563  583  611  631  664  699
+      |(Declaration)    : 59
+      |(Definition)     : 161
+      |(Reference)      : 185  189  203  280  310  341  379  413  446  497  535  575  597  626  648  682  718
      xlat
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  45
-      |(Definition)     : 194
-      |(Reference)      : 152  152  191
+      |(Declaration)    : 1  48
+      |(Definition)     : 198
+      |(Reference)      : 155  155  195
      xlon
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  45
+      |(Declaration)    : 1  48
       |(Definition)     : 
-      |(Reference)      : 151  151  171  172  172
+      |(Reference)      : 154  154  174  175  175
      xx
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 52
-      |(Definition)     : 358  391
-      |(Reference)      : 360  393
+      |(Declaration)    : 55
+      |(Definition)     : 364  398
+      |(Reference)      : 366  400
      y1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 56
-      |(Definition)     : 159
-      |(Reference)      : 160  191  194  199  276  305  335  372  405  437  487  524  563  583  611  631  664  699
+      |(Declaration)    : 59
+      |(Definition)     : 162
+      |(Reference)      : 163  195  198  203  280  310  341  379  413  446  497  535  575  597  626  648  682  718
      y2
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 56
-      |(Definition)     : 160
-      |(Reference)      : 191  194  199  276  305  335  372  405  437  487  524  563  583  611  631  664  699
+      |(Declaration)    : 59
+      |(Definition)     : 163
+      |(Reference)      : 195  198  203  280  310  341  379  413  446  497  535  575  597  626  648  682  718
    Cross reference of label
      (Label) (label-kind)               (line-no.)
      ------- ------------- ------------ ----------
-         20  execution     (Definition) 324  
-                           (Reference)  319  322
-         21  execution     (Definition) 361  
-                           (Reference)  355  359
-         22  execution     (Definition) 394  
-                           (Reference)  388  392
-         23  execution     (Definition) 426  
-                           (Reference)  421  424
-         26  execution     (Definition) 462  
-                           (Reference)  457  460
-         28  execution     (Definition) 265  
-                           (Reference)  260  263
-         31  execution     (Definition) 294  
-                           (Reference)  289  292
+         20  execution     (Definition) 329  
+                           (Reference)  324  327
+         21  execution     (Definition) 367  
+                           (Reference)  361  365
+         22  execution     (Definition) 401  
+                           (Reference)  395  399
+         23  execution     (Definition) 434  
+                           (Reference)  429  432
+         26  execution     (Definition) 471  
+                           (Reference)  466  469
+         28  execution     (Definition) 269  
+                           (Reference)  264  267
+         31  execution     (Definition) 298  
+                           (Reference)  293  296
 
  Total information
    Procedures       : 1
-   Total lines      : 732
-   Total statements : 405
-   Total stack(byte): 17168
+   Total lines      : 751
+   Total statements : 411
+   Total stack(byte): 18288
    Total prefetch num: 0
 

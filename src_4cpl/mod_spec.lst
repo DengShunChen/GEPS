@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Tue Aug 29 14:57:27 2023
+ Fujitsu Fortran Version 4.6.1  Fri Dec  1 17:11:04 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72/src_4cpl
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_4cpl
    Source file       : mod_spec.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -129,7 +129,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      vornow
                                    <<< Loop-information  End >>>
@@ -138,7 +138,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      divnow
                                    <<< Loop-information  End >>>
@@ -147,7 +147,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      temnow
                                    <<< Loop-information  End >>>
@@ -156,7 +156,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      vormid
                                    <<< Loop-information  End >>>
@@ -165,7 +165,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      divmid
                                    <<< Loop-information  End >>>
@@ -174,7 +174,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      temmid
                                    <<< Loop-information  End >>>
@@ -184,7 +184,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      vorold
                                    <<< Loop-information  End >>>
@@ -193,7 +193,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      divold
                                    <<< Loop-information  End >>>
@@ -202,7 +202,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      temold
                                    <<< Loop-information  End >>>
@@ -212,7 +212,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      trefs
                                    <<< Loop-information  End >>>
@@ -221,7 +221,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      vorten
                                    <<< Loop-information  End >>>
@@ -230,7 +230,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      divten
                                    <<< Loop-information  End >>>
@@ -239,7 +239,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      temten
                                    <<< Loop-information  End >>>
@@ -249,7 +249,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      hldten
                                    <<< Loop-information  End >>>
@@ -258,7 +258,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      plnow
                                    <<< Loop-information  End >>>
@@ -267,7 +267,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      plold
                                    <<< Loop-information  End >>>
@@ -277,7 +277,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      spgeo
                                    <<< Loop-information  End >>>
@@ -332,31 +332,31 @@
       |(Definition)     : 
       |(Reference)      : 5
      divmid
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 18
       |(Definition)     : 
       |(Reference)      : 
      divnow
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 18
       |(Definition)     : 
       |(Reference)      : 
      divold
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 18
       |(Definition)     : 
       |(Reference)      : 
      divten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 18
       |(Definition)     : 
       |(Reference)      : 
      hldten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 18
       |(Definition)     : 
@@ -386,43 +386,43 @@
       |(Definition)     : 
       |(Reference)      : 6
      plmid
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 24
       |(Definition)     : 
       |(Reference)      : 
      plnow
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 24
       |(Definition)     : 
       |(Reference)      : 
      plnowL
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 27
       |(Definition)     : 
       |(Reference)      : 
      plold
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 24
       |(Definition)     : 
       |(Reference)      : 
      ploldL
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 27
       |(Definition)     : 
       |(Reference)      : 
      plten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 24
       |(Definition)     : 
       |(Reference)      : 
      pltenL
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 27
       |(Definition)     : 
@@ -440,61 +440,61 @@
       |(Definition)     : 
       |(Reference)      : 112
      spgeo
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 24
       |(Definition)     : 
       |(Reference)      : 
      temmid
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 18
       |(Definition)     : 
       |(Reference)      : 
      temnow
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 18
       |(Definition)     : 
       |(Reference)      : 
      temold
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 18
       |(Definition)     : 
       |(Reference)      : 
      temten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 18
       |(Definition)     : 
       |(Reference)      : 
      trefs
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 18
       |(Definition)     : 
       |(Reference)      : 
      vormid
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 18
       |(Definition)     : 
       |(Reference)      : 
      vornow
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 18
       |(Definition)     : 
       |(Reference)      : 
      vorold
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 18
       |(Definition)     : 
       |(Reference)      : 
      vorten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 18
       |(Definition)     : 
@@ -509,31 +509,31 @@
       |(Definition)     : 32
       |(Reference)      : 
      divmid
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 36  70
       |(Reference)      : 
      divnow
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 36  67
       |(Reference)      : 
      divold
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 36  74
       |(Reference)      : 
      divten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 36  79
       |(Reference)      : 
      hldten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 36  82
@@ -581,85 +581,85 @@
       |(Definition)     : 
       |(Reference)      : 59
      plmid
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 36
       |(Reference)      : 
      plnow
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 36  83
       |(Reference)      : 
      plold
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 36  84
       |(Reference)      : 
      plten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 36
       |(Reference)      : 
      spgeo
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 36  86
       |(Reference)      : 
      temmid
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 36  71
       |(Reference)      : 
      temnow
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 36  68
       |(Reference)      : 
      temold
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 36  75
       |(Reference)      : 
      temten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 36  80
       |(Reference)      : 
      trefs
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 36  77
       |(Reference)      : 
      vormid
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 36  69
       |(Reference)      : 
      vornow
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 36  66
       |(Reference)      : 
      vorold
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 36  73
       |(Reference)      : 
      vorten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 36  78
@@ -674,31 +674,31 @@
       |(Definition)     : 93
       |(Reference)      : 
      divmid
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 97
       |(Reference)      : 
      divnow
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 97
       |(Reference)      : 
      divold
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 97
       |(Reference)      : 
      divten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 97
       |(Reference)      : 
      hldten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 97
@@ -716,103 +716,103 @@
       |(Definition)     : 105
       |(Reference)      : 
      plmid
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 97
       |(Reference)      : 
      plnow
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 97
       |(Reference)      : 
      plnowL
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 106
       |(Reference)      : 
      plold
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 97
       |(Reference)      : 
      ploldL
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 106
       |(Reference)      : 
      plten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 97
       |(Reference)      : 
      pltenL
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 106
       |(Reference)      : 
      spgeo
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 97
       |(Reference)      : 
      temmid
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 97
       |(Reference)      : 
      temnow
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 97
       |(Reference)      : 
      temold
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 97
       |(Reference)      : 
      temten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 97
       |(Reference)      : 
      trefs
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 97
       |(Reference)      : 
      vormid
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 97
       |(Reference)      : 
      vornow
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 97
       |(Reference)      : 
      vorold
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 97
       |(Reference)      : 
      vorten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 97

@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Tue Aug 29 14:58:49 2023
+ Fujitsu Fortran Version 4.6.1  Fri Dec  1 17:12:25 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72/src_4cpl
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_4cpl
    Source file       : intgrt_3tl.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -205,7 +205,7 @@
              143                                   istst,ii,nxjf !,n_stable,n_unstable,nc_stable
              144                     
              145                           real    www,dtx,dta,thdai,tkei,tpei,dsigp,            &
-             146                                   cosw,tengi,dt24,tg2,dtx_tau,hfiltx,sqhaf,     &
+             146                                   cosw,tengi,dt24,tg2,dtx_tau,sqhaf,            &
              147                                   dummy,dt1,sptend,wmax,xx,facw,dtaup!!,          &
              148                     !!              sptendmax2,sptendmax1,dt_chg
              149                     ! sppt variables
@@ -580,7 +580,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      pk, pklev
                                    <<< Loop-information  End >>>
@@ -644,7 +644,7 @@
              454     2                       do k = 1, lev
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 211
+                                   <<<    Standard iteration count: 176
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
                                    <<< Loop-information  End >>>
@@ -665,7 +665,7 @@
              469                           cosw=0.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 411
+                                   <<<    Standard iteration count: 381
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
                                    <<< Loop-information  End >>>
@@ -713,9 +713,9 @@
              495     3  pp   4v                  qtot=0.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 1067
+                                   <<<    Standard iteration count: 889
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<< Loop-information  End >>>
              496     4  pp    v                  do n = 1, ncld-1
              497     4   p    v                     kk=k+(n-1)*lev
@@ -940,7 +940,7 @@
              680                     !!      else if(tau.gt.24. .and. tau.le.36.)then
              681                     !!         hfiltx=hfilt*2.
              682                     !!      else
-             683                            hfiltx=hfilt
+             683                     !!       hfiltx=hfilt
              684                     !!      endif
              685                     !
              686                     !  global mean tempertures (tbar) and specific humid (qbar)
@@ -974,7 +974,7 @@
              710     3   p                     pltemp(n,m,i) = 0.0
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      hldten, temten, vorten, divten
                                    <<< Loop-information  End >>>
@@ -1009,7 +1009,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      pdot
                                    <<< Loop-information  End >>>
@@ -1018,7 +1018,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      vdzonlr, vdmerdr, vdzonl, vdmerd
                                    <<< Loop-information  End >>>
@@ -1030,7 +1030,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qvadv
                                    <<< Loop-information  End >>>
@@ -1039,7 +1039,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      pten, ddtempr, ddtemp
                                    <<< Loop-information  End >>>
@@ -1118,7 +1118,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SPILLS :
-                                   <<<      GENERAL   : SPILL 28  FILL 42
+                                   <<<      GENERAL   : SPILL 28  FILL 45
                                    <<<      SIMD&FP   : SPILL 0  FILL 0
                                    <<<      SCALABLE  : SPILL 0  FILL 0
                                    <<<      PREDICATE : SPILL 0  FILL 0
@@ -1188,8 +1188,8 @@
              865     2  pp                   do k = 1, lev
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.17, ITR: 24, MVE: 2, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.17, ITR: 48, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tt, ttp, vt, vp, ut, up, ddtemp, vdmerd
                                    <<<      vdzonl, ddtempr, vdmerdr, vdzonlr
@@ -1219,8 +1219,8 @@
              881     2  pp                   do k = 1, lev*ncld
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.50, ITR: 80, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.50, ITR: 160, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qvadv, qt, qp
                                    <<< Loop-information  End >>>
@@ -1234,8 +1234,8 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 1334
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      pt, ptp
                                    <<< Loop-information  End >>>
@@ -1257,7 +1257,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.40, ITR: 64, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.28, ITR: 56, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      plten, plold, pltemp
                                    <<< Loop-information  End >>>
@@ -1302,9 +1302,9 @@
              918     3  pp   4v                  qtot=0.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 1067
+                                   <<<    Standard iteration count: 889
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<< Loop-information  End >>>
              919     4  pp    v                  do n = 1, ncld-1
              920     4   p    v                     kk=k+(n-1)*lev
@@ -1387,17 +1387,22 @@
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      ddtempr, tt, vdmerdr, vt, vdzonlr, ut
-                                   <<<      ddtemp, vdmerd, vdzonl
+                                   <<<      vdmerdr, tt, vdzonlr, ddtempr, vt, ut
+                                   <<<      vdmerd, ddtemp, vdzonl
                                    <<< Loop-information  End >>>
              995     2  pp                       do k = 1, lev
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 48, MVE: 2, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.77, ITR: 72, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      vt, vdmerdr, vdzonlr, ut, ddtempr, tt
-                                   <<<      ddtemp, vdmerd, vdzonl
+                                   <<<      ddtempr, vt, vdmerdr, ddtemp, vdzonlr
+                                   <<<      ut, vdmerd, tt, vdzonl
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 0
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 1  FILL 1
+                                   <<<      PREDICATE : SPILL 0  FILL 0
                                    <<< Loop-information  End >>>
              996     3   p    v                    do i = 1,nxj
              997     3   p    v                      vdzonl(i,k,jj) = ( ut(i,k,jj) - vdzonlr(i,k,jj) ) / dta
@@ -1443,7 +1448,7 @@
             1033     3  pp                    do i = 1, 2
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      vorten, divten
                                    <<< Loop-information  End >>>
@@ -1472,7 +1477,7 @@
             1048     1                       mf=mlist(m)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 593
+                                   <<<    Standard iteration count: 485
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
                                    <<< Loop-information  End >>>
@@ -1511,17 +1516,17 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      temten, divten, temold, vorold, divold
+                                   <<<      temten, divten, divold, temold, vorold
                                    <<<      vorten, temnow, divnow, vornow
                                    <<< Loop-information  End >>>
             1071     4   p                       do i = 1, 2
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.81, ITR: 32, MVE: 2, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.63, ITR: 48, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      divold, vorten, vorold, temten, temnow
-                                   <<<      temold, divten, divnow, vornow
+                                   <<<      divten, divold, vorten, vorold, temten
+                                   <<<      temold, temnow, divnow, vornow
                                    <<< Loop-information  End >>>
             1072     5   p    v                  do k = 1, levp
             1073     5   p    v                    vornow(k,i,n,m)= dta*vorten(k,i,n,m) + vorold(k,i,n,m)
@@ -1544,14 +1549,9 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.60, ITR: 64, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.42, ITR: 56, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      plten, plold, plnow
-                                   <<<    SPILLS :
-                                   <<<      GENERAL   : SPILL 0  FILL 3
-                                   <<<      SIMD&FP   : SPILL 0  FILL 0
-                                   <<<      SCALABLE  : SPILL 0  FILL 0
-                                   <<<      PREDICATE : SPILL 0  FILL 0
                                    <<< Loop-information  End >>>
             1083     3   p    v                do n = mf, jtrun
             1084     3   p    v                  plnow(n,m,1)= dta*plten(n,m,1)+plold(n,m,1)
@@ -1582,17 +1582,17 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      temold, divold, vorold, temten, divten
-                                   <<<      vorten
+                                   <<<      temten, temold, divten, divold, vorten
+                                   <<<      vorold
                                    <<< Loop-information  End >>>
             1105     4   p                       do i  = 1, 2
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.12, ITR: 56, MVE: 4, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.61, ITR: 56, MVE: 4, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      temten, temold, divten, divold, vorten
-                                   <<<      vorold
+                                   <<<      vorten, vorold, temten, temold, divten
+                                   <<<      divold
                                    <<< Loop-information  End >>>
             1106     5   p    v                  do k  = 1, levp
             1107     5   p    v                    vorten(k,i,n,m)= dta*vorten(k,i,n,m) + vorold(k,i,n,m)
@@ -1615,7 +1615,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.75, ITR: 96, MVE: 6, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 120, MVE: 8, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      plold, plten
                                    <<< Loop-information  End >>>
@@ -1678,15 +1678,22 @@
             1149     2  pp                   do m = 1, mlistnum
             1150     2   p                     mf=mlist(m)
             1151     3   p                     do n = mf, jtrun
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vornow, divnow, divten, divold, vorold
+                                   <<<      temnow, temold, vorten, temten
+                                   <<< Loop-information  End >>>
             1152     4   p                       do i = 1, 2
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.44, ITR: 32, MVE: 2, POL: L)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      temten, temnow, temold, divten, divnow
-                                   <<<      divold, vorten, vornow, vorold
+                                   <<<      vornow, vorold, divten, divnow, temnow
+                                   <<<      temold, divold, vorten, temten
                                    <<<    SPILLS :
-                                   <<<      GENERAL   : SPILL 0  FILL 9
+                                   <<<      GENERAL   : SPILL 0  FILL 12
                                    <<<      SIMD&FP   : SPILL 0  FILL 0
                                    <<<      SCALABLE  : SPILL 0  FILL 0
                                    <<<      PREDICATE : SPILL 0  FILL 0
@@ -1719,9 +1726,9 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 176, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.63, ITR: 192, MVE: 6, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      qt, qm, qp
+                                   <<<      qp, qt, qm
                                    <<< Loop-information  End >>>
             1171     4   p   2v                  do i = 1, nxj
             1172     4   p   2v                    qm(i,k,jj) = qp(i,k,jj) + tfilt*( qm(i,k,jj)           &
@@ -1734,14 +1741,14 @@
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      plnow, plten, plold
+                                   <<<      plnow, plold, plten
                                    <<< Loop-information  End >>>
             1177     2  pp                   do m =1,mlistnum
             1178     2   p                     mf=mlist(m)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 1.85, ITR: 48, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.70, ITR: 48, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      plnow, plold, plten
                                    <<< Loop-information  End >>>
@@ -2478,8 +2485,8 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tg, sst, ocean
                                    <<<    SPILLS :
-                                   <<<      GENERAL   : SPILL 25  FILL 109
-                                   <<<      SIMD&FP   : SPILL 2  FILL 2
+                                   <<<      GENERAL   : SPILL 25  FILL 110
+                                   <<<      SIMD&FP   : SPILL 0  FILL 2
                                    <<<      SCALABLE  : SPILL 0  FILL 0
                                    <<<      PREDICATE : SPILL 0  FILL 0
                                    <<< Loop-information  End >>>
@@ -2667,8 +2674,8 @@
 
  Procedure information
    Lines      : 1936
-   Statements : 1042
-   Stack(byte): 211808
+   Statements : 1041
+   Stack(byte): 212096
    Prefetch num: 16
 
  Scoping unit of external sub-program : intgrt_3tl
@@ -2740,13 +2747,13 @@
       |(Definition)     : 947
       |(Reference)      : 
      arrhyd
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 1016
       |(Reference)      : 
      arsddt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 1016
@@ -2812,7 +2819,7 @@
       |(Definition)     : 1539
       |(Reference)      : 
      cc
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 94
       |(Definition)     : 730  731  839  840  1004  1006  1202  1203  1204  1205  1537  1538
@@ -2854,7 +2861,7 @@
       |(Definition)     : 1773
       |(Reference)      : 1777
      cim
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 842  1008  1210
@@ -2908,13 +2915,13 @@
       |(Definition)     : 
       |(Reference)      : 23
      cor
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 829
       |(Reference)      : 
      cosl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 985  1090  1123  1504  1539  1608
@@ -3004,13 +3011,13 @@
       |(Definition)     : 
       |(Reference)      : 37  1763  1767  1767  1817  1817
      ddtemp
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 67
       |(Definition)     : 744  796  852  999  1004
       |(Reference)      : 875
      ddtempr
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 67
       |(Definition)     : 745  869
@@ -3052,7 +3059,7 @@
       |(Definition)     : 
       |(Reference)      : 37  1912
      deldm
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 67
       |(Definition)     : 829  855
@@ -3088,43 +3095,43 @@
       |(Definition)     : 
       |(Reference)      : 947
      diss_est
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 53
      diveng
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 67
       |(Definition)     : 829  839
       |(Reference)      : 
      divnow
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 1016  1074  1090  1159  1202  1215
       |(Reference)      : 1157  1157
      divold
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 732  1016  1157
       |(Reference)      : 1074  1108  1157
      divten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 712  1008  1016  1035  1108  1123
       |(Reference)      : 1074  1108  1157  1159
      dlphi
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 842
       |(Reference)      : 
      dlpl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 829  1210
@@ -3232,7 +3239,7 @@
       |(Definition)     : 
       |(Reference)      : 1692
      dpoly
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 732  842  1008  1210  1215
@@ -3244,7 +3251,7 @@
       |(Definition)     : 947  1539
       |(Reference)      : 
      dsigma
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 829  947  1016
@@ -3298,13 +3305,13 @@
       |(Definition)     : 
       |(Reference)      : 607  1299  1301  1718  1852
      dtphi
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 842
       |(Reference)      : 
      dtpl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 829  1210
@@ -3346,7 +3353,7 @@
       |(Definition)     : 947
       |(Reference)      : 
      eigval
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 1016
@@ -3358,7 +3365,7 @@
       |(Definition)     : 947
       |(Reference)      : 
      eps4
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 1016  1090  1123
@@ -3370,13 +3377,13 @@
       |(Definition)     : 947
       |(Reference)      : 
      evecin
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 1016
       |(Reference)      : 
      evectr
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 1016
@@ -3574,7 +3581,7 @@
       |(Definition)     : 615  1272  1292  1297  1309  1504  1517  1539  1608  1624  1632  1681  1856
       |(Reference)      : 
      glob
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 81
       |(Definition)     : 1292  1681
@@ -3639,17 +3646,11 @@
       |(Declaration)    : 82
       |(Definition)     : 533  1134  1292  1319
       |(Reference)      : 1134
-     hfilt
+     hfiltx
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 683
-     hfiltx
-      |(Class and Type) : variable name, REAL(8)
-      |(Attributes)     : 
-      |(Declaration)    : 145
-      |(Definition)     : 683  1090  1123
+      |(Definition)     : 1090  1123
       |(Reference)      : 
      hflux
       |(Class and Type) : variable name, REAL(8)
@@ -3676,7 +3677,7 @@
       |(Definition)     : 1334  1539
       |(Reference)      : 1371  1501  1514
      hldten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 715  840  842
@@ -4114,13 +4115,13 @@
       |(Definition)     : 454  493  711  865  881  916  995  1034  1072  1106  1153  1170
       |(Reference)      : 456  456  457  458  458  460  460  462  462  494  494  497  712  713  714  715  867  867  868  868  869  869  870  870  871  871  872  872  873  873  874  874  875  875  883  883  884  884  917  917  920  997  997  997  998  998  998  999  999  999  1035  1036  1073  1073  1073  1074  1074  1074  1075  1075  1075  1107  1107  1107  1108  1108  1108  1109  1109  1109  1154  1154  1154  1154  1154  1156  1156  1157  1157  1157  1157  1157  1159  1159  1160  1160  1160  1160  1160  1162  1162  1172  1172  1172  1172  1172
      kea
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 53
      keb
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
@@ -4636,13 +4637,13 @@
       |(Definition)     : 770  804  829  947  1090  1123  1504  1539  1608
       |(Reference)      : 67  67  496  881  919  1170
      ndsldta
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 67
       |(Definition)     : 749  848  852
       |(Reference)      : 750
      ndsldtah
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 67
       |(Definition)     : 750  782
@@ -4834,7 +4835,7 @@
       |(Definition)     : 339  760  762  764  766  768  770  796  798  800  802  804  823  829  1223
       |(Reference)      : 67  67  67  67  67  67  67  67  67  67  67  82  82  82  82  82  82  82  82  82  82  82  82  82  82  82  91  91  91  101  101  101  113  166  166  192  192
      o3l
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 947
@@ -4900,7 +4901,7 @@
       |(Definition)     : 947  1517
       |(Reference)      : 
      onocos
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 732  829  1008  1215
@@ -5014,13 +5015,13 @@
       |(Definition)     : 
       |(Reference)      : 19
      pdot
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 67
       |(Definition)     : 738  829  852  947
       |(Reference)      : 
      phi
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 829  1504  1539
@@ -5038,13 +5039,13 @@
       |(Definition)     : 1378
       |(Reference)      : 1401
      pk
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 339  823  829  947  1223  1504  1539  1608
       |(Reference)      : 408  462
      pk2
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 339  823  829  947  1223  1504  1539
@@ -5062,13 +5063,13 @@
       |(Definition)     : 947
       |(Reference)      : 
      plnow
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 1016  1084  1085  1182  1185  1206  1210
       |(Reference)      : 1180  1180  1183  1183
      plold
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 1016  1180  1183
@@ -5080,19 +5081,19 @@
       |(Definition)     : 339  823  947  1223  1539  1608
       |(Reference)      : 
      pltemp
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 94
       |(Definition)     : 710  897  898  905
       |(Reference)      : 
      plten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 709  856  1016  1027  1028  1042  1118  1119
       |(Reference)      : 897  898  1051  1051  1084  1085  1118  1119  1180  1182  1183  1185
      poly
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 730  732  840  842  856  905  1006  1008  1042  1202  1204  1206  1210  1215  1537
@@ -5104,31 +5105,31 @@
       |(Definition)     : 
       |(Reference)      : 339  823  1223
      pt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 339  823  829  852  905  947  1206  1223  1504  1539  1608  1681
       |(Reference)      : 456  494  889  917
      pten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 67
       |(Definition)     : 746  798  829
       |(Reference)      : 
      pten_sl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 67
       |(Definition)     : 782  798
       |(Reference)      : 
      ptend
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 1042  1539
       |(Reference)      : 
      ptmeans
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 1016
@@ -5140,7 +5141,7 @@
       |(Definition)     : 339  823  947  1223  1504  1539  1608
       |(Reference)      : 
      ptp
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 889  947
@@ -5170,19 +5171,19 @@
       |(Definition)     : 441  473  479  947
       |(Reference)      : 473  479  519
      qm
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 770  1172
       |(Reference)      : 1172
      qm_sl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 67
       |(Definition)     : 770  782  804
       |(Reference)      : 
      qp
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 883  947
@@ -5194,7 +5195,7 @@
       |(Definition)     : 947
       |(Reference)      : 
      qt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 829  884  947  1504  1539  1608
@@ -5206,7 +5207,7 @@
       |(Definition)     : 495  498  918  921
       |(Reference)      : 498  501  921  924
      qvadv
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 67
       |(Definition)     : 743  804  852
@@ -5332,7 +5333,7 @@
       |(Definition)     : 
       |(Reference)      : 985
      rdiv
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 829  1203  1504  1539
@@ -5476,7 +5477,7 @@
       |(Definition)     : 549  947  1572
       |(Reference)      : 
      rvor
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 1538  1539
@@ -5488,7 +5489,7 @@
       |(Definition)     : 947
       |(Reference)      : 
      sd
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 829  1517
@@ -5518,7 +5519,7 @@
       |(Definition)     : 947
       |(Reference)      : 
      sgeo
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 829  947  1504  1539  1608
@@ -5536,7 +5537,7 @@
       |(Definition)     : 947
       |(Reference)      : 
      sigma
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 339  823  829  947  1223  1539
@@ -5554,7 +5555,7 @@
       |(Definition)     : 
       |(Reference)      : 1016
      sinl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 829
@@ -5578,13 +5579,13 @@
       |(Definition)     : 
       |(Reference)      : 1802
      skeb3du
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 53
      skeb3dv
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
@@ -5662,7 +5663,7 @@
       |(Definition)     : 1772
       |(Reference)      : 1774  1775  1776
      spalm
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 1016
@@ -5872,13 +5873,13 @@
       |(Definition)     : 
       |(Reference)      : 1675  1677
      temnow
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 1016  1075  1090  1162  1204
       |(Reference)      : 1160  1160
      temold
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 730  1016  1160
@@ -5908,7 +5909,7 @@
       |(Definition)     : 233  276  1414  1472
       |(Reference)      : 
      temten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 714  1006  1016  1109  1123
@@ -6220,7 +6221,7 @@
       |(Definition)     : 
       |(Reference)      : 732  1215
      trefs
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 1090  1123
@@ -6256,19 +6257,19 @@
       |(Definition)     : 947
       |(Reference)      : 
      tt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 829  875  947  1205  1504  1539  1608
       |(Reference)      : 458  462  872  999
      ttm_sl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 67
       |(Definition)     : 768  782  796
       |(Reference)      : 
      ttp
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 731  768  872  947
@@ -6292,7 +6293,7 @@
       |(Definition)     : 1556
       |(Reference)      : 
      typtrk
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 1539
@@ -6316,7 +6317,7 @@
       |(Definition)     : 
       |(Reference)      : 731  1203  1205  1538
      up
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 732  764  870  947  1090  1123
@@ -6328,19 +6329,19 @@
       |(Definition)     : 947  1624
       |(Reference)      : 
      ut
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 760  829  873  947  985  1215  1504  1539  1608
       |(Reference)      : 460  870  997
      ut_sl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 760
       |(Reference)      : 
      uum_sl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 67
       |(Definition)     : 764  782  800
@@ -6352,25 +6353,25 @@
       |(Definition)     : 947  1539  1608  1681
       |(Reference)      : 
      vdmerd
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 67
       |(Definition)     : 739  802  848  852  998  1008
       |(Reference)      : 874
      vdmerdr
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 67
       |(Definition)     : 741  829  848  868
       |(Reference)      : 998
      vdzonl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 67
       |(Definition)     : 740  800  848  852  997  1008
       |(Reference)      : 873
      vdzonlr
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 67
       |(Definition)     : 742  829  848  867
@@ -6382,49 +6383,49 @@
       |(Definition)     : 947  1539
       |(Reference)      : 
      vornow
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 1073  1090  1156  1215  1537
       |(Reference)      : 1154  1154
      vorold
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 732  1154
       |(Reference)      : 1073  1107  1154
      vorten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 713  1008  1036  1107  1123
       |(Reference)      : 1073  1107  1154  1156
      vp
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 732  766  871  947  1090  1123
       |(Reference)      : 868
      vt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 762  829  874  947  985  1215  1504  1539  1608
       |(Reference)      : 460  871  998
      vt_sl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 762
       |(Reference)      : 
      vvel
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 829  947  1539
       |(Reference)      : 
      vvm_sl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 67
       |(Definition)     : 766  782  802
@@ -6436,19 +6437,19 @@
       |(Definition)     : 947
       |(Reference)      : 1360  1360
      wcfac
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 732  1215
       |(Reference)      : 
      wdfac
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 732  1215
       |(Reference)      : 
      weight
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 840  856  1006  1008
@@ -6618,7 +6619,7 @@
  Total information
    Procedures       : 1
    Total lines      : 1936
-   Total statements : 1042
-   Total stack(byte): 211808
+   Total statements : 1041
+   Total stack(byte): 212096
    Total prefetch num: 16
 

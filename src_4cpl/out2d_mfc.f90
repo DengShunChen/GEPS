@@ -6,10 +6,10 @@
       use mpe
       use index
       use const ,only : grav,ptop,rgas,cp ,outdms ,outgrb2 ,ifilout_grb, &
-                        RTYPE,kflag
+                        RTYPE,kflag ,out_hp
       use grid  ,only : tt,qt,plt,pk,pk2,sgeo
-      use mod_grb2_param  !for write grib2 data
-!
+      use mod_grb2_param , only :ofdir,wrt_grb2_v2,wrt_grb2_accu_v2
+      use phygrid ,only: raincu3, rainlp3
       implicit  none
 
       integer   nx,lev,my,my_max,itau,ntau,num
@@ -48,6 +48,7 @@
                   'b10200','b10210','b02171','b02181','b02150', &
                   's003x0','s003u0','x00770','ssl010'/
 
+      integer:: gtp1(9)
 !     grib code 0,1,2:variable   3:order  4:layer  5:above_land_height
 !                 1h  Tot                   T2M T2M  2M DW DW       
 !                 p   p  T2 sh2 rh2 u10 v10 max min DPT LW SW CC SLP
@@ -66,6 +67,11 @@
       alaps = 0.0065
       rdg = rgas/grav
 !     
+        if( outgrb2 == 1)then
+ 134                      format( A  ,A ,I10.10 , i4.4       )
+             write(ofdir,134 )trim(ifilout_grb),'/',idtg/100 ,itau
+             if(myrank==0) call system("mkdir -p "//trim(ofdir) )
+        endif
  
       do jj = 1, jlistnum
         j=jlist1(jj)
@@ -168,48 +174,40 @@
 ! Total Precp.
 !byl      call mpe2d_unify(glob,raintot)
 
-!====== grib2 output
-      if(outgrb2==1 )then
-          n=1
-          call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
-          if(myrank==0)then
-            call wrt_grb2_accu(ntau,ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,float(ptp5(n)),1,1,mout ) 
-          endif
-          do n=2,7
-            call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
-            if(myrank==0)then
-              call wrt_grb2(ntau,ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,float(ptp5(n)) ,mout ) 
-            endif
-          enddo
-
-          n=8          !Tmax2m 
-          call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
-          if(myrank==0)call wrt_grb2_accu(ntau,ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,float(ptp5(n)),2,1,mout ) 
-          n=9          !Tmin2m
-          call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
-          if(myrank==0)call wrt_grb2_accu(ntau,ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,float(ptp5(n)),3,1,mout ) 
-
-          do n=10,num
-            call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
-            if(myrank==0)then
-              call wrt_grb2(ntau,ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,float(ptp5(n)) ,mout ) 
-            endif
-          enddo
-      endif
-
-
-    if(outdms.gt.0)then
       do n=1,num
         call syslbl (dmskey(n),idtg,ntau,ggdef,ihdg)
         call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),glob)
         if ( myrank .eq. n-1 ) then
           mout=glob
           ihdg2=ihdg
+          gtp1=(/ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,ptp5(n),-999,-999/)
+          if(n==1)then
+             gtp1(8:9)=(/1,1/) !1hr precip
+          else if(n==8)then
+             gtp1(8:9)=(/2,1/) !MaxT2m
+          else if(n==9)then
+             gtp1(8:9)=(/3,1/) !MinT2m
+          endif
         endif
       enddo
 !
-      if (myrank .lt. num ) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
-    endif ! outdms .gt. 0
+      if (myrank .lt. num ) then
+
+        if(outdms.gt.0)then
+             call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
+        endif ! outdms .gt. 0
+
+        if(outgrb2 == 1 )then
+          if(gtp1(8)==-999)then
+          call wrt_grb2_v2(itau,gtp1(1),gtp1(2),gtp1(3),gtp1(4),gtp1(5) &
+              ,gtp1(6),gtp1(7),mout,ihdg2)
+          else
+          call wrt_grb2_accu_v2(itau,gtp1(1),gtp1(2),gtp1(3),gtp1(4),gtp1(5) &
+              ,gtp1(6),gtp1(7),gtp1(8),gtp1(9),mout,ihdg2)
+          endif
+        endif !outgrb2
+
+      endif
 !
 !! rh10
 !!byl      call mpe2d_unify(glob,rh10)
@@ -220,6 +218,50 @@
 !!     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 !      call dmswrit_mfc(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
+! accum.  precipitation
+      if (out_hp)then
+       do jj = 1, jlistnum
+         j=jlist1(jj)
+         nxj=nxdef_2d(j)
+         do i=1,nxj
+           raincu3(i,jj)= raincu3(i,jj) + raincu1(i,jj)
+           rainlp3(i,jj)= rainlp3(i,jj) + rainlp1(i,jj)
+         enddo
+       enddo
+
+       if(outgrb2 == 1 )then
+        if(myrank==0)then
+        !convective precipitation
+        call syslbl ('B00632',idtg,ntau,ggdef,ihdg)
+        glob=raincu3
+        call unify_reduceintp(nx,my,my_max,glob,mout)
+        call wrt_grb2_accu_v2(itau,0,1,10,2,103,0,0,1,3,mout,ihdg)
+        !
+        call syslbl ('B00642',idtg,ntau,ggdef,ihdg)
+        glob=rainlp3
+        call unify_reduceintp(nx,my,my_max,glob,mout)
+        call wrt_grb2_accu_v2(itau,0,1,9,2,103,0,0,1,3,mout,ihdg)
+
+        call syslbl ('B00622',idtg,ntau,ggdef,ihdg)
+        glob=raincu3 + rainlp3
+        call unify_reduceintp(nx,my,my_max,glob,mout)
+        call wrt_grb2_accu_v2(itau,0,1,9,2,103,0,0,1,3,mout,ihdg)
+
+        endif
+       endif
+
+       if( mod( itau , 3 ) == 0 )then
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          do i=1,nxj
+            raincu3(i,jj)= 0.0
+            rainlp3(i,jj)= 0.0
+          enddo
+        enddo
+       endif
+
+      endif !out_hp
 
       return
       end

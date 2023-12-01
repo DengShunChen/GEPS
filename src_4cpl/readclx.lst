@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Tue Aug 29 14:58:09 2023
+ Fujitsu Fortran Version 4.6.1  Fri Dec  1 17:11:47 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72/src_4cpl
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_4cpl
    Source file       : readclx.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -506,7 +506,7 @@
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      ls, slopetyp, icex, sea, land, ice, solt
+                                   <<<      ls, icex, sea, land, ice, solt, slopetyp
                                    <<< Loop-information  End >>>
              348     1  pp                 do jj=1,jlistnum
              349     1   p                    j=jlist1(jj)
@@ -515,71 +515,65 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 0.91, ITR: 24, MVE: 2, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.83, ITR: 24, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      slopetyp, icex, ls, solt, sea, land, ice
+                                   <<<      ls, slopetyp, icex, solt, sea, land, ice
                                    <<< Loop-information  End >>>
              352     2   p    v               do i=1,nxj
              353     2   p    v                  ice(i,jj) =.false.
              354     2   p    v                  land(i,jj)=.false.
              355     2   p    v                  sea(i,jj) =.false.
-             356     2   p    v                  if(ls(i,jj) .eq. 0)sea(i,jj) =.true.
-             357     2   p    v                  if(ls(i,jj) .eq. 1)land(i,jj)=.true.
-             358     2   p    v                  if(ls(i,jj) .eq. 1)slopetyp(i,jj)=max(1,slopetyp(i,jj))
-             359     2   p    v                  if( (ls(i,jj).eq.0) .and. (icex(i,jj).eq.1) ) solt(i,jj)=271.2
-             360     2               !soil if(icex(i,j) .eq. 1)then
-             361     2               !soil sea(i,j)=.false.
-             362     2               !soil land(i,j)=.false.
-             363     2               !soil ice(i,j)=.true.
-             364     2               !soil end if
-             365     2   p    v              enddo
-             366     1   p                 enddo
-             367                     !
-             368                     !  modify albedo base on ground wetness
-             369                     !
-             370                     !      do 51 j=1,my
-             371                     !       nxj=nxdef(j)
-             372                     !      do 51 i=1,nxj
-             373                     !     xt=0.31-0.17*wet(i,1)
-             374                     !     if(alb(i,j).lt.xt)alb(i,j)=xt
-             375                     !51   continue
-             376                     !
-             377                     !  modify deep soil temp for sea-ice points (=271.2)
-             378                     !
-                                   <<< Loop-information Start >>>
-                                   <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 3
-                                   <<<  [OPTIMIZATION]
-                                   <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      ls, icex, ice, sea
-                                   <<< Loop-information  End >>>
-             379     1  pp                 do 52 jj=1,jlistnum
-             380     1   p                   j=jlist1(jj)
-             381     1   p                  nxj=nxdef_2d(j)
-                                   <<< Loop-information Start >>>
-                                   <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 16)
-                                   <<<    SOFTWARE PIPELINING(IPC: 0.50, ITR: 96, MVE: 2, POL: S)
-                                   <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      icex, ls, ice, sea
-                                   <<< Loop-information  End >>>
-             382     2   p   2v            do 52 i=1,nxj
-             383     3   p   2v            if ( (ls(i,jj).eq.0) .and. (icex(i,jj).eq.1) ) then
-             384     3               !soil
-             385     3               ! in new soil model, ice present sea-ice
-             386     3   p   2v            ice(i,jj)=.true.        !sea ice
-             387     3   p   2v            sea(i,jj)=.false.
-             388     3               !soil
-             389     3   p   2v            endif
-             390     1   p   2v        52  continue
-             391                     !
-             392                           return
-             393                           end
+             356     3   p    v                  if(ls(i,jj) .eq. 0)then !ocean
+             357     3   p    v                    sea(i,jj) =.true.
+             358     4   p    v                    if( (icex(i,jj).eq.1) )then !sea ice
+             359     4   p    v                       solt(i,jj)=271.2 ! deep soil temp for sea-ice points (=271.2)
+             360     4   p    v                       ice(i,jj)=.true.
+             361     4   p    v                       sea(i,jj)=.false.
+             362     4   p    v                    endif
+             363     3   p    v                  elseif(ls(i,jj) .eq. 1)then !land
+             364     3   p    v                    land(i,jj)=.true.
+             365     3   p    v                    slopetyp(i,jj)=max(1,slopetyp(i,jj))
+             366     3   p    v                  endif
+             367     2               
+             368     2               !soil if(icex(i,j) .eq. 1)then
+             369     2               !soil sea(i,j)=.false.
+             370     2               !soil land(i,j)=.false.
+             371     2               !soil ice(i,j)=.true.
+             372     2               !soil end if
+             373     2   p    v              enddo
+             374     1   p                 enddo
+             375                     !
+             376                     !  modify albedo base on ground wetness
+             377                     !
+             378                     !      do 51 j=1,my
+             379                     !       nxj=nxdef(j)
+             380                     !      do 51 i=1,nxj
+             381                     !     xt=0.31-0.17*wet(i,1)
+             382                     !     if(alb(i,j).lt.xt)alb(i,j)=xt
+             383                     !51   continue
+             384                     !
+             385                     !  modify deep soil temp for sea-ice points (=271.2)
+             386                     !
+             387                     !      do 52 jj=1,jlistnum
+             388                     !        j=jlist1(jj)
+             389                     !       nxj=nxdef_2d(j)
+             390                     !      do 52 i=1,nxj
+             391                     !      if ( (ls(i,jj).eq.0) .and. (icex(i,jj).eq.1) ) then
+             392                     !!soil
+             393                     !! in new soil model, ice present sea-ice
+             394                     !      ice(i,jj)=.true.        !sea ice
+             395                     !      sea(i,jj)=.false.
+             396                     !!soil
+             397                     !      endif
+             398                     !  52  continue
+             399                     !
+             400                           return
+             401                           end
 
  Procedure information
-   Lines      : 393
-   Statements : 221
-   Stack(byte): 8720
+   Lines      : 401
+   Statements : 219
+   Stack(byte): 8736
    Prefetch num: 0
 
  Scoping unit of external sub-program : readclx
@@ -654,20 +648,20 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 69
-      |(Definition)     : 174  247  280  312  352  382
-      |(Reference)      : 175  175  175  177  177  177  178  178  178  179  179  179  181  181  181  248  248  248  250  250  250  251  251  251  252  252  252  254  254  254  281  313  313  353  354  355  356  356  357  357  358  358  358  359  359  359  383  383  386  387
+      |(Definition)     : 174  247  280  312  352
+      |(Reference)      : 175  175  175  177  177  177  178  178  178  179  179  179  181  181  181  248  248  248  250  250  250  251  251  251  252  252  252  254  254  254  281  313  313  353  354  355  356  357  358  359  360  361  363  364  365  365
      ice
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  50
-      |(Definition)     : 353  386
+      |(Definition)     : 353  360
       |(Reference)      : 
      icex
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 61
       |(Definition)     : 268
-      |(Reference)      : 359  383
+      |(Reference)      : 358
      iglob
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION
@@ -720,26 +714,26 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 69
-      |(Definition)     : 172  245  275  310  349  380
-      |(Reference)      : 173  246  276  277  278  279  279  281  284  311  351  381
+      |(Definition)     : 172  245  275  310  349
+      |(Reference)      : 173  246  276  277  278  279  279  281  284  311  351
      jj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 69
-      |(Definition)     : 171  244  274  309  348  379
-      |(Reference)      : 172  175  175  175  177  177  177  178  178  178  179  179  179  181  181  181  245  248  248  248  250  250  250  251  251  251  252  252  252  254  254  254  275  278  281  284  310  313  313  349  353  354  355  356  356  357  357  358  358  358  359  359  359  380  383  383  386  387
+      |(Definition)     : 171  244  274  309  348
+      |(Reference)      : 172  175  175  175  177  177  177  178  178  178  179  179  179  181  181  181  245  248  248  248  250  250  250  251  251  251  252  252  252  254  254  254  275  278  281  284  310  313  313  349  353  354  355  356  357  358  359  360  361  363  364  365  365
      jlist1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 172  245  275  310  349  380
+      |(Reference)      : 172  245  275  310  349
      jlistnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 171  244  274  309  348  379
+      |(Reference)      : 171  244  274  309  348
      jul
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
@@ -762,7 +756,7 @@
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  50
-      |(Definition)     : 354  357
+      |(Definition)     : 354  364
       |(Reference)      : 
      lncrec
       |(Class and Type) : variable name, INTEGER(4)
@@ -787,7 +781,7 @@
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  61
       |(Definition)     : 281
-      |(Reference)      : 356  357  358  359  383
+      |(Reference)      : 356  363
      ls_full
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
@@ -805,7 +799,7 @@
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 358
+      |(Reference)      : 365
      mm
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
@@ -871,13 +865,13 @@
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 173  246  277  311  351  381
+      |(Reference)      : 173  246  277  311  351
      nxj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 69
-      |(Definition)     : 173  246  277  311  351  381
-      |(Reference)      : 174  247  280  312  352  382
+      |(Definition)     : 173  246  277  311  351
+      |(Reference)      : 174  247  280  312  352
      nxjstart
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
@@ -912,7 +906,7 @@
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  50
-      |(Definition)     : 355  356  387
+      |(Definition)     : 355  357  361
       |(Reference)      : 
      shdmax
       |(Class and Type) : variable name, REAL(8)
@@ -936,8 +930,8 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  45
-      |(Definition)     : 339  358
-      |(Reference)      : 358
+      |(Definition)     : 339  365
+      |(Reference)      : 365
      snoalb
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
@@ -1060,13 +1054,11 @@
                            (Reference)  303
          33  format        (Definition) 106  
                            (Reference)  138  164  211  236
-         52  execution     (Definition) 390  
-                           (Reference)  379  382
 
  Total information
    Procedures       : 1
-   Total lines      : 393
-   Total statements : 221
-   Total stack(byte): 8720
+   Total lines      : 401
+   Total statements : 219
+   Total stack(byte): 8736
    Total prefetch num: 0
 

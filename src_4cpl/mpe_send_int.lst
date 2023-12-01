@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Tue Aug 29 14:57:11 2023
+ Fujitsu Fortran Version 4.6.1  Fri Dec  1 17:10:47 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72/src_4cpl
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_4cpl
    Source file       : mpe_send_int.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -61,18 +61,27 @@
  External subroutine subprogram "mpe_send_int"
   (inc)(line-no.)(nest)(optimize)
                1                           subroutine mpe_send_int( itau ,n , itag , ist)
-               2                           use rank, only : root_io
-               3                           use mpi
-               4                           integer::n
-               5                           integer :: itau(n)  ,itag
-               6                     
-               7                           call MPI_SEND( itau, n, MPI_integer , root_io, itag , &
-               8                                          MPI_COMM_WORLD, ist )
-               9                           return
-              10                           end
+               2                     #if defined(RSM) && defined(CWB_MPMD)
+               3                           use rank, only : root_io,MPI_COMM_gfs_all
+               4                     #else
+               5                           use rank, only : root_io
+               6                     #endif
+               7                           use mpi
+               8                           integer::n
+               9                           integer :: itau(n)  ,itag
+              10                     
+              11                     #if defined(RSM) && defined(CWB_MPMD)
+              12                           call MPI_SEND( itau, n, MPI_integer , root_io, itag , &
+              13                                          MPI_COMM_gfs_all, ist )
+              14                     #else
+              15                           call MPI_SEND( itau, n, MPI_integer , root_io, itag , &
+              16                                          MPI_COMM_WORLD, ist )
+              17                     #endif
+              18                           return
+              19                           end
 
  Procedure information
-   Lines      : 10
+   Lines      : 19
    Statements : 8
    Stack(byte): 352
    Prefetch num: 0
@@ -83,20 +92,20 @@
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1
-      |(Definition)     : 7
+      |(Definition)     : 15
       |(Reference)      : 
      itag
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  5
+      |(Declaration)    : 1  9
       |(Definition)     : 
-      |(Reference)      : 7
+      |(Reference)      : 15
      itau
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  5
+      |(Declaration)    : 1  9
       |(Definition)     : 
-      |(Reference)      : 7
+      |(Reference)      : 15
      mpe_send_int
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
@@ -108,61 +117,70 @@
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 3
+      |(Reference)      : 7
      mpi_comm_world
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 7
+      |(Reference)      : 15
      mpi_integer
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 7
+      |(Reference)      : 15
      mpi_send
       |(Class and Type) : generic name
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 7
+      |(Reference)      : 15
      n
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  4
+      |(Declaration)    : 1  8
       |(Definition)     : 
-      |(Reference)      : 5  7
+      |(Reference)      : 9  15
      rank
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 2
+      |(Reference)      : 5
      root_io
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 2  7
+      |(Reference)      : 5  15
 
  External subroutine subprogram "mpe_recv_int"
   (inc)(line-no.)(nest)(optimize)
-              11                     
-              12                           subroutine mpe_recv_int( itau ,n , itag , ist)
-              13                           use rank, only : root_gfs
-              14                           use mpi
-              15                           integer::n
-              16                           integer :: itau(n)  ,itag
-              17                           integer:: ierr ,ISTATUS(MPI_STATUS_SIZE)
-              18                     
-              19                           call MPI_RECV( itau , n, MPI_INTEGER , root_gfs, &
-              20                                          itag, MPI_COMM_WORLD, ISTATUS, ierr )
-              21                           return
-              22                           end
+              20                     !=================================
+              21                           subroutine mpe_recv_int( itau ,n , itag , ist)
+              22                     #if defined(RSM) && defined(CWB_MPMD)
+              23                           use rank, only : root_gfs,MPI_COMM_gfs_all
+              24                     #else
+              25                           use rank, only : root_gfs
+              26                     #endif
+              27                           use mpi
+              28                           integer::n
+              29                           integer :: itau(n)  ,itag
+              30                           integer:: ierr ,ISTATUS(MPI_STATUS_SIZE)
+              31                     
+              32                     #if defined(RSM) && defined(CWB_MPMD)
+              33                           call MPI_RECV( itau , n, MPI_INTEGER , root_gfs, &
+              34                                          itag, MPI_COMM_gfs_all, ISTATUS, ierr )
+              35                     #else
+              36                           call MPI_RECV( itau , n, MPI_INTEGER , root_gfs, &
+              37                                          itag, MPI_COMM_WORLD, ISTATUS, ierr )
+              38                     #endif
+              39                           return
+              40                           end
 
  Procedure information
-   Lines      : 12
+   Lines      : 21
    Statements : 9
    Stack(byte): 400
    Prefetch num: 0
@@ -172,91 +190,91 @@
      ISTATUS
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 17
-      |(Definition)     : 19
+      |(Declaration)    : 30
+      |(Definition)     : 36
       |(Reference)      : 
      ierr
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 17
-      |(Definition)     : 19
+      |(Declaration)    : 30
+      |(Definition)     : 36
       |(Reference)      : 
      ist
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 12
+      |(Declaration)    : 21
       |(Definition)     : 
       |(Reference)      : 
      itag
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 12  16
+      |(Declaration)    : 21  29
       |(Definition)     : 
-      |(Reference)      : 19
+      |(Reference)      : 36
      itau
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 12  16
-      |(Definition)     : 19
+      |(Declaration)    : 21  29
+      |(Definition)     : 36
       |(Reference)      : 
      mpe_recv_int
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 12
+      |(Definition)     : 21
       |(Reference)      : 
      mpi
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 14
+      |(Reference)      : 27
      mpi_comm_world
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 19
+      |(Reference)      : 36
      mpi_integer
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 19
+      |(Reference)      : 36
      mpi_recv
       |(Class and Type) : generic name
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 19
+      |(Reference)      : 36
      mpi_status_size
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 17
+      |(Reference)      : 30
      n
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 12  15
+      |(Declaration)    : 21  28
       |(Definition)     : 
-      |(Reference)      : 16  19
+      |(Reference)      : 29  36
      rank
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 13
+      |(Reference)      : 25
      root_gfs
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 13  19
+      |(Reference)      : 25  36
 
  Total information
    Procedures       : 2
-   Total lines      : 22
+   Total lines      : 40
    Total statements : 17
    Total stack(byte): 752
    Total prefetch num: 0

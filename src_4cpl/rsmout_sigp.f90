@@ -20,7 +20,8 @@
 #else
       use rank, only : myrank
 #endif
-      use const, only: rlon1, rlon2, rlat1, rlat2, rgrdsz, rsmsfcmgrhr
+      use const, only: rlon1, rlon2, rlat1, rlat2, rgrdsz, rsmsfcmgrhr &
+                ,RTYPE
 
       implicit  none
 
@@ -30,15 +31,17 @@
 
       real      ptop,rad,grav
 
-      real      cosl(my),pt(nxp,my_max),sgeo(nxp,my_max),        &
-                snr(nxp,my_max),gwr(nxp,my_max),                &
-                tg(nxp,my_max),pk(nxp,lev,my_max),              &
-                ut(nxp,lev,my_max),         &
-                vt(nxp,lev,my_max),tt(nxp,lev,my_max),          &
-                qt(nxp,lev*ncld,my_max),                        &
-                work(nx,my),               &
+      real(kind=RTYPE)::ut(nxp,lev,my_max),vt(nxp,lev,my_max) &
+          ,tt(nxp,lev,my_max),qt(nxp,lev*ncld,my_max)         &
+          ,pt(nxp,my_max),pk(nxp,lev,my_max),sgeo(nxp,my_max)
+
+      real(kind=RTYPE)::wrk1(nxp,my_max),work(nx,my)
+
+      real(kind=RTYPE)      cosl(my)
+      real      snr(nxp,my_max),gwr(nxp,my_max),                &
+                tg(nxp,my_max),                                 &
                 smc(nxp,km,my_max),stc(nxp,km,my_max),          &
-                wrk1(nxp,my_max)
+                workr8(nx,my)
 
       logical   land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max)
 
@@ -181,8 +184,9 @@
           if (ierr/=0) stop "rsmout_sigp: open file xlon fail"
           write(99,*) work(x1:x2,1)
 #ifdef send_RSM
+        workr8=work
         itag=klon
-        call mpmd_send(work(x1:x2,1),nxs,root_rsm,itag,'R')
+        call mpmd_send(workr8(x1:x2,1),nxs,root_rsm,itag,'R')
 #endif
           close(99)
           open(98,file='rsm_xlat_'//cidtg//'.txt',status='unknown', &
@@ -219,7 +223,7 @@
 
 #ifdef write_RSM
       if(myrank.eq.0) then
-        inquire(iolength=recsize) work(x1:x2,y1:y2)
+        inquire(iolength=recsize) workr8(x1:x2,y1:y2)
         open(nsig,file='rsm_data_'//cidtg//'.f'//cfhour,status='unknown', &
             form='unformatted',access='direct',recl=recsize,iostat=ierr)
         if (ierr/=0) stop "rsmout_sigp: open file fail"
@@ -267,8 +271,8 @@
 !
 #ifdef write_RSM
       if(myrank.eq.0) then
-        krec=ksgeo
-        write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
+        workr8=work
+        write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
       endif
 #endif
 #ifdef send_RSM
@@ -296,8 +300,9 @@
 !
 #ifdef write_RSM
       if(myrank.eq.0) then
+        workr8=work
         krec=ksfcp
-        write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
+        write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
       endif
 #endif
 #ifdef send_RSM
@@ -326,8 +331,9 @@
 !
 #ifdef write_RSM
       if(myrank.eq.0) then
+        workr8=work
         krec=ktt-1+(lev-k+1)
-        write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
+        write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
       endif
 #endif
 #ifdef send_RSM
@@ -363,8 +369,9 @@
 !
 #ifdef write_RSM
       if(myrank.eq.0) then
+        workr8=work
         krec=kuu-1+(lev-k+1)
-        write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
+        write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
       endif
 #endif
 #ifdef send_RSM
@@ -396,8 +403,9 @@
 !
 #ifdef write_RSM
       if(myrank.eq.0) then
+        workr8=work
         krec=kvv-1+(lev-k+1)
-        write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
+        write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
       endif
 #endif
 #ifdef send_RSM
@@ -428,8 +436,9 @@
 !
 #ifdef write_RSM
       if(myrank.eq.0) then
+        workr8=work
         krec=kqt-1+(lev-k+1)
-        write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
+        write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
       endif
 #endif
 #ifdef send_RSM
@@ -478,8 +487,9 @@
             endif
 #ifdef write_RSM
             if(myrank.eq.0) then
+              workr8=work
               krec=ktrace-1+(lev-k+1)
-              write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
+              write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
             endif
 #endif
 #ifdef send_RSM
@@ -515,8 +525,9 @@
 !
 #ifdef write_RSM
       if(myrank.eq.0) then
+        workr8=work
         krec=koz-1+(lev-k+1)
-        write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
+        write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
       endif
 #endif
 #ifdef send_RSM
@@ -554,8 +565,9 @@
 !
 #ifdef write_RSM
       if(myrank.eq.0) then
+        workr8=work
         krec=kslmk
-        write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
+        write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
       endif
 #endif
 #ifdef send_RSM
@@ -570,12 +582,14 @@
       endif
 #endif
 ! ***snr***
-      call unify_reduceintp(nx,my,my_max,snr,work)
+      wrk1=snr
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
 !
 #ifdef write_RSM
       if(myrank.eq.0) then
+        workr8=work
         krec=ksnr
-        write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
+        write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
       endif
 #endif
 #ifdef send_RSM
@@ -602,8 +616,9 @@
 !
 #ifdef write_RSM
       if(myrank.eq.0) then
+        workr8=work
         krec=ksimk
-        write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
+        write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
       endif
 #endif
 #ifdef send_RSM
@@ -618,12 +633,14 @@
       endif
 #endif
 ! ***tg***
-      call unify_reduceintp(nx,my,my_max,tg,work)
+      wrk1=tg
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
 !
 #ifdef write_RSM
       if(myrank.eq.0) then
+        workr8=work
         krec=ktg
-        write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
+        write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
       endif
 #endif
 #ifdef send_RSM
@@ -655,8 +672,9 @@
 !
 #ifdef write_RSM
       if(myrank.eq.0) then
+        workr8=work
         krec=ksmc-1+k
-        write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
+        write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
       endif
 #endif
 #ifdef send_RSM
@@ -690,8 +708,9 @@
 !
 #ifdef write_RSM
       if(myrank.eq.0) then
+        workr8=work
         krec=kstc-1+k
-        write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
+        write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
       endif
 #endif
 #ifdef send_RSM

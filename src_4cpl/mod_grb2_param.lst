@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Tue Aug 29 14:57:26 2023
+ Fujitsu Fortran Version 4.6.1  Fri Dec  1 17:11:03 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72/src_4cpl
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_4cpl
    Source file       : mod_grb2_param.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -124,8 +124,8 @@
               62                           !add default
               63                           integer*4  :: grbnxmy
               64                           !grib2 file name
-              65                           character::grbfile*255
-              66                           integer*4::grbid=134
+              65                           character::grbfile*255 ,ofdir*255
+              66                           integer*4::grbid=23,grbparid=24
               67                           integer*8::grb_idtg
               68                           !for ensemble
               69                           integer::grbmem=-1 ,grbnumm
@@ -443,319 +443,389 @@
              375     1                           else
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 1231
+                                   <<<    Standard iteration count: 1600
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 192, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 320, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      fld, r4out
                                    <<< Loop-information  End >>>
-             376     1  pp   2v                    r4out(:)=fld(:)
-             377     1                             call  wrt_grb2_io(itau,t0,t1,t2,p3,t10,t11,t12, r4out )
+             376     1  pp   4v                    r4out(:)=fld(:)
+             377     1                             call  wrt_grb2_io(itau,t0,t1,t2,p3,t10,t11,nint(t12), r4out )
              378     1                           endif
              379                                 end
              380                           !=======================================================================
-             381                                 subroutine wrt_grb2_accu(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,fld)
-             382                                 use param, only : io_quilting
-             383                                 use rank,only:ntag
-             384                                 use const, only: RTYPE
-             385                                 integer::  t0,t1,t2,t10,t11,p3,t24,t27
-             386                                 real::  t12
-             387                                 integer::ptp0(9)
-             388                                 integer::itau,ist
-             389                                 real(kind=RTYPE)::fld(grbnxmy)
-             390                                 real*4::r4out(grbnxmy)
-             391                                 character:: keydoit*34
-             392                                 data keydoit/"DOIT..........................DOIT"/
-             393     1                           if(io_quilting)then
+             381                                 subroutine wrt_grb2_v2(itau,t0,t1,t2,p3,t10,t11,t12,fld,ihdg2)
+             382                                 use param, only : nx,my
+             383                                 use const, only: idtg,RTYPE
+             384                                 integer::  t0,t1,t2,t10,t11,p3
+             385                                 integer::  t12
+             386                                 integer::ptp0(9)
+             387                                 integer::itau,ist,istat,i,ia
+             388                                 real(kind=RTYPE)::fld(nx*my)
+             389                                 real*4::r4out(nx*my)
+             390                                 character:: ihdg2*26,clen*7
+             391                     
+             392     1       2                    do i = 1, 26
+             393     1       2                     ia=ichar(ihdg2(i:i))
+             394     2       2                     if((ia.ge.97).and.(ia.le.122))then
+             395     2       2                       ia=ia-32
+             396     2       2                       ihdg2(i:i)=char(ia)
+             397     2       2                     endif
+             398     1       2                    enddo
+             399                     
+             400                      133                      format( A  ,A1 ,A6,A4 )
+             401                                   write(grbfile,133 )trim(ofdir),'/',ihdg2(1:6),ihdg2(11:14)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1600
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 320, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fld, r4out
+                                   <<< Loop-information  End >>>
+             402        pp   4v                    r4out(:)=fld(:)
+             403                                   call opn_grb2(grbparid,nx,my,idtg,itau,istat)
+             404                                   call wrt_grb2_io(itau,t0,t1,t2,p3,t10,t11,t12, r4out )
+             405          i                        call cls_grb2(grbparid,istat)
+             406                                 end
+             407                           !=======================================================================
+             408                                 subroutine wrt_grb2_accu(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,fld)
+             409                                 use param, only : io_quilting
+             410                                 use rank,only:ntag
+             411                                 use const, only: RTYPE
+             412                                 integer::  t0,t1,t2,t10,t11,p3,t24,t27
+             413                                 real::  t12
+             414                                 integer::ptp0(9)
+             415                                 integer::itau,ist
+             416                                 real(kind=RTYPE)::fld(grbnxmy)
+             417                                 real*4::r4out(grbnxmy)
+             418                                 character:: keydoit*34
+             419                                 data keydoit/"DOIT..........................DOIT"/
+             420     1                           if(io_quilting)then
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 1600
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 16)
                                    <<< Loop-information  End >>>
-             394     1   s    v                    ptp0=(/t0,t1,t2,p3,t10,t11,nint(t12), t24 ,t27/)
-             395     1                             ntag=ntag+1
-             396     1                             call mpe_send_key( keydoit  ,ntag,ist)
-             397     1                             ntag=ntag+1
-             398     1                             call mpe_send_int( ptp0 , 9 ,ntag,ist)
-             399     1                             ntag=ntag+1
-             400     1                             call mpe_send_data(fld ,grbnxmy ,ntag,ist)
-             401     1                           else
+             421     1   s    v                    ptp0=(/t0,t1,t2,p3,t10,t11,nint(t12), t24 ,t27/)
+             422     1                             ntag=ntag+1
+             423     1                             call mpe_send_key( keydoit  ,ntag,ist)
+             424     1                             ntag=ntag+1
+             425     1                             call mpe_send_int( ptp0 , 9 ,ntag,ist)
+             426     1                             ntag=ntag+1
+             427     1                             call mpe_send_data(fld ,grbnxmy ,ntag,ist)
+             428     1                           else
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 1231
+                                   <<<    Standard iteration count: 1600
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 192, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 320, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      fld, r4out
                                    <<< Loop-information  End >>>
-             402     1  pp   2v                    r4out(:)=fld(:)
-             403     1                             call wrt_grb2_accu_io(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,r4out)
-             404     1                           endif
-             405                                 end
-             406                           !=======================================================================
-             407                                 !subroutine seclist45(itau,t1,t2,t10,t11,t12,t13,t14,t15,p3,p5)
-             408                                 !subroutine seclist45(itau,t0,t1,t2,p3,t10,t11,t12,r4out)
-             409                                 subroutine wrt_grb2_io(itau,t0,t1,t2,p3,t10,t11,t12,fld)
-             410                                 !itau :tau
-             411                           !===varitabel set ===
-             412                                 !t0   :Product Discipline ( Code Table 0.0 )
-             413                                 !t1   :Parameter category ( See Code Table 4.1 )
-             414                                 !t2   :Parameter number ( See Code Table 4.2 )
-             415                           !======compress
-             416                                 !p3   :Decimal scale factor (D) [[  set varibale to int( var*10**p3 )  ]]
-             417                           !======layer set
-             418                                 !t10  :Type of surface (See Code Table 4.5)
-             419                                 !     : 1:GroundSurface 100:prssure leyer(Pa) 101:MeanSeaLevel 103:Height Above Ground(m)
-             420                                 !t11  :Scale factor         final value is result=t12*10**t11
-             421                                 !t12  :Value   (ex: T2M  t12=2    850hPa t12=85000 )
-             422                                 use grib_mod
-             423                           !     use mod_typhoon, only: write_mem    !for read ensemble member num
-             424                                 implicit none
-             425                                 integer*4::  t0,t1,t2,t10,t11,t13,t14,p3,p5
-             426                                 real::  t12,t15
-             427                                 integer::itau
-             428                                 real*4::fld(grbnxmy)
-             429                     
-             430                                 listsec0(1)=t0   !Product Discipline ( Code Table 0.0 )
-             431                           ! Add data info. (section 4)
-             432                           !     ipdsnum=0  ! Product Definition Template Number (Code Table 4.0)
-             433                                 ipdstmpl(1)=t1   !Parameter category ( See Code Table 4.1 )
-             434                                 ipdstmpl(2)=t2   !Parameter number ( See Code Table 4.2 )
-             435                           !
-             436     1                           if(itau.eq.0)then
-             437     1                           ipdstmpl(3)=0    !Type of generating process (See Code Table 4.3)
-             438     1                           else
-             439     1                           ipdstmpl(3)=2
-             440     1                           endif
-             441                                 ipdstmpl(9)=itau !Forecast time in units defined by ipdstmpl(8)
-             442                                 ipdstmpl(10)=t10 !Type of first fixed surface(See Code Table 4.5)
-             443                                 ipdstmpl(11)=t11 !Scale factor of first fixed surface
-             444                                 ipdstmpl(12)=t12 !Scaled value of first fixed surface
-             445                                 ipdstmpl(13)=255!t13
-             446                                 ipdstmpl(14)=0  !t14
-             447                                 ipdstmpl(15)=0  !t15
-             448     1                           if(ipdsnum==1)then
-             449     1                            !Type of ensemble forecast (see Code table 4.6)
-             450     1                            !0:hi-res-ctl 1:low-res-ctl 3:member
-             451     2                            if(grbmem==0)then
-             452     2                              ipdstmpl(16)=1 !control run
-             453     2                            else
-             454     2                              ipdstmpl(16)=3
-             455     2                            endif
-             456     1                            ipdstmpl(17)=grbmem  !Perturbation number
-             457     1                            ipdstmpl(18)=grbnumm !Number of forecasts in ensemble
-             458     1                           endif
-             459                           ! Add packing info. (section 5)
-             460                                idrstmpl3=(/0,0,p3,0,0,0,0,0,0,0,0,0,0,0,0,0,2/)
-             461                     
-             462                                 call gribcreate(cgrib,lcgrib,listsec0,listsec1,ierr)
-             463                                 call addgrid(cgrib,lcgrib,igds,igdstmpl,igdstmplen,ideflist,idefnum,ierr)
-             464                                 call addfield(cgrib,lcgrib,ipdsnum,ipdstmpl,ipdstmplen,    &
-             465                                      coordlist,numcoord,idrsnum3,idrstmpl3,idrstmplen3, &
-             466                                      fld,grbnxmy,ibmap,bmap,ierr)
-             467                                 call gribend(cgrib,lcgrib,lengrib,ierr)
-             468                                 call wryte(grbid,lengrib,cgrib)
-             469                                 return
-             470                                 end subroutine
-             471                           !=======================================================================
-             472                     
-             473                           !      subroutine seclist4_85(ita,t1,t2,t10,t11,t12,t13,t14,t15,t16,    &
-             474                           !                             t17,t18,t19,t20,t21,t22,t23,t24,t25,t26,  &
-             475                           !                             t27,t28,t29,p3,p5)
-             476                                 subroutine wrt_grb2_accu_io(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,fld)
-             477                                 !itau :tau
-             478                           !===varitabel set ===
-             479                                 !t0   :Product Discipline ( Code Table 0.0 )
-             480                                 !t1   :Parameter category ( See Code Table 4.1 )
-             481                                 !t2   :Parameter number ( See Code Table 4.2 )
-             482                           !======compress
-             483                                 !p3   :Decimal scale factor (D) [[  set varibale to int( var*10**p3 )  ]]
-             484                           !======layer set
-             485                                 !t10  :Type of surface (See Code Table 4.5)
-             486                                 !     : 1:GroundSurface 100:prssure leyer(Pa) 101:MeanSeaLevel 103:Height Above Ground(m)
-             487                                 !t11  :Scale factor         final value is result=t12*10**t11
-             488                                 !t12  :Value   (ex: T2M  t12=2    850hPa t12=85000 )
-             489                                 !t24  ;0 ave 1 accu
-             490                                 !t27  :average of time range
-             491                                 use grib_mod
-             492                                 integer itau,t0,t1,t2,t10,t11,t13,t14,t16,t17,t18,t19,t20,t21,   &
-             493                                             t22,t23,t24,t25,t26,t27,t28,t29,p3,p5
-             494                                 real t12,t15
-             495                                 real*4::fld(grbnxmy)
-             496                                 integer*8::idtg2
-             497                                 character:: cdtg*12
-             498                     
-             499                                 if( (itau-t27)  <  0 )return
-             500                                 listsec0(1)=t0   !Product Discipline ( Code Table 0.0 )
-             501                           ! Add data info. (section 4)
-             502                           !     ipdsnum_acc=8  ! Product Definition Template Number (Code Table 4.0)
-             503                                 ipdstmpl8(1)=t1   !Parameter category ( See Code Table 4.1 )
-             504                                 ipdstmpl8(2)=t2   !Parameter number ( See Code Table 4.2 )
-             505     1                           if(itau.eq.0)then
-             506     1                           ipdstmpl8(3)=0    !Type of generating process (See Code Table 4.3)
-             507     1                           else
-             508     1                           ipdstmpl8(3)=2
-             509     1                           endif
-             510                                 ipdstmpl8(8 )=1   !Forecast time in units defined by ipdstmpl(8)
-             511                                 ipdstmpl8(9 )= itau-t27  !Forecast time in units defined by ipdstmpl(8)
-             512                                 ipdstmpl8(10)=t10 !Type of first fixed surface(See Code Table 4.5)
-             513                                 ipdstmpl8(11)=t11 !Scale factor of first fixed surface
-             514                                 ipdstmpl8(12)=t12 !Scaled value of first fixed surface
-             515                                 ipdstmpl8(13)=255!t13
-             516                                 ipdstmpl8(14)=0  !t14
-             517                                 ipdstmpl8(15)=0  !t15
-             518                                 call dtgfix12(grb_idtg,idtg2 ,itau)
-             519                                 write(cdtg,'(i12.12)')idtg2
-             520     1                           if(ipdsnum_acc==8)then
-             521     1                             read(cdtg,'(i4,i2,i2,i2)')ipdstmpl8(16:19)!yyyy mm dd hh
-             522     1                             ipdstmpl8(20)=0 !t20 ! minute
-             523     1                             ipdstmpl8(21)=0 !t21 ! Second | Time of end of overall time interval
-             524     1                             ipdstmpl8(22)=1 !t22
-             525     1                             ipdstmpl8(23)=0 !t23
-             526     1                             ipdstmpl8(24)=t24 !t24  0 ave 1 accu
-             527     1                             ipdstmpl8(25)=2 !t25 code 4.11
-             528     1                             ipdstmpl8(26)=1 !t26 ! unit of time for time range. 1:hour, 2:day
-             529     1                             ipdstmpl8(27)=t27  ! time interval value
-             530     1                             ipdstmpl8(28)=0  !t28 fcst,dt unit 0:minut 1:hour 2:day
-             531     1                             ipdstmpl8(29)=0  !t29
-             532     1                           elseif(ipdsnum_acc==11)then
-             533     2                            if(grbmem==0)then
-             534     2                              ipdstmpl8(16)=1 !control run
-             535     2                            else
-             536     2                              ipdstmpl8(16)=3 !Type of ensemble forecast (see Code table 4.6)
-             537     2                            endif
-             538     1                            ipdstmpl8(17)=grbmem  !Perturbation number
-             539     1                            ipdstmpl8(18)=grbnumm !Number of forecasts in ensemble
-             540     1                             read(cdtg,'(i4,i2,i2,i2)')ipdstmpl8(19:22)!yyyy mm dd hh
-             541     1                             ipdstmpl8(23)=0 !t20 ! minute
-             542     1                             ipdstmpl8(24)=0 !t21 ! Second | Time of end of overall time interval
-             543     1                             ipdstmpl8(25)=1 !t22
-             544     1                             ipdstmpl8(26)=0 !t23
-             545     1                             ipdstmpl8(27)=t24 !t24  0 ave 1 accu
-             546     1                             ipdstmpl8(28)=2 !t25 code 4.11
-             547     1                             ipdstmpl8(29)=1 !t26 ! unit of time for time range. 1:hour, 2:day
-             548     1                             ipdstmpl8(30)=t27  ! time interval value
-             549     1                             ipdstmpl8(31)=0  !t28 fcst,dt unit 0:minut 1:hour 2:day
-             550     1                             ipdstmpl8(32)=0  !t29
-             551     1                           endif
-             552                           ! Add packing info. (section 5)
-             553                                idrstmpl3=(/0,0,p3,0,0,0,0,0,0,0,0,0,0,0,0,0,2/)
-             554                     
-             555                                 call gribcreate(cgrib,lcgrib,listsec0,listsec1,ierr)
-             556                                 call addgrid(cgrib,lcgrib,igds,igdstmpl,igdstmplen,ideflist,idefnum,ierr)
-             557                                 call addfield(cgrib,lcgrib,ipdsnum_acc,ipdstmpl8,ipdstmplen8,    &
-             558                                      coordlist,numcoord,idrsnum3,idrstmpl3,idrstmplen3, &
-             559                                      fld,grbnxmy,ibmap,bmap,ierr)
-             560                                 call gribend(cgrib,lcgrib,lengrib,ierr)
-             561                                 call wryte(grbid,lengrib,cgrib)
-             562                                 return
-             563                                 !end
-             564                                 end subroutine
-             565                           !=======================================================================
-             566                                 !subroutine latlong(im,jm,la2,lo2,din) !gaussian grid
-             567                                 subroutine latlong(im,jm)!,la2,lo2,din) !gaussian grid
-             568                                 !for golbal grid (start at 0E,90S)
-             569                     
-             570                                 integer*4 im,jm,xxyy,la2,lo2,din
-             571                     
-             572                                 din=360000000/im
-             573                           !     la2=90000000-din
-             574                                 la2=90000000
-             575                                 lo2=360000000-din
-             576                           !     lo2=360000000
-             577                           !
-             578                                  xxyy=im*jm
-             579                                  grbnxmy=xxyy
-             580                           ! Add GRIB2 dimention info. (section 3)
-             581                                  igds(2)=xxyy  !Number of grid points in the defined grid.
-             582                                  igds(5)=40    !Gaussian latitude/longitude
-             583                                  igdstmpl(8)=im    !Ni  - number of points of a parallel
-             584                                  igdstmpl(9)=jm    !Nj  - number of points of a meridian
-             585                                  igdstmpl(15)=la2  !La2 - latitude of last grid point
-             586                                  igdstmpl(16)=lo2  !Lo2 - longitude of last grid point
-             587                                  igdstmpl(17)=din  !Di  - i direction increment
-             588                           !      igdstmpl(18)=jm   !N   - number of parallels between a pole and
-             589                                  igdstmpl(18)=jm/2 !N   - number of parallels between a pole and the equator
-             590                     
-             591                                !CWB define processID
-             592     1                          if( im < 1560)then  !GEPS is 1552 GI0G
-             593     1                           ipdstmpl (5)=53
-             594     1                           ipdstmpl8(5)=53
-             595     1                          else !GFS is GJ0G
-             596     1                           ipdstmpl (5)=34
-             597     1                           ipdstmpl8(5)=34
-             598     1                          endif
-             599                     
-             600                                 return
-             601                                 end subroutine
-             602                           !=======================================================================
-             603                                 !subroutine latlonc(im,jm,la2,lo2,din)
-             604                                 subroutine latlonc(im,jm)!,la2,lo2,din) !lat-lon grid
-             605                                 !for golbal grid (start at 0E,90S)
+             429     1  pp   4v                    r4out(:)=fld(:)
+             430     1                             call wrt_grb2_accu_io(itau,t0,t1,t2,p3,t10,t11,nint(t12),t24,t27,r4out)
+             431     1                           endif
+             432                                 end
+             433                           !=======================================================================
+             434                                 subroutine wrt_grb2_accu_v2(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,fld,ihdg2)
+             435                                 use param, only : nx,my
+             436                                 use const, only: idtg,RTYPE
+             437                                 integer::  t0,t1,t2,t10,t11,p3,t24,t27
+             438                                 integer::  t12
+             439                                 integer::ptp0(9)
+             440                                 integer::itau,ist,istat,i,ia
+             441                                 real(kind=RTYPE)::fld(nx*my)
+             442                                 real*4::r4out(nx*my)
+             443                                 character:: ihdg2*26,clen*7
+             444     1       2                    do i = 1, 26
+             445     1       2                     ia=ichar(ihdg2(i:i))
+             446     2       2                     if((ia.ge.97).and.(ia.le.122))then
+             447     2       2                       ia=ia-32
+             448     2       2                       ihdg2(i:i)=char(ia)
+             449     2       2                     endif
+             450     1       2                    enddo
+             451                      133                      format( A  ,A1 ,A6,A4 )
+             452                                   write(grbfile,133 )trim(ofdir),'/',ihdg2(1:6),ihdg2(11:14)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1600
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 320, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fld, r4out
+                                   <<< Loop-information  End >>>
+             453        pp   4v                    r4out(:)=fld(:)
+             454                                   call opn_grb2(grbparid,nx,my,idtg,itau,istat)
+             455                                   call wrt_grb2_accu_io(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,r4out)
+             456          i                        call cls_grb2(grbparid,istat)
+             457                                 end
+             458                           !=======================================================================
+             459                                 !subroutine seclist45(itau,t1,t2,t10,t11,t12,t13,t14,t15,p3,p5)
+             460                                 !subroutine seclist45(itau,t0,t1,t2,p3,t10,t11,t12,r4out)
+             461                                 subroutine wrt_grb2_io(itau,t0,t1,t2,p3,t10,t11,t12,fld)
+             462                                 !itau :tau
+             463                           !===varitabel set ===
+             464                                 !t0   :Product Discipline ( Code Table 0.0 )
+             465                                 !t1   :Parameter category ( See Code Table 4.1 )
+             466                                 !t2   :Parameter number ( See Code Table 4.2 )
+             467                           !======compress
+             468                                 !p3   :Decimal scale factor (D) [[  set varibale to int( var*10**p3 )  ]]
+             469                           !======layer set
+             470                                 !t10  :Type of surface (See Code Table 4.5)
+             471                                 !     : 1:GroundSurface 100:prssure leyer(Pa) 101:MeanSeaLevel 103:Height Above Ground(m)
+             472                                 !t11  :Scale factor         final value is result=t12*10**t11
+             473                                 !t12  :Value   (ex: T2M  t12=2    850hPa t12=85000 )
+             474                                 use grib_mod
+             475                           !     use mod_typhoon, only: write_mem    !for read ensemble member num
+             476                                 implicit none
+             477                                 integer*4::  t0,t1,t2,t10,t11,t12,t13,t14,p3,p5
+             478                                 real::  t15
+             479                                 integer::itau
+             480                                 real*4::fld(grbnxmy)
+             481                     
+             482                                 listsec0(1)=t0   !Product Discipline ( Code Table 0.0 )
+             483                           ! Add data info. (section 4)
+             484                           !     ipdsnum=0  ! Product Definition Template Number (Code Table 4.0)
+             485                                 ipdstmpl(1)=t1   !Parameter category ( See Code Table 4.1 )
+             486                                 ipdstmpl(2)=t2   !Parameter number ( See Code Table 4.2 )
+             487                           !
+             488     1                           if(itau.eq.0)then
+             489     1                           ipdstmpl(3)=0    !Type of generating process (See Code Table 4.3)
+             490     1                           else
+             491     1                           ipdstmpl(3)=2
+             492     1                           endif
+             493                                 ipdstmpl(9)=itau !Forecast time in units defined by ipdstmpl(8)
+             494                                 ipdstmpl(10)=t10 !Type of first fixed surface(See Code Table 4.5)
+             495                                 ipdstmpl(11)=t11 !Scale factor of first fixed surface
+             496                                 ipdstmpl(12)=t12 !Scaled value of first fixed surface
+             497                                 ipdstmpl(13)=255!t13
+             498                                 ipdstmpl(14)=0  !t14
+             499                                 ipdstmpl(15)=0  !t15
+             500     1                           if(ipdsnum==1)then
+             501     1                            !Type of ensemble forecast (see Code table 4.6)
+             502     1                            !0:hi-res-ctl 1:low-res-ctl 3:member
+             503     2                            if(grbmem==0)then
+             504     2                              ipdstmpl(16)=1 !control run
+             505     2                            else
+             506     2                              ipdstmpl(16)=3
+             507     2                            endif
+             508     1                            ipdstmpl(17)=grbmem  !Perturbation number
+             509     1                            ipdstmpl(18)=grbnumm !Number of forecasts in ensemble
+             510     1                           endif
+             511                           ! Add packing info. (section 5)
+             512                                idrstmpl3=(/0,0,p3,0,0,0,0,0,0,0,0,0,0,0,0,0,2/)
+             513                     
+             514                                 call gribcreate(cgrib,lcgrib,listsec0,listsec1,ierr)
+             515                                 call addgrid(cgrib,lcgrib,igds,igdstmpl,igdstmplen,ideflist,idefnum,ierr)
+             516                                 call addfield(cgrib,lcgrib,ipdsnum,ipdstmpl,ipdstmplen,    &
+             517                                      coordlist,numcoord,idrsnum3,idrstmpl3,idrstmplen3, &
+             518                                      fld,grbnxmy,ibmap,bmap,ierr)
+             519                                 call gribend(cgrib,lcgrib,lengrib,ierr)
+             520                                 call wryte(grbparid,lengrib,cgrib)
+             521                                 return
+             522                                 end subroutine
+             523                           !=======================================================================
+             524                     
+             525                           !      subroutine seclist4_85(ita,t1,t2,t10,t11,t12,t13,t14,t15,t16,    &
+             526                           !                             t17,t18,t19,t20,t21,t22,t23,t24,t25,t26,  &
+             527                           !                             t27,t28,t29,p3,p5)
+             528                                 subroutine wrt_grb2_accu_io(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,fld)
+             529                                 !itau :tau
+             530                           !===varitabel set ===
+             531                                 !t0   :Product Discipline ( Code Table 0.0 )
+             532                                 !t1   :Parameter category ( See Code Table 4.1 )
+             533                                 !t2   :Parameter number ( See Code Table 4.2 )
+             534                           !======compress
+             535                                 !p3   :Decimal scale factor (D) [[  set varibale to int( var*10**p3 )  ]]
+             536                           !======layer set
+             537                                 !t10  :Type of surface (See Code Table 4.5)
+             538                                 !     : 1:GroundSurface 100:prssure leyer(Pa) 101:MeanSeaLevel 103:Height Above Ground(m)
+             539                                 !t11  :Scale factor         final value is result=t12*10**t11
+             540                                 !t12  :Value   (ex: T2M  t12=2    850hPa t12=85000 )
+             541                                 !t24  ;0 ave 1 accu
+             542                                 !t27  :average of time range
+             543                                 use grib_mod
+             544                                 integer itau,t0,t1,t2,t10,t11,t12,t13,t14,t16,t17,t18,t19,t20,t21,   &
+             545                                             t22,t23,t24,t25,t26,t27,t28,t29,p3,p5
+             546                                 real t15
+             547                                 real*4::fld(grbnxmy)
+             548                                 integer*8::idtg2
+             549                                 character:: cdtg*12
+             550                     
+             551                                 if( (itau-t27)  <  0 )return
+             552                                 listsec0(1)=t0   !Product Discipline ( Code Table 0.0 )
+             553                           ! Add data info. (section 4)
+             554                           !     ipdsnum_acc=8  ! Product Definition Template Number (Code Table 4.0)
+             555                                 ipdstmpl8(1)=t1   !Parameter category ( See Code Table 4.1 )
+             556                                 ipdstmpl8(2)=t2   !Parameter number ( See Code Table 4.2 )
+             557     1                           if(itau.eq.0)then
+             558     1                           ipdstmpl8(3)=0    !Type of generating process (See Code Table 4.3)
+             559     1                           else
+             560     1                           ipdstmpl8(3)=2
+             561     1                           endif
+             562                                 ipdstmpl8(8 )=1   !Forecast time in units defined by ipdstmpl(8)
+             563                                 ipdstmpl8(9 )= itau-t27  !Forecast time in units defined by ipdstmpl(8)
+             564                                 ipdstmpl8(10)=t10 !Type of first fixed surface(See Code Table 4.5)
+             565                                 ipdstmpl8(11)=t11 !Scale factor of first fixed surface
+             566                                 ipdstmpl8(12)=t12 !Scaled value of first fixed surface
+             567                                 ipdstmpl8(13)=255!t13
+             568                                 ipdstmpl8(14)=0  !t14
+             569                                 ipdstmpl8(15)=0  !t15
+             570                                 call dtgfix12(grb_idtg,idtg2 ,itau)
+             571                                 write(cdtg,'(i12.12)')idtg2
+             572     1                           if(ipdsnum_acc==8)then
+             573     1                             read(cdtg,'(i4,i2,i2,i2)')ipdstmpl8(16:19)!yyyy mm dd hh
+             574     1                             ipdstmpl8(20)=0 !t20 ! minute
+             575     1                             ipdstmpl8(21)=0 !t21 ! Second | Time of end of overall time interval
+             576     1                             ipdstmpl8(22)=1 !t22
+             577     1                             ipdstmpl8(23)=0 !t23
+             578     1                             ipdstmpl8(24)=t24 !t24  0 ave 1 accu
+             579     1                             ipdstmpl8(25)=2 !t25 code 4.11
+             580     1                             ipdstmpl8(26)=1 !t26 ! unit of time for time range. 1:hour, 2:day
+             581     1                             ipdstmpl8(27)=t27  ! time interval value
+             582     1                             ipdstmpl8(28)=0  !t28 fcst,dt unit 0:minut 1:hour 2:day
+             583     1                             ipdstmpl8(29)=0  !t29
+             584     1                           elseif(ipdsnum_acc==11)then
+             585     2                            if(grbmem==0)then
+             586     2                              ipdstmpl8(16)=1 !control run
+             587     2                            else
+             588     2                              ipdstmpl8(16)=3 !Type of ensemble forecast (see Code table 4.6)
+             589     2                            endif
+             590     1                            ipdstmpl8(17)=grbmem  !Perturbation number
+             591     1                            ipdstmpl8(18)=grbnumm !Number of forecasts in ensemble
+             592     1                             read(cdtg,'(i4,i2,i2,i2)')ipdstmpl8(19:22)!yyyy mm dd hh
+             593     1                             ipdstmpl8(23)=0 !t20 ! minute
+             594     1                             ipdstmpl8(24)=0 !t21 ! Second | Time of end of overall time interval
+             595     1                             ipdstmpl8(25)=1 !t22
+             596     1                             ipdstmpl8(26)=0 !t23
+             597     1                             ipdstmpl8(27)=t24 !t24  0 ave 1 accu
+             598     1                             ipdstmpl8(28)=2 !t25 code 4.11
+             599     1                             ipdstmpl8(29)=1 !t26 ! unit of time for time range. 1:hour, 2:day
+             600     1                             ipdstmpl8(30)=t27  ! time interval value
+             601     1                             ipdstmpl8(31)=0  !t28 fcst,dt unit 0:minut 1:hour 2:day
+             602     1                             ipdstmpl8(32)=0  !t29
+             603     1                           endif
+             604                           ! Add packing info. (section 5)
+             605                                idrstmpl3=(/0,0,p3,0,0,0,0,0,0,0,0,0,0,0,0,0,2/)
              606                     
-             607                                 integer im,jm,xxyy,la2,lo2,din
-             608                     
-             609                                 din=360000000/im
-             610                           !     la2=90000000-din
-             611                                 la2=90000000
-             612                                 lo2=360000000-din
-             613                           !     lo2=360000000
-             614                     
-             615                                  xxyy=im*jm
-             616                                  grbnxmy=xxyy
-             617                           ! Add GRIB2 dimention info. (section 3)
-             618                                  igds(2)=xxyy  !Number of grid points in the defined grid.
-             619                                  igds(5)=0     !Equal latitude/longitude
-             620                                  igdstmpl(8)=im    !Ni  - number of points of a parallel
-             621                                  igdstmpl(9)=jm    !Nj  - number of points of a meridian
-             622                                  igdstmpl(15)=la2  !La2 - latitude of last grid point
-             623                                  igdstmpl(16)=lo2  !Lo2 - longitude of last grid point
-             624                                  igdstmpl(17)=din  !Di  - i direction increment
-             625                                  igdstmpl(18)=din  !Di  - j direction increment
-             626                           !       igdstmpl(18)=jm   !N   - number of parallels between a pole and the equator
-             627                     
-             628                                 return
-             629                                 end subroutine
-             630                           !=======================================================================
-             631                                 subroutine opn_grb2(nx,my,idtg,itau ,ierr)
-             632                                 use grib_mod
-             633                                      integer::nx,my,itau,ierr
-             634                                      integer*8::idtg
-             635                                      if( .not. allocated( cgrib ) )allocate( cgrib(lcgrib) , bmap(nx*my) )
-             636                                      lengrib=0
+             607                                 call gribcreate(cgrib,lcgrib,listsec0,listsec1,ierr)
+             608                                 call addgrid(cgrib,lcgrib,igds,igdstmpl,igdstmplen,ideflist,idefnum,ierr)
+             609                                 call addfield(cgrib,lcgrib,ipdsnum_acc,ipdstmpl8,ipdstmplen8,    &
+             610                                      coordlist,numcoord,idrsnum3,idrstmpl3,idrstmplen3, &
+             611                                      fld,grbnxmy,ibmap,bmap,ierr)
+             612                                 call gribend(cgrib,lcgrib,lengrib,ierr)
+             613                                 call wryte(grbparid,lengrib,cgrib)
+             614                                 return
+             615                                 !end
+             616                                 end subroutine
+             617                           !=======================================================================
+             618                                 !subroutine latlong(im,jm,la2,lo2,din) !gaussian grid
+             619                                 subroutine latlong(im,jm)!,la2,lo2,din) !gaussian grid
+             620                                 !for golbal grid (start at 0E,90S)
+             621                     
+             622                                 integer*4 im,jm,xxyy,la2,lo2,din
+             623                     
+             624                                 din=360000000/im
+             625                           !     la2=90000000-din
+             626                                 la2=90000000
+             627                                 lo2=360000000-din
+             628                           !     lo2=360000000
+             629                           !
+             630                                  xxyy=im*jm
+             631                                  grbnxmy=xxyy
+             632                           ! Add GRIB2 dimention info. (section 3)
+             633                                  igds(2)=xxyy  !Number of grid points in the defined grid.
+             634                                  igds(5)=40    !Gaussian latitude/longitude
+             635                                  igdstmpl(8)=im    !Ni  - number of points of a parallel
+             636                                  igdstmpl(9)=jm    !Nj  - number of points of a meridian
+             637                                  igdstmpl(15)=la2  !La2 - latitude of last grid point
+             638                                  igdstmpl(16)=lo2  !Lo2 - longitude of last grid point
+             639                                  igdstmpl(17)=din  !Di  - i direction increment
+             640                           !      igdstmpl(18)=jm   !N   - number of parallels between a pole and
+             641                                  igdstmpl(18)=jm/2 !N   - number of parallels between a pole and the equator
+             642                     
+             643                                !CWB define processID
+             644     1                          if( im < 1560)then  !GEPS is 1552 GI0G
+             645     1                           ipdstmpl (5)=53
+             646     1                           ipdstmpl8(5)=53
+             647     1                          else !GFS is GJ0G
+             648     1                           ipdstmpl (5)=34
+             649     1                           ipdstmpl8(5)=34
+             650     1                          endif
+             651                     
+             652                                 return
+             653                                 end subroutine
+             654                           !=======================================================================
+             655                                 !subroutine latlonc(im,jm,la2,lo2,din)
+             656                                 subroutine latlonc(im,jm)!,la2,lo2,din) !lat-lon grid
+             657                                 !for golbal grid (start at 0E,90S)
+             658                     
+             659                                 integer im,jm,xxyy,la2,lo2,din
+             660                     
+             661                                 din=360000000/im
+             662                           !     la2=90000000-din
+             663                                 la2=90000000
+             664                                 lo2=360000000-din
+             665                           !     lo2=360000000
+             666                     
+             667                                  xxyy=im*jm
+             668                                  grbnxmy=xxyy
+             669                           ! Add GRIB2 dimention info. (section 3)
+             670                                  igds(2)=xxyy  !Number of grid points in the defined grid.
+             671                                  igds(5)=0     !Equal latitude/longitude
+             672                                  igdstmpl(8)=im    !Ni  - number of points of a parallel
+             673                                  igdstmpl(9)=jm    !Nj  - number of points of a meridian
+             674                                  igdstmpl(15)=la2  !La2 - latitude of last grid point
+             675                                  igdstmpl(16)=lo2  !Lo2 - longitude of last grid point
+             676                                  igdstmpl(17)=din  !Di  - i direction increment
+             677                                  igdstmpl(18)=din  !Di  - j direction increment
+             678                           !       igdstmpl(18)=jm   !N   - number of parallels between a pole and the equator
+             679                     
+             680                                 return
+             681                                 end subroutine
+             682                           !=======================================================================
+             683                                 subroutine opn_grb2(grbidin,nx,my,idtg,itau ,ierr)
+             684                                 use grib_mod
+             685                                      integer::nx,my,itau,ierr,grbidin
+             686                                      integer*8::idtg
+             687                                      if( .not. allocated( cgrib ) )allocate( cgrib(lcgrib) , bmap(nx*my) )
+             688                                      lengrib=0
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SOFTWARE PIPELINING(IPC: 2.50, ITR: 12, MVE: 2, POL: S)
                                    <<< Loop-information  End >>>
-             637             4                        cgrib=''
-             638                                      call baopenw(grbid,trim(grbfile),ierr)
-             639                                      call latlong(nx,my)
-             640                                      call seclist01(idtg,itau)
-             641     1                                if(grbmem>=0)then
-             642     1                                  ipdsnum=1
-             643     1                                  ipdsnum_acc=11
-             644     1                                endif
-             645                                 end subroutine
-             646                                 subroutine cls_grb2 (ierr)
-             647                                 use grib_mod
-             648                                   integer::ierr
-             649                                   call baclose(grbid,ierr)
-             650                           !       deallocate(cgrib,bmap)
-             651                                 end subroutine
-             652                     
-             653                           end module mod_grb2_param
-             654                     
+             689             4                        cgrib=''
+             690                                      call baopenw(grbidin,trim(grbfile),ierr)
+             691                                      call latlong(nx,my)
+             692                                      call seclist01(idtg,itau)
+             693     1                                if(grbmem>=0)then
+             694     1                                  ipdsnum=1
+             695     1                                  ipdsnum_acc=11
+             696     1                                endif
+             697                                 end subroutine
+             698                                 subroutine cls_grb2 (grbidin,ierr)
+             699                                 use grib_mod
+             700                                   integer::ierr,grbidin
+             701                                   call baclose(grbidin,ierr)
+             702                           !       deallocate(cgrib,bmap)
+             703                                 end subroutine
+             704                     
+             705                           end module mod_grb2_param
+             706                     
 
  Diagnostic messages: program name(mod_grb2_param)
    jwd8654i-w  "mod_grb2_param.f90", line 178: Number of initial elements must be equal to number of initial constants.
 
  Procedure information
-   Lines      : 654
-   Statements : 288
-   Stack(byte): 5904
+   Lines      : 706
+   Statements : 336
+   Stack(byte): 8496
    Prefetch num: 0
 
  Scoping unit of module : mod_grb2_param
@@ -812,6 +882,12 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : PUBLIC
       |(Declaration)    : 63
+      |(Definition)     : 
+      |(Reference)      : 
+     grbparid
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, initialized
+      |(Declaration)    : 66
       |(Definition)     : 
       |(Reference)      : 
      ibmap
@@ -975,7 +1051,7 @@
       |(Attributes)     : 
       |(Declaration)    : 1
       |(Definition)     : 
-      |(Reference)      : 653
+      |(Reference)      : 705
      ngrdpts
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : PUBLIC
@@ -988,6 +1064,12 @@
       |(Declaration)    : 39
       |(Definition)     : 
       |(Reference)      : 42
+     ofdir
+      |(Class and Type) : variable name, CHARACTER(255,1)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
      pcoord
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC
@@ -1073,7 +1155,7 @@
       |(Definition)     : 
       |(Reference)      : 358
      fld
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 355  363
       |(Definition)     : 374
@@ -1131,7 +1213,7 @@
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 368
+      |(Reference)      : 368  377
      ntag
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
@@ -1202,8 +1284,8 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 355  360
-      |(Definition)     : 377
-      |(Reference)      : 368
+      |(Definition)     : 
+      |(Reference)      : 368  377
      t2
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
@@ -1223,86 +1305,128 @@
       |(Definition)     : 
       |(Reference)      : 377
 
- Scoping unit of module sub-program : wrt_grb2_accu
+ Scoping unit of module sub-program : wrt_grb2_v2
    Attribute and Cross reference of name
+     char
+      |(Class and Type) : intrinsic function name, CHARACTER((unknown),1)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 396
+     clen
+      |(Class and Type) : variable name, CHARACTER(7,1)
+      |(Attributes)     : 
+      |(Declaration)    : 390
+      |(Definition)     : 
+      |(Reference)      : 
+     cls_grb2
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 405
      const
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 384
+      |(Reference)      : 383
      fld
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 381  389
-      |(Definition)     : 400
+      |(Declaration)    : 381  388
+      |(Definition)     : 
       |(Reference)      : 402
-     grbnxmy
-      |(Class and Type) : variable name, INTEGER(4)
+     grbfile
+      |(Class and Type) : variable name, CHARACTER(255,1)
       |(Attributes)     : host-associated
       |(Declaration)    : 
-      |(Definition)     : 400
-      |(Reference)      : 389  390
-     io_quilting
-      |(Class and Type) : variable name, LOGICAL(4)
-      |(Attributes)     : common-block-object, use-associated
+      |(Definition)     : 401
+      |(Reference)      : 
+     grbparid
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 382  393
-     ist
+      |(Definition)     : 403  405
+      |(Reference)      : 
+     i
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 388
-      |(Definition)     : 396  398  400
-      |(Reference)      : 
-     itau
+      |(Declaration)    : 387
+      |(Definition)     : 392
+      |(Reference)      : 393  393  396  396
+     ia
       |(Class and Type) : variable name, INTEGER(4)
-      |(Attributes)     : dummy-argument
-      |(Declaration)    : 381  388
-      |(Definition)     : 403
-      |(Reference)      : 
-     keydoit
-      |(Class and Type) : variable name, CHARACTER(34,1)
-      |(Attributes)     : initialized
-      |(Declaration)    : 391  392
-      |(Definition)     : 396
-      |(Reference)      : 
-     mpe_send_data
-      |(Class and Type) : external subroutine name
       |(Attributes)     : 
-      |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 400
-     mpe_send_int
-      |(Class and Type) : external subroutine name
-      |(Attributes)     : 
-      |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 398
-     mpe_send_key
-      |(Class and Type) : external subroutine name
-      |(Attributes)     : 
-      |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 396
-     nint
+      |(Declaration)    : 387
+      |(Definition)     : 393  395
+      |(Reference)      : 394  394  395  396
+     ichar
       |(Class and Type) : intrinsic function name, INTEGER(4)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 394
-     ntag
+      |(Reference)      : 393
+     idtg
+      |(Class and Type) : variable name, INTEGER(8)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 403
+      |(Reference)      : 383
+     ihdg2
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 381  390
+      |(Definition)     : 396
+      |(Reference)      : 393  401  401
+     ist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 387
+      |(Definition)     : 
+      |(Reference)      : 
+     istat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 387
+      |(Definition)     : 403  405
+      |(Reference)      : 
+     itau
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 381  387
+      |(Definition)     : 403  404
+      |(Reference)      : 
+     my
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 395  396  397  398  399  400
-      |(Reference)      : 383  395  397  399
+      |(Definition)     : 403
+      |(Reference)      : 382  388  389
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 403
+      |(Reference)      : 382  388  389
+     ofdir
+      |(Class and Type) : variable name, CHARACTER(255,1)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 401
+     opn_grb2
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 403
      p3
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 381  385
-      |(Definition)     : 403
-      |(Reference)      : 394
+      |(Declaration)    : 381  384
+      |(Definition)     : 404
+      |(Reference)      : 
      param
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -1312,87 +1436,469 @@
      ptp0
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 387
-      |(Definition)     : 394  398
+      |(Declaration)    : 386
+      |(Definition)     : 
       |(Reference)      : 
      RTYPE
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 384  389
+      |(Reference)      : 383  388
      r4out
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 390
-      |(Definition)     : 402  403
+      |(Declaration)    : 389
+      |(Definition)     : 402  404
+      |(Reference)      : 
+     t0
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 381  384
+      |(Definition)     : 404
+      |(Reference)      : 
+     t1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 381  384
+      |(Definition)     : 404
+      |(Reference)      : 
+     t10
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 381  384
+      |(Definition)     : 404
+      |(Reference)      : 
+     t11
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 381  384
+      |(Definition)     : 404
+      |(Reference)      : 
+     t12
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 381  385
+      |(Definition)     : 404
+      |(Reference)      : 
+     t2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 381  384
+      |(Definition)     : 404
+      |(Reference)      : 
+     trim
+      |(Class and Type) : intrinsic function name, CHARACTER((unknown),1)
+      |(Attributes)     : PURE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 401
+     wrt_grb2_io
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 404
+     wrt_grb2_v2
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 381
+      |(Reference)      : 
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        133  format        (Definition) 400  
+                           (Reference)  401
+
+ Scoping unit of module sub-program : wrt_grb2_accu
+   Attribute and Cross reference of name
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 411
+     fld
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 408  416
+      |(Definition)     : 427
+      |(Reference)      : 429
+     grbnxmy
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 427
+      |(Reference)      : 416  417
+     io_quilting
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 409  420
+     ist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 415
+      |(Definition)     : 423  425  427
+      |(Reference)      : 
+     itau
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 408  415
+      |(Definition)     : 430
+      |(Reference)      : 
+     keydoit
+      |(Class and Type) : variable name, CHARACTER(34,1)
+      |(Attributes)     : initialized
+      |(Declaration)    : 418  419
+      |(Definition)     : 423
+      |(Reference)      : 
+     mpe_send_data
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 427
+     mpe_send_int
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 425
+     mpe_send_key
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 423
+     nint
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 421  430
+     ntag
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 422  423  424  425  426  427
+      |(Reference)      : 410  422  424  426
+     p3
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 408  412
+      |(Definition)     : 430
+      |(Reference)      : 421
+     param
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 409
+     ptp0
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 414
+      |(Definition)     : 421  425
+      |(Reference)      : 
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 411  416
+     r4out
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 417
+      |(Definition)     : 429  430
       |(Reference)      : 
      rank
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 383
+      |(Reference)      : 410
      t0
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 381  385
-      |(Definition)     : 403
-      |(Reference)      : 394
+      |(Declaration)    : 408  412
+      |(Definition)     : 430
+      |(Reference)      : 421
      t1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 381  385
-      |(Definition)     : 403
-      |(Reference)      : 394
+      |(Declaration)    : 408  412
+      |(Definition)     : 430
+      |(Reference)      : 421
      t10
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 381  385
-      |(Definition)     : 403
-      |(Reference)      : 394
+      |(Declaration)    : 408  412
+      |(Definition)     : 430
+      |(Reference)      : 421
      t11
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 381  385
-      |(Definition)     : 403
-      |(Reference)      : 394
+      |(Declaration)    : 408  412
+      |(Definition)     : 430
+      |(Reference)      : 421
      t12
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 381  386
-      |(Definition)     : 403
-      |(Reference)      : 394
+      |(Declaration)    : 408  413
+      |(Definition)     : 
+      |(Reference)      : 421  430
      t2
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 381  385
-      |(Definition)     : 403
-      |(Reference)      : 394
+      |(Declaration)    : 408  412
+      |(Definition)     : 430
+      |(Reference)      : 421
      t24
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 381  385
-      |(Definition)     : 403
-      |(Reference)      : 394
+      |(Declaration)    : 408  412
+      |(Definition)     : 430
+      |(Reference)      : 421
      t27
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 381  385
-      |(Definition)     : 403
-      |(Reference)      : 394
+      |(Declaration)    : 408  412
+      |(Definition)     : 430
+      |(Reference)      : 421
      wrt_grb2_accu
       |(Class and Type) : module subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 381
+      |(Definition)     : 408
       |(Reference)      : 
      wrt_grb2_accu_io
       |(Class and Type) : module subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 403
+      |(Reference)      : 430
+
+ Scoping unit of module sub-program : wrt_grb2_accu_v2
+   Attribute and Cross reference of name
+     char
+      |(Class and Type) : intrinsic function name, CHARACTER((unknown),1)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 448
+     clen
+      |(Class and Type) : variable name, CHARACTER(7,1)
+      |(Attributes)     : 
+      |(Declaration)    : 443
+      |(Definition)     : 
+      |(Reference)      : 
+     cls_grb2
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 456
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 436
+     fld
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 434  441
+      |(Definition)     : 
+      |(Reference)      : 453
+     grbfile
+      |(Class and Type) : variable name, CHARACTER(255,1)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 452
+      |(Reference)      : 
+     grbparid
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 454  456
+      |(Reference)      : 
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 440
+      |(Definition)     : 444
+      |(Reference)      : 445  445  448  448
+     ia
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 440
+      |(Definition)     : 445  447
+      |(Reference)      : 446  446  447  448
+     ichar
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 445
+     idtg
+      |(Class and Type) : variable name, INTEGER(8)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 454
+      |(Reference)      : 436
+     ihdg2
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 434  443
+      |(Definition)     : 448
+      |(Reference)      : 445  452  452
+     ist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 440
+      |(Definition)     : 
+      |(Reference)      : 
+     istat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 440
+      |(Definition)     : 454  456
+      |(Reference)      : 
+     itau
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 434  440
+      |(Definition)     : 454  455
+      |(Reference)      : 
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 454
+      |(Reference)      : 435  441  442
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 454
+      |(Reference)      : 435  441  442
+     ofdir
+      |(Class and Type) : variable name, CHARACTER(255,1)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 452
+     opn_grb2
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 454
+     p3
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 434  437
+      |(Definition)     : 455
+      |(Reference)      : 
+     param
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 435
+     ptp0
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 439
+      |(Definition)     : 
+      |(Reference)      : 
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 436  441
+     r4out
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 442
+      |(Definition)     : 453  455
+      |(Reference)      : 
+     t0
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 434  437
+      |(Definition)     : 455
+      |(Reference)      : 
+     t1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 434  437
+      |(Definition)     : 455
+      |(Reference)      : 
+     t10
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 434  437
+      |(Definition)     : 455
+      |(Reference)      : 
+     t11
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 434  437
+      |(Definition)     : 455
+      |(Reference)      : 
+     t12
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 434  438
+      |(Definition)     : 455
+      |(Reference)      : 
+     t2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 434  437
+      |(Definition)     : 455
+      |(Reference)      : 
+     t24
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 434  437
+      |(Definition)     : 455
+      |(Reference)      : 
+     t27
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 434  437
+      |(Definition)     : 455
+      |(Reference)      : 
+     trim
+      |(Class and Type) : intrinsic function name, CHARACTER((unknown),1)
+      |(Attributes)     : PURE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 452
+     wrt_grb2_accu_io
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 455
+     wrt_grb2_accu_v2
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 434
+      |(Reference)      : 
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        133  format        (Definition) 451  
+                           (Reference)  452
 
  Scoping unit of module sub-program : wrt_grb2_io
    Attribute and Cross reference of name
@@ -1401,271 +1907,271 @@
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 464
+      |(Reference)      : 516
      addgrid
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 463
+      |(Reference)      : 515
      bmap
       |(Class and Type) : variable name, LOGICAL(1)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 464
+      |(Definition)     : 516
       |(Reference)      : 
      cgrib
       |(Class and Type) : variable name, CHARACTER(1,1)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 462  463  464  467  468
+      |(Definition)     : 514  515  516  519  520
       |(Reference)      : 
      coordlist
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 464
+      |(Definition)     : 516
       |(Reference)      : 
      fld
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 409  428
-      |(Definition)     : 464
-      |(Reference)      : 
-     grbid
-      |(Class and Type) : variable name, INTEGER(4)
-      |(Attributes)     : host-associated, initialized
-      |(Declaration)    : 
-      |(Definition)     : 468
+      |(Declaration)    : 461  480
+      |(Definition)     : 516
       |(Reference)      : 
      grbmem
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 451  456
+      |(Reference)      : 503  508
      grbnumm
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 457
+      |(Reference)      : 509
      grbnxmy
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated
       |(Declaration)    : 
-      |(Definition)     : 464
-      |(Reference)      : 428
+      |(Definition)     : 516
+      |(Reference)      : 480
+     grbparid
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 520
+      |(Reference)      : 
      grib_mod
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 422
+      |(Reference)      : 474
      gribcreate
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 462
+      |(Reference)      : 514
      gribend
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 467
+      |(Reference)      : 519
      ibmap
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 464
+      |(Definition)     : 516
       |(Reference)      : 
      ideflist
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 463
+      |(Definition)     : 515
       |(Reference)      : 
      idefnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 463
+      |(Definition)     : 515
       |(Reference)      : 
      idrsnum3
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 464
+      |(Definition)     : 516
       |(Reference)      : 
      idrstmpl3
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 460  464
+      |(Definition)     : 512  516
       |(Reference)      : 
      idrstmplen3
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 464
+      |(Reference)      : 516
      ierr
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated
       |(Declaration)    : 
-      |(Definition)     : 462  463  464  467
+      |(Definition)     : 514  515  516  519
       |(Reference)      : 
      igds
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 463
+      |(Definition)     : 515
       |(Reference)      : 
      igdstmpl
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 463
+      |(Definition)     : 515
       |(Reference)      : 
      igdstmplen
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 463
+      |(Reference)      : 515
      ipdsnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 464
-      |(Reference)      : 448
+      |(Definition)     : 516
+      |(Reference)      : 500
      ipdstmpl
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 433  434  437  439  441  442  443  444  445  446  447  452  454  456  457  464
+      |(Definition)     : 485  486  489  491  493  494  495  496  497  498  499  504  506  508  509  516
       |(Reference)      : 
      ipdstmplen
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 464
+      |(Reference)      : 516
      itau
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 409  427
+      |(Declaration)    : 461  479
       |(Definition)     : 
-      |(Reference)      : 436  441
+      |(Reference)      : 488  493
      lcgrib
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 462  463  464  467
+      |(Definition)     : 514  515  516  519
       |(Reference)      : 
      lengrib
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated
       |(Declaration)    : 
-      |(Definition)     : 467  468
+      |(Definition)     : 519  520
       |(Reference)      : 
      listsec0
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 430  462
+      |(Definition)     : 482  514
       |(Reference)      : 
      listsec1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 462
+      |(Definition)     : 514
       |(Reference)      : 
      numcoord
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 464
+      |(Reference)      : 516
      p3
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 409  425
+      |(Declaration)    : 461  477
       |(Definition)     : 
-      |(Reference)      : 460
+      |(Reference)      : 512
      p5
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 425
+      |(Declaration)    : 477
       |(Definition)     : 
       |(Reference)      : 
      t0
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 409  425
+      |(Declaration)    : 461  477
       |(Definition)     : 
-      |(Reference)      : 430
+      |(Reference)      : 482
      t1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 409  425
+      |(Declaration)    : 461  477
       |(Definition)     : 
-      |(Reference)      : 433
+      |(Reference)      : 485
      t10
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 409  425
+      |(Declaration)    : 461  477
       |(Definition)     : 
-      |(Reference)      : 442
+      |(Reference)      : 494
      t11
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 409  425
+      |(Declaration)    : 461  477
       |(Definition)     : 
-      |(Reference)      : 443
+      |(Reference)      : 495
      t12
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 409  426
+      |(Declaration)    : 461  477
       |(Definition)     : 
-      |(Reference)      : 444
+      |(Reference)      : 496
      t13
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 425
+      |(Declaration)    : 477
       |(Definition)     : 
       |(Reference)      : 
      t14
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 425
+      |(Declaration)    : 477
       |(Definition)     : 
       |(Reference)      : 
      t15
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 426
+      |(Declaration)    : 478
       |(Definition)     : 
       |(Reference)      : 
      t2
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 409  425
+      |(Declaration)    : 461  477
       |(Definition)     : 
-      |(Reference)      : 434
+      |(Reference)      : 486
      wrt_grb2_io
       |(Class and Type) : module subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 409
+      |(Definition)     : 461
       |(Reference)      : 
      wryte
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 468
+      |(Reference)      : 520
 
  Scoping unit of module sub-program : wrt_grb2_accu_io
    Attribute and Cross reference of name
@@ -1674,517 +2180,517 @@
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 557
+      |(Reference)      : 609
      addgrid
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 556
+      |(Reference)      : 608
      bmap
       |(Class and Type) : variable name, LOGICAL(1)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 557
+      |(Definition)     : 609
       |(Reference)      : 
      cdtg
       |(Class and Type) : variable name, CHARACTER(12,1)
       |(Attributes)     : 
-      |(Declaration)    : 497
-      |(Definition)     : 519
-      |(Reference)      : 521  540
+      |(Declaration)    : 549
+      |(Definition)     : 571
+      |(Reference)      : 573  592
      cgrib
       |(Class and Type) : variable name, CHARACTER(1,1)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 555  556  557  560  561
+      |(Definition)     : 607  608  609  612  613
       |(Reference)      : 
      coordlist
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 557
+      |(Definition)     : 609
       |(Reference)      : 
      dtgfix12
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 518
+      |(Reference)      : 570
      fld
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 476  495
-      |(Definition)     : 557
+      |(Declaration)    : 528  547
+      |(Definition)     : 609
       |(Reference)      : 
      grb_idtg
       |(Class and Type) : variable name, INTEGER(8)
       |(Attributes)     : host-associated
       |(Declaration)    : 
-      |(Definition)     : 518
-      |(Reference)      : 
-     grbid
-      |(Class and Type) : variable name, INTEGER(4)
-      |(Attributes)     : host-associated, initialized
-      |(Declaration)    : 
-      |(Definition)     : 561
+      |(Definition)     : 570
       |(Reference)      : 
      grbmem
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 533  538
+      |(Reference)      : 585  590
      grbnumm
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 539
+      |(Reference)      : 591
      grbnxmy
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated
       |(Declaration)    : 
-      |(Definition)     : 557
-      |(Reference)      : 495
+      |(Definition)     : 609
+      |(Reference)      : 547
+     grbparid
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 613
+      |(Reference)      : 
      grib_mod
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 491
+      |(Reference)      : 543
      gribcreate
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 555
+      |(Reference)      : 607
      gribend
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 560
+      |(Reference)      : 612
      ibmap
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 557
+      |(Definition)     : 609
       |(Reference)      : 
      ideflist
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 556
+      |(Definition)     : 608
       |(Reference)      : 
      idefnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 556
+      |(Definition)     : 608
       |(Reference)      : 
      idrsnum3
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 557
+      |(Definition)     : 609
       |(Reference)      : 
      idrstmpl3
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 553  557
+      |(Definition)     : 605  609
       |(Reference)      : 
      idrstmplen3
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 557
+      |(Reference)      : 609
      idtg2
       |(Class and Type) : variable name, INTEGER(8)
       |(Attributes)     : 
-      |(Declaration)    : 496
-      |(Definition)     : 518
-      |(Reference)      : 519
+      |(Declaration)    : 548
+      |(Definition)     : 570
+      |(Reference)      : 571
      ierr
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated
       |(Declaration)    : 
-      |(Definition)     : 555  556  557  560
+      |(Definition)     : 607  608  609  612
       |(Reference)      : 
      igds
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 556
+      |(Definition)     : 608
       |(Reference)      : 
      igdstmpl
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 556
+      |(Definition)     : 608
       |(Reference)      : 
      igdstmplen
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 556
+      |(Reference)      : 608
      ipdsnum_acc
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 557
-      |(Reference)      : 520  532
+      |(Definition)     : 609
+      |(Reference)      : 572  584
      ipdstmpl8
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 503  504  506  508  510  511  512  513  514  515  516  517  521  522  523  524  525  526  527  528  529  530  531  534  536  538  539  540  541  542  543  544  545  546  547  548  549  550  557
+      |(Definition)     : 555  556  558  560  562  563  564  565  566  567  568  569  573  574  575  576  577  578  579  580  581  582  583  586  588  590  591  592  593  594  595  596  597  598  599  600  601  602  609
       |(Reference)      : 
      ipdstmplen8
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 557
+      |(Reference)      : 609
      itau
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 476  492
-      |(Definition)     : 518
-      |(Reference)      : 499  505  511
+      |(Declaration)    : 528  544
+      |(Definition)     : 570
+      |(Reference)      : 551  557  563
      lcgrib
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 555  556  557  560
+      |(Definition)     : 607  608  609  612
       |(Reference)      : 
      lengrib
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated
       |(Declaration)    : 
-      |(Definition)     : 560  561
+      |(Definition)     : 612  613
       |(Reference)      : 
      listsec0
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 500  555
+      |(Definition)     : 552  607
       |(Reference)      : 
      listsec1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 555
+      |(Definition)     : 607
       |(Reference)      : 
      numcoord
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 557
+      |(Reference)      : 609
      p3
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 476  492
+      |(Declaration)    : 528  544
       |(Definition)     : 
-      |(Reference)      : 553
+      |(Reference)      : 605
      p5
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 492
+      |(Declaration)    : 544
       |(Definition)     : 
       |(Reference)      : 
      t0
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 476  492
+      |(Declaration)    : 528  544
       |(Definition)     : 
-      |(Reference)      : 500
+      |(Reference)      : 552
      t1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 476  492
+      |(Declaration)    : 528  544
       |(Definition)     : 
-      |(Reference)      : 503
+      |(Reference)      : 555
      t10
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 476  492
+      |(Declaration)    : 528  544
       |(Definition)     : 
-      |(Reference)      : 512
+      |(Reference)      : 564
      t11
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 476  492
+      |(Declaration)    : 528  544
       |(Definition)     : 
-      |(Reference)      : 513
+      |(Reference)      : 565
      t12
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 476  494
+      |(Declaration)    : 528  544
       |(Definition)     : 
-      |(Reference)      : 514
+      |(Reference)      : 566
      t13
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 492
+      |(Declaration)    : 544
       |(Definition)     : 
       |(Reference)      : 
      t14
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 492
+      |(Declaration)    : 544
       |(Definition)     : 
       |(Reference)      : 
      t15
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 494
+      |(Declaration)    : 546
       |(Definition)     : 
       |(Reference)      : 
      t16
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 492
+      |(Declaration)    : 544
       |(Definition)     : 
       |(Reference)      : 
      t17
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 492
+      |(Declaration)    : 544
       |(Definition)     : 
       |(Reference)      : 
      t18
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 492
+      |(Declaration)    : 544
       |(Definition)     : 
       |(Reference)      : 
      t19
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 492
+      |(Declaration)    : 544
       |(Definition)     : 
       |(Reference)      : 
      t2
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 476  492
+      |(Declaration)    : 528  544
       |(Definition)     : 
-      |(Reference)      : 504
+      |(Reference)      : 556
      t20
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 492
+      |(Declaration)    : 544
       |(Definition)     : 
       |(Reference)      : 
      t21
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 492
+      |(Declaration)    : 544
       |(Definition)     : 
       |(Reference)      : 
      t22
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 492
+      |(Declaration)    : 544
       |(Definition)     : 
       |(Reference)      : 
      t23
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 492
+      |(Declaration)    : 544
       |(Definition)     : 
       |(Reference)      : 
      t24
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 476  492
+      |(Declaration)    : 528  544
       |(Definition)     : 
-      |(Reference)      : 526  545
+      |(Reference)      : 578  597
      t25
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 492
+      |(Declaration)    : 544
       |(Definition)     : 
       |(Reference)      : 
      t26
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 492
+      |(Declaration)    : 544
       |(Definition)     : 
       |(Reference)      : 
      t27
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 476  492
+      |(Declaration)    : 528  544
       |(Definition)     : 
-      |(Reference)      : 499  511  529  548
+      |(Reference)      : 551  563  581  600
      t28
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 492
+      |(Declaration)    : 544
       |(Definition)     : 
       |(Reference)      : 
      t29
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 492
+      |(Declaration)    : 544
       |(Definition)     : 
       |(Reference)      : 
      wrt_grb2_accu_io
       |(Class and Type) : module subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 476
+      |(Definition)     : 528
       |(Reference)      : 
      wryte
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 561
+      |(Reference)      : 613
 
  Scoping unit of module sub-program : latlong
    Attribute and Cross reference of name
      din
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 570
-      |(Definition)     : 572
-      |(Reference)      : 575  587
+      |(Declaration)    : 622
+      |(Definition)     : 624
+      |(Reference)      : 627  639
      grbnxmy
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated
       |(Declaration)    : 
-      |(Definition)     : 579
+      |(Definition)     : 631
       |(Reference)      : 
      igds
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 581  582
+      |(Definition)     : 633  634
       |(Reference)      : 
      igdstmpl
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 583  584  585  586  587  589
+      |(Definition)     : 635  636  637  638  639  641
       |(Reference)      : 
      im
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 567  570
+      |(Declaration)    : 619  622
       |(Definition)     : 
-      |(Reference)      : 572  578  583  592
+      |(Reference)      : 624  630  635  644
      ipdstmpl
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 593  596
+      |(Definition)     : 645  648
       |(Reference)      : 
      ipdstmpl8
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 594  597
+      |(Definition)     : 646  649
       |(Reference)      : 
      jm
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 567  570
+      |(Declaration)    : 619  622
       |(Definition)     : 
-      |(Reference)      : 578  584  589
+      |(Reference)      : 630  636  641
      la2
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 570
-      |(Definition)     : 574
-      |(Reference)      : 585
+      |(Declaration)    : 622
+      |(Definition)     : 626
+      |(Reference)      : 637
      latlong
       |(Class and Type) : module subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 567
+      |(Definition)     : 619
       |(Reference)      : 
      lo2
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 570
-      |(Definition)     : 575
-      |(Reference)      : 586
+      |(Declaration)    : 622
+      |(Definition)     : 627
+      |(Reference)      : 638
      xxyy
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 570
-      |(Definition)     : 578
-      |(Reference)      : 579  581
+      |(Declaration)    : 622
+      |(Definition)     : 630
+      |(Reference)      : 631  633
 
  Scoping unit of module sub-program : latlonc
    Attribute and Cross reference of name
      din
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 607
-      |(Definition)     : 609
-      |(Reference)      : 612  624  625
+      |(Declaration)    : 659
+      |(Definition)     : 661
+      |(Reference)      : 664  676  677
      grbnxmy
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated
       |(Declaration)    : 
-      |(Definition)     : 616
+      |(Definition)     : 668
       |(Reference)      : 
      igds
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 618  619
+      |(Definition)     : 670  671
       |(Reference)      : 
      igdstmpl
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 620  621  622  623  624  625
+      |(Definition)     : 672  673  674  675  676  677
       |(Reference)      : 
      im
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 604  607
+      |(Declaration)    : 656  659
       |(Definition)     : 
-      |(Reference)      : 609  615  620
+      |(Reference)      : 661  667  672
      jm
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 604  607
+      |(Declaration)    : 656  659
       |(Definition)     : 
-      |(Reference)      : 615  621
+      |(Reference)      : 667  673
      la2
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 607
-      |(Definition)     : 611
-      |(Reference)      : 622
+      |(Declaration)    : 659
+      |(Definition)     : 663
+      |(Reference)      : 674
      latlonc
       |(Class and Type) : module subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 604
+      |(Definition)     : 656
       |(Reference)      : 
      lo2
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 607
-      |(Definition)     : 612
-      |(Reference)      : 623
+      |(Declaration)    : 659
+      |(Definition)     : 664
+      |(Reference)      : 675
      xxyy
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 607
-      |(Definition)     : 615
-      |(Reference)      : 616  618
+      |(Declaration)    : 659
+      |(Definition)     : 667
+      |(Reference)      : 668  670
 
  Scoping unit of module sub-program : opn_grb2
    Attribute and Cross reference of name
@@ -2193,127 +2699,127 @@
       |(Attributes)     : PURE
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 635
+      |(Reference)      : 687
      baopenw
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 638
+      |(Reference)      : 690
      bmap
       |(Class and Type) : variable name, LOGICAL(1)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 635
+      |(Definition)     : 687
       |(Reference)      : 
      cgrib
       |(Class and Type) : variable name, CHARACTER(1,1)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 635  637
-      |(Reference)      : 635
+      |(Definition)     : 687  689
+      |(Reference)      : 687
      grbfile
       |(Class and Type) : variable name, CHARACTER(255,1)
       |(Attributes)     : host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 638
-     grbid
+      |(Reference)      : 690
+     grbidin
       |(Class and Type) : variable name, INTEGER(4)
-      |(Attributes)     : host-associated, initialized
-      |(Declaration)    : 
-      |(Definition)     : 638
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 683  685
+      |(Definition)     : 690
       |(Reference)      : 
      grbmem
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 641
+      |(Reference)      : 693
      grib_mod
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 632
+      |(Reference)      : 684
      idtg
       |(Class and Type) : variable name, INTEGER(8)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 631  634
-      |(Definition)     : 640
+      |(Declaration)    : 683  686
+      |(Definition)     : 692
       |(Reference)      : 
      ierr
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 631  633
-      |(Definition)     : 638
+      |(Declaration)    : 683  685
+      |(Definition)     : 690
       |(Reference)      : 
      ipdsnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 642
+      |(Definition)     : 694
       |(Reference)      : 
      ipdsnum_acc
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
-      |(Definition)     : 643
+      |(Definition)     : 695
       |(Reference)      : 
      itau
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 631  633
-      |(Definition)     : 640
+      |(Declaration)    : 683  685
+      |(Definition)     : 692
       |(Reference)      : 
      latlong
       |(Class and Type) : module subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 639
+      |(Reference)      : 691
      lcgrib
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 635
+      |(Reference)      : 687
      lengrib
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated
       |(Declaration)    : 
-      |(Definition)     : 636
+      |(Definition)     : 688
       |(Reference)      : 
      my
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 631  633
-      |(Definition)     : 639
-      |(Reference)      : 635
+      |(Declaration)    : 683  685
+      |(Definition)     : 691
+      |(Reference)      : 687
      nx
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 631  633
-      |(Definition)     : 639
-      |(Reference)      : 635
+      |(Declaration)    : 683  685
+      |(Definition)     : 691
+      |(Reference)      : 687
      opn_grb2
       |(Class and Type) : module subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 631
+      |(Definition)     : 683
       |(Reference)      : 
      seclist01
       |(Class and Type) : module subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 640
+      |(Reference)      : 692
      trim
       |(Class and Type) : intrinsic function name, CHARACTER((unknown),1)
       |(Attributes)     : PURE
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 638
+      |(Reference)      : 690
 
  Scoping unit of module sub-program : cls_grb2
    Attribute and Cross reference of name
@@ -2322,36 +2828,36 @@
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 649
+      |(Reference)      : 701
      cls_grb2
       |(Class and Type) : module subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 646
+      |(Definition)     : 698
       |(Reference)      : 
-     grbid
+     grbidin
       |(Class and Type) : variable name, INTEGER(4)
-      |(Attributes)     : host-associated, initialized
-      |(Declaration)    : 
-      |(Definition)     : 649
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 698  700
+      |(Definition)     : 701
       |(Reference)      : 
      grib_mod
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 647
+      |(Reference)      : 699
      ierr
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 646  648
-      |(Definition)     : 649
+      |(Declaration)    : 698  700
+      |(Definition)     : 701
       |(Reference)      : 
 
  Total information
    Procedures       : 1
-   Total lines      : 654
-   Total statements : 288
-   Total stack(byte): 5904
+   Total lines      : 706
+   Total statements : 336
+   Total stack(byte): 8496
    Total prefetch num: 0
 

@@ -703,15 +703,24 @@
       t2_qg_me = PI*4.*C_cube*olfus * 0.28*Sc3*SQRT(av_g) * cgg(11)
 
 !>  - Compute constants for helping find lookup table indexes
-      nic2 = NINT(ALOG10(r_c(1)))
-      nii2 = NINT(ALOG10(r_i(1)))
-      nii3 = NINT(ALOG10(Nt_i(1)))
-      nir2 = NINT(ALOG10(r_r(1)))
-      nir3 = NINT(ALOG10(N0r_exp(1)))
-      nis2 = NINT(ALOG10(r_s(1)))
-      nig2 = NINT(ALOG10(r_g(1)))
-      nig3 = NINT(ALOG10(N0g_exp(1)))
-      niIN2 = NINT(ALOG10(Nt_IN(1)))
+!      nic2 = NINT(ALOG10(r_c(1)))
+      nic2 = NINT(DLOG10(r_c(1)))
+!      nii2 = NINT(ALOG10(r_i(1)))
+      nii2 = NINT(DLOG10(r_i(1)))
+!      nii3 = NINT(ALOG10(Nt_i(1)))
+      nii3 = NINT(DLOG10(Nt_i(1)))
+!      nir2 = NINT(ALOG10(r_r(1)))
+      nir2 = NINT(DLOG10(r_r(1)))
+!      nir3 = NINT(ALOG10(N0r_exp(1)))
+      nir3 = NINT(DLOG10(N0r_exp(1)))
+!      nis2 = NINT(ALOG10(r_s(1)))
+      nis2 = NINT(DLOG10(r_s(1)))
+!      nig2 = NINT(ALOG10(r_g(1)))
+      nig2 = NINT(DLOG10(r_g(1)))
+!      nig3 = NINT(ALOG10(N0g_exp(1)))
+      nig3 = NINT(DLOG10(N0g_exp(1)))
+!      niIN2 = NINT(ALOG10(Nt_IN(1)))
+      niIN2 = NINT(DLOG10(Nt_IN(1)))
 
 !>  - Create bins of cloud water (from min diameter up to 100 microns)
       Dc(1) = D0c*1.0d0
@@ -2522,7 +2531,8 @@
 !> - Calculate y-intercept, slope values for graupel.
 !+---+-----------------------------------------------------------------+
       do k = kte, kts, -1
-         ygra1 = alog10(max(1.E-9, rg(k)))
+!         ygra1 = alog10(max(1.E-9, rg(k)))
+         ygra1 = dlog10(max(1.E-9, rg(k)))
          zans1 = 3.4 + 2./7.*(ygra1+8.) + rand1
          N0_exp = 10.**(zans1)
          N0_exp = MAX(DBLE(gonv_min), MIN(N0_exp, DBLE(gonv_max)))
@@ -2639,7 +2649,8 @@
 
 !>  - Cloud water lookup table index.
          if (rc(k).gt. r_c(1)) then
-          nic = NINT(ALOG10(rc(k)))
+!          nic = NINT(ALOG10(rc(k)))
+          nic = NINT(DLOG10(rc(k)))
           do nn = nic-1, nic+1
              n = nn
              if ( (rc(k)/10.**nn).ge.1.0 .and. &
@@ -2658,7 +2669,8 @@
 
 !>  - Cloud ice lookup table indexes.
          if (ri(k).gt. r_i(1)) then
-          nii = NINT(ALOG10(ri(k)))
+!          nii = NINT(ALOG10(ri(k)))
+          nii = NINT(DLOG10(ri(k)))
           do nn = nii-1, nii+1
              n = nn
              if ( (ri(k)/10.**nn).ge.1.0 .and. &
@@ -2672,7 +2684,8 @@
          endif
 
          if (ni(k).gt. Nt_i(1)) then
-          nii = NINT(ALOG10(ni(k)))
+!          nii = NINT(ALOG10(ni(k)))
+          nii = NINT(DLOG10(ni(k)))
           do nn = nii-1, nii+1
              n = nn
              if ( (ni(k)/10.**nn).ge.1.0 .and. &
@@ -2687,7 +2700,8 @@
 
 !>  - Rain lookup table indexes.
          if (rr(k).gt. r_r(1)) then
-          nir = NINT(ALOG10(rr(k)))
+!          nir = NINT(ALOG10(rr(k)))
+          nir = NINT(DLOG10(rr(k)))
           do nn = nir-1, nir+1
              n = nn
              if ( (rr(k)/10.**nn).ge.1.0 .and. &
@@ -2716,7 +2730,8 @@
 
 !>  - Snow lookup table index.
          if (rs(k).gt. r_s(1)) then
-          nis = NINT(ALOG10(rs(k)))
+!          nis = NINT(ALOG10(rs(k)))
+          nis = NINT(DLOG10(rs(k)))
           do nn = nis-1, nis+1
              n = nn
              if ( (rs(k)/10.**nn).ge.1.0 .and. &
@@ -2731,7 +2746,8 @@
 
 !>  - Graupel lookup table index.
          if (rg(k).gt. r_g(1)) then
-          nig = NINT(ALOG10(rg(k)))
+!          nig = NINT(ALOG10(rg(k)))
+          nig = NINT(DLOG10(rg(k)))
           do nn = nig-1, nig+1
              n = nn
              if ( (rg(k)/10.**nn).ge.1.0 .and. &
@@ -2796,7 +2812,8 @@
            stoke_g = mvd_c(k)*mvd_c(k)*vtg*rho_w/(9.*visco(k)*xDg)
            if (xDg.gt. D0g) then
             if (stoke_g.ge.0.4 .and. stoke_g.le.10.) then
-             Ef_gw = 0.55*ALOG10(2.51*stoke_g)
+!             Ef_gw = 0.55*ALOG10(2.51*stoke_g)
+             Ef_gw = 0.55*DLOG10(2.51*stoke_g)
             elseif (stoke_g.lt.0.4) then
              Ef_gw = 0.0
             elseif (stoke_g.gt.10) then
@@ -2965,7 +2982,8 @@
 
 !>  - Ice nuclei lookup table index.
           if (xni.gt. Nt_IN(1)) then
-           niin = NINT(ALOG10(xni))
+!           niin = NINT(ALOG10(xni))
+           niin = NINT(DLOG10(xni))
            do nn = niin-1, niin+1
               n = nn
               if ( (xni/10.**nn).ge.1.0 .and. &
@@ -3601,7 +3619,8 @@
 !> - Calculate y-intercept, slope values for graupel.
 !+---+-----------------------------------------------------------------+
       do k = kte, kts, -1
-         ygra1 = alog10(max(1.E-9, rg(k)))
+!         ygra1 = alog10(max(1.E-9, rg(k)))
+         ygra1 = dlog10(max(1.E-9, rg(k)))
          zans1 = 3.4 + 2./7.*(ygra1+8.) + rand1
          N0_exp = 10.**(zans1)
          N0_exp = MAX(DBLE(gonv_min), MIN(N0_exp, DBLE(gonv_max)))
@@ -3689,7 +3708,8 @@
 
 !>  - Cloud water lookup table index.
             if (rc(k).gt. r_c(1)) then
-             nic = NINT(ALOG10(rc(k)))
+!             nic = NINT(ALOG10(rc(k)))
+             nic = NINT(DLOG10(rc(k)))
              do nn = nic-1, nic+1
                 n = nn
                 if ( (rc(k)/10.**nn).ge.1.0 .and. &
@@ -4238,7 +4258,8 @@
           do k = kte, kts, -1
              vtg = 0.
              if (rg(k).gt. R1) then
-              ygra1 = alog10(max(1.E-9, rg(k)))
+!              ygra1 = alog10(max(1.E-9, rg(k)))
+              ygra1 = dlog10(max(1.E-9, rg(k)))
               zans1 = 3.4 + 2./7.*(ygra1+8.) + rand1
               N0_exp = 10.**(zans1)
               N0_exp = MAX(DBLE(gonv_min), MIN(N0_exp, DBLE(gonv_max)))
@@ -4977,7 +4998,8 @@
 
 !..Freeze water (smallest drops become cloud ice, otherwise graupel).
         do m = 1, ntb_IN
-        T_adjust = MAX(-3.0, MIN(3.0 - ALOG10(Nt_IN(m)), 3.0))
+!        T_adjust = MAX(-3.0, MIN(3.0 - ALOG10(Nt_IN(m)), 3.0))
+        T_adjust = MAX(-3.0, MIN(3.0 - DLOG10(Nt_IN(m)), 3.0))
         do k = 1, 45
 !         print*, ' Freezing water for temp = ', -k
          Texp = DEXP( DFLOAT(k) - T_adjust*1.0D0 ) - 1.0D0
@@ -5790,7 +5812,8 @@
       xni = 0.0
       satw = qv/qvs
       mu_diff    = 210368.0 + (131.438*temp) - (3.32373E6/temp)         &
-     &           - (41729.1*alog(temp))
+!     &           - (41729.1*alog(temp))
+     &           - (41729.1*dlog(temp))
       a_w_i      = exp(mu_diff/(R_uni*temp))
       delta_aw   = satw - a_w_i
       log_J_rate = -906.7 + (8502.0*delta_aw)                           &
@@ -6146,7 +6169,8 @@
 
       if (ANY(L_qg .eqv. .true.)) then
       do k = kte, kts, -1
-         ygra1 = alog10(max(1.E-9, rg(k)))
+!         ygra1 = alog10(max(1.E-9, rg(k)))
+         ygra1 = dlog10(max(1.E-9, rg(k)))
          zans1 = 3.4 + 2./7.*(ygra1+8.) + rand1
          N0_exp = 10.**(zans1)
          N0_exp = MAX(DBLE(gonv_min), MIN(N0_exp, DBLE(gonv_max)))

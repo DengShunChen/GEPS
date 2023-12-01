@@ -1,5 +1,5 @@
 module mod_stochastic_physics
-  use mpe, only : mpe_bcast, mpe_double
+  use mpe, only : mpe_bcast, mpe_double, mpe_integer
   use rank, only : myrank
   use index
   use param
@@ -9,8 +9,8 @@ module mod_stochastic_physics
   private 
 
   type random_pattern
-    real, allocatable :: n2du(:,:,:)
-    real, allocatable :: n2dv(:,:,:)
+    real(kind=RTYPE), allocatable :: n2du(:,:,:)
+    real(kind=RTYPE), allocatable :: n2dv(:,:,:)
     real(kind=RTYPE), allocatable :: n2d(:,:)
     real, allocatable :: kenorm(:,:)
     real(kind=RTYPE), allocatable :: spec(:,:)
@@ -28,7 +28,7 @@ module mod_stochastic_physics
     integer, public :: seed
   end type random_pattern
 
-  integer :: recn=1
+  integer,save :: recnsppt=1, recnskeb=1
   real ::  dt
   logical, public :: ncep_seeds=.false.
   real,allocatable :: sl(:)
@@ -265,8 +265,9 @@ contains
     endif
 
     do k=1,lev
-      if (myrank == 0) print *,'mod_stochastic_physics : k,sl,vfact_sppt',k,sl(k),vfact_sppt(k)
+      if (myrank == 0) print 301,'mod_stochastic_physics : k,sl,vfact_sppt',k,sl(k),vfact_sppt(k)
     enddo
+    301 format ( A , I4 , 2F20.12 )
 
   end subroutine init_sppt
 
@@ -306,8 +307,9 @@ contains
          if (sl(k).LT. 2*shum_sigefold) then
             vfact_shum(k)=0.0
          endif
-        if (myrank == 0) print *,'mod_stochastic_physics : k,sl,vfact_shum',k,sl(k),vfact_shum(k)
+        if (myrank == 0) print 301,'mod_stochastic_physics : k,sl,vfact_shum',k,sl(k),vfact_shum(k)
       enddo
+    301 format ( A , I4 , 2F20.12 )
   end subroutine init_shum
 
   subroutine init_skeb(dtau)
@@ -378,8 +380,9 @@ contains
     enddo
 
     do k=1,lev
-      if (myrank == 0) print *,'mod_stochastic_physics : k,sl,vfact_skeb',k,sl(k),vfact_skeb(k)
+      if (myrank == 0) print 301,'mod_stochastic_physics : k,sl,vfact_skeb',k,sl(k),vfact_skeb(k)
     enddo
+    301 format ( A , I4 , 2F20.12 )
     ! calculate vertical interpolation weights
     do k=1,skeblevs
       skeb_vloc(k)=sl(lev)-real(skeblevs-k)/real(skeblevs-1.0)*(sl(lev)-sl(1))
@@ -400,13 +403,13 @@ contains
       enddo
     enddo
     deallocate(skeb_vloc)
+    skeb_vwts(:,1)=1.0-skeb_vwts(:,2)
+    skeb_vpts(:,2)=skeb_vpts(:,1)+1
     if (myrank .eq. 0) then
       do k=1,lev
         print*,'skeb vpts ',skeb_vpts(k,1),skeb_vwts(k,2)
       enddo
     endif
-    skeb_vwts(:,1)=1.0-skeb_vwts(:,2)
-    skeb_vpts(:,2)=skeb_vpts(:,1)+1
 
   end subroutine init_skeb
 
@@ -488,6 +491,8 @@ contains
         allocate(rpattern(n)%n2du(nxp,my_max,skeblevs))
         allocate(rpattern(n)%n2dv(nxp,my_max,skeblevs))
         allocate(rpattern(n)%kenorm(rpattern(n)%mlmax,2))
+        rpattern(n)%n2du(:,:,:)=0.0
+        rpattern(n)%n2dv(:,:,:)=0.0
       endif
       allocate(rpattern(n)%spec(rpattern(n)%mlmax,2))
       allocate(rpattern(n)%varspec(rpattern(n)%mlmax))
@@ -509,7 +514,8 @@ contains
           count4 = count - count_trunc
         endif
       endif
-      call mpe_bcast(count4,1,0,mpe_double) 
+!     call mpe_bcast(count4,1,0,mpe_double) 
+      call mpe_bcast(count4,1,0,mpe_integer)
       if (rpattern(n)%seed == -999 ) then
         rpattern(n)%seed = count4
       endif
@@ -700,7 +706,8 @@ contains
     integer, intent(in) :: nscale
     real, intent(in) :: vfact(nlev) 
     type(random_pattern), intent(inout) :: rpattern(nscale)
-    real(kind=RTYPE), intent(  out) :: n3du(nxp,nlev,my_max),n3dv(nxp,nlev,my_max) 
+    real(kind=RTYPE), intent(  out) :: n3du(nxp,nlev,my_max),n3dv(nxp,nlev,my_max)
+
  
     n3du = 0.
     n3dv = 0.
@@ -797,7 +804,7 @@ contains
     implicit none
     type(random_pattern), intent(inout) :: rpattern
     integer :: ml, ns, ms, k
-    real, allocatable ::            specpv(:,:,:),specpd(:,:,:)
+    real(kind=RTYPE), allocatable :: specpv(:,:,:),specpd(:,:,:)
     real(kind=RTYPE), allocatable :: bufr2d(:,:,:) ,noise(:,:) ,specf(:,:)
 
     allocate(bufr2d(jtrun,jtmax*nsizey,2)) 
@@ -1214,8 +1221,8 @@ contains
       call unify_reduceintp(nx,my,my_max,rpattern_sppt(n)%n2d,glob)   
       if ( myrank .eq. 0 ) then
         glob4=glob
-        write(ihead,rec=recn) glob4
-        recn=recn+1
+        write(ihead,rec=recnsppt) glob4
+        recnsppt=recnsppt+1
       endif
     enddo
     do k=lev,1,-1
@@ -1229,8 +1236,8 @@ contains
       call unify_reduceintp(nx,my,my_max,temp,glob)   
       if ( myrank.eq.0 ) then
         glob4=glob
-        write(ihead,rec=recn) glob4
-        recn=recn+1
+        write(ihead,rec=recnsppt) glob4
+        recnsppt=recnsppt+1
       endif
     enddo
 
@@ -1247,7 +1254,7 @@ contains
     integer      :: i, j, k, jj, nxj, ihead, n
     integer      :: nxmy4
     real         :: tau,xx
-    real         :: glob(nx,my),temp(nxp,my_max)
+    real(kind=RTYPE):: glob(nx,my),temp(nxp,my_max)
     real(kind=4) :: glob4(nx,my)
 
 
@@ -1268,8 +1275,8 @@ contains
       call unify_reduceintp(nx,my,my_max,temp,glob)   
       if ( myrank.eq.0 ) then
         glob4=glob
-        write(ihead,rec=recn) glob4
-        recn=recn+1
+        write(ihead,rec=recnskeb) glob4
+        recnskeb=recnskeb+1
       endif
     enddo
 
@@ -1284,8 +1291,8 @@ contains
       call unify_reduceintp(nx,my,my_max,temp,glob)
       if ( myrank.eq.0 ) then
         glob4=glob
-        write(ihead,rec=recn) glob4
-        recn=recn+1
+        write(ihead,rec=recnskeb) glob4
+        recnskeb=recnskeb+1
       endif
     enddo
 
@@ -1301,8 +1308,8 @@ contains
       call unify_reduceintp(nx,my,my_max,temp,glob)
       if ( myrank.eq.0 ) then
         glob4=glob
-        write(ihead,rec=recn) glob4
-        recn=recn+1
+        write(ihead,rec=recnskeb) glob4
+        recnskeb=recnskeb+1
       endif
     enddo
 
@@ -1317,8 +1324,8 @@ contains
       call unify_reduceintp(nx,my,my_max,temp,glob)
       if ( myrank.eq.0 ) then
         glob4=glob
-        write(ihead,rec=recn) glob4
-        recn=recn+1
+        write(ihead,rec=recnskeb) glob4
+        recnskeb=recnskeb+1
       endif
     enddo
 
@@ -1333,8 +1340,8 @@ contains
       call unify_reduceintp(nx,my,my_max,temp,glob)
       if ( myrank.eq.0 ) then
         glob4=glob
-        write(ihead,rec=recn) glob4
-        recn=recn+1
+        write(ihead,rec=recnskeb) glob4
+        recnskeb=recnskeb+1
       endif
     enddo
 

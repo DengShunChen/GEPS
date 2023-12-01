@@ -9,7 +9,7 @@
       use mpe
       use index
       use mod_outflds
-      use mod_grb2_param
+      use mod_grb2_param , only :ofdir,wrt_grb2_v2,wrt_grb2_accu_v2
       use const ,only:outgrb2 ,outdms ,domfc ,RTYPE,kflag
 !
       implicit  none
@@ -53,6 +53,7 @@
 !kc >
       real      sfac2,sfac3,sfac4
       integer::praint
+      integer:: ptp0(9),ptp1(9)
 !kc <
 !      logical lwrite
 !xb110>
@@ -100,8 +101,8 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s00030',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,19,1,3,1,0,0.,glob)
+      ptp0=(/0,19,1,3,1,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !surface roughness(m)
@@ -110,33 +111,32 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s00040',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,1,2,1,0,0.,glob)
+      ptp0=(/2,0,1,2,1,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 
 !   ---------- Precipitation ----------
 !
       if(label(kk).eq.'b00620')then
+      !precipitaion accum. interval info for grib2
+      praint=mod(itau,12)
+      if(praint==0)praint=12
 !
 !cumulus parameterization precipitation
       globp=raincu
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b00630',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)then
-        praint=mod(itau,12)
-        if(praint==0)praint=12
-        call wrt_grb2_accu(itau,0,1,10,2,103,0,0.,1,praint,glob)
-      endif
+      ptp0=(/0,1,10,2,103,0,0,1,praint/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
  
       globp=rainlp
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b00640',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,47,2,103,0,0.,1,praint,glob)
+      ptp0=(/0,1,47,2,103,0,0,1,praint/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
 !total precipitation  every 12 hour reset to zero (mm)
       call syslbl ('b00620',idtg,itau,ggdef,ihdg)
       do 98 jj=1,jlistnum
@@ -147,8 +147,8 @@
  98   continue
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,8,2,103,0,0.,1,praint,glob)
+      ptp0=(/0,1,8,2,103,0,0,1,praint/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
 !accu. total precipitation from tau 0
       if( itau==0 .or.  itau .gt. nint(domfc) )then
 !
@@ -156,8 +156,8 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b0062t',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,49,0,103,0,0.,glob)
+      ptp0=(/0,1,49,0,103,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       endif !domfc
       go to 30
       endif
@@ -167,8 +167,8 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b00650',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,1,60,2,103,0,0.,glob)
+      ptp0=(/0,1,60,2,103,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !atmosphere column precipitable water (mm)
@@ -176,8 +176,8 @@
       call unify_reduceintp(nx,my,my_max,wk_xy(1,1,4),glob)
       call syslbl ('x00590',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,3,2,10,0,0.,glob)
+      ptp0=(/0,1,3,2,10,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !   ---------- short wave Radiation ----------
@@ -187,8 +187,8 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s00310',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,4,9,2,1,0,0.,glob)
+      ptp0=(/0,4,9,2,1,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !net radiation flux at the surface
@@ -203,8 +203,8 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s00300',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,4,0,2,1,0,0.,glob)
+      ptp0=(/0,4,0,2,1,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !donwward shortwave radiation at the surface
@@ -213,8 +213,8 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s003u0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,4,7,2,1,0,0.,glob)
+      ptp0=(/0,4,7,2,1,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !solar absorption at the top atmosphere
@@ -223,8 +223,8 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('x00330',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,4,1,2,8,0,0.,glob)
+      ptp0=(/0,4,1,2,8,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !   ---------- long wave Radiation ----------
@@ -234,8 +234,8 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s00320',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,5,5,2,1,0,0.,glob)
+      ptp0=(/0,5,5,2,1,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !downward longwave radiation at the surface
@@ -244,8 +244,8 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s003x0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,5,3,2,1,0,0.,glob)
+      ptp0=(/0,5,3,2,1,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !outgoing longwave radiation (OLR) 
@@ -255,8 +255,8 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('x00340',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,5,5,2,8,0,0.,glob)
+      ptp0=(/0,5,5,2,8,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !   ---------- Heat flux ----------
@@ -266,8 +266,8 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s00420',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,0,11,2,1,0,0.,glob)
+      ptp0=(/0,0,11,2,1,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !lentent heat flux at the surface
@@ -276,8 +276,8 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s00430',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,0,10,2,1,0,0.,glob)
+      ptp0=(/0,0,10,2,1,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !ground heat flux
@@ -286,8 +286,8 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s00440',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,10,2,1,0,0.,glob)
+      ptp0=(/2,0,10,2,1,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !u conponent of surface grivity wave stress
@@ -296,8 +296,8 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s00450',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,3,16,2,1,0,0.,glob)
+      ptp0=(/0,3,16,2,1,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !v conponent of surface grivity wave stress
@@ -306,19 +306,20 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s00460',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,3,17,2,1,0,0.,glob)
+      ptp0=(/0,3,17,2,1,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !   ---------- temperature ----------
 !land suface tempaerature or sea surface temperature
       if(label(kk).eq.'s00100') then
       globp=tg
+!      call unify_reduceintp_idw(nx,my,my_max,globp,glob)
       call unify_reduceintp_idw(nx,my,my_max,globp,glob)
       call syslbl ('s00100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,0,17,2,1,0,0.,glob)
+      ptp0=(/0,0,17,2,1,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !land skin air temperature (the model lowest)
@@ -326,8 +327,8 @@
       call unify_reduceintp(nx,my,my_max,wk_xy(1,1,1),glob)
       call syslbl ('b00100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,0,0,2,103,0,0.,glob)
+      ptp0=(/0,0,0,2,103,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 ! 2m temerature
@@ -337,8 +338,8 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b02100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,0,0,2,103,0,2.,glob)
+      ptp0=(/0,0,0,2,103,0,2,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       endif !domfc
       go to 30
       endif
@@ -348,8 +349,8 @@
       call unify_reduceintp(nx,my,my_max,wk_xy(1,1,2),glob)
       call syslbl ('b00200',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,2,2,2,103,0,0.,glob)
+      ptp0=(/0,2,2,2,103,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !skinvu component ( model lowest)
@@ -357,8 +358,8 @@
       call unify_reduceintp(nx,my,my_max,wk_xy(1,1,3),glob)
       call syslbl ('b00210',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,2,3,2,103,0,0.,glob)
+      ptp0=(/0,2,3,2,103,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !10m u component
@@ -368,8 +369,8 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b10200',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,2,2,2,103,0,10.,glob)
+      ptp0=(/0,2,2,2,103,0,10,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       endif !domfc
       go to 30
       endif
@@ -380,8 +381,8 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b10210',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,2,3,2,103,0,10.,glob)
+      ptp0=(/0,2,3,2,103,0,10,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       endif !domfc
       go to 30
       endif
@@ -391,8 +392,8 @@
       call unify_reduceintp(nx,my,my_max,wk_xy(1,1,5),glob)
       call syslbl ('b00510',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,1,2,103,0,0.,glob)
+      ptp0=(/0,1,1,2,103,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !2m specific humidity
@@ -402,8 +403,8 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b02500',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,1,0,6,103,0,2.,glob)
+      ptp0=(/0,1,0,6,103,0,2,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       endif !domfc
       go to 30
       endif
@@ -419,8 +420,8 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b02510',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,1,2,103,0,2.,glob)
+      ptp0=(/0,1,1,2,103,0,2,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       endif !domfc
       go to 30
       endif
@@ -435,8 +436,8 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b10510',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,1,2,103,0,10.,glob)
+      ptp0=(/0,1,1,2,103,0,10,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !
@@ -452,8 +453,8 @@
       call unify_reduceintp_idw(nx,my,my_max,globp,glob)
       call syslbl ('s005a0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,3,1,0,0.,glob)
+      ptp0=(/2,0,9,3,1,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !soil moisture content (mm)
@@ -462,8 +463,8 @@
       call unify_reduceintp_idw(nx,my,my_max,globp,glob)
       call syslbl ('s005a1',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,2,0,3,2,1,0,0.,glob)
+      ptp0=(/2,0,3,2,1,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !canopy moisture content(mm)
@@ -472,8 +473,8 @@
       call unify_reduceintp_idw(nx,my,my_max,globp,glob)
       call syslbl ('s005c0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,19,2,1,0,0.,glob)
+      ptp0=(/2,3,19,2,1,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 
@@ -491,8 +492,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,1),glob)
       call syslbl ('sa15b0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,2,0,9,2,151,0,1.,glob)
+      ptp0=(/2,0,9,2,151,0,1,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 
@@ -501,8 +502,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,2),glob)
       call syslbl ('sa25b0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,2,151,0,2.,glob)
+      ptp0=(/2,0,9,2,151,0,2,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 ! 40-100cm Volumetric soil moisture fraction (0-1.0)
@@ -510,8 +511,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,3),glob)
       call syslbl ('sa35b0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,2,151,0,3.,glob)
+      ptp0=(/2,0,9,2,151,0,3,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 ! 100-200cm Volumetric soil moisture fraction (0-1.0)
@@ -519,8 +520,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,4),glob)
       call syslbl ('sa45b0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,2,0,9,2,151,0,4.,glob)
+      ptp0=(/2,0,9,2,151,0,4,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !kc >
@@ -529,8 +530,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,1),glob)
       call syslbl ('s015b0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,2,151,0,1.,glob)
+      ptp0=(/2,0,9,2,151,0,1,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 
@@ -550,8 +551,8 @@
       call unify_reduceintp_idw(nx,my,my_max,globp,glob)
       call syslbl ('s025b0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,2,151,0,2.,glob)
+      ptp0=(/2,0,9,2,151,0,2,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !xb13 <
@@ -560,8 +561,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,2),glob)
       call syslbl ('s035b0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,2,151,0,3.,glob)
+      ptp0=(/2,0,9,2,151,0,3,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 
@@ -570,8 +571,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,3),glob)
       call syslbl ('s045b0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,2,151,0,4.,glob)
+      ptp0=(/2,0,9,2,151,0,4,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 ! 100-200cm Volumetric soil moisture fraction (0-1.0)
@@ -579,8 +580,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,4),glob)
       call syslbl ('s055b0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,2,151,0,5.,glob)
+      ptp0=(/2,0,9,2,151,0,5,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !xb13 >
@@ -590,8 +591,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,5),glob)
       call syslbl ('sa15b1',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0 )call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,10,2,151,0,1.,glob)
+      ptp0=(/2,3,10,2,151,0,1,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 ! 10-40cm Unfrozen(liquid) soil moisture content(volumetric fraction)
@@ -599,8 +600,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,6),glob)
       call syslbl ('sa25b1',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,10,2,151,0,2.,glob)
+      ptp0=(/2,3,10,2,151,0,2,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 ! 40-100cm Unfrozen(liquid) soil moisture content(volumetric fraction)
@@ -608,8 +609,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,7),glob)
       call syslbl ('sa35b1',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,10,2,151,0,3.,glob)
+      ptp0=(/2,3,10,2,151,0,3,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 ! 100-200cm Unfrozen(liquid) soil moisture content(volumetric fraction)
@@ -617,8 +618,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,8),glob)
       call syslbl ('sa45b1',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,10,2,151,0,4.,glob)
+      ptp0=(/2,3,10,2,151,0,4,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !xb13
@@ -627,8 +628,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,5),glob)
       call syslbl ('s015b1',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,10,2,151,0,1.,glob)
+      ptp0=(/2,3,10,2,151,0,1,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 
@@ -645,8 +646,8 @@
       call unify_reduceintp_idw(nx,my,my_max,globp,glob)
       call syslbl ('s025b1',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,2,3,10,2,151,0,2.,glob)
+      ptp0=(/2,3,10,2,151,0,2,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 ! 10-40cm Unfrozen(liquid) soil moisture content(volumetric fraction)
@@ -654,8 +655,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,6),glob)
       call syslbl ('s035b1',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,10,2,151,0,3.,glob)
+      ptp0=(/2,3,10,2,151,0,3,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 ! 40-100cm Unfrozen(liquid) soil moisture content(volumetric fraction)
@@ -663,8 +664,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,7),glob)
       call syslbl ('s045b1',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,10,2,151,0,4.,glob)
+      ptp0=(/2,3,10,2,151,0,4,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 ! 100-200cm Unfrozen(liquid) soil moisture content(volumetric fraction)
@@ -672,8 +673,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,8),glob)
       call syslbl ('s055b1',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,10,2,151,0,5.,glob)
+      ptp0=(/2,3,10,2,151,0,5,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !<xb13
@@ -683,8 +684,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,9),glob)
       call syslbl ('sa1100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,18,2,151,0,1.,glob)
+      ptp0=(/2,3,18,2,151,0,1,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 ! 10-40cm Volumetric soil temperature(K)
@@ -692,8 +693,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,10),glob)
       call syslbl ('sa2100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,2,3,18,2,151,0,2.,glob)
+      ptp0=(/2,3,18,2,151,0,2,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 ! 40-100cm Volumetric soil temperature(K)
@@ -701,8 +702,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,11),glob)
       call syslbl ('sa3100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,2,3,18,2,151,0,3.,glob)
+      ptp0=(/2,3,18,2,151,0,3,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 ! 100-200cm Volumetric soil temperature(K)
@@ -710,8 +711,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,12),glob)
       call syslbl ('sa4100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,18,2,151,0,4.,glob)
+      ptp0=(/2,3,18,2,151,0,4,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !xb13>
@@ -720,8 +721,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,9),glob)
       call syslbl ('s01100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,18,2,151,0,1.,glob)
+      ptp0=(/2,3,18,2,151,0,1,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 ! 10-200cm Volumetric soil temperature(K)
@@ -738,8 +739,8 @@
       call unify_reduceintp_idw(nx,my,my_max,globp,glob)
       call syslbl ('s02100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,18,2,151,0,2.,glob)
+      ptp0=(/2,3,18,2,151,0,2,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 ! 10-40cm Volumetric soil temperature(K)
@@ -747,8 +748,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,10),glob)
       call syslbl ('s03100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,18,2,151,0,3.,glob)
+      ptp0=(/2,3,18,2,151,0,3,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 ! 40-100cm Volumetric soil temperature(K)
@@ -756,8 +757,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,11),glob)
       call syslbl ('s04100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,18,2,151,0,4.,glob)
+      ptp0=(/2,3,18,2,151,0,4,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 ! 100-200cm Volumetric soil temperature(K)
@@ -765,8 +766,8 @@
       call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,12),glob)
       call syslbl ('s05100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,18,2,151,0,5.,glob)
+      ptp0=(/2,3,18,2,151,0,5,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !   ---------- cloud cover ----------
@@ -777,8 +778,8 @@
       call unify_reduceintp(nx,my,my_max,wk_xy(1,1,6),glob)
       call syslbl ('x00770',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,6,1,3,10,0,0.,glob)
+      ptp0=(/0,6,1,3,10,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       endif !domfc
       go to 30
       endif
@@ -787,8 +788,8 @@
       call unify_reduceintp(nx,my,my_max,wk_xy(1,1,7),glob)
       call syslbl ('x00760',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,6,5,3,10,0,0.,glob)
+      ptp0=(/0,6,5,3,10,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 ! cmid_middle cloud fraction
@@ -796,8 +797,8 @@
       call unify_reduceintp(nx,my,my_max,wk_xy(1,1,8),glob)
       call syslbl ('x00750',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,6,4,3,10,0,0.,glob)
+      ptp0=(/0,6,4,3,10,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 ! clow_low cloud fraction
@@ -805,8 +806,8 @@
       call unify_reduceintp(nx,my,my_max,wk_xy(1,1,9),glob)
       call syslbl ('x00740',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,6,3,3,10,0,0.,glob)
+      ptp0=(/0,6,3,3,10,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !zonal mean cloudiness of Y-Z cross section 0-1 
@@ -827,8 +828,8 @@
       call unify_reduceintp(nx,my,my_max,wk_xy(1,1,10),glob)
       call syslbl ('pbl000',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,3,18,1,10,0,0.,glob)
+      ptp0=(/0,3,18,1,10,0,0,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !
@@ -837,8 +838,8 @@
       call unify_reduceintp(nx,my,my_max,wk_xy(1,1,11),glob)
       call syslbl ('m01500',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,0,9,104,0,1.,glob)
+      ptp0=(/0,1,0,9,104,0,1,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 !
@@ -854,8 +855,8 @@
       write(varkey,'(A1,I2.2,A3)')lflg,ilev,'500'
       call syslbl (varkey,idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,0,9,104,0,float(lev),glob)
+      ptp0=(/0,1,0,9,104,0,lev,-999,-999/)
+      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       go to 30
       endif
 
@@ -876,6 +877,17 @@
       if(outdms.gt.0)then
        if ( myrank .lt. nc )             &
           call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
+      endif
+      if(outgrb2 == 1 )then
+       if ( myrank .lt. nc ) then
+        if(ptp1(8)==-999)then
+        call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+            ,ptp1(6),ptp1(7),mout,ihdg2)
+        else
+        call wrt_grb2_accu_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+            ,ptp1(6),ptp1(7),ptp1(8),ptp1(9),mout,ihdg2)
+        endif
+       endif
       endif
 !
       return
@@ -906,3 +918,45 @@
 !
       return
       end
+!---------------------------------------------------------------
+      subroutine split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
+!
+      use rank
+      use const, only: RTYPE,kflag,outgrb2 ,outdms
+      use mod_grb2_param , only :wrt_grb2_v2 , wrt_grb2_accu_v2
+!
+      implicit none
+!
+      integer   nx,my,nc,istat,lenc,lev
+      real(kind=RTYPE) glob(nx,my),mout(nx,my)
+      character*26 ihdg,ihdg2
+      character*80 ifilout
+      integer::ptp0(9),ptp1(9)
+      integer::itau_spl
+
+      if (myrank .eq. nc) then
+        mout  = glob
+        ihdg2 = ihdg
+        ptp1  = ptp0
+      endif
+        nc    = nc + 1
+!
+      if ( nc .eq. nsize .and. myrank .lt. nc ) then
+        if(outdms.gt.0)then
+          call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
+        endif
+        if(outgrb2 == 1 )then
+         read(ihdg2(7:10),'(I4)')itau_spl
+         if(ptp1(8)==-999)then
+          call wrt_grb2_v2(itau_spl,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+              ,ptp1(6),ptp1(7),mout,ihdg2)
+         else
+          call wrt_grb2_accu_v2(itau_spl,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+              ,ptp1(6),ptp1(7),ptp1(8),ptp1(9),mout,ihdg2)
+         endif
+        endif
+        nc    = 0
+      endif
+!
+      return
+      end subroutine split2

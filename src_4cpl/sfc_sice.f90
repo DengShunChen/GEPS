@@ -118,6 +118,7 @@
       real(kind=kind_phys), parameter :: timin = 173.0    ! minimum temperature allowed for snow/ice
       real(kind=kind_phys), parameter :: albfw = 0.06     ! albedo for lead
       real(kind=kind_phys), parameter :: dsi   = 1.0/0.33
+      real(kind=kind_phys), parameter :: cimin = 0.15     !  --- minimum ice concentration
 
 !  ---  inputs:
       integer, intent(in) :: im, km, lsm, imj
@@ -153,7 +154,6 @@
 
       real (kind=kind_phys) :: t12, t14, tem, stsice(im,kmi) &
       ,                   hflxi, hflxw, q0, qs1, wind, qssi, qssw,fpvs
-      real (kind=kind_phys), parameter :: cimin=0.15 !  --- minimum ice concentration
 
       integer :: i, k, ipr
 
@@ -556,6 +556,7 @@
           stsice(i,1) = -(sqrt(b1*b1 - 4.0*a1*c1) + b1)/(a1+a1)
           tice(i) = (k12*stsice(i,1) - ai) / (k12 + bi)
 
+          !!! top ice melt
           if (tice(i) > tsf) then
             a1 = a10 + k12
             b1 = b10 - k12*tsf
@@ -570,6 +571,7 @@
           stsice(i,2) = (dt2*k32*(stsice(i,1) + tfw + tfw)                &
                       +  dici*hice(i)*stsice(i,2)) * wrk
 
+          !!! bottom melt
           bmelt = (focn(i) + ki4*(stsice(i,2) - tfw)/hice(i)) * delt
 
 !  --- ...  resize the ice ...

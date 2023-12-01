@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Tue Aug 29 14:57:12 2023
+ Fujitsu Fortran Version 4.6.1  Fri Dec  1 17:10:48 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72/src_4cpl
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_4cpl
    Source file       : mod_const.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWBSUM -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -118,190 +118,204 @@
               56                              capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &
               57                              ptop,dt,tau,taui,taue,tauo,                       &
               58                              hours,frad,evaprh,qgini,                          &
-              59                              tice,hice,cutfreq,taup,hfilt,tfilt,               &
-              60                              taureg,cgw,domfc,otgreen,cgwd,cmbk,spl1,spl2
-              61                         real(kind=RTYPE) :: ptmean,ptmeans,qmin
-              62                         !sit
-              63                         real :: fsit         !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
-              64                                              !default fsit<=0., turn on sit_vdiff every tau
-              65                         real dSITdt_intv    !interval of returning ave. dSITdt to dSST/dt
-              66                         real weightSIT      !the weighting of SIT tendency
-              67                         real updatetg       !the time interval to update tg
-              68                     
+              59                              tice,hice,cutfreq,taup,hfilt,hfiltx,tfilt,        &
+              60                              taureg,cgw,domfc,otgreen,cgwd,cmbk,spl1,spl2,     &
+              61                              factop
+              62                         real(kind=RTYPE) :: ptmean,ptmeans,qmin
+              63                         !sit
+              64                         real :: fsit         !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
+              65                                              !default fsit<=0., turn on sit_vdiff every tau
+              66                         real dSITdt_intv    !interval of returning ave. dSITdt to dSST/dt
+              67                         real weightSIT      !the weighting of SIT tendency
+              68                         real updatetg       !the time interval to update tg
               69                     
-              70                         common/constR/                                         &
-              71                              capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &
-              72                              ptop,ptmean,dt,tau,taui,taue,tauo,                &
-              73                              hours,frad,evaprh,qgini,                          &
-              74                              tice,hice,cutfreq,taup,hfilt,ptmeans,             &
-              75                              taureg,cgw,fsit,domfc,otgreen,spl1,spl2,          &
-              76                              dSITdt_intv,weightSIT,updatetg
-              77                         logical :: lsimpl,lzadv, yesdia,dopbl, docup, dorad,   &
-              78                                 dolsp, dograv,doshl, dodry, donnmi,ozon,       &
-              79                                 restrt,hdiff, cstar, update,doincr,hybrid,     &
-              80                                 doo3l, docgrav, doclx, tofd, doslavepp,        &
-              81                                 two_loop,ttl
-              82                     
-              83                         ! for stochastic physics
-              84                         logical :: dosppt       =.false.
-              85                         logical :: dospptout    =.false.
-              86                         logical :: doskebout    =.false.
-              87                         logical :: doshum       =.false.
-              88                         logical :: doskeb       =.false.
-              89                         logical :: dossst       =.false.
-              90                         logical :: use_zmtnblck =.false.
-              91                     
-              92                         logical :: out_green,out_hp
-              93                     
-              94                         !for Semi-Lagrangain
-              95                         logical :: ndsladvh2
-              96                     
-              97                     ! output data for RSM (Also, RSM compiling flag is necessary)
-              98                         !for RSM output
-              99                         logical :: outrsm
-             100                         integer :: rsmoutinv, rsmsfcmgrhr
-             101                         real    :: rlon1, rlon2, rlat1, rlat2, rgrdsz
-             102                     
-             103                         !for horizontal diffusion
-             104                         integer :: hdk1,hdk2(3),hord
-             105                         real    :: vd
-             106                     
-             107                         !for pdf cloud
-             108                         logical :: pdfcloud
+              70                     
+              71                         common/constR/                                         &
+              72                              capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &
+              73                              ptop,ptmean,dt,tau,taui,taue,tauo,                &
+              74                              hours,frad,evaprh,qgini,hfilt,hfiltx,             &
+              75                              tice,hice,cutfreq,taup,ptmeans,                   &
+              76                              taureg,cgw,fsit,domfc,otgreen,spl1,spl2,          &
+              77                              dSITdt_intv,weightSIT,updatetg
+              78                         logical :: lsimpl,lzadv, yesdia,dopbl, docup, dorad,   &
+              79                                 dolsp, dograv,doshl, dodry, donnmi,ozon,       &
+              80                                 restrt,hdiff, cstar, update,doincr,hybrid,     &
+              81                                 doo3l, docgrav, doclx, tofd, doslavepp,        &
+              82                                 two_loop,ttl,mass_dp,dpprt
+              83                     
+              84                         ! for stochastic physics
+              85                         logical :: dosppt       =.false.
+              86                         logical :: dospptout    =.false.
+              87                         logical :: doskebout    =.false.
+              88                         logical :: doshum       =.false.
+              89                         logical :: doskeb       =.false.
+              90                         logical :: dossst       =.false.
+              91                         logical :: use_zmtnblck =.false.
+              92                     
+              93                         logical :: out_green,out_hp
+              94                     
+              95                         !for Semi-Lagrangain
+              96                         logical :: ndsladvh2
+              97                     
+              98                         !for Semi-implicit
+              99                         real    :: alphax
+             100                     
+             101                         !for mass conservation
+             102                         real    :: pdryi,pdry,pcorr
+             103                     
+             104                     ! output data for RSM (Also, RSM compiling flag is necessary)
+             105                         !for RSM output
+             106                         logical :: outrsm
+             107                         integer :: rsmoutinv, rsmsfcmgrhr
+             108                         real    :: rlon1, rlon2, rlat1, rlat2, rgrdsz
              109                     
-             110                         !for 2dMPI
-             111                         logical :: idg_jdg_owner
-             112                         integer :: idg_listnum,jdg_listnum
+             110                         !for horizontal diffusion
+             111                         integer :: hdk1,hdk2(3),hord
+             112                         real    :: vd
              113                     
-             114                         ! daily forecast sst, sea ice fraction, water equivlent snow depth, time weighting
-             115                         logical :: ldailyFCTsst,ldailyFCTicesndpt,lFCTweight
-             116                         integer :: dailyClm_option
-             117                         logical :: lopgsst
-             118                     
-             119                         ! sit
-             120                         logical :: do_sit
-             121                     
-             122                         ! SKEB
-             123                         logical :: first_call
-             124                     
-             125                         !for output
-             126                         integer :: outgrb2    !output grib2 format
-             127                         integer :: outdms     !output dmskey
+             114                         !for pdf cloud
+             115                         logical :: pdfcloud
+             116                     
+             117                         !for 2dMPI
+             118                         logical :: idg_jdg_owner
+             119                         integer :: idg_listnum,jdg_listnum
+             120                     
+             121                         ! daily forecast sst, sea ice fraction, water equivlent snow depth, time weighting
+             122                         logical :: ldailyFCTsst,ldailyFCTicesndpt,lFCTweight
+             123                         integer :: dailyClm_option
+             124                         logical :: lopgsst
+             125                     
+             126                         ! sit
+             127                         logical :: do_sit
              128                     
-             129                         common/constL/lsimpl,lzadv,yesdia,dopbl,docup,dorad,   &
-             130                                 dolsp, dograv,doshl, dodry, donnmi,ozon,       &
-             131                                 restrt,hdiff, cstar, update,doincr,hybrid,     &
-             132                                 doo3l,ndsladvh2,docgrav,out_green,out_hp,      &
-             133                                 ldailyFCTsst,ldailyFCTicesndpt,lFCTweight,     &
-             134                                 dailyClm_option,lopgsst,do_sit,tofd
-             135                     
+             129                         ! SKEB
+             130                         logical :: first_call
+             131                     
+             132                         !for output
+             133                         integer :: outgrb2    !output grib2 format
+             134                         integer :: outdms     !output dmskey
+             135                         logical :: outfv3     !output for fv3 at tau=6
              136                     
-             137                         character(len=80) ifilin,cwbout,bckfile,namlsts, &
-             138                                 ifilout,crdate,ocards,phyout,cntrl, &
-             139                                 ifilin_ncep,ifilin_sst,ifilin_nc,   &
-             140                                 ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb
-             141                     
-             142                         common/files/ifilin,cwbout,bckfile,namlsts, &
-             143                                 ifilout,crdate,ocards,phyout,cntrl, &
-             144                                 ifilin_ncep,ifilin_sst,ifilin_nc,   &
-             145                                 ifilin_ClmANA,ifilin_ClmFCT
-             146                     
-             147                         character(len=16), dimension(:), allocatable, save  :: outdir
-             148                     
-             149                         !dms34
-             150                         integer(kind=8) ::  idtg,idtg2
-             151                         common/constI8/idtg,idtg2
-             152                     
-             153                         !dms34
-             154                         !ggdef, gmdef, gsdef : grid system definition for gg, gm, gs
-             155                         character(len=4)  ::  ggdef,gmdef,gsdef
-             156                         common/dmskey34/ggdef,gmdef,gsdef
-             157                     
-             158                         real(kind=RTYPE), dimension(:,:,:), allocatable, save  :: poly,dpoly
-             159                         real(kind=RTYPE), dimension(:,:)  , allocatable, save  :: eps4,wdfac,wcfac
-             160                         real(kind=RTYPE), dimension(:)    , allocatable, save  :: cim,eps4L   ! for 2dMPI
-             161                     
-             162                         contains
-             163                     
-             164                           subroutine allocate_const_array
-             165                             implicit none
-             166                             integer  ierr
-             167                     
-             168                             allocate (poly(jtrun,my/2,jtmax),dpoly(jtrun,my/2,jtmax),          &
-             169                                       eps4(jtrun,jtmax),wdfac(jtrun,jtmax),wcfac(jtrun,jtmax), &
-             170                                       cim(jtmax), stat=ierr)
-             171     1                       if (ierr/= 0) then
-             172     1                           write(6,*) 'mod_const : allocate fail 1 '
-             173     1                           stop
-             174     1                       end if
+             137                         common/constL/lsimpl,lzadv,yesdia,dopbl,docup,dorad,   &
+             138                                 dolsp, dograv,doshl, dodry, donnmi,ozon,       &
+             139                                 restrt,hdiff, cstar, update,doincr,hybrid,     &
+             140                                 doo3l,ndsladvh2,docgrav,out_green,out_hp,      &
+             141                                 ldailyFCTsst,ldailyFCTicesndpt,lFCTweight,     &
+             142                                 dailyClm_option,lopgsst,do_sit,tofd
+             143                     
+             144                     
+             145                         character(len=80) ifilin,cwbout,bckfile,namlsts, &
+             146                                 ifilout,crdate,ocards,phyout,cntrl, &
+             147                                 ifilin_ncep,ifilin_sst,ifilin_nc,   &
+             148                                 ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb
+             149                     
+             150                         common/files/ifilin,cwbout,bckfile,namlsts, &
+             151                                 ifilout,crdate,ocards,phyout,cntrl, &
+             152                                 ifilin_ncep,ifilin_sst,ifilin_nc,   &
+             153                                 ifilin_ClmANA,ifilin_ClmFCT
+             154                     
+             155                         character(len=16), dimension(:), allocatable, save  :: outdir
+             156                     
+             157                         !dms34
+             158                         integer(kind=8) ::  idtg,idtg2
+             159                         common/constI8/idtg,idtg2
+             160                     
+             161                         !dms34
+             162                         !ggdef, gmdef, gsdef : grid system definition for gg, gm, gs
+             163                         character(len=4)  ::  ggdef,gmdef,gsdef
+             164                         common/dmskey34/ggdef,gmdef,gsdef
+             165                     
+             166                         real(kind=RTYPE), dimension(:,:,:), allocatable, save  :: poly,dpoly
+             167                         real(kind=RTYPE), dimension(:,:)  , allocatable, save  :: eps4,wdfac,wcfac
+             168                         real(kind=RTYPE), dimension(:)    , allocatable, save  :: cim,eps4L   ! for 2dMPI
+             169                     
+             170                         contains
+             171                     
+             172                           subroutine allocate_const_array
+             173                             implicit none
+             174                             integer  ierr
              175                     
-             176                             allocate (aki(lev+1),bki(lev+1),                         &
-             177                                       sigma(lev+1,2),dsigma(lev,2), stat= ierr)
-             178     1                       if (ierr/= 0) then
-             179     1                           write(6,*) 'mod_const : allocate fail 2 '
-             180     1                           stop
-             181     1                       end if
-             182                     
-             183                             allocate (mlsort(jtrun,jtrun),msort(mlmax),lsort(mlmax), &
-             184                                       stat= ierr)
-             185     1                       if (ierr/= 0) then
-             186     1                           write(6,*) 'mod_const : allocate fail 3 '
-             187     1                           stop
-             188     1                       end if
-             189                     
-             190                             allocate (weight(my),sinl(my),cosl(my),           &
-             191                             cor(my),onocos(my),                               &
-             192                             tmean(lev),spalm(lev),eigval(lev),evecin(lev,lev),&
-             193                             evectr(lev,lev),arrhyd(lev,lev),arsddt(lev,lev),  &
-             194                             pmcor(lev),tmcor(lev,lev),tmeans(lev),            &
-             195                                       stat= ierr)
-             196     1                       if (ierr/= 0) then
-             197     1                           write(6,*) 'mod_const : allocate fail 4 '
-             198     1                           stop
-             199     1                       end if
-             200                     
-             201                     
-             202                             allocate (outdir(nout),stat= ierr)
-             203     1                       if (ierr/= 0) then
-             204     1                           write(6,*) 'mod_const : allocate fail 5 '
-             205     1                           stop
-             206     1                       end if
-             207                           end subroutine
+             176                             allocate (poly(jtrun,my/2,jtmax),dpoly(jtrun,my/2,jtmax),          &
+             177                                       eps4(jtrun,jtmax),wdfac(jtrun,jtmax),wcfac(jtrun,jtmax), &
+             178                                       cim(jtmax), stat=ierr)
+             179     1                       if (ierr/= 0) then
+             180     1                           write(6,*) 'mod_const : allocate fail 1 '
+             181     1                           stop
+             182     1                       end if
+             183                     
+             184                             allocate (aki(lev+1),bki(lev+1),                         &
+             185                                       sigma(lev+1,2),dsigma(lev,2), stat= ierr)
+             186     1                       if (ierr/= 0) then
+             187     1                           write(6,*) 'mod_const : allocate fail 2 '
+             188     1                           stop
+             189     1                       end if
+             190                     
+             191                             allocate (mlsort(jtrun,jtrun),msort(mlmax),lsort(mlmax), &
+             192                                       stat= ierr)
+             193     1                       if (ierr/= 0) then
+             194     1                           write(6,*) 'mod_const : allocate fail 3 '
+             195     1                           stop
+             196     1                       end if
+             197                     
+             198                             allocate (weight(my),sinl(my),cosl(my),           &
+             199                             cor(my),onocos(my),                               &
+             200                             tmean(lev),spalm(lev),eigval(lev),evecin(lev,lev),&
+             201                             evectr(lev,lev),arrhyd(lev,lev),arsddt(lev,lev),  &
+             202                             pmcor(lev),tmcor(lev,lev),tmeans(lev),            &
+             203                                       stat= ierr)
+             204     1                       if (ierr/= 0) then
+             205     1                           write(6,*) 'mod_const : allocate fail 4 '
+             206     1                           stop
+             207     1                       end if
              208                     
-             209                           subroutine deallocate_const_array
-             210                             implicit none
-             211                     
-             212                             deallocate(poly,dpoly,eps4,wdfac,wcfac,cim)
-             213                             deallocate(aki,bki,sigma,dsigma)
-             214                             deallocate(mlsort,msort,lsort)
-             215                             deallocate(weight,sinl,cosl,cor,onocos,          &
-             216                                        tmean,spalm,eigval,pmcor,tmeans)
-             217                             deallocate(outdir)
-             218                           end subroutine
-             219                       end module const
+             209                     
+             210                             allocate (outdir(nout),stat= ierr)
+             211     1                       if (ierr/= 0) then
+             212     1                           write(6,*) 'mod_const : allocate fail 5 '
+             213     1                           stop
+             214     1                       end if
+             215                           end subroutine
+             216                     
+             217                           subroutine deallocate_const_array
+             218                             implicit none
+             219                     
+             220                             deallocate(poly,dpoly,eps4,wdfac,wcfac,cim)
+             221                             deallocate(aki,bki,sigma,dsigma)
+             222                             deallocate(mlsort,msort,lsort)
+             223                             deallocate(weight,sinl,cosl,cor,onocos,          &
+             224                                        tmean,spalm,eigval,pmcor,tmeans)
+             225                             deallocate(outdir)
+             226                           end subroutine
+             227                       end module const
 
  Procedure information
-   Lines      : 219
-   Statements : 98
+   Lines      : 227
+   Statements : 101
    Stack(byte): 3296
    Prefetch num: 0
 
  Scoping unit of module : const
    Attribute and Cross reference of name
      aki
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 21
       |(Definition)     : 
       |(Reference)      : 
-     arrhyd
+     alphax
       |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 99
+      |(Definition)     : 
+      |(Reference)      : 
+     arrhyd
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 52
       |(Definition)     : 
       |(Reference)      : 
      arsddt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 52
       |(Definition)     : 
@@ -309,11 +323,11 @@
      bckfile
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 137  142
+      |(Declaration)    : 145  150
       |(Definition)     : 
       |(Reference)      : 
      bki
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 21
       |(Definition)     : 
@@ -321,13 +335,13 @@
      capa
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      cgw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      cgwd
@@ -337,9 +351,9 @@
       |(Definition)     : 
       |(Reference)      : 
      cim
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 160
+      |(Declaration)    : 168
       |(Definition)     : 
       |(Reference)      : 
      cmbk
@@ -351,7 +365,7 @@
      cntrl
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 137  142
+      |(Declaration)    : 145  150
       |(Definition)     : 
       |(Reference)      : 
      const
@@ -359,7 +373,7 @@
       |(Attributes)     : 
       |(Declaration)    : 1
       |(Definition)     : 
-      |(Reference)      : 219
+      |(Reference)      : 227
      constI
       |(Class and Type) : common name
       |(Attributes)     : 
@@ -369,29 +383,29 @@
      constI8
       |(Class and Type) : common name
       |(Attributes)     : 
-      |(Declaration)    : 151
+      |(Declaration)    : 159
       |(Definition)     : 
       |(Reference)      : 
      constL
       |(Class and Type) : common name
       |(Attributes)     : 
-      |(Declaration)    : 129
+      |(Declaration)    : 137
       |(Definition)     : 
       |(Reference)      : 
      constR
       |(Class and Type) : common name
       |(Attributes)     : 
-      |(Declaration)    : 70
+      |(Declaration)    : 71
       |(Definition)     : 
       |(Reference)      : 
      cor
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 49
       |(Definition)     : 
       |(Reference)      : 
      cosl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 49
       |(Definition)     : 
@@ -399,185 +413,191 @@
      cp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      crdate
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 137  142
+      |(Declaration)    : 145  150
       |(Definition)     : 
       |(Reference)      : 
      cstar
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 77  129
+      |(Declaration)    : 78  137
       |(Definition)     : 
       |(Reference)      : 
      cutfreq
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      cwbout
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 137  142
+      |(Declaration)    : 145  150
       |(Definition)     : 
       |(Reference)      : 
      dSITdt_intv
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 65  70
+      |(Declaration)    : 66  71
       |(Definition)     : 
       |(Reference)      : 
      dailyClm_option
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 116  129
+      |(Declaration)    : 123  137
       |(Definition)     : 
       |(Reference)      : 
      dmskey34
       |(Class and Type) : common name
       |(Attributes)     : 
-      |(Declaration)    : 156
+      |(Declaration)    : 164
       |(Definition)     : 
       |(Reference)      : 
      do_sit
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 120  129
+      |(Declaration)    : 127  137
       |(Definition)     : 
       |(Reference)      : 
      docgrav
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 77  129
+      |(Declaration)    : 78  137
       |(Definition)     : 
       |(Reference)      : 
      doclx
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 77
+      |(Declaration)    : 78
       |(Definition)     : 
       |(Reference)      : 
      docup
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 77  129
+      |(Declaration)    : 78  137
       |(Definition)     : 
       |(Reference)      : 
      dodry
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 77  129
+      |(Declaration)    : 78  137
       |(Definition)     : 
       |(Reference)      : 
      dograv
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 77  129
+      |(Declaration)    : 78  137
       |(Definition)     : 
       |(Reference)      : 
      doincr
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 77  129
+      |(Declaration)    : 78  137
       |(Definition)     : 
       |(Reference)      : 
      dolsp
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 77  129
+      |(Declaration)    : 78  137
       |(Definition)     : 
       |(Reference)      : 
      domfc
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      donnmi
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 77  129
+      |(Declaration)    : 78  137
       |(Definition)     : 
       |(Reference)      : 
      doo3l
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 77  129
+      |(Declaration)    : 78  137
       |(Definition)     : 
       |(Reference)      : 
      dopbl
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 77  129
+      |(Declaration)    : 78  137
       |(Definition)     : 
       |(Reference)      : 
      dorad
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 77  129
+      |(Declaration)    : 78  137
       |(Definition)     : 
       |(Reference)      : 
      doshl
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 77  129
+      |(Declaration)    : 78  137
       |(Definition)     : 
       |(Reference)      : 
      doshum
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, initialized
-      |(Declaration)    : 87
+      |(Declaration)    : 88
       |(Definition)     : 
       |(Reference)      : 
      doskeb
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, initialized
-      |(Declaration)    : 88
+      |(Declaration)    : 89
       |(Definition)     : 
       |(Reference)      : 
      doskebout
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, initialized
-      |(Declaration)    : 86
+      |(Declaration)    : 87
       |(Definition)     : 
       |(Reference)      : 
      doslavepp
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 77
+      |(Declaration)    : 78
       |(Definition)     : 
       |(Reference)      : 
      dosppt
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, initialized
-      |(Declaration)    : 84
+      |(Declaration)    : 85
       |(Definition)     : 
       |(Reference)      : 
      dospptout
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, initialized
-      |(Declaration)    : 85
+      |(Declaration)    : 86
       |(Definition)     : 
       |(Reference)      : 
      dossst
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, initialized
-      |(Declaration)    : 89
+      |(Declaration)    : 90
       |(Definition)     : 
       |(Reference)      : 
      dpoly
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 158
+      |(Declaration)    : 166
+      |(Definition)     : 
+      |(Reference)      : 
+     dpprt
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 78
       |(Definition)     : 
       |(Reference)      : 
      dsigma
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 22
       |(Definition)     : 
@@ -585,145 +605,157 @@
      dt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      eigval
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 49
       |(Definition)     : 
       |(Reference)      : 
      eps4
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 159
+      |(Declaration)    : 167
       |(Definition)     : 
       |(Reference)      : 
      eps4L
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 160
+      |(Declaration)    : 168
       |(Definition)     : 
       |(Reference)      : 
      evaprh
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      evecin
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 52
       |(Definition)     : 
       |(Reference)      : 
      evectr
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 52
+      |(Definition)     : 
+      |(Reference)      : 
+     factop
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 55
       |(Definition)     : 
       |(Reference)      : 
      files
       |(Class and Type) : common name
       |(Attributes)     : 
-      |(Declaration)    : 142
+      |(Declaration)    : 150
       |(Definition)     : 
       |(Reference)      : 
      first_call
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 123
+      |(Declaration)    : 130
       |(Definition)     : 
       |(Reference)      : 
      frad
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      fsit
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 63  70
+      |(Declaration)    : 64  71
       |(Definition)     : 
       |(Reference)      : 
      ggdef
       |(Class and Type) : variable name, CHARACTER(4,1)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 155  156
+      |(Declaration)    : 163  164
       |(Definition)     : 
       |(Reference)      : 
      gmdef
       |(Class and Type) : variable name, CHARACTER(4,1)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 155  156
+      |(Declaration)    : 163  164
       |(Definition)     : 
       |(Reference)      : 
      grav
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      gsdef
       |(Class and Type) : variable name, CHARACTER(4,1)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 155  156
+      |(Declaration)    : 163  164
       |(Definition)     : 
       |(Reference)      : 
      hdiff
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 77  129
+      |(Declaration)    : 78  137
       |(Definition)     : 
       |(Reference)      : 
      hdk1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 104
+      |(Declaration)    : 111
       |(Definition)     : 
       |(Reference)      : 
      hdk2
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : PUBLIC, DIMENSION
-      |(Declaration)    : 104
+      |(Declaration)    : 111
       |(Definition)     : 
       |(Reference)      : 
      hfilt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
+      |(Definition)     : 
+      |(Reference)      : 
+     hfiltx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      hice
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      hltm
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      hord
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 104
+      |(Declaration)    : 111
       |(Definition)     : 
       |(Reference)      : 
      hours
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      hybrid
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 77  129
+      |(Declaration)    : 78  137
       |(Definition)     : 
       |(Reference)      : 
      idg
@@ -735,73 +767,73 @@
      idg_jdg_owner
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 111
+      |(Declaration)    : 118
       |(Definition)     : 
       |(Reference)      : 
      idg_listnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 112
+      |(Declaration)    : 119
       |(Definition)     : 
       |(Reference)      : 
      idtg
       |(Class and Type) : variable name, INTEGER(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 150  151
+      |(Declaration)    : 158  159
       |(Definition)     : 
       |(Reference)      : 
      idtg2
       |(Class and Type) : variable name, INTEGER(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 150  151
+      |(Declaration)    : 158  159
       |(Definition)     : 
       |(Reference)      : 
      ifilin
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 137  142
+      |(Declaration)    : 145  150
       |(Definition)     : 
       |(Reference)      : 
      ifilin_ClmANA
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 137  142
+      |(Declaration)    : 145  150
       |(Definition)     : 
       |(Reference)      : 
      ifilin_ClmFCT
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 137  142
+      |(Declaration)    : 145  150
       |(Definition)     : 
       |(Reference)      : 
      ifilin_nc
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 137  142
+      |(Declaration)    : 145  150
       |(Definition)     : 
       |(Reference)      : 
      ifilin_ncep
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 137  142
+      |(Declaration)    : 145  150
       |(Definition)     : 
       |(Reference)      : 
      ifilin_sst
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 137  142
+      |(Declaration)    : 145  150
       |(Definition)     : 
       |(Reference)      : 
      ifilout
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 137  142
+      |(Declaration)    : 145  150
       |(Definition)     : 
       |(Reference)      : 
      ifilout_grb
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 137
+      |(Declaration)    : 145
       |(Definition)     : 
       |(Reference)      : 
      ipadding
@@ -825,7 +857,7 @@
      jdg_listnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 112
+      |(Declaration)    : 119
       |(Definition)     : 
       |(Reference)      : 
      jm2
@@ -843,7 +875,7 @@
      kflag
       |(Class and Type) : named constant, CHARACTER(1,1)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 18
+      |(Declaration)    : 14
       |(Definition)     : 
       |(Reference)      : 
      ksgeo
@@ -879,19 +911,19 @@
      lFCTweight
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 115  129
+      |(Declaration)    : 122  137
       |(Definition)     : 
       |(Reference)      : 
      ldailyFCTicesndpt
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 115  129
+      |(Declaration)    : 122  137
       |(Definition)     : 
       |(Reference)      : 
      ldailyFCTsst
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 115  129
+      |(Declaration)    : 122  137
       |(Definition)     : 
       |(Reference)      : 
      ldiag
@@ -903,13 +935,13 @@
      lopgsst
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 117  129
+      |(Declaration)    : 124  137
       |(Definition)     : 
       |(Reference)      : 
      lsimpl
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 77  129
+      |(Declaration)    : 78  137
       |(Definition)     : 
       |(Reference)      : 
      lsort
@@ -921,13 +953,19 @@
      lzadv
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 77  129
+      |(Declaration)    : 78  137
       |(Definition)     : 
       |(Reference)      : 
      MPI_RTYPE
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 17
+      |(Declaration)    : 13
+      |(Definition)     : 
+      |(Reference)      : 
+     mass_dp
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 78
       |(Definition)     : 
       |(Reference)      : 
      mlsort
@@ -947,13 +985,13 @@
       |(Attributes)     : PUBLIC, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 4
+      |(Reference)      : 4  13
      mpi_real8
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : PUBLIC, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 4  17
+      |(Reference)      : 4
      msort
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
@@ -969,7 +1007,7 @@
      namlsts
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 137  142
+      |(Declaration)    : 145  150
       |(Definition)     : 
       |(Reference)      : 
      ncpu
@@ -981,7 +1019,7 @@
      ndsladvh2
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 95  129
+      |(Declaration)    : 96  137
       |(Definition)     : 
       |(Reference)      : 
      njump
@@ -1059,17 +1097,17 @@
      ocards
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 137  142
+      |(Declaration)    : 145  150
       |(Definition)     : 
       |(Reference)      : 
      omega
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      onocos
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 49
       |(Definition)     : 
@@ -1077,49 +1115,55 @@
      otgreen
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      out_green
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 92  129
+      |(Declaration)    : 93  137
       |(Definition)     : 
       |(Reference)      : 
      out_hp
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 92  129
+      |(Declaration)    : 93  137
       |(Definition)     : 
       |(Reference)      : 
      outdir
       |(Class and Type) : variable name, CHARACTER(16,1)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 147
+      |(Declaration)    : 155
       |(Definition)     : 
       |(Reference)      : 
      outdms
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 127
+      |(Declaration)    : 134
+      |(Definition)     : 
+      |(Reference)      : 
+     outfv3
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 135
       |(Definition)     : 
       |(Reference)      : 
      outgrb2
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 126
+      |(Declaration)    : 133
       |(Definition)     : 
       |(Reference)      : 
      outrsm
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 99
+      |(Declaration)    : 106
       |(Definition)     : 
       |(Reference)      : 
      ozon
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 77  129
+      |(Declaration)    : 78  137
       |(Definition)     : 
       |(Reference)      : 
      param
@@ -1128,152 +1172,170 @@
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 3
+     pcorr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 102
+      |(Definition)     : 
+      |(Reference)      : 
      pdfcloud
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 108
+      |(Declaration)    : 115
+      |(Definition)     : 
+      |(Reference)      : 
+     pdry
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 102
+      |(Definition)     : 
+      |(Reference)      : 
+     pdryi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 102
       |(Definition)     : 
       |(Reference)      : 
      phyout
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 137  142
+      |(Declaration)    : 145  150
       |(Definition)     : 
       |(Reference)      : 
      pmcor
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 49
       |(Definition)     : 
       |(Reference)      : 
      poly
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 158
+      |(Declaration)    : 166
       |(Definition)     : 
       |(Reference)      : 
      ptmean
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 61  70
+      |(Declaration)    : 62  71
       |(Definition)     : 
       |(Reference)      : 
      ptmeans
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 61  70
+      |(Declaration)    : 62  71
       |(Definition)     : 
       |(Reference)      : 
      ptop
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      qgini
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      qmin
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 61
+      |(Declaration)    : 62
       |(Definition)     : 
       |(Reference)      : 
      RTYPE
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 16
+      |(Declaration)    : 12
       |(Definition)     : 
-      |(Reference)      : 21  22  49  52  61  158  159  160
+      |(Reference)      : 21  22  49  52  62  166  167  168
      rad
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      radsq
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      restrt
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 77  129
+      |(Declaration)    : 78  137
       |(Definition)     : 
       |(Reference)      : 
      rgas
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      rgrdsz
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 101
+      |(Declaration)    : 108
       |(Definition)     : 
       |(Reference)      : 
      rlat1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 101
+      |(Declaration)    : 108
       |(Definition)     : 
       |(Reference)      : 
      rlat2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 101
+      |(Declaration)    : 108
       |(Definition)     : 
       |(Reference)      : 
      rlon1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 101
+      |(Declaration)    : 108
       |(Definition)     : 
       |(Reference)      : 
      rlon2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 101
+      |(Declaration)    : 108
       |(Definition)     : 
       |(Reference)      : 
      rsmoutinv
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 100
+      |(Declaration)    : 107
       |(Definition)     : 
       |(Reference)      : 
      rsmsfcmgrhr
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 100
+      |(Declaration)    : 107
       |(Definition)     : 
       |(Reference)      : 
      s0
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      sigma
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 22
       |(Definition)     : 
       |(Reference)      : 
      sinl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 49
       |(Definition)     : 
       |(Reference)      : 
      spalm
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 49
       |(Definition)     : 
@@ -1281,55 +1343,55 @@
      spl1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      spl2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      stbo
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      tau
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      taue
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      taui
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      tauo
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      taup
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      taureg
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      tfilt
@@ -1341,23 +1403,23 @@
      tice
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 55  70
+      |(Declaration)    : 55  71
       |(Definition)     : 
       |(Reference)      : 
      tmcor
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 52
       |(Definition)     : 
       |(Reference)      : 
      tmean
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 49
       |(Definition)     : 
       |(Reference)      : 
      tmeans
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 49
       |(Definition)     : 
@@ -1365,59 +1427,59 @@
      tofd
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 77  129
+      |(Declaration)    : 78  137
       |(Definition)     : 
       |(Reference)      : 
      ttl
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 77
+      |(Declaration)    : 78
       |(Definition)     : 
       |(Reference)      : 
      two_loop
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 77
+      |(Declaration)    : 78
       |(Definition)     : 
       |(Reference)      : 
      update
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 77  129
+      |(Declaration)    : 78  137
       |(Definition)     : 
       |(Reference)      : 
      updatetg
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 67  70
+      |(Declaration)    : 68  71
       |(Definition)     : 
       |(Reference)      : 
      use_zmtnblck
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, initialized
-      |(Declaration)    : 90
+      |(Declaration)    : 91
       |(Definition)     : 
       |(Reference)      : 
      vd
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC
-      |(Declaration)    : 105
+      |(Declaration)    : 112
       |(Definition)     : 
       |(Reference)      : 
      wcfac
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 159
+      |(Declaration)    : 167
       |(Definition)     : 
       |(Reference)      : 
      wdfac
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 159
+      |(Declaration)    : 167
       |(Definition)     : 
       |(Reference)      : 
      weight
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 49
       |(Definition)     : 
@@ -1425,398 +1487,398 @@
      weightSIT
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 66  70
+      |(Declaration)    : 67  71
       |(Definition)     : 
       |(Reference)      : 
      yesdia
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, common-block-object
-      |(Declaration)    : 77  129
+      |(Declaration)    : 78  137
       |(Definition)     : 
       |(Reference)      : 
 
  Scoping unit of module sub-program : allocate_const_array
    Attribute and Cross reference of name
      aki
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 176
+      |(Definition)     : 184
       |(Reference)      : 
      allocate_const_array
       |(Class and Type) : module subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 164
+      |(Definition)     : 172
       |(Reference)      : 
      arrhyd
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 190
+      |(Definition)     : 198
       |(Reference)      : 
      arsddt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 190
+      |(Definition)     : 198
       |(Reference)      : 
      bki
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 176
+      |(Definition)     : 184
       |(Reference)      : 
      cim
-      |(Class and Type) : variable name, REAL(8)
-      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
-      |(Declaration)    : 
-      |(Definition)     : 168
-      |(Reference)      : 
-     cor
-      |(Class and Type) : variable name, REAL(8)
-      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
-      |(Declaration)    : 
-      |(Definition)     : 190
-      |(Reference)      : 
-     cosl
-      |(Class and Type) : variable name, REAL(8)
-      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
-      |(Declaration)    : 
-      |(Definition)     : 190
-      |(Reference)      : 
-     dpoly
-      |(Class and Type) : variable name, REAL(8)
-      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
-      |(Declaration)    : 
-      |(Definition)     : 168
-      |(Reference)      : 
-     dsigma
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 176
       |(Reference)      : 
-     eigval
-      |(Class and Type) : variable name, REAL(8)
+     cor
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 190
+      |(Definition)     : 198
+      |(Reference)      : 
+     cosl
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 198
+      |(Reference)      : 
+     dpoly
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 176
+      |(Reference)      : 
+     dsigma
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 184
+      |(Reference)      : 
+     eigval
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 198
       |(Reference)      : 
      eps4
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 168
+      |(Definition)     : 176
       |(Reference)      : 
      evecin
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 190
+      |(Definition)     : 198
       |(Reference)      : 
      evectr
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 190
+      |(Definition)     : 198
       |(Reference)      : 
      ierr
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 166
-      |(Definition)     : 168  176  183  190  202
-      |(Reference)      : 171  178  185  196  203
+      |(Declaration)    : 174
+      |(Definition)     : 176  184  191  198  210
+      |(Reference)      : 179  186  193  204  211
      jtmax
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 168  168  168  168  168  168
+      |(Reference)      : 176  176  176  176  176  176
      jtrun
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 168  168  168  168  168  183  183
+      |(Reference)      : 176  176  176  176  176  191  191
      lev
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 176  176  176  176  190  190  190  190  190  190  190  190  190  190  190  190  190  190  190
+      |(Reference)      : 184  184  184  184  198  198  198  198  198  198  198  198  198  198  198  198  198  198  198
      lsort
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 183
+      |(Definition)     : 191
       |(Reference)      : 
      mlmax
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 183  183
+      |(Reference)      : 191  191
      mlsort
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 183
+      |(Definition)     : 191
       |(Reference)      : 
      msort
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 183
+      |(Definition)     : 191
       |(Reference)      : 
      my
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 168  168  190  190  190  190  190
+      |(Reference)      : 176  176  198  198  198  198  198
      nout
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 202
+      |(Reference)      : 210
      onocos
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 190
+      |(Definition)     : 198
       |(Reference)      : 
      outdir
       |(Class and Type) : variable name, CHARACTER(16,1)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 202
+      |(Definition)     : 210
       |(Reference)      : 
      pmcor
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 190
+      |(Definition)     : 198
       |(Reference)      : 
      poly
-      |(Class and Type) : variable name, REAL(8)
-      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
-      |(Declaration)    : 
-      |(Definition)     : 168
-      |(Reference)      : 
-     sigma
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
       |(Definition)     : 176
       |(Reference)      : 
-     sinl
-      |(Class and Type) : variable name, REAL(8)
+     sigma
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 190
+      |(Definition)     : 184
+      |(Reference)      : 
+     sinl
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 198
       |(Reference)      : 
      spalm
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 190
+      |(Definition)     : 198
       |(Reference)      : 
      tmcor
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 190
+      |(Definition)     : 198
       |(Reference)      : 
      tmean
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 190
+      |(Definition)     : 198
       |(Reference)      : 
      tmeans
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 190
+      |(Definition)     : 198
       |(Reference)      : 
      wcfac
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 168
+      |(Definition)     : 176
       |(Reference)      : 
      wdfac
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 168
+      |(Definition)     : 176
       |(Reference)      : 
      weight
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 190
+      |(Definition)     : 198
       |(Reference)      : 
 
  Scoping unit of module sub-program : deallocate_const_array
    Attribute and Cross reference of name
      aki
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 213
+      |(Definition)     : 221
       |(Reference)      : 
      bki
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 213
+      |(Definition)     : 221
       |(Reference)      : 
      cim
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 212
+      |(Definition)     : 220
       |(Reference)      : 
      cor
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 215
+      |(Definition)     : 223
       |(Reference)      : 
      cosl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 215
+      |(Definition)     : 223
       |(Reference)      : 
      deallocate_const_array
       |(Class and Type) : module subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 209
+      |(Definition)     : 217
       |(Reference)      : 
      dpoly
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 212
+      |(Definition)     : 220
       |(Reference)      : 
      dsigma
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 213
+      |(Definition)     : 221
       |(Reference)      : 
      eigval
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 215
+      |(Definition)     : 223
       |(Reference)      : 
      eps4
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 212
+      |(Definition)     : 220
       |(Reference)      : 
      lsort
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 214
+      |(Definition)     : 222
       |(Reference)      : 
      mlsort
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 214
+      |(Definition)     : 222
       |(Reference)      : 
      msort
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 214
+      |(Definition)     : 222
       |(Reference)      : 
      onocos
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 215
+      |(Definition)     : 223
       |(Reference)      : 
      outdir
       |(Class and Type) : variable name, CHARACTER(16,1)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 217
+      |(Definition)     : 225
       |(Reference)      : 
      pmcor
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 215
+      |(Definition)     : 223
       |(Reference)      : 
      poly
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 212
+      |(Definition)     : 220
       |(Reference)      : 
      sigma
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 213
+      |(Definition)     : 221
       |(Reference)      : 
      sinl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 215
+      |(Definition)     : 223
       |(Reference)      : 
      spalm
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 215
+      |(Definition)     : 223
       |(Reference)      : 
      tmean
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 215
+      |(Definition)     : 223
       |(Reference)      : 
      tmeans
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 215
+      |(Definition)     : 223
       |(Reference)      : 
      wcfac
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 212
+      |(Definition)     : 220
       |(Reference)      : 
      wdfac
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 212
+      |(Definition)     : 220
       |(Reference)      : 
      weight
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 215
+      |(Definition)     : 223
       |(Reference)      : 
 
  Total information
    Procedures       : 1
-   Total lines      : 219
-   Total statements : 98
+   Total lines      : 227
+   Total statements : 101
    Total stack(byte): 3296
    Total prefetch num: 0
 

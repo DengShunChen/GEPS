@@ -52,6 +52,7 @@
 !!      hice=3.336e5
       evaprh=0.98
       hfilt=1.
+      factop=60.
 
       nnmiit=3
       nnmivm=3
@@ -91,7 +92,8 @@
       out_green= .false.
       out_hp   = .false.
       outgrb2  =      0  !output grib2 format
-      outdms   =      1  !output dmskey 1:real-8  ,2:real-4
+      outdms   =      1  !output dmskey 
+      outfv3   = .false.
 ! pdf cloud
       pdfcloud=.false.
 ! stochastic physics
@@ -106,6 +108,9 @@
       two_loop=.false.
 ! dy-core two time level
       ttl=.true.
+! dry air mass correction
+      mass_dp=.true.
+      dpprt  =.false.
 ! output data for RSM (Also, RSM compiling flag is necessary)
       outrsm=.false.
       rsmoutinv=6
@@ -321,8 +326,8 @@
            .99251445,.99638192,1.0000000 /) 
       ptop=0.01
 !  sponge layer 
-      spl1=20.
-      spl2=100.
+      spl1=1.
+      spl2=50.
       vd=0.1
       endif
 !
