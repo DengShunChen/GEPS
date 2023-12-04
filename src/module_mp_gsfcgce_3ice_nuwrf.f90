@@ -125,6 +125,7 @@ MODULE module_mp_gsfcgce_3ice_nuwrf
 !.. more difficult to integreate with the radar code.
 !.. Values will be defined in subroutine all_flux --- JJS 20140116
       REAL ::     xnor, xnos, xnoh, xnog  
+      REAL ::     rhowater, rhosnow
       REAL ::     rhohail, rhograul
 !      REAL    , PARAMETER ::     xnor = 8.0e6
 !      REAL    , PARAMETER ::     xnos = 1.6e7
@@ -133,6 +134,10 @@ MODULE module_mp_gsfcgce_3ice_nuwrf
 !      REAL    , PARAMETER ::     rhohail = 917.
 !      REAL    , PARAMETER ::     rhograul = 400.
 !+---+-----------------------------------------------------------------+
+
+!.. for terminal velocity and fall_flux :
+      real, private :: consta, constb, constc, constd, o6, cdrag, &
+                       abar, bbar, rhoe_s
 
 CONTAINS
 
@@ -150,7 +155,7 @@ CONTAINS
 !                      ,qsold                                      &
                       ,rho, pii, p, dt_in, z                       &
                       ,ht, dz8w, grav, w                           &
-                      ,rhowater, rhosnow                           &
+!                      ,rhowater, rhosnow                           &
                       ,itimestep, xland                            &
 !                      ,ids,ide, jds,jde, kds,kde                   & ! domain dims
                       ,ims,ime, jms,jme, kms,kme                   & ! memory dims
@@ -280,9 +285,9 @@ CONTAINS
   REAL , DIMENSION( ims:ime , jms:jme ) , INTENT(IN) ::       ht
 
   REAL, INTENT(IN   ) ::                                   dt_in, &
-                                                            grav, &
-                                                        rhowater, &
-                                                         rhosnow
+                                                            grav
+!                                                        rhowater, &
+!                                                         rhosnow
 
   LOGICAL, INTENT(IN), OPTIONAL :: F_QG
 
@@ -596,15 +601,14 @@ CONTAINS
                                          zz, dzw, prez, rhoz,     &
                                          orhoz
   REAL,    DIMENSION( kts:kte )       :: rsed, ised, ssed, gsed
-  REAL,    DIMENSION( kts:kte )       :: thz, piz
+  REAL,    DIMENSION( kts:kte )       :: thz, piz, tz
 
    INTEGER                    :: k, i, j
 !
 
   REAL, DIMENSION( kts:kte )    :: vtr, vts, vtg, vti
 
-  REAL                          :: dtb, pi, consta, constc, gambp4,    &
-                                   gamdp4, gam4pt5, gam4bbar
+  REAL                          :: dtb, pi, gambp4, gamdp4, gam4pt5, gam4bbar
 
 !NUWRF BEGIN
 ! New local variable
@@ -625,25 +629,9 @@ CONTAINS
   DATA igce/0/ 
   DATA ftns/1./, ftng/1./
 
-
-!JJS 20140116  These variables are declared in the beginning of the module.
-!JJS 20140116  No need to declared again here. 
-!  will be defined later using consat values 
-   REAL     ::     rhowater 
-   REAL     ::     rhosnow 
-!   REAL     ::     xnor, xnoh, rhohail   !define in the begining of the module
-!   REAL     ::     xnos, xnog, rhograul  !define in the begining of the module
-!
 !NUWRF END
 
-   REAL    , PARAMETER ::                              &
-!             constb = 0.8, constd = 0.25, o6 = 1./6.,           &
-             constb = 0.8, constd = 0.11, o6 = 1./6.,            &
-             cdrag = 0.6
-
-  REAL    , PARAMETER ::     abar = 19.3, bbar = 0.37,           &
-                                      p0 = 1.0e5
-  REAL    , PARAMETER ::     rhoe_s = 1.29
+  REAL    , PARAMETER :: p0 = 1.0e5
 
 ! for terminal velocity flux
   INTEGER                       :: min_q, max_q
@@ -653,6 +641,7 @@ CONTAINS
   integer                       :: n,ntimes
   real                          :: dtcfl,precip
   real , dimension(kts:kte)     :: qden
+  real , dimension(its:ite,kts:kte,jts:jte) :: vtr3d,vts3d,vtg3d,vti3d
 #endif
 
   if (improve.eq.3) igce=1
@@ -681,27 +670,9 @@ CONTAINS
    dtb=dt
    pi=acos(-1.)
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      xnor = tnw*1.0e8
-      rhowater = roqr*1000.
-      xnos = tns*1.0e8             ! Consistent with ConSat
-      rhosnow = roqs*1000.
-
-! tng and roqg are assigned with hail numbers in consat if (ihail.eq.1)
-      xnog = tng*1.0e8
-      rhograul = roqg*1000.
-      if (ihail.eq.1) then
-         xnoh = xnog      
-         rhohail = rhograul
-      endif
-
-   consta=2115.0*0.01**(1-constb)
-!   constc=152.93*0.01**(1-constd)
-   constc=78.63*0.01**(1-constd)
-
 !  Gamma function
-   gambp4=gammagce(constb+4.)
-   gamdp4=gammagce(constd+4.)
+   gambp4=gammagce(constb+4.)   !ga4b
+   gamdp4=gammagce(constd+4.)   !ga4d
    gam4pt5=gammagce(4.5)
    gam4bbar=gammagce(4.+bbar)
 !
@@ -726,6 +697,10 @@ CONTAINS
       ssed(k)=0.
       gsed(k)=0.
       rsed(k)=0.
+      vtr3d(i,k,j)=0.
+      vts3d(i,k,j)=0.
+      vtg3d(i,k,j)=0.
+      vti3d(i,k,j)=0.
    end do
 
    pptrain = 0.
@@ -736,8 +711,8 @@ CONTAINS
    ! in MKS system
    do k = kts, kte
       qrz(k)=qr(i,k,j)
-        qiz(k)=qi(i,k,j)
-        qsz(k)=qs(i,k,j)
+      qiz(k)=qi(i,k,j)
+      qsz(k)=qs(i,k,j)
       rhoz(k)=rho(i,k,j)
       thz(k)=th(i,k,j)
       piz(k)=pi_mks(i,k,j)
@@ -747,6 +722,7 @@ CONTAINS
 !      fv(k)=sqrt(rho(i,1,j)/rhoz(k))
       zz(k)=z(i,k,j)
       dzw(k)=dz8w(i,k,j)
+      tz(k)=thz(k)*piz(k)
    enddo !k
 
    IF (ice2.eq.0 .or. ice2.eq.2) THEN
@@ -764,32 +740,28 @@ CONTAINS
 !-- rain
 !
 #ifdef SL_sedi
-    ntimes = 4
+    ntimes = 1
     dtcfl = dtb/real(ntimes)
 
     do n = 1 , ntimes
        vtr(:) = 0.
-       qden(:) = 0.
+!       qden(:) = 0.
        precip = 0.
-       do k = kts , kte
-          qden(k) = qrz(k) * rhoz(k)
-          ! new codes from Steve's in cgs
-          r00 = rhoz(k) * 0.001  ! rhoz(k) need to be in CGS
-          call vqrqi(1,improve,r00,fv(k),qrz(k),vtr(k))
-          vtr(k) = vtr(k) * 0.01  ! convert back to MKS
-          if (.not. vtr(k) .gt. 0.0) cycle ! EMK NUWRF Bug fix
-       enddo
-
-       call semi_lagrange_sedim(kte,dzw,vtr,qden,precip,dtcfl,1.E-15)
-
-       do k = kts , kte
-          qrz(k) = qden(k) / rhoz(k)
-       enddo
+!       do k = kts , kte
+!          qden(k) = qrz(k) * rhoz(k)
+!       enddo
+!       call vtr_mks(kte,rhoz,qrz,vtr)
+!       call semi_lagrange_sedim(kte,dzw,vtr,qden,precip,dtcfl,1.E-15)
+!       do k = kts , kte
+!          qrz(k) = qden(k) / rhoz(k)
+!       enddo
+       call semi_sedi('qr',ihail,improve,1,kte,dzw,rhoz,qrz,tz,vtr,precip,dtcfl,1.e-15)
        pptrain = pptrain + precip
     enddo
 
     do k = kts , kte
        qr(i,k,j) = qrz(k)
+       vtr3d(i,k,j) = vtr(k)
     enddo
 #else
     t_del_tv=0.
@@ -810,37 +782,14 @@ CONTAINS
             min_q=min0(min_q,k)
             max_q=max0(max_q,k)
 
-          igce = 1
-          if (igce.ne.1) then
-! old codes from Chern's in MKS
-!            min_q=min0(min_q,k)
-!            max_q=max0(max_q,k)
-            tmp1=sqrt(pi*rhowater*xnor/rhoz(k)/qrz(k))
-            tmp1=sqrt(tmp1)
-            vtr(k)=consta*gambp4*fv(k)/tmp1**constb
-            vtr(k)=vtr(k)/6.
-          else
-! new codes from Steve's in cgs
-            y1=rhoz(k)*0.001*qrz(k)  ! rhoz(k) need to be in CGS
-            vs=sqrt( y1 )
-            vg=sqrt( vs )
-            vr=vrc0+vrc1*vg+vrc2*vs+vrc3*vg*vs
-            vtr(k)=max(fv(k)*vr, 0.0)
-              !vrc0, vrc1, vrc2, vrc3 are dfined in new consat_s
-            vtr(k)=vtr(k) * 0.01  ! convert back to MKS 
-           endif 
-
-           if (.not. vtr(k) .gt. 0.0) cycle ! EMK NUWRF Bug fix
+           call vtr_mks(1,rhoz(k),qrz(k),vtr(k))
+!           if (.not. vtr(k) .gt. 0.0) cycle ! EMK NUWRF Bug fix
 
             if (k .eq. 1) then
-!               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtr(k))
                del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vtr(k))
             else
-!               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtr(k))
                del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vtr(k))
             endif
-!         else
-!            vtr(k)=0.
           endif
       enddo
 
@@ -866,7 +815,6 @@ CONTAINS
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
 !            tmpqrz=qrz(k)
             qrz(k)=qrz(k)+del_tv*flux
-!            qrz(k)=amax1(0.,qrz(k))
             qrz(k)=dmax1(0.,qrz(k))
             qr(i,k,j)=qrz(k)
             fluxin=fluxout
@@ -890,42 +838,28 @@ CONTAINS
 !-- snow
 !
 #ifdef SL_sedi
-    ntimes = 2
+    ntimes = 1
     dtcfl = dtb/real(ntimes)
 
     do n = 1 , ntimes
        vts(:) = 0.
-       qden(:) = 0.
+!       qden(:) = 0.
        precip = 0.
-       do k = kts , kte
-          qden(k) = qsz(k) * rhoz(k)
-          ! new codes from Steve's in cgs
-          y1 = qsz(k)             
-          r00= rhoz(k) * 0.001   ! rhoz(k) need to be in CGS
-          vscf=vsc*fv(k)
-
-          ftns=1.
-          ftns0=1.
-          if (improve.eq.3)then
-             tair=thz(k)*piz(k)
-             tairc=tair-t0
-             call sgmap(1,y1,r00,tairc,ftns0)
-             ftns=ftns0**bsq
-          endif
-          vts(k)=max(vscf*(r00*y1)**bsq/ftns, 0.0)
-          vts(k)=vts(k) * 0.01  ! convert back to MKS  
-       enddo
-
-       call semi_lagrange_sedim(kte,dzw,vts,qden,precip,dtcfl,1.E-15)
-
-       do k = kts , kte
-          qsz(k) = qden(k) / rhoz(k)
-       enddo
+!       do k = kts , kte
+!          qden(k) = qsz(k) * rhoz(k)
+!       enddo
+!       call vts_mks(improve,kte,rhoz,qsz,tz,vts)
+!       call semi_lagrange_sedim(kte,dzw,vts,qden,precip,dtcfl,1.E-15)
+!       do k = kts , kte
+!          qsz(k) = qden(k) / rhoz(k)
+!       enddo
+       call semi_sedi('qs',ihail,improve,1,kte,dzw,rhoz,qsz,tz,vts,precip,dtcfl,1.e-15)
        pptsnow = pptsnow + precip
     enddo
 
     do k = kts , kte
        qs(i,k,j) = qsz(k)
+       vts3d(i,k,j) = vts(k)
     enddo
 #else
     t_del_tv=0.
@@ -945,39 +879,11 @@ CONTAINS
             min_q=min0(min_q,k)
             max_q=max0(max_q,k)
 
-           igce = 1
-           if (igce.ne.1) then
-! old codes from Chern's in MKS
-            tmp1=sqrt(pi*rhosnow*xnos/rhoz(k)/qsz(k))
-            tmp1=sqrt(tmp1)
-            vts(k)=constc*gamdp4*fv(k)/tmp1**constd
-            vts(k)=vts(k)/6.
-
-           else
-! new codes from Steve's in cgs
-!            y1 = rhoz(k) * 0.001 *qsz(k)             ! rhoz(k) need to be in CGS
-            y1 = qsz(k)             
-            r00= rhoz(k) * 0.001   ! rhoz(k) need to be in CGS
-            vscf=vsc*fv(k)
-
-               ftns=1.
-               ftns0=1.
-               if (improve.eq.3)then
-                 tair=thz(k)*piz(k)
-                 tairc=tair-t0
-                 call sgmap(1,y1,r00,tairc,ftns0)
-                 ftns=ftns0**bsq
-               endif
-               vts(k)=max(vscf*(r00*y1)**bsq/ftns, 0.0)
-                      ! bs, bsq, vscf are defined in new consat_s
-               vts(k)=vts(k) * 0.01  ! convert back to MKS  
-            endif
+            call vts_mks(improve,1,rhoz(k),qsz(k),tz(k),vts(k))
 
             if (k .eq. 1) then
-!               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vts(k))
                del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vts(k))
             else
-!               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vts(k))
                del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vts(k))
             endif
          endif
@@ -1005,7 +911,6 @@ CONTAINS
             fluxout=rhoz(k)*vts(k)*qsz(k)
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
             qsz(k)=qsz(k)+del_tv*flux
-!            qsz(k)=amax1(0.,qsz(k))
             qsz(k)=dmax1(0.,qsz(k))
             qs(i,k,j)=qsz(k)
             fluxin=fluxout
@@ -1041,62 +946,28 @@ CONTAINS
 !    endif
 
 #ifdef SL_sedi
-    ntimes = 2
+    ntimes = 1
     dtcfl = dtb/real(ntimes)
 
     do n = 1 , ntimes
        vtg(:) = 0.
-       qden(:) = 0.
+!       qden(:) = 0.
        precip = 0.
-       do k = kts , kte
-          qden(k) = qgz(k) * rhoz(k)
-          if (ihail .eq. 1) then
-             ! for hail, based on Lin et al (1983)
-             tmp1=sqrt(pi*rhohail*xnoh/rhoz(k)/qgz(k))
-             tmp1=sqrt(tmp1)
-             term0=sqrt(4.*grav*rhohail/3./rhoz(k)/cdrag)
-             vtg(k)=gam4pt5*term0*sqrt(1./tmp1)
-             vtg(k)=vtg(k)/6.
-          else
-             ! for graupel, based on RH (1984)
-             igce = 1
-             if (igce.ne.1) then
-                ! old codes from Chern's in MKS
-                tmp1=sqrt(pi*rhograul*xnog/rhoz(k)/qgz(k))
-                tmp1=sqrt(tmp1)
-                tmp1=tmp1**bbar
-                tmp1=1./tmp1
-                term0=abar*gam4bbar/6.
-                vtg(k)=term0*tmp1*(p0/prez(k))**0.4
-             else
-                ! new codes from Steve's in cgs
-                y1 = qgz(k)             
-                r00= rhoz(k) * 0.001      ! rhoz(k) need to be in CGS
-                vgcr=vgc*fv(k)
-                ftng=1.
-                ftng0=1.
-                if (improve.gt.2) then
-                   tair=thz(k)*piz(k)
-                   tairc=tair-t0
-                   call sgmap(2,y1,r00,tairc,ftng0)
-                   ftng=ftng0**bgq
-                endif
-                vtg(k)=dmax1(vgcr*(r00*y1)**bgq/ftng, 0.0)
-                vtg(k)=vtg(k) * 0.01  ! convert back to MKS
-             endif  !igce
-          endif !ihail
-       enddo
-
-       call semi_lagrange_sedim(kte,dzw,vtg,qden,precip,dtcfl,1.E-15)
-
-       do k = kts , kte
-          qgz(k) = qden(k) / rhoz(k)
-       enddo
+!       do k = kts , kte
+!          qden(k) = qgz(k) * rhoz(k)
+!       enddo
+!       call vtg_mks(ihail,improve,kte,rhoz,qgz,tz,vtg)
+!       call semi_lagrange_sedim(kte,dzw,vtg,qden,precip,dtcfl,1.E-15)
+!       do k = kts , kte
+!          qgz(k) = qden(k) / rhoz(k)
+!       enddo
+       call semi_sedi('qg',ihail,improve,1,kte,dzw,rhoz,qgz,tz,vtg,precip,dtcfl,1.e-15)
        pptgraul = pptgraul + precip
     enddo
 
     do k = kts , kte
        qg(i,k,j) = qgz(k)
+       vtg3d(i,k,j) = vtg(k)
     enddo
 #else
     t_del_tv=0.
@@ -1115,53 +986,11 @@ CONTAINS
             min_q=min0(min_q,k)
             max_q=max0(max_q,k)
 
-            if (ihail .eq. 1) then
-!  for hail, based on Lin et al (1983)
-              tmp1=sqrt(pi*rhohail*xnoh/rhoz(k)/qgz(k))
-              tmp1=sqrt(tmp1)
-              term0=sqrt(4.*grav*rhohail/3./rhoz(k)/cdrag)
-              vtg(k)=gam4pt5*term0*sqrt(1./tmp1)
-              vtg(k)=vtg(k)/6.
-            else
-! for graupel, based on RH (1984)
-
-              igce = 1
-              if (igce.ne.1) then
-! old codes from Chern's in MKS
-                 tmp1=sqrt(pi*rhograul*xnog/rhoz(k)/qgz(k))
-                 tmp1=sqrt(tmp1)
-                 tmp1=tmp1**bbar
-                 tmp1=1./tmp1
-                 term0=abar*gam4bbar/6.
-                 vtg(k)=term0*tmp1*(p0/prez(k))**0.4
-
-              else
-! new codes from Steve's in cgs
-!                 y1=rhoz(k) * 0.001 * qgz(k)    ! rhoz(k) need to be in CGS
-                 y1 = qgz(k)             
-                 r00= rhoz(k) * 0.001      ! rhoz(k) need to be in CGS
-                 vgcr=vgc*fv(k)
-                 ftng=1.
-                 ftng0=1.
-                 if (improve.gt.2) then
-                    tair=thz(k)*piz(k)
-                    tairc=tair-t0
-                    call sgmap(2,y1,r00,tairc,ftng0)
-                    ftng=ftng0**bgq
-                 endif
-!                 vtg(k)=amax1(vgcr*(r00*y1)**bgq/ftng, 0.0)
-                 vtg(k)=dmax1(vgcr*(r00*y1)**bgq/ftng, 0.0)
-                                       ! bg, vgcr, bgq are defined in new consat_s
-                 vtg(k)=vtg(k) * 0.01  ! convert back to MKS
-     
-               endif  !igce
-            endif !ihail
+            call vtg_mks(ihail,improve,1,rhoz(k),qgz(k),tz(k),vtg(k))
 
             if (k .eq. 1) then
-!               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtg(k))
                del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vtg(k))
             else
-!               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtg(k))
                del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vtg(k))
             endif 
 !
@@ -1190,7 +1019,6 @@ CONTAINS
             fluxout=rhoz(k)*vtg(k)*qgz(k)
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
             qgz(k)=qgz(k)+del_tv*flux
-!            qgz(k)=amax1(0.,qgz(k))
             qgz(k)=dmax1(0.,qgz(k))
             qg(i,k,j)=qgz(k)
             fluxin=fluxout
@@ -1221,26 +1049,23 @@ CONTAINS
 
     do n = 1 , ntimes
        vti(:) = 0.
-       qden(:) = 0.
+!       qden(:) = 0.
        precip = 0.
-       do k = kts , kte
-          qden(k) = qiz(k) * rhoz(k)
-          ! new codes from Steve's in cgs
-          r00 = rhoz(k) * 0.001  ! rhoz(k) need to be in CGS
-          call vqrqi(2,improve,r00,fv(k),qiz(k),vti(k))
-          vti(k) = vti(k) * 0.01  ! convert back to MKS
-       enddo
-
-       call semi_lagrange_sedim(kte,dzw,vti,qden,precip,dtcfl,1.E-15)
-
-       do k = kts , kte
-          qiz(k) = qden(k) / rhoz(k)
-       enddo
+!       do k = kts , kte
+!          qden(k) = qiz(k) * rhoz(k)
+!       enddo
+!       call vti_mks(improve,kte,rhoz,qiz,vti)
+!       call semi_lagrange_sedim(kte,dzw,vti,qden,precip,dtcfl,1.E-15)
+!       do k = kts , kte
+!          qiz(k) = qden(k) / rhoz(k)
+!       enddo
+       call semi_sedi('qi',ihail,improve,0,kte,dzw,rhoz,qiz,tz,vti,precip,dtcfl,1.e-15)
        pptice = pptice + precip
     enddo
 
     do k = kts , kte
        qi(i,k,j) = qiz(k)
+       vti3d(i,k,j) = vti(k)
     enddo
 #else
     t_del_tv=0.
@@ -1260,60 +1085,16 @@ CONTAINS
             min_q=min0(min_q,k)
             max_q=max0(max_q,k)
 
-          igce = 1
-          if (igce.ne.1) then
-
-! old codes from Chern's in MKS
-            vti(k)= 3.29 * (rhoz(k)* qiz(k))** 0.16  ! Heymsfield and Donner
-
-          else
-
-! new codes from Steve's in cgs.
-            vti(k)=0.
-            y1=rhoz(k) * 1000. * qiz(k)    ! y1 in g/m**3
-
-            if (y1 .lt. 1.e-6) then
-               vti(k)=0.
-            else
-              if (improve.eq.3)then                     !from Hong et al. (2004)
-               const_vt=1.49e4      
-               const_d=11.9
-               const_m=1./5.38e7
-               y1=y1*1.e-3                              !   y1 in g/cm**3
-               bb1=const_m*y1**0.25
-               bb2=const_d*bb1**0.5
-               vti(k)=max(const_vt*bb2**1.31, 0.0)
-               vti(k)=vti(k)*100.                       !cm/s
-!               if (vti(k) .gt. 20.) vti(k)=20.          ! lang et al
-!vvvvvvvvvvvvvv Tao 20110722 vvvvvvvvvvvvvvvvvv
-               if (vti(k) .gt. 50.) vti(k)=50.          ! lang et al
-!^^^^^^^^^^^^^^ Tao 20110722 ^^^^^^^^^^^^^^^^^^
-              else                                      !from Starr & Cox
-               do ic=1,6
-                 if (y1.gt.aice(ic) .and. y1.le.aice(ic+1)) then
-                    vti(k)=vice(ic)+(vice(ic+1)-vice(ic))*         &
-                      (y1-aice(ic))/(aice(ic+1)-aice(ic))
-!                    if (vti(k) .le. 0.0) vti(k)=0.
-                    if (vti(k) .lt. 0.0) vti(k)=0. ! EMK per 20110816 code
-                 endif
-                enddo
-               endif  !improve
-             endif   !y1
-             vti(k)=vti(k) * 0.01                       ! convert back to MKS
-          endif  ! igce
+          call vti_mks(improve,1,rhoz(k),qiz(k),vti(k))
 
           ! EMK:  Avoid division by zero
           if ((vti(k) .gt. 1.0e-20)) then
             if (k .eq. 1) then
-!               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vti(k))
                del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vti(k))
             else
-!               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vti(k))
                del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vti(k))
             endif
          end if
-!         else
-!            vti(k)=0.
          endif
       enddo
 
@@ -1340,7 +1121,6 @@ CONTAINS
             fluxout=rhoz(k)*vti(k)*qiz(k)
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
             qiz(k)=qiz(k)+del_tv*flux
-!            qiz(k)=amax1(0.,qiz(k))
             qiz(k)=dmax1(0.,qiz(k))
             qi(i,k,j)=qiz(k)
             fluxin=fluxout
@@ -1399,7 +1179,7 @@ CONTAINS
 !        enddo
 !     enddo
 !  endif
- 
+
   RETURN
   END SUBROUTINE fall_flux
 
@@ -1938,6 +1718,32 @@ CONTAINS
 !         print *,'rn34, cpi2, esc, amc, as, roqs, tns, ga6d = ', rn34, cpi2, esc, amc, as, roqs, tns, ga6d 
          rn35=alv*alv/(cp*rw)
       endif
+
+!----- for teminal velocity and fall_flux --------
+      constb = 0.8
+!      constd = 0.25
+      constd = 0.11
+      consta = 2115.0*0.01**(1-constb)   ! =841.9967
+!      constc=152.93*0.01**(1-constd)
+      constc=78.63*0.01**(1-constd)      ! =11.72
+
+      o6 = 1./6.
+      cdrag = 0.6
+      abar = 19.3
+      bbar = 0.37
+      rhoe_s = 1.29           !surface air density (km/m^3)
+
+      xnor = tnw*1.0e8        !intercept parameter of rain (m^-4)
+      xnos = tns*1.0e8        !intercept parameter of snow (m^-4)
+      xnog = tng*1.0e8        !intercept parameter of graupel (m^-4)
+      rhowater = roqr*1000.   !density of rain (kg/m^3)
+      rhosnow = roqs*1000.    !density of snow (kg/m^3)
+      rhograul = roqg*1000.   !density of graupel (kg/m^3)
+      if (ihail.eq.1) then
+         xnoh = xnog          !intercept parameter of hail (m^-4)
+         rhohail = rhograul   !density of hail (kg/m^3)
+      endif
+
     return
   END SUBROUTINE consat_s 
 
@@ -4832,9 +4638,7 @@ CONTAINS
 !!!!!!!!!!!DDDDDDDDDDDDDD double check by Lang 02/23/2016
               sccc=cnd(i,j)
               seee=dd(i,j) + ern(i,j)
-!              sddd=dep(i,j) + amax1(pint(i,j),0.0) + psdep(i,j) + pgdep(i,j)
               sddd=dep(i,j) + dmax1(pint(i,j),0.0) + psdep(i,j) + pgdep(i,j)
-!              ssss=dd1(i,j) - amin1(pint(i,j),0.0) + pssub(i,j) + pgsub(i,j) + pmlts(i,j) + pmltg(i,j)
               ssss=dd1(i,j) - dmin1(pint(i,j),0.0) + pssub(i,j) + pgsub(i,j) + pmlts(i,j) + pmltg(i,j)
               smmm=psmlt(i,j) + pgmlt(i,j) + pimlt(i,j) + qracs(i,j) 
               sfff=psacw(i,j)*d2t + piacr(i,j)*d2t + psfw(i,j)*d2t + pgfr(i,j)*d2t   &
@@ -5658,6 +5462,232 @@ CONTAINS
    end function eff_rad
 
 !-------------------------------------------------------------------
+      subroutine vti_mks(improve,km,rhoz,qiz,vti)
+      implicit none
+      integer, intent(in) :: improve, km
+      real, dimension(km), intent(in) :: rhoz  !air density (kg/m^3)
+      real, dimension(km), intent(in) :: qiz   !mixing ratio (kg/kg)
+      real, dimension(km), intent(out):: vti   !terminal velocity (m/s)
+
+      !local variables
+      integer :: k, ic
+      integer :: igce
+      real    :: cmin, y1
+      real    :: const_vt, const_d, const_m, bb1, bb2
+      real, dimension(7) ::  aice, vice
+      data aice/1.e-6, 1.e-5, 1.e-4, 1.e-3, 0.01, 0.1, 1./
+      data vice/5,15,30,35,40,45,50/
+
+      cmin = 1.e-40
+!      cmin = 1.e-10
+
+      do k = 1, km
+         igce = 1
+         if ( igce .ne. 1 ) then
+            ! old codes from Chern's in MKS
+            ! from Heymsfield and Donner 1990
+            vti(k)= 3.29 * (rhoz(k)* qiz(k))** 0.16
+         else
+            ! new codes from Steve's in CGS
+            vti(k) = 0.
+            y1 = rhoz(k) * 1000. * qiz(k)    ! y1 in g/m**3
+            if (y1 .lt. 1.e-6) then
+               vti(k) = 0.
+            else
+               if ( improve .eq. 3 )then
+                  ! from Hong et al. (2004)
+                  const_vt = 1.49e4
+                  const_d = 11.9
+                  const_m = 1./5.38e7
+                  y1 = y1 * 1.e-3                       ! y1 in kg/m^3
+                  bb1 = const_m * y1**0.25
+                  bb2 = const_d * bb1**0.5
+                  vti(k) = max(const_vt*bb2**1.31, 0.0) ! vti in m/s
+                  vti(k) = vti(k) * 100.                ! vti in cm/s
+!                  if ( vti(k) .gt. 20. ) vti(k) = 20.   ! lang et al
+                  if ( vti(k) .gt. 50. ) vti(k) = 50.   ! Tao 20110722
+               else
+                  ! from Starr and Cox (1985)
+                  do ic = 1,6
+                     if (y1.gt.aice(ic) .and. y1.le.aice(ic+1)) then
+                        vti(k) = vice(ic)+(vice(ic+1)-vice(ic))*         &
+                                (y1-aice(ic))/(aice(ic+1)-aice(ic))
+                        if (vti(k) .lt. 0.0) vti(k) = 0. ! EMK per 20110816 code
+                     endif
+                  enddo
+               endif  !improve
+            endif   !y1
+            vti(k) = vti(k) * 0.01     ! convert back to MKS
+         endif  ! igce
+      enddo
+
+      return
+      end subroutine vti_mks
+!-------------------------------------------------------------------
+
+!-------------------------------------------------------------------
+      subroutine vtr_mks(km,rhoz,qrz,vtr)
+      implicit none
+      integer, intent(in) :: km
+      real, dimension(km), intent(in) :: rhoz  !air density (kg/m^3)
+      real, dimension(km), intent(in) :: qrz   !mixing ratio (kg/kg)
+      real, dimension(km), intent(out):: vtr   !terminal velocity (m/s)
+
+      !local variables
+      integer :: k
+      integer :: igce
+      real    :: cmin, pi, gambp4
+      real    :: y1, tmp1, vs, vg, vr, fv
+
+      cmin = 1.e-40
+!      cmin = 1.e-10
+      pi = acos(-1.)
+      gambp4 = gammagce(constb+4.)
+
+      do k = 1, km
+         y1 = rhoz(k)*qrz(k)*0.001  !in CGS
+         fv = sqrt( rhoe_s/rhoz(k) )
+         if ( y1 .gt. cmin ) then
+            igce = 1
+            if ( igce .ne. 1 ) then
+               ! old codes from Chern's in MKS
+               tmp1 = sqrt(pi*rhowater*xnor/rhoz(k)/qrz(k))
+               tmp1 = sqrt(tmp1)
+               vtr(k) = consta*gambp4*fv/tmp1**constb
+               vtr(k) = vtr(k)/6.
+            else
+               ! new codes from Steve's in CGS :
+               vs = sqrt( y1 )
+               vg = sqrt( vs )
+!               vr=vr0+vr1*vg+vr2*vs+vr3*vg*vs
+               vr = vrc0+vrc1*vg+vrc2*vs+vrc3*vg*vs
+               vtr(k) = max(fv*vr, 0.e0)
+               vtr(k) = vtr(k)*0.01  !convert back to MKS
+            endif  !end of if igce
+         endif  !end of if y1
+      enddo
+
+      return
+      end subroutine vtr_mks
+!-------------------------------------------------------------------
+
+!-------------------------------------------------------------------
+      subroutine vts_mks(improve,km,rhoz,qsz,tz,vts)
+      implicit none
+      integer, intent(in) :: improve,km
+      real, dimension(km), intent(in) :: rhoz  !air density (kg/m^3)
+      real, dimension(km), intent(in) :: qsz   !mixing ratio (kg/kg)
+      real, dimension(km), intent(in) :: tz    !temperature (K)
+      real, dimension(km), intent(out):: vts   !terminal velocity (m/s)
+
+      !local variables
+      integer :: k
+      integer :: igce
+
+      real    :: cmin, y1, fv, r00, ftns, ftns0, tzc, vscf
+      real    :: tmp1, pi, gamdp4
+
+      cmin = 1.e-20
+      pi = acos(-1.)
+      gamdp4 = gammagce(constd+4.)
+
+      do k = 1, km
+         y1 = rhoz(k)*qsz(k)*0.001  !in CGS
+         fv = sqrt( rhoe_s/rhoz(k) )
+         if ( qsz(k) .gt. cmin ) then
+            igce = 1
+            if ( igce .ne. 1 ) then
+               ! old codes from Chern's in MKS
+               tmp1 = sqrt(pi*rhosnow*xnos/rhoz(k)/qsz(k))
+               tmp1 = sqrt(tmp1)
+               vts(k) = constc*gamdp4*fv/tmp1**constd
+               vts(k) = vts(k)/6.
+            else
+               ! new codes from Steve's in cgs
+!               y1 = rhoz(k) * 0.001 *qsz(k)             ! rhoz(k) need to be in CGS
+               y1 = qsz(k)
+               r00 = rhoz(k) * 0.001   ! rhoz(k) need to be in CGS
+               vscf = vsc*fv
+
+               ftns = 1.
+               ftns0 = 1.
+               if ( improve .eq. 3 )then
+                  tzc = tz(k) - t0
+                  call sgmap(1,y1,r00,tzc,ftns0)
+                  ftns = ftns0**bsq
+               endif
+               vts(k) = max(vscf*(r00*y1)**bsq/ftns, 0.0)
+               vts(k) = vts(k) * 0.01  ! convert back to MKS
+            endif  !end of if igce
+         endif  !end of if y1
+      enddo
+
+      return
+      end subroutine vts_mks
+!-------------------------------------------------------------------
+
+!-------------------------------------------------------------------
+      subroutine vtg_mks(ihail,improve,km,rhoz,qgz,tz,vtg)
+      implicit none
+      integer, intent(in) :: ihail, improve, km
+      real, dimension(km), intent(in) :: rhoz  !air density (kg/m^3)
+      real, dimension(km), intent(in) :: qgz   !mixing ratio (kg/kg)
+      real, dimension(km), intent(in) :: tz    !temperature (K)
+      real, dimension(km), intent(out):: vtg   !terminal velocity (m/s)
+
+      !local variables
+      integer :: k
+      integer :: igce
+      real    :: tmp1, pi, gam4pt5, term0, grav, r00, vgcr
+      real    :: y1, fv, ftng, ftng0, tzc
+
+      pi = acos(-1.)
+      grav = 9.80665e+0
+      gam4pt5 = gammagce(4.5)
+
+      do k = 1, km
+         if (ihail .eq. 1) then
+            ! for hail, based on Lin et al (1983)
+            tmp1 = sqrt(pi*rhohail*xnoh/rhoz(k)/qgz(k))
+            tmp1 = sqrt(tmp1)
+            term0 = sqrt(4.*grav*rhohail/3./rhoz(k)/cdrag)
+            vtg(k) = gam4pt5*term0*sqrt(1./tmp1)
+            vtg(k) = vtg(k)/6.
+         else
+            ! for graupel, based on RH (1984)
+            igce = 1
+!            if ( igce .ne. 1 ) then
+!               ! old codes from Chern's in MKS; prez(:) needed.
+!               tmp1=sqrt(pi*rhograul*xnog/rhoz(k)/qgz(k))
+!               tmp1=sqrt(tmp1)
+!               tmp1=tmp1**bbar
+!               tmp1=1./tmp1
+!               term0=abar*gam4bbar/6.
+!               vtg(k)=term0*tmp1*(p0/prez(k))**0.4
+!            else
+               ! new codes from Steve's in CGS
+               y1 = qgz(k)
+               r00 = rhoz(k)*0.001  !in CGS
+               fv = sqrt( rhoe_s/rhoz(k) )
+               vgcr = vgc*fv
+               ftng = 1.
+               ftng0 = 1.
+               if ( improve .gt. 2 ) then
+                  tzc = tz(k) - t0
+                  call sgmap(2,y1,r00,tzc,ftng0)
+                  ftng = ftng0**bgq
+               endif
+               vtg(k) = dmax1(vgcr*(r00*y1)**bgq/ftng, 0.0)
+               vtg(k) = vtg(k)*0.01  !convert back to MKS
+!            endif  !end of if igce
+         endif  !end of if ihail
+      enddo
+
+      return
+      end subroutine vtg_mks
+!-------------------------------------------------------------------
+
+!-------------------------------------------------------------------
       SUBROUTINE semi_lagrange_sedim(km,dzl,wwl,rql,precip,dt,R1)
 !-------------------------------------------------------------------
 !
@@ -5880,6 +5910,265 @@ CONTAINS
        enddo
 
        END SUBROUTINE semi_lagrange_sedim
+
+!-------------------------------------------------------------------
+      SUBROUTINE semi_sedi(qvar,ihail,improve,iter,km,dzl,rho,qc,tz,ww,precip,dt,R1)
+!-------------------------------------------------------------------
+!
+! This routine is a semi-Lagrangain forward advection for hydrometeors
+! with mass conservation and positive definite advection
+! 2nd order interpolation with monotonic piecewise parabolic method is used.
+! This routine is under assumption of decfl < 1 for semi_Lagrangian
+!
+! dzl    depth of model layer (m)
+! rho    dry air density (kg/m^3)
+! qc     dry mixing ratio of condensate (kg/kg)
+! tz     air temperature (K)
+! ww     terminal velocity (m/s)
+! precip total precipitation at surface (mm)
+! dt     time step (sec)
+! iter   how many time to guess mean terminal velocity: 0 pure forward.
+!        0 : use departure wind for advection
+!        1 : use mean wind for advection
+!        > 1 : use mean wind after iter-1 iterations
+!
+! author: hann-ming henry juang <henry.juang@noaa.gov>
+!         implemented by song-you hong
+! reference: Juang, H.-M., and S.-Y. Hong, 2010: Forward semi-Lagrangian advection
+!         with mass conservation and positive definiteness for falling
+!         hydrometeors. *Mon.  Wea. Rev.*, *138*, 1778-1791
+!
+      implicit none
+
+      character(len=2) :: qvar
+      integer, intent(in) :: ihail, improve, km, iter
+      real, intent(in) ::  dt, R1
+      real, intent(in) :: dzl(km), rho(km), tz(km)
+      real, intent(out) :: ww(km)
+      real, intent(out) :: precip
+      real, intent(inout) :: qc(km)
+      integer  k,m,kk,kb,kt,n
+      real  tl,tl2,qql,dql,qqd
+      real  th,th2,qqh,dqh
+      real  zsum,qsum,dim,dip,con1,fa1,fa2
+      real  allold, decfl
+      real  dz(km), qq(km)
+      real  wi(km+1), zi(km+1), za(km+2)
+      real  qn(km)
+      real  dza(km+1), qa(km+1), qmi(km+1), qpi(km+1)
+      real  wd(km),wa(km),was(km)
+!
+      precip = 0.0
+      qa(:) = 0.0
+      qq(:) = 0.0
+      dz(:) = dzl(:)
+      if ( qvar .eq. 'qr' ) call vtr_mks(km,rho,qc,ww)
+      if ( qvar .eq. 'qs' ) call vts_mks(improve,km,rho,qc,tz,ww)
+      if ( qvar .eq. 'qg' ) call vtg_mks(ihail,improve,km,rho,qc,tz,ww)
+      if ( qvar .eq. 'qi' ) call vti_mks(improve,km,rho,qc,ww)
+      do k = 1,km
+        qq(k) = qc(k)*rho(k)
+        if ( qq(k) .le. R1 ) then
+          qq(k) = 0.0
+          ww(k) = 0.0 
+        endif
+      enddo
+
+! skip for no precipitation for all layers
+      allold = 0.0
+      do k = 1,km
+        allold = allold + qq(k)
+      enddo
+      if ( allold .le. 0.0 ) then
+         return 
+      endif
+!
+! compute interface values
+      zi(1) = 0.0
+      do k = 1,km
+        zi(k+1) = zi(k)+dz(k)
+      enddo
+!====================================
+! save departure wind
+      wd(:) = ww(:)
+      n = 1
+ 100  continue
+! plm is 2nd order, we can use 2nd order wi or 3rd order wi
+! 2nd order interpolation to get wi
+      wi(1) = ww(1)
+      wi(km+1) = ww(km)
+      do k = 2,km
+        wi(k) = (ww(k)*dz(k-1)+ww(k-1)*dz(k))/(dz(k-1)+dz(k))
+      enddo
+! 3rd order interpolation to get wi
+      fa1 = 9./16.
+      fa2 = 1./16.
+      wi(1) = ww(1)
+      wi(2) = 0.5*(ww(2)+ww(1))
+      do k = 3,km-1
+        wi(k) = fa1*(ww(k)+ww(k-1))-fa2*(ww(k+1)+ww(k-2))
+      enddo
+      wi(km) = 0.5*(ww(km)+ww(km-1))
+      wi(km+1) = ww(km)
+
+! terminate of top of raingroup
+      do k = 2,km
+        if( ww(k).eq.0.0 ) wi(k) = ww(k-1)
+      enddo
+
+! diffusivity of wi
+      con1 = 0.05
+      do k = km,1,-1
+        decfl = (wi(k+1)-wi(k))*dt/dz(k)
+        if( decfl .gt. con1 ) then
+          wi(k) = wi(k+1) - con1*dz(k)/dt
+        endif
+      enddo
+! compute arrival point
+      do k = 1,km+1
+        za(k) = zi(k) - wi(k)*dt
+      enddo
+      za(km+2) = zi(km+1)
+
+      do k = 1,km+1
+        dza(k) = za(k+1) - za(k)
+      enddo
+
+! computer deformation at arrival point
+      do k = 1,km
+        qa(k) = qq(k)*dz(k)/dza(k)
+        qc(k) = qa(k)/rho(k)
+      enddo
+      qa(km+1) = 0.0
+
+! compute arrival terminal velocity, and estimate mean terminal velocity
+! then back to use mean terminal velocity
+      if ( n.le.iter ) then
+        if ( qvar .eq. 'qr' ) call vtr_mks(km,rho,qc,wa)
+        if ( qvar .eq. 'qs' ) call vts_mks(improve,km,rho,qc,tz,wa)
+        if ( qvar .eq. 'qg' ) call vtg_mks(ihail,improve,km,rho,qc,tz,wa)
+        if ( qvar .eq. 'qi' ) call vti_mks(improve,km,rho,qc,wa)
+
+        do k = 1,km
+           if ( n.ge.2 ) wa(k) = 0.5*(wa(k)+was(k))
+           ! mean wind is average of departure and new arrival winds
+           ww(k) = 0.5*(wd(k)+wa(k))
+        enddo
+        was(:) = wa(:)
+        n = n + 1
+        go to 100
+      endif
+!====================================
+! estimate values at arrival cell interface with monotone
+      do k = 2,km
+        dip = (qa(k+1)-qa(k))/(dza(k+1)+dza(k))
+        dim = (qa(k)-qa(k-1))/(dza(k-1)+dza(k))
+        if ( dip*dim.le.0.0 ) then
+          qmi(k) = qa(k)
+          qpi(k) = qa(k)
+        else
+          qpi(k) = qa(k)+0.5*(dip+dim)*dza(k)
+          qmi(k) = 2.0*qa(k)-qpi(k)
+          if ( qpi(k).lt.0.0 .or. qmi(k).lt.0.0 ) then
+            qpi(k) = qa(k)
+            qmi(k) = qa(k)
+          endif
+        endif
+      enddo
+      qpi(1) = qa(1)
+      qmi(1) = qa(1)
+      qmi(km+1) = qa(km+1)
+      qpi(km+1) = qa(km+1)
+
+! interpolation to regular point
+      qn = 0.0
+      kb = 1
+      kt = 1
+      intp : do k = 1,km
+             kb = max(kb-1,1)
+             kt = max(kt-1,1)
+! find kb and kt
+             if ( zi(k).ge.za(km+1) ) then
+               exit intp
+             else
+               find_kb : do kk = kb,km
+                         if ( zi(k).le.za(kk+1) ) then
+                           kb = kk
+                           exit find_kb
+                         else
+                           cycle find_kb
+                         endif
+               enddo find_kb
+               find_kt : do kk = kt,km+2
+                         if( zi(k+1).le.za(kk) ) then
+                           kt = kk
+                           exit find_kt
+                         else
+                           cycle find_kt
+                         endif
+               enddo find_kt
+               kt = kt - 1
+! compute q with piecewise constant method
+               if ( kt.eq.kb ) then
+                 tl = (zi(k)-za(kb))/dza(kb)
+                 th = (zi(k+1)-za(kb))/dza(kb)
+                 tl2 = tl*tl
+                 th2 = th*th
+                 qqd = 0.5*(qpi(kb)-qmi(kb))
+                 qqh = qqd*th2+qmi(kb)*th
+                 qql = qqd*tl2+qmi(kb)*tl
+                 qn(k) = (qqh-qql)/(th-tl)
+               else if ( kt.gt.kb ) then
+                 tl = (zi(k)-za(kb))/dza(kb)
+                 tl2 = tl*tl
+                 qqd = 0.5*(qpi(kb)-qmi(kb))
+                 qql = qqd*tl2+qmi(kb)*tl
+                 dql = qa(kb)-qql
+                 zsum  = (1.-tl)*dza(kb)
+                 qsum  = dql*dza(kb)
+                 if ( kt-kb.gt.1 ) then
+                   do m = kb+1,kt-1
+                     zsum = zsum + dza(m)
+                     qsum = qsum + qa(m) * dza(m)
+                   enddo
+                 endif
+                 th = (zi(k+1)-za(kt))/dza(kt)
+                 th2 = th*th
+                 qqd = 0.5*(qpi(kt)-qmi(kt))
+                 dqh = qqd*th2+qmi(kt)*th
+                 zsum  = zsum + th*dza(kt)
+                 qsum  = qsum + dqh*dza(kt)
+                 qn(k) = qsum/zsum
+               endif
+               cycle intp
+             endif
+       enddo intp
+
+! rain out (unit:kg/m^2=mm)
+       sum_precip: do k = 1,km
+          if ( za(k).lt.0.0 .and. za(k+1).le.0.0 ) then
+             precip = precip + qa(k)*dza(k)
+             cycle sum_precip
+          else if ( za(k).lt.0.0 .and. za(k+1).gt.0.0 ) then
+             ! from Thompson MP :
+             th = (0.0-za(k))/dza(k)
+             th2 = th*th
+             qqd = 0.5*(qpi(k)-qmi(k))
+             qqh = qqd*th2+qmi(k)*th
+             precip = precip + qqh*dza(k)
+!             ! from WSM6 MP : 
+!             precip = precip + qa(k)*(0.-za(k))
+             exit sum_precip
+          endif
+          exit sum_precip
+       enddo sum_precip
+
+! replace the new values
+       do k = 1,km
+          qc(k) = max(qn(k),R1)/rho(k)
+       enddo
+
+       END SUBROUTINE semi_sedi
 
 END MODULE  module_mp_gsfcgce_3ice_nuwrf
 

@@ -1086,7 +1086,7 @@
 !                   rho3d, pii3d, p3d, dta, z3d,                         &
                    rho3d, pii3d, p3d, dts, z3d,                         &
                    ht, dz3d, con_g, w3d,                                &
-                   rhowater, rhosnow,                                   &
+!                   rhowater, rhosnow,                                   &
                    itimestep, land2d,                                   &
 !                   ids,ide, jds,jde, kds,kde,                           & ! domain dims
                    1, nx , 1, 1, 1, lev,                                & ! memory dims
