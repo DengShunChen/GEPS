@@ -755,7 +755,7 @@ CONTAINS
 !       do k = kts , kte
 !          qrz(k) = qden(k) / rhoz(k)
 !       enddo
-       call semi_sedi('qr',ihail,improve,1,kte,dzw,rhoz,qrz,tz,vtr,precip,dtcfl,1.e-15)
+       call semi_sedi('qr',ihail,improve,0,kte,dzw,rhoz,qrz,tz,vtr,precip,dtcfl,1.e-15)
        pptrain = pptrain + precip
     enddo
 
@@ -853,7 +853,7 @@ CONTAINS
 !       do k = kts , kte
 !          qsz(k) = qden(k) / rhoz(k)
 !       enddo
-       call semi_sedi('qs',ihail,improve,1,kte,dzw,rhoz,qsz,tz,vts,precip,dtcfl,1.e-15)
+       call semi_sedi('qs',ihail,improve,0,kte,dzw,rhoz,qsz,tz,vts,precip,dtcfl,1.e-15)
        pptsnow = pptsnow + precip
     enddo
 
@@ -961,7 +961,7 @@ CONTAINS
 !       do k = kts , kte
 !          qgz(k) = qden(k) / rhoz(k)
 !       enddo
-       call semi_sedi('qg',ihail,improve,1,kte,dzw,rhoz,qgz,tz,vtg,precip,dtcfl,1.e-15)
+       call semi_sedi('qg',ihail,improve,0,kte,dzw,rhoz,qgz,tz,vtg,precip,dtcfl,1.e-15)
        pptgraul = pptgraul + precip
     enddo
 
