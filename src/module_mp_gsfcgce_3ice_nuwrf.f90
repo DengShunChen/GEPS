@@ -5961,6 +5961,8 @@ CONTAINS
       precip = 0.0
       qa(:) = 0.0
       qq(:) = 0.0
+      wa(:) = 0.0
+      was(:) = 0.0
       dz(:) = dzl(:)
       if ( qvar .eq. 'qr' ) call vtr_mks(km,rho,qc,ww)
       if ( qvar .eq. 'qs' ) call vts_mks(improve,km,rho,qc,tz,ww)
