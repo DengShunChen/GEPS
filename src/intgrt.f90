@@ -51,7 +51,7 @@
                   run_stochastic_physics,                 &
                   destroy_stochastic_physics,             &
                   skeb3du,skeb3dv,diss_est,skebfilt,      &
-                  keb,kea
+                  keb,kea,skebest
 !-----------------------------------------------------------------------
       use mod_grb2_param , only : grbid ,grbfile ,opn_grb2 ,cls_grb2
 
@@ -1267,6 +1267,8 @@
           call joinrs(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
           call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc   &
                      ,temnow,1,nsizey)
+          ! SKEB process
+          if ( doskeb ) call skebest(um,vm)
 
           call trandv(jtrun,jtmax,nx,my,my_max,lev,ut,vt,weight,cim &
                        ,onocos,poly,dpoly,vornow,divnow,nsizey)
@@ -1403,6 +1405,17 @@
         if (hdiff) call hdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld     &
                              , hfiltx,rad,cosl,um,vm,vornow,divnow,temnow  &
                              , eps4,trefs)
+        ! SKEB process
+        if ( doskeb ) then
+          call tranuv (jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac    &
+                      , poly,dpoly,vornow,divnow,ut,vt,nsizey)
+    
+          call skebest(um,vm)
+
+          ! compute vorticity and divergence from u and v
+          call trandv ( jtrun,jtmax,nx,my,my_max,lev,ut,vt,weight,cim &
+                        ,onocos,poly,dpoly,vornow,divnow,nsizey)
+        endif
       endif ! .not. two_loop
 !
 ! update tg, dtsea/dt (W00100)
@@ -1487,51 +1500,6 @@
       call tranuv (jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac &
                   , poly,dpoly,vornow,divnow,ut,vt,nsizey)
 !
-
-      ! SKEB process
-      if ( doskeb ) then
-        ! estimate the dissipation of kinectic energy for SKEB
-        do jj =1,jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          do k=1,lev
-            do i=1,nxj
-              diss_est(i,k,jj)=(um(i,k,jj)*ut(i,k,jj)                &
-                               +vm(i,k,jj)*vt(i,k,jj))               &
-                               +0.5*(um(i,k,jj)**2.+vm(i,k,jj)**2.)
-            enddo
-          enddo
-        enddo
-        call joinrs(cc,diss_est,dummy,dummy,dummy,nx,my_max,lev      &
-                   ,jlistnum,1,1)
-        call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc     &
-                   ,temten,1,nsizey)
-        ! apply spectral filter of the dissipation of kinetic energy
-        call filter_skeb(jtrun,jtmax,levp,temten,skebfilt)
-        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temten,cc,1,nsizey)
-        call ujoinsr(cc,diss_est,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-!
-!        if ( myrank .eq. 0 ) print *,'intgrt: diss_est(1,72,1)=',diss_est(1,72,1)
-        do jj = 1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          xx=radsq*onocos(j)
-          do k = 1, lev
-            do i = 1, nxj
-              keb(i,k,jj)=0.5*(ut(i,k,jj)**2.+vt(i,k,jj)**2.)*xx
-              ut(i,k,jj)=ut(i,k,jj)+skeb3du(i,k,jj)*diss_est(i,k,jj)
-              vt(i,k,jj)=vt(i,k,jj)+skeb3dv(i,k,jj)*diss_est(i,k,jj)
-              kea(i,k,jj)=0.5*(ut(i,k,jj)**2.+vt(i,k,jj)**2.)*xx
-            enddo
-          enddo
-        enddo
-!        if ( myrank .eq. 0 ) print *,'intgrt: keb(1,72,1)=',keb(1,72,1)
-!        if ( myrank .eq. 0 ) print *,'intgrt: kea(1,72,1)=',kea(1,72,1)
-
-        ! compute vorticity and divergence from u and v
-        call trandv ( jtrun,jtmax,nx,my,my_max,lev,ut,vt,weight,cim &
-                      ,onocos,poly,dpoly,vornow,divnow,nsizey)
-      endif
 !
 !  detact instability occure or not
 !
