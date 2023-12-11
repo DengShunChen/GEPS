@@ -1,13 +1,14 @@
 #!/bin/ksh
-#PJM -L "node=32:noncont"
-#PJM -L rscgrp=fujitsu
+#PJM -L "node=54"
+#PJM -L rscgrp=large
 #PJM -x PJM_CACHE_MODE=4
-#PJM -L elapse=2:00:00
+#PJM -L elapse=02:30:00
 #PJM -L node-mem=unlimited
 #PJM --no-stging
-#PJM --mpi "proc=1536"
+#PJM --mpi "proc=2560"
 #PJM -j
-#PJM -N JTCo639L72
+#PJM -S
+#PJM -N "JTCo639L72"
 
 set -x
 
@@ -34,5 +35,5 @@ source /users/xa09/sample/setup_mpi+omp.${machine} $OMP
 
 #==============================================================================================================#
 
-. ${MDIR}/job/regression_gfs2TL.ksh
+. ${MDIR}/job/regression.ksh
 #. ${MDIR}/job/regression_stochy_physics.ksh
