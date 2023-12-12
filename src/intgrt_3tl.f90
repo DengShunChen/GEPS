@@ -76,7 +76,7 @@
                 vvm_sl(nx,levp,my_max),                            &
                 uum_sl(nx,levp,my_max),ddtempr(nxp,lev,my_max)
 !
-      integer   ierr,itter,itt,year,yrd
+      integer   ierr,itt,year,yrd
 !
       real(kind=RTYPE) glob(nx,my)
       real      hf24(nxp,my_max),qf24(nxp,my_max),ss24(nxp,my_max),rs24(nxp,my_max), &
@@ -745,7 +745,6 @@
        ddtempr=0.
        pten=0.
 !
-       itter=1
        ndsldta = 0.5*dta
        ndsldtah= ndsldta/float(itter)
 

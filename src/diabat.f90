@@ -606,9 +606,10 @@
 
 
       rsolhr = hours
-      hours = hours + dt/3600.
-      if ( abs(24.-hours) .lt. 1.e-6 )  then
-         hours = 0. 
+      dtx_tau=dt/3600.
+      hours = hours + dtx_tau
+      if ( hours .gt. 24. .and. mod(hours,24.) .le. dtx_tau+0.0001 )  then
+         hours = mod ( hours,24.0 )
          julian= julian + 1
          if ( julian .gt. yrd ) julian = julian - yrd
          doozon = .true.
@@ -668,16 +669,19 @@
               snr(i,jj) =0.
               sndepth(i,jj)=0.
               sncover(i,jj)=0.
+              shdmax(i,jj)=0.
               z0(i,jj)=ustar(i,jj)*ustar(i,jj)*0.014/grav
             endif
             if(.not. iceold(i,jj) .and. ice(i,jj)) then
+              tg(i,jj)=271.2
               xtice(i,jj)=tg(i,jj)
               zice(i,jj)=0.15 ! from himin in sfc_sice 
-              cice(i,jj)=0.15 ! from cimin in sfc_sice 
+              cice(i,jj)=0.5 ! from cimin in sfc_sice 
               snr(i,jj) =15.
               sndepth(i,jj)=snr(i,jj)*8.
               sncover(i,jj)=min(1., snr(i,jj)/400.)
-              z0(i,jj)=0.0002 ! set new ice point to 0.0002
+              shdmax(i,jj)=cice(i,jj)
+              z0(i,jj)=(1.-cice(i,jj))*z0ocn(i,jj)+cice(i,jj)*0.00001
             endif
           endif ! if(ls(i,jj).eq.0) then
         enddo
@@ -1143,11 +1147,11 @@
              asl_clr(1,1,jj),atl_clr(1,1,jj),cosz(1,jj),                   &
              asol_clr(1,jj),olr_clr(1,jj),ss_clr(1,jj),rs_clr(1,jj),       &
              sld_clr(1,jj),rld_clr(1,jj),sfalb(1,jj),sfemis(1,jj))
-          do k = 1, lev
-            do i = 1, nxj
-              dtrad(i,k,jj) = asl(i,k,jj) + atl(i,k,jj)
-            enddo
-          enddo
+!          do k = 1, lev
+!            do i = 1, nxj
+!              dtrad(i,k,jj) = asl(i,k,jj) + atl(i,k,jj)
+!            enddo
+!          enddo
       endif  ! for uprad .and. irad=2
 
       if ( dorad ) then
@@ -1165,6 +1169,8 @@
           rld_adj(i) = rld_adj(i) * sfemis(i,jj)
           rs_adj(i) = rs_adj(i) * sfemis(i,jj)
         enddo
+
+        if ( itimestep .le. 1 ) dtrad(:,:,jj) = dtradn(:,:)
       endif
 
 !xb110> save the variables for TDK before doing PBL parameterization

@@ -486,6 +486,7 @@
                   zice(i,jj) = max(zice(i,jj),1.*cice(i,jj))
                   icwarn = icwarn + 1 
                 endif
+                shdmax(i,jj) = cice(i,jj)
               endif            
 ! set snow depth to zero on ocean point
               if ( ocean(i,jj) ) then
@@ -920,7 +921,7 @@
 !                  
 !  computing global mean surface pressure at initial time
 !
-      if ( mass_dp .and. .not. restrt ) then
+      if ( .not. restrt ) then
         pdryi = 0.
         call ptot(pdryi,dpprt)
       endif

@@ -326,7 +326,7 @@
       return
       end
 !
-      subroutine adjptq(pltemp)
+      subroutine adjptq(dta,pltemp,pltend)
 
       use index
       use mpe
@@ -340,9 +340,10 @@
       integer i,j,k,n,jj,kk,nxj,nxjf,kn
       real    dsigp    ,qtot      ,qtota                    &
              ,sumtott  ,sumwatt   ,sumwatta                 &
-             ,odpondp
-      real(kind=RTYPE) pnew(nxp,my_max)                     &
-                      ,ww1(nx,my_max),pltemp(jtrun,jtmax,2)
+             ,odpondp  ,dta
+      real(kind=RTYPE) pnew(nxp,my_max),pten(nxp,my_max)    &
+                      ,ww1(nx,my_max),pltemp(jtrun,jtmax,2) &
+                      ,pltend(jtrun,jtmax,2)
       
       ! adjustment of surface pressure
       do jj = 1, jlistnum
@@ -368,6 +369,7 @@
             tt(i,k,jj)  = tt(i,k,jj)*pk(i,k,jj) / (1.0+0.608*qt(i,k,jj))
           enddo
           pnew(i,jj) = sumtott - sumwatt + sumwatta
+
         enddo
       enddo
 
@@ -393,8 +395,13 @@
             enddo
             tt(i,k,jj) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj))/pk(i,k,jj)
           enddo
+          pten(i,jj) = ( pnew(i,jj) - ptp(i,jj) ) / dta
         enddo
       enddo
+
+      call mpe2d_unify_nx(ww1,pten)
+      call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1            &
+                  ,pltend,nsizey)            
 
       return
       end
