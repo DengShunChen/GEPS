@@ -696,20 +696,20 @@
 !           if( tg(i,jj) .le. 271.35 )then ! -1.8 degC
 !            ice    (i,jj) = .true.
 !            ocean  (i,jj) = .false.
-!            zice   (i,jj) = 0.15 ! from himin in sfc_sice 
+!            zice   (i,jj) = 0.15  ! from himin in sfc_sice 
 !            cice   (i,jj) = max(0.15,cice(i,jj)) ! from cimin in sfc_sice 
-!            snr    (i,jj) = 15.
-!            sndepth(i,jj) = snr(i,jj)*8.
-!            sncover(i,jj) = min(1., snr(i,jj)/400.)
-!            z0     (i,jj) = 0.00002
-!            tg     (i,jj) = 271.35
+!            snr    (i,jj) = 0. !15.
+!            sndepth(i,jj) = 0. !snr(i,jj)*8.
+!            sncover(i,jj) = 0. !min(1., snr(i,jj)/400.)
+!            !z0     (i,jj) = 0.00002
+!            tg     (i,jj) = 271.35 ! (273.15 - 1.8)
 !            xtice  (i,jj) = tg(i,jj)
 !           endif
-!           endif !ocean
-!           if( ice(i,jj) )then !ice to ocean
+!           endif !ocean 
+!           if( ice(i,jj) )then !seaice melt to ocean
 !           if( xtice(i,jj) .gt. 273.0 )then !-relates freezing temp to salinity (273.15 - 0.054)
 !            if(  snr(i,jj).lt. 0.1 .and. zice(i,jj) .lt. 0.1 )then
-!            print*,'i=',nxjstart(j)+i-1,'j=',j,' ice 2 ocean'
+!            !!print*,'i=',nxjstart(j)+i-1,'j=',j,' ice 2 ocean'
 !            ice    (i,jj) =.false.
 !            ocean  (i,jj) =.true.
 !            zice   (i,jj) = 0.0
@@ -717,11 +717,11 @@
 !            snr    (i,jj) = 0.0
 !            sndepth(i,jj) = 0.0
 !            sncover(i,jj) = 0.0
-!            z0     (i,jj) =ustar(i,jj)*ustar(i,jj)*0.014/grav
+!            !z0     (i,jj) =ustar(i,jj)*ustar(i,jj)*0.014/grav
 !            endif
 !           endif
-!           endif
-!          endif
+!           endif !ice 
+!          endif !not land
 !         enddo
 !        enddo
 !      endif

@@ -796,6 +796,7 @@
               endif
               if( dailyFCTsst(ii,jj,1).ge.sstmin .AND. &
                   dailyFCTsst(ii,jj,2).ge.sstmin )then
+                !remove large tendency 20231207
                 ssttend =  dailyFCTsst(ii,jj,2)-dailyFCTsst(ii,jj,1)
                 ssttend = min( 10. , max( -10. , ssttend ))
                 dFCTsstdt(ii,jj)=ssttend/(24.*3600.)
