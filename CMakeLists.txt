@@ -135,6 +135,9 @@ set ( TCOGFS_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src
                           ${CMAKE_CURRENT_BINARY_DIR}/src
                           ${CMAKE_Fortran_MODULE_DIRECTORY} )
 
+# G2
+include_directories($ENV{G2_INC_PATH})
+
 ###########################################################################
 # Link Options (-L<path> -l<lib>), for dms, netcdf and Intel librares
 ###########################################################################
@@ -162,6 +165,18 @@ endif()
 if (${USE_MPMD})
  find_package( MPMD REQUIRED )
 endif()
+
+# G2
+link_directories($ENV{G2_LIB_PATH})
+link_libraries(-lg2)
+
+# PNG
+link_directories($ENV{PNG_LIB_PATH})
+link_libraries(-lpng)
+
+# Jasper
+link_directories($ENV{JAPSER_LIB_PATH})
+link_libraries(-ljasper)
 
 ###########################################################################
 # Build Target, TCO
