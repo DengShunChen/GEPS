@@ -1,16 +1,14 @@
 #!/bin/bash
-#PJM -L rscunit=rscunit_ft01
-#PJM -L rscgrp=fujitsu
-#PJM -L "node=80:noncont"
-#PJM -L elapse=2:00:00
-####PJM --mpi "proc=3840"
-#PJM --mpi proc=2560,max-proc-per-node=32
-#PJM --mpi rank-map-bynode
+#PJM -L "node=27"
+#PJM -L rscgrp=large
+#PJM -x PJM_CACHE_MODE=4
+#PJM -L elapse=02:30:00
 #PJM -L node-mem=unlimited
 #PJM --no-stging
+#PJM --mpi "proc=1280"
 #PJM -j
 #PJM -S
-#PJM -N "JTCo639L72"
+#PJM -N "JTCo383L72"
 #PJM -x PJM_CACHE_MODE=4
 
 set -x
@@ -24,7 +22,7 @@ TERR=GMTED30
 JCAP=383
 
 #MPI=3840
-MPI=2560
+MPI=1280
 OMP=1
 
 if [ $JCAP = 639 ] ; then
