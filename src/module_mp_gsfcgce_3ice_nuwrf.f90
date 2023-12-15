@@ -98,6 +98,8 @@ MODULE module_mp_gsfcgce_3ice_nuwrf
 
    REAL,    PRIVATE, DIMENSION( 31 ) ::    BergCon1,  BergCon2,       &
                                            BergCon3,  BergCon4
+   ! semi-Lagrangian sedimentation threshold
+   real,    private, parameter :: qfmin = 1.e-20
 
 !
    REAL,    PRIVATE, DIMENSION( 31 )  ::      aa1,  aa2
@@ -755,7 +757,7 @@ CONTAINS
 !       do k = kts , kte
 !          qrz(k) = qden(k) / rhoz(k)
 !       enddo
-       call semi_sedi('qr',ihail,improve,0,kte,dzw,rhoz,qrz,tz,vtr,precip,dtcfl,1.e-15)
+       call semi_sedi('qr',ihail,improve,0,kte,dzw,rhoz,qrz,tz,vtr,precip,dtcfl,qfmin)
        pptrain = pptrain + precip
     enddo
 
@@ -853,7 +855,7 @@ CONTAINS
 !       do k = kts , kte
 !          qsz(k) = qden(k) / rhoz(k)
 !       enddo
-       call semi_sedi('qs',ihail,improve,0,kte,dzw,rhoz,qsz,tz,vts,precip,dtcfl,1.e-15)
+       call semi_sedi('qs',ihail,improve,0,kte,dzw,rhoz,qsz,tz,vts,precip,dtcfl,qfmin)
        pptsnow = pptsnow + precip
     enddo
 
@@ -961,7 +963,7 @@ CONTAINS
 !       do k = kts , kte
 !          qgz(k) = qden(k) / rhoz(k)
 !       enddo
-       call semi_sedi('qg',ihail,improve,0,kte,dzw,rhoz,qgz,tz,vtg,precip,dtcfl,1.e-15)
+       call semi_sedi('qg',ihail,improve,0,kte,dzw,rhoz,qgz,tz,vtg,precip,dtcfl,qfmin)
        pptgraul = pptgraul + precip
     enddo
 
@@ -1059,7 +1061,7 @@ CONTAINS
 !       do k = kts , kte
 !          qiz(k) = qden(k) / rhoz(k)
 !       enddo
-       call semi_sedi('qi',ihail,improve,0,kte,dzw,rhoz,qiz,tz,vti,precip,dtcfl,1.e-15)
+       call semi_sedi('qi',ihail,improve,0,kte,dzw,rhoz,qiz,tz,vti,precip,dtcfl,qfmin)
        pptice = pptice + precip
     enddo
 
