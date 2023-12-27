@@ -748,7 +748,7 @@ CONTAINS
     do n = 1 , ntimes
        vtr(:) = 0.
        precip = 0.
-       call semi_sedi('qr',ihail,improve,0,kte,dzw,rhoz,qrz,tz,vtr,precip,dtcfl,qfmin)
+       call semi_sedi('qr',ihail,improve,0,kte,dzw,rhoz,qrz,tz,vtr,precip,dtcfl)
        pptrain = pptrain + precip
     enddo
 
@@ -837,7 +837,7 @@ CONTAINS
     do n = 1 , ntimes
        vts(:) = 0.
        precip = 0.
-       call semi_sedi('qs',ihail,improve,0,kte,dzw,rhoz,qsz,tz,vts,precip,dtcfl,qfmin)
+       call semi_sedi('qs',ihail,improve,0,kte,dzw,rhoz,qsz,tz,vts,precip,dtcfl)
        pptsnow = pptsnow + precip
     enddo
 
@@ -936,7 +936,7 @@ CONTAINS
     do n = 1 , ntimes
        vtg(:) = 0.
        precip = 0.
-       call semi_sedi('qg',ihail,improve,0,kte,dzw,rhoz,qgz,tz,vtg,precip,dtcfl,qfmin)
+       call semi_sedi('qg',ihail,improve,0,kte,dzw,rhoz,qgz,tz,vtg,precip,dtcfl)
        pptgraul = pptgraul + precip
     enddo
 
@@ -1025,7 +1025,7 @@ CONTAINS
     do n = 1 , ntimes
        vti(:) = 0.
        precip = 0.
-       call semi_sedi('qi',ihail,improve,0,kte,dzw,rhoz,qiz,tz,vti,precip,dtcfl,qfmin)
+       call semi_sedi('qi',ihail,improve,0,kte,dzw,rhoz,qiz,tz,vti,precip,dtcfl)
        pptice = pptice + precip
     enddo
 
@@ -1052,16 +1052,16 @@ CONTAINS
             min_q=min0(min_q,k)
             max_q=max0(max_q,k)
 
-          call vti_mks(improve,rhoz(k),tz(k),qiz(k),vti(k))
+            call vti_mks(improve,rhoz(k),tz(k),qiz(k),vti(k))
 
-          ! EMK:  Avoid division by zero
-          if ((vti(k) .gt. 1.0e-20)) then
-            if (k .eq. 1) then
-               del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vti(k))
-            else
-               del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vti(k))
+            ! EMK:  Avoid division by zero
+            if ((vti(k) .gt. 1.0e-20)) then
+               if (k .eq. 1) then
+                  del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vti(k))
+               else
+                  del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vti(k))
+               endif
             endif
-         end if
          endif
       enddo
 
@@ -5694,7 +5694,7 @@ CONTAINS
 !-------------------------------------------------------------------
 
 !-------------------------------------------------------------------
-      SUBROUTINE semi_sedi(qvar,ihail,improve,iter,km,dzl,rho,qc,tz,ww,precip,dt,R1)
+      SUBROUTINE semi_sedi(qvar,ihail,improve,iter,km,dzl,rho,qc,tz,ww,precip,dt)
 !-------------------------------------------------------------------
 !
 ! This routine is a semi-Lagrangain forward advection for hydrometeors
@@ -5724,7 +5724,7 @@ CONTAINS
 
       character(len=2) :: qvar
       integer, intent(in) :: ihail, improve, km, iter
-      real, intent(in) ::  dt, R1
+      real, intent(in) ::  dt
       real, intent(in) :: dzl(km), rho(km), tz(km)
       real, intent(out) :: ww(km)
       real, intent(out) :: precip
@@ -5743,6 +5743,7 @@ CONTAINS
       precip = 0.0
       qa(:) = 0.0
       qq(:) = 0.0
+      ww(:) = 0.0
       wa(:) = 0.0
       was(:) = 0.0
       dz(:) = dzl(:)
@@ -5754,10 +5755,6 @@ CONTAINS
       enddo
       do k = 1,km
         qq(k) = qc(k)*rho(k)
-        if ( qq(k) .le. R1 ) then
-          qq(k) = 0.0
-          ww(k) = 0.0 
-        endif
       enddo
 
 ! skip for no precipitation for all layers
@@ -5953,7 +5950,7 @@ CONTAINS
 
 ! replace the new values
        do k = 1,km
-          qc(k) = max(qn(k),R1)/rho(k)
+          qc(k) = qn(k)/rho(k)
        enddo
 
        END SUBROUTINE semi_sedi
