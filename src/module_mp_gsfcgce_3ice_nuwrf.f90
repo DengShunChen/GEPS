@@ -5445,6 +5445,7 @@ CONTAINS
       ! 2 : Heymsfield and Donner (1990), igce!= 1
       ! 3 : Hong et al. (2004)          , igce = 1 , improve = 3
       ! 4 : Deng and Mace (2008)
+      ! 5 : hybrid of HD90 and DM08
 
       real, parameter :: vimax = 0.5     ! max fall speed for cloud ice (m/s)
       real, parameter :: vimin = 0.      ! min fall speed for cloud ice (m/s)
@@ -5465,6 +5466,7 @@ CONTAINS
       real, parameter :: dd = 0.00216078
       real, parameter :: ee = 1.9714
       real    :: tc
+      real    :: h1, h2
 
       if ( qiz .ge. cminf ) then
          if ( vtiflag .eq. 1 ) then
@@ -5510,6 +5512,15 @@ CONTAINS
                   (tc * (aa * tc + bb) + cc) + dd * tc + ee
             vti = exp(log(10.) * vti)
             vti = vti * 0.01    ! convert back to MKS
+
+         elseif ( vtiflag .eq. 5 ) then
+            ! hybrid of HD90 and DM08 :
+            tc = tz - t0
+            h1 = 0.5  !for HD90
+            h2 = 0.5  !for DM08
+            vti = 3.29 * ( rhoz * qiz ) ** 0.16 * h1 + &
+                  exp(log(10.) * (3. + log10(qiz * rhoz)) * &
+                  (tc * (aa * tc + bb) + cc) + dd * tc + ee) * 0.01 * h2
          endif
 
          vti = min ( vimax , max ( vimin , vti ) )
