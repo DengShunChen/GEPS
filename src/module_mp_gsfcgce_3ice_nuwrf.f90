@@ -5432,7 +5432,7 @@ CONTAINS
    end function eff_rad
 
 !-------------------------------------------------------------------
-      subroutine vti_mks(improve,rhoz,qiz,tz,vti)
+      subroutine vti_mks(improve,rhoz,tz,qiz,vti)
       implicit none
       integer, intent(in) :: improve
       real, intent(in) :: rhoz  !air density (kg/m^3)
