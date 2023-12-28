@@ -127,7 +127,11 @@
 !           z0max = exp( tem2*log01 + tem1*log01 )
             z0max = 0.01
           else
-            z0max = exp( tem2*log01 + tem1*log(z0max) )
+            if (islimsk(i) == 2) then
+              z0max = exp( tem2*log(0.0002) + tem1*log(z0max) )
+            else
+              z0max = exp( tem2*log01 + tem1*log(z0max) )
+            endif
           endif
 
          elseif (ivegsrc == 0 ) then
@@ -143,7 +147,11 @@
 !             z0max = exp( tem2*log01 + tem1*log01 )
               z0max = 0.01
             else
-              z0max = exp( tem2*log01 + tem1*log(z0max) )
+              if (islimsk(i) == 2) then
+                z0max = exp( tem2*log(0.0002) + tem1*log(z0max) )
+              else
+                z0max = exp( tem2*log01 + tem1*log(z0max) )
+              endif
             endif
 
          endif

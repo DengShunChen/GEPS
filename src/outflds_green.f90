@@ -301,6 +301,11 @@
       call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
       runoff(:,:)=0.0 !6 hr zero out
 
+      endif !mod(float(itau)+0.00001, 6. ) .lt. 0.01
+
+!
+
+      if (mod(float(itau)+0.00001, 24. ) .lt. 0.01) then
       !!!sea ice fraction
       wrk=cice
       call syslbl ('w00091',idtg,itau,ggdef,ihdg)
@@ -315,31 +320,8 @@
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       ptp0=(/10,2,1,2,103,0,0,-999,-999/)
       call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
+      endif
 
-!land sea mask
-! 0:ocean
-! 1:land
-! 2:sea ice
-      wrk=2.0
-      do  jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        do  i=1,nxj
-         if( land(i,jj)  )then
-            wrk(i,jj) = 1.0
-         elseif( ocean(i,jj) )then
-            wrk(i,jj) = 0.0
-         endif
-        enddo
-      enddo
-      call syslbl ('s00070',idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      ptp0=(/2,0,0,2,103,0,0,-999,-999/)
-      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
-
-
-      endif !mod(float(itau)+0.00001, 6. ) .lt. 0.01
 !
       if(outdms.gt.0)then
       if ( myrank .lt. nc )             &

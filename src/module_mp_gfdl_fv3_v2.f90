@@ -1975,6 +1975,15 @@ subroutine icloud (ks, ke, tzk, p1, qvk, qlk, qrk, qik, qsk, qgk, dp1, den, &
                     pgfr = factor * pgfr
                     
                     sink = psacr + pgfr
+                    !xb141 >>>
+                    ! pgfr could be greater than 1.e-9, and lead to negative values of qr (about -1.e-25).
+                    ! let psacr & pgfr divided in portion :
+                    if ( sink > qr ) then
+                       psacr = qr * psacr / sink
+                       pgfr = qr * pgfr / sink
+                       sink = qr
+                    endif
+                    !xb141 <<<
                     qr = qr - sink
                     qs = qs + psacr
                     qg = qg + pgfr

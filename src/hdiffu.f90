@@ -126,10 +126,10 @@
             vornow(k,2,n,m)=vornow(k,2,n,m)/c1
             divnow(k,1,n,m)=divnow(k,1,n,m)/c2
             divnow(k,2,n,m)=divnow(k,2,n,m)/c2
-!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
-!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
-            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
-            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
+            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
+            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
+!            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
+!            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
           enddo
         enddo
  100  continue
@@ -185,7 +185,7 @@
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
       real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
-      real      hfilt,nf,dec,coefu,powd,kfac
+      real      hfilt,nf,dec,coefu,powd,kfac,dect
       real      c1,c2,c3
       logical   windchk
 
@@ -236,7 +236,15 @@
         kfac = min(coefu*max(float(hdk2(1)-KL),0.),factop)!  & 
 !             + min(1.*max(float(hdk2(3)-KL),0.),4.)
 !        if ( KL .le. hdk1 ) kfac = kfac*(1.+vd*exp(-0.5*KL))
-        kfac = kfac*(1.+vd*exp(-0.5*max(float(KL-hdk1),0.)))
+!        kfac = kfac*(1.+vd*exp(-0.2*max(float(KL-hdk1),0.)))
+        dect = float(min(max(hdk1-KL,1-hdk1),hdk1-1))/float((hdk1-1))
+        if ( dect .ge. 0. ) then
+          dec  = 0.5*(1.+dect**(1./3.))
+        else
+          dect = -1.*dect
+          dec  = 0.5*(1.-dect**(1./3.))
+        endif
+        kfac = kfac*(1.+vd*dec)
         facd = max(1.,kfac)*amp
         facv = max(1.,kfac)*amp
         fact = max(1.,kfac)*amp
@@ -273,10 +281,10 @@
             vornow(k,2,n,m)=vornow(k,2,n,m)/c1
             divnow(k,1,n,m)=divnow(k,1,n,m)/c2
             divnow(k,2,n,m)=divnow(k,2,n,m)/c2
-!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
-!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
-            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
-            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
+            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
+            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
+!            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
+!            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
           enddo
         enddo
  100  continue
@@ -483,7 +491,7 @@
       real      windmax1,windmax2,windmax3
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
-      real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
+      real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu,dec,dect
       real      hfilt,nf,kfac,fl,powd
       real      c1,c2,c3,c4
       logical   windchk
@@ -528,7 +536,16 @@
         kfac = min(fl*max(float(hdk2(1)-KL),0.),factop)!    &
 !              + min(1.*max(float(hdk2(3)-KL),0.),4.)
 !        if ( KL .le. hdk1 ) kfac = kfac*(1.+vd*exp(-0.5*KL))
-        kfac = kfac*(1.+vd*exp(-0.5*max(float(KL-hdk1),0.)))
+!        kfac = kfac*(1.+vd*exp(-0.5*max(float(KL-hdk1),0.)))
+        dect = float(min(max(hdk1-KL,1-hdk1),hdk1-1))/float((hdk1-1))
+        if ( dect .ge. 0. ) then
+          dec  = 0.5*(1.+dect**(1./3.))
+        else
+          dect = -1.*dect
+          dec  = 0.5*(1.-dect**(1./3.))
+        endif
+        kfac = kfac*(1.+vd*dec)
+
 !        facd = mwhd * max(amp,kfac)
 !        facv = max(min(amp,1.),kfac)
         facd = max(1.,kfac)*amp
@@ -563,10 +580,10 @@
             vornow(k,2,n,m)=vornow(k,2,n,m)/c1
             divnow(k,1,n,m)=divnow(k,1,n,m)/c2
             divnow(k,2,n,m)=divnow(k,2,n,m)/c2
-!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
-!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
-            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
-            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
+            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
+            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
+!            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
+!            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
           enddo
         enddo
  100  continue
