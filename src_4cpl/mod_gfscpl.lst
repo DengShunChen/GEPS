@@ -1,5 +1,5 @@
 
- Fujitsu Fortran Version 4.6.1  Fri Dec  1 17:11:45 2023
+ Fujitsu Fortran Version 4.6.1  Mon Dec  4 10:57:38 2023
 
  Compilation information
    Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_4cpl
@@ -108,82 +108,324 @@
               37                       use cpl_rank,     only: id_gocn
               38                       use cpl_attr,     only: AttrVect_importRAttr, gfs_export_attr, gfsExport_rList
               39                       use cpl_sendrecv, only: cpl_send
-              40                       implicit none
-              41                     
-              42                       integer, intent(in) :: compid
-              43                       real(kind=8), dimension(nlon,nlat), intent(in)  :: u10m, v10m, &
-              44                                                                          t02m, q02m, &
-              45                                                                          pslv, swup, &
-              46                                                                          swdn, lwdn, &
-              47                                                                          rain, snow, tgfs
-              48                     
-              49                       real(kind=8), dimension(nlon_glb, nlat_glb,11) :: glob_var
-              50                       integer :: cnt, i, ii, j, jj, nxj
+              40                       use const       , only: RTYPE
+              41                       implicit none
+              42                     
+              43                       integer, intent(in) :: compid
+              44                       real(kind=8), dimension(nlon,nlat), intent(in)  :: u10m, v10m, &
+              45                                                                          t02m, q02m, &
+              46                                                                          pslv, swup, &
+              47                                                                          swdn, lwdn, &
+              48                                                                          rain, snow, tgfs
+              49                     
+              50                       real(kind=8), dimension(nlon_glb, nlat_glb,11) :: glob_var
               51                     
-              52                       call unify_reduceintp(nlon_glb, nlat_glb, nlat, u10m, glob_var(:,:,1))
-              53                       call unify_reduceintp(nlon_glb, nlat_glb, nlat, v10m, glob_var(:,:,2))
-              54                       call unify_reduceintp(nlon_glb, nlat_glb, nlat, t02m, glob_var(:,:,3))
-              55                       call unify_reduceintp(nlon_glb, nlat_glb, nlat, q02m, glob_var(:,:,4))
-              56                       call unify_reduceintp(nlon_glb, nlat_glb, nlat, pslv, glob_var(:,:,5))
-              57                       call unify_reduceintp(nlon_glb, nlat_glb, nlat, swup, glob_var(:,:,6))
-              58                       call unify_reduceintp(nlon_glb, nlat_glb, nlat, swdn, glob_var(:,:,7))
-              59                       call unify_reduceintp(nlon_glb, nlat_glb, nlat, lwdn, glob_var(:,:,8))
-              60                       call unify_reduceintp(nlon_glb, nlat_glb, nlat, rain, glob_var(:,:,9))
-              61                       call unify_reduceintp(nlon_glb, nlat_glb, nlat, snow, glob_var(:,:,10))
-              62                       call unify_reduceintp(nlon_glb, nlat_glb, nlat, tgfs, glob_var(:,:,11))
-              63                     
-              64                       cnt = 0
-              65     1                 do jj = 1, jlistnum
-              66     1                   j = jlist1(jj)
-              67     1                   ii = mylon*nlon + 1 !nxjstart(j)
-              68     1                   nxj = nlon      !nxdef_2d(j)
+              52                       real(kind=RTYPE), dimension(nlon,nlat)             :: ocnwrk1
+              53                       real(kind=RTYPE), dimension(nlon_glb, nlat_glb,11) :: ocnwrk2
+              54                     
+              55                       integer :: cnt, i, ii, j, jj, nxj
+              56                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      u10m, ocnwrk1
+                                   <<< Loop-information  End >>>
+              57        pp   2v        ocnwrk1 = u10m
+              58                       call unify_reduceintp(nlon_glb, nlat_glb, nlat, ocnwrk1, ocnwrk2(:,:,1))
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ocnwrk2, glob_var
+                                   <<< Loop-information  End >>>
+              59        pp   2v        glob_var(:,:,1) = ocnwrk2(:,:,1)
+              60                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      v10m, ocnwrk1
+                                   <<< Loop-information  End >>>
+              61        pp   2v        ocnwrk1 = v10m
+              62                       call unify_reduceintp(nlon_glb, nlat_glb, nlat, ocnwrk1, ocnwrk2(:,:,2))
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ocnwrk2, glob_var
+                                   <<< Loop-information  End >>>
+              63        pp   2v        glob_var(:,:,2) = ocnwrk2(:,:,2)
+              64                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      t02m, ocnwrk1
+                                   <<< Loop-information  End >>>
+              65        pp   2v        ocnwrk1 = t02m
+              66                       call unify_reduceintp(nlon_glb, nlat_glb, nlat, ocnwrk1, ocnwrk2(:,:,3))
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ocnwrk2, glob_var
+                                   <<< Loop-information  End >>>
+              67        pp   2v        glob_var(:,:,3) = ocnwrk2(:,:,3)
+              68                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      q02m, ocnwrk1
+                                   <<< Loop-information  End >>>
+              69        pp   2v        ocnwrk1 = q02m
+              70                       call unify_reduceintp(nlon_glb, nlat_glb, nlat, ocnwrk1, ocnwrk2(:,:,4))
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ocnwrk2, glob_var
+                                   <<< Loop-information  End >>>
+              71        pp   2v        glob_var(:,:,4) = ocnwrk2(:,:,4)
+              72                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pslv, ocnwrk1
+                                   <<< Loop-information  End >>>
+              73        pp   2v        ocnwrk1 = pslv
+              74                       call unify_reduceintp(nlon_glb, nlat_glb, nlat, ocnwrk1, ocnwrk2(:,:,5))
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ocnwrk2, glob_var
+                                   <<< Loop-information  End >>>
+              75        pp   2v        glob_var(:,:,5) = ocnwrk2(:,:,5)
+              76                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      swup, ocnwrk1
+                                   <<< Loop-information  End >>>
+              77        pp   2v        ocnwrk1 = swup
+              78                       call unify_reduceintp(nlon_glb, nlat_glb, nlat, ocnwrk1, ocnwrk2(:,:,6))
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ocnwrk2, glob_var
+                                   <<< Loop-information  End >>>
+              79        pp   2v        glob_var(:,:,6) = ocnwrk2(:,:,6)
+              80                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      swdn, ocnwrk1
+                                   <<< Loop-information  End >>>
+              81        pp   2v        ocnwrk1 = swdn
+              82                       call unify_reduceintp(nlon_glb, nlat_glb, nlat, ocnwrk1, ocnwrk2(:,:,7))
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ocnwrk2, glob_var
+                                   <<< Loop-information  End >>>
+              83        pp   2v        glob_var(:,:,7) = ocnwrk2(:,:,7)
+              84                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      lwdn, ocnwrk1
+                                   <<< Loop-information  End >>>
+              85        pp   2v        ocnwrk1 = lwdn
+              86                       call unify_reduceintp(nlon_glb, nlat_glb, nlat, ocnwrk1, ocnwrk2(:,:,8))
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ocnwrk2, glob_var
+                                   <<< Loop-information  End >>>
+              87        pp   2v        glob_var(:,:,8) = ocnwrk2(:,:,8)
+              88                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rain, ocnwrk1
+                                   <<< Loop-information  End >>>
+              89        pp   2v        ocnwrk1 = rain
+              90                       call unify_reduceintp(nlon_glb, nlat_glb, nlat, ocnwrk1, ocnwrk2(:,:,9))
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ocnwrk2, glob_var
+                                   <<< Loop-information  End >>>
+              91        pp   2v        glob_var(:,:,9) = ocnwrk2(:,:,9)
+              92                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      snow, ocnwrk1
+                                   <<< Loop-information  End >>>
+              93        pp   2v        ocnwrk1 = snow
+              94                       call unify_reduceintp(nlon_glb, nlat_glb, nlat, ocnwrk1, ocnwrk2(:,:,10))
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ocnwrk2, glob_var
+                                   <<< Loop-information  End >>>
+              95        pp   2v        glob_var(:,:,10) = ocnwrk2(:,:,10)
+              96                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tgfs, ocnwrk1
+                                   <<< Loop-information  End >>>
+              97        pp   2v        ocnwrk1 = tgfs
+              98                       call unify_reduceintp(nlon_glb, nlat_glb, nlat, ocnwrk1, ocnwrk2(:,:,11))
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ocnwrk2, glob_var
+                                   <<< Loop-information  End >>>
+              99        pp   2v        glob_var(:,:,11) = ocnwrk2(:,:,11)
+             100                     
+             101                       cnt = 0
+             102     1                 do jj = 1, jlistnum
+             103     1                   j = jlist1(jj)
+             104     1                   ii = mylon*nlon + 1 !nxjstart(j)
+             105     1                   nxj = nlon      !nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      glob_var
                                    <<< Loop-information  End >>>
-              69     2                   do i = ii, ii+nxj-1
-              70     2                     cnt = cnt + 1
-              71     2                     gfs_export_attr%rAttr(1,cnt) = glob_var(i,j,1)
-              72     2                     gfs_export_attr%rAttr(2,cnt) = glob_var(i,j,2)
-              73     2                     gfs_export_attr%rAttr(3,cnt) = glob_var(i,j,3)
-              74     2                     gfs_export_attr%rAttr(4,cnt) = glob_var(i,j,4)
-              75     2                     gfs_export_attr%rAttr(5,cnt) = glob_var(i,j,5)*100.d0
-              76     2                     gfs_export_attr%rAttr(6,cnt) = glob_var(i,j,6)
-              77     2                     gfs_export_attr%rAttr(7,cnt) = glob_var(i,j,7)
-              78     2                     gfs_export_attr%rAttr(8,cnt) = glob_var(i,j,8)
-              79     2                     gfs_export_attr%rAttr(9,cnt) = glob_var(i,j,9)
-              80     2                     gfs_export_attr%rAttr(10,cnt) = glob_var(i,j,10)
-              81     2                     gfs_export_attr%rAttr(11,cnt) = glob_var(i,j,11) - 273.15d0
-              82     2                   end do
-              83     1                 enddo
-              84                     
-              85                       call cpl_send(compid, id_gocn, gfs_export_attr, myid)
-              86                     
-              87                     end subroutine gfs_cpl_send2gocn
-              88                     
-              89                     subroutine gfs_cpl_recv4gocn(compid, mask_lnd, tgfs, ssufs, ssvfs)
-              90                       use param,        only: nx, my, my_max
-              91                       use index,        only: nxp, jlistnum, jlist1, &
-              92                                               nxdef_2d, nxjstart, lreduce, nxdef
-              93                       use mpe,          only: mpe_double
-              94                       use rank,         only: myrank
-              95                       use cpl_rank,     only: id_gocn
-              96                       use cpl_attr,     only: recv_AV=>gfs_recv_gocn_Attr
-              97                       use cpl_sendrecv, only: cpl_recv
-              98                       implicit none
-              99                     
-             100                       integer, intent(in) :: compid
-             101                       logical, intent(inout) :: mask_lnd(nxp, my_max)
-             102                       real, intent(inout) :: tgfs(nxp, my_max), ssufs(nxp,my_max), ssvfs(nxp,my_max)
-             103                       real, dimension(nx, my) :: tg_glb, sst_glb, ssu_glb, ssv_glb
-             104                       real, dimension(nx, my_max) :: sst_nxj
-             105                       real, dimension(nxp, my_max) :: SST, SSU, SSV
-             106                     
-             107                       integer :: cnt, i, ii, j, jj, nxj
-             108                     
-             109                       call cpl_recv(compid, id_gocn, recv_AV, myrank)
-             110                     
+             106     2                   do i = ii, ii+nxj-1
+             107     2                     cnt = cnt + 1
+             108     2                     gfs_export_attr%rAttr(1,cnt) = glob_var(i,j,1)
+             109     2                     gfs_export_attr%rAttr(2,cnt) = glob_var(i,j,2)
+             110     2                     gfs_export_attr%rAttr(3,cnt) = glob_var(i,j,3)
+             111     2                     gfs_export_attr%rAttr(4,cnt) = glob_var(i,j,4)
+             112     2                     gfs_export_attr%rAttr(5,cnt) = glob_var(i,j,5)*100.d0
+             113     2                     gfs_export_attr%rAttr(6,cnt) = glob_var(i,j,6)
+             114     2                     gfs_export_attr%rAttr(7,cnt) = glob_var(i,j,7)
+             115     2                     gfs_export_attr%rAttr(8,cnt) = glob_var(i,j,8)
+             116     2                     gfs_export_attr%rAttr(9,cnt) = glob_var(i,j,9)
+             117     2                     gfs_export_attr%rAttr(10,cnt) = glob_var(i,j,10)
+             118     2                     gfs_export_attr%rAttr(11,cnt) = glob_var(i,j,11) - 273.15d0
+             119     2                   end do
+             120     1                 enddo
+             121                     
+             122                       call cpl_send(compid, id_gocn, gfs_export_attr, myid)
+             123                     
+             124                     end subroutine gfs_cpl_send2gocn
+             125                     
+             126                     subroutine gfs_cpl_recv4gocn(compid, mask_lnd, tgfs, ssufs, ssvfs)
+             127                       use param,        only: nx, my, my_max
+             128                       use index,        only: nxp, jlistnum, jlist1, &
+             129                                               nxdef_2d, nxjstart, lreduce, nxdef
+             130                       use mpe,          only: mpe_double
+             131                       use rank,         only: myrank
+             132                       use cpl_rank,     only: id_gocn
+             133                       use cpl_attr,     only: recv_AV=>gfs_recv_gocn_Attr
+             134                       use cpl_sendrecv, only: cpl_recv
+             135                       use const       , only: RTYPE
+             136                       implicit none
+             137                     
+             138                       integer, intent(in) :: compid
+             139                       logical, intent(inout) :: mask_lnd(nxp, my_max)
+             140                       real, intent(inout) :: tgfs(nxp, my_max), ssufs(nxp,my_max), ssvfs(nxp,my_max)
+             141                       real, dimension(nx, my) :: tg_glb, sst_glb, ssu_glb, ssv_glb
+             142                       real, dimension(nx, my_max) :: sst_nxj
+             143                       real, dimension(nxp, my_max) :: SST, SSU, SSV
+             144                     
+             145                       real(kind=RTYPE) :: ocnwrk3(nxp, my_max)
+             146                       real(kind=RTYPE), dimension(nx, my) :: ocnwrk4
+             147                       real(kind=RTYPE), dimension(nx, my_max) :: ocnwrk5
+             148                       real(kind=RTYPE), dimension(nxp, my_max) :: ocnwrk6
+             149                     
+             150                     
+             151                       integer :: cnt, i, ii, j, jj, nxj
+             152                     
+             153                       call cpl_recv(compid, id_gocn, recv_AV, myrank)
+             154                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 9
@@ -192,7 +434,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      sst_nxj
                                    <<< Loop-information  End >>>
-             111        pp   4v        sst_nxj = 0.0
+             155        pp   4v        sst_nxj = 0.0
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 9
@@ -201,8 +443,8 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      sst_glb
                                    <<< Loop-information  End >>>
-             112        pp   4v        sst_glb = 0.0
-             113                       cnt = 0
+             156        pp   4v        sst_glb = 0.0
+             157                       cnt = 0
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 7
@@ -211,8 +453,8 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      SSV, SSU
                                    <<< Loop-information  End >>>
-             114        pp   2v        SSU=0.
-             115         p   2v        SSV=0.
+             158        pp   2v        SSU=0.
+             159         p   2v        SSV=0.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 7
@@ -221,8 +463,8 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ssv_glb, ssu_glb
                                    <<< Loop-information  End >>>
-             116        pp   2v        ssu_glb=0.
-             117         p   2v        ssv_glb=0.
+             160        pp   2v        ssu_glb=0.
+             161         p   2v        ssv_glb=0.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 7
@@ -231,17 +473,17 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ssvfs, ssufs
                                    <<< Loop-information  End >>>
-             118        pp   2v        ssufs=0.
-             119         p   2v        ssvfs=0.
-             120                     
+             162        pp   2v        ssufs=0.
+             163         p   2v        ssvfs=0.
+             164                     
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      SSV, SSU, SST
                                    <<< Loop-information  End >>>
-             121     1   s             do jj = 1, jlistnum
-             122     1   p               j = jlist1(jj)
-             123     1   p               nxj = nxp  !nxdef_2d(j)
+             165     1   s             do jj = 1, jlistnum
+             166     1   p               j = jlist1(jj)
+             167     1   p               nxj = nxp  !nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 239
@@ -251,47 +493,119 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      SSV, SSU, SST
                                    <<< Loop-information  End >>>
-             124     2  pp   2v          do i = 1, nxj
-             125     2   p   2v            cnt = cnt + 1
-             126     2   p   2v            SST(i,jj) = recv_AV%rAttr(1,cnt)
-             127     2   p   2v            SSU(i,jj) = recv_AV%rAttr(2,cnt)
-             128     2   p   2v            SSV(i,jj) = recv_AV%rAttr(3,cnt)
-             129     2   p   2v          end do
-             130     1   p             end do
-             131                     !      write(*,*) 'SSUmax=', maxval(SSU), 'myrank=', myrank
-             132                     
-             133                       call unify_reduceintp(nx, my, my_max, tgfs, tg_glb)
-             134                     
-             135                       call mpe2d_unify(sst_glb, SST, .true.)
-             136                       call mpe2d_unify(ssu_glb, SSU, .true.)
-             137                       call mpe2d_unify(ssv_glb, SSV, .true.)
-             138                     !      if(myrank .eq. 0) write(*,*) 'ssu_glbmax=', maxval(ssu_glb)
-             139                       !call mpe2d_unify_nx(sst_nxj, SST)
-             140                       !call mpe2d_unify_my(sst_glb, sst_nxj)
-             141                       !do j = 1, my
-             142                       !  do i = 1, nx
-             143                       !    if(sst_glb(i,j).gt.271.0) tg_glb(i,j) = sst_glb(i,j)
-             144                       !  end do
-             145                       !end do
-             146                     
-             147                       !call unify_reducepick(nx, my, my_max, tg_glb, tgfs)
+             168     2  pp   2v          do i = 1, nxj
+             169     2   p   2v            cnt = cnt + 1
+             170     2   p   2v            SST(i,jj) = recv_AV%rAttr(1,cnt)
+             171     2   p   2v            SSU(i,jj) = recv_AV%rAttr(2,cnt)
+             172     2   p   2v            SSV(i,jj) = recv_AV%rAttr(3,cnt)
+             173     2   p   2v          end do
+             174     1   p             end do
+             175                     !      write(*,*) 'SSUmax=', maxval(SSU), 'myrank=', myrank
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tgfs, ocnwrk3
+                                   <<< Loop-information  End >>>
+             176        pp   2v        ocnwrk3 = tgfs
+             177                       call unify_reduceintp(nx, my, my_max, ocnwrk3, ocnwrk4)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sst_glb, ocnwrk4, tg_glb
+                                   <<< Loop-information  End >>>
+             178        pp   2v        tg_glb = ocnwrk4
+             179                     
+             180         p   2v        ocnwrk4 = sst_glb
+             181                       call mpe2d_unify(ocnwrk4, ocnwrk6, .true.)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ocnwrk6, SST
+                                   <<< Loop-information  End >>>
+             182        pp   2v        SST = ocnwrk6
+             183                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ssu_glb, ocnwrk4
+                                   <<< Loop-information  End >>>
+             184        pp   2v        ocnwrk4 = ssu_glb
+             185                       call mpe2d_unify(ocnwrk4, ocnwrk6, .true.)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ocnwrk6, SSU
+                                   <<< Loop-information  End >>>
+             186        pp   2v        SSU = ocnwrk6
+             187                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ssv_glb, ocnwrk4
+                                   <<< Loop-information  End >>>
+             188        pp   2v        ocnwrk4 = ssv_glb
+             189                       call mpe2d_unify(ocnwrk4, ocnwrk6, .true.)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ocnwrk6, SSV
+                                   <<< Loop-information  End >>>
+             190        pp   2v        SSV = ocnwrk6
+             191                     !      if(myrank .eq. 0) write(*,*) 'ssu_glbmax=', maxval(ssu_glb)
+             192                       !call mpe2d_unify_nx(sst_nxj, SST)
+             193                       !call mpe2d_unify_my(sst_glb, sst_nxj)
+             194                       !do j = 1, my
+             195                       !  do i = 1, nx
+             196                       !    if(sst_glb(i,j).gt.271.0) tg_glb(i,j) = sst_glb(i,j)
+             197                       !  end do
+             198                       !end do
+             199                     
+             200                       !call unify_reducepick(nx, my, my_max, tg_glb, tgfs)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      mask_lnd, sst_glb, ssu_glb, ssv_glb
                                    <<<      tgfs, ssufs, ssvfs
                                    <<< Loop-information  End >>>
-             148     1                 do jj = 1, jlistnum
-             149     1                   j   = jlist1(jj)
-             150     1                   ii  = nxjstart(j)
-             151     1                   nxj = nxdef_2d(j)
-             152     2                   if( lreduce.eq.1 ) then
-             153     2                     call reducepick(sst_glb(1,j), nxdef(j), nx, 1)
-             154     2                     call reducepick(ssu_glb(1,j), nxdef(j), nx, 1)
-             155     2                     call reducepick(ssv_glb(1,j), nxdef(j), nx, 1)
-             156     2                   end if
-             157     1               
-             158     1               
+             201     1                 do jj = 1, jlistnum
+             202     1                   j   = jlist1(jj)
+             203     1                   ii  = nxjstart(j)
+             204     1                   nxj = nxdef_2d(j)
+             205     2                   if( lreduce.eq.1 ) then
+             206     2                     call reducepick(sst_glb(1,j), nxdef(j), nx, 1)
+             207     2                     call reducepick(ssu_glb(1,j), nxdef(j), nx, 1)
+             208     2                     call reducepick(ssv_glb(1,j), nxdef(j), nx, 1)
+             209     2                   end if
+             210     1               
+             211     1               
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 445
@@ -302,24 +616,24 @@
                                    <<<      tgfs, mask_lnd, ssu_glb, sst_glb
                                    <<<      ssv_glb, ssufs, ssvfs
                                    <<< Loop-information  End >>>
-             159     2  pp    v          do i = 1, nxj
-             160     3   p    v            if(.not.mask_lnd(i,jj).and.sst_glb(ii,j).gt.271.0) then
-             161     3   p    v              tgfs(i,jj)  = sst_glb(ii,j)
-             162     3   p    v              ssufs(i,jj) = ssu_glb(ii,j)
-             163     3   p    v              ssvfs(i,jj) = ssv_glb(ii,j)
-             164     3   p    v            end if
-             165     2   p    v            ii = ii + 1
-             166     2   p    v          end do
-             167     1                 end do
-             168                     
-             169                     end subroutine gfs_cpl_recv4gocn
-             170                     
-             171                     end module gfs_cpl
+             212     2  pp    v          do i = 1, nxj
+             213     3   p    v            if(.not.mask_lnd(i,jj).and.sst_glb(ii,j).gt.271.0) then
+             214     3   p    v              tgfs(i,jj)  = sst_glb(ii,j)
+             215     3   p    v              ssufs(i,jj) = ssu_glb(ii,j)
+             216     3   p    v              ssvfs(i,jj) = ssv_glb(ii,j)
+             217     3   p    v            end if
+             218     2   p    v            ii = ii + 1
+             219     2   p    v          end do
+             220     1                 end do
+             221                     
+             222                     end subroutine gfs_cpl_recv4gocn
+             223                     
+             224                     end module gfs_cpl
 
  Procedure information
-   Lines      : 171
-   Statements : 128
-   Stack(byte): 3264
+   Lines      : 224
+   Statements : 166
+   Stack(byte): 9664
    Prefetch num: 0
 
  Scoping unit of module : gfs_cpl
@@ -329,7 +643,7 @@
       |(Attributes)     : 
       |(Declaration)    : 1
       |(Definition)     : 
-      |(Reference)      : 171
+      |(Reference)      : 224
 
  Scoping unit of module sub-program : gfs_cpl_init
    Attribute and Cross reference of name
@@ -579,15 +893,21 @@
      cnt
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 50
-      |(Definition)     : 64  70
-      |(Reference)      : 70  71  72  73  74  75  76  77  78  79  80  81
+      |(Declaration)    : 55
+      |(Definition)     : 101  107
+      |(Reference)      : 107  108  109  110  111  112  113  114  115  116  117  118
      compid
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
-      |(Declaration)    : 30  42
+      |(Declaration)    : 30  43
       |(Definition)     : 
-      |(Reference)      : 85
+      |(Reference)      : 122
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 40
      cpl_attr
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -605,7 +925,7 @@
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 39  85
+      |(Reference)      : 39  122
      cpl_sendrecv
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -623,37 +943,37 @@
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 30
-      |(Reference)      : 87
+      |(Reference)      : 124
      gfs_export_Attr
       |(Class and Type) : variable name, TYPE(AttrVect)
       |(Attributes)     : TARGET, use-associated
       |(Declaration)    : 
-      |(Definition)     : 71  72  73  74  75  76  77  78  79  80  81
-      |(Reference)      : 38  85
+      |(Definition)     : 108  109  110  111  112  113  114  115  116  117  118
+      |(Reference)      : 38  122
      glob_var
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 49
-      |(Definition)     : 52  53  54  55  56  57  58  59  60  61  62
-      |(Reference)      : 71  72  73  74  75  76  77  78  79  80  81
+      |(Declaration)    : 50
+      |(Definition)     : 59  63  67  71  75  79  83  87  91  95  99
+      |(Reference)      : 108  109  110  111  112  113  114  115  116  117  118
      i
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 50
-      |(Definition)     : 69
-      |(Reference)      : 71  72  73  74  75  76  77  78  79  80  81
+      |(Declaration)    : 55
+      |(Definition)     : 106
+      |(Reference)      : 108  109  110  111  112  113  114  115  116  117  118
      id_gocn
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 37  85
+      |(Reference)      : 37  122
      ii
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 50
-      |(Definition)     : 67
-      |(Reference)      : 69
+      |(Declaration)    : 55
+      |(Definition)     : 104
+      |(Reference)      : 106
      index
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -663,15 +983,15 @@
      j
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 50
-      |(Definition)     : 66
-      |(Reference)      : 71  72  73  74  75  76  77  78  79  80  81
+      |(Declaration)    : 55
+      |(Definition)     : 103
+      |(Reference)      : 108  109  110  111  112  113  114  115  116  117  118
      jj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 50
-      |(Definition)     : 65
-      |(Reference)      : 66
+      |(Declaration)    : 55
+      |(Definition)     : 102
+      |(Reference)      : 103
      jlen
       |(Class and Type) : use name
       |(Attributes)     : 
@@ -683,19 +1003,19 @@
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 34  66
+      |(Reference)      : 34  103
      jlistnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 34  65
+      |(Reference)      : 34  102
      lwdn
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 30  43
+      |(Declaration)    : 30  44
       |(Definition)     : 
-      |(Reference)      : 59
+      |(Reference)      : 85
      my
       |(Class and Type) : use name
       |(Attributes)     : 
@@ -707,13 +1027,13 @@
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 36  85
+      |(Reference)      : 36  122
      mylon
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 34  67
+      |(Reference)      : 34  104
      myrank
       |(Class and Type) : use name
       |(Attributes)     : 
@@ -724,26 +1044,26 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 52  53  54  55  56  57  58  59  60  61  62
-      |(Reference)      : 34  43  43  43  43  43  43  43  43  43  43  43
+      |(Definition)     : 58  62  66  70  74  78  82  86  90  94  98
+      |(Reference)      : 34  44  44  44  44  44  44  44  44  44  44  44  52
      nlat_glb
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 52  53  54  55  56  57  58  59  60  61  62
-      |(Reference)      : 33  49
+      |(Definition)     : 58  62  66  70  74  78  82  86  90  94  98
+      |(Reference)      : 33  50  53
      nlon
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 34  43  43  43  43  43  43  43  43  43  43  43  67  68
+      |(Reference)      : 34  44  44  44  44  44  44  44  44  44  44  44  52  104  105
      nlon_glb
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 52  53  54  55  56  57  58  59  60  61  62
-      |(Reference)      : 33  49
+      |(Definition)     : 58  62  66  70  74  78  82  86  90  94  98
+      |(Reference)      : 33  50  53
      nx
       |(Class and Type) : use name
       |(Attributes)     : 
@@ -759,8 +1079,8 @@
      nxj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 50
-      |(Definition)     : 68
+      |(Declaration)    : 55
+      |(Definition)     : 105
       |(Reference)      : 
      nxjstart
       |(Class and Type) : variable name, INTEGER(4)
@@ -774,6 +1094,18 @@
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 34
+     ocnwrk1
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 52
+      |(Definition)     : 57  58  61  62  65  66  69  70  73  74  77  78  81  82  85  86  89  90  93  94  97  98
+      |(Reference)      : 
+     ocnwrk2
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 53
+      |(Definition)     : 58  62  66  70  74  78  82  86  90  94  98
+      |(Reference)      : 59  63  67  71  75  79  83  87  91  95  99
      param
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -783,21 +1115,27 @@
      pslv
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 30  43
+      |(Declaration)    : 30  44
       |(Definition)     : 
-      |(Reference)      : 56
+      |(Reference)      : 73
      q02m
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 30  43
+      |(Declaration)    : 30  44
       |(Definition)     : 
-      |(Reference)      : 55
+      |(Reference)      : 69
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 40  52  53
      rain
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 30  43
+      |(Declaration)    : 30  44
       |(Definition)     : 
-      |(Reference)      : 60
+      |(Reference)      : 89
      rank
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -813,335 +1151,371 @@
      snow
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 30  43
+      |(Declaration)    : 30  44
       |(Definition)     : 
-      |(Reference)      : 61
+      |(Reference)      : 93
      swdn
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 30  43
+      |(Declaration)    : 30  44
       |(Definition)     : 
-      |(Reference)      : 58
+      |(Reference)      : 81
      swup
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 30  43
+      |(Declaration)    : 30  44
       |(Definition)     : 
-      |(Reference)      : 57
+      |(Reference)      : 77
      t02m
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 30  43
+      |(Declaration)    : 30  44
       |(Definition)     : 
-      |(Reference)      : 54
+      |(Reference)      : 65
      tgfs
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 30  43
+      |(Declaration)    : 30  44
       |(Definition)     : 
-      |(Reference)      : 62
+      |(Reference)      : 97
      u10m
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 30  43
+      |(Declaration)    : 30  44
       |(Definition)     : 
-      |(Reference)      : 52
+      |(Reference)      : 57
      unify_reduceintp
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 52  53  54  55  56  57  58  59  60  61  62
+      |(Reference)      : 58  62  66  70  74  78  82  86  90  94  98
      v10m
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 30  43
+      |(Declaration)    : 30  44
       |(Definition)     : 
-      |(Reference)      : 53
+      |(Reference)      : 61
 
  Scoping unit of module sub-program : gfs_cpl_recv4gocn
    Attribute and Cross reference of name
      cnt
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 107
-      |(Definition)     : 113  125
-      |(Reference)      : 125  126  127  128
+      |(Declaration)    : 151
+      |(Definition)     : 157  169
+      |(Reference)      : 169  170  171  172
      compid
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
-      |(Declaration)    : 89  100
+      |(Declaration)    : 126  138
       |(Definition)     : 
-      |(Reference)      : 109
+      |(Reference)      : 153
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 135
      cpl_attr
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 96
+      |(Reference)      : 133
      cpl_rank
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 95
+      |(Reference)      : 132
      cpl_recv
       |(Class and Type) : module subroutine name
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 97  109
+      |(Reference)      : 134  153
      cpl_sendrecv
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 97
+      |(Reference)      : 134
      gfs_cpl_recv4gocn
       |(Class and Type) : module subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 89
-      |(Reference)      : 169
+      |(Definition)     : 126
+      |(Reference)      : 222
      gfs_recv_gocn_Attr
       |(Class and Type) : use name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 96
+      |(Reference)      : 133
      i
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 107
-      |(Definition)     : 124  159
-      |(Reference)      : 126  127  128  160  161  162  163
+      |(Declaration)    : 151
+      |(Definition)     : 168  212
+      |(Reference)      : 170  171  172  213  214  215  216
      id_gocn
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 95  109
+      |(Reference)      : 132  153
      ii
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 107
-      |(Definition)     : 150  165
-      |(Reference)      : 160  161  162  163  165
+      |(Declaration)    : 151
+      |(Definition)     : 203  218
+      |(Reference)      : 213  214  215  216  218
      index
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 91
+      |(Reference)      : 128
      j
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 107
-      |(Definition)     : 122  149
-      |(Reference)      : 150  151  153  153  154  154  155  155  160  161  162  163
+      |(Declaration)    : 151
+      |(Definition)     : 166  202
+      |(Reference)      : 203  204  206  206  207  207  208  208  213  214  215  216
      jj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 107
-      |(Definition)     : 121  148
-      |(Reference)      : 122  126  127  128  149  160  161  162  163
+      |(Declaration)    : 151
+      |(Definition)     : 165  201
+      |(Reference)      : 166  170  171  172  202  213  214  215  216
      jlist1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 91  122  149
+      |(Reference)      : 128  166  202
      jlistnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 91  121  148
+      |(Reference)      : 128  165  201
      lreduce
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 91  152
+      |(Reference)      : 128  205
      mask_lnd
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 89  101
+      |(Declaration)    : 126  139
       |(Definition)     : 
-      |(Reference)      : 160
+      |(Reference)      : 213
      mpe
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 93
+      |(Reference)      : 130
      mpe2d_unify
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 135  136  137
+      |(Reference)      : 181  185  189
      mpe_double
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 93
+      |(Reference)      : 130
      my
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 133
-      |(Reference)      : 90  103  103  103  103
+      |(Definition)     : 177
+      |(Reference)      : 127  141  141  141  141  146
      my_max
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 133
-      |(Reference)      : 90  101  102  102  102  104  105  105  105
+      |(Definition)     : 177
+      |(Reference)      : 127  139  140  140  140  142  143  143  143  145  147  148
      myrank
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 94  109
+      |(Reference)      : 131  153
      nx
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 133  153  154  155
-      |(Reference)      : 90  103  103  103  103  104
+      |(Definition)     : 177  206  207  208
+      |(Reference)      : 127  141  141  141  141  142  146  147
      nxdef
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 153  154  155
-      |(Reference)      : 91
+      |(Definition)     : 206  207  208
+      |(Reference)      : 128
      nxdef_2d
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 91  151
+      |(Reference)      : 128  204
      nxj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 107
-      |(Definition)     : 123  151
-      |(Reference)      : 124  159
+      |(Declaration)    : 151
+      |(Definition)     : 167  204
+      |(Reference)      : 168  212
      nxjstart
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 91  150
+      |(Reference)      : 128  203
      nxp
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 91  101  102  102  102  105  105  105  123
+      |(Reference)      : 128  139  140  140  140  143  143  143  145  148  167
+     ocnwrk3
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 145
+      |(Definition)     : 176  177
+      |(Reference)      : 
+     ocnwrk4
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 146
+      |(Definition)     : 177  180  181  184  185  188  189
+      |(Reference)      : 178
+     ocnwrk5
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 147
+      |(Definition)     : 
+      |(Reference)      : 
+     ocnwrk6
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 148
+      |(Definition)     : 181  185  189
+      |(Reference)      : 182  186  190
      param
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 90
+      |(Reference)      : 127
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 135  145  146  147  148
      rank
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 94
+      |(Reference)      : 131
      recv_AV
       |(Class and Type) : variable name, TYPE(AttrVect)
       |(Attributes)     : TARGET, use-associated
       |(Declaration)    : 
-      |(Definition)     : 109
-      |(Reference)      : 96  126  127  128
+      |(Definition)     : 153
+      |(Reference)      : 133  170  171  172
      reducepick
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 153  154  155
+      |(Reference)      : 206  207  208
      SST
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 105
-      |(Definition)     : 126  135
+      |(Declaration)    : 143
+      |(Definition)     : 170  182
       |(Reference)      : 
      SSU
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 105
-      |(Definition)     : 114  127  136
+      |(Declaration)    : 143
+      |(Definition)     : 158  171  186
       |(Reference)      : 
      SSV
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 105
-      |(Definition)     : 115  128  137
+      |(Declaration)    : 143
+      |(Definition)     : 159  172  190
       |(Reference)      : 
      sst_glb
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 103
-      |(Definition)     : 112  135  153
-      |(Reference)      : 160  161
+      |(Declaration)    : 141
+      |(Definition)     : 156  206
+      |(Reference)      : 180  213  214
      sst_nxj
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 104
-      |(Definition)     : 111
+      |(Declaration)    : 142
+      |(Definition)     : 155
       |(Reference)      : 
      ssu_glb
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 103
-      |(Definition)     : 116  136  154
-      |(Reference)      : 162
+      |(Declaration)    : 141
+      |(Definition)     : 160  207
+      |(Reference)      : 184  215
      ssufs
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 89  102
-      |(Definition)     : 118  162
+      |(Declaration)    : 126  140
+      |(Definition)     : 162  215
       |(Reference)      : 
      ssv_glb
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 103
-      |(Definition)     : 117  137  155
-      |(Reference)      : 163
+      |(Declaration)    : 141
+      |(Definition)     : 161  208
+      |(Reference)      : 188  216
      ssvfs
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 89  102
-      |(Definition)     : 119  163
+      |(Declaration)    : 126  140
+      |(Definition)     : 163  216
       |(Reference)      : 
      tg_glb
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 103
-      |(Definition)     : 133
+      |(Declaration)    : 141
+      |(Definition)     : 178
       |(Reference)      : 
      tgfs
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 89  102
-      |(Definition)     : 133  161
-      |(Reference)      : 
+      |(Declaration)    : 126  140
+      |(Definition)     : 214
+      |(Reference)      : 176
      unify_reduceintp
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 133
+      |(Reference)      : 177
 
  Total information
    Procedures       : 1
-   Total lines      : 171
-   Total statements : 128
-   Total stack(byte): 3264
+   Total lines      : 224
+   Total statements : 166
+   Total stack(byte): 9664
    Total prefetch num: 0
 

@@ -1,0 +1,306 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Dec 19 11:04:12 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src
+   Source file       : indexx.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "indexx"
+  (inc)(line-no.)(nest)(optimize)
+               1                           SUBROUTINE indexx(n,arr,indx)
+               2                     
+               3                     !
+               4                           use const, only : RTYPE
+               5                     !
+               6                           implicit  none
+               7                     
+               8                           INTEGER   n,indx(n),M,NSTACK
+               9                           REAL(kind=RTYPE) arr(n)
+              10                           PARAMETER (M=7,NSTACK=50)
+              11                           INTEGER   i,indxt,ir,itemp,j,jstack,k,l,istack(NSTACK)
+              12                           REAL      a
+              13                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.75, ITR: 192, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      indx
+                                   <<< Loop-information  End >>>
+              14     1  pp   2v            do 11 j=1,n
+              15     1   p   2v              indx(j)=j
+              16     1   p   2v      11    continue
+              17                           jstack=0
+              18                           l=1
+              19                           ir=n
+              20     1               1     if(ir-l.lt.M)then
+              21     2                       do 13 j=l+1,ir
+              22     2                         indxt=indx(j)
+              23     2                         a=arr(indxt)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      indx
+                                   <<< Loop-information  End >>>
+              24     3                         do 12 i=j-1,1,-1
+              25     3                           if(arr(indx(i)).le.a)goto 2
+              26     3                           indx(i+1)=indx(i)
+              27     3               12        continue
+              28     2                         i=0
+              29     2               2         indx(i+1)=indxt
+              30     2               13      continue
+              31     1                       if(jstack.eq.0)return
+              32     1                       ir=istack(jstack)
+              33     1                       l=istack(jstack-1)
+              34     1                       jstack=jstack-2
+              35     1                     else
+              36     1                       k=(l+ir)/2
+              37     1                       itemp=indx(k)
+              38     1                       indx(k)=indx(l+1)
+              39     1                       indx(l+1)=itemp
+              40     2                       if(arr(indx(l+1)).gt.arr(indx(ir)))then
+              41     2                         itemp=indx(l+1)
+              42     2                         indx(l+1)=indx(ir)
+              43     2                         indx(ir)=itemp
+              44     2                       endif
+              45     2                       if(arr(indx(l)).gt.arr(indx(ir)))then
+              46     2                         itemp=indx(l)
+              47     2                         indx(l)=indx(ir)
+              48     2                         indx(ir)=itemp
+              49     2                       endif
+              50     2                       if(arr(indx(l+1)).gt.arr(indx(l)))then
+              51     2                         itemp=indx(l+1)
+              52     2                         indx(l+1)=indx(l)
+              53     2                         indx(l)=itemp
+              54     2                       endif
+              55     1                       i=l+1
+              56     1                       j=ir
+              57     1                       indxt=indx(l)
+              58     1                       a=arr(indxt)
+              59     1               3       continue
+              60     1                         i=i+1
+              61     1                       if(arr(indx(i)).lt.a)goto 3
+              62     1               4       continue
+              63     1                         j=j-1
+              64     1                       if(arr(indx(j)).gt.a)goto 4
+              65     1                       if(j.lt.i)goto 5
+              66     1                       itemp=indx(i)
+              67     1                       indx(i)=indx(j)
+              68     1                       indx(j)=itemp
+              69     1                       goto 3
+              70     1               5       indx(l)=indx(j)
+              71     1                       indx(j)=indxt
+              72     1                       jstack=jstack+2
+              73     1                       if(jstack.gt.NSTACK)pause 'NSTACK too small in indexx'
+              74     2                       if(ir-i+1.ge.j-l)then
+              75     2                         istack(jstack)=ir
+              76     2                         istack(jstack-1)=i
+              77     2                         ir=j-1
+              78     2                       else
+              79     2                         istack(jstack)=j-1
+              80     2                         istack(jstack-1)=l
+              81     2                         l=i
+              82     2                       endif
+              83     1                     endif
+              84                           goto 1
+              85                           END
+              86                     !  (C) Copr. 1986-92 Numerical Recipes Software $!6)$3D#21)8.
+
+ Procedure information
+   Lines      : 86
+   Statements : 80
+   Stack(byte): 960
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : indexx
+   Attribute and Cross reference of name
+     a
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 12
+      |(Definition)     : 23  58
+      |(Reference)      : 25  61  64
+     arr
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  9
+      |(Definition)     : 
+      |(Reference)      : 23  25  40  40  45  45  50  50  58  61  64
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 4
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 24  28  55  60
+      |(Reference)      : 25  26  26  29  60  61  65  66  67  74  76  81
+     indexx
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     indx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  8
+      |(Definition)     : 15  26  29  38  39  42  43  47  48  52  53  67  68  70  71
+      |(Reference)      : 22  25  26  37  38  40  40  41  42  45  45  46  47  50  50  51  52  57  61  64  66  67  70
+     indxt
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 22  57
+      |(Reference)      : 23  29  58  71
+     ir
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 19  32  77
+      |(Reference)      : 20  21  36  40  42  43  45  47  48  56  74  75
+     istack
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 11
+      |(Definition)     : 75  76  79  80
+      |(Reference)      : 32  33
+     itemp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 37  41  46  51  66
+      |(Reference)      : 39  43  48  53  68
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 14  21  56  63
+      |(Reference)      : 15  15  22  24  63  64  65  67  68  70  71  74  77  79
+     jstack
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 17  34  72
+      |(Reference)      : 31  32  33  34  72  73  75  76  79  80
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 36
+      |(Reference)      : 37  38
+     l
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 18  33  81
+      |(Reference)      : 20  21  36  38  39  40  41  42  45  46  47  50  50  51  52  52  53  55  57  70  74  80
+     M
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 8  10
+      |(Definition)     : 
+      |(Reference)      : 20
+     NSTACK
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 8  10
+      |(Definition)     : 
+      |(Reference)      : 11  73
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  8
+      |(Definition)     : 
+      |(Reference)      : 8  9  14  19
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 4  9
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+          1  execution     (Definition) 20  
+                           (Reference)  84
+          2  execution     (Definition) 29  
+                           (Reference)  25
+          3  execution     (Definition) 59  
+                           (Reference)  61  69
+          4  execution     (Definition) 62  
+                           (Reference)  64
+          5  execution     (Definition) 70  
+                           (Reference)  65
+         11  execution     (Definition) 16  
+                           (Reference)  14
+         12  execution     (Definition) 27  
+                           (Reference)  24
+         13  execution     (Definition) 30  
+                           (Reference)  21
+
+ Total information
+   Procedures       : 1
+   Total lines      : 86
+   Total statements : 80
+   Total stack(byte): 960
+   Total prefetch num: 0
+

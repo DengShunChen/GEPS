@@ -1,0 +1,2462 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Dec 19 11:04:09 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src
+   Source file       : module_mp_radar.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ Module "module_mp_radar"
+  (inc)(line-no.)(nest)(optimize)
+               1                     !+---+-----------------------------------------------------------------+
+               2                     !..This set of routines facilitates computing radar reflectivity.
+               3                     !.. This module is more library code whereas the individual microphysics
+               4                     !.. schemes contains specific details needed for the final computation,
+               5                     !.. so refer to location within each schemes calling the routine named
+               6                     !.. rayleigh_soak_wetgraupel.
+               7                     !.. The bulk of this code originated from Ulrich Blahak (Germany) and
+               8                     !.. was adapted to WRF by G. Thompson.  This version of code is only
+               9                     !.. intended for use when Rayleigh scattering principles dominate and
+              10                     !.. is not intended for wavelengths in which Mie scattering is a
+              11                     !.. significant portion.  Therefore, it is well-suited to use with
+              12                     !.. 5 or 10 cm wavelength like USA NEXRAD radars.
+              13                     !.. This code makes some rather simple assumptions about water
+              14                     !.. coating on outside of frozen species (snow/graupel).  Fraction of
+              15                     !.. meltwater is simply the ratio of mixing ratio below melting level
+              16                     !.. divided by mixing ratio at level just above highest T>0C.  Also,
+              17                     !.. immediately 90% of the melted water exists on the ice's surface
+              18                     !.. and 10% is embedded within ice.  No water is "shed" at all in these
+              19                     !.. assumptions. The code is quite slow because it does the reflectivity
+              20                     !.. calculations based on 50 individual size bins of the distributions.
+              21                     !+---+-----------------------------------------------------------------+
+              22                     
+              23                            MODULE module_mp_radar
+              24                     
+              25                           PUBLIC :: rayleigh_soak_wetgraupel
+              26                           PUBLIC :: radar_init
+              27                           PRIVATE :: m_complex_water_ray
+              28                           PRIVATE :: m_complex_ice_maetzler
+              29                           PRIVATE :: m_complex_maxwellgarnett
+              30                           PRIVATE :: get_m_mix_nested
+              31                           PRIVATE :: get_m_mix
+              32                           PRIVATE :: WGAMMA
+              33                           PRIVATE :: GAMMLN
+              34                     
+              35                     
+              36                           INTEGER, PARAMETER, PUBLIC:: nrbins = 50
+              37                           DOUBLE PRECISION, DIMENSION(nrbins+1), PUBLIC:: xxDx
+              38                           DOUBLE PRECISION, DIMENSION(nrbins), PUBLIC:: xxDs,xdts,xxDg,xdtg
+              39                           DOUBLE PRECISION, PARAMETER, PUBLIC:: lamda_radar = 0.10           ! in meters
+              40                           DOUBLE PRECISION, PUBLIC:: K_w, PI5, lamda4
+              41                           COMPLEX*16, PUBLIC:: m_w_0, m_i_0
+              42                           DOUBLE PRECISION, DIMENSION(nrbins+1), PUBLIC:: simpson
+              43                           DOUBLE PRECISION, DIMENSION(3), PARAMETER, PUBLIC:: basis =       &
+              44                                                (/1.d0/3.d0, 4.d0/3.d0, 1.d0/3.d0/)
+              45                           REAL, DIMENSION(4), PUBLIC:: xcre, xcse, xcge, xcrg, xcsg, xcgg
+              46                           REAL, PUBLIC:: xam_r, xbm_r, xmu_r, xobmr
+              47                           REAL, PUBLIC:: xam_s, xbm_s, xmu_s, xoams, xobms, xocms
+              48                           REAL, PUBLIC:: xam_g, xbm_g, xmu_g, xoamg, xobmg, xocmg
+              49                           REAL, PUBLIC:: xorg2, xosg2, xogg2
+              50                     
+              51                           INTEGER, PARAMETER, PUBLIC:: slen = 20
+              52                           CHARACTER(len=slen), PUBLIC::                                     &
+              53                                   mixingrulestring_s, matrixstring_s, inclusionstring_s,    &
+              54                                   hoststring_s, hostmatrixstring_s, hostinclusionstring_s,  &
+              55                                   mixingrulestring_g, matrixstring_g, inclusionstring_g,    &
+              56                                   hoststring_g, hostmatrixstring_g, hostinclusionstring_g
+              57                     
+              58                     !..Single melting snow/graupel particle 90% meltwater on external sfc
+              59                           DOUBLE PRECISION, PARAMETER:: melt_outside_s = 0.9d0
+              60                           DOUBLE PRECISION, PARAMETER:: melt_outside_g = 0.9d0
+              61                     
+              62                           CHARACTER*256:: radar_debug
+              63                     
+              64                           CONTAINS
+              65                     
+              66                     !+---+-----------------------------------------------------------------+
+              67                     !+---+-----------------------------------------------------------------+
+              68                     !+---+-----------------------------------------------------------------+
+              69                     
+              70                           subroutine radar_init
+              71                     
+              72                           IMPLICIT NONE
+              73                           INTEGER:: n
+              74                           PI5 = 3.14159*3.14159*3.14159*3.14159*3.14159
+              75                           lamda4 = lamda_radar*lamda_radar*lamda_radar*lamda_radar
+              76          i                m_w_0 = m_complex_water_ray (lamda_radar, 0.0d0)
+              77                           m_i_0 = m_complex_ice_maetzler (lamda_radar, 0.0d0)
+              78                           K_w = (ABS( (m_w_0*m_w_0 - 1.0) /(m_w_0*m_w_0 + 2.0) ))**2
+              79                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+              80     1   s   fv            do n = 1, nrbins+1
+              81     1   p   fv               simpson(n) = 0.0d0
+              82     1   p   fv            enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+              83     1   s   fv            do n = 1, nrbins-1, 2
+              84     1   s   fv               simpson(n) = simpson(n) + basis(1)
+              85     1   p   fv               simpson(n+1) = simpson(n+1) + basis(2)
+              86     1   m   fv               simpson(n+2) = simpson(n+2) + basis(3)
+              87     1   p   fv            enddo
+              88                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.04, ITR: 6, MVE: 3, POL: S)
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 1  FILL 1
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+              89     1       2             do n = 1, slen
+              90     1       2                mixingrulestring_s(n:n) = char(0)
+              91     1       2                matrixstring_s(n:n) = char(0)
+              92     1       2                inclusionstring_s(n:n) = char(0)
+              93     1       2                hoststring_s(n:n) = char(0)
+              94     1       2                hostmatrixstring_s(n:n) = char(0)
+              95     1       2                hostinclusionstring_s(n:n) = char(0)
+              96     1       2                mixingrulestring_g(n:n) = char(0)
+              97     1       2                matrixstring_g(n:n) = char(0)
+              98     1       2                inclusionstring_g(n:n) = char(0)
+              99     1       2                hoststring_g(n:n) = char(0)
+             100     1       2                hostmatrixstring_g(n:n) = char(0)
+             101     1       2                hostinclusionstring_g(n:n) = char(0)
+             102     1       2             enddo
+             103                     
+             104                           mixingrulestring_s = 'maxwellgarnett'
+             105                           hoststring_s = 'air'
+             106                           matrixstring_s = 'water'
+             107                           inclusionstring_s = 'spheroidal'
+             108                           hostmatrixstring_s = 'icewater'
+             109                           hostinclusionstring_s = 'spheroidal'
+             110                     
+             111                           mixingrulestring_g = 'maxwellgarnett'
+             112                           hoststring_g = 'air'
+             113                           matrixstring_g = 'water'
+             114                           inclusionstring_g = 'spheroidal'
+             115                           hostmatrixstring_g = 'icewater'
+             116                           hostinclusionstring_g = 'spheroidal'
+             117                     
+             118                     !..Create bins of snow (from 100 microns up to 2 cm).
+             119                           xxDx(1) = 100.D-6
+             120                           xxDx(nrbins+1) = 0.02d0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 15
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.68, ITR: 48, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      xxDx
+                                   <<< Loop-information  End >>>
+             121     1  pp    v            do n = 2, nrbins
+             122     1   p    v               xxDx(n) = DEXP(DFLOAT(n-1)/DFLOAT(nrbins) &
+             123     1                                 *DLOG(xxDx(nrbins+1)/xxDx(1)) +DLOG(xxDx(1)))
+             124     1   p    v            enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 762
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             125     1   s   fv            do n = 1, nrbins
+             126     1   p   fv               xxDs(n) = DSQRT(xxDx(n)*xxDx(n+1))
+             127     1   p   fv               xdts(n) = xxDx(n+1) - xxDx(n)
+             128     1   p   fv            enddo
+             129                     
+             130                     !..Create bins of graupel (from 100 microns up to 5 cm).
+             131                           xxDx(1) = 100.D-6
+             132                           xxDx(nrbins+1) = 0.05d0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 15
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.68, ITR: 48, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      xxDx
+                                   <<< Loop-information  End >>>
+             133     1  pp    v            do n = 2, nrbins
+             134     1   p    v               xxDx(n) = DEXP(DFLOAT(n-1)/DFLOAT(nrbins) &
+             135     1                                 *DLOG(xxDx(nrbins+1)/xxDx(1)) +DLOG(xxDx(1)))
+             136     1   p    v            enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 762
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             137     1   s   fv            do n = 1, nrbins
+             138     1   p   fv               xxDg(n) = DSQRT(xxDx(n)*xxDx(n+1))
+             139     1   p   fv               xdtg(n) = xxDx(n+1) - xxDx(n)
+             140     1   p   fv            enddo
+             141                     
+             142                     
+             143                     !..The calling program must set the m(D) relations and gamma shape
+             144                     !.. parameter mu for rain, snow, and graupel.  Easily add other types
+             145                     !.. based on the template here.  For majority of schemes with simpler
+             146                     !.. exponential number distribution, mu=0.
+             147                     
+             148                           xcre(1) = 1. + xbm_r
+             149                           xcre(2) = 1. + xmu_r
+             150                           xcre(3) = 1. + xbm_r + xmu_r
+             151                           xcre(4) = 1. + 2.*xbm_r + xmu_r
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             152     1       f             do n = 1, 4
+             153     1    i  f                xcrg(n) = WGAMMA(xcre(n))
+             154     1       f             enddo
+             155                           xorg2 = 1./xcrg(2)
+             156                     
+             157                           xcse(1) = 1. + xbm_s
+             158                           xcse(2) = 1. + xmu_s
+             159                           xcse(3) = 1. + xbm_s + xmu_s
+             160                           xcse(4) = 1. + 2.*xbm_s + xmu_s
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             161     1       f             do n = 1, 4
+             162     1    i  f                xcsg(n) = WGAMMA(xcse(n))
+             163     1       f             enddo
+             164                           xosg2 = 1./xcsg(2)
+             165                     
+             166                           xcge(1) = 1. + xbm_g
+             167                           xcge(2) = 1. + xmu_g
+             168                           xcge(3) = 1. + xbm_g + xmu_g
+             169                           xcge(4) = 1. + 2.*xbm_g + xmu_g
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             170     1       f             do n = 1, 4
+             171     1    i  f                xcgg(n) = WGAMMA(xcge(n))
+             172     1       f             enddo
+             173                           xogg2 = 1./xcgg(2)
+             174                     
+             175                           xobmr = 1./xbm_r
+             176                           xoams = 1./xam_s
+             177                           xobms = 1./xbm_s
+             178                           xocms = xoams**xobms
+             179                           xoamg = 1./xam_g
+             180                           xobmg = 1./xbm_g
+             181                           xocmg = xoamg**xobmg
+             182                     
+             183                     
+             184                           end subroutine radar_init
+             185                     
+             186                     !+---+-----------------------------------------------------------------+
+             187                     !+---+-----------------------------------------------------------------+
+             188                     
+             189                           COMPLEX*16 FUNCTION m_complex_water_ray(lambda,T)
+             190                     
+             191                     !      Complex refractive Index of Water as function of Temperature T
+             192                     !      [deg C] and radar wavelength lambda [m]; valid for
+             193                     !      lambda in [0.001,1.0] m; T in [-10.0,30.0] deg C
+             194                     !      after Ray (1972)
+             195                     
+             196                           IMPLICIT NONE
+             197                           DOUBLE PRECISION, INTENT(IN):: T,lambda
+             198                           DOUBLE PRECISION:: epsinf,epss,epsr,epsi
+             199                           DOUBLE PRECISION:: alpha,lambdas,sigma,nenner
+             200                           COMPLEX*16, PARAMETER:: i = (0d0,1d0)
+             201                           DOUBLE PRECISION, PARAMETER:: PIx=3.1415926535897932384626434d0
+             202                     
+             203                           epsinf  = 5.27137d0 + 0.02164740d0 * T - 0.00131198d0 * T*T
+             204                           epss    = 78.54d+0 * (1.0 - 4.579d-3 * (T - 25.0)                 &
+             205                                   + 1.190d-5 * (T - 25.0)*(T - 25.0)                        &
+             206                                   - 2.800d-8 * (T - 25.0)*(T - 25.0)*(T - 25.0))
+             207                           alpha   = -16.8129d0/(T+273.16) + 0.0609265d0
+             208                           lambdas = 0.00033836d0 * exp(2513.98d0/(T+273.16)) * 1e-2
+             209                     
+             210                           nenner = 1.d0+2.d0*(lambdas/lambda)**(1d0-alpha)*sin(alpha*PIx*0.5) &
+             211                                  + (lambdas/lambda)**(2d0-2d0*alpha)
+             212                           epsr = epsinf + ((epss-epsinf) * ((lambdas/lambda)**(1d0-alpha)   &
+             213                                * sin(alpha*PIx*0.5)+1d0)) / nenner
+             214                           epsi = ((epss-epsinf) * ((lambdas/lambda)**(1d0-alpha)            &
+             215                                * cos(alpha*PIx*0.5)+0d0)) / nenner                           &
+             216                                + lambda*1.25664/1.88496
+             217                     
+             218                           m_complex_water_ray = SQRT(CMPLX(epsr,-epsi))
+             219                     
+             220                           END FUNCTION m_complex_water_ray
+             221                     
+             222                     !+---+-----------------------------------------------------------------+
+             223                     
+             224                           COMPLEX*16 FUNCTION m_complex_ice_maetzler(lambda,T)
+             225                     
+             226                     !      complex refractive index of ice as function of Temperature T
+             227                     !      [deg C] and radar wavelength lambda [m]; valid for
+             228                     !      lambda in [0.0001,30] m; T in [-250.0,0.0] C
+             229                     !      Original comment from the Matlab-routine of Prof. Maetzler:
+             230                     !      Function for calculating the relative permittivity of pure ice in
+             231                     !      the microwave region, according to C. Maetzler, "Microwave
+             232                     !      properties of ice and snow", in B. Schmitt et al. (eds.) Solar
+             233                     !      System Ices, Astrophys. and Space Sci. Library, Vol. 227, Kluwer
+             234                     !      Academic Publishers, Dordrecht, pp. 241-257 (1998). Input:
+             235                     !      TK = temperature (K), range 20 to 273.15
+             236                     !      f = frequency in GHz, range 0.01 to 3000
+             237                     
+             238                           IMPLICIT NONE
+             239                           DOUBLE PRECISION, INTENT(IN):: T,lambda
+             240                           DOUBLE PRECISION:: f,c,TK,B1,B2,b,deltabeta,betam,beta,theta,alfa
+             241                     
+             242                           c = 2.99d8
+             243                           TK = T + 273.16
+             244                           f = c / lambda * 1d-9
+             245                     
+             246                           B1 = 0.0207
+             247                           B2 = 1.16d-11
+             248                           b = 335.0d0
+             249                           deltabeta = EXP(-10.02 + 0.0364*(TK-273.16))
+             250                           betam = (B1/TK) * ( EXP(b/TK) / ((EXP(b/TK)-1)**2) ) + B2*f*f
+             251                           beta = betam + deltabeta
+             252                           theta = 300. / TK - 1.
+             253                           alfa = (0.00504d0 + 0.0062d0*theta) * EXP(-22.1d0*theta)
+             254                           m_complex_ice_maetzler = 3.1884 + 9.1e-4*(TK-273.16)
+             255                           m_complex_ice_maetzler = m_complex_ice_maetzler                   &
+             256                                                  + CMPLX(0.0d0, (alfa/f + beta*f))
+             257                           m_complex_ice_maetzler = SQRT(CONJG(m_complex_ice_maetzler))
+             258                     
+             259                           END FUNCTION m_complex_ice_maetzler
+             260                     
+             261                     !+---+-----------------------------------------------------------------+
+             262                     
+             263                           subroutine rayleigh_soak_wetgraupel (x_g, a_geo, b_geo, fmelt,    &
+             264                                          meltratio_outside, m_w, m_i, lambda, C_back,       &
+             265                                          mixingrule,matrix,inclusion,                       &
+             266                                          host,hostmatrix,hostinclusion)
+             267                     
+             268                           IMPLICIT NONE
+             269                     
+             270                           DOUBLE PRECISION, INTENT(in):: x_g, a_geo, b_geo, fmelt, lambda,  &
+             271                                                          meltratio_outside
+             272                           DOUBLE PRECISION, INTENT(out):: C_back
+             273                           COMPLEX*16, INTENT(in):: m_w, m_i
+             274                           CHARACTER(len=*), INTENT(in):: mixingrule, matrix, inclusion,     &
+             275                                                          host, hostmatrix, hostinclusion
+             276                     
+             277                           COMPLEX*16:: m_core, m_air
+             278                           DOUBLE PRECISION:: D_large, D_g, rhog, x_w, xw_a, fm, fmgrenz,    &
+             279                                              volg, vg, volair, volice, volwater,            &
+             280                                              meltratio_outside_grenz, mra
+             281                           INTEGER:: error
+             282                           DOUBLE PRECISION, PARAMETER:: PIx=3.1415926535897932384626434d0
+             283                     
+             284                     !     refractive index of air:
+             285                           m_air = (1.0d0,0.0d0)
+             286                     
+             287                     !     Limiting the degree of melting --- for safety:
+             288                           fm = DMAX1(DMIN1(fmelt, 1.0d0), 0.0d0)
+             289                     !     Limiting the ratio of (melting on outside)/(melting on inside):
+             290                           mra = DMAX1(DMIN1(meltratio_outside, 1.0d0), 0.0d0)
+             291                     
+             292                     !    ! The relative portion of meltwater melting at outside should increase
+             293                     !    ! from the given input value (between 0 and 1)
+             294                     !    ! to 1 as the degree of melting approaches 1,
+             295                     !    ! so that the melting particle "converges" to a water drop.
+             296                     !    ! Simplest assumption is linear:
+             297                           mra = mra + (1.0d0-mra)*fm
+             298                     
+             299                           x_w = x_g * fm
+             300                     
+             301                           D_g = a_geo * x_g**b_geo
+             302                     
+             303     1                     if (D_g .ge. 1d-12) then
+             304     1               
+             305     1                      vg = PIx/6. * D_g**3
+             306     1                      rhog = DMAX1(DMIN1(x_g / vg, 900.0d0), 10.0d0)
+             307     1                      vg = x_g / rhog
+             308     1               
+             309     1                      meltratio_outside_grenz = 1.0d0 - rhog / 1000.
+             310     1               
+             311     2                      if (mra .le. meltratio_outside_grenz) then
+             312     2                       !..In this case, it cannot happen that, during melting, all the
+             313     2                       !.. air inclusions within the ice particle get filled with
+             314     2                       !.. meltwater. This only happens at the end of all melting.
+             315     2                       volg = vg * (1.0d0 - mra * fm)
+             316     2               
+             317     2                      else
+             318     2                       !..In this case, at some melting degree fm, all the air
+             319     2                       !.. inclusions get filled with meltwater.
+             320     2                       fmgrenz=(900.0-rhog)/(mra*900.0-rhog+900.0*rhog/1000.)
+             321     2               
+             322     3                       if (fm .le. fmgrenz) then
+             323     3                        !.. not all air pockets are filled:
+             324     3                        volg = (1.0 - mra * fm) * vg
+             325     3                       else
+             326     3                        !..all air pockets are filled with meltwater, now the
+             327     3                        !.. entire ice sceleton melts homogeneously:
+             328     3                        volg = (x_g - x_w) / 900.0 + x_w / 1000.
+             329     3                       endif
+             330     2               
+             331     2                      endif
+             332     1               
+             333     1                      D_large  = (6.0 / PIx * volg) ** (1./3.)
+             334     1                      volice = (x_g - x_w) / (volg * 900.0)
+             335     1                      volwater = x_w / (1000. * volg)
+             336     1                      volair = 1.0 - volice - volwater
+             337     1               
+             338     1                      !..complex index of refraction for the ice-air-water mixture
+             339     1                      !.. of the particle:
+             340     1                      m_core = get_m_mix_nested (m_air, m_i, m_w, volair, volice,      &
+             341     1                                        volwater, mixingrule, host, matrix, inclusion, &
+             342     1                                        hostmatrix, hostinclusion, error)
+             343     2                      if (error .ne. 0) then
+             344     2                       C_back = 0.0d0
+             345     2                       return
+             346     2                      endif
+             347     1               
+             348     1                      !..Rayleigh-backscattering coefficient of melting particle:
+             349     1                      C_back = (ABS((m_core**2-1.0d0)/(m_core**2+2.0d0)))**2           &
+             350     1                               * PI5 * D_large**6 / lamda4
+             351     1               
+             352     1                     else
+             353     1                      C_back = 0.0d0
+             354     1                     endif
+             355                     
+             356                           end subroutine rayleigh_soak_wetgraupel
+             357                     
+             358                     !+---+-----------------------------------------------------------------+
+             359                     
+             360                           complex*16 function get_m_mix_nested (m_a, m_i, m_w, volair,      &
+             361                                          volice, volwater, mixingrule, host, matrix,        &
+             362                                          inclusion, hostmatrix, hostinclusion, cumulerror)
+             363                     
+             364                           IMPLICIT NONE
+             365                     
+             366                           DOUBLE PRECISION, INTENT(in):: volice, volair, volwater
+             367                           COMPLEX*16, INTENT(in):: m_a, m_i, m_w
+             368                           CHARACTER(len=*), INTENT(in):: mixingrule, host, matrix,          &
+             369                                          inclusion, hostmatrix, hostinclusion
+             370                           INTEGER, INTENT(out):: cumulerror
+             371                     
+             372                           DOUBLE PRECISION:: vol1, vol2
+             373                           COMPLEX*16:: mtmp
+             374                           INTEGER:: error
+             375                     
+             376                           !..Folded: ( (m1 + m2) + m3), where m1,m2,m3 could each be
+             377                           !.. air, ice, or water
+             378                     
+             379                           cumulerror = 0
+             380                           get_m_mix_nested = CMPLX(1.0d0,0.0d0)
+             381                     
+             382     1                     if (host .eq. 'air') then
+             383     1               
+             384     2                      if (matrix .eq. 'air') then
+             385     2                       write(*,*) 'GET_M_MIX_NESTED: bad matrix: ', matrix
+             386     2                       cumulerror = cumulerror + 1
+             387     2                      else
+             388     2                       vol1 = volice / MAX(volice+volwater,1d-10)
+             389     2                       vol2 = 1.0d0 - vol1
+             390     2                       mtmp = get_m_mix (m_a, m_i, m_w, 0.0d0, vol1, vol2,             &
+             391     2                                        mixingrule, matrix, inclusion, error)
+             392     2                       cumulerror = cumulerror + error
+             393     2               
+             394     3                       if (hostmatrix .eq. 'air') then
+             395     3                        get_m_mix_nested = get_m_mix (m_a, mtmp, 2.0*m_a,              &
+             396     3                                        volair, (1.0d0-volair), 0.0d0, mixingrule,     &
+             397     3                                        hostmatrix, hostinclusion, error)
+             398     3                        cumulerror = cumulerror + error
+             399     3                       elseif (hostmatrix .eq. 'icewater') then
+             400     3                        get_m_mix_nested = get_m_mix (m_a, mtmp, 2.0*m_a,              &
+             401     3                                        volair, (1.0d0-volair), 0.0d0, mixingrule,     &
+             402     3                                        'ice', hostinclusion, error)
+             403     3                        cumulerror = cumulerror + error
+             404     3                       else
+             405     3                        write(*,*) 'GET_M_MIX_NESTED: bad hostmatrix: ',        &
+             406     3                                          hostmatrix
+             407     3                        cumulerror = cumulerror + 1
+             408     3                       endif
+             409     2                      endif
+             410     1               
+             411     1                     elseif (host .eq. 'ice') then
+             412     1               
+             413     2                      if (matrix .eq. 'ice') then
+             414     2                       write(radar_debug,*) 'GET_M_MIX_NESTED: bad matrix: ', matrix
+             415     2                       cumulerror = cumulerror + 1
+             416     2                      else
+             417     2                       vol1 = volair / MAX(volair+volwater,1d-10)
+             418     2                       vol2 = 1.0d0 - vol1
+             419     2                       mtmp = get_m_mix (m_a, m_i, m_w, vol1, 0.0d0, vol2,             &
+             420     2                                        mixingrule, matrix, inclusion, error)
+             421     2                       cumulerror = cumulerror + error
+             422     2               
+             423     3                       if (hostmatrix .eq. 'ice') then
+             424     3                        get_m_mix_nested = get_m_mix (mtmp, m_i, 2.0*m_a,              &
+             425     3                                        (1.0d0-volice), volice, 0.0d0, mixingrule,     &
+             426     3                                        hostmatrix, hostinclusion, error)
+             427     3                        cumulerror = cumulerror + error
+             428     3                       elseif (hostmatrix .eq. 'airwater') then
+             429     3                        get_m_mix_nested = get_m_mix (mtmp, m_i, 2.0*m_a,              &
+             430     3                                        (1.0d0-volice), volice, 0.0d0, mixingrule,     &
+             431     3                                        'air', hostinclusion, error)
+             432     3                        cumulerror = cumulerror + error
+             433     3                       else
+             434     3                        write(*,*) 'GET_M_MIX_NESTED: bad hostmatrix: ',        &
+             435     3                                          hostmatrix
+             436     3                        cumulerror = cumulerror + 1
+             437     3                       endif
+             438     2                      endif
+             439     1               
+             440     1                     elseif (host .eq. 'water') then
+             441     1               
+             442     2                      if (matrix .eq. 'water') then
+             443     2                       write(*,*) 'GET_M_MIX_NESTED: bad matrix: ', matrix
+             444     2                       cumulerror = cumulerror + 1
+             445     2                      else
+             446     2                       vol1 = volair / MAX(volice+volair,1d-10)
+             447     2                       vol2 = 1.0d0 - vol1
+             448     2                       mtmp = get_m_mix (m_a, m_i, m_w, vol1, vol2, 0.0d0,             &
+             449     2                                        mixingrule, matrix, inclusion, error)
+             450     2                       cumulerror = cumulerror + error
+             451     2               
+             452     3                       if (hostmatrix .eq. 'water') then
+             453     3                        get_m_mix_nested = get_m_mix (2*m_a, mtmp, m_w,                &
+             454     3                                        0.0d0, (1.0d0-volwater), volwater, mixingrule, &
+             455     3                                        hostmatrix, hostinclusion, error)
+             456     3                        cumulerror = cumulerror + error
+             457     3                       elseif (hostmatrix .eq. 'airice') then
+             458     3                        get_m_mix_nested = get_m_mix (2*m_a, mtmp, m_w,                &
+             459     3                                        0.0d0, (1.0d0-volwater), volwater, mixingrule, &
+             460     3                                        'ice', hostinclusion, error)
+             461     3                        cumulerror = cumulerror + error
+             462     3                       else
+             463     3                        write(*,*) 'GET_M_MIX_NESTED: bad hostmatrix: ',         &
+             464     3                                          hostmatrix
+             465     3                        cumulerror = cumulerror + 1
+             466     3                       endif
+             467     2                      endif
+             468     1               
+             469     1                     elseif (host .eq. 'none') then
+             470     1               
+             471     1                      get_m_mix_nested = get_m_mix (m_a, m_i, m_w,                     &
+             472     1                                      volair, volice, volwater, mixingrule,            &
+             473     1                                      matrix, inclusion, error)
+             474     1                      cumulerror = cumulerror + error
+             475     1               
+             476     1                     else
+             477     1                      write(*,*) 'GET_M_MIX_NESTED: unknown matrix: ', host
+             478     1                      cumulerror = cumulerror + 1
+             479     1                     endif
+             480                     
+             481     1                     IF (cumulerror .ne. 0) THEN
+             482     1                      write(*,*) 'GET_M_MIX_NESTED: error encountered'
+             483     1                      get_m_mix_nested = CMPLX(1.0d0,0.0d0)
+             484     1                     endif
+             485                     
+             486                           end function get_m_mix_nested
+             487                     
+             488                     !+---+-----------------------------------------------------------------+
+             489                     
+             490                           COMPLEX*16 FUNCTION get_m_mix (m_a, m_i, m_w, volair, volice,     &
+             491                                          volwater, mixingrule, matrix, inclusion, error)
+             492                     
+             493                           IMPLICIT NONE
+             494                     
+             495                           DOUBLE PRECISION, INTENT(in):: volice, volair, volwater
+             496                           COMPLEX*16, INTENT(in):: m_a, m_i, m_w
+             497                           CHARACTER(len=*), INTENT(in):: mixingrule, matrix, inclusion
+             498                           INTEGER, INTENT(out):: error
+             499                     
+             500                           error = 0
+             501                           get_m_mix = CMPLX(1.0d0,0.0d0)
+             502                     
+             503     1                     if (mixingrule .eq. 'maxwellgarnett') then
+             504     2                      if (matrix .eq. 'ice') then
+             505     2                       get_m_mix = m_complex_maxwellgarnett(volice, volair, volwater,  &
+             506     2                                          m_i, m_a, m_w, inclusion, error)
+             507     2                      elseif (matrix .eq. 'water') then
+             508     2                       get_m_mix = m_complex_maxwellgarnett(volwater, volair, volice,  &
+             509     2                                          m_w, m_a, m_i, inclusion, error)
+             510     2                      elseif (matrix .eq. 'air') then
+             511     2                       get_m_mix = m_complex_maxwellgarnett(volair, volwater, volice,  &
+             512     2                                          m_a, m_w, m_i, inclusion, error)
+             513     2                      else
+             514     2                       write(*,*) 'GET_M_MIX: unknown matrix: ', matrix
+             515     2                       error = 1
+             516     2                      endif
+             517     1               
+             518     1                     else
+             519     1                      write(*,*) 'GET_M_MIX: unknown mixingrule: ', mixingrule
+             520     1                      error = 2
+             521     1                     endif
+             522                     
+             523     1                     if (error .ne. 0) then
+             524     1                      write(*,*) 'GET_M_MIX: error encountered'
+             525     1                     endif
+             526                     
+             527                           END FUNCTION get_m_mix
+             528                     
+             529                     !+---+-----------------------------------------------------------------+
+             530                     
+             531                           COMPLEX*16 FUNCTION m_complex_maxwellgarnett(vol1, vol2, vol3,    &
+             532                                          m1, m2, m3, inclusion, error)
+             533                     
+             534                           IMPLICIT NONE
+             535                     
+             536                           COMPLEX*16 :: m1, m2, m3
+             537                           DOUBLE PRECISION :: vol1, vol2, vol3
+             538                           CHARACTER(len=*) :: inclusion
+             539                     
+             540                           COMPLEX*16 :: beta2, beta3, m1t, m2t, m3t
+             541                           INTEGER, INTENT(out) :: error
+             542                     
+             543                           error = 0
+             544                     
+             545     1                     if (DABS(vol1+vol2+vol3-1.0d0) .gt. 1d-6) then
+             546     1                      write(*,*) 'M_COMPLEX_MAXWELLGARNETT: sum of the ',       &
+             547     1                             'partial volume fractions is not 1...ERROR'
+             548     1                      m_complex_maxwellgarnett=CMPLX(-999.99d0,-999.99d0)
+             549     1                      error = 1
+             550     1                      return
+             551     1                     endif
+             552                     
+             553                           m1t = m1**2
+             554                           m2t = m2**2
+             555                           m3t = m3**2
+             556                     
+             557     1                     if (inclusion .eq. 'spherical') then
+             558     1                      beta2 = 3.0d0*m1t/(m2t+2.0d0*m1t)
+             559     1                      beta3 = 3.0d0*m1t/(m3t+2.0d0*m1t)
+             560     1                     elseif (inclusion .eq. 'spheroidal') then
+             561     1                      beta2 = 2.0d0*m1t/(m2t-m1t) * (m2t/(m2t-m1t)*LOG(m2t/m1t)-1.0d0)
+             562     1                      beta3 = 2.0d0*m1t/(m3t-m1t) * (m3t/(m3t-m1t)*LOG(m3t/m1t)-1.0d0)
+             563     1                     else
+             564     1                      write(*,*) 'M_COMPLEX_MAXWELLGARNETT: ',                  &
+             565     1                                        'unknown inclusion: ', inclusion
+             566     1                      m_complex_maxwellgarnett=DCMPLX(-999.99d0,-999.99d0)
+             567     1                      error = 1
+             568     1                      return
+             569     1                     endif
+             570                     
+             571                           m_complex_maxwellgarnett = &
+             572                            SQRT(((1.0d0-vol2-vol3)*m1t + vol2*beta2*m2t + vol3*beta3*m3t) / &
+             573                            (1.0d0-vol2-vol3+vol2*beta2+vol3*beta3))
+             574                     
+             575                           END FUNCTION m_complex_maxwellgarnett
+             576                     
+             577                     !+---+-----------------------------------------------------------------+
+             578                           REAL FUNCTION GAMMLN(XX)
+             579                     !     --- RETURNS THE VALUE LN(GAMMA(XX)) FOR XX > 0.
+             580                           IMPLICIT NONE
+             581                           REAL, INTENT(IN):: XX
+             582                           DOUBLE PRECISION, PARAMETER:: STP = 2.5066282746310005D0
+             583                           DOUBLE PRECISION, DIMENSION(6), PARAMETER:: &
+             584                                    COF = (/76.18009172947146D0, -86.50532032941677D0, &
+             585                                            24.01409824083091D0, -1.231739572450155D0, &
+             586                                           .1208650973866179D-2, -.5395239384953D-5/)
+             587                           DOUBLE PRECISION:: SER,TMP,X,Y
+             588                           INTEGER:: J
+             589                     
+             590                           X=XX
+             591                           Y=X
+             592                           TMP=X+5.5D0
+             593                           TMP=(X+0.5D0)*LOG(TMP)-TMP
+             594                           SER=1.000000000190015D0
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             595     1   s   fs            DO 11 J=1,6
+             596     1   s   fs              Y=Y+1.D0
+             597     1   m   fm              SER=SER+COF(J)/Y
+             598     1   p   fv      11    CONTINUE
+             599                           GAMMLN=TMP+LOG(STP*SER/X)
+             600                           END FUNCTION GAMMLN
+             601                     !  (C) Copr. 1986-92 Numerical Recipes Software 2.02
+             602                     !+---+-----------------------------------------------------------------+
+             603                           REAL FUNCTION WGAMMA(y)
+             604                     
+             605                           IMPLICIT NONE
+             606                           REAL, INTENT(IN):: y
+             607                     
+             608                           WGAMMA = EXP(GAMMLN(y))
+             609                     
+             610                           END FUNCTION WGAMMA
+             611                     
+             612                     !+---+-----------------------------------------------------------------+
+             613                           END MODULE module_mp_radar
+             614                     !+---+-----------------------------------------------------------------+
+
+ Procedure information
+   Lines      : 614
+   Statements : 366
+   Stack(byte): 6352
+   Prefetch num: 0
+
+ Scoping unit of module : module_mp_radar
+   Attribute and Cross reference of name
+     basis
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PUBLIC, DIMENSION
+      |(Declaration)    : 43
+      |(Definition)     : 
+      |(Reference)      : 
+     GAMMLN
+      |(Class and Type) : module function name, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 33
+      |(Definition)     : 
+      |(Reference)      : 
+     get_m_mix
+      |(Class and Type) : module function name, COMPLEX(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 31
+      |(Definition)     : 
+      |(Reference)      : 
+     get_m_mix_nested
+      |(Class and Type) : module function name, COMPLEX(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 30
+      |(Definition)     : 
+      |(Reference)      : 
+     hostinclusionstring_g
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 52
+      |(Definition)     : 
+      |(Reference)      : 
+     hostinclusionstring_s
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 52
+      |(Definition)     : 
+      |(Reference)      : 
+     hostmatrixstring_g
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 52
+      |(Definition)     : 
+      |(Reference)      : 
+     hostmatrixstring_s
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 52
+      |(Definition)     : 
+      |(Reference)      : 
+     hoststring_g
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 52
+      |(Definition)     : 
+      |(Reference)      : 
+     hoststring_s
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 52
+      |(Definition)     : 
+      |(Reference)      : 
+     inclusionstring_g
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 52
+      |(Definition)     : 
+      |(Reference)      : 
+     inclusionstring_s
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 52
+      |(Definition)     : 
+      |(Reference)      : 
+     K_w
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 40
+      |(Definition)     : 
+      |(Reference)      : 
+     lamda4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 40
+      |(Definition)     : 
+      |(Reference)      : 
+     lamda_radar
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 39
+      |(Definition)     : 
+      |(Reference)      : 
+     m_complex_ice_maetzler
+      |(Class and Type) : module function name, COMPLEX(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 28
+      |(Definition)     : 
+      |(Reference)      : 
+     m_complex_maxwellgarnett
+      |(Class and Type) : module function name, COMPLEX(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 29
+      |(Definition)     : 
+      |(Reference)      : 
+     m_complex_water_ray
+      |(Class and Type) : module function name, COMPLEX(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 27
+      |(Definition)     : 
+      |(Reference)      : 
+     m_i_0
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 41
+      |(Definition)     : 
+      |(Reference)      : 
+     m_w_0
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 41
+      |(Definition)     : 
+      |(Reference)      : 
+     matrixstring_g
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 52
+      |(Definition)     : 
+      |(Reference)      : 
+     matrixstring_s
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 52
+      |(Definition)     : 
+      |(Reference)      : 
+     melt_outside_g
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 60
+      |(Definition)     : 
+      |(Reference)      : 
+     melt_outside_s
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 59
+      |(Definition)     : 
+      |(Reference)      : 
+     mixingrulestring_g
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 52
+      |(Definition)     : 
+      |(Reference)      : 
+     mixingrulestring_s
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 52
+      |(Definition)     : 
+      |(Reference)      : 
+     module_mp_radar
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 23
+      |(Definition)     : 
+      |(Reference)      : 613
+     nrbins
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 36
+      |(Definition)     : 
+      |(Reference)      : 37  38  42
+     PI5
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 40
+      |(Definition)     : 
+      |(Reference)      : 
+     radar_debug
+      |(Class and Type) : variable name, CHARACTER(256,1)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 62
+      |(Definition)     : 
+      |(Reference)      : 
+     radar_init
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 26
+      |(Definition)     : 
+      |(Reference)      : 
+     rayleigh_soak_wetgraupel
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 25
+      |(Definition)     : 
+      |(Reference)      : 
+     simpson
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, DIMENSION
+      |(Declaration)    : 42
+      |(Definition)     : 
+      |(Reference)      : 
+     slen
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 51
+      |(Definition)     : 
+      |(Reference)      : 52
+     WGAMMA
+      |(Class and Type) : module function name, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 32
+      |(Definition)     : 
+      |(Reference)      : 
+     xam_g
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 48
+      |(Definition)     : 
+      |(Reference)      : 
+     xam_r
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 46
+      |(Definition)     : 
+      |(Reference)      : 
+     xam_s
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 47
+      |(Definition)     : 
+      |(Reference)      : 
+     xbm_g
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 48
+      |(Definition)     : 
+      |(Reference)      : 
+     xbm_r
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 46
+      |(Definition)     : 
+      |(Reference)      : 
+     xbm_s
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 47
+      |(Definition)     : 
+      |(Reference)      : 
+     xcge
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, DIMENSION
+      |(Declaration)    : 45
+      |(Definition)     : 
+      |(Reference)      : 
+     xcgg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, DIMENSION
+      |(Declaration)    : 45
+      |(Definition)     : 
+      |(Reference)      : 
+     xcre
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, DIMENSION
+      |(Declaration)    : 45
+      |(Definition)     : 
+      |(Reference)      : 
+     xcrg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, DIMENSION
+      |(Declaration)    : 45
+      |(Definition)     : 
+      |(Reference)      : 
+     xcse
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, DIMENSION
+      |(Declaration)    : 45
+      |(Definition)     : 
+      |(Reference)      : 
+     xcsg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, DIMENSION
+      |(Declaration)    : 45
+      |(Definition)     : 
+      |(Reference)      : 
+     xdtg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, DIMENSION
+      |(Declaration)    : 38
+      |(Definition)     : 
+      |(Reference)      : 
+     xdts
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, DIMENSION
+      |(Declaration)    : 38
+      |(Definition)     : 
+      |(Reference)      : 
+     xmu_g
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 48
+      |(Definition)     : 
+      |(Reference)      : 
+     xmu_r
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 46
+      |(Definition)     : 
+      |(Reference)      : 
+     xmu_s
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 47
+      |(Definition)     : 
+      |(Reference)      : 
+     xoamg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 48
+      |(Definition)     : 
+      |(Reference)      : 
+     xoams
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 47
+      |(Definition)     : 
+      |(Reference)      : 
+     xobmg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 48
+      |(Definition)     : 
+      |(Reference)      : 
+     xobmr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 46
+      |(Definition)     : 
+      |(Reference)      : 
+     xobms
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 47
+      |(Definition)     : 
+      |(Reference)      : 
+     xocmg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 48
+      |(Definition)     : 
+      |(Reference)      : 
+     xocms
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 47
+      |(Definition)     : 
+      |(Reference)      : 
+     xogg2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 49
+      |(Definition)     : 
+      |(Reference)      : 
+     xorg2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 49
+      |(Definition)     : 
+      |(Reference)      : 
+     xosg2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 49
+      |(Definition)     : 
+      |(Reference)      : 
+     xxDg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, DIMENSION
+      |(Declaration)    : 38
+      |(Definition)     : 
+      |(Reference)      : 
+     xxDs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, DIMENSION
+      |(Declaration)    : 38
+      |(Definition)     : 
+      |(Reference)      : 
+     xxDx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, DIMENSION
+      |(Declaration)    : 37
+      |(Definition)     : 
+      |(Reference)      : 
+
+ Scoping unit of module sub-program : radar_init
+   Attribute and Cross reference of name
+     ABS
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 78
+     basis
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 84  85  86
+     char
+      |(Class and Type) : intrinsic function name, CHARACTER((unknown),1)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 90  91  92  93  94  95  96  97  98  99  100  101
+     DEXP
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 122  134
+     DFLOAT
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 122  122  134  134
+     DLOG
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 122  122  134  134
+     DSQRT
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 126  138
+     hostinclusionstring_g
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 101  116
+      |(Reference)      : 
+     hostinclusionstring_s
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 95  109
+      |(Reference)      : 
+     hostmatrixstring_g
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 100  115
+      |(Reference)      : 
+     hostmatrixstring_s
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 94  108
+      |(Reference)      : 
+     hoststring_g
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 99  112
+      |(Reference)      : 
+     hoststring_s
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 93  105
+      |(Reference)      : 
+     inclusionstring_g
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 98  114
+      |(Reference)      : 
+     inclusionstring_s
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 92  107
+      |(Reference)      : 
+     K_w
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 78
+      |(Reference)      : 
+     lamda4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 75
+      |(Reference)      : 
+     lamda_radar
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 75  75  75  75  76  77
+     m_complex_ice_maetzler
+      |(Class and Type) : module function name, COMPLEX(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 77
+     m_complex_water_ray
+      |(Class and Type) : module function name, COMPLEX(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 76
+     m_i_0
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 77
+      |(Reference)      : 
+     m_w_0
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 76
+      |(Reference)      : 78  78  78  78
+     matrixstring_g
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 97  113
+      |(Reference)      : 
+     matrixstring_s
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 91  106
+      |(Reference)      : 
+     mixingrulestring_g
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 96  111
+      |(Reference)      : 
+     mixingrulestring_s
+      |(Class and Type) : variable name, CHARACTER(20,1)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 90  104
+      |(Reference)      : 
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 73
+      |(Definition)     : 80  83  89  121  125  133  137  152  161  170
+      |(Reference)      : 81  84  84  85  85  86  86  90  90  91  91  92  92  93  93  94  94  95  95  96  96  97  97  98  98  99  99  100  100  101  101  122  122  126  126  126  127  127  127  134  134  138  138  138  139  139  139  153  153  162  162  171  171
+     nrbins
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 80  83  120  121  122  122  125  132  133  134  134  137
+     PI5
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 74
+      |(Reference)      : 
+     radar_init
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 70
+      |(Reference)      : 184
+     simpson
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 81  84  85  86
+      |(Reference)      : 84  85  86
+     slen
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 89
+     WGAMMA
+      |(Class and Type) : module function name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 153  162  171
+     xam_g
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 179
+     xam_s
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 176
+     xbm_g
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 166  168  169  180
+     xbm_r
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 148  150  151  175
+     xbm_s
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 157  159  160  177
+     xcge
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 166  167  168  169
+      |(Reference)      : 171
+     xcgg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 171
+      |(Reference)      : 173
+     xcre
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 148  149  150  151
+      |(Reference)      : 153
+     xcrg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 153
+      |(Reference)      : 155
+     xcse
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 157  158  159  160
+      |(Reference)      : 162
+     xcsg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 162
+      |(Reference)      : 164
+     xdtg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 139
+      |(Reference)      : 
+     xdts
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 127
+      |(Reference)      : 
+     xmu_g
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 167  168  169
+     xmu_r
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 149  150  151
+     xmu_s
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 158  159  160
+     xoamg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 179
+      |(Reference)      : 181
+     xoams
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 176
+      |(Reference)      : 178
+     xobmg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 180
+      |(Reference)      : 181
+     xobmr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 175
+      |(Reference)      : 
+     xobms
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 177
+      |(Reference)      : 178
+     xocmg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 181
+      |(Reference)      : 
+     xocms
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 178
+      |(Reference)      : 
+     xogg2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 173
+      |(Reference)      : 
+     xorg2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 155
+      |(Reference)      : 
+     xosg2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 164
+      |(Reference)      : 
+     xxDg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138
+      |(Reference)      : 
+     xxDs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 126
+      |(Reference)      : 
+     xxDx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 119  120  122  131  132  134
+      |(Reference)      : 122  122  122  126  126  127  127  134  134  134  138  138  139  139
+
+ Scoping unit of module sub-program : m_complex_water_ray
+   Attribute and Cross reference of name
+     alpha
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 199
+      |(Definition)     : 207
+      |(Reference)      : 210  210  210  212  212  214  214
+     CMPLX
+      |(Class and Type) : intrinsic function name, COMPLEX(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 218
+     cos
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 214
+     epsi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 198
+      |(Definition)     : 214
+      |(Reference)      : 218
+     epsinf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 198
+      |(Definition)     : 203
+      |(Reference)      : 212  212  214
+     epsr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 198
+      |(Definition)     : 212
+      |(Reference)      : 218
+     epss
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 198
+      |(Definition)     : 204
+      |(Reference)      : 212  214
+     exp
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 208
+     i
+      |(Class and Type) : named constant, COMPLEX(8)
+      |(Attributes)     : 
+      |(Declaration)    : 200
+      |(Definition)     : 
+      |(Reference)      : 
+     lambda
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 189  197
+      |(Definition)     : 
+      |(Reference)      : 210  210  212  214  214
+     lambdas
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 199
+      |(Definition)     : 208
+      |(Reference)      : 210  210  212  214
+     m_complex_water_ray
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : result-value
+      |(Declaration)    : 
+      |(Definition)     : 218
+      |(Reference)      : 
+     m_complex_water_ray
+      |(Class and Type) : module function name, COMPLEX(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 189
+      |(Reference)      : 220
+     nenner
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 199
+      |(Definition)     : 210
+      |(Reference)      : 212  214
+     PIx
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 201
+      |(Definition)     : 
+      |(Reference)      : 210  212  214
+     SQRT
+      |(Class and Type) : intrinsic function name, COMPLEX(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 218
+     sigma
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 199
+      |(Definition)     : 
+      |(Reference)      : 
+     sin
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 210  212
+     T
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 189  197
+      |(Definition)     : 
+      |(Reference)      : 203  203  203  204  204  204  204  204  204  207  208
+
+ Scoping unit of module sub-program : m_complex_ice_maetzler
+   Attribute and Cross reference of name
+     alfa
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 253
+      |(Reference)      : 255
+     B1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 246
+      |(Reference)      : 250
+     B2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 247
+      |(Reference)      : 250
+     b
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 248
+      |(Reference)      : 250  250
+     beta
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 251
+      |(Reference)      : 255
+     betam
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 250
+      |(Reference)      : 251
+     CMPLX
+      |(Class and Type) : intrinsic function name, COMPLEX(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 255
+     CONJG
+      |(Class and Type) : intrinsic function name, COMPLEX(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 257
+     c
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 242
+      |(Reference)      : 244
+     deltabeta
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 249
+      |(Reference)      : 251
+     EXP
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 249  250  250  253
+     f
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 244
+      |(Reference)      : 250  250  255  255
+     lambda
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 224  239
+      |(Definition)     : 
+      |(Reference)      : 244
+     m_complex_ice_maetzler
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : result-value
+      |(Declaration)    : 
+      |(Definition)     : 254  255  257
+      |(Reference)      : 255  257
+     m_complex_ice_maetzler
+      |(Class and Type) : module function name, COMPLEX(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 224
+      |(Reference)      : 259
+     SQRT
+      |(Class and Type) : intrinsic function name, COMPLEX(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 257
+     T
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 224  239
+      |(Definition)     : 
+      |(Reference)      : 243
+     TK
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 243
+      |(Reference)      : 249  250  250  250  252  254
+     theta
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 240
+      |(Definition)     : 252
+      |(Reference)      : 253  253
+
+ Scoping unit of module sub-program : rayleigh_soak_wetgraupel
+   Attribute and Cross reference of name
+     ABS
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 349
+     a_geo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 263  270
+      |(Definition)     : 
+      |(Reference)      : 301
+     b_geo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 263  270
+      |(Definition)     : 
+      |(Reference)      : 301
+     C_back
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(OUT), dummy-argument
+      |(Declaration)    : 263  272
+      |(Definition)     : 344  349  353
+      |(Reference)      : 
+     DMAX1
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 288  290  306
+     DMIN1
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 288  290  306
+     D_g
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 278
+      |(Definition)     : 301
+      |(Reference)      : 303  305
+     D_large
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 278
+      |(Definition)     : 333
+      |(Reference)      : 349
+     error
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 281
+      |(Definition)     : 340
+      |(Reference)      : 343
+     fm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 278
+      |(Definition)     : 288
+      |(Reference)      : 297  299  315  322  324
+     fmelt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 263  270
+      |(Definition)     : 
+      |(Reference)      : 288
+     fmgrenz
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 278
+      |(Definition)     : 320
+      |(Reference)      : 322
+     get_m_mix_nested
+      |(Class and Type) : module function name, COMPLEX(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 340
+     host
+      |(Class and Type) : variable name, CHARACTER(*,1)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 263  274
+      |(Definition)     : 
+      |(Reference)      : 340
+     hostinclusion
+      |(Class and Type) : variable name, CHARACTER(*,1)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 263  274
+      |(Definition)     : 
+      |(Reference)      : 340
+     hostmatrix
+      |(Class and Type) : variable name, CHARACTER(*,1)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 263  274
+      |(Definition)     : 
+      |(Reference)      : 340
+     inclusion
+      |(Class and Type) : variable name, CHARACTER(*,1)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 263  274
+      |(Definition)     : 
+      |(Reference)      : 340
+     lambda
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 263  270
+      |(Definition)     : 
+      |(Reference)      : 
+     lamda4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 349
+     m_air
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : 
+      |(Declaration)    : 277
+      |(Definition)     : 285
+      |(Reference)      : 340
+     m_core
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : 
+      |(Declaration)    : 277
+      |(Definition)     : 340
+      |(Reference)      : 349  349
+     m_i
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 263  273
+      |(Definition)     : 
+      |(Reference)      : 340
+     m_w
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 263  273
+      |(Definition)     : 
+      |(Reference)      : 340
+     matrix
+      |(Class and Type) : variable name, CHARACTER(*,1)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 263  274
+      |(Definition)     : 
+      |(Reference)      : 340
+     meltratio_outside
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 263  270
+      |(Definition)     : 
+      |(Reference)      : 290
+     meltratio_outside_grenz
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 278
+      |(Definition)     : 309
+      |(Reference)      : 311
+     mixingrule
+      |(Class and Type) : variable name, CHARACTER(*,1)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 263  274
+      |(Definition)     : 
+      |(Reference)      : 340
+     mra
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 278
+      |(Definition)     : 290  297
+      |(Reference)      : 297  297  311  315  320  324
+     PI5
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 349
+     PIx
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 282
+      |(Definition)     : 
+      |(Reference)      : 305  333
+     rayleigh_soak_wetgraupel
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 263
+      |(Reference)      : 356
+     rhog
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 278
+      |(Definition)     : 306
+      |(Reference)      : 307  309  320  320  320
+     vg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 278
+      |(Definition)     : 305  307
+      |(Reference)      : 306  315  324
+     volair
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 278
+      |(Definition)     : 336
+      |(Reference)      : 340
+     volg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 278
+      |(Definition)     : 315  324  328
+      |(Reference)      : 333  334  335
+     volice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 278
+      |(Definition)     : 334
+      |(Reference)      : 336  340
+     volwater
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 278
+      |(Definition)     : 335
+      |(Reference)      : 336  340
+     x_g
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 263  270
+      |(Definition)     : 
+      |(Reference)      : 299  301  306  307  328  334
+     x_w
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 278
+      |(Definition)     : 299
+      |(Reference)      : 328  328  334  335
+     xw_a
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 278
+      |(Definition)     : 
+      |(Reference)      : 
+
+ Scoping unit of module sub-program : get_m_mix_nested
+   Attribute and Cross reference of name
+     CMPLX
+      |(Class and Type) : intrinsic function name, COMPLEX(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 380  483
+     cumulerror
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(OUT), dummy-argument
+      |(Declaration)    : 360  370
+      |(Definition)     : 379  386  392  398  403  407  415  421  427  432  436  444  450  456  461  465  474  478
+      |(Reference)      : 386  392  398  403  407  415  421  427  432  436  444  450  456  461  465  474  478  481
+     error
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 374
+      |(Definition)     : 390  395  400  419  424  429  448  453  458  471
+      |(Reference)      : 392  398  403  421  427  432  450  456  461  474
+     get_m_mix
+      |(Class and Type) : module function name, COMPLEX(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 390  395  400  419  424  429  448  453  458  471
+     get_m_mix_nested
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : result-value
+      |(Declaration)    : 
+      |(Definition)     : 380  395  400  424  429  453  458  471  483
+      |(Reference)      : 
+     get_m_mix_nested
+      |(Class and Type) : module function name, COMPLEX(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 360
+      |(Reference)      : 486
+     host
+      |(Class and Type) : variable name, CHARACTER(*,1)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 360  368
+      |(Definition)     : 
+      |(Reference)      : 382  411  440  469  477
+     hostinclusion
+      |(Class and Type) : variable name, CHARACTER(*,1)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 360  368
+      |(Definition)     : 
+      |(Reference)      : 395  400  424  429  453  458
+     hostmatrix
+      |(Class and Type) : variable name, CHARACTER(*,1)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 360  368
+      |(Definition)     : 
+      |(Reference)      : 394  395  399  405  423  424  428  434  452  453  457  463
+     inclusion
+      |(Class and Type) : variable name, CHARACTER(*,1)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 360  368
+      |(Definition)     : 
+      |(Reference)      : 390  419  448  471
+     MAX
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 388  417  446
+     m_a
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 360  367
+      |(Definition)     : 
+      |(Reference)      : 390  395  395  400  400  419  424  429  448  453  458  471
+     m_i
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 360  367
+      |(Definition)     : 
+      |(Reference)      : 390  419  424  429  448  471
+     m_w
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 360  367
+      |(Definition)     : 
+      |(Reference)      : 390  419  448  453  458  471
+     matrix
+      |(Class and Type) : variable name, CHARACTER(*,1)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 360  368
+      |(Definition)     : 
+      |(Reference)      : 384  385  390  413  414  419  442  443  448  471
+     mixingrule
+      |(Class and Type) : variable name, CHARACTER(*,1)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 360  368
+      |(Definition)     : 
+      |(Reference)      : 390  395  400  419  424  429  448  453  458  471
+     mtmp
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : 
+      |(Declaration)    : 373
+      |(Definition)     : 390  419  448
+      |(Reference)      : 395  400  424  429  453  458
+     radar_debug
+      |(Class and Type) : variable name, CHARACTER(256,1)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 414
+      |(Reference)      : 
+     vol1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 372
+      |(Definition)     : 388  417  446
+      |(Reference)      : 389  390  418  419  447  448
+     vol2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 372
+      |(Definition)     : 389  418  447
+      |(Reference)      : 390  419  448
+     volair
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 360  366
+      |(Definition)     : 
+      |(Reference)      : 395  395  400  400  417  417  446  446  471
+     volice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 360  366
+      |(Definition)     : 
+      |(Reference)      : 388  388  424  424  429  429  446  471
+     volwater
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 360  366
+      |(Definition)     : 
+      |(Reference)      : 388  417  453  453  458  458  471
+
+ Scoping unit of module sub-program : get_m_mix
+   Attribute and Cross reference of name
+     CMPLX
+      |(Class and Type) : intrinsic function name, COMPLEX(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 501
+     error
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(OUT), dummy-argument
+      |(Declaration)    : 490  498
+      |(Definition)     : 500  505  508  511  515  520
+      |(Reference)      : 523
+     get_m_mix
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : result-value
+      |(Declaration)    : 
+      |(Definition)     : 501  505  508  511
+      |(Reference)      : 
+     get_m_mix
+      |(Class and Type) : module function name, COMPLEX(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 490
+      |(Reference)      : 527
+     inclusion
+      |(Class and Type) : variable name, CHARACTER(*,1)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 490  497
+      |(Definition)     : 
+      |(Reference)      : 505  508  511
+     m_a
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 490  496
+      |(Definition)     : 
+      |(Reference)      : 505  508  511
+     m_complex_maxwellgarnett
+      |(Class and Type) : module function name, COMPLEX(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 505  508  511
+     m_i
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 490  496
+      |(Definition)     : 
+      |(Reference)      : 505  508  511
+     m_w
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 490  496
+      |(Definition)     : 
+      |(Reference)      : 505  508  511
+     matrix
+      |(Class and Type) : variable name, CHARACTER(*,1)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 490  497
+      |(Definition)     : 
+      |(Reference)      : 504  507  510  514
+     mixingrule
+      |(Class and Type) : variable name, CHARACTER(*,1)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 490  497
+      |(Definition)     : 
+      |(Reference)      : 503  519
+     volair
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 490  495
+      |(Definition)     : 
+      |(Reference)      : 505  508  511
+     volice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 490  495
+      |(Definition)     : 
+      |(Reference)      : 505  508  511
+     volwater
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 490  495
+      |(Definition)     : 
+      |(Reference)      : 505  508  511
+
+ Scoping unit of module sub-program : m_complex_maxwellgarnett
+   Attribute and Cross reference of name
+     beta2
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : 
+      |(Declaration)    : 540
+      |(Definition)     : 558  561
+      |(Reference)      : 571  571
+     beta3
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : 
+      |(Declaration)    : 540
+      |(Definition)     : 559  562
+      |(Reference)      : 571  571
+     CMPLX
+      |(Class and Type) : intrinsic function name, COMPLEX(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 548
+     DABS
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 545
+     DCMPLX
+      |(Class and Type) : intrinsic function name, COMPLEX(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 566
+     error
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(OUT), dummy-argument
+      |(Declaration)    : 531  541
+      |(Definition)     : 543  549  567
+      |(Reference)      : 
+     inclusion
+      |(Class and Type) : variable name, CHARACTER(*,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 531  538
+      |(Definition)     : 
+      |(Reference)      : 557  560  564
+     LOG
+      |(Class and Type) : intrinsic function name, COMPLEX(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 561  562
+     m1
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 531  536
+      |(Definition)     : 
+      |(Reference)      : 553
+     m1t
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : 
+      |(Declaration)    : 540
+      |(Definition)     : 553
+      |(Reference)      : 558  558  559  559  561  561  561  561  562  562  562  562  571
+     m2
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 531  536
+      |(Definition)     : 
+      |(Reference)      : 554
+     m2t
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : 
+      |(Declaration)    : 540
+      |(Definition)     : 554
+      |(Reference)      : 558  561  561  561  561  571
+     m3
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 531  536
+      |(Definition)     : 
+      |(Reference)      : 555
+     m3t
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : 
+      |(Declaration)    : 540
+      |(Definition)     : 555
+      |(Reference)      : 559  562  562  562  562  571
+     m_complex_maxwellgarnett
+      |(Class and Type) : variable name, COMPLEX(8)
+      |(Attributes)     : result-value
+      |(Declaration)    : 
+      |(Definition)     : 548  566  571
+      |(Reference)      : 
+     m_complex_maxwellgarnett
+      |(Class and Type) : module function name, COMPLEX(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 531
+      |(Reference)      : 575
+     SQRT
+      |(Class and Type) : intrinsic function name, COMPLEX(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 571
+     vol1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 531  537
+      |(Definition)     : 
+      |(Reference)      : 545
+     vol2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 531  537
+      |(Definition)     : 
+      |(Reference)      : 545  571  571  571  571
+     vol3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 531  537
+      |(Definition)     : 
+      |(Reference)      : 545  571  571  571  571
+
+ Scoping unit of module sub-program : GAMMLN
+   Attribute and Cross reference of name
+     COF
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 583
+      |(Definition)     : 
+      |(Reference)      : 597
+     GAMMLN
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : result-value
+      |(Declaration)    : 
+      |(Definition)     : 599
+      |(Reference)      : 
+     GAMMLN
+      |(Class and Type) : module function name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 578
+      |(Reference)      : 600
+     J
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 588
+      |(Definition)     : 595
+      |(Reference)      : 597
+     LOG
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 593  599
+     SER
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 587
+      |(Definition)     : 594  597
+      |(Reference)      : 597  599
+     STP
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 582
+      |(Definition)     : 
+      |(Reference)      : 599
+     TMP
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 587
+      |(Definition)     : 592  593
+      |(Reference)      : 593  593  599
+     X
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 587
+      |(Definition)     : 590
+      |(Reference)      : 591  592  593  599
+     XX
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 578  581
+      |(Definition)     : 
+      |(Reference)      : 590
+     Y
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 587
+      |(Definition)     : 591  596
+      |(Reference)      : 596  597
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         11  execution     (Definition) 598  
+                           (Reference)  595
+
+ Scoping unit of module sub-program : WGAMMA
+   Attribute and Cross reference of name
+     EXP
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 608
+     GAMMLN
+      |(Class and Type) : module function name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 608
+     WGAMMA
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : result-value
+      |(Declaration)    : 
+      |(Definition)     : 608
+      |(Reference)      : 
+     WGAMMA
+      |(Class and Type) : module function name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 603
+      |(Reference)      : 610
+     y
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 603  606
+      |(Definition)     : 
+      |(Reference)      : 608
+
+ Total information
+   Procedures       : 1
+   Total lines      : 614
+   Total statements : 366
+   Total stack(byte): 6352
+   Total prefetch num: 0
+

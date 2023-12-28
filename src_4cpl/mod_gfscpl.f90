@@ -37,6 +37,7 @@ subroutine gfs_cpl_send2gocn(compid, u10m, v10m, t02m, q02m, &
   use cpl_rank,     only: id_gocn
   use cpl_attr,     only: AttrVect_importRAttr, gfs_export_attr, gfsExport_rList
   use cpl_sendrecv, only: cpl_send
+  use const       , only: RTYPE
   implicit none
 
   integer, intent(in) :: compid
@@ -47,19 +48,55 @@ subroutine gfs_cpl_send2gocn(compid, u10m, v10m, t02m, q02m, &
                                                      rain, snow, tgfs
 
   real(kind=8), dimension(nlon_glb, nlat_glb,11) :: glob_var
+
+  real(kind=RTYPE), dimension(nlon,nlat)             :: ocnwrk1
+  real(kind=RTYPE), dimension(nlon_glb, nlat_glb,11) :: ocnwrk2
+
   integer :: cnt, i, ii, j, jj, nxj 
 
-  call unify_reduceintp(nlon_glb, nlat_glb, nlat, u10m, glob_var(:,:,1))
-  call unify_reduceintp(nlon_glb, nlat_glb, nlat, v10m, glob_var(:,:,2))
-  call unify_reduceintp(nlon_glb, nlat_glb, nlat, t02m, glob_var(:,:,3))
-  call unify_reduceintp(nlon_glb, nlat_glb, nlat, q02m, glob_var(:,:,4))
-  call unify_reduceintp(nlon_glb, nlat_glb, nlat, pslv, glob_var(:,:,5))
-  call unify_reduceintp(nlon_glb, nlat_glb, nlat, swup, glob_var(:,:,6))
-  call unify_reduceintp(nlon_glb, nlat_glb, nlat, swdn, glob_var(:,:,7))
-  call unify_reduceintp(nlon_glb, nlat_glb, nlat, lwdn, glob_var(:,:,8))
-  call unify_reduceintp(nlon_glb, nlat_glb, nlat, rain, glob_var(:,:,9))
-  call unify_reduceintp(nlon_glb, nlat_glb, nlat, snow, glob_var(:,:,10))
-  call unify_reduceintp(nlon_glb, nlat_glb, nlat, tgfs, glob_var(:,:,11))
+  ocnwrk1 = u10m
+  call unify_reduceintp(nlon_glb, nlat_glb, nlat, ocnwrk1, ocnwrk2(:,:,1))
+  glob_var(:,:,1) = ocnwrk2(:,:,1)
+
+  ocnwrk1 = v10m
+  call unify_reduceintp(nlon_glb, nlat_glb, nlat, ocnwrk1, ocnwrk2(:,:,2))
+  glob_var(:,:,2) = ocnwrk2(:,:,2)
+
+  ocnwrk1 = t02m
+  call unify_reduceintp(nlon_glb, nlat_glb, nlat, ocnwrk1, ocnwrk2(:,:,3))
+  glob_var(:,:,3) = ocnwrk2(:,:,3)
+
+  ocnwrk1 = q02m
+  call unify_reduceintp(nlon_glb, nlat_glb, nlat, ocnwrk1, ocnwrk2(:,:,4))
+  glob_var(:,:,4) = ocnwrk2(:,:,4)
+
+  ocnwrk1 = pslv
+  call unify_reduceintp(nlon_glb, nlat_glb, nlat, ocnwrk1, ocnwrk2(:,:,5))
+  glob_var(:,:,5) = ocnwrk2(:,:,5)
+
+  ocnwrk1 = swup
+  call unify_reduceintp(nlon_glb, nlat_glb, nlat, ocnwrk1, ocnwrk2(:,:,6))
+  glob_var(:,:,6) = ocnwrk2(:,:,6)
+
+  ocnwrk1 = swdn
+  call unify_reduceintp(nlon_glb, nlat_glb, nlat, ocnwrk1, ocnwrk2(:,:,7))
+  glob_var(:,:,7) = ocnwrk2(:,:,7)
+
+  ocnwrk1 = lwdn
+  call unify_reduceintp(nlon_glb, nlat_glb, nlat, ocnwrk1, ocnwrk2(:,:,8))
+  glob_var(:,:,8) = ocnwrk2(:,:,8)
+
+  ocnwrk1 = rain
+  call unify_reduceintp(nlon_glb, nlat_glb, nlat, ocnwrk1, ocnwrk2(:,:,9))
+  glob_var(:,:,9) = ocnwrk2(:,:,9)
+
+  ocnwrk1 = snow
+  call unify_reduceintp(nlon_glb, nlat_glb, nlat, ocnwrk1, ocnwrk2(:,:,10))
+  glob_var(:,:,10) = ocnwrk2(:,:,10)
+
+  ocnwrk1 = tgfs
+  call unify_reduceintp(nlon_glb, nlat_glb, nlat, ocnwrk1, ocnwrk2(:,:,11))
+  glob_var(:,:,11) = ocnwrk2(:,:,11)
   
   cnt = 0
   do jj = 1, jlistnum
@@ -95,6 +132,7 @@ subroutine gfs_cpl_recv4gocn(compid, mask_lnd, tgfs, ssufs, ssvfs)
   use cpl_rank,     only: id_gocn
   use cpl_attr,     only: recv_AV=>gfs_recv_gocn_Attr
   use cpl_sendrecv, only: cpl_recv
+  use const       , only: RTYPE
   implicit none
 
   integer, intent(in) :: compid
@@ -103,6 +141,12 @@ subroutine gfs_cpl_recv4gocn(compid, mask_lnd, tgfs, ssufs, ssvfs)
   real, dimension(nx, my) :: tg_glb, sst_glb, ssu_glb, ssv_glb
   real, dimension(nx, my_max) :: sst_nxj
   real, dimension(nxp, my_max) :: SST, SSU, SSV
+
+  real(kind=RTYPE) :: ocnwrk3(nxp, my_max)
+  real(kind=RTYPE), dimension(nx, my) :: ocnwrk4
+  real(kind=RTYPE), dimension(nx, my_max) :: ocnwrk5
+  real(kind=RTYPE), dimension(nxp, my_max) :: ocnwrk6
+
   
   integer :: cnt, i, ii, j, jj, nxj
 
@@ -129,12 +173,21 @@ subroutine gfs_cpl_recv4gocn(compid, mask_lnd, tgfs, ssufs, ssvfs)
     end do
   end do
 !      write(*,*) 'SSUmax=', maxval(SSU), 'myrank=', myrank
+  ocnwrk3 = tgfs
+  call unify_reduceintp(nx, my, my_max, ocnwrk3, ocnwrk4)
+  tg_glb = ocnwrk4
 
-  call unify_reduceintp(nx, my, my_max, tgfs, tg_glb)
-  
-  call mpe2d_unify(sst_glb, SST, .true.)
-  call mpe2d_unify(ssu_glb, SSU, .true.)
-  call mpe2d_unify(ssv_glb, SSV, .true.)
+  ocnwrk4 = sst_glb
+  call mpe2d_unify(ocnwrk4, ocnwrk6, .true.)
+  SST = ocnwrk6
+
+  ocnwrk4 = ssu_glb
+  call mpe2d_unify(ocnwrk4, ocnwrk6, .true.)
+  SSU = ocnwrk6
+
+  ocnwrk4 = ssv_glb
+  call mpe2d_unify(ocnwrk4, ocnwrk6, .true.)
+  SSV = ocnwrk6
 !      if(myrank .eq. 0) write(*,*) 'ssu_glbmax=', maxval(ssu_glb)
   !call mpe2d_unify_nx(sst_nxj, SST)
   !call mpe2d_unify_my(sst_glb, sst_nxj)

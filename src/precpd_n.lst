@@ -1,0 +1,2305 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Dec 19 11:04:09 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src
+   Source file       : precpd_n.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "precpd_n"
+  (inc)(line-no.)(nest)(optimize)
+               1                            subroutine precpd_n (im,ix,km,dt,del,prsl,ps, &
+               2                                               q,cwm,qr,qs,phi,t,rn,sr, &
+               3                                               rainp,u00k,lprnt)
+               4                     !xb110>
+               5                     !                         dzl,psautco,prautco,evpco,wminco,
+               6                     !     &                    lprnt,jpr,kdt,me)
+               7                     !xb110<
+               8                     !e
+               9                     !
+              10                     !     ******************************************************************
+              11                     !     *                                                                *
+              12                     !     *           subroutine for precipitation processes               *
+              13                     !     *           from suspended cloud water/ice                       *
+              14                     !     *                                                                *
+              15                     !     ******************************************************************
+              16                     !     *                                                                *
+              17                     !     *  originally created by  q. zhao                jan. 1995       *
+              18                     !     *                         -------                                *
+              19                     !     *  modified and rewritten by shrinivas moorthi   oct. 1998       *
+              20                     !     *                            -----------------                   *
+              21                     !     *  and                       hua-lu pan                          *
+              22                     !     *                            ----------                          *
+              23                     !     *                                                                *
+              24                     !     *  references:                                                   *
+              25                     !     *                                                                *
+              26                     !     *  zhao and carr (1997), monthly weather review (august)         *
+              27                     !     *  sundqvist et al., (1989) monthly weather review. (august)     *
+              28                     !     *  chuang 2013, modify sr to define frozen precipitation fraction*
+              29                     !     ******************************************************************
+              30                     !
+              31                     !     in this code vertical indexing runs from surface to top of the
+              32                     !     model
+              33                     !
+              34                     !     argument list:
+              35                     !     --------------
+              36                     !       im         : inner dimension over which calculation is made
+              37                     !       ix         : maximum inner dimension
+              38                     !       km         : number of vertical levels
+              39                     !       dt         : time step in seconds
+              40                     !       del(km)    : pressure layer thickness (bottom to top)
+              41                     !       prsl(km)   : pressure values for model layers (bottom to top)
+              42                     !       ps(im)     : surface pressure (centibars)
+              43                     !       q(ix,km)   : specific humidity (updated in the code)
+              44                     !       cwm(ix,km) : condensate mixing ratio (updated in the code)
+              45                     !       qr(ix,km) : condensate rain mixing ratio (updated in the code)
+              46                     !       qs(ix,km) : condensate snow mixing ratio (updated in the code)
+              47                     !       t(ix,km)   : temperature       (updated in the code)
+              48                     !       rn(im)     : precipitation over one time-step dt (m/dt)
+              49                     !old      sr(im)     : index (=-1 snow, =0 rain/snow, =1 rain)
+              50                     !new    sr(im)     : "snow ratio", ratio of snow to total precipitation
+              51                     !       cll(ix,km) : cloud cover
+              52                     !hchuang rn(im) unit in m per time step
+              53                     !        precipitation rate conversion 1 mm/s = 1 kg/m2/s
+              54                     !
+              55                     !xb110>
+              56                     !      use machine , only : kind_phys
+              57                     !      use funcphys , only : fpvs
+              58                     !      use physcons, grav => con_g, hvap => con_hvap, hfus => con_hfus
+              59                     !     &,             ttp => con_ttp, cp => con_cp
+              60                     !     &,             eps => con_eps, epsm1 => con_epsm1
+              61                     !     &,             R   => con_rd
+              62                     !xb110<
+              63                           implicit none
+              64                     !xb110>
+              65                           real hvap,grav,hfus,ttp,rd,rv,cp,eps,epsm1
+              66                     
+              67                           parameter(  hvap = 2.5000e+6 )
+              68                           parameter(  grav = 9.80665e+0 )
+              69                           parameter(  hfus = 3.3358e+5 )
+              70                           parameter(   ttp = 2.7316e+2 )
+              71                           parameter(    rd = 2.8705e+2 )
+              72                           parameter(    rv = 4.6150e+2 )
+              73                           parameter(    cp = 1.0046e+3 )
+              74                           parameter(   eps = rd/rv )
+              75                           parameter( epsm1 = eps-1 )
+              76                     !xb110<
+              77                     !     include 'constant.h'
+              78                     !
+              79                     !      real (kind=kind_phys) g,      h1,    h1000    !xb110
+              80                           real  g,      h1,    h1000                                  &
+              81                           ,                     d00                                   &
+              82                           ,                     elwv,   eliv,  row                    &
+              83                           ,                     epsq,   eliw                          &
+              84                           ,                     rcp,    rrow                          &
+              85                     !->rsun
+              86                           ,                     vts, vtr, onsr(ix), onss(ix)
+              87                     
+              88                           integer               nsr(ix),    nss(ix), nt
+              89                     !<-rsun
+              90                            parameter (g=grav,         h1=1.e0,     h1000=1000.0       &
+              91                           ,           d00=0.e0                                        &
+              92                           ,           elwv=hvap,      eliv=hvap+hfus,   row=1.e3      &
+              93                           ,           epsq=2.e-12                                     &
+              94                           ,           eliw=eliv-elwv, rcp=h1/cp,   rrow=h1/row)
+              95                     !->rsun
+              96                     !       parameter( vts = 1.0, vtr = 5.0)
+              97                     !       parameter( vts = 1.0, vtr = 4.0) !rsun
+              98                            parameter( vts = 1.0, vtr = 2.0) !xb110
+              99                     !      real(kind=kind_phys), parameter :: minp=1.e-12
+             100                     !      real(kind=kind_phys), parameter :: minp=1.e-15 !xb110
+             101                           real, parameter :: minp=1.e-15
+             102                     !      real(kind=kind_phys) watertot1(im), watertot2(im)  !xb110
+             103                           real watertot1(im), watertot2(im)
+             104                     !<-rsun
+             105                     
+             106                     !
+             107                     !      real(kind=kind_phys), parameter :: cons_0=0.0,     cons_p01=0.01    !xb110
+             108                           real, parameter :: cons_0=0.0,     cons_p01=0.01                         &
+             109                           ,                                  cons_20=20.0                          &
+             110                           ,                                  cons_m30=-30.0, cons_50=50.0
+             111                     !
+             112                           integer im, ix, km, jpr,kdt
+             113                     !      real (kind=kind_phys) q(ix,km),   t(ix,km),    cwm(ix,km)             !xb110
+             114                           real                  q(ix,km),   t(ix,km),    cwm(ix,km)          &
+             115                           ,                                 del(ix,km),  prsl(ix,km)         &
+             116                     !    &,                     cll(im,km), del(ix,km),  prsl(ix,km)         &
+             117                           ,                     ps(ix),     rn(ix),      sr(ix)              &
+             118                           ,                     dt                                           &
+             119                     !->rsun
+             120                           ,                     qr(ix,km), qs(ix,km), dzl(ix,km),sn(im)      &
+             121                     !<-rsun
+             122                     !hchuang code change [+1l] : add record to record information in vertical in
+             123                     !                       addition to total column precrl
+             124                           ,                     rainp(ix,km), rnp(im),                       &
+             125                                                 psautco, prautco, evpco, wminco(2)
+             126                     !
+             127                     !
+             128                     !      real (kind=kind_phys) err(im),      ers(im) ! rsun,     precrl(im)        !xb110
+             129                           real  err(im),      ers(im)                                        & ! rsun,     precrl(im)
+             130                     !rsun      &,                     precsl(im),   precrl1(im),!precsl1(im) &
+             131                           ,                     rq(im),       condt(im)                       &
+             132                           ,                     conde(im),    rconde(im),  tmt0(im)           &
+             133                           ,                     wmin(im,km),  wmink(im),   pres(im)           &
+             134                           ,                     wmini(im,km), ccr(im)                         &
+             135                           ,                     tt(im),       qq(im),      ww(im)             &
+             136                           ,                     u00k(ix,km)                                   &
+             137                           ,                     zaodt                                         &
+             138                     !->rsun
+             139                           ,                     rho(im,km),seds(im,km),sedr(im,km)            &
+             140                           ,                     qqs(im),qqr(im)
+             141                     !<-rsun
+             142                     !       real (kind=kind_phys) cclim(km) !xb110
+             143                            real  cclim(km)
+             144                     !
+             145                           integer iw(im,km), ipr(im), iwl(im),     iwl1(im)
+             146                     !
+             147                            logical comput(im)
+             148                            logical lprnt
+             149                            logical noskip
+             150                     !
+             151                     !      real (kind=kind_phys) ke,   rdt,  us, cclimit, climit, cws, csm1      !xb110
+             152                           real  ke,   rdt,  us, cclimit, climit, cws, csm1                      &
+             153                           ,                     crs1, crs2, cr, aa2,     dtcp,   c00, cmr       &
+             154                           ,                     tem,  c1,   c2, wwn                             &
+             155                     !    &,                     tem,  c1,   c2, u00b,    u00t,   wwn            &
+             156                           ,                     precrk, precsk, pres1,   qk,     qw,  qi        &
+             157                           ,                     qint, fiw, wws, cwmk, expf                      &
+             158                           ,                     psaut, psaci, amaxcm, tem1, tem2                &
+             159                           ,                     tmt0k, psm1, psm2, ppr                          &
+             160                           ,                     rprs,  erk,   pps, sid, rid, amaxps             &
+             161                           ,                     praut, fi, qc, amaxrq, rqkll                    &
+             162                     !->rsan
+             163                           ,                     erkdt
+             164                           integer me
+             165                     !<-rsun
+             166                           integer i, k, ihpr, n
+             167                     
+             168                     !xb110>
+             169                           real      phi(ix,km)
+             170                     
+             171                     !--- merge qsatq in here
+             172                           real vpsat(191),pqs,qqq,temx,t1
+             173                           integer ic
+             174                           data vpsat/                                                       &
+             175                               9.67165e-05,  1.15983e-04,  1.38819e-04,  1.65835e-04,        &
+             176                               1.97736e-04,  2.35339e-04,  2.79584e-04,  3.31553e-04,        &
+             177                               3.92489e-04,  4.63820e-04,  5.47177e-04,  6.44430e-04,        &
+             178                               7.57710e-04,  8.89450e-04,  1.04242e-03,  1.21975e-03,        &
+             179                               1.42503e-03,  1.66230e-03,  1.93614e-03,  2.25172e-03,        &
+             180                               2.61488e-03,  3.03222e-03,  3.51113e-03,  4.05995e-03,        &
+             181                               4.68804e-03,  5.40589e-03,  6.22523e-03,  7.15922e-03,        &
+             182                               8.22253e-03,  9.43153e-03,  1.08045e-02,  1.23617e-02,        &
+             183                               1.41258e-02,  1.61219e-02,  1.83779e-02,  2.09244e-02,        &
+             184                               2.37959e-02,  2.70300e-02,  3.06684e-02,  3.47573e-02,        &
+             185                               3.93475e-02,  4.44947e-02,  5.02607e-02,  5.67130e-02,        &
+             186                               6.39258e-02,  7.19807e-02,  8.09670e-02,  9.09823e-02,        &
+             187                               1.02134e-01,  1.14538e-01,  1.28323e-01,                      &
+             188                     !
+             189                                             1.45280e-01,  1.64189e-01,  1.85241e-01,        &
+             190                               2.08643e-01,  2.34615e-01,  2.63398e-01,  2.95248e-01,        &
+             191                               3.30441e-01,  3.69270e-01,  4.12053e-01,  4.59124e-01,        &
+             192                               5.10843e-01,  5.67591e-01,  6.29773e-01,  6.97819e-01,        &
+             193                               7.72185e-01,  8.53352e-01,  9.41827e-01,  1.03814e+00,        &
+             194                               1.14287e+00,  1.25659e+00,  1.37992e+00,  1.51352e+00,        &
+             195                               1.65806e+00,  1.81424e+00,  1.98279e+00,  2.16447e+00,        &
+             196                               2.36006e+00,  2.57039e+00,  2.79628e+00,  3.03858e+00,        &
+             197                               3.29819e+00,  3.57599e+00,  3.87289e+00,  4.18982e+00,        &
+             198                               4.52773e+00,  4.88753e+00,  5.27019e+00,  5.67664e+00,        &
+             199                     !
+             200                               6.10780e+00,  6.56617e+00,  7.05475e+00,  7.57526e+00,        &
+             201                               8.12946e+00,  8.71922e+00,  9.34647e+00,  1.00132e+01,        &
+             202                               1.07216e+01,  1.14739e+01,  1.22723e+01,  1.31192e+01,        &
+             203                               1.40172e+01,  1.49688e+01,  1.59767e+01,  1.70438e+01,        &
+             204                               1.81729e+01,  1.93672e+01,  2.06298e+01,  2.19639e+01,        &
+             205                               2.33729e+01,  2.48605e+01,  2.64302e+01,  2.80858e+01,        &
+             206                               2.98314e+01,  3.16708e+01,  3.36085e+01,  3.56487e+01,        &
+             207                               3.77959e+01,  4.00548e+01,  4.24303e+01,  4.49274e+01,        &
+             208                               4.75511e+01,  5.03069e+01,  5.32001e+01,  5.62365e+01,        &
+             209                               5.94220e+01,  6.27625e+01,  6.62643e+01,  6.99337e+01,        &
+             210                     !
+             211                               7.37774e+01,  7.78022e+01,  8.20150e+01,  8.64231e+01,        &
+             212                               9.10338e+01,  9.58548e+01,  1.00894e+02,  1.06159e+02,        &
+             213                               1.11659e+02,  1.17401e+02,  1.23395e+02,  1.29650e+02,        &
+             214                               1.36174e+02,  1.42978e+02,  1.50070e+02,  1.57461e+02,        &
+             215                               1.65161e+02,  1.73180e+02,  1.81529e+02,  1.90218e+02,        &
+             216                               1.99260e+02,  2.08665e+02,  2.18446e+02,  2.28613e+02,        &
+             217                               2.39180e+02,  2.50159e+02,  2.61562e+02,  2.73404e+02,        &
+             218                               2.85696e+02,  2.98453e+02,  3.11689e+02,  3.25418e+02,        &
+             219                               3.39655e+02,  3.54414e+02,  3.69711e+02,  3.85560e+02,        &
+             220                               4.01979e+02,  4.18982e+02,  4.36586e+02,  4.54808e+02,        &
+             221                     !
+             222                               4.73665e+02,  4.93175e+02,  5.13354e+02,  5.34221e+02,        &
+             223                               5.55795e+02,  5.78093e+02,  6.01135e+02,  6.24940e+02,        &
+             224                               6.49527e+02,  6.74918e+02,  7.01131e+02,  7.28188e+02,        &
+             225                               7.56110e+02,  7.84918e+02,  8.14633e+02,  8.45278e+02,        &
+             226                               8.76876e+02,  9.09448e+02,  9.43018e+02,  9.77609e+02,        &
+             227                               1.01325e+03/
+             228                     !
+             229                     !xb110<
+             230                     !
+             231                     !xb110>
+             232                           temx = 1.0/1.622
+             233                           psautco   = 4.0e-4
+             234                           prautco   = 1.0e-4
+             235                           evpco     = 2.0e-5
+             236                           wminco(1) = 0.5e-5
+             237                           wminco(2) = 0.5e-5
+             238                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      phi, dzl
+                                   <<< Loop-information  End >>>
+             239     1  pp                 do k = 1,km
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      phi, dzl
+                                   <<< Loop-information  End >>>
+             240     2   p   2v             do i = 1,im
+             241     2   p   2v               dzl(i,k) = phi(i,k)/g
+             242     2   p   2v             end do
+             243     1   p                 end do
+             244                     !xb110<
+             245                     !-----------------------preliminaries ---------------------------------
+             246                     !
+             247                     !     do k=1,km
+             248                     !       do i=1,im
+             249                     !         cll(i,k) = 0.0
+             250                     !       enddo
+             251                     !     enddo
+             252                     !
+             253                           rdt     = h1 / dt
+             254                     !rsun evpco   = 2.0e-5
+             255                     !     ke      = 2.0e-5  ! commented on 09/10/99  -- opr value
+             256                     !     ke      = 2.0e-6
+             257                     !     ke      = 1.0e-5
+             258                     !!!   ke      = 5.0e-5
+             259                     !!    ke      = 7.0e-5
+             260                           ke      = evpco
+             261                     !     ke      = 7.0e-5
+             262                           us      = h1
+             263                           cclimit = 1.0e-3
+             264                           climit  = 1.0e-20
+             265                           cws     = 0.025
+             266                     !
+             267                           zaodt   = 800.0 * rdt
+             268                     !xb110      zaodt   = 800.0 * rdt*2.0 ! rsun
+             269                     !xb110      zaodt   = 800.0 * rdt*4.0 ! rsun
+             270                     !
+             271                           csm1    = 5.0000e-8   * zaodt
+             272                           crs1    = 5.00000e-6  * zaodt
+             273                           crs2    = 6.66600e-10 * zaodt
+             274                           cr      = 5.0e-4      * zaodt
+             275                           aa2     = 1.25e-3     * zaodt
+             276                     !rsun aa2     = 2.5e-3     * zaodt
+             277                     !
+             278                           ke      = ke * sqrt(rdt)
+             279                     !     ke      = ke * sqrt(zaodt)
+             280                     !
+             281                           dtcp    = dt * rcp
+             282                     !
+             283                     !     c00 = 1.5e-1 * dt
+             284                     !     c00 = 10.0e-1 * dt
+             285                     !     c00 = 3.0e-1 * dt          !05/09/2000
+             286                     !      c00 = 1.0e-4 * dt          !05/09/2000   !xb110
+             287                           c00 = prautco * dt         !05/09/2000
+             288                           cmr = 1.0 / 3.0e-4
+             289                     !     cmr = 1.0 / 5.0e-4
+             290                     !     c1  = 100.0
+             291                           c1  = 300.0
+             292                           c2  = 0.5
+             293                     !
+             294                     !
+             295                     !--------calculate c0 and cmr using lc at previous step-----------------
+             296                     !
+             297                     !xb110>
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.66, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      prsl, del
+                                   <<< Loop-information  End >>>
+             298        pp   2v            prsl = prsl *1000.    ! convert the unit from cb to Pa !xb110
+             299         p   2v            del  = del  *1000.
+             300                     !xb110<
+             301                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      t, q, prsl, rainp, iw, rho, wmini, wmin
+                                   <<< Loop-information  End >>>
+             302     1  pp                 do k=1,km
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.60, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      t, q, prsl, rainp, iw, rho, wmini, wmin
+                                   <<< Loop-information  End >>>
+             303     2   p    v              do i=1,im
+             304     2   p    v                tem   = (prsl(i,k)*0.00001)
+             305     2               !         tem   = sqrt(tem)
+             306     2   p    v                iw(i,k)    = 0.0
+             307     2               !         wmin(i,k)  = 1.0e-5 * tem
+             308     2               !         wmini(i,k) = 1.0e-5 * tem       ! testing for ras
+             309     2               !
+             310     2               
+             311     2   p    v                wmin(i,k)  = wminco(1) * tem
+             312     2   p    v                wmini(i,k) = wminco(2) * tem
+             313     2               
+             314     2   p    v                rainp(i,k) = 0.0
+             315     2               
+             316     2   p    v                rho(i,k) = 0.622*prsl(i,k)/(rd*t(i,k)*(q(i,k) + 0.622))
+             317     2               
+             318     2   p    v              enddo
+             319     1   p                 enddo
+             320                     
+             321                     !       conservation
+             322                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 471
+                                   <<<  [OPTIMIZATION]
+                                   <<<    INTERCHANGED(nest: 2)
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.16, ITR: 88, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      watertot1, q, del, qr, qs, cwm
+                                   <<< Loop-information  End >>>
+             323     1  pp   4v            do i = 1, im
+             324     1   p   4v              watertot1(i) = 0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    INTERCHANGED(nest: 1)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      q, cwm, qs, qr, del, watertot1
+                                   <<< Loop-information  End >>>
+             325     2                       do k = 1, km
+             326     2   p    v                watertot1(i) = watertot1(i) +                           &
+             327     2                             (q(i,k)+cwm(i,k)+qr(i,k)+qs(i,k))*del(i,k)/grav
+             328     2                       enddo
+             329     1   p    v            enddo
+             330                     !->rsun
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 616
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      iwl1, comput, rn, sn, sr, ccr, rnp
+                                   <<< Loop-information  End >>>
+             331     1  pp    v            do i=1,im
+             332     1               !       c0(i)  = 1.5e-1
+             333     1               !       cmr(i) = 3.0e-4
+             334     1               !
+             335     1   p    v              iwl1(i)    = 0
+             336     1               ! - - - - - - - - - - -
+             337     1               !rsun        precrl1(i) = d00
+             338     1               !rsun        precsl1(i) = d00
+             339     1               ! - - - - - - - - - - -
+             340     1   p    v              comput(i)  = .false.
+             341     1   p    v              rn(i)      = d00
+             342     1               !->rsun
+             343     1   p    v              sn(i)      = d00
+             344     1               !<-rsun
+             345     1   p    v              sr(i)      = d00
+             346     1   p    v              ccr(i)     = d00
+             347     1               !
+             348     1   p    v              rnp(i)     = d00
+             349     1   p    v            enddo
+             350                     !------------select columns where precip falls --------------
+             351                     !      do i = 1, im
+             352                     !        tem = dzl(i,1)/vtr
+             353                     !        nsr(i)  = int(dt/tem+1.)
+             354                     !        tem = dzl(i,1)/vts
+             355                     !        nss(i)  = int(dt/tem+1.)
+             356                     !        onsr(i) = 1./nsr(i)
+             357                     !        onss(i) = 1./nss(i)
+             358                     !      enddo
+             359                     !
+             360                     !      if(me == 0 ) then
+             361                     !!        print*,'dzl(1,1)',kdt,dzl(1,1)
+             362                     !!        print*,'nsr,nss,onsr, nnss:',nsr,nss,onsr, onss
+             363                     !!        print*,'precpd before seds : qs:',kdt,qs
+             364                     !      endif
+             365                     !
+             366                     !      do i = 1, im
+             367                     !        do nt = 1, nss (i)
+             368                     !          do k = km, 1, -1
+             369                     !            if(qs(i,k) .gt. minp) then
+             370                     !              seds(i,k)  = vts * qs(i,k) * rho(i,k)
+             371                     !            else
+             372                     !              seds(i,k)  = 0.0
+             373                     !            endif
+             374                     !          enddo
+             375                     !!rsun          qs(i,km) = qs(i,km)-seds(i,km)/dzl(i,km)*dt/nss(i)/rho(i,km)
+             376                     !          qs(i,km) = qs(i,km)-seds(i,km)/
+             377                     !     &               del(i,km)*dt/nss(i)*grav
+             378                     !          qs(i,km) = max(qs(i,km),0.0)
+             379                     !          do k = km-1, 1, -1
+             380                     !            tem1=qs(i,k+1)
+             381                     !            tem =qs(i,k)
+             382                     !!            qs(i,k) = qs(i,k) +
+             383                     !!     &              (seds(i,k+1) - seds(i,k))/rho(i,k)*
+             384                     !!     &              dt*onss(i)/dzl(i,k)
+             385                     !            qs(i,k) = qs(i,k) +
+             386                     !     &             (seds(i,k+1) - seds(i,k))/del(i,k)*grav*
+             387                     !     &              dt*onss(i)
+             388                     !!rsun            qs(i,k) = max(qs(i,k),0.0)
+             389                     !!            if(qs(i,k) < 0.0) then
+             390                     !!               print*,'neg value qs:',
+             391                     !!     &                  k,tem1, tem, rho(i,k+1), rho(i,k),
+             392                     !!     &                  seds(i,k+1), seds(i,k),
+             393                     !!     &                  onss(i),dzl(i,k),qs(i,k)
+             394                     !!
+             395                     !!            endif
+             396                     !          enddo
+             397                     !          rn(i) = rn(i)+seds(i,1)*dt*onss(i)*rrow
+             398                     !          sn(i) = sn(i)+seds(i,1)*dt*onss(i)*rrow
+             399                     !        enddo
+             400                     !      enddo
+             401                     !
+             402                     !!      if(me==0) then
+             403                     !!        print*,'precpd after seds: seds:',kdt,seds
+             404                     !!        print*,'precpd after seds : rn:',kdt,rn
+             405                     !!        print*,'precpd after seds : sn:',kdt,sn
+             406                     !!        print*,'precpd after seds : qs:',kdt,qs
+             407                     !!        print*, 'precpd before sedr : qr:',kdt, qr
+             408                     !!      endif
+             409                     !
+             410                     !      do i = 1, im
+             411                     !        do nt = 1, nsr(i)
+             412                     !          do k = km, 1, -1
+             413                     !            if(qr(i,k) .gt. minp) then
+             414                     !              sedr(i,k)  = vtr * qr(i,k) * rho(i,k)
+             415                     !            else
+             416                     !              sedr(i,k)  = 0.0
+             417                     !            endif
+             418                     !          enddo
+             419                     !          qr(i,km) = qr(i,km)-sedr(i,km)/
+             420                     !     &               del(i,km)*dt/nsr(i)*grav
+             421                     !          do k = km-1, 1, -1
+             422                     !            tem = qr(i,k)
+             423                     !            tem1 = qr(i,k+1)
+             424                     !
+             425                     !            qr(i,k) = qr(i,k) +
+             426                     !     &             (sedr(i,k+1) - sedr(i,k))/del(i,k)*grav*
+             427                     !     &              dt*onsr(i)
+             428                     !!rsun            qr(i,k) = max(qr(i,k),0.0)
+             429                     !!            if(qr(i,k) < 0.0) then
+             430                     !!               print*,'neg value qr:',
+             431                     !!     &                  k,tem1, tem, rho(i,k+1), rho(i,k),
+             432                     !!     &                  sedr(i,k+1), sedr(i,k),
+             433                     !!     &                  onsr(i),dzl(i,k),qr(i,k)
+             434                     !!
+             435                     !!            endif
+             436                     !          enddo
+             437                     !          rn(i) = rn(i)+sedr(i,1)*dt*onsr(i)*rrow
+             438                     !
+             439                     !        enddo
+             440                     !      enddo
+             441                     !
+             442                     !!      if(me ==0) then
+             443                     !!        print*,'precpd after sedr and dt: sedr:',kdt,sedr
+             444                     !!        print*,'precpd after sedr  dt: rn:',kdt,rn
+             445                     !!        print*,'precpd after sedr dt : sn:',kdt,sn
+             446                     !!        print*,'precpd after sedr dt : qr:',kdt,qr
+             447                     !!      endif
+             448                     !
+             449                     !      do i = 1, im
+             450                     !        rid = rn(i)
+             451                     !        if (rid < 1.e-13) then
+             452                     !           sr(i) = 0.
+             453                     !        else
+             454                     !           sr(i) = sn(i)/rid
+             455                     !        endif
+             456                     !      enddo
+             457                     !!->rsun conservation
+             458                     !
+             459                     !      do i = 1, im
+             460                     !        watertot2(i) = 0.0
+             461                     !        do k = 1, km
+             462                     !          watertot2(i) = watertot2(i) +
+             463                     !     &        (q(i,k)+cwm(i,k)+qr(i,k)+qs(i,k))*del(i,k)/grav
+             464                     !        enddo
+             465                     !        watertot2(i) = watertot2(i) + rn(i)*row
+             466                     !
+             467                     !        if(abs(watertot2(i) - watertot1(i)) > 1.e-6) then
+             468                     !          print*,'different1:',kdt, watertot1(i), watertot2(i), rn(i),
+             469                     !     &        abs(watertot2(i) - watertot1(i))
+             470                     !        endif
+             471                     !      enddo
+             472                     
+             473                     !------------select columns where rain can be produced--------------
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wmin, wmini, cwm, comput
+                                   <<< Loop-information  End >>>
+             474     1                     do k=1, km-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 572
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 112, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      comput, wmin, cwm, wmini
+                                   <<< Loop-information  End >>>
+             475     2  pp   2v              do i=1,im
+             476     2   p   2v                tem = min(wmin(i,k), wmini(i,k))
+             477     2   p   2v                if (cwm(i,k) > tem) comput(i) = .true.
+             478     2   p   2v              enddo
+             479     1                     enddo
+             480                           ihpr = 0
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      comput
+                                   <<< Loop-information  End >>>
+             481     1       2s            do i=1,im
+             482     2       2v              if (comput(i)) then
+             483     2       2m                 ihpr      = ihpr + 1
+             484     2       2s                 ipr(ihpr) = i
+             485     2       2v              endif
+             486     1       2v            enddo
+             487                     !***********************************************************************
+             488                     !-----------------begining of precipitation calculation-----------------
+             489                     !***********************************************************************
+             490                     !     do k=km-1,2,-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qqs, ipr, qqr, rnp, ww, qq, tt, iwl
+                                   <<<      iwl1
+                                   <<< Loop-information  End >>>
+             491     1                     do k=km,1,-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 149
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.20, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ipr, wmink, qqr, qqs, pres, comput, ww
+                                   <<<      qq, tt, err, ers, iwl
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 14
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             492     2  pp    v              do n=1,ihpr
+             493     2               !rsun          precrl(n) = precrl1(n)
+             494     2               !rsun          precsl(n) = precsl1(n)
+             495     2   p    v                err  (n)  = d00
+             496     2   p    v                ers  (n)  = d00
+             497     2   p    v                iwl  (n)  = 0
+             498     2               !
+             499     2   p    v                i         = ipr(n)
+             500     2   p    v                tt(n)     = t(i,k)
+             501     2   p    v                qq(n)     = q(i,k)
+             502     2   p    v                ww(n)     = cwm(i,k)
+             503     2   p    v                wmink(n)  = wmin(i,k)
+             504     2   p    v                pres(n)   = prsl(i,k)
+             505     2               !->rsun
+             506     2   p    v                qqs(n)    = qs(i,k)
+             507     2   p    v                qqr(n)    = qr(i,k)
+             508     2               !<-rsun
+             509     2               !
+             510     2               !rsun     precrk = max(cons_0,    precrl1(n))
+             511     2   p    v                precrk = max(cons_0,    qqr(n) * del(i,k)/grav)
+             512     2               !rsun     precsk = max(cons_0,    precsl1(n))
+             513     2   p    v                precsk = max(cons_0,    qqs(n) * del(i,k)/grav)
+             514     2   p    v                wwn    = max(ww(n), climit)
+             515     2               !         if (wwn .gt. wmink(n) .or. (precrk+precsk) .gt. d00) then
+             516     3   p    v                if (wwn > climit .or. (precrk+precsk) > d00) then
+             517     3               !rsun     if (wwn > climit .or. (seds(i,k)+sedr(i,k)) > d00) then ! rsun ???
+             518     3   p    v                  comput(n) = .true.
+             519     3   p    v                else
+             520     3   p    v                  comput(n) = .false.
+             521     3   p    v                endif
+             522     2   p    v              enddo
+             523     1               !
+             524     1               !       es(1:ihpr) = fpvs(tt(1:ihpr))
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 48
+                                   <<< Loop-information  End >>>
+             525     2  pp    s              do n=1,ihpr
+             526     3   p    m                if (comput(n)) then
+             527     3   p                       i = ipr(n)
+             528     3   p    s                  conde(n)  = (dt/g) * del(i,k)
+             529     3   p    s                  condt(n)  = conde(n) * rdt
+             530     3   p    s                  rconde(n) = h1 / conde(n)
+             531     3   p    s                  qk        = max(epsq,  qq(n))
+             532     3   p    s                  tmt0(n)   = tt(n) - 273.16
+             533     3   p    s                  wwn       = max(ww(n), climit)
+             534     3               !
+             535     3               !           pl = pres(n) * 0.01
+             536     3               !           call qsatd(tt(n), pl, qc)
+             537     3               !           rq(n) = max(qq(n), epsq) / max(qc, 1.0e-10)
+             538     3               !           rq(n) = max(1.0e-10, rq(n))           ! -- relative humidity---
+             539     3               !
+             540     3               !  the global qsat computation is done in pa
+             541     3   p    s                  pres1   = pres(n)
+             542     3               !           qw      = es(n)
+             543     3               !xb110>
+             544     3               !            qw      = min(pres1, fpvs(tt(n)))
+             545     3               !            qw      = eps * qw / (pres1 + epsm1 * qw)
+             546     3               !            qw      = max(qw,epsq)
+             547     3   p    s                t1 = max(1.00001, min(190.999, tt(n)-182.16))
+             548     3   p    s                ic = int(t1)
+             549     3   p    s                pqs = pres(n)/100.
+             550     3   p    s                qqq = min(temx*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic))  &
+             551     3                                                    *(t1-float(ic)))
+             552     3               !         qw = 0.622*qqq/(pqs-qqq)
+             553     3   p    s                qw = 0.622*qqq/(pqs+epsm1*qqq)
+             554     3               
+             555     3   p    s                qw = max(qw,epsq)
+             556     3               !xb110<
+             557     3               !
+             558     3               !           tmt15 = min(tmt0(n), cons_m15)
+             559     3               !           ai    = 0.008855
+             560     3               !           bi    = 1.0
+             561     3               !           if (tmt0(n) .lt. -20.0) then
+             562     3               !             ai = 0.007225
+             563     3               !             bi = 0.9674
+             564     3               !           endif
+             565     3               !           qi   = qw * (bi + ai*min(tmt0(n),cons_0))
+             566     3               !           qint = qw * (1.-0.00032*tmt15*(tmt15+15.))
+             567     3               !
+             568     3   p    s                  qi   = qw
+             569     3   p    m                  qint = qw
+             570     3               !           if (tmt0(n).le.-40.) qint = qi
+             571     3               !
+             572     3               !-------------------ice-water id number iw------------------------------
+             573     4   p    s                  if(tmt0(n) < -15.) then
+             574     4               !rsun       if(tmt0(n) < -12.) then
+             575     4               !rsun       if(tmt0(n) < -10.) then
+             576     4   p    s                     fi = qk - u00k(i,k)*qi
+             577     5   p    m                     if(fi > d00 .or. wwn > climit) then
+             578     5   p    m                        iwl(n) = 1
+             579     5   p                          else
+             580     5   p    m                        iwl(n) = 0
+             581     5   p                          endif
+             582     4               !           endif
+             583     4   p                       elseif (tmt0(n) >= 0.) then
+             584     4   p    m                     iwl(n) = 0
+             585     4               !
+             586     4               !           if(tmt0(n).lt.0.0.and.tmt0(n).ge.-15.0) then
+             587     4   p                       else
+             588     4   p    m                    iwl(n) = 0
+             589     4   p    s                    if(iwl1(n) == 1 .and. wwn > climit) iwl(n) = 1
+             590     4   p                       endif
+             591     3               !
+             592     3               !           if(tmt0(n).ge.0.) then
+             593     3               !              iwl(n) = 0
+             594     3               !           endif
+             595     3               !----------------the satuation specific humidity------------------------
+             596     3   p    s                  fiw   = float(iwl(n))
+             597     3   p    s                  qc    = (h1-fiw)*qint + fiw*qi
+             598     3               !----------------the relative humidity----------------------------------
+             599     4   p    m                  if(qc <= 1.0e-10) then
+             600     4   p    m                     rq(n) = d00
+             601     4   p                       else
+             602     4   p    m                     rq(n) = qk / qc
+             603     4   p                       endif
+             604     3               !----------------cloud cover ratio ccr----------------------------------
+             605     4   p    m                  if(rq(n) < u00k(i,k)) then
+             606     4   p    m                         ccr(n) = d00
+             607     4   p                       elseif(rq(n) >= us) then
+             608     4   p    m                         ccr(n) = us
+             609     4   p                       else
+             610     4   p    m                       rqkll  = min(us,rq(n))
+             611     4   p    m                       ccr(n) = h1-sqrt((us-rqkll)/(us-u00k(i,k))) !eq.11
+             612     4   p                       endif
+             613     3               !
+             614     3   p    v                endif
+             615     2   p    v              enddo
+             616     1               !-------------------ice-water id number iwl------------------------------
+             617     1               !       do n=1,ihpr
+             618     1               !         if (comput(n) .and.  (ww(n) .gt. climit)) then
+             619     1               !           if (tmt0(n) .lt. -15.0
+             620     1               !    *         .or. (tmt0(n) .lt. 0.0 .and. iwl1(n) .eq. 1))
+             621     1               !    *                                      iwl(n) = 1
+             622     1               !             cll(ipr(n),k) = 1.0                           ! cloud cover!
+             623     1               !             cll(ipr(n),k) = min(1.0, ww(n)*cclim(k))      ! cloud cover!
+             624     1               !         endif
+             625     1               !       enddo
+             626     1               !
+             627     1               !---   precipitation production --  auto conversion and accretion
+             628     1               !
+             629     1                     noskip=.true.
+             630     2                     if(noskip) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      comput
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 2  FILL 4
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             631     3   s    s              do n=1,ihpr
+             632     4   p    v                if (comput(n) .and. ccr(n) > 0.0) then
+             633     4               !->rsun
+             634     4               !rsun       i = ipr(n)
+             635     4               !<-rsun
+             636     4   p    v                  wws    = ww(n)
+             637     4   p    v                  cwmk   = max(cons_0, wws)
+             638     4               !           amaxcm = max(cons_0, cwmk - wmink(n))
+             639     5   p    v                  if (iwl(n) == 1) then                 !  ice phase
+             640     5   p    v                     amaxcm = max(cons_0, cwmk - wmini(ipr(n),k))
+             641     5   p    v                     expf      = dt * exp(0.025*tmt0(n))          !eq.26
+             642     5   p    v                     psaut     = min(cwmk, psautco*expf*amaxcm)   !eq.25
+             643     5   p    v                     ww(n)     = ww(n) - psaut
+             644     5   p    v                     cwmk      = max(cons_0, ww(n))
+             645     5               !              cwmk      = max(cons_0, ww(n)-wmini(ipr(n),k))
+             646     5               !rsun          psaci     = min(cwmk, aa2*expf*precsl1(n)*cwmk)
+             647     5               !rsun          psaci     = min(cwmk,
+             648     5               !rsun&              aa2*expf*qs(ipr(n),k)*del(ipr(n),k)
+             649     5               !rsun&              /grav*cwmk)
+             650     5               
+             651     5               !
+             652     5               !       use a criterion for the snow collecion
+             653     5               !
+             654     5               
+             655     5   p    v                     precsk = max(cons_0,    qqs(n) * condt(n))
+             656     5   p    v                     psaci     = min(cwmk, aa2*expf*precsk*cwmk)  !eq.28, 29
+             657     5               
+             658     5   p    v                     ww(n)     = ww(n) - psaci
+             659     5               !->rsun
+             660     5   p    v                     tem = wws - ww(n)
+             661     6   p    v                     if(ww(n) > 0.0 .and. ww(n) > wws) then
+             662     6   p    v                       ww(n) = wws
+             663     6   p    v                       tem=0.0
+             664     6   p    v                     endif
+             665     5   p    v                     tem1 = qs(ipr(n),k)
+             666     5               !rsun          precsl(n) = precsl(n) + (wws - ww(n)) * condt(n)
+             667     5               !rsun          qs(ipr(n),k) = qs(ipr(n),k) + max(wws - ww(n),0.)
+             668     5               !rsun          qs(ipr(n),k) = qs(ipr(n),k) + tem
+             669     5   p    v                     qqs(n) = qqs(n) + tem
+             670     6   p    v                     if(wws-ww(n) < 0.0) then
+             671     6   m    m                       print*,'1precpd neg values:',k,wws,ww(n),  &
+             672     6                                     wws - ww(n),qs(ipr(n),k),tem1
+             673     6   p    v                     endif
+             674     5               
+             675     5               !->> rsun    test test
+             676     5               !               ww(n) = wws
+             677     5               !               qs(ipr(n),k) = tem
+             678     5               !<<-rsun
+             679     5               
+             680     5               !<-rsun
+             681     5   p    v                  else                                    !  liquid water
+             682     5               !
+             683     5               !          for using sundqvist precip formulation of rain
+             684     5               !
+             685     5   p    v                     amaxcm    = max(cons_0, cwmk - wmink(n))
+             686     5               !!             amaxcm    = cwmk
+             687     5               !rsun          tem1      = precsl1(n) + precrl1(n)
+             688     5               !               tem1      = (qs(ipr(n),k)*rho(ipr(n),k)*dzl(ipr(n),k) +
+             689     5               !     &                      qr(ipr(n),k)*rho(ipr(n),k)*dzl(ipr(n),k))
+             690     5               !rsun          tem1      = max(cons_0,(qs(ipr(n),k)+qr(ipr(n),k))
+             691     5               !rsun&                    *del(ipr(n),k)/grav)
+             692     5   p    v                     tem1      = max(cons_0,(qqs(n)+qqr(n))*condt(n))
+             693     5   p    v                     tem2      = min(max(cons_0, 268.0-tt(n)), cons_20)
+             694     5   p    v                     tem       = (1.0+c1*sqrt(tem1*rdt)) * (1+c2*sqrt(tem2))
+             695     5               !
+             696     5   p    v                     tem2      = amaxcm * cmr * tem / max(ccr(n),cons_p01)
+             697     5   p    v                     tem2      = min(cons_50, tem2*tem2)
+             698     5   p    v                     praut     = c00  * tem * amaxcm * (1.0-exp(-tem2)) !eq.24
+             699     5   p    v                     praut     = min(praut, cwmk)
+             700     5   p    v                     ww(n)     = ww(n) - praut
+             701     5               !
+             702     5               !          below is for zhao's precip formulation (water)
+             703     5               !
+             704     5               !              amaxcm    = max(cons_0, cwmk - wmink(n))
+             705     5               !              praut     = min(cwmk, c00*amaxcm*amaxcm)
+             706     5               !              ww(n)     = ww(n) - praut
+             707     5               !
+             708     5               !              cwmk      = max(cons_0, ww(n))
+             709     5               !              tem1      = precsl1(n) + precrl1(n)
+             710     5               !              pracw     = min(cwmk, cr*dt*tem1*cwmk)
+             711     5               !              ww(n)     = ww(n) - pracw
+             712     5               !
+             713     5               !rsun          precrl(n) = precrl(n) + (wws - ww(n)) * condt(n)
+             714     5   p    v                     tem = wws - ww(n)
+             715     6   p    v                     if(tem < 0.0) then
+             716     6   p    v                       tem = 0.0
+             717     6   p    v                       ww(n) = wws
+             718     6   p    v                     endif
+             719     5   p    v                     tem1 = qr(ipr(n),k)
+             720     5               !rsun          qqr(n)    = qqr(n) + max(wws - ww(n),0.)
+             721     5               !rsun          qr(ipr(n),k)    = qr(ipr(n),k) + max(wws - ww(n),0.)
+             722     5               !rsun          qr(ipr(n),k)    = qr(ipr(n),k) + (wws - ww(n)) ! rsun does this do anything to conservation
+             723     5               !rsun          qr(ipr(n),k)    = qr(ipr(n),k) + tem ! rsun does this do anything to conservation
+             724     5   p    v                     qqr(n)    = qqr(n) + tem ! rsun does this do anything to conservation
+             725     6   p    v                     if(wws-ww(n) < 0.0) then
+             726     6   m    m                       print*,'2precpd neg values:',wws,ww(n),          &
+             727     6                                     wws - ww(n),qr(ipr(n),k),tem1,qqr(n)
+             728     6   p    v                     endif
+             729     5               !->> rsun    test test
+             730     5               !               ww(n) = wws
+             731     5               !               qr(ipr(n),k) = tem
+             732     5               !<<-rsun
+             733     5               !
+             734     5               !hchuang code change [+1l] : add record to record information in vertical
+             735     5               ! turn rnp in unit of ww (cwm and q, kg/kg ???)
+             736     5   p    v                     rnp(n) = rnp(n) + (wws - ww(n))
+             737     5   p    v                  endif
+             738     4   p    v                endif
+             739     3   p    v              enddo
+             740     2                     endif ! if(noskip)
+             741     1               !
+             742     1               !-----evaporation of precipitation-------------------------
+             743     1               !**** err & ers positive--->evaporation-- negtive--->condensation
+             744     1               !
+             745     1                     noskip = .false.
+             746     1                     noskip = .true.
+             747     2                     if(noskip) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 85
+                                   <<< Loop-information  End >>>
+             748     3  pp    s              do n=1,ihpr
+             749     4   p    m                if (comput(n)) then
+             750     4               !rsun       i      = ipr(n)
+             751     4   p                       qk     = max(epsq,  qq(n))
+             752     4   p    s                  tmt0k  = max(cons_m30, tmt0(n))
+             753     4               !rsun       precrk = max(cons_0,    precrl(n))
+             754     4               !rsun       precrk = max(cons_0,    qr(i,k)*del(i,k)/grav)
+             755     4   p    s                  precrk = max(cons_0,    qqr(n)*condt(n))
+             756     4               !rsun       precsk = max(cons_0,    precsl(n))
+             757     4               !rsun       precsk = max(cons_0,    qs(i,k)*del(i,k)/grav)
+             758     4   p    s                  precsk = max(cons_0,    qqs(n)*condt(n))
+             759     4   p    s                  amaxrq = max(cons_0,    u00k(i,k)-rq(n)) * conde(n)
+             760     4               !----------------------------------------------------------------------
+             761     4               ! increase the evaporation for strong/light prec
+             762     4               !----------------------------------------------------------------------
+             763     4   p    m                  ppr    = ke * amaxrq * sqrt(precrk)    !evaporation of rain; eq.35
+             764     4               !           ppr    = ke * amaxrq * sqrt(precrk*rdt)
+             765     4               !->rsun
+             766     4               !rsun       ppr    = min (ppr,qr(i,k)*condt(n))
+             767     4               !<-rsun
+             768     5   p    s                  if (tmt0(n) .ge. 0.) then
+             769     5   p    m                    pps = 0.
+             770     5   p                       else
+             771     5   p    m                    pps = (crs1+crs2*tmt0k) * amaxrq * precsk / u00k(i,k) !evaporation of snow; eq.36
+             772     5               !->rsun
+             773     5               !rsun         pps = min (pps,qs(i,k)*condt(n))
+             774     5               !<-rsun
+             775     5   p                       end if
+             776     4               !---------------correct if over-evapo./cond. occurs--------------------
+             777     4   p    s                  erk=precrk+precsk
+             778     4   p    m                  erkdt = erk
+             779     4   p                       if(rq(n).ge.1.0e-10)  erk = amaxrq * qk * rdt / rq(n)
+             780     5   p    m                  if (ppr+pps .gt. abs(erk)) then
+             781     5               !rsun          rprs   = erk / (precrk+precsk)
+             782     5   p    s                     rprs   = erk /erkdt
+             783     5   p    s                     ppr    = precrk * rprs
+             784     5   p    m                     pps    = precsk * rprs
+             785     5   p                       endif
+             786     4   p    s                  ppr       = min(ppr, precrk)
+             787     4   p    s                  pps       = min(pps, precsk)
+             788     4   p    s                  err(n)    = ppr * rconde(n)
+             789     4   p    s                  ers(n)    = pps * rconde(n)
+             790     4               !rsun       precrl(n) = precrl(n) - ppr
+             791     4               !rsun       qr(i,k)   = max(0.0,qr(i,k) - ppr /del(i,k)*grav) ! rsun potenially negative values
+             792     4               !rsun       qr(i,k)   = qr(i,k) - ppr /del(i,k)*grav ! rsun potenially negative values
+             793     4               !rsun       qr(i,k)   = qr(i,k) - err(n) * dt
+             794     4   p    s                  qqr(n)   = qqr(n) - err(n) * dt   ! rsun: make sure this is positive
+             795     4               !hchuang code change [+1l] : add record to record information in vertical
+             796     4               ! use err for kg/kg/dt not the ppr (mm/dt=kg/m2/dt)
+             797     4               !
+             798     4   p    s                  rnp(n) = rnp(n) - err(n)
+             799     4               !
+             800     4               !rsun       precsl(n) = precsl(n) - pps
+             801     4               !rsun       qs(i,k)   = max(0.,qs(i,k) - pps /del(i,k)*grav)
+             802     4               !rsun       qs(i,k)   = qs(i,k) - pps /del(i,k)*grav
+             803     4               !rsun       qs(i,k)   = qs(i,k) - ers(n) * dt
+             804     4   p    s                  qqs(n)   = qqs(n) - ers(n) * dt
+             805     4   p    v                endif
+             806     3   p    v              enddo
+             807     2                     endif ! if(noskip)
+             808     1               !--------------------melting of the snow--------------------------------
+             809     1                     noskip=.true.
+             810     2                     if(noskip) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 112
+                                   <<< Loop-information  End >>>
+             811     3  pp    s              do n=1,ihpr
+             812     4   p    v                if (comput(n)) then
+             813     4   p                       i      = ipr(n)
+             814     4               !rsun        precrk = max(cons_0,    qr(i,k)*del(i,k)/grav)
+             815     4   p    s                   precrk = max(cons_0,    qqr(n) * condt(n))
+             816     4               !rsun        precsk = max(cons_0,    qs(i,k)*del(i,k)/grav)
+             817     4   p    m                   precsk = max(cons_0,    qqs(n)*condt(n))
+             818     5   p    m                  if (tmt0(n) .gt. 0.) then
+             819     5               !rsun          amaxps = max(cons_0,    precsl(n))
+             820     5   p    s                     amaxps = max(cons_0,    precsk)
+             821     5   p    s                     psm1   = csm1 * tmt0(n) * tmt0(n) * amaxps !eq.30; continous melting of melting snow
+             822     5   p    m                     psm2   = cws * cr * max(cons_0, ww(n)) * amaxps   !eq.31, 32; melting rate of snow
+             823     5   p    m                     ppr    = (psm1 + psm2) * conde(n)
+             824     6   p    m                     if (ppr .gt. amaxps) then
+             825     6   p    m                       ppr  = amaxps
+             826     6   p    m                       psm1 = amaxps * rconde(n)
+             827     6   p                          endif
+             828     5               !rsun          precrl(n) = precrl(n) + ppr
+             829     5               !rsun          qr(i,k) = qr(i,k) + ppr/del(i,k)*grav
+             830     5               !rsun          qqr(n) = qqr(n) + ppr/del(i,k)*grav
+             831     5   p    s                     qqr(n) = qqr(n) + psm1*dt
+             832     5               !
+             833     5               !hchuang code change [+1l] : add record to record information in vertical
+             834     5               ! turn ppr (mm/dt=kg/m2/dt) to kg/kg/dt -> ppr/air density (kg/m3)
+             835     5   p    m                     rnp(n) = rnp(n) + ppr * rconde(n)
+             836     5               !
+             837     5               !rsun          precsl(n) = precsl(n) - ppr
+             838     5               !rsun          qs(i,k) = qs(i,k) - ppr/del(i,k)*grav
+             839     5               !rsun          qqs(n) = qqs(n) - ppr/del(i,k)*grav
+             840     5   p    m                     qqs(n) = qqs(n) - psm1*dt
+             841     5   p                       else
+             842     5   p    m                     psm1 = d00
+             843     5   p                       endif
+             844     4               !
+             845     4               !---------------update t and q------------------------------------------
+             846     4   p    v                  tt(n) = tt(n) - dtcp * (elwv*err(n)+eliv*ers(n)+eliw*psm1)
+             847     4   p    m                  qq(n) = qq(n) + dt * (err(n)+ers(n))
+             848     4   p    v                endif
+             849     3   p    v              enddo
+             850     2                     endif ! if(noskip)
+             851     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.33, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tt, qqs, qqr, ipr, rnp, ww, qq, iwl
+                                   <<<      iwl1
+                                   <<< Loop-information  End >>>
+             852     2   s    v              do n=1,ihpr
+             853     2   p    v                iwl1(n)    = iwl(n)
+             854     2               !rsun          precrl1(n) = max(cons_0, precrl(n))
+             855     2               !rsun          precsl1(n) = max(cons_0, precsl(n))
+             856     2   p    v                i          = ipr(n)
+             857     2   m    v                t(i,k)     = tt(n)
+             858     2   s    v                q(i,k)     = qq(n)
+             859     2   s    v                cwm(i,k)   = ww(n)
+             860     2   m    v                iw(i,k)    = iwl(n)
+             861     2   s    v                qr(i,k)    = qqr(n)
+             862     2   s    v                qs(i,k)    = qqs(n)
+             863     2               !hchuang code change [+1l] : add record to record information in vertical
+             864     2               ! rnp = precrl1*rconde(n) unit in kg/kg/dt
+             865     2               !
+             866     2   s    v                rainp(i,k) = rnp(n)
+             867     2   p    v              enddo
+             868     1               !
+             869     1               !  move water from vapor to liquid should the liquid amount be negative
+             870     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 232
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cwm
+                                   <<< Loop-information  End >>>
+             871     2  pp    s              do i = 1, im
+             872     3   p    v                if (cwm(i,k) < 0.) then
+             873     3   p    m                  tem      = q(i,k) + cwm(i,k)
+             874     4   p    m                  if (tem >= 0.0) then
+             875     4   p    m                    q(i,k)   = tem
+             876     4   p    m                    t(i,k)   = t(i,k) - elwv * rcp * cwm(i,k)
+             877     4   p    m                    cwm(i,k) = 0.
+             878     4   p                       elseif (q(i,k) > 0.0) then
+             879     4   p    m                    cwm(i,k) = tem
+             880     4   p    m                    t(i,k)   = t(i,k) + elwv * rcp * q(i,k)
+             881     4   p                         q(i,k)   = 0.0
+             882     4   p                       endif
+             883     3   p    v                endif
+             884     2   p    v              enddo
+             885     1               !
+             886     1                     enddo                               ! k loop ends here!
+             887                     !->rsun conservation
+             888                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 471
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 192, MVE: 7, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      watertot2, q, del, qr, qs, cwm, rn
+                                   <<< Loop-information  End >>>
+             889     1  pp   2v            do i = 1, im
+             890     1   p   2v              watertot2(i) = 0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    INTERCHANGED(nest: 1)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      q, cwm, qs, qr, del, watertot2
+                                   <<< Loop-information  End >>>
+             891     2       2               do k = 1, km
+             892     2   p   2v                watertot2(i) = watertot2(i) +                          &
+             893     2                             (q(i,k)+cwm(i,k)+qr(i,k)+qs(i,k))*del(i,k)/grav
+             894     2   p   2v              enddo
+             895     1   p   2v              watertot2(i) = watertot2(i) + rn(i)*row
+             896     1               
+             897     2   p   2v              if(abs(watertot2(i) - watertot1(i)) > 1.e-6) then
+             898     2               !          print*,'different2:',kdt, watertot1(i), watertot2(i), rn(i), & !xb110
+             899     2               !     &        abs(watertot2(i) - watertot1(i))                    !     !xb110
+             900     2   p   2v              endif
+             901     1   p   2v            enddo
+             902                     !      print*,'after different2'
+             903                     !<-rsun
+             904                     !->rsun sedimentation
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 226
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.26, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      dzl, onss, nss, onsr, nsr
+                                   <<< Loop-information  End >>>
+             905     1  pp    v            do i = 1, im
+             906     1   p    v              tem = dzl(i,1)/vtr
+             907     1   p    v              nsr(i)  = int(dt/tem+1.)
+             908     1   p    v              tem = dzl(i,1)/vts
+             909     1   p    v              nss(i)  = int(dt/tem+1.)
+             910     1   p    v              onsr(i) = 1./nsr(i)
+             911     1   p    v              onss(i) = 1./nss(i)
+             912     1   p    v            enddo
+             913                     
+             914                     !      if(me == 0 ) then    !xb110
+             915                     !        print*,'dzl(1,1)',kdt,dzl(1,1)
+             916                     !        print*,'nsr,nss,onsr, nnss:',nsr,nss,onsr, onss
+             917                     !        print*,'precpd before seds : qs:',kdt,qs
+             918                     !      endif                 !xb110
+             919                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             920     1  pp                 do i = 1, im
+             921     2   p                   do nt = 1, nss (i)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.61, ITR: 96, MVE: 3, POL: S)
+                                   <<< Loop-information  End >>>
+             922     3   p   2v                do k = km, 1, -1
+             923     4   p   2v                  if(qs(i,k) .gt. minp) then
+             924     4   p   2v                    seds(i,k)  = vts * qs(i,k) * rho(i,k)
+             925     4   p   2v                  else
+             926     4   p   2v                    seds(i,k)  = 0.0
+             927     4   p   2v                  endif
+             928     3   p   2v                enddo
+             929     2               !rsun          qs(i,km) = qs(i,km)-seds(i,km)/dzl(i,km)*dt/nss(i)/rho(i,km)
+             930     2   p                     qs(i,km) = qs(i,km)-seds(i,km)/                         &
+             931     2                                    del(i,km)*dt/nss(i)*grav
+             932     2   p                     qs(i,km) = max(qs(i,km),0.0)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.48, ITR: 48, MVE: 2, POL: S)
+                                   <<< Loop-information  End >>>
+             933     3   p   2v                do k = km-1, 1, -1
+             934     3   p   2v                  tem1=qs(i,k+1)
+             935     3   p   2v                  tem =qs(i,k)
+             936     3               !            qs(i,k) = qs(i,k) +
+             937     3               !     &              (seds(i,k+1) - seds(i,k))/rho(i,k)*
+             938     3               !     &              dt*onss(i)/dzl(i,k)
+             939     3   p   2v                  qs(i,k) = qs(i,k) +                                 &
+             940     3                                  (seds(i,k+1) - seds(i,k))/del(i,k)*grav*     &
+             941     3                                   dt*onss(i)
+             942     3               !rsun            qs(i,k) = max(qs(i,k),0.0)
+             943     3               !            if(qs(i,k) < 0.0) then
+             944     3               !               print*,'neg value qs:',
+             945     3               !     &                  k,tem1, tem, rho(i,k+1), rho(i,k),
+             946     3               !     &                  seds(i,k+1), seds(i,k),
+             947     3               !     &                  onss(i),dzl(i,k),qs(i,k)
+             948     3               !
+             949     3               !            endif
+             950     3   p   2v                enddo
+             951     2   p                     rn(i) = rn(i)+seds(i,1)*dt*onss(i)*rrow
+             952     2   p                     sn(i) = sn(i)+seds(i,1)*dt*onss(i)*rrow
+             953     2   p                   enddo
+             954     1   p                 enddo
+             955                     
+             956                     !      if(me==0) then
+             957                     !        print*,'precpd after seds: seds:',kdt,seds
+             958                     !        print*,'precpd after seds : rn:',kdt,rn
+             959                     !        print*,'precpd after seds : sn:',kdt,sn
+             960                     !        print*,'precpd after seds : qs:',kdt,qs
+             961                     !        print*, 'precpd before sedr : qr:',kdt, qr
+             962                     !      endif
+             963                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             964     1  pp                 do i = 1, im
+             965     2   p                   do nt = 1, nsr(i)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.40, ITR: 96, MVE: 3, POL: S)
+                                   <<< Loop-information  End >>>
+             966     3   p   2v                do k = km, 1, -1
+             967     4   p   2v                  if(qr(i,k) .gt. minp) then
+             968     4   p   2v                    sedr(i,k)  = vtr * qr(i,k) * rho(i,k)
+             969     4   p   2v                  else
+             970     4   p   2v                    sedr(i,k)  = 0.0
+             971     4   p   2v                  endif
+             972     3   p   2v                enddo
+             973     2   p                     qr(i,km) = qr(i,km)-sedr(i,km)/                         &
+             974     2                                    del(i,km)*dt/nsr(i)*grav
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.48, ITR: 48, MVE: 2, POL: S)
+                                   <<< Loop-information  End >>>
+             975     3   p   2v                do k = km-1, 1, -1
+             976     3   p   2v                  tem = qr(i,k)
+             977     3   p   2v                  tem1 = qr(i,k+1)
+             978     3               
+             979     3   p   2v                  qr(i,k) = qr(i,k) +                                   &
+             980     3                                  (sedr(i,k+1) - sedr(i,k))/del(i,k)*grav*       &
+             981     3                                   dt*onsr(i)
+             982     3               !rsun            qr(i,k) = max(qr(i,k),0.0)
+             983     3               !            if(qr(i,k) < 0.0) then
+             984     3               !               print*,'neg value qr:',
+             985     3               !     &                  k,tem1, tem, rho(i,k+1), rho(i,k),
+             986     3               !     &                  sedr(i,k+1), sedr(i,k),
+             987     3               !     &                  onsr(i),dzl(i,k),qr(i,k)
+             988     3               !
+             989     3               !            endif
+             990     3   p   2v                enddo
+             991     2   p                     rn(i) = rn(i)+sedr(i,1)*dt*onsr(i)*rrow
+             992     2               
+             993     2   p                   enddo
+             994     1   p                 enddo
+             995                     
+             996                     !      if(me ==0) then
+             997                     !        print*,'precpd after sedr and dt: sedr:',kdt,sedr
+             998                     !        print*,'precpd after sedr  dt: rn:',kdt,rn
+             999                     !        print*,'precpd after sedr dt : sn:',kdt,sn
+            1000                     !        print*,'precpd after sedr dt : qr:',kdt,qr
+            1001                     !      endif
+            1002                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 667
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.46, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rn, sn, sr
+                                   <<< Loop-information  End >>>
+            1003     1  pp   2v            do i = 1, im
+            1004     1   p   2v              rid = rn(i)
+            1005     2   p   2v              if (rid < 1.e-13) then
+            1006     2   p   2v                 sr(i) = 0.
+            1007     2   p   2v              else
+            1008     2   p   2v                 sr(i) = sn(i)/rid
+            1009     2   p   2v              endif
+            1010     1   p   2v            enddo
+            1011                     !->rsun conservation
+            1012                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 762
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 192, MVE: 7, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      watertot2, q, del, qr, qs, cwm, rn
+                                   <<< Loop-information  End >>>
+            1013     1  pp   2v            do i = 1, im
+            1014     1   p   2v              watertot2(i) = 0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    INTERCHANGED(nest: 1)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      q, cwm, qs, qr, del, watertot2
+                                   <<< Loop-information  End >>>
+            1015     2       2               do k = 1, km
+            1016     2   p   2v                watertot2(i) = watertot2(i) +                                 &
+            1017     2                             (q(i,k)+cwm(i,k)+qr(i,k)+qs(i,k))*del(i,k)/grav
+            1018     2   p   2v              enddo
+            1019     1   p   2v              watertot2(i) = watertot2(i) + rn(i)*row
+            1020     1               
+            1021     2   p   2v              if(abs(watertot2(i) - watertot1(i)) > 1.e-6) then
+            1022     2               !          print*,'different1:',kdt, watertot1(i), watertot2(i), rn(i),  &!xb110
+            1023     2               !     &        abs(watertot2(i) - watertot1(i))                           !xb110
+            1024     2   p   2v              endif
+            1025     1   p   2v            enddo
+            1026                     !<-rsun end of sedimentation
+            1027                     
+            1028                     !**********************************************************************
+            1029                     !-----------------------end of precipitation processes-----------------
+            1030                     !**********************************************************************
+            1031                     !
+            1032                     !->rsun
+            1033                     !      do n=1,ihpr
+            1034                     !        i = ipr(n)
+            1035                     !        rn(i) = (precrl1(n)  + precsl1(n)) * rrow  ! prate: flux to rate in DT (not /s)
+            1036                     !!
+            1037                     !!----sr=1 if sfc prec is rain ; ----sr=-1 if sfc prec is snow
+            1038                     !!----sr=0 for both of them or no sfc prec
+            1039                     !!
+            1040                     !!        rid = 0.
+            1041                     !!        sid = 0.
+            1042                     !!        if (precrl1(n) .ge. 1.e-13) rid = 1.
+            1043                     !!        if (precsl1(n) .ge. 1.e-13) sid = -1.
+            1044                     !!        sr(i) = rid + sid  ! sr=1 --> rain, sr=-1 -->snow, sr=0 -->both
+            1045                     !! chuang, june 2013: change sr to define fraction of frozen precipitation instead
+            1046                     !! because wpc uses it in their winter experiment
+            1047                     !
+            1048                     !        rid = precrl1(n) + precsl1(n)
+            1049                     !        if (rid < 1.e-13) then
+            1050                     !           sr(i) = 0.
+            1051                     !        else
+            1052                     !           sr(i) = precsl1(n)/rid
+            1053                     !        endif
+            1054                     !      enddo
+            1055                     !<-rsun
+            1056                     !
+            1057                           return
+            1058                           end
+
+ Procedure information
+   Lines      : 1058
+   Statements : 384
+   Stack(byte): 113888
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : precpd_n
+   Attribute and Cross reference of name
+     aa2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 275
+      |(Reference)      : 656
+     abs
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 780  897  1021
+     amaxcm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 640  685
+      |(Reference)      : 642  696  698
+     amaxps
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 820
+      |(Reference)      : 821  822  824  825  826
+     amaxrq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 759
+      |(Reference)      : 763  771  779
+     c00
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 287
+      |(Reference)      : 698
+     c1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 291
+      |(Reference)      : 694
+     c2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 292
+      |(Reference)      : 694
+     cclim
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 143
+      |(Definition)     : 
+      |(Reference)      : 
+     cclimit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 263
+      |(Reference)      : 
+     ccr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 129
+      |(Definition)     : 346  606  608  611
+      |(Reference)      : 632  696
+     climit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 264
+      |(Reference)      : 514  516  533  577  589
+     cmr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 288
+      |(Reference)      : 696
+     comput
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 147
+      |(Definition)     : 340  477  518  520
+      |(Reference)      : 482  526  632  749  812
+     conde
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 129
+      |(Definition)     : 528
+      |(Reference)      : 529  530  759  823
+     condt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 129
+      |(Definition)     : 529
+      |(Reference)      : 655  692  755  758  815  817
+     cons_0
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 108
+      |(Definition)     : 
+      |(Reference)      : 511  513  637  640  644  655  685  692  693  755  758  759  815  817  820  822
+     cons_20
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 108
+      |(Definition)     : 
+      |(Reference)      : 693
+     cons_50
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 108
+      |(Definition)     : 
+      |(Reference)      : 697
+     cons_m30
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 108
+      |(Definition)     : 
+      |(Reference)      : 752
+     cons_p01
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 108
+      |(Definition)     : 
+      |(Reference)      : 696
+     cp
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65  73
+      |(Definition)     : 
+      |(Reference)      : 90
+     cr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 274
+      |(Reference)      : 822
+     crs1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 272
+      |(Reference)      : 771
+     crs2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 273
+      |(Reference)      : 771
+     csm1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 271
+      |(Reference)      : 821
+     cwm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  114
+      |(Definition)     : 859  877  879
+      |(Reference)      : 326  477  502  872  873  876  892  1016
+     cwmk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 637  644
+      |(Reference)      : 640  642  656  656  685  699
+     cws
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 265
+      |(Reference)      : 822
+     d00
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80  90
+      |(Definition)     : 
+      |(Reference)      : 341  343  345  346  348  495  496  516  577  600  606  842
+     del
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  114
+      |(Definition)     : 299
+      |(Reference)      : 299  326  511  513  528  892  930  939  973  979  1016
+     dt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  114
+      |(Definition)     : 
+      |(Reference)      : 253  281  287  528  641  794  804  831  840  847  907  909  930  939  951  952  973  979  991
+     dtcp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 281
+      |(Reference)      : 846
+     dzl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 114
+      |(Definition)     : 241
+      |(Reference)      : 906  908
+     eliv
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80  90
+      |(Definition)     : 
+      |(Reference)      : 90  846
+     eliw
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80  90
+      |(Definition)     : 
+      |(Reference)      : 846
+     elwv
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80  90
+      |(Definition)     : 
+      |(Reference)      : 90  846  876  876  880  880
+     eps
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65  74
+      |(Definition)     : 
+      |(Reference)      : 75
+     epsm1
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65  75
+      |(Definition)     : 
+      |(Reference)      : 553
+     epsq
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80  90
+      |(Definition)     : 
+      |(Reference)      : 531  555  751
+     erk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 777  779
+      |(Reference)      : 778  780  782
+     erkdt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 778
+      |(Reference)      : 782
+     err
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 129
+      |(Definition)     : 495  788
+      |(Reference)      : 794  798  846  847
+     ers
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 129
+      |(Definition)     : 496  789
+      |(Reference)      : 804  846  847
+     evpco
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 114
+      |(Definition)     : 235
+      |(Reference)      : 260
+     exp
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 641  698
+     expf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 641
+      |(Reference)      : 642  656
+     fi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 576
+      |(Reference)      : 577
+     fiw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 596
+      |(Reference)      : 597  597
+     float
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 550  596
+     g
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80  90
+      |(Definition)     : 
+      |(Reference)      : 241  528
+     grav
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65  68
+      |(Definition)     : 
+      |(Reference)      : 90  326  511  513  892  930  939  973  979  1016
+     h1
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80  90
+      |(Definition)     : 
+      |(Reference)      : 90  90  253  262  530  597  611
+     h1000
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80  90
+      |(Definition)     : 
+      |(Reference)      : 
+     hfus
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65  69
+      |(Definition)     : 
+      |(Reference)      : 90
+     hvap
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65  67
+      |(Definition)     : 
+      |(Reference)      : 90  90
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 166
+      |(Definition)     : 240  303  323  331  475  481  499  527  813  856  871  889  905  920  964  1003  1013
+      |(Reference)      : 241  241  304  306  311  312  314  316  316  316  316  324  326  326  326  326  326  326  326  335  340  341  343  345  346  348  476  476  477  477  482  484  500  501  502  503  504  506  507  511  513  528  576  605  611  759  771  857  858  859  860  861  862  866  872  873  873  875  876  876  876  877  878  879  880  880  880  881  890  892  892  892  892  892  892  892  895  895  895  897  897  906  907  908  909  910  910  911  911  921  923  924  924  924  926  930  930  930  930  930  932  932  934  935  939  939  939  939  939  939  951  951  951  951  952  952  952  952  965  967  968  968  968  970  973  973  973  973  973  976  977  979  979  979  979  979  979  991  991  991  991  1004  1006  1008  1008  1014  1016  1016  1016  1016  1016  1016  1016  1019  1019  1019  1021  1021
+     ic
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 173
+      |(Definition)     : 548
+      |(Reference)      : 550  550  550  550
+     ihpr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 166
+      |(Definition)     : 480  483
+      |(Reference)      : 483  484  492  525  631  748  811  852
+     im
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  112
+      |(Definition)     : 
+      |(Reference)      : 103  103  114  114  129  129  129  129  129  129  129  129  129  129  129  129  129  129  129  129  129  129  129  129  145  145  145  145  147  240  303  323  331  475  481  871  889  905  920  964  1003  1013
+     int
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 548  907  909
+     ipr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 145
+      |(Definition)     : 484
+      |(Reference)      : 499  527  640  665  671  719  726  813  856
+     iw
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 145
+      |(Definition)     : 306  860
+      |(Reference)      : 
+     iwl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 145
+      |(Definition)     : 497  578  580  584  588  589
+      |(Reference)      : 596  639  853  860
+     iwl1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 145
+      |(Definition)     : 335  853
+      |(Reference)      : 589
+     ix
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  112
+      |(Definition)     : 
+      |(Reference)      : 80  80  88  88  114  114  114  114  114  114  114  114  114  114  114  114  129  169
+     jpr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 112
+      |(Definition)     : 
+      |(Reference)      : 
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 166
+      |(Definition)     : 239  302  325  474  491  891  922  933  966  975  1015
+      |(Reference)      : 241  241  304  306  311  312  314  316  316  316  316  326  326  326  326  326  476  476  477  500  501  502  503  504  506  507  511  513  528  576  605  611  640  665  671  671  719  726  759  771  857  858  859  860  861  862  866  872  873  873  875  876  876  876  877  878  879  880  880  880  881  892  892  892  892  892  923  924  924  924  926  934  935  939  939  939  939  939  967  968  968  968  970  976  977  979  979  979  979  979  1016  1016  1016  1016  1016
+     kdt
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 112
+      |(Definition)     : 
+      |(Reference)      : 
+     ke
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 260  278
+      |(Reference)      : 278  763
+     km
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  112
+      |(Definition)     : 
+      |(Reference)      : 114  114  114  114  114  114  114  114  114  129  129  129  129  129  129  143  145  169  239  302  325  474  491  891  922  930  930  930  930  932  932  933  966  973  973  973  973  975  1015
+     lprnt
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  148
+      |(Definition)     : 
+      |(Reference)      : 
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 511  513  514  531  533  547  555  637  640  644  655  685  692  693  696  751  752  755  758  759  815  817  820  822  932
+     me
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 164
+      |(Definition)     : 
+      |(Reference)      : 
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 476  547  550  610  642  656  693  697  699  786  787
+     minp
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 101
+      |(Definition)     : 
+      |(Reference)      : 923  967
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 166
+      |(Definition)     : 492  525  631  748  811  852
+      |(Reference)      : 495  496  497  499  500  501  502  503  504  506  507  511  513  514  518  520  526  527  528  529  529  530  530  531  532  532  533  541  547  549  573  578  580  583  584  588  589  589  596  600  602  605  606  607  608  610  611  632  632  636  639  640  641  643  643  644  655  655  658  658  660  661  661  662  665  669  669  670  671  671  671  685  692  692  692  693  696  700  700  714  717  719  724  724  725  726  726  726  726  736  736  736  749  751  752  755  755  758  758  759  759  768  779  779  788  788  789  789  794  794  794  798  798  798  804  804  804  812  813  815  815  817  817  818  821  821  822  823  826  831  831  835  835  835  840  840  846  846  846  846  847  847  847  847  853  853  856  857  858  859  860  861  862  866
+     noskip
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 149
+      |(Definition)     : 629  745  746  809
+      |(Reference)      : 630  747  810
+     nsr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 88
+      |(Definition)     : 907
+      |(Reference)      : 910  965  973
+     nss
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 88
+      |(Definition)     : 909
+      |(Reference)      : 911  921  930
+     nt
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 88
+      |(Definition)     : 921  965
+      |(Reference)      : 
+     onsr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 80
+      |(Definition)     : 910
+      |(Reference)      : 979  991
+     onss
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 80
+      |(Definition)     : 911
+      |(Reference)      : 939  951  952
+     phi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  169
+      |(Definition)     : 
+      |(Reference)      : 241
+     ppr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 763  783  786  823  825
+      |(Reference)      : 780  786  788  824  835
+     pps
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 769  771  784  787
+      |(Reference)      : 780  787  789
+     pqs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 172
+      |(Definition)     : 549
+      |(Reference)      : 550  553
+     praut
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 698  699
+      |(Reference)      : 699  700
+     prautco
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 114
+      |(Definition)     : 234
+      |(Reference)      : 287
+     precpd_n
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     precrk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 511  755  815
+      |(Reference)      : 516  763  777  783  786
+     precsk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 513  655  758  817
+      |(Reference)      : 516  656  771  777  784  787  820
+     pres
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 129
+      |(Definition)     : 504
+      |(Reference)      : 541  549
+     pres1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 541
+      |(Reference)      : 
+     prsl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  114
+      |(Definition)     : 298
+      |(Reference)      : 298  304  316  504
+     ps
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  114
+      |(Definition)     : 
+      |(Reference)      : 
+     psaci
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 656
+      |(Reference)      : 658
+     psaut
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 642
+      |(Reference)      : 643
+     psautco
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 114
+      |(Definition)     : 233
+      |(Reference)      : 642
+     psm1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 821  826  842
+      |(Reference)      : 823  831  840  846
+     psm2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 822
+      |(Reference)      : 823
+     q
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  114
+      |(Definition)     : 858  875  881
+      |(Reference)      : 316  326  501  873  878  880  892  1016
+     qc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 597
+      |(Reference)      : 599  602
+     qi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 568
+      |(Reference)      : 576  597
+     qint
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 569
+      |(Reference)      : 597
+     qk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 531  751
+      |(Reference)      : 576  602  779
+     qq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 129
+      |(Definition)     : 501  847
+      |(Reference)      : 531  751  847  858
+     qqq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 172
+      |(Definition)     : 550
+      |(Reference)      : 553  553
+     qqr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 129
+      |(Definition)     : 507  724  794  831
+      |(Reference)      : 511  692  724  726  755  794  815  831  861
+     qqs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 129
+      |(Definition)     : 506  669  804  840
+      |(Reference)      : 513  655  669  692  758  804  817  840  862
+     qr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  114
+      |(Definition)     : 861  973  979
+      |(Reference)      : 326  507  719  726  892  967  968  973  976  977  979  1016
+     qs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  114
+      |(Definition)     : 862  930  932  939
+      |(Reference)      : 326  506  665  671  892  923  924  930  932  934  935  939  1016
+     qw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 553  555
+      |(Reference)      : 555  568  569
+     rainp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  114
+      |(Definition)     : 314  866
+      |(Reference)      : 
+     rconde
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 129
+      |(Definition)     : 530
+      |(Reference)      : 788  789  826  835
+     rcp
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80  90
+      |(Definition)     : 
+      |(Reference)      : 281
+     rd
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65  71
+      |(Definition)     : 
+      |(Reference)      : 74  316
+     rdt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 253
+      |(Reference)      : 267  278  529  694  779
+     rho
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 129
+      |(Definition)     : 316
+      |(Reference)      : 924  968
+     rid
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 1004
+      |(Reference)      : 1005  1008
+     rn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  114
+      |(Definition)     : 341  951  991
+      |(Reference)      : 895  951  991  1004  1019
+     rnp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 114
+      |(Definition)     : 348  736  798  835
+      |(Reference)      : 736  798  835  866
+     row
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80  90
+      |(Definition)     : 
+      |(Reference)      : 90  895  1019
+     rprs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 782
+      |(Reference)      : 783  784
+     rq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 129
+      |(Definition)     : 600  602
+      |(Reference)      : 605  607  610  759  779  779
+     rqkll
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 610
+      |(Reference)      : 611
+     rrow
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80  90
+      |(Definition)     : 
+      |(Reference)      : 951  952  991
+     rv
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65  72
+      |(Definition)     : 
+      |(Reference)      : 74
+     sedr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 129
+      |(Definition)     : 968  970
+      |(Reference)      : 973  979  979  991
+     seds
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 129
+      |(Definition)     : 924  926
+      |(Reference)      : 930  939  939  951  952
+     sid
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 
+      |(Reference)      : 
+     sn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 114
+      |(Definition)     : 343  952
+      |(Reference)      : 952  1008
+     sqrt
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 278  611  694  694  763
+     sr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  114
+      |(Definition)     : 345  1006  1008
+      |(Reference)      : 
+     t
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  114
+      |(Definition)     : 857  876  880
+      |(Reference)      : 316  500  876  880
+     t1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 172
+      |(Definition)     : 547
+      |(Reference)      : 548  550
+     tem
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 304  476  660  663  694  714  716  873  906  908  935  976
+      |(Reference)      : 311  312  477  669  696  698  715  724  874  875  879  907  909
+     tem1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 665  692  719  934  977
+      |(Reference)      : 671  694  726
+     tem2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 693  696  697
+      |(Reference)      : 694  697  697  698
+     temx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 172
+      |(Definition)     : 232
+      |(Reference)      : 550
+     tmt0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 129
+      |(Definition)     : 532
+      |(Reference)      : 573  583  641  752  768  818  821  821
+     tmt0k
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 752
+      |(Reference)      : 771
+     tt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 129
+      |(Definition)     : 500  846
+      |(Reference)      : 532  547  693  846  857
+     ttp
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65  70
+      |(Definition)     : 
+      |(Reference)      : 
+     u00k
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  129
+      |(Definition)     : 
+      |(Reference)      : 576  605  611  759  771
+     us
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 262
+      |(Reference)      : 607  608  610  611  611
+     vpsat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 172  174
+      |(Definition)     : 
+      |(Reference)      : 550  550  550
+     vtr
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80  98
+      |(Definition)     : 
+      |(Reference)      : 906  968
+     vts
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80  98
+      |(Definition)     : 
+      |(Reference)      : 908  924
+     watertot1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 103
+      |(Definition)     : 324  326
+      |(Reference)      : 326  897  1021
+     watertot2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 103
+      |(Definition)     : 890  892  895  1014  1016  1019
+      |(Reference)      : 892  895  897  1016  1019  1021
+     wmin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 129
+      |(Definition)     : 311
+      |(Reference)      : 476  503
+     wminco
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 114
+      |(Definition)     : 236  237
+      |(Reference)      : 311  312
+     wmini
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 129
+      |(Definition)     : 312
+      |(Reference)      : 476  640
+     wmink
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 129
+      |(Definition)     : 503
+      |(Reference)      : 685
+     ww
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 129
+      |(Definition)     : 502  643  658  662  700  717
+      |(Reference)      : 514  533  636  643  644  658  660  661  661  670  671  671  700  714  725  726  726  736  822  859
+     wwn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 514  533
+      |(Reference)      : 516  577  589
+     wws
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 636
+      |(Reference)      : 637  660  661  662  670  671  671  714  717  725  726  726  736
+     zaodt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 129
+      |(Definition)     : 267
+      |(Reference)      : 271  272  273  274  275
+
+ Total information
+   Procedures       : 1
+   Total lines      : 1058
+   Total statements : 384
+   Total stack(byte): 113888
+   Total prefetch num: 0
+

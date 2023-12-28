@@ -114,7 +114,7 @@
 
           wind     = max(sqrt((u1(i)-ssu(i))**2 + (v1(i)-ssv(i))**2)          &
                        + max( 0.0, min( ddvel(i), 30.0 ) ), 1.0)
-
+          
           q0       = max( q1(i), 1.0e-8 )
           rho      = prsl1(i) / (rd*t1(i)*(1.0 + rvrdm1*q0))
 

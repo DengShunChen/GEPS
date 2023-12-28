@@ -1,0 +1,1850 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Dec 19 11:04:19 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src
+   Source file       : rozone.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "rozone"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine rozone (nxj,im,lm,pp,o3l,sinl,julian)
+               2                     !
+               3                     !######################################################################c
+               4                     !  --- for application sinl is a constant  (faster) ---                c
+               5                     !  --- this is new version using new ozone data source --              c
+               6                     !                                                                      c
+               7                     ! a. function:                                                         c
+               8                     !  subroutine rozone generates  a seasonal varying, zonal mean         c
+               9                     !  clmotology of atmospheric ozone for use in long and short wave      c
+              10                     !  radiation.                                                          c
+              11                     !  climatology of new ozone concentrations from r. d. mcpeters,        c
+              12                     !  heath, d.f., and bhartia, p.k. paper: average ozone profiles        c
+              13                     !  for 1979 from the nimbus 7 sbuv instrument, journal of geophysical  c
+              14                     !  research, vol. 89, no. d4, pages 5199-5214, june 30, 1984           c
+              15                     !                                                                      c
+              16                     ! b. common block specification:                                       c
+              17                     !    none                                                              c
+              18                     !                                                                      c
+              19                     ! c. parameter specification:                                          c
+              20                     !    none                                                              c
+              21                     !                                                                      c
+              22                     ! d. input/output variables:                                           c
+              23                     !    im    : longitudial dimension of the model                        c
+              24                     !    lm    : vertical layers of the model                              c
+              25                     !    pp(im,lm) : pressures at odd levels (mb)                          c
+              26                     !    o3l(im,lm): climatology ozone concentration at the model grids    c
+              27                     !    sinl      : sin of latitude of the grids                          c
+              28                     !    julian: julian day                                                c
+              29                     !                                                                      c
+              30                     !  e. calling modules:                                                 c
+              31                     !     outside radtn                                                    c
+              32                     !                                                                      c
+              33                     !  f. usage:                                                           c
+              34                     !     call rozone( im,lm,pp,o3l,sinl,julian )                          c
+              35                     !                                                                      c
+              36                     !  g. modules called:                                                  c
+              37                     !     lninth                                                           c
+              38                     !                                                                      c
+              39                     !  h. limitation:                                                      c
+              40                     !     none                                                             c
+              41                     !                                                                      c
+              42                     !  i. date:                                                            c
+              43                     !     created: jul 15, 1993                                            c
+              44                     !                                                                      c
+              45                     !  j. auther:                                                          c
+              46                     !     c. fong,  c.-.s liou                                             c
+              47                     !     modify to f90 by C-H Lee in 2015
+              48                     !                                                                      c
+              49                     !######################################################################c
+              50                     !
+              51                           use const, only: RTYPE
+              52                     !
+              53                           implicit  none
+              54                     
+              55                           integer   nxj,im,lm,julian
+              56                     
+              57                           real      pp(im,lm)
+              58                           real(kind=RTYPE) o3l(im,lm)
+              59                     !
+              60                     !  local work arrays
+              61                     !
+              62                           real      pref(12),aref(16),o3wk(16,12),o3z(12)
+              63                           integer   numd(12)
+              64                     !
+              65                           data numd/15,46,64,94,135,165,196,227,258,288,319,349/
+              66                     !
+              67                           real      tabo3(16,12,12)
+              68                     !
+              69                           real      oja1(16),oja2(16),oja3(16),oja4(16),oja5(16)            &
+              70                           , oja6(16),oja7(16),oja8(16),oja9(16),oja10(16)                   &
+              71                           , oja11(16),oja12(16)
+              72                     !
+              73                           equivalence (tabo3(1,1,1),oja1)
+              74                           equivalence (tabo3(1,2,1),oja2)
+              75                           equivalence (tabo3(1,3,1),oja3)
+              76                           equivalence (tabo3(1,4,1),oja4)
+              77                           equivalence (tabo3(1,5,1),oja5)
+              78                           equivalence (tabo3(1,6,1),oja6)
+              79                           equivalence (tabo3(1,7,1),oja7)
+              80                           equivalence (tabo3(1,8,1),oja8)
+              81                           equivalence (tabo3(1,9,1),oja9)
+              82                           equivalence (tabo3(1,10,1),oja10)
+              83                           equivalence (tabo3(1,11,1),oja11)
+              84                           equivalence (tabo3(1,12,1),oja12)
+              85                     !
+              86                           data pref/0.17, 0.35, 0.70, 1.40, 2.80, 5.60, 11.19, 22.39        &
+              87                           , 44.78, 89.56, 179.12, 506.63/
+              88                           data aref/-75.0, -65.0, -55.0, -45.0, -35.0, -25.0, -15.0         &
+              89                           , -5.0, 5.0, 15.0, 25.0, 35.0, 45.0, 55.0, 65.0, 75.0/
+              90                     !
+              91                           data oja1/0.63, 0.67, 0.71, 0.76, 0.80, 0.82, 0.82, 0.82, 0.82    &
+              92                           , 0.78, 0.75, 0.76, 0.79, 0.80, 0.83, 0.83/
+              93                           data oja2/1.07, 1.15, 1.22, 1.30, 1.37, 1.39, 1.38, 1.37, 1.37    &
+              94                           , 1.33, 1.31, 1.39, 1.50, 1.54, 1.58, 1.58/
+              95                           data oja3/1.75, 1.91, 2.06, 2.22, 2.36, 2.42, 2.41, 2.41, 2.41    &
+              96                           , 2.38, 2.43, 2.68, 2.89, 2.85, 2.79, 2.79/
+              97                           data oja4/2.93, 3.15, 3.40, 3.67, 3.91, 4.08, 4.15, 4.18, 4.18    &
+              98                           , 4.27, 4.58, 5.10, 5.40, 5.18, 4.83, 4.83/
+              99                           data oja5/5.52, 5.76, 6.12, 6.45, 6.80, 7.16, 7.15, 7.53, 7.53    &
+             100                           , 7.48, 7.58, 7.56, 7.31, 6.74, 6.11, 6.11/
+             101                           data oja6/6.40, 7.08, 7.95, 8.68, 9.36, 9.88, 10.46, 10.42, 10.42 &
+             102                           , 9.87, 9.06, 8.18, 7.39, 6.44, 5.86, 5.86/
+             103                           data oja7/4.03, 5.00, 6.28, 7.46, 8.50, 9.13, 9.68, 9.71, 9.71    &
+             104                           , 8.96, 7.86, 6.94, 6.13, 5.14, 4.64, 4.64/
+             105                           data oja8/4.11, 4.65, 5.26, 5.57, 5.75, 5.81, 5.86, 5.72, 5.72    &
+             106                           , 5.44, 5.27, 5.34, 5.23, 4.82, 4.64, 4.64/
+             107                           data oja9/3.13, 3.20, 3.10, 2.70, 2.30, 1.99, 1.77, 1.60, 1.60    &
+             108                           , 1.73, 2.16, 2.94, 3.55, 3.80, 3.98, 3.98/
+             109                           data oja10/1.07, 1.05, 0.94, 0.63, 0.47, 0.31, 0.18, 0.10, 0.10   &
+             110                           , 0.21, 0.44, 0.90, 1.32, 1.55, 1.62, 1.62/
+             111                           data oja11/0.26, 0.26, 0.23, 0.17, 0.11, 0.08, 0.05, 0.03, 0.03   &
+             112                           , 0.05, 0.10, 0.22, 0.33, 0.39, 0.40, 0.40/
+             113                           data oja12/0.07, 0.06, 0.06, 0.05, 0.04, 0.03, 0.03, 0.02, 0.02   &
+             114                           , 0.02, 0.02, 0.03, 0.03, 0.03, 0.03, 0.03/
+             115                     !
+             116                           real      ofe1(16),ofe2(16),ofe3(16),ofe4(16),ofe5(16)            &
+             117                           , ofe6(16),ofe7(16),ofe8(16),ofe9(16),ofe10(16)                   &
+             118                           , ofe11(16),ofe12(16)
+             119                     !
+             120                           equivalence (tabo3(1,1,2),ofe1)
+             121                           equivalence (tabo3(1,2,2),ofe2)
+             122                           equivalence (tabo3(1,3,2),ofe3)
+             123                           equivalence (tabo3(1,4,2),ofe4)
+             124                           equivalence (tabo3(1,5,2),ofe5)
+             125                           equivalence (tabo3(1,6,2),ofe6)
+             126                           equivalence (tabo3(1,7,2),ofe7)
+             127                           equivalence (tabo3(1,8,2),ofe8)
+             128                           equivalence (tabo3(1,9,2),ofe9)
+             129                           equivalence (tabo3(1,10,2),ofe10)
+             130                           equivalence (tabo3(1,11,2),ofe11)
+             131                           equivalence (tabo3(1,12,2),ofe12)
+             132                     !
+             133                           data ofe1/0.62, 0.65, 0.70, 0.75, 0.79, 0.81, 0.80, 0.80         &
+             134                           , 0.80, 0.80, 0.77, 0.74, 0.77, 0.81, 0.86, 0.89/
+             135                           data ofe2/1.12, 1.16, 1.23, 1.31, 1.37, 1.38, 1.35, 1.33         &
+             136                           , 1.33, 1.34, 1.32, 1.33, 1.45, 1.58, 1.68, 1.76/
+             137                           data ofe3/2.01, 2.07, 2.18, 2.32, 2.43, 2.43, 2.33, 2.27         &
+             138                           , 2.27, 2.33, 2.38, 2.54, 2.86, 3.06, 3.10, 3.17/
+             139                           data ofe4/3.61, 3.65, 3.78, 3.96, 4.13, 4.14, 3.98, 3.86         &
+             140                           , 3.86, 4.03, 4.33, 4.92, 5.50, 5.63, 5.39, 5.26/
+             141                           data ofe5/5.83, 6.16, 6.41, 6.63, 6.93, 7.15, 7.25, 7.16         &
+             142                           , 7.16, 7.18, 7.39, 7.78, 7.67, 7.23, 6.71, 6.40/
+             143                           data ofe6/5.88, 7.05, 7.94, 8.67, 9.33, 9.82,10.36,10.50         &
+             144                           ,10.50,10.17, 9.57, 8.63, 7.72, 7.00, 6.52, 6.46/
+             145                           data ofe7/3.53, 4.76, 6.04, 7.32, 8.39, 9.02, 9.66, 9.94         &
+             146                           , 9.94, 9.44, 8.48, 7.16, 6.33, 5.63, 5.15, 5.15/
+             147                           data ofe8/3.93, 4.63, 5.15, 5.52, 5.71, 5.72, 5.80, 5.74         &
+             148                           , 5.74, 5.54, 5.41, 5.32, 5.34, 5.23, 5.13, 5.49/
+             149                           data ofe9/2.91, 3.03, 2.89, 2.56, 2.21, 1.92, 1.73, 1.60         &
+             150                           , 1.60, 1.74, 2.19, 3.00, 3.80, 4.30, 4.52, 5.15/
+             151                           data ofe10/1.01, 0.98, 0.84, 0.62, 0.42, 0.28, 0.17, 0.10        &
+             152                           , 0.10, 0.22, 0.45, 0.95, 1.45, 1.70, 1.79, 1.97/
+             153                           data ofe11/0.23, 0.22, 0.19, 0.13, 0.09, 0.06, 0.04, 0.03        &
+             154                           , 0.03, 0.05, 0.11, 0.25, 0.39, 0.44, 0.48, 0.50/
+             155                           data ofe12/0.07, 0.06, 0.05, 0.04, 0.03, 0.03, 0.02, 0.02        &
+             156                           , 0.02, 0.02, 0.02, 0.03, 0.03, 0.04, 0.04, 0.04/
+             157                     !
+             158                           real      omr1(16),omr2(16),omr3(16),omr4(16),omr5(16)           &
+             159                           , omr6(16),omr7(16),omr8(16),omr9(16),omr10(16)                  &
+             160                           , omr11(16),omr12(16)
+             161                     !
+             162                           equivalence (tabo3(1,1,3),omr1)
+             163                           equivalence (tabo3(1,2,3),omr2)
+             164                           equivalence (tabo3(1,3,3),omr3)
+             165                           equivalence (tabo3(1,4,3),omr4)
+             166                           equivalence (tabo3(1,5,3),omr5)
+             167                           equivalence (tabo3(1,6,3),omr6)
+             168                           equivalence (tabo3(1,7,3),omr7)
+             169                           equivalence (tabo3(1,8,3),omr8)
+             170                           equivalence (tabo3(1,9,3),omr9)
+             171                           equivalence (tabo3(1,10,3),omr10)
+             172                           equivalence (tabo3(1,11,3),omr11)
+             173                           equivalence (tabo3(1,12,3),omr12)
+             174                     !
+             175                           data omr1/0.69, 0.67, 0.69, 0.73, 0.76, 0.78, 0.80, 0.83         &
+             176                           , 0.83, 0.82, 0.79, 0.75, 0.70, 0.71, 0.74, 0.78/
+             177                           data omr2/1.36, 1.28, 1.28, 1.31, 1.33, 1.33, 1.34, 1.37         &
+             178                           , 1.37, 1.37, 1.36, 1.31, 1.27, 1.33, 1.45, 1.55/
+             179                           data omr3/2.72, 2.51, 2.43, 2.43, 2.42, 2.35, 2.29, 2.28         &
+             180                           , 2.28, 2.33, 2.40, 2.42, 2.46, 2.67, 2.94, 3.05/
+             181                           data omr4/5.03, 4.82, 4.55, 4.41, 4.31, 4.10, 3.82, 3.69         &
+             182                           , 3.69, 3.89, 4.19, 4.50, 4.88, 5.38, 5.72, 5.61/
+             183                           data omr5/6.22, 6.93, 7.04, 7.02, 7.08, 7.06, 6.76, 6.48         &
+             184                           , 6.48, 6.78, 7.11, 7.53, 8.01, 8.07, 7.76, 7.13/
+             185                           data omr6/5.26, 6.57, 7.68, 8.47, 9.09, 9.60, 9.53, 9.86         &
+             186                           , 9.86, 9.90, 9.58, 9.06, 8.71, 7.98, 7.17, 6.60/
+             187                           data omr7/3.20, 4.23, 5.57, 6.86, 7.98, 8.86, 9.69,10.07         &
+             188                           ,10.07, 9.70, 8.87, 7.65, 6.76, 5.93, 5.17, 4.74/
+             189                           data omr8/3.85, 4.40, 4.95, 5.34, 5.63, 5.77, 5.97, 6.12         &
+             190                           , 6.12, 5.92, 5.74, 5.49, 5.28, 5.13, 5.04, 4.96/
+             191                           data omr9/2.82, 2.92, 2.82, 2.55, 2.26, 1.96, 1.78, 1.71         &
+             192                           , 1.71, 1.88, 2.32, 3.03, 3.68, 4.20, 4.70, 4.88/
+             193                           data omr10/1.04, 0.97, 0.83, 0.64, 0.45, 0.29, 0.17, 0.11        &
+             194                           , 0.11, 0.24, 0.49, 0.95, 1.39, 1.65, 1.95, 2.02/
+             195                           data omr11/0.23, 0.19, 0.16, 0.12, 0.09, 0.06, 0.04, 0.03        &
+             196                           , 0.03, 0.06, 0.13, 0.27, 0.40, 0.46, 0.55, 0.59/
+             197                           data omr12/0.07, 0.06, 0.05, 0.04, 0.03, 0.03, 0.02, 0.02        &
+             198                           , 0.02, 0.02, 0.03, 0.03, 0.04, 0.04, 0.05, 0.05/
+             199                     !
+             200                           real      oap1(16),oap2(16),oap3(16),oap4(16),oap5(16)           &
+             201                           , oap6(16),oap7(16),oap8(16),oap9(16),oap10(16)                  &
+             202                           , oap11(16),oap12(16)
+             203                     !
+             204                           equivalence (tabo3(1,1,4),oap1)
+             205                           equivalence (tabo3(1,2,4),oap2)
+             206                           equivalence (tabo3(1,3,4),oap3)
+             207                           equivalence (tabo3(1,4,4),oap4)
+             208                           equivalence (tabo3(1,5,4),oap5)
+             209                           equivalence (tabo3(1,6,4),oap6)
+             210                           equivalence (tabo3(1,7,4),oap7)
+             211                           equivalence (tabo3(1,8,4),oap8)
+             212                           equivalence (tabo3(1,9,4),oap9)
+             213                           equivalence (tabo3(1,10,4),oap10)
+             214                           equivalence (tabo3(1,11,4),oap11)
+             215                           equivalence (tabo3(1,12,4),oap12)
+             216                     !
+             217                           data oap1/0.79, 0.76, 0.75, 0.75, 0.75, 0.78, 0.82, 0.84         &
+             218                           , 0.84, 0.83, 0.81, 0.78, 0.72, 0.68, 0.68, 0.70/
+             219                           data oap2/1.65, 1.56, 1.47, 1.41, 1.35, 1.34, 1.37, 1.40         &
+             220                           , 1.40, 1.39, 1.38, 1.34, 1.25, 1.21, 1.24, 1.31/
+             221                           data oap3/3.37, 3.23, 3.02, 2.77, 2.55, 2.40, 2.34, 2.34         &
+             222                           , 2.34, 2.38, 2.43, 2.40, 2.25, 2.22, 2.36, 2.51/
+             223                           data oap4/5.96, 6.15, 5.88, 5.30, 4.74, 4.26, 3.90, 3.79         &
+             224                           , 3.79, 3.94, 4.16, 4.24, 4.11, 4.22, 4.55, 4.77/
+             225                           data oap5/6.15, 7.15, 7.71, 7.61, 7.42, 7.15, 6.70, 6.45         &
+             226                           , 6.45, 6.80, 7.12, 7.28, 7.28, 7.37, 7.49, 7.17/
+             227                           data oap6/4.70, 5.76, 7.10, 7.94, 8.73, 9.45, 9.70, 9.52         &
+             228                           , 9.52, 9.80, 9.64, 9.32, 9.03, 8.53, 7.87, 6.89/
+             229                           data oap7/2.98, 3.80, 5.13, 6.19, 7.38, 8.64, 9.58, 9.92         &
+             230                           , 9.92, 9.81, 9.04, 8.07, 7.27, 6.36, 5.43, 4.52/
+             231                           data oap8/3.65, 4.16, 4.87, 5.09, 5.42, 5.73, 6.03, 6.33         &
+             232                           , 6.33, 6.28, 5.97, 5.63, 5.40, 5.14, 4.84, 4.50/
+             233                           data oap9/2.79, 2.93, 2.96, 2.66, 2.36, 2.04, 1.83, 1.79         &
+             234                           , 1.79, 2.02, 2.40, 2.95, 3.54, 4.00, 4.29, 4.47/
+             235                           data oap10/1.12, 1.09, 0.92, 0.72, 0.53, 0.33, 0.19, 0.12        &
+             236                           , 0.12, 0.26, 0.51, 0.89, 1.28, 1.51, 1.70, 1.90/
+             237                           data oap11/0.24, 0.22, 0.17, 0.13, 0.10, 0.06, 0.04, 0.03        &
+             238                           , 0.03, 0.07, 0.15, 0.26, 0.38, 0.43, 0.50, 0.58/
+             239                           data oap12/0.06, 0.05, 0.04, 0.04, 0.03, 0.03, 0.02, 0.02        &
+             240                           , 0.02, 0.03, 0.03, 0.04, 0.05, 0.05, 0.06, 0.07/
+             241                     !
+             242                           real      oma1(16),oma2(16),oma3(16),oma4(16),oma5(16)           &
+             243                           , oma6(16),oma7(16),oma8(16),oma9(16),oma10(16)                  &
+             244                           , oma11(16),oma12(16)
+             245                     !
+             246                           equivalence (tabo3(1,1,5),oma1)
+             247                           equivalence (tabo3(1,2,5),oma2)
+             248                           equivalence (tabo3(1,3,5),oma3)
+             249                           equivalence (tabo3(1,4,5),oma4)
+             250                           equivalence (tabo3(1,5,5),oma5)
+             251                           equivalence (tabo3(1,6,5),oma6)
+             252                           equivalence (tabo3(1,7,5),oma7)
+             253                           equivalence (tabo3(1,8,5),oma8)
+             254                           equivalence (tabo3(1,9,5),oma9)
+             255                           equivalence (tabo3(1,10,5),oma10)
+             256                           equivalence (tabo3(1,11,5),oma11)
+             257                           equivalence (tabo3(1,12,5),oma12)
+             258                     !
+             259                           data oma1/0.84, 0.84, 0.83, 0.81, 0.77, 0.78, 0.82, 0.84         &
+             260                           , 0.84, 0.83, 0.82, 0.79, 0.75, 0.71, 0.68, 0.66/
+             261                           data oma2/1.78, 1.78, 1.73, 1.59, 1.42, 1.36, 1.38, 1.40         &
+             262                           , 1.40, 1.40, 1.38, 1.34, 1.29, 1.22, 1.18, 1.15/
+             263                           data oma3/3.72, 3.72, 3.76, 3.35, 2.82, 2.49, 2.38, 2.37         &
+             264                           , 2.37, 2.38, 2.38, 2.32, 2.22, 2.09, 2.01, 1.98/
+             265                           data oma4/6.70, 6.70, 7.23, 6.56, 5.46, 4.52, 4.01, 3.88         &
+             266                           , 3.88, 3.92, 3.58, 3.92, 3.78, 3.61, 3.52, 3.52/
+             267                           data oma5/6.67, 6.67, 7.75, 8.19, 7.57, 7.35, 6.77, 6.58         &
+             268                           , 6.58, 6.78, 6.93, 6.91, 6.79, 6.65, 6.45, 6.31/
+             269                           data oma6/5.07, 5.07, 6.12, 7.38, 8.38, 9.14, 9.46, 9.39         &
+             270                           , 9.39, 9.74, 9.57, 9.26, 8.92, 8.50, 7.74, 6.77/
+             271                           data oma7/3.62, 3.62, 4.55, 5.75, 6.91, 8.18, 9.28, 9.66         &
+             272                           , 9.66, 9.83, 9.11, 8.27, 7.48, 6.63, 5.55, 4.34/
+             273                           data oma8/3.96, 3.96, 4.47, 4.97, 5.29, 5.62, 5.98, 6.28         &
+             274                           , 6.28, 6.41, 6.11, 5.79, 5.54, 5.29, 4.88, 4.18/
+             275                           data oma9/3.01, 3.01, 3.04, 2.88, 2.55, 2.16, 1.88, 1.80         &
+             276                           , 1.80, 2.04, 2.38, 2.84, 3.33, 3.73, 3.99, 3.88/
+             277                           data oma10/1.19, 1.19, 1.07, 0.87, 0.65, 0.39, 0.21, 0.12        &
+             278                           , 0.12, 0.25, 0.47, 0.79, 1.10, 1.30, 1.46, 1.58/
+             279                           data oma11/0.25, 0.25, 0.22, 0.17, 0.13, 0.08, 0.05, 0.03        &
+             280                           , 0.03, 0.07, 0.14, 0.23, 0.33, 0.37, 0.41, 0.50/
+             281                           data oma12/0.04, 0.04, 0.04, 0.03, 0.03, 0.03, 0.02, 0.02        &
+             282                           , 0.02, 0.03, 0.03, 0.04, 0.05, 0.06, 0.06, 0.08/
+             283                     !
+             284                           real      ojn1(16),ojn2(16),ojn3(16),ojn4(16),ojn5(16)           &
+             285                           , ojn6(16),ojn7(16),ojn8(16),ojn9(16),ojn10(16)                  &
+             286                           , ojn11(16),ojn12(16)
+             287                     !
+             288                           equivalence (tabo3(1,1,6),ojn1)
+             289                           equivalence (tabo3(1,2,6),ojn2)
+             290                           equivalence (tabo3(1,3,6),ojn3)
+             291                           equivalence (tabo3(1,4,6),ojn4)
+             292                           equivalence (tabo3(1,5,6),ojn5)
+             293                           equivalence (tabo3(1,6,6),ojn6)
+             294                           equivalence (tabo3(1,7,6),ojn7)
+             295                           equivalence (tabo3(1,8,6),ojn8)
+             296                           equivalence (tabo3(1,9,6),ojn9)
+             297                           equivalence (tabo3(1,10,6),ojn10)
+             298                           equivalence (tabo3(1,11,6),ojn11)
+             299                           equivalence (tabo3(1,12,6),ojn12)
+             300                     !
+             301                           data ojn1/0.85, 0.85, 0.85, 0.83, 0.77, 0.79, 0.82, 0.84         &
+             302                           , 0.84, 0.84, 0.83, 0.81, 0.77, 0.73, 0.69, 0.65/
+             303                           data ojn2/1.78, 1.78, 1.78, 1.66, 1.44, 1.38, 1.39, 1.40         &
+             304                           , 1.40,  1.41,1.41, 1.37, 1.30, 1.23, 1.17, 1.10/
+             305                           data ojn3/3.66, 3.66, 3.78, 3.55, 2.86, 2.52, 2.41, 2.38         &
+             306                           , 2.38, 2.41, 2.42, 2.33, 2.20, 2.05, 1.90, 1.77/
+             307                           data ojn4/6.54, 6.54, 7.05, 6.98, 5.59, 4.56, 4.12, 3.95         &
+             308                           , 3.95, 3.99, 3.99, 3.84, 3.62, 3.36, 3.11, 2.95/
+             309                           data ojn5/6.52, 6.52, 7.22, 8.25, 7.97, 7.22, 6.86, 6.79         &
+             310                           , 6.79, 6.89, 6.91, 6.76, 6.55, 6.27, 5.88, 5.76/
+             311                           data ojn6/4.97, 4.97, 5.57, 7.11, 8.14, 8.64, 9.19, 9.50         &
+             312                           , 9.50, 9.78, 9.55, 9.18, 8.77, 8.24, 7.36, 6.71/
+             313                           data ojn7/3.68, 3.68, 4.24, 5.68, 6.76, 7.71, 8.50, 9.54         &
+             314                           , 9.54, 9.78, 9.14, 8.32, 7.46, 6.55, 5.32, 4.33/
+             315                           data ojn8/3.68, 3.68, 4.15, 4.99, 5.30, 5.49, 5.53, 6.19         &
+             316                           , 6.19, 6.42, 6.17, 5.85, 5.60, 5.32, 4.75, 4.20/
+             317                           data ojn9/3.28, 3.28, 3.17, 3.15, 2.76, 2.28, 1.55, 1.79         &
+             318                           , 1.79, 2.02, 2.31, 2.66, 3.08, 3.42, 3.55, 3.50/
+             319                           data ojn10/1.42, 1.42, 1.28, 1.04, 0.77, 0.46, 0.24, 0.12        &
+             320                           , 0.12, 0.23, 0.42, 0.66, 0.92, 1.11, 1.23, 1.28/
+             321                           data ojn11/0.33, 0.33, 0.30, 0.22, 0.17, 0.10, 0.05, 0.03        &
+             322                           , 0.03, 0.07, 0.12, 0.19, 0.26, 0.30, 0.34, 0.36/
+             323                           data ojn12/0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.02, 0.02        &
+             324                           , 0.02, 0.03, 0.04, 0.04, 0.05, 0.06, 0.07, 0.08/
+             325                     !
+             326                           real      oju1(16),oju2(16),oju3(16),oju4(16),oju5(16)           &
+             327                           , oju6(16),oju7(16),oju8(16),oju9(16),oju10(16)                  &
+             328                           , oju11(16),oju12(16)
+             329                     !
+             330                           equivalence (tabo3(1,1,7),oju1)
+             331                           equivalence (tabo3(1,2,7),oju2)
+             332                           equivalence (tabo3(1,3,7),oju3)
+             333                           equivalence (tabo3(1,4,7),oju4)
+             334                           equivalence (tabo3(1,5,7),oju5)
+             335                           equivalence (tabo3(1,6,7),oju6)
+             336                           equivalence (tabo3(1,7,7),oju7)
+             337                           equivalence (tabo3(1,8,7),oju8)
+             338                           equivalence (tabo3(1,9,7),oju9)
+             339                           equivalence (tabo3(1,10,7),oju10)
+             340                           equivalence (tabo3(1,11,7),oju11)
+             341                           equivalence (tabo3(1,12,7),oju12)
+             342                     !
+             343                           data oju1/0.79, 0.79, 0.80, 0.82, 0.79, 0.79, 0.80, 0.82         &
+             344                           , 0.82, 0.83, 0.84, 0.81, 0.77, 0.71, 0.67, 0.62/
+             345                           data oju2/1.55, 1.55, 1.61, 1.60, 1.45, 1.38, 1.36, 1.37         &
+             346                           , 1.37, 1.40, 1.42, 1.40, 1.31, 1.22, 1.14, 1.06/
+             347                           data oju3/2.92, 2.92, 3.31, 3.22, 2.77, 2.49, 2.39, 2.36         &
+             348                           , 2.36, 2.43, 2.49, 2.43, 2.26, 2.05, 1.89, 1.73/
+             349                           data oju4/5.24, 5.24, 6.29, 6.12, 5.15, 4.47, 4.14, 4.02         &
+             350                           , 4.02, 4.11, 4.18, 4.03, 3.75, 3.40, 3.12, 2.92/
+             351                           data oju5/6.16, 6.16, 7.21, 7.70, 7.42, 7.12, 7.04, 7.07         &
+             352                           , 7.07, 7.16, 7.16, 6.92, 6.62, 6.22, 5.76, 5.56/
+             353                           data oju6/5.21, 5.21, 5.99, 7.21, 7.90, 8.60, 9.36, 9.79         &
+             354                           , 9.79, 10.0, 9.73, 9.25, 8.75, 8.12, 7.18, 6.45/
+             355                           data oju7/3.85, 3.85, 4.54, 5.86, 6.68, 7.70, 8.90, 9.62         &
+             356                           , 9.62, 9.85, 9.20, 8.35, 7.40, 6.38, 5.12, 4.07/
+             357                           data oju8/3.78, 3.78, 4.23, 5.00, 5.20, 5.45, 5.86, 6.20         &
+             358                           , 6.20, 6.46, 6.17, 5.86, 5.61, 5.32, 4.71, 4.10/
+             359                           data oju9/3.34, 3.34, 3.34, 3.35, 2.91, 2.35, 1.95, 1.79         &
+             360                           , 1.79, 2.00, 2.19, 2.46, 2.84, 3.16, 3.20, 3.09/
+             361                           data oju10/1.45, 1.45, 1.30, 1.16, 0.89, 0.51, 0.25, 0.12        &
+             362                           , 0.12, 0.21, 0.36, 0.54, 0.78, 0.97, 1.04, 1.04/
+             363                           data oju11/0.39, 0.39, 0.32, 0.27, 0.21, 0.12, 0.06, 0.03        &
+             364                           , 0.03, 0.06, 0.10, 0.14, 0.20, 0.25, 0.26, 0.27/
+             365                           data oju12/0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.02, 0.02        &
+             366                           , 0.02, 0.03, 0.03, 0.04, 0.05, 0.06, 0.06, 0.07/
+             367                     !
+             368                           real      oau1(16),oau2(16),oau3(16),oau4(16),oau5(16)           &
+             369                           , oau6(16),oau7(16),oau8(16),oau9(16),oau10(16)                  &
+             370                           , oau11(16),oau12(16)
+             371                     !
+             372                           equivalence (tabo3(1,1,8),oau1)
+             373                           equivalence (tabo3(1,2,8),oau2)
+             374                           equivalence (tabo3(1,3,8),oau3)
+             375                           equivalence (tabo3(1,4,8),oau4)
+             376                           equivalence (tabo3(1,5,8),oau5)
+             377                           equivalence (tabo3(1,6,8),oau6)
+             378                           equivalence (tabo3(1,7,8),oau7)
+             379                           equivalence (tabo3(1,8,8),oau8)
+             380                           equivalence (tabo3(1,9,8),oau9)
+             381                           equivalence (tabo3(1,10,8),oau10)
+             382                           equivalence (tabo3(1,11,8),oau11)
+             383                           equivalence (tabo3(1,12,8),oau12)
+             384                     !
+             385                           data oau1/0.72, 0.73, 0.75, 0.78, 0.78, 0.78, 0.80, 0.82         &
+             386                           , 0.82, 0.82, 0.82, 0.80, 0.74, 0.69, 0.64, 0.61/
+             387                           data oau2/1.38, 1.39, 1.42, 1.46, 1.40, 1.36, 1.35, 1.37         &
+             388                           , 1.37, 1.39, 1.40, 1.39, 1.30, 1.21, 1.14, 1.10/
+             389                           data oau3/2.51, 2.50, 2.70, 2.81, 2.64, 2.46, 2.37, 2.36         &
+             390                           , 2.36, 2.42, 2.48, 2.48, 2.33, 2.15, 2.03, 1.94/
+             391                           data oau4/4.42, 4.50, 5.09, 5.26, 4.89, 4.44, 4.12, 4.00         &
+             392                           , 4.00, 4.13, 4.28, 4.27, 4.04, 3.78, 3.60, 3.44/
+             393                           data oau5/5.47, 5.92, 7.03, 7.50, 7.48, 7.34, 7.17, 7.07         &
+             394                           , 7.07, 7.21, 7.33, 7.16, 6.85, 6.53, 6.15, 5.62/
+             395                           data oau6/4.57, 5.38, 6.70, 7.78, 8.32, 9.03, 9.74, 9.96         &
+             396                           , 9.96,10.16, 9.90, 9.39, 8.80, 8.12, 7.15, 5.90/
+             397                           data oau7/3.61, 3.90, 5.01, 6.26, 6.95, 7.98, 9.22, 9.86         &
+             398                           , 9.86,10.00,9.24, 8.34, 7.29, 6.15, 4.87, 3.65/
+             399                           data oau8/3.56, 3.74, 4.40, 5.06, 5.25, 5.50, 5.93, 6.34         &
+             400                           , 6.34, 6.53, 6.20, 5.90, 5.58, 5.24, 4.69, 4.03/
+             401                           data oau9/3.23, 3.33, 3.51, 3.47, 3.04, 2.40, 1.97, 1.83         &
+             402                           , 1.83, 1.99, 2.15, 2.39, 2.66, 2.55, 3.02, 2.91/
+             403                           data oau10/1.11, 1.23, 1.24, 1.18, 0.98, 0.55, 0.26, 0.12        &
+             404                           , 0.12, 0.20, 0.33, 0.50, 0.68, 0.87, 0.96, 0.99/
+             405                           data oau11/0.27, 0.32, 0.30, 0.29, 0.26, 0.14, 0.07, 0.03        &
+             406                           , 0.03, 0.05, 0.08, 0.12, 0.15, 0.20, 0.21, 0.23/
+             407                           data oau12/0.04, 0.04, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03        &
+             408                           , 0.03, 0.03, 0.03, 0.04, 0.05, 0.05, 0.06, 0.07/
+             409                     !
+             410                           real      osp1(16),osp2(16),osp3(16),osp4(16),osp5(16)           &
+             411                           , osp6(16),osp7(16),osp8(16),osp9(16),osp10(16)                  &
+             412                           , osp11(16),osp12(16)
+             413                     !
+             414                           equivalence (tabo3(1,1,9),osp1)
+             415                           equivalence (tabo3(1,2,9),osp2)
+             416                           equivalence (tabo3(1,3,9),osp3)
+             417                           equivalence (tabo3(1,4,9),osp4)
+             418                           equivalence (tabo3(1,5,9),osp5)
+             419                           equivalence (tabo3(1,6,9),osp6)
+             420                           equivalence (tabo3(1,7,9),osp7)
+             421                           equivalence (tabo3(1,8,9),osp8)
+             422                           equivalence (tabo3(1,9,9),osp9)
+             423                           equivalence (tabo3(1,10,9),osp10)
+             424                           equivalence (tabo3(1,11,9),osp11)
+             425                           equivalence (tabo3(1,12,9),osp12)
+             426                     !
+             427                           data osp1/0.70, 0.69, 0.72, 0.76, 0.77, 0.78, 0.81, 0.83         &
+             428                           , 0.83, 0.81, 0.79, 0.75, 0.71, 0.67, 0.65, 0.65/
+             429                           data osp2/1.31, 1.29, 1.34, 1.38, 1.36, 1.34, 1.36, 1.37         &
+             430                           , 1.37, 1.37, 1.34, 1.31, 1.27, 1.24, 1.23, 1.26/
+             431                           data osp3/2.37, 2.38, 2.57, 2.67, 2.53, 2.39, 2.34, 2.33         &
+             432                           , 2.33, 2.36, 2.38, 2.39, 2.38, 2.36, 2.40, 2.45/
+             433                           data osp4/4.30, 4.44, 4.91, 5.10, 4.72, 4.26, 3.99, 3.89         &
+             434                           , 3.89, 4.01, 4.16, 4.30, 4.40, 4.50, 4.65, 4.54/
+             435                           data osp5/6.06, 6.65, 7.48, 7.93, 7.79, 7.36, 7.02, 6.85         &
+             436                           , 6.85, 7.00, 7.18, 7.22, 7.18, 7.15, 6.95, 6.00/
+             437                           data osp6/5.75, 6.66, 7.76, 8.55, 9.04, 9.53, 9.92, 9.92         &
+             438                           , 9.92,10.06, 9.92, 9.38, 8.68, 7.92, 6.85, 5.33/
+             439                           data osp7/3.85, 4.64, 5.78, 6.70, 7.44, 8.53, 9.62, 9.99         &
+             440                           , 9.99, 9.98, 9.23, 8.18, 6.95, 5.74, 4.46, 3.25/
+             441                           data osp8/3.57, 4.11, 4.77, 5.17, 5.37, 5.74, 6.14, 6.41         &
+             442                           , 6.41, 6.46, 6.07, 5.77, 5.41, 5.08, 4.58, 3.84/
+             443                           data osp9/3.07, 3.52, 3.70, 3.50, 3.03, 2.46, 2.02, 1.84         &
+             444                           , 1.84, 1.96, 2.09, 2.34, 2.61, 2.88, 2.95, 2.77/
+             445                           data osp10/0.89, 1.14, 1.24, 1.20, 0.97, 0.56, 0.27, 0.12        &
+             446                           , 0.12, 0.19, 0.32, 0.49, 0.67, 0.85, 0.94, 1.00/
+             447                           data osp11/0.20, 0.27, 0.31, 0.32, 0.27, 0.16, 0.07, 0.03        &
+             448                           , 0.03, 0.05, 0.07, 0.10, 0.13, 0.16, 0.18, 0.22/
+             449                           data osp12/0.04, 0.04, 0.04, 0.04, 0.03, 0.03, 0.03, 0.03        &
+             450                           , 0.03, 0.03, 0.03, 0.04, 0.04, 0.05, 0.05, 0.07/
+             451                     !
+             452                           real      ooc1(16),ooc2(16),ooc3(16),ooc4(16),ooc5(16)           &
+             453                           , ooc6(16),ooc7(16),ooc8(16),ooc9(16),ooc10(16)                  &
+             454                           , ooc11(16),ooc12(16)
+             455                     !
+             456                           equivalence (tabo3(1,1,10),ooc1)
+             457                           equivalence (tabo3(1,2,10),ooc2)
+             458                           equivalence (tabo3(1,3,10),ooc3)
+             459                           equivalence (tabo3(1,4,10),ooc4)
+             460                           equivalence (tabo3(1,5,10),ooc5)
+             461                           equivalence (tabo3(1,6,10),ooc6)
+             462                           equivalence (tabo3(1,7,10),ooc7)
+             463                           equivalence (tabo3(1,8,10),ooc8)
+             464                           equivalence (tabo3(1,9,10),ooc9)
+             465                           equivalence (tabo3(1,10,10),ooc10)
+             466                           equivalence (tabo3(1,11,10),ooc11)
+             467                           equivalence (tabo3(1,12,10),ooc12)
+             468                     !
+             469                           data ooc1/0.70, 0.70, 0.72, 0.74, 0.76, 0.79, 0.81, 0.83         &
+             470                           , 0.83, 0.81, 0.77, 0.73, 0.71, 0.71, 0.72, 0.74/
+             471                           data ooc2/1.28, 1.26, 1.29, 1.29, 1.30, 1.33, 1.36, 1.39         &
+             472                           , 1.39, 1.38, 1.32, 1.29, 1.32, 1.39, 1.46, 1.50/
+             473                           data ooc3/2.27, 2.29, 2.37, 2.37, 2.32, 2.32, 2.34, 2.36         &
+             474                           , 2.36, 2.39, 2.37, 2.43, 2.60, 2.82, 2.97, 3.01/
+             475                           data ooc4/4.05, 4.16, 4.36, 4.36, 4.19, 4.04, 3.97, 3.93         &
+             476                           , 3.93, 4.06, 4.23, 4.59, 5.10, 5.55, 5.74, 5.47/
+             477                           data ooc5/6.40, 6.80, 7.24, 7.53, 7.49, 7.26, 7.08, 6.91         &
+             478                           , 6.91, 6.98, 7.23, 7.51, 7.66, 7.58, 7.11, 6.19/
+             479                           data ooc6/6.96, 7.75, 8.40, 8.95, 9.45, 9.91, 10.15, 9.99        &
+             480                           , 9.99, 9.87, 9.74, 9.12, 8.19, 7.22, 6.08, 5.10/
+             481                           data ooc7/4.33, 5.71, 6.49, 7.14, 7.93, 9.02, 9.79, 9.90         &
+             482                           , 9.90, 9.56, 8.85, 7.67, 6.38, 5.25, 4.09, 3.31/
+             483                           data ooc8/4.47, 5.03, 5.30, 5.36, 5.51, 5.86, 6.11, 6.12         &
+             484                           , 6.12, 5.99, 5.71, 5.40, 5.15, 4.96, 4.42, 3.98/
+             485                           data ooc9/3.76, 4.17, 4.01, 3.48, 2.90, 2.37, 1.96, 1.73         &
+             486                           , 1.73, 1.83, 2.00, 2.28, 2.67, 3.02, 3.02, 2.88/
+             487                           data ooc10/1.10, 1.41, 1.43, 1.19, 0.86, 0.50, 0.25, 0.11        &
+             488                           , 0.11, 0.19, 0.32, 0.50, 0.73, 0.95, 1.04, 1.05/
+             489                           data ooc11/0.25, 0.35, 0.38, 0.33, 0.25, 0.14, 0.07, 0.03        &
+             490                           , 0.03, 0.04, 0.06, 0.09, 0.13, 0.17, 0.20, 0.21/
+             491                           data ooc12/0.05, 0.05, 0.05, 0.04, 0.04, 0.03, 0.03, 0.02        &
+             492                           , 0.02, 0.02, 0.03, 0.03, 0.04, 0.04, 0.05, 0.06/
+             493                     !
+             494                           real      ono1(16),ono2(16),ono3(16),ono4(16),ono5(16)           &
+             495                           , ono6(16),ono7(16),ono8(16),ono9(16),ono10(16)                  &
+             496                           , ono11(16),ono12(16)
+             497                     !
+             498                           equivalence (tabo3(1,1,11),ono1)
+             499                           equivalence (tabo3(1,2,11),ono2)
+             500                           equivalence (tabo3(1,3,11),ono3)
+             501                           equivalence (tabo3(1,4,11),ono4)
+             502                           equivalence (tabo3(1,5,11),ono5)
+             503                           equivalence (tabo3(1,6,11),ono6)
+             504                           equivalence (tabo3(1,7,11),ono7)
+             505                           equivalence (tabo3(1,8,11),ono8)
+             506                           equivalence (tabo3(1,9,11),ono9)
+             507                           equivalence (tabo3(1,10,11),ono10)
+             508                           equivalence (tabo3(1,11,11),ono11)
+             509                           equivalence (tabo3(1,12,11),ono12)
+             510                     !
+             511                           data ono1/0.66, 0.70, 0.73, 0.76, 0.78, 0.82, 0.85, 0.87         &
+             512                           , 0.87, 0.82, 0.77, 0.75, 0.75, 0.73, 0.74, 0.74/
+             513                           data ono2/1.15, 1.22, 1.26, 1.29, 1.33, 1.38, 1.43, 1.47         &
+             514                           , 1.47, 1.40, 1.34, 1.36, 1.45, 1.47, 1.52, 1.52/
+             515                           data ono3/1.97, 2.10, 2.19, 2.25, 2.31, 2.40, 2.48, 2.55         &
+             516                           , 2.55, 2.47, 2.47, 2.68, 3.01, 3.12, 3.14, 3.14/
+             517                           data ono4/3.45, 3.64, 3.79, 3.87, 3.95, 4.07, 4.16, 4.22         &
+             518                           , 4.22, 4.24, 4.51, 5.23, 6.04, 6.30, 6.04, 6.04/
+             519                           data ono5/6.16, 6.44, 6.77, 6.95, 7.07, 7.21, 7.25, 7.06         &
+             520                           , 7.06, 7.17, 7.50, 7.90, 8.03, 7.67, 6.90, 6.90/
+             521                           data ono6/6.92, 7.54, 8.28, 8.90, 9.44, 9.98,10.29, 9.83         &
+             522                           , 9.83, 9.79, 9.51, 8.60, 7.50, 6.52, 5.61, 5.61/
+             523                           data ono7/4.69, 5.46, 6.38, 7.30, 8.26, 9.27, 9.96, 9.82         &
+             524                           , 9.82, 9.33, 8.41, 7.05, 5.83, 4.84, 3.98, 3.98/
+             525                           data ono8/4.61, 4.91, 5.15, 5.32, 5.59, 5.92, 6.18, 6.24         &
+             526                           , 6.24, 5.90, 5.51, 5.15, 4.90, 4.63, 4.28, 4.28/
+             527                           data ono9/4.07, 4.00, 3.66, 3.14, 2.64, 2.23, 1.53, 1.78         &
+             528                           , 1.78, 1.85, 2.04, 2.38, 2.76, 3.03, 3.13, 3.13/
+             529                           data ono10/1.40, 1.40, 1.24, 0.56, 0.67, 0.42, 0.23, 0.12        &
+             530                           , 0.12, 0.20, 0.36, 0.57, 0.80, 1.01, 1.17, 1.17/
+             531                           data ono11/0.36, 0.37, 0.33, 0.26, 0.18, 0.12, 0.06, 0.03        &
+             532                           , 0.03, 0.05, 0.07, 0.11, 0.15, 0.20, 0.24, 0.24/
+             533                           data ono12/0.06, 0.06, 0.05, 0.05, 0.04, 0.03, 0.03, 0.02        &
+             534                           , 0.02, 0.02, 0.03, 0.03, 0.03, 0.04, 0.04, 0.04/
+             535                     !
+             536                           real      ode1(16),ode2(16),ode3(16),ode4(16),ode5(16)           &
+             537                           , ode6(16),ode7(16),ode8(16),ode9(16),ode10(16)                  &
+             538                           , ode11(16),ode12(16)
+             539                     !
+             540                           equivalence (tabo3(1,1,12),ode1)
+             541                           equivalence (tabo3(1,2,12),ode2)
+             542                           equivalence (tabo3(1,3,12),ode3)
+             543                           equivalence (tabo3(1,4,12),ode4)
+             544                           equivalence (tabo3(1,5,12),ode5)
+             545                           equivalence (tabo3(1,6,12),ode6)
+             546                           equivalence (tabo3(1,7,12),ode7)
+             547                           equivalence (tabo3(1,8,12),ode8)
+             548                           equivalence (tabo3(1,9,12),ode9)
+             549                           equivalence (tabo3(1,10,12),ode10)
+             550                           equivalence (tabo3(1,11,12),ode11)
+             551                           equivalence (tabo3(1,12,12),ode12)
+             552                     !
+             553                           data ode1/0.65, 0.69, 0.73, 0.77, 0.80, 0.82, 0.85, 0.86         &
+             554                           , 0.86, 0.81, 0.76, 0.74, 0.73, 0.73, 0.75, 0.75/
+             555                           data ode2/1.09, 1.18, 1.24, 1.30, 1.35, 1.39, 1.43, 1.47         &
+             556                           , 1.47, 1.39, 1.33, 1.35, 1.40, 1.43, 1.45, 1.45/
+             557                           data ode3/1.75, 1.92, 2.07, 2.20, 2.31, 2.41, 2.51, 2.58         &
+             558                           , 2.58, 2.50, 2.47, 2.63, 2.85, 2.81, 2.73, 2.73/
+             559                           data ode4/2.89, 3.14, 3.40, 3.63, 3.84, 4.05, 4.24, 4.38         &
+             560                           , 4.38, 4.39, 4.59, 5.14, 5.70, 5.45, 5.11, 5.11/
+             561                           data ode5/5.66, 5.89, 6.26, 6.57, 6.83, 7.14, 7.43, 7.35         &
+             562                           , 7.35, 7.33, 7.50, 7.72, 7.58, 6.87, 6.32, 6.32/
+             563                           data ode6/6.74, 7.26, 8.09, 8.80, 9.37, 9.88,10.29, 9.88         &
+             564                           , 9.88, 9.54, 9.12, 8.32, 7.13, 6.06, 5.44, 5.44/
+             565                           data ode7/4.44, 5.24, 6.40, 7.51, 8.48, 9.23, 9.76, 9.57         &
+             566                           , 9.57, 8.91, 8.00, 6.92, 5.72, 4.65, 4.05, 4.05/
+             567                           data ode8/4.38, 4.74, 5.20, 5.51, 5.77, 5.92, 6.03, 5.98         &
+             568                           , 5.98, 5.66, 5.35, 5.15, 4.93, 4.46, 4.18, 4.18/
+             569                           data ode9/3.60, 3.56, 3.32, 2.90, 2.50, 2.12, 1.85, 1.70         &
+             570                           , 1.70, 1.81, 2.10, 2.58, 3.11, 3.33, 3.37, 3.37/
+             571                           data ode10/1.24, 1.21, 1.04, 0.79, 0.57, 0.36, 0.20, 0.11        &
+             572                           , 0.11, 0.21, 0.40, 0.68, 1.05, 1.31, 1.35, 1.35/
+             573                           data ode11/0.32, 0.32, 0.27, 0.21, 0.15, 0.10, 0.06, 0.03        &
+             574                           , 0.03, 0.05, 0.08, 0.14, 0.23, 0.31, 0.30, 0.30/
+             575                           data ode12/0.07, 0.06, 0.06, 0.05, 0.04, 0.03, 0.03, 0.02        &
+             576                           , 0.02, 0.02, 0.02, 0.03, 0.03, 0.03, 0.03, 0.03/
+             577                     !
+             578                     !  fac  = ozone mol weight / dry air mol weight ( use for changing
+             579                     !         volume ratio to weight ratio )
+             580                     !
+             581                     
+             582                           integer  i,j,k,imlm,ll,kk
+             583                           real     fac,sinl,d2r,pi,theta,con,daynum
+             584                     
+             585                           fac  = (48.0/28.97)*1.0e-06
+             586                     !     fac=1.0
+             587                           pi   = 3.141592654
+             588                           imlm = im*lm
+             589                     !
+             590                           d2r  = 180.0/pi
+             591                           theta= asin(sinl)*d2r
+             592                     !
+             593                     !  check julian locating on which month is
+             594                     !  and linearly interpolate for time
+             595                     !
+             596                           daynum = julian
+             597                           if ( daynum .gt. 365 )     daynum = 365.
+             598                           if ( daynum .le. numd(1) ) daynum = julian+365.
+             599                     !
+             600     1                     if ( daynum .le. numd(12) ) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      o3wk, (unknown)
+                                   <<< Loop-information  End >>>
+             601     2                     do 90 j = 1,11
+             602     2                     con = (daynum-numd(j)) / (numd(j+1)-numd(j))
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 843
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.33, ITR: 192, MVE: 3, POL: S)
+                                   <<<    UNSWITCHING
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             603     3   s   4s            do 70 i = 1,16*12
+             604     3       4s            if ( (con.gt.0.0) .and. (con.le.1.0) )   &
+             605     3                        o3wk(i,1) = (tabo3(i,1,j) + con*(tabo3(i,1,j+1)-tabo3(i,1,j))) * fac
+             606     3   p   4s         70 continue
+             607     2                  90 continue
+             608     1               !
+             609     1                     else
+             610     1               !
+             611     1                     con = (daynum-numd(12)) / (380.-numd(12))
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 889
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.66, ITR: 160, MVE: 6, POL: S)
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             612     2   s   2v            do 100 i = 1,16*12
+             613     2   p   2v            o3wk(i,1) = (tabo3(i,1,12) + con*(tabo3(i,1,1)-tabo3(i,1,12))) * fac
+             614     2   p   2v        100 continue
+             615     1                     endif
+             616                     !
+             617                     !  linearly interpolate for altitude
+             618                     !
+             619     1                     if ( (theta.le.aref(1)) .or. (theta.ge.aref(16)) ) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    UNSWITCHING
+                                   <<< Loop-information  End >>>
+             620     2   s    s            do 200 k = 1,12
+             621     2   p    s            if ( theta .le. aref(1) )  o3z(k) = o3wk(1,k)
+             622     2   p    v            if ( theta .ge. aref(16) ) o3z(k) = o3wk(16,k)
+             623     2   p    s        200 continue
+             624     1               !
+             625     1                     else
+             626     1               !
+             627     1                     ll  = (theta+75.)/10.0 + 1
+             628     1                     con = (theta-aref(ll)) / (aref(ll+1)-aref(ll))
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 843
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             629     2   s    v            do 220 k = 1,12
+             630     2   p    v            o3z(k) = o3wk(ll,k) + con*(o3wk(ll+1,k)-o3wk(ll,k))
+             631     2   p    v        220 continue
+             632     1                     endif
+             633                     !
+             634                     !  linear interpolate for p
+             635                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pp, o3l
+                                   <<< Loop-information  End >>>
+             636     1  pp                 do 300 k = 1, lm
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.87, ITR: 64, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      o3l, pp
+                                   <<< Loop-information  End >>>
+             637     2   p   2v            do 300 i = 1, nxj
+             638     2   p   2v            if ( pp(i,k) .le. pref(1) )  o3l(i,k) = o3z(1)
+             639     2   p   2v            if ( pp(i,k) .ge. pref(12) ) o3l(i,k) = o3z(12)
+             640     1   p   2v        300 continue
+             641                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    INTERCHANGED(nest: 2)
+                                   <<< Loop-information  End >>>
+             642     1   p                 do 390 k = 1,11
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    INTERCHANGED(nest: 1)
+                                   <<< Loop-information  End >>>
+             643     2  pp                 do 310 kk = 1, lm
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pp
+                                   <<< Loop-information  End >>>
+             644     3   p   2s            do 310 i = 1, nxj
+             645     3   p   2v            con = (pp(i,kk)-pref(k)) / (pref(k+1)-pref(k))
+             646     3   p   2s            if ( (con.gt.0.0) .and. (con.le.1.0) ) &
+             647     3                         o3l(i,kk) = o3z(k) + con*(o3z(k+1)-o3z(k))
+             648     2   p   2v       310  continue
+             649     1   p            390  continue
+             650                     !
+             651                           return
+             652                           end
+
+ Procedure information
+   Lines      : 652
+   Statements : 361
+   Stack(byte): 2416
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : rozone
+   Attribute and Cross reference of name
+     aref
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 62  88
+      |(Definition)     : 
+      |(Reference)      : 619  619  621  622  628  628  628
+     asin
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 591
+     con
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 583
+      |(Definition)     : 602  611  628  645
+      |(Reference)      : 604  604  604  613  630  646  646  646
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 51
+     d2r
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 583
+      |(Definition)     : 590
+      |(Reference)      : 591
+     daynum
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 583
+      |(Definition)     : 596  597  598
+      |(Reference)      : 597  598  600  602  611
+     fac
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 583
+      |(Definition)     : 585
+      |(Reference)      : 604  613
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 582
+      |(Definition)     : 603  612  637  644
+      |(Reference)      : 604  604  604  604  613  613  613  613  638  638  639  639  645  646
+     im
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 57  58  588
+     imlm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 582
+      |(Definition)     : 588
+      |(Reference)      : 
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 582
+      |(Definition)     : 601
+      |(Reference)      : 602  602  602  604  604  604
+     julian
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 596  598
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 582
+      |(Definition)     : 620  629  636  642
+      |(Reference)      : 621  621  622  622  630  630  630  630  638  638  639  639  645  645  645  646  646  646
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 582
+      |(Definition)     : 643
+      |(Reference)      : 645  646
+     ll
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 582
+      |(Definition)     : 627
+      |(Reference)      : 628  628  628  630  630  630
+     lm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 57  58  588  636  643
+     numd
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 63  65
+      |(Definition)     : 
+      |(Reference)      : 598  600  602  602  602  611  611
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 637  644
+     o3l
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  58
+      |(Definition)     : 638  639  646
+      |(Reference)      : 
+     o3wk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 62
+      |(Definition)     : 604  613
+      |(Reference)      : 621  622  630  630  630
+     o3z
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 62
+      |(Definition)     : 621  622  630
+      |(Reference)      : 638  639  646  646  646
+     oap1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 200  204  217
+      |(Definition)     : 
+      |(Reference)      : 
+     oap10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 200  213  235
+      |(Definition)     : 
+      |(Reference)      : 
+     oap11
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 200  214  237
+      |(Definition)     : 
+      |(Reference)      : 
+     oap12
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 200  215  239
+      |(Definition)     : 
+      |(Reference)      : 
+     oap2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 200  205  219
+      |(Definition)     : 
+      |(Reference)      : 
+     oap3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 200  206  221
+      |(Definition)     : 
+      |(Reference)      : 
+     oap4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 200  207  223
+      |(Definition)     : 
+      |(Reference)      : 
+     oap5
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 200  208  225
+      |(Definition)     : 
+      |(Reference)      : 
+     oap6
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 200  209  227
+      |(Definition)     : 
+      |(Reference)      : 
+     oap7
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 200  210  229
+      |(Definition)     : 
+      |(Reference)      : 
+     oap8
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 200  211  231
+      |(Definition)     : 
+      |(Reference)      : 
+     oap9
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 200  212  233
+      |(Definition)     : 
+      |(Reference)      : 
+     oau1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 368  372  385
+      |(Definition)     : 
+      |(Reference)      : 
+     oau10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 368  381  403
+      |(Definition)     : 
+      |(Reference)      : 
+     oau11
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 368  382  405
+      |(Definition)     : 
+      |(Reference)      : 
+     oau12
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 368  383  407
+      |(Definition)     : 
+      |(Reference)      : 
+     oau2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 368  373  387
+      |(Definition)     : 
+      |(Reference)      : 
+     oau3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 368  374  389
+      |(Definition)     : 
+      |(Reference)      : 
+     oau4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 368  375  391
+      |(Definition)     : 
+      |(Reference)      : 
+     oau5
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 368  376  393
+      |(Definition)     : 
+      |(Reference)      : 
+     oau6
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 368  377  395
+      |(Definition)     : 
+      |(Reference)      : 
+     oau7
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 368  378  397
+      |(Definition)     : 
+      |(Reference)      : 
+     oau8
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 368  379  399
+      |(Definition)     : 
+      |(Reference)      : 
+     oau9
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 368  380  401
+      |(Definition)     : 
+      |(Reference)      : 
+     ode1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 536  540  553
+      |(Definition)     : 
+      |(Reference)      : 
+     ode10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 536  549  571
+      |(Definition)     : 
+      |(Reference)      : 
+     ode11
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 536  550  573
+      |(Definition)     : 
+      |(Reference)      : 
+     ode12
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 536  551  575
+      |(Definition)     : 
+      |(Reference)      : 
+     ode2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 536  541  555
+      |(Definition)     : 
+      |(Reference)      : 
+     ode3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 536  542  557
+      |(Definition)     : 
+      |(Reference)      : 
+     ode4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 536  543  559
+      |(Definition)     : 
+      |(Reference)      : 
+     ode5
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 536  544  561
+      |(Definition)     : 
+      |(Reference)      : 
+     ode6
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 536  545  563
+      |(Definition)     : 
+      |(Reference)      : 
+     ode7
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 536  546  565
+      |(Definition)     : 
+      |(Reference)      : 
+     ode8
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 536  547  567
+      |(Definition)     : 
+      |(Reference)      : 
+     ode9
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 536  548  569
+      |(Definition)     : 
+      |(Reference)      : 
+     ofe1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 116  120  133
+      |(Definition)     : 
+      |(Reference)      : 
+     ofe10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 116  129  151
+      |(Definition)     : 
+      |(Reference)      : 
+     ofe11
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 116  130  153
+      |(Definition)     : 
+      |(Reference)      : 
+     ofe12
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 116  131  155
+      |(Definition)     : 
+      |(Reference)      : 
+     ofe2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 116  121  135
+      |(Definition)     : 
+      |(Reference)      : 
+     ofe3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 116  122  137
+      |(Definition)     : 
+      |(Reference)      : 
+     ofe4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 116  123  139
+      |(Definition)     : 
+      |(Reference)      : 
+     ofe5
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 116  124  141
+      |(Definition)     : 
+      |(Reference)      : 
+     ofe6
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 116  125  143
+      |(Definition)     : 
+      |(Reference)      : 
+     ofe7
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 116  126  145
+      |(Definition)     : 
+      |(Reference)      : 
+     ofe8
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 116  127  147
+      |(Definition)     : 
+      |(Reference)      : 
+     ofe9
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 116  128  149
+      |(Definition)     : 
+      |(Reference)      : 
+     oja1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 69  73  91
+      |(Definition)     : 
+      |(Reference)      : 
+     oja10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 69  82  109
+      |(Definition)     : 
+      |(Reference)      : 
+     oja11
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 69  83  111
+      |(Definition)     : 
+      |(Reference)      : 
+     oja12
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 69  84  113
+      |(Definition)     : 
+      |(Reference)      : 
+     oja2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 69  74  93
+      |(Definition)     : 
+      |(Reference)      : 
+     oja3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 69  75  95
+      |(Definition)     : 
+      |(Reference)      : 
+     oja4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 69  76  97
+      |(Definition)     : 
+      |(Reference)      : 
+     oja5
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 69  77  99
+      |(Definition)     : 
+      |(Reference)      : 
+     oja6
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 69  78  101
+      |(Definition)     : 
+      |(Reference)      : 
+     oja7
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 69  79  103
+      |(Definition)     : 
+      |(Reference)      : 
+     oja8
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 69  80  105
+      |(Definition)     : 
+      |(Reference)      : 
+     oja9
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 69  81  107
+      |(Definition)     : 
+      |(Reference)      : 
+     ojn1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 284  288  301
+      |(Definition)     : 
+      |(Reference)      : 
+     ojn10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 284  297  319
+      |(Definition)     : 
+      |(Reference)      : 
+     ojn11
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 284  298  321
+      |(Definition)     : 
+      |(Reference)      : 
+     ojn12
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 284  299  323
+      |(Definition)     : 
+      |(Reference)      : 
+     ojn2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 284  289  303
+      |(Definition)     : 
+      |(Reference)      : 
+     ojn3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 284  290  305
+      |(Definition)     : 
+      |(Reference)      : 
+     ojn4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 284  291  307
+      |(Definition)     : 
+      |(Reference)      : 
+     ojn5
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 284  292  309
+      |(Definition)     : 
+      |(Reference)      : 
+     ojn6
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 284  293  311
+      |(Definition)     : 
+      |(Reference)      : 
+     ojn7
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 284  294  313
+      |(Definition)     : 
+      |(Reference)      : 
+     ojn8
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 284  295  315
+      |(Definition)     : 
+      |(Reference)      : 
+     ojn9
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 284  296  317
+      |(Definition)     : 
+      |(Reference)      : 
+     oju1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 326  330  343
+      |(Definition)     : 
+      |(Reference)      : 
+     oju10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 326  339  361
+      |(Definition)     : 
+      |(Reference)      : 
+     oju11
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 326  340  363
+      |(Definition)     : 
+      |(Reference)      : 
+     oju12
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 326  341  365
+      |(Definition)     : 
+      |(Reference)      : 
+     oju2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 326  331  345
+      |(Definition)     : 
+      |(Reference)      : 
+     oju3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 326  332  347
+      |(Definition)     : 
+      |(Reference)      : 
+     oju4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 326  333  349
+      |(Definition)     : 
+      |(Reference)      : 
+     oju5
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 326  334  351
+      |(Definition)     : 
+      |(Reference)      : 
+     oju6
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 326  335  353
+      |(Definition)     : 
+      |(Reference)      : 
+     oju7
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 326  336  355
+      |(Definition)     : 
+      |(Reference)      : 
+     oju8
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 326  337  357
+      |(Definition)     : 
+      |(Reference)      : 
+     oju9
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 326  338  359
+      |(Definition)     : 
+      |(Reference)      : 
+     oma1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 242  246  259
+      |(Definition)     : 
+      |(Reference)      : 
+     oma10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 242  255  277
+      |(Definition)     : 
+      |(Reference)      : 
+     oma11
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 242  256  279
+      |(Definition)     : 
+      |(Reference)      : 
+     oma12
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 242  257  281
+      |(Definition)     : 
+      |(Reference)      : 
+     oma2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 242  247  261
+      |(Definition)     : 
+      |(Reference)      : 
+     oma3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 242  248  263
+      |(Definition)     : 
+      |(Reference)      : 
+     oma4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 242  249  265
+      |(Definition)     : 
+      |(Reference)      : 
+     oma5
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 242  250  267
+      |(Definition)     : 
+      |(Reference)      : 
+     oma6
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 242  251  269
+      |(Definition)     : 
+      |(Reference)      : 
+     oma7
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 242  252  271
+      |(Definition)     : 
+      |(Reference)      : 
+     oma8
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 242  253  273
+      |(Definition)     : 
+      |(Reference)      : 
+     oma9
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 242  254  275
+      |(Definition)     : 
+      |(Reference)      : 
+     omr1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 158  162  175
+      |(Definition)     : 
+      |(Reference)      : 
+     omr10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 158  171  193
+      |(Definition)     : 
+      |(Reference)      : 
+     omr11
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 158  172  195
+      |(Definition)     : 
+      |(Reference)      : 
+     omr12
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 158  173  197
+      |(Definition)     : 
+      |(Reference)      : 
+     omr2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 158  163  177
+      |(Definition)     : 
+      |(Reference)      : 
+     omr3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 158  164  179
+      |(Definition)     : 
+      |(Reference)      : 
+     omr4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 158  165  181
+      |(Definition)     : 
+      |(Reference)      : 
+     omr5
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 158  166  183
+      |(Definition)     : 
+      |(Reference)      : 
+     omr6
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 158  167  185
+      |(Definition)     : 
+      |(Reference)      : 
+     omr7
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 158  168  187
+      |(Definition)     : 
+      |(Reference)      : 
+     omr8
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 158  169  189
+      |(Definition)     : 
+      |(Reference)      : 
+     omr9
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 158  170  191
+      |(Definition)     : 
+      |(Reference)      : 
+     ono1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 494  498  511
+      |(Definition)     : 
+      |(Reference)      : 
+     ono10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 494  507  529
+      |(Definition)     : 
+      |(Reference)      : 
+     ono11
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 494  508  531
+      |(Definition)     : 
+      |(Reference)      : 
+     ono12
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 494  509  533
+      |(Definition)     : 
+      |(Reference)      : 
+     ono2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 494  499  513
+      |(Definition)     : 
+      |(Reference)      : 
+     ono3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 494  500  515
+      |(Definition)     : 
+      |(Reference)      : 
+     ono4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 494  501  517
+      |(Definition)     : 
+      |(Reference)      : 
+     ono5
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 494  502  519
+      |(Definition)     : 
+      |(Reference)      : 
+     ono6
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 494  503  521
+      |(Definition)     : 
+      |(Reference)      : 
+     ono7
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 494  504  523
+      |(Definition)     : 
+      |(Reference)      : 
+     ono8
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 494  505  525
+      |(Definition)     : 
+      |(Reference)      : 
+     ono9
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 494  506  527
+      |(Definition)     : 
+      |(Reference)      : 
+     ooc1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 452  456  469
+      |(Definition)     : 
+      |(Reference)      : 
+     ooc10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 452  465  487
+      |(Definition)     : 
+      |(Reference)      : 
+     ooc11
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 452  466  489
+      |(Definition)     : 
+      |(Reference)      : 
+     ooc12
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 452  467  491
+      |(Definition)     : 
+      |(Reference)      : 
+     ooc2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 452  457  471
+      |(Definition)     : 
+      |(Reference)      : 
+     ooc3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 452  458  473
+      |(Definition)     : 
+      |(Reference)      : 
+     ooc4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 452  459  475
+      |(Definition)     : 
+      |(Reference)      : 
+     ooc5
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 452  460  477
+      |(Definition)     : 
+      |(Reference)      : 
+     ooc6
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 452  461  479
+      |(Definition)     : 
+      |(Reference)      : 
+     ooc7
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 452  462  481
+      |(Definition)     : 
+      |(Reference)      : 
+     ooc8
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 452  463  483
+      |(Definition)     : 
+      |(Reference)      : 
+     ooc9
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 452  464  485
+      |(Definition)     : 
+      |(Reference)      : 
+     osp1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 410  414  427
+      |(Definition)     : 
+      |(Reference)      : 
+     osp10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 410  423  445
+      |(Definition)     : 
+      |(Reference)      : 
+     osp11
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 410  424  447
+      |(Definition)     : 
+      |(Reference)      : 
+     osp12
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 410  425  449
+      |(Definition)     : 
+      |(Reference)      : 
+     osp2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 410  415  429
+      |(Definition)     : 
+      |(Reference)      : 
+     osp3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 410  416  431
+      |(Definition)     : 
+      |(Reference)      : 
+     osp4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 410  417  433
+      |(Definition)     : 
+      |(Reference)      : 
+     osp5
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 410  418  435
+      |(Definition)     : 
+      |(Reference)      : 
+     osp6
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 410  419  437
+      |(Definition)     : 
+      |(Reference)      : 
+     osp7
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 410  420  439
+      |(Definition)     : 
+      |(Reference)      : 
+     osp8
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 410  421  441
+      |(Definition)     : 
+      |(Reference)      : 
+     osp9
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 410  422  443
+      |(Definition)     : 
+      |(Reference)      : 
+     pi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 583
+      |(Definition)     : 587
+      |(Reference)      : 590
+     pp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  57
+      |(Definition)     : 
+      |(Reference)      : 638  639  645
+     pref
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 62  86
+      |(Definition)     : 
+      |(Reference)      : 638  639  645  645  645
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 51  58
+     rozone
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     sinl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  583
+      |(Definition)     : 
+      |(Reference)      : 591
+     tabo3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, storage-associated, initialized
+      |(Declaration)    : 67  73  74  75  76  77  78  79  80  81  82  83  84  120  121  122  123  124  125  126  127  128  129  130  131  162  163  164  165  166  167  168  169  170  171  172  173  204  205  206  207  208  209  210  211  212  213  214  215  246  247  248  249  250  251  252  253  254  255  256  257  288  289  290  291  292  293  294  295  296  297  298  299  330  331  332  333  334  335  336  337  338  339  340  341  372  373  374  375  376  377  378  379  380  381  382  383  414  415  416  417  418  419  420  421  422  423  424  425  456  457  458  459  460  461  462  463  464  465  466  467  498  499  500  501  502  503  504  505  506  507  508  509  540  541  542  543  544  545  546  547  548  549  550  551
+      |(Definition)     : 
+      |(Reference)      : 604  604  604  613  613  613
+     theta
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 583
+      |(Definition)     : 591
+      |(Reference)      : 619  619  621  622  627  628
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         70  execution     (Definition) 606  
+                           (Reference)  603
+         90  execution     (Definition) 607  
+                           (Reference)  601
+        100  execution     (Definition) 614  
+                           (Reference)  612
+        200  execution     (Definition) 623  
+                           (Reference)  620
+        220  execution     (Definition) 631  
+                           (Reference)  629
+        300  execution     (Definition) 640  
+                           (Reference)  636  637
+        310  execution     (Definition) 648  
+                           (Reference)  643  644
+        390  execution     (Definition) 649  
+                           (Reference)  642
+
+ Total information
+   Procedures       : 1
+   Total lines      : 652
+   Total statements : 361
+   Total stack(byte): 2416
+   Total prefetch num: 0
+

@@ -1,0 +1,587 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Dec 19 11:04:30 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src
+   Source file       : radsw_param.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ Module "module_radsw_parameters"
+  (inc)(line-no.)(nest)(optimize)
+               1                     !!!!!  ==============================================================  !!!!!
+               2                     !!!!!              sw-rrtm3 radiation package description              !!!!!
+               3                     !!!!!  ==============================================================  !!!!!
+               4                     !                                                                          !
+               5                     !   this package includes ncep's modifications of the rrtm-sw radiation    !
+               6                     !   code from aer inc.                                                     !
+               7                     !                                                                          !
+               8                     !   the sw-rrtm3 package includes these parts:                             !
+               9                     !                                                                          !
+              10                     !      'radsw_rrtm3_param.f'                                               !
+              11                     !      'radsw_rrtm3_datatb.f'                                              !
+              12                     !      'radsw_rrtm3_main.f'                                                !
+              13                     !                                                                          !
+              14                     !   the 'radsw_rrtm3_param.f' contains:                                    !
+              15                     !                                                                          !
+              16                     !      'module_radsw_parameters'  -- band parameters set up                !
+              17                     !                                                                          !
+              18                     !   the 'radsw_rrtm3_datatb.f' contains:                                   !
+              19                     !                                                                          !
+              20                     !      'module_radsw_ref'         -- reference temperature and pressure    !
+              21                     !      'module_radsw_cldprtb'     -- cloud property coefficients table     !
+              22                     !      'module_radsw_sflux'       -- spectral distribution of solar flux   !
+              23                     !      'module_radsw_kgbnn'       -- absorption coeffients for 14          !
+              24                     !                                    bands, where nn = 16-29               !
+              25                     !                                                                          !
+              26                     !   the 'radsw_rrtm3_main.f' contains:                                     !
+              27                     !                                                                          !
+              28                     !      'module_radsw_main'        -- main sw radiation transfer            !
+              29                     !                                                                          !
+              30                     !   in the main module 'module_radsw_main' there are only two              !
+              31                     !   externally callable subroutines:                                       !
+              32                     !                                                                          !
+              33                     !      'swrad'      -- main rrtm3 sw radiation routine                     !
+              34                     !      'rswinit'    -- initialization routine                              !
+              35                     !                                                                          !
+              36                     !   all the sw radiation subprograms become contained subprograms          !
+              37                     !   in module 'module_radsw_main' and many of them are not directly        !
+              38                     !   accessable from places outside the module.                             !
+              39                     !                                                                          !
+              40                     !   compilation sequence is:                                               !
+              41                     !                                                                          !
+              42                     !      'radsw_rrtm3_param.f'                                               !
+              43                     !      'radsw_rrtm3_datatb.f'                                              !
+              44                     !      'radsw_rrtm3_main.f'                                                !
+              45                     !                                                                          !
+              46                     !   and all should be put in front of routines that use sw modules         !
+              47                     !                                                                          !
+              48                     !   ncep modifications history log:                                        !
+              49                     !                                                                          !
+              50                     !       see list in program "radsw_rrtm3_main.f"                           !
+              51                     !                                                                          !
+              52                     !!!!!  ==============================================================  !!!!!
+              53                     !!!!!                         end descriptions                         !!!!!
+              54                     !!!!!  ==============================================================  !!!!!
+              55                     
+              56                     
+              57                     !========================================!
+              58                           module module_radsw_parameters     !
+              59                     !........................................!
+              60                     
+              61                           use physpara,                only : kind_phys
+              62                     
+              63                           implicit   none
+              64                     !
+              65                           public
+              66                     !
+              67                     !  ---  define type construct for radiation fluxes at toa
+              68                     !
+              69                           type :: topfsw_type
+              70                             real (kind=kind_phys) :: upfxc         ! total sky upward flux at toa
+              71                             real (kind=kind_phys) :: dnfxc         ! total sky downward flux at toa
+              72                             real (kind=kind_phys) :: upfx0         ! clear sky upward flux at toa
+              73                           end type
+              74                     !
+              75                     !  ---  define type construct for radiation fluxes at surface
+              76                     !
+              77                           type :: sfcfsw_type
+              78                             real (kind=kind_phys) :: upfxc         ! total sky upward flux at sfc
+              79                             real (kind=kind_phys) :: dnfxc         ! total sky downward flux at sfc
+              80                             real (kind=kind_phys) :: upfx0         ! clear sky upward flux at sfc
+              81                             real (kind=kind_phys) :: dnfx0         ! clear sky downward flux at sfc
+              82                           end type
+              83                     !
+              84                     !  ---  define type construct for optional radiation flux profiles
+              85                     !
+              86                           type :: profsw_type
+              87                             real (kind=kind_phys) :: upfxc         ! total sky level upward flux
+              88                             real (kind=kind_phys) :: dnfxc         ! total sky level downward flux
+              89                             real (kind=kind_phys) :: upfx0         ! clear sky level upward flux
+              90                             real (kind=kind_phys) :: dnfx0         ! clear sky level downward flux
+              91                           end type
+              92                     !
+              93                     !  ---  define type construct for optional component downward fluxes at surface
+              94                     !
+              95                           type :: cmpfsw_type
+              96                             real (kind=kind_phys) :: uvbfc         ! total sky downward uv-b flux at sfc
+              97                             real (kind=kind_phys) :: uvbf0         ! clear sky downward uv-b flux at sfc
+              98                     
+              99                             real (kind=kind_phys) :: nirbm         ! sfc downward nir direct beam flux
+             100                             real (kind=kind_phys) :: nirdf         ! sfc downward nir diffused flux
+             101                             real (kind=kind_phys) :: visbm         ! sfc downward uv+vis direct beam flx
+             102                             real (kind=kind_phys) :: visdf         ! sfc downward uv+vis diffused flux
+             103                           end type
+             104                     !
+             105                     !  ---  parameter constants for sw band structures
+             106                     !
+             107                           integer, parameter :: nblow  = 16            ! band range lower limit
+             108                           integer, parameter :: nbhgh  = 29            ! band range upper limit
+             109                           integer, parameter :: nbands = nbhgh-nblow+1 ! num of spectral bands
+             110                           integer, parameter :: ngptsw = 112           ! total num of g-point in all bands
+             111                           integer, parameter :: ngmax  = 16            ! max num of g-point in one band
+             112                           integer, parameter :: maxgas = 7             ! max num of absorbing gases
+             113                           integer, parameter :: ntbmx  = 10000         ! indx upper lim of trans table
+             114                     
+             115                           integer, parameter :: nswstr = 1
+             116                           integer, parameter :: nbdsw  = nbands
+             117                     
+             118                     !  ---  number of g-point in each band
+             119                           integer  :: ng16, ng17, ng18, ng19, ng20, ng21, ng22,             &
+             120                          &            ng23, ng24, ng25, ng26, ng27, ng28, ng29
+             121                           parameter ( ng16=06, ng17=12, ng18=08, ng19=08, ng20=10,          &
+             122                          &            ng21=10, ng22=02, ng23=10, ng24=08, ng25=06,          &
+             123                          &            ng26=06, ng27=08, ng28=06, ng29=12)
+             124                     
+             125                           integer, dimension(nblow:nbhgh) :: ng
+             126                           data  ng / ng16, ng17, ng18, ng19, ng20, ng21, ng22,              &
+             127                          &           ng23, ng24, ng25, ng26, ng27, ng28, ng29  /
+             128                     
+             129                     !  ---  starting index of each band
+             130                           integer  :: ns16, ns17, ns18, ns19, ns20, ns21, ns22,             &
+             131                          &            ns23, ns24, ns25, ns26, ns27, ns28, ns29
+             132                           parameter ( ns16=00,         ns17=ns16+ng16,  ns18=ns17+ng17,     &
+             133                          &            ns19=ns18+ng18,  ns20=ns19+ng19,  ns21=ns20+ng20,     &
+             134                          &            ns22=ns21+ng21,  ns23=ns22+ng22,  ns24=ns23+ng23,     &
+             135                          &            ns25=ns24+ng24,  ns26=ns25+ng25,  ns27=ns26+ng26,     &
+             136                          &            ns28=ns27+ng27,  ns29=ns28+ng28  )
+             137                     
+             138                           integer, dimension(nblow:nbhgh) :: ngs
+             139                           data  ngs / ns16, ns17, ns18, ns19, ns20, ns21, ns22,             &
+             140                          &            ns23, ns24, ns25, ns26, ns27, ns28, ns29  /
+             141                     
+             142                     !  ---  band index for each g-point
+             143                           integer, dimension(ngptsw)      :: ngb
+             144                           data ngb(:) / 16,16,16,16,16,16,                                  & ! band 16
+             145                          &              17,17,17,17,17,17,17,17,17,17,17,17,                & ! band 17
+             146                          &              18,18,18,18,18,18,18,18,                            & ! band 18
+             147                          &              19,19,19,19,19,19,19,19,                            & ! band 19
+             148                          &              20,20,20,20,20,20,20,20,20,20,                      & ! band 20
+             149                          &              21,21,21,21,21,21,21,21,21,21,                      & ! band 21
+             150                          &              22,22,                                              & ! band 22
+             151                          &              23,23,23,23,23,23,23,23,23,23,                      & ! band 23
+             152                          &              24,24,24,24,24,24,24,24,                            & ! band 24
+             153                          &              25,25,25,25,25,25,                                  & ! band 25
+             154                          &              26,26,26,26,26,26,                                  & ! band 26
+             155                          &              27,27,27,27,27,27,27,27,                            & ! band 27
+             156                          &              28,28,28,28,28,28,                                  & ! band 28
+             157                          &              29,29,29,29,29,29,29,29,29,29,29,29 /                 ! band 29
+             158                     
+             159                     !  ---  band wavenumber intervals
+             160                           real (kind=kind_phys), dimension(nbands):: wvnum1, wvnum2
+             161                           data wvnum1(:)    /                                               &
+             162                          &         2600.0, 3251.0, 4001.0, 4651.0, 5151.0, 6151.0, 7701.0,  &
+             163                          &         8051.0,12851.0,16001.0,22651.0,29001.0,38001.0,  820.0 /
+             164                           data wvnum2(:)    /                                               &
+             165                          &         3250.0, 4000.0, 4650.0, 5150.0, 6150.0, 7700.0, 8050.0,  &
+             166                          &        12850.0,16000.0,22650.0,29000.0,38000.0,50000.0, 2600.0 /
+             167                     
+             168                     !
+             169                     !........................................!
+             170                           end module module_radsw_parameters !
+             171                     !========================================!
+
+ Procedure information
+   Lines      : 171
+   Statements : 52
+   Stack(byte): 352
+   Prefetch num: 0
+
+ Scoping unit of module : module_radsw_parameters
+   Attribute and Cross reference of name
+     cmpfsw_type
+      |(Class and Type) : type name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 
+      |(Definition)     : 95
+      |(Reference)      : 
+     kind_phys
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 61  160
+     maxgas
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 112
+      |(Definition)     : 
+      |(Reference)      : 
+     module_radsw_parameters
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 58
+      |(Definition)     : 
+      |(Reference)      : 170
+     nbands
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 109
+      |(Definition)     : 
+      |(Reference)      : 116  160
+     nbdsw
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 116
+      |(Definition)     : 
+      |(Reference)      : 
+     nbhgh
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 108
+      |(Definition)     : 
+      |(Reference)      : 109  125  138
+     nblow
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 109  125  138
+     ng
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, DIMENSION, initialized
+      |(Declaration)    : 125  126
+      |(Definition)     : 
+      |(Reference)      : 
+     ng16
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 119  121
+      |(Definition)     : 
+      |(Reference)      : 126  132
+     ng17
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 119  121
+      |(Definition)     : 
+      |(Reference)      : 126  132
+     ng18
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 119  121
+      |(Definition)     : 
+      |(Reference)      : 126  132
+     ng19
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 119  121
+      |(Definition)     : 
+      |(Reference)      : 126  132
+     ng20
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 119  121
+      |(Definition)     : 
+      |(Reference)      : 126  132
+     ng21
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 119  121
+      |(Definition)     : 
+      |(Reference)      : 126  132
+     ng22
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 119  121
+      |(Definition)     : 
+      |(Reference)      : 126  132
+     ng23
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 119  121
+      |(Definition)     : 
+      |(Reference)      : 126  132
+     ng24
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 119  121
+      |(Definition)     : 
+      |(Reference)      : 126  132
+     ng25
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 119  121
+      |(Definition)     : 
+      |(Reference)      : 126  132
+     ng26
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 119  121
+      |(Definition)     : 
+      |(Reference)      : 126  132
+     ng27
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 119  121
+      |(Definition)     : 
+      |(Reference)      : 126  132
+     ng28
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 119  121
+      |(Definition)     : 
+      |(Reference)      : 126  132
+     ng29
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 119  121
+      |(Definition)     : 
+      |(Reference)      : 126
+     ngb
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, DIMENSION, initialized
+      |(Declaration)    : 143  144
+      |(Definition)     : 
+      |(Reference)      : 
+     ngmax
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 111
+      |(Definition)     : 
+      |(Reference)      : 
+     ngptsw
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 110
+      |(Definition)     : 
+      |(Reference)      : 143
+     ngs
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, DIMENSION, initialized
+      |(Declaration)    : 138  139
+      |(Definition)     : 
+      |(Reference)      : 
+     ns16
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 130  132
+      |(Definition)     : 
+      |(Reference)      : 132  139
+     ns17
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 130  132
+      |(Definition)     : 
+      |(Reference)      : 132  139
+     ns18
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 130  132
+      |(Definition)     : 
+      |(Reference)      : 132  139
+     ns19
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 130  132
+      |(Definition)     : 
+      |(Reference)      : 132  139
+     ns20
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 130  132
+      |(Definition)     : 
+      |(Reference)      : 132  139
+     ns21
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 130  132
+      |(Definition)     : 
+      |(Reference)      : 132  139
+     ns22
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 130  132
+      |(Definition)     : 
+      |(Reference)      : 132  139
+     ns23
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 130  132
+      |(Definition)     : 
+      |(Reference)      : 132  139
+     ns24
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 130  132
+      |(Definition)     : 
+      |(Reference)      : 132  139
+     ns25
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 130  132
+      |(Definition)     : 
+      |(Reference)      : 132  139
+     ns26
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 130  132
+      |(Definition)     : 
+      |(Reference)      : 132  139
+     ns27
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 130  132
+      |(Definition)     : 
+      |(Reference)      : 132  139
+     ns28
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 130  132
+      |(Definition)     : 
+      |(Reference)      : 132  139
+     ns29
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 130  132
+      |(Definition)     : 
+      |(Reference)      : 139
+     nswstr
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 115
+      |(Definition)     : 
+      |(Reference)      : 
+     ntbmx
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 113
+      |(Definition)     : 
+      |(Reference)      : 
+     physpara
+      |(Class and Type) : module name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 61
+     profsw_type
+      |(Class and Type) : type name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 
+      |(Definition)     : 86
+      |(Reference)      : 
+     sfcfsw_type
+      |(Class and Type) : type name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 
+      |(Definition)     : 77
+      |(Reference)      : 
+     topfsw_type
+      |(Class and Type) : type name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 
+      |(Definition)     : 69
+      |(Reference)      : 
+     wvnum1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, DIMENSION, initialized
+      |(Declaration)    : 160  161
+      |(Definition)     : 
+      |(Reference)      : 
+     wvnum2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, DIMENSION, initialized
+      |(Declaration)    : 160  164
+      |(Definition)     : 
+      |(Reference)      : 
+   Derived type construction
+     cmpfsw_type
+      |  (Attributes) : 
+      |uvbfc
+      |  (Type and Attributes) : REAL(8), PUBLIC
+      |uvbf0
+      |  (Type and Attributes) : REAL(8), PUBLIC
+      |nirbm
+      |  (Type and Attributes) : REAL(8), PUBLIC
+      |nirdf
+      |  (Type and Attributes) : REAL(8), PUBLIC
+      |visbm
+      |  (Type and Attributes) : REAL(8), PUBLIC
+      |visdf
+      |  (Type and Attributes) : REAL(8), PUBLIC
+     profsw_type
+      |  (Attributes) : 
+      |upfxc
+      |  (Type and Attributes) : REAL(8), PUBLIC
+      |dnfxc
+      |  (Type and Attributes) : REAL(8), PUBLIC
+      |upfx0
+      |  (Type and Attributes) : REAL(8), PUBLIC
+      |dnfx0
+      |  (Type and Attributes) : REAL(8), PUBLIC
+     sfcfsw_type
+      |  (Attributes) : 
+      |upfxc
+      |  (Type and Attributes) : REAL(8), PUBLIC
+      |dnfxc
+      |  (Type and Attributes) : REAL(8), PUBLIC
+      |upfx0
+      |  (Type and Attributes) : REAL(8), PUBLIC
+      |dnfx0
+      |  (Type and Attributes) : REAL(8), PUBLIC
+     topfsw_type
+      |  (Attributes) : 
+      |upfxc
+      |  (Type and Attributes) : REAL(8), PUBLIC
+      |dnfxc
+      |  (Type and Attributes) : REAL(8), PUBLIC
+      |upfx0
+      |  (Type and Attributes) : REAL(8), PUBLIC
+
+ Total information
+   Procedures       : 1
+   Total lines      : 171
+   Total statements : 52
+   Total stack(byte): 352
+   Total prefetch num: 0
+

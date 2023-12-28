@@ -1,0 +1,806 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Dec 19 11:05:24 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src
+   Source file       : out24.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "out24"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine out24 (nx,my,my_max,hf24,qf24,ss24,rs24,asol24,olr24  &
+               2                                           ,rain24,rainlp24,dt24,ifilout,glob,itau,idtg,ggdef,flash24)
+               3                     !
+               4                           use index
+               5                           use rank
+               6                           use mpe
+               7                           use mod_grb2_param , only :ofdir,wrt_grb2_accu_v2
+               8                           use const ,only:outdms ,outgrb2 ,ifilout_grb, RTYPE,kflag &
+               9                                          ,do_sit,ldailyFCTsst,dailyClm_option,ldailyFCTicesndpt
+              10                           USE mo_netcdf,           ONLY:lkvl
+              11                           use mod_sitgrid, only:ratioSIT,dtsit24
+              12                           USE mod_sit_control,only:loutsit24
+              13                           use mod_sst ,only:outtseadiffFCT24
+              14                     
+              15                           implicit  none
+              16                     
+              17                           integer   nx,my,my_max,itau
+              18                           real      dt24
+              19                     
+              20                           real      hf24(nxp,my_max),qf24(nxp,my_max),ss24(nxp,my_max),rs24(nxp,my_max), &
+              21                                     asol24(nxp,my_max),olr24(nxp,my_max),rain24(nxp,my_max)              &
+              22                                    ,flash24(nxp,my_max),rainlp24(nxp,my_max)
+              23                     
+              24                           real(kind=RTYPE) glob(nx,my),wrk(nxp,my_max)
+              25                     !
+              26                           integer*8 idtg
+              27                           character*80 ifilout
+              28                           character*26 ihdg
+              29                           character*4  ggdef
+              30                     
+              31                           integer   imax,jmax,lenc,j,nxj,i,istat,jj
+              32                     !
+              33                           imax=nx
+              34                           jmax=my
+              35                           lenc= imax*jmax
+              36                     !
+              37     1                     if( outgrb2 == 1)then
+              38     1                134                    format( A  ,A ,I10.10 , i4.4       )
+              39     1                          write(ofdir,134 )trim(ifilout_grb),'/',idtg/100 ,itau
+              40     1                          if(myrank==0) call system("mkdir -p "//trim(ofdir) )
+              41     1                     endif
+              42                     !===
+              43                     !  Latent heat flux at the surface (W/m**2)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qf24, wrk
+                                   <<< Loop-information  End >>>
+              44     1  pp                 do jj = 1,jlistnum
+              45     1   p                   j=jlist1(jj)
+              46     1   p                   nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qf24, wrk
+                                   <<< Loop-information  End >>>
+              47     2   p   2v              do i=1,nxj
+              48     2   p   2v               wrk(i,jj)=qf24(i,jj)/dt24
+              49     2   p   2v              enddo
+              50     1   p                 enddo
+              51                           call unify_reduceintp(nx,my,my_max,wrk,glob)
+              52                           call syslbl ('s0043f',idtg,itau,ggdef,ihdg)
+              53                           if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
+              54                           if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,0,10,2,1,0,0,0,24,glob,ihdg)
+              55                     ! Sensible heat flux at the surface (W/m**2)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      hf24, wrk
+                                   <<< Loop-information  End >>>
+              56     1  pp                 do jj=1,jlistnum
+              57     1   p                    j=jlist1(jj)
+              58     1   p                    nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      hf24, wrk
+                                   <<< Loop-information  End >>>
+              59     2   p   2v               do i=1,nxj
+              60     2   p   2v                wrk(i,jj)=hf24(i,jj)/dt24
+              61     2   p   2v               enddo
+              62     1   p                 enddo
+              63                           call unify_reduceintp(nx,my,my_max,wrk,glob)
+              64                           call syslbl ('s0042f',idtg,itau,ggdef,ihdg)
+              65                           if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
+              66                           if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,0,11,2,1,0,0,0,24,glob,ihdg)
+              67                     ! Net shortwave (solar) flux at the surface (W/m**2) (positive : downward flux)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ss24, wrk
+                                   <<< Loop-information  End >>>
+              68     1  pp                 do jj=1,jlistnum
+              69     1   p                    j=jlist1(jj)
+              70     1   p                    nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ss24, wrk
+                                   <<< Loop-information  End >>>
+              71     2   p   2v               do i=1,nxj
+              72     2   p   2v                wrk(i,jj)=ss24(i,jj)/dt24
+              73     2   p   2v               enddo
+              74     1   p                 enddo
+              75                           call unify_reduceintp(nx,my,my_max,wrk,glob)
+              76                           call syslbl ('s0031f',idtg,itau,ggdef,ihdg)
+              77                           if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
+              78                           if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,4,9,2,1,0,0,0,24,glob,ihdg)
+              79                     ! net surface longwave radiation
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rs24, wrk
+                                   <<< Loop-information  End >>>
+              80     1  pp                 do jj=1,jlistnum
+              81     1   p                    j=jlist1(jj)
+              82     1   p                    nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rs24, wrk
+                                   <<< Loop-information  End >>>
+              83     2   p   2v               do i=1,nxj
+              84     2   p   2v                wrk(i,jj)=rs24(i,jj)/dt24
+              85     2   p   2v               enddo
+              86     1   p                 enddo
+              87                           call unify_reduceintp(nx,my,my_max,wrk,glob)
+              88                           call syslbl ('s0032f',idtg,itau,ggdef,ihdg)
+              89                           if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
+              90                           if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,5,5,2,1,0,0,0,24,glob,ihdg)
+              91                     !
+              92                     !  Total precipitation  24-hours
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rain24, wrk
+                                   <<< Loop-information  End >>>
+              93     1  pp                 do jj=1,jlistnum
+              94     1   p                    j=jlist1(jj)
+              95     1   p                    nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rain24, wrk
+                                   <<< Loop-information  End >>>
+              96     2   p   2v               do i=1,nxj
+              97     2   p   2v                wrk(i,jj)=rain24(i,jj)
+              98     2   p   2v               enddo
+              99     1   p                 enddo
+             100                           call unify_reduceintp(nx,my,my_max,wrk,glob)
+             101                           call syslbl ('b00626',idtg,itau,ggdef,ihdg)
+             102                           if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
+             103                           if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,1,8,2,103,0,0,1,24,glob,ihdg)
+             104                     !
+             105                     !  Total precipitation  24-hours
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rainlp24, wrk
+                                   <<< Loop-information  End >>>
+             106     1  pp                 do jj=1,jlistnum
+             107     1   p                    j=jlist1(jj)
+             108     1   p                    nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rainlp24, wrk
+                                   <<< Loop-information  End >>>
+             109     2   p   2v               do i=1,nxj
+             110     2   p   2v                wrk(i,jj)=rainlp24(i,jj)
+             111     2   p   2v               enddo
+             112     1   p                 enddo
+             113                           call unify_reduceintp(nx,my,my_max,wrk,glob)
+             114                           call syslbl ('b00646',idtg,itau,ggdef,ihdg)
+             115                           if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
+             116                     
+             117                     !  The average of latent heat flux release for total precipitation within 24-hours
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rain24, wrk
+                                   <<< Loop-information  End >>>
+             118     1  pp                 do jj=1,jlistnum
+             119     1   p                    j=jlist1(jj)
+             120     1   p                    nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.75, ITR: 192, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rain24, wrk
+                                   <<< Loop-information  End >>>
+             121     2   p   2v               do i=1,nxj
+             122     2   p   2v                wrk(i,jj)=rain24(i,jj)/dt24*2.5e+6
+             123     2   p   2v               enddo
+             124     1   p                 enddo
+             125                           call unify_reduceintp(nx,my,my_max,wrk,glob)
+             126                           call syslbl ('b0062f',idtg,itau,ggdef,ihdg)
+             127                           if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
+             128                     
+             129                     ! model top of net solor shortwave radiation
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      asol24, wrk
+                                   <<< Loop-information  End >>>
+             130     1  pp                 do jj=1,jlistnum
+             131     1   p                    j=jlist1(jj)
+             132     1   p                    nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      asol24, wrk
+                                   <<< Loop-information  End >>>
+             133     2   p   2v               do i=1,nxj
+             134     2   p   2v                wrk(i,jj)=asol24(i,jj)/dt24
+             135     2   p   2v               enddo
+             136     1   p                 enddo
+             137                           call unify_reduceintp(nx,my,my_max,wrk,glob)
+             138                           call syslbl ('x0033f',idtg,itau,ggdef,ihdg)
+             139                           if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
+             140                           if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,4,1,2,8,0,0,0,24,glob,ihdg)
+             141                     
+             142                     ! model top of Outgoing longwave radiation (OLR)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      olr24, wrk
+                                   <<< Loop-information  End >>>
+             143     1  pp                 do jj=1,jlistnum
+             144     1   p                    j=jlist1(jj)
+             145     1   p                    nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      olr24, wrk
+                                   <<< Loop-information  End >>>
+             146     2   p   2v               do i=1,nxj
+             147     2   p   2v                wrk(i,jj)=olr24(i,jj)/dt24
+             148     2   p   2v               enddo
+             149     1   p                 enddo
+             150                           call unify_reduceintp(nx,my,my_max,wrk,glob)
+             151                           call syslbl ('x0034f',idtg,itau,ggdef,ihdg)
+             152                           if(outdms.gt.0)  call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
+             153                           if(outgrb2==1.and.myrank==0)call wrt_grb2_accu_v2(itau,0,5,5,2,8,0,0,0,24,glob,ihdg)
+             154                     !
+             155                     !xb110>>
+             156                     ! 24hr average flash density (km-2day-1)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flash24, wrk
+                                   <<< Loop-information  End >>>
+             157     1  pp                 do jj = 1,jlistnum
+             158     1   p                   j=jlist1(jj)
+             159     1   p                   nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flash24, wrk
+                                   <<< Loop-information  End >>>
+             160     2   p   2v              do i=1,nxj
+             161     2   p   2v               wrk(i,jj)=flash24(i,jj)/dt24
+             162     2   p   2v              enddo
+             163     1   p                 enddo
+             164                           call unify_reduceintp(nx,my,my_max,wrk,glob)
+             165                           call syslbl ('x00999',idtg,itau,ggdef,ihdg)
+             166                           if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
+             167                           if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,17,4,6,10,0,0,0,24,glob,ihdg)
+             168                     !xb110<<
+             169                     
+             170                     !Ocean SIT daily mean output
+             171     1                     if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
+             172     1                       call outtseadiffFCT24(nx,my,my_max,dt24,ifilout,itau,idtg,ggdef)
+             173     1                     endif
+             174                     
+             175     1                     if(do_sit)then
+             176     2                       if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
+             177     2                         call outtseadiffSIT24(nx,my,my_max,ratioSIT,dtsit24,ifilout,itau,idtg,ggdef)
+             178     2                       endif
+             179     2                       if(loutsit24)then
+             180     2                         call outsit24(nx,my,my_max,lkvl,ifilout,itau,idtg,ggdef)
+             181     2                       endif
+             182     1                     endif !do_sit
+             183                     
+             184                     
+             185                           return
+             186                           end
+
+ Procedure information
+   Lines      : 186
+   Statements : 149
+   Stack(byte): 4992
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : out24
+   Attribute and Cross reference of name
+     asol24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  20
+      |(Definition)     : 
+      |(Reference)      : 134
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8
+     dailyClm_option
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8  171  176
+     dmswrit
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 53  65  77  89  102  115  127  139  152  166
+     do_sit
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8  175
+     dt24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 172
+      |(Reference)      : 48  60  72  84  122  134  147  161
+     dtsit24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 177
+      |(Reference)      : 11
+     flash24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  20
+      |(Definition)     : 
+      |(Reference)      : 161
+     ggdef
+      |(Class and Type) : variable name, CHARACTER(4,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  29
+      |(Definition)     : 52  64  76  88  101  114  126  138  151  165  172  177  180
+      |(Reference)      : 
+     glob
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  24
+      |(Definition)     : 51  53  54  63  65  66  75  77  78  87  89  90  100  102  103  113  115  125  127  137  139  140  150  152  153  164  166  167
+      |(Reference)      : 
+     hf24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  20
+      |(Definition)     : 
+      |(Reference)      : 60
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 47  59  71  83  96  109  121  133  146  160
+      |(Reference)      : 48  48  60  60  72  72  84  84  97  97  110  110  122  122  134  134  147  147  161  161
+     idtg
+      |(Class and Type) : variable name, INTEGER(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  26
+      |(Definition)     : 52  64  76  88  101  114  126  138  151  165  172  177  180
+      |(Reference)      : 39
+     ifilout
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  27
+      |(Definition)     : 53  65  77  89  102  115  127  139  152  166  172  177  180
+      |(Reference)      : 
+     ifilout_grb
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8  39
+     ihdg
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 52  53  54  64  65  66  76  77  78  88  89  90  101  102  103  114  115  126  127  138  139  140  151  152  153  165  166  167
+      |(Reference)      : 
+     imax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 33  53  65  77  89  102  115  127  139  152  166
+      |(Reference)      : 35
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 4
+     istat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 53  65  77  89  102  115  127  139  152  166
+      |(Reference)      : 
+     itau
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 52  54  64  66  76  78  88  90  101  103  114  126  138  140  151  153  165  167  172  177  180
+      |(Reference)      : 39
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 45  57  69  81  94  107  119  131  144  158
+      |(Reference)      : 46  58  70  82  95  108  120  132  145  159
+     jj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 44  56  68  80  93  106  118  130  143  157
+      |(Reference)      : 45  48  48  57  60  60  69  72  72  81  84  84  94  97  97  107  110  110  119  122  122  131  134  134  144  147  147  158  161  161
+     jlist1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 45  57  69  81  94  107  119  131  144  158
+     jlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 44  56  68  80  93  106  118  130  143  157
+     jmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 34  53  65  77  89  102  115  127  139  152  166
+      |(Reference)      : 35
+     kflag
+      |(Class and Type) : named constant, CHARACTER(1,1)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8  53  65  77  89  102  115  127  139  152  166
+     ldailyFCTicesndpt
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8  171  176
+     ldailyFCTsst
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8  171  176
+     lenc
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 35  53  65  77  89  102  115  127  139  152  166
+      |(Reference)      : 
+     lkvl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 180
+      |(Reference)      : 10
+     loutsit24
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : SAVE, namelist-group-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 12  179
+     mo_netcdf
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 10
+     mod_grb2_param
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 7
+     mod_sit_control
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 12
+     mod_sitgrid
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 11
+     mod_sst
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 13
+     mpe
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 6
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 51  63  75  87  100  113  125  137  150  164  172  177  180
+      |(Reference)      : 24  34
+     my_max
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 51  63  75  87  100  113  125  137  150  164  172  177  180
+      |(Reference)      : 20  20  20  20  20  20  20  20  20  24
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 40  54  66  78  90  103  140  153  167
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 51  63  75  87  100  113  125  137  150  164  172  177  180
+      |(Reference)      : 24  33
+     nxdef_2d
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 46  58  70  82  95  108  120  132  145  159
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 46  58  70  82  95  108  120  132  145  159
+      |(Reference)      : 47  59  71  83  96  109  121  133  146  160
+     nxp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 20  20  20  20  20  20  20  20  20  24
+     ofdir
+      |(Class and Type) : variable name, CHARACTER(255,1)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 39
+      |(Reference)      : 7  40
+     olr24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  20
+      |(Definition)     : 
+      |(Reference)      : 147
+     out24
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     outdms
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8  53  65  77  89  102  115  127  139  152  166
+     outgrb2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8  37  54  66  78  90  103  140  153  167
+     outsit24
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 180
+     outtseadiffFCT24
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 13  172
+     outtseadiffSIT24
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 177
+     qf24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  20
+      |(Definition)     : 
+      |(Reference)      : 48
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8  24
+     rain24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  20
+      |(Definition)     : 
+      |(Reference)      : 97  122
+     rainlp24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  20
+      |(Definition)     : 
+      |(Reference)      : 110
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 5
+     ratioSIT
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 177
+      |(Reference)      : 11
+     rs24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  20
+      |(Definition)     : 
+      |(Reference)      : 84
+     ss24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  20
+      |(Definition)     : 
+      |(Reference)      : 72
+     syslbl
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 52  64  76  88  101  114  126  138  151  165
+     system
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 40
+     trim
+      |(Class and Type) : intrinsic function name, CHARACTER((unknown),1)
+      |(Attributes)     : PURE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 39  40
+     unify_reduceintp
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 51  63  75  87  100  113  125  137  150  164
+     wrk
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 24
+      |(Definition)     : 48  51  60  63  72  75  84  87  97  100  110  113  122  125  134  137  147  150  161  164
+      |(Reference)      : 
+     wrt_grb2_accu_v2
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 7  54  66  78  90  103  140  153  167
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        134  format        (Definition) 38  
+                           (Reference)  39
+
+ Total information
+   Procedures       : 1
+   Total lines      : 186
+   Total statements : 149
+   Total stack(byte): 4992
+   Total prefetch num: 0
+

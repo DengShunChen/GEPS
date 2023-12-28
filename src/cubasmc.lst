@@ -1,0 +1,517 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Dec 19 11:04:27 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src
+   Source file       : cubasmc.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "cubasmc"
+  (inc)(line-no.)(nest)(optimize)
+               1                     !+  Calculates cloud base values for midlevel convection
+               2                     !+ $Id: cubasmc.f90,v 1.5 1999/09/17 11:18:36 m214089 Exp $
+               3                     
+               4                     !SUBROUTINE cubasmc(klon,klev,kk,pten,pqen,pqsen,puen,pven,&
+               5                     SUBROUTINE cubasmc(nxj,klon,klev,kk,pten,pqen,pqsen,puen,pven,&
+               6                     !ktrac, &
+               7                     !&      pxten,pxtu,pmfuxt,
+               8                        pverv,pgeo,pgeoh,ldcum,ktype,klab,pmfu,pmfub,pentr, &
+               9                     &      kcbot,ptu,pqu,plu,puu,pvu,pmfus,pmfuq,pmful,pdmfup,pmfuu,pmfuv)
+              10                     
+              11                       ! Description:
+              12                       !
+              13                       ! This routine calculates cloud base values for midlevel convection
+              14                       !
+              15                       ! Method:
+              16                       !
+              17                       ! This routine is called from *cuasc*.
+              18                       ! Input are environmental values t,q etc.
+              19                       ! It returns cloudbase values for midlevel convection
+              20                       !
+              21                       ! Authors:
+              22                       !
+              23                       ! S. Tiedtke, ECMWF, in 1989, original source
+              24                       ! L. Kornblueh, MPI, May 1998, f90 rewrite
+              25                       ! U. Schulzweida, MPI, May 1998, f90 rewrite
+              26                       !
+              27                       ! for more details see file AUTHORS
+              28                       !
+              29                       USE shr_kind_mod, only: r8 => shr_kind_r8
+              30                       USE mo_constants,    ONLY: cpd,     &! specific heat at constant pressure
+              31                                                  rcpd,    &! rcpd=1./cpd
+              32                                                  g         ! gravity acceleration
+              33                       USE mo_cumulus_flux, ONLY: cmfcmin, &! minimum massflux value (for safety)
+              34                                                  cmfcmax, &! maximum massflux value allowed for
+              35                                                  entrmid, &! entrainment rate for midlevel convect.
+              36                                                  lmfdudv   ! true if cumulus friction is switched on
+              37                     
+              38                       IMPLICIT NONE
+              39                     
+              40                       !  Scalar arguments with intent(In):
+              41                     !  INTEGER, INTENT (IN) :: klon, kk, klev
+              42                       INTEGER, INTENT (IN) :: klon, nxj, kk, klev
+              43                     !, ktrac
+              44                     
+              45                       !  Array arguments with intent(In):
+              46                       REAL(r8), INTENT (IN) :: pgeo(klon,klev), pgeoh(klon,klev), pqen(klon,klev),  &
+              47                     &                      pqsen(klon,klev), pten(klon,klev), puen(klon,klev), &
+              48                     &                      pven(klon,klev), pverv(klon,klev)
+              49                     !, pxten(klon,klev,ktrac)
+              50                       LOGICAL, INTENT (IN) :: ldcum(klon)
+              51                     
+              52                       !  Array arguments with intent(InOut):
+              53                       REAL(r8), INTENT (INOUT) :: pdmfup(klon,klev), pentr(klon), plu(klon,klev), &
+              54                     &                         pmfu(klon,klev), pmfub(klon), pmful(klon,klev), &
+              55                     &                         pmfuq(klon,klev), pmfus(klon,klev), pmfuu(klon), &
+              56                     &                         pmfuv(klon), &
+              57                     !pmfuxt(klon,klev,ktrac),  &
+              58                     &                         pqu(klon,klev), ptu(klon,klev), puu(klon,klev), &
+              59                     &                         pvu(klon,klev)
+              60                     !, pxtu(klon,klev,ktrac)
+              61                       INTEGER, INTENT (INOUT) :: kcbot(klon), klab(klon,klev), ktype(klon)
+              62                     
+              63                       !  Local scalars:
+              64                       REAL(r8) :: zzzmb
+              65                       INTEGER :: jl, jt
+              66                     
+              67                       !  Local arrays:
+              68                       LOGICAL :: llo3(klon)
+              69                     
+              70                       !  Intrinsic functions
+              71                       INTRINSIC MAX, MIN
+              72                     
+              73                     
+              74                       !  Executable statements
+              75                     
+              76                     !-- 1. CALCULATE ENTRAINMENT AND DETRAINMENT RATES
+              77                     
+              78                     !DIR$ IVDEP
+              79                     !OCL NOVREC
+              80                     !  DO jl = 1, klon
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 122
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    UNSWITCHING
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ldcum, klab, pqsen, pqen, pten, pgeo
+                                   <<<      pgeoh, ptu, pqu, plu, pverv, pmfub, pmfu
+                                   <<<      pmfus, pmfuq, pmful
+                                   <<<    PREFETCH(SOFT) : 22
+                                   <<<     SEQUENTIAL : 22
+                                   <<<      ktype: 2, pentr: 2, puen: 2, puu: 2
+                                   <<<      pven: 2, pvu: 2, pdmfup: 2, kcbot: 2
+                                   <<<      pmfuv: 2, pmfuu: 2, llo3: 2
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 5
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+              81     1  pp    v        DO jl = 1, nxj
+              82     1   p    v          llo3(jl) = .FALSE.
+              83     2   p    v           IF( .NOT. ldcum(jl) .AND. klab(jl,kk+1).EQ.0                  &
+              84     2                             .AND. pqen(jl,kk) .GT. 0.90*pqsen(jl,kk) ) THEN
+              85     2   p    v            llo3(jl) = .TRUE.
+              86     2   p    v            ptu(jl,kk+1) = (cpd*pten(jl,kk)+pgeo(jl,kk)-pgeoh(jl,kk+1))*rcpd
+              87     2   p    v            pqu(jl,kk+1) = pqen(jl,kk)
+              88     2   p    v            plu(jl,kk+1) = 0.
+              89     2   p    v            zzzmb = MAX(cmfcmin,-pverv(jl,kk)/g)
+              90     2   p    v            zzzmb = MIN(zzzmb,cmfcmax)
+              91     2   p    v            pmfub(jl) = zzzmb
+              92     2   p    v            pmfu(jl,kk+1) = pmfub(jl)
+              93     2   p    v            pmfus(jl,kk+1) = pmfub(jl)*(cpd*ptu(jl,kk+1)+pgeoh(jl,kk+1))
+              94     2   p    v            pmfuq(jl,kk+1) = pmfub(jl)*pqu(jl,kk+1)
+              95     2   p    v            pmful(jl,kk+1) = 0.
+              96     2   p    v            pdmfup(jl,kk+1) = 0.
+              97     2   p    v            kcbot(jl) = kk
+              98     2   p    v            klab(jl,kk+1) = 1
+              99     2   p    v            ktype(jl) = 3
+             100     2   p    v            pentr(jl) = entrmid
+             101     3   p    v            IF (lmfdudv) THEN
+             102     3   p    v              puu(jl,kk+1) = puen(jl,kk)
+             103     3   p    v              pvu(jl,kk+1) = pven(jl,kk)
+             104     3   p    v              pmfuu(jl) = pmfub(jl)*puu(jl,kk+1)
+             105     3   p    v              pmfuv(jl) = pmfub(jl)*pvu(jl,kk+1)
+             106     3   p    v            END IF
+             107     2   p    v          END IF
+             108     1   p    v        END DO
+             109                     
+             110                     !DIR$ IVDEP
+             111                     !OCL NOVREC
+             112                     ! DO jt = 1, ktrac
+             113                     !   DO jl = 1, klon
+             114                     !   DO jl = 1, nxj
+             115                     !     IF (llo3(jl)) THEN
+             116                     !       pxtu(jl,kk+1,jt) = pxten(jl,kk,jt)
+             117                     !       pmfuxt(jl,kk+1,jt) = pmfub(jl)*pxtu(jl,kk+1,jt)
+             118                     !     END IF
+             119                     !   END DO
+             120                     ! END DO
+             121                     
+             122                       RETURN
+             123                     END SUBROUTINE cubasmc
+
+ Procedure information
+   Lines      : 123
+   Statements : 43
+   Stack(byte): 2032
+   Prefetch num: 22
+
+ Scoping unit of external sub-program : cubasmc
+   Attribute and Cross reference of name
+     cmfcmax
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 33  90
+     cmfcmin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 33  89
+     cpd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 30  86  93
+     cubasmc
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 5
+      |(Reference)      : 123
+     entrmid
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 33  100
+     g
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 30  89
+     jl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 81
+      |(Reference)      : 82  83  83  83  83  85  86  86  86  86  87  87  88  89  91  92  92  93  93  93  93  94  94  94  95  96  97  98  99  100  102  102  103  103  104  104  104  105  105  105
+     jt
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     kcbot
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  61
+      |(Definition)     : 97
+      |(Reference)      : 
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 5  42
+      |(Definition)     : 
+      |(Reference)      : 83  83  83  86  86  86  86  87  87  88  89  92  93  93  93  94  94  95  96  97  98  102  102  103  103  104  105
+     klab
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  61
+      |(Definition)     : 98
+      |(Reference)      : 83
+     klev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 5  42
+      |(Definition)     : 
+      |(Reference)      : 46  46  46  46  46  46  46  46  53  53  53  53  53  53  53  53  53  53  61
+     klon
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 5  42
+      |(Definition)     : 
+      |(Reference)      : 46  46  46  46  46  46  46  46  50  53  53  53  53  53  53  53  53  53  53  53  53  53  53  61  61  61  68
+     ktype
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  61
+      |(Definition)     : 99
+      |(Reference)      : 
+     ldcum
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  50
+      |(Definition)     : 
+      |(Reference)      : 83
+     llo3
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 68
+      |(Definition)     : 82  85
+      |(Reference)      : 
+     lmfdudv
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 33  101
+     MAX
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : INTRINSIC, PURE, ELEMENTAL
+      |(Declaration)    : 71
+      |(Definition)     : 
+      |(Reference)      : 89
+     MIN
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : INTRINSIC, PURE, ELEMENTAL
+      |(Declaration)    : 71
+      |(Definition)     : 
+      |(Reference)      : 90
+     mo_constants
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 30
+     mo_cumulus_flux
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 33
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 5  42
+      |(Definition)     : 
+      |(Reference)      : 81
+     pdmfup
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  53
+      |(Definition)     : 96
+      |(Reference)      : 
+     pentr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  53
+      |(Definition)     : 100
+      |(Reference)      : 
+     pgeo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  46
+      |(Definition)     : 
+      |(Reference)      : 86
+     pgeoh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  46
+      |(Definition)     : 
+      |(Reference)      : 86  93
+     plu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  53
+      |(Definition)     : 88
+      |(Reference)      : 
+     pmfu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  53
+      |(Definition)     : 92
+      |(Reference)      : 
+     pmfub
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  53
+      |(Definition)     : 91
+      |(Reference)      : 92  93  94  104  105
+     pmful
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  53
+      |(Definition)     : 95
+      |(Reference)      : 
+     pmfuq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  53
+      |(Definition)     : 94
+      |(Reference)      : 
+     pmfus
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  53
+      |(Definition)     : 93
+      |(Reference)      : 
+     pmfuu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  53
+      |(Definition)     : 104
+      |(Reference)      : 
+     pmfuv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  53
+      |(Definition)     : 105
+      |(Reference)      : 
+     pqen
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  46
+      |(Definition)     : 
+      |(Reference)      : 83  87
+     pqsen
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  46
+      |(Definition)     : 
+      |(Reference)      : 83
+     pqu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  53
+      |(Definition)     : 87
+      |(Reference)      : 94
+     pten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  46
+      |(Definition)     : 
+      |(Reference)      : 86
+     ptu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  53
+      |(Definition)     : 86
+      |(Reference)      : 93
+     puen
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  46
+      |(Definition)     : 
+      |(Reference)      : 102
+     puu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  53
+      |(Definition)     : 102
+      |(Reference)      : 104
+     pven
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  46
+      |(Definition)     : 
+      |(Reference)      : 103
+     pverv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  46
+      |(Definition)     : 
+      |(Reference)      : 89
+     pvu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  53
+      |(Definition)     : 103
+      |(Reference)      : 105
+     r8
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 29  46  53  64
+     rcpd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 30  86
+     shr_kind_mod
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 29
+     shr_kind_r8
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 29
+     zzzmb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 64
+      |(Definition)     : 89  90
+      |(Reference)      : 90  91
+
+ Total information
+   Procedures       : 1
+   Total lines      : 123
+   Total statements : 43
+   Total stack(byte): 2032
+   Total prefetch num: 22
+

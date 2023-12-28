@@ -1,0 +1,1243 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Dec 19 11:05:09 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src
+   Source file       : rsmout.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "rsmout"
+  (inc)(line-no.)(nest)(optimize)
+               1                         subroutine rsmout(idtg,itau,nx,my,my_max,lev,ncld            &
+               2                                  , ptop,cp,rgas,grav,sgeo,pdiff                        &
+               3                                  , t1000,pt,plt,pk,pk2,phi,ut,vt                       &
+               4                                  , tt,qt,tg,snr,cosl                                   &
+               5                                  , km,smc,stc                                          &
+               6                                  , ice,land,ocean)
+               7                     
+               8                     #ifdef RSM
+               9                     !
+              10                     !  output driver subroutine to process sigma level data to standard
+              11                     !  pressure surfaces and standard grids
+              12                     !
+              13                           use mpe
+              14                           use rank
+              15                           use index
+              16                           use const, only: rlon1, rlon2, rlat1, rlat2, rgrdsz, RTYPE
+              17                           implicit  none
+              18                     
+              19                           integer(kind=8)  :: idtg
+              20                           integer   itau,nx,my,my_max,lev,ncld,km
+              21                           real      ptop,cp,rgas,grav
+              22                     
+              23                           real      pdiff(nxp,my_max)                                     &
+              24                                   , t1000(nxp,my_max),plt(nxp,lev,my_max)                 &
+              25                                   , tg(nxp,my_max),snr(nxp,my_max)                        &
+              26                     !soil
+              27                                   , smc(nxp,km,my_max),stc(nxp,km,my_max)
+              28                           real(kind=RTYPE) ut(nxp,lev,my_max),vt(nxp,lev,my_max)          &
+              29                                   ,        tt(nxp,lev,my_max),qt(nxp,lev*ncld,my_max)     &
+              30                                   ,        phi(nxp,lev,my_max),sgeo(nxp,my_max)           &
+              31                                   ,        pt(nxp,my_max)                                 &
+              32                                   ,        pk(nxp,lev,my_max),pk2(nxp,lev,my_max)         &
+              33                                   ,        cosl(my)
+              34                     
+              35                           logical   land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max)
+              36                     
+              37                     !
+              38                     ! local work arrays
+              39                     !
+              40                           real      slp(nxp,my_max),tmp(nxp,lev,my_max),plog(nxp,lev,my_max) &
+              41                                   , pllp(nxp,my_max),slmsk(nxp,my_max)
+              42                           real(kind=RTYPE) glob(nx,my)
+              43                           real      tens(lev+1)
+              44                     !
+              45                           integer,  parameter :: lpout = 47
+              46                           real      wrk1(nxp,lev),pout(lpout),pkout(lpout),phistd(lpout) &
+              47                                   , bt1(nxp,my_max),bt2(nxp,my_max)
+              48                           real(kind=RTYPE) pres3d(nxp,my_max,lpout),hld1(nxp,my_max)     &
+              49                                   ,        hld2(nxp,my_max)
+              50                     !
+              51                           real(kind=RTYPE) soil_xy(nxp,my_max,8)   ! the last dim is changable
+              52                     !
+              53                           integer   nxmy,jj,j,nxj,k,i,n,nk,ngq,ntt,kk,ntrac,ii
+              54                           integer   llts
+              55                           real      rad,ograv,alaps,rdg,ttb,ttp,ttt,ttt1,ttt2,anlslp
+              56                           real      apha,pl1000,splog,ax,bx,cx,dx,tmid,tsf,tadia,xxx
+              57                     !
+              58                     !yj rsm dimension
+              59                           ! global: lon 0~359.75, lat -90~90
+              60                           integer  nx2,my2,ierr
+              61                           ! default: lon 60~179.75, lat -20~70
+              62                           integer nxs, mys
+              63                           integer x1, x2, y1, y2
+              64                           real,allocatable ::  rsmoutp(:,:),                          &
+              65                          &     temp_gfs(:,:,:),spfh_gfs(:,:,:),clwr_gfs(:,:,:),           &
+              66                          &     rain_gfs(:,:,:),qice_gfs(:,:,:),snow_gfs(:,:,:),grpl_gfs(:,:,:), &
+              67                          &     ozon_gfs(:,:,:),geop_gfs(:,:),u_gfs(:,:,:),v_gfs(:,:,:),     &
+              68                          &     tg_gfs(:,:),smc_gfs(:,:,:),snr_gfs(:,:),stc_gfs(:,:,:),      &
+              69                          &     ice_gfs(:,:),                                               &
+              70                     !yj2019
+              71                          &     terr_gfs(:,:),slmsk_gfs(:,:)
+              72                     
+              73                           real,allocatable :: xr(:),yr(:)
+              74                     !
+              75                           character cdum1*14
+              76                           character cdum2*12
+              77                           data cdum1/'-------------'/
+              78                           data cdum2/'--rsmout---'/
+              79                     !
+              80                           data pout/ 1.0, 2.0, 3.0, 5.0, 7.0                          &
+              81                                    ,10.0,20.0,30.0,50.0,70.0,100.0,125.0,150.0,175.0  &
+              82                                    ,200.0,225.0,250.0,275.0,300.0,325.0,350.0,375.0   &
+              83                                    ,400.0,425.0,450.0,475.0,500.0,525.0,550.0,575.0   &
+              84                                    ,600.0,625.0,650.0,675.0,700.0,725.0,750.0,775.0   &
+              85                                    ,800.0,825.0,850.0,875.0,900.0,925.0,950.0,975.0   &
+              86                                    ,1000.0/
+              87                     !
+              88                           data rad/6.371e6/
+              89                     !
+              90                           nx2=nint(360./rgrdsz)
+              91                           my2=nint(180./rgrdsz+1.)
+              92                           nxs=nint((rlon2-rlon1)/rgrdsz+1.)
+              93                           mys=nint((rlat2-rlat1)/rgrdsz+1.)
+              94                     !
+              95                           if (myrank.eq.0) print*,'allocate rsmoutp'
+              96                           allocate (rsmoutp(nx2,my2))
+              97                           allocate (xr(nx2),yr(my2))
+              98                           if (myrank.eq.0) print*,'allocate all gfs variables for RSM'
+              99                           if (myrank.eq.0) then
+             100                             x1=nint(  (rlon1-0.)     /rgrdsz+1.)
+             101                             x2=nint(  (rlon2-0.)     /rgrdsz+1.)
+             102                             y1=nint(  (rlat1-(-90.)) /rgrdsz+1.)
+             103                             y2=nint(  (rlat2-(-90.)) /rgrdsz+1.)
+             104                             print*,'nxs, mys=',nxs,mys
+             105                             print*,'rlon1, rlon2, rlat1, rlat2, rgrdsz',                &
+             106                                       rlon1, rlon2, rlat1, rlat2, rgrdsz
+             107                             if ( (x2-x1+1).ne.nxs  .or. (y2-y1+1).ne.mys) then
+             108                               print*,'wrong dimension for output in rsmout.f90'
+             109                               print*,'check: mod(360.,rgrdsz) should be zero'
+             110                     !          call mpe_finalize
+             111                               stop
+             112                             endif
+             113                             allocate (                                                    &
+             114                          &     temp_gfs(nxs,mys,lpout),spfh_gfs(nxs,mys,lpout),           &
+             115                          &     clwr_gfs(nxs,mys,lpout),ozon_gfs(nxs,mys,lpout),           &
+             116                          &     rain_gfs(nxs,mys,lpout),qice_gfs(nxs,mys,lpout),           &
+             117                          &     snow_gfs(nxs,mys,lpout),grpl_gfs(nxs,mys,lpout),           &
+             118                          &     geop_gfs(nxs,mys),u_gfs(nxs,mys,lpout),v_gfs(nxs,mys,lpout), &
+             119                          &     tg_gfs(nxs,mys),smc_gfs(nxs,mys,km),snr_gfs(nxs,mys),         &
+             120                          &     stc_gfs(nxs,mys,km),ice_gfs(nxs,mys),                      &
+             121                     !yj2019
+             122                          &     terr_gfs(nxs,mys),slmsk_gfs(nxs,mys),                      &
+             123                          &     stat=ierr)
+             124                             if (ierr/=0) stop "rsmout: allocate fail"
+             125                             if (ierr/=0) call mpe_finalize
+             126                               temp_gfs=0.0
+             127                               spfh_gfs=0.0
+             128                               clwr_gfs=0.0
+             129                               rain_gfs=0.0
+             130                               qice_gfs=0.0
+             131                               snow_gfs=0.0
+             132                               grpl_gfs=0.0
+             133                               ozon_gfs=0.0
+             134                               geop_gfs=0.0
+             135                               u_gfs=0.0
+             136                               v_gfs=0.0
+             137                               tg_gfs=0.0
+             138                               smc_gfs=0.0
+             139                               snr_gfs=0.0
+             140                               stc_gfs=0.0
+             141                               ice_gfs=0.0
+             142                               terr_gfs=0.0
+             143                               slmsk_gfs=0.0
+             144                           endif
+             145                           if (myrank.eq.0) print*,'after allocate all gfs variables for RSM'
+             146                     !
+             147                           nxmy = nx*my
+             148                     ! initializing
+             149                           pllp=0.
+             150                           bt1=0.
+             151                           bt2=0.
+             152                           glob=0.
+             153                           pres3d=0.
+             154                           soil_xy=0.
+             155                     !
+             156                           if(myrank .eq. 0) print*,'   in rsmout for tau= ',itau
+             157                     !
+             158                     !
+             159                           if(ncld.ge.2)then
+             160                             ntrac=2
+             161                           else
+             162                             ntrac=ncld
+             163                           endif
+             164                           do n=1,ntrac
+             165                             nk=(n-1)*lev
+             166                             ngq = 0
+             167                             ntt = 0
+             168                             do jj =1,jlistnum
+             169                               j=jlist1(jj)
+             170                               nxj=nxdef_2d(j)
+             171                               do k = 1, lev
+             172                                 kk=nk+k
+             173                                 do i = 1,nxj
+             174                                   if ( qt(i,kk,jj) .lt. 0.0 )  then
+             175                                     ngq = ngq + 1
+             176                                     qt(i,kk,jj) = 0.0
+             177                                   endif
+             178                                 enddo
+             179                               enddo
+             180                     !         ntt = ntt + nxj*lev
+             181                               ntt = ntt + nxjp(j)*lev
+             182                             enddo
+             183                             call mpe_global_sum(ngq,1,mpe_integer)
+             184                             call mpe_global_sum(ntt,1,mpe_integer)
+             185                             if( n.eq.1 .and. myrank.eq.0 .and. ngq.ne.0 )  print 901, ngq
+             186                             if( n.eq.2 .and. myrank.eq.0 .and. ngq.ne.0 )  print 902, ntt-ngq
+             187                           enddo
+             188                     
+             189                       901 format ( 1x, " *** warning: in outflds, there are grid points"  &
+             190                                  , " with q < 0. , total number = ",i8,// )
+             191                       902 format ( 1x, " *** checking: in outflds, there are grid points" &
+             192                                  , " with qc > 0. , total number = ",i8,// )
+             193                     !
+             194                     !                 compute interpolation coeffs
+             195                     !
+             196                           ograv= 1.0/grav
+             197                     !
+             198                     !  generate structure variables
+             199                     !
+             200                     !  first, the log(p) quantities
+             201                     !
+             202                           do k=1,lpout
+             203                             pkout(k)= log(pout(k))
+             204                           enddo
+             205                     !
+             206                     !  generate std height at p levels
+             207                     !
+             208                           call geostd(lpout,pout,phistd)
+             209                     !
+             210                           alaps = 0.0065
+             211                           rdg = rgas/grav
+             212                     !
+             213                     !  hydrostatic equation
+             214                     !
+             215                           do jj =1,jlistnum
+             216                             j=jlist1(jj)
+             217                             nxj=nxdef_2d(j)
+             218                             do i=1,nxj
+             219                               phi(i,lev,jj)= cp*tt(i,lev,jj)*(pk2(i,lev,jj)-pk(i,lev,jj)) &
+             220                                            + sgeo(i,jj)
+             221                             enddo
+             222                             do k=lev-1,1,-1
+             223                               do i=1,nxj
+             224                                 phi(i,k,jj)= phi(i,k+1,jj)+cp*(tt(i,k,jj)*(pk2(i,k,jj)-pk(i,k,jj)) &
+             225                                            + tt(i,k+1,jj)*(pk(i,k+1,jj)-pk2(i,k,jj)))
+             226                               enddo
+             227                             enddo
+             228                             do k=1,lev
+             229                               do i=1,nxj
+             230                                 plog(i,k,jj)= log(plt(i,k,jj))
+             231                               enddo
+             232                             enddo
+             233                           enddo
+             234                     !
+             235                     !  compute sea level pressure and update pdiff
+             236                     !  The method is based on one used by ecmwf, reseach manual 2 (1988)
+             237                     !
+             238                     !  llts layer's temperature is used to derive an alternative
+             239                     !  surface skin temperature
+             240                     !
+             241                     !      if( itau .gt. 0 )then
+             242                     !
+             243                           llts = lev-5
+             244                     !
+             245                           do jj = 1, jlistnum
+             246                             j=jlist1(jj)
+             247                             nxj=nxdef_2d(j)
+             248                             do i=1,nxj
+             249                               ttb  = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
+             250                               ttp  = tt(i,llts,jj)*pk(i,llts,jj)/(1.0+0.608*qt(i,llts,jj))
+             251                               ttt1 = ttb + alaps*rdg*ttb*   &
+             252                                   ((pt(i,jj)+ptop)/plt(i,lev,jj)-1.0)
+             253                               ttt2 = ttp + alaps*(phi(i,llts,jj)-sgeo(i,jj))/grav
+             254                               hld1(i,jj) = 0.25*ttt1 + 0.75*ttt2
+             255                               hld2(i,jj) = hld1(i,jj) + alaps*sgeo(i,jj)/grav
+             256                               if( sgeo(i,jj) .lt. 0.1 ) then
+             257                                 anlslp = pt(i,jj) + ptop
+             258                               else if( hld1(i,jj) .le. 290.5 .and. hld2(i,jj) .gt. 290.5 ) then
+             259                                 apha = rgas*(290.5-hld1(i,jj))/sgeo(i,jj)
+             260                                 ttt = sgeo(i,jj)/(rgas*hld1(i,jj))
+             261                                 anlslp = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333*  &
+             262                                          apha*ttt*apha*ttt) )
+             263                               else if( hld1(i,jj) .gt. 290.5 .and. hld2(i,jj) .gt. 290.5 ) then
+             264                                 hld1(i,jj) = (hld1(i,jj)+290.5)*0.5
+             265                                 anlslp = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,jj)) )
+             266                               else if( hld1(i,jj) .lt. 255.0 .and. hld2(i,jj) .lt. 255.0 ) then
+             267                                 hld1(i,jj) = (hld1(i,jj)+255.0)*0.5
+             268                                 anlslp = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,jj)) )
+             269                               else
+             270                                 apha = alaps * rdg
+             271                                 ttt = sgeo(i,jj)/(rgas*hld1(i,jj))
+             272                                 anlslp = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333*  &
+             273                                          apha*ttt*apha*ttt) )
+             274                               endif
+             275                               pllp(i,jj) = anlslp - pt(i,jj)
+             276                               pdiff(i,jj)=pllp(i,jj)
+             277                             enddo
+             278                           enddo
+             279                     !
+             280                     !      else
+             281                     !
+             282                     !  pllp equal to pdiff at the initial time, tau=0
+             283                     !
+             284                     !      do jj = 1, jlistnum
+             285                     !        j=jlist1(jj)
+             286                     !        nxj=nxdef(j)
+             287                     !        do i = 1, nxj
+             288                     !          pllp(i,j) = pdiff(i,jj)
+             289                     !        enddo
+             290                     !      enddo
+             291                     !
+             292                     !      endif     ! end of ( itau .gt. 0 )
+             293                     !
+             294                     !      call mpe_unify(pllp,nx,my,2,mpe_double)
+             295                     !      call mpe_unify(pt,nx,my,2,mpe_double)
+             296                     !
+             297                     !
+             298                     !  obtain the the bottom pressure for the following interpolations
+             299                     !  bt2 will be used in geoptential interpolations
+             300                     !
+             301                           pl1000= log(1000.1)
+             302                     !
+             303                           do jj = 1, jlistnum
+             304                             j=jlist1(jj)
+             305                             nxj=nxdef_2d(j)
+             306                             do i = 1, nxj
+             307                               slp(i,jj)= pt(i,jj)+pdiff(i,jj)
+             308                               if( slp(i,jj) .le. 1000.1) then
+             309                                 pllp(i,jj) = 1000.1
+             310                               else
+             311                                 pllp(i,jj) = slp(i,jj)
+             312                               endif
+             313                             enddo
+             314                     !
+             315                             call geostd (nxjp(j),pllp(1,jj),bt2(1,jj))
+             316                     !
+             317                             do i = 1, nxj
+             318                               pllp(i,jj) = log(pllp(i,jj))
+             319                             enddo
+             320                           enddo
+             321                     !
+             322                     !      call mpe_unify(pllp,nx,my,2,mpe_double)
+             323                     !      call mpe_unify(bt2,nx,my,2,mpe_double)
+             324                     !
+             325                     !  temperature output
+             326                     !
+             327                           do jj =1,jlistnum
+             328                             j=jlist1(jj)
+             329                             nxj=nxdef_2d(j)
+             330                     !
+             331                     !  bottom boundary condition for temperature:
+             332                     !  limits for 1000 mb boundary condition are (1) standard lapse rate
+             333                     !  from bottom model level for terrain height and (2) layer mean temp
+             334                     !  of slp and 1000 mb.  Boundary condition is linear combination
+             335                     !  of these two cases weighted with subterrainean thickness.
+             336                     !
+             337                             do k = 1, lev
+             338                               do i = 1,nxj
+             339                                 tmp(i,k,jj) = tt(i,k,jj)*pk(i,k,jj)/(1.0+0.608*qt(i,k,jj))
+             340                               enddo
+             341                             enddo
+             342                     !
+             343                             do i=1,nxj
+             344                               slp(i,jj) = max( slp(i,jj), pt(i,jj) )
+             345                               splog= log(slp(i,jj))
+             346                               dx= log(slp(i,jj)/(pt(i,jj)+ptop))
+             347                     !          bx= tmp(i,lev,jj)*(1.0/sig(lev+1))**0.19023 + sgeo(i,jj)*0.00065
+             348                               bx= tmp(i,lev,jj) + sgeo(i,jj)*0.00065
+             349                               if ( sgeo(i,jj) .ge. 1000.0 )  then
+             350                                 tmid = sgeo(i,jj)/(dx*rgas)
+             351                                 ax = tmp(i,lev,jj)+ (tmid-tmp(i,lev,jj))*(splog-plog(i,lev,jj)) &
+             352                                     / (log((slp(i,jj)+pt(i,jj)+ptop)*0.5)-plog(i,lev,jj))
+             353                               else
+             354                                 ax = bx
+             355                               endif
+             356                               cx = (sgeo(i,jj)-1000.0)/(10000.0-1000.0)
+             357                               cx = max (0.0, min (1.0, cx))
+             358                               dx = cx*cx
+             359                               tsf = dx*ax + (1.0-dx)*bx
+             360                               tadia= tmp(i,lev,jj)*(slp(i,jj)/plt(i,lev,jj))**0.25
+             361                               tsf  = max( tmp(i,lev,jj), min( tsf,tadia ) )
+             362                               if ( slp(i,jj) .gt. 1000.1 )  then
+             363                                 bt1(i,jj)= tsf
+             364                                 t1000(i,jj) = tsf
+             365                               else
+             366                                 bt1(i,jj)= tsf + (tsf-tmp(i,lev,jj))*(pl1000-splog)  &
+             367                                          / (splog - plog(i,lev,jj))
+             368                                 t1000(i,jj) = bt1(i,jj)
+             369                               endif
+             370                             enddo
+             371                           enddo
+             372                     !
+             373                     !!      call mpe_unify(bt1,nx,my,2,mpe_double)
+             374                     !      if(myrank.eq.0) then
+             375                     !        print*,'check bottom temperature'
+             376                     !        call qmaxn3(bt1,cdum1,cdum2,1,1,1,nx,my,1)
+             377                     !      endif
+             378                     
+             379                     !
+             380                           if(myrank.eq.0)print*,' rsmout : start tempout'
+             381                     ! yj replace tempout
+             382                           do k = 1, lev+1
+             383                             tens(k) = 1.0
+             384                           end do
+             385                           tens(lev+1)= 0.0
+             386                           tens(lev)= 0.0
+             387                           call voterp(nx,my,my_max,lev,lpout,plog,pllp,tmp,bt1 &
+             388                                       ,pkout,pres3d,tens)
+             389                     
+             390                           do k=1,lpout
+             391                             call unify_reduceintp(nx,my,my_max,pres3d(1,1,k),glob)
+             392                             if(myrank.eq.0) then
+             393                     !          call qmax2d(glob,1,1,nx,my)
+             394                               call xyintpo('gg',nx,my,'ga',nx2,my2,glob,rsmoutp,0 &
+             395                                             ,xr,yr,.true.)
+             396                     !          print*,'x1,x2,nxs,mys,k=',x1,x2,nxs,mys,k
+             397                     !          call qmax2d(rsmoutp,1,1,nx2,my2)
+             398                               jj=0
+             399                               do j=y1,y2
+             400                                 jj=jj+1
+             401                                 ii=0
+             402                                 do i=x1,x2
+             403                                   ii=ii+1
+             404                                   temp_gfs(ii,jj,lpout-k+1)=rsmoutp(i,j)
+             405                                 enddo
+             406                               enddo
+             407                     !          print*,'k=,temp_gfs(2,2,k)=',k,temp_gfs(2,2,lpout-k+1)
+             408                     !          print*,'====check temp_gfs after partail for temp===='
+             409                               call qmax2d(temp_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+             410                             endif
+             411                           enddo
+             412                     
+             413                     !
+             414                     !  moisture output as mixing ratio
+             415                     !
+             416                             if(ncld.lt.3) then
+             417                               print*,'Err: ntrac must include spehum,O3,and clwr for RSM'
+             418                               stop
+             419                             endif
+             420                     !
+             421                           do ntrac=1,ncld
+             422                             do jj = 1, jlistnum
+             423                               j=jlist1(jj)
+             424                               nxj=nxdef_2d(j)
+             425                               do k = 1, lev
+             426                                 kk = (ntrac-1)*lev+k
+             427                                 do i = 1,nxj
+             428                                   tmp(i,k,jj)=qt(i,kk,jj)
+             429                                 enddo
+             430                               enddo
+             431                               do i = 1,nxj
+             432                                 bt1(i,jj)=tmp(i,lev,jj)
+             433                               enddo
+             434                             enddo
+             435                     !!        call mpe_unify(bt1,nx,my,2,mpe_double)
+             436                             if(myrank.eq.0)print*,' rsmout : start shumout2'
+             437                             if(myrank.eq.0)print*,' now is ntrac = ',ntrac, &
+             438                     !                               '(1:spfh,2:cw,3:o3)'
+             439                                         '(1:spfh,2:cw,3:rain,4:ice,5:snow,6:graupel,7:o3)'
+             440                     ! yj replace shumuot2 out
+             441                             call voterp(nx,my,my_max,lev,lpout,plog,pllp,tmp,bt1 &
+             442                                  ,pkout,pres3d,tens)
+             443                           glob=0.
+             444                             do k=1,lpout
+             445                     ! relative humidity, clwr, and O3 must be smaller or equal 1.0
+             446                               do jj = 1, jlistnum
+             447                                 j=jlist1(jj)
+             448                                 nxj=nxdef_2d(j)
+             449                                 do i=1,nxj
+             450                                   pres3d(i,jj,k)= max(pres3d(i,jj,k),0.0)
+             451                                 enddo !end --loop i
+             452                               enddo !end --loop jj
+             453                               call unify_reduceintp(nx,my,my_max,pres3d(1,1,k),glob)
+             454                     
+             455                              if(myrank.eq.0) then
+             456                               call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             457                                            ,rsmoutp,0,xr,yr,.true.)
+             458                     !          jj=0
+             459                     !          do j=y1,y2
+             460                     !            jj=jj+1
+             461                     !            ii=0
+             462                     !            do i=x1,x2
+             463                     !              ii=ii+1
+             464                                if (ntrac.eq.1) spfh_gfs(:,:,lpout-k+1)=max(rsmoutp(x1:x2,y1:y2),0.0)
+             465                                if (ntrac.eq.2) clwr_gfs(:,:,lpout-k+1)=max(rsmoutp(x1:x2,y1:y2),0.0)
+             466                                if (ntrac.eq.3) rain_gfs(:,:,lpout-k+1)=max(rsmoutp(x1:x2,y1:y2),0.0)
+             467                                if (ntrac.eq.4) qice_gfs(:,:,lpout-k+1)=max(rsmoutp(x1:x2,y1:y2),0.0)
+             468                                if (ntrac.eq.5) snow_gfs(:,:,lpout-k+1)=max(rsmoutp(x1:x2,y1:y2),0.0)
+             469                                if (ntrac.eq.6) grpl_gfs(:,:,lpout-k+1)=max(rsmoutp(x1:x2,y1:y2),0.0)
+             470                                if (ntrac.eq.ncld) ozon_gfs(:,:,lpout-k+1)=max(rsmoutp(x1:x2,y1:y2),0.0)
+             471                     !            enddo
+             472                     !          enddo
+             473                               if (ntrac.eq.1)call qmax2d(spfh_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+             474                               if (ntrac.eq.2)call qmax2d(clwr_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+             475                     !          if (ntrac.eq.3)call qmax2d(ozon_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+             476                               if (ntrac.eq.3)call qmax2d(rain_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+             477                               if (ntrac.eq.4)call qmax2d(qice_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+             478                               if (ntrac.eq.5)call qmax2d(snow_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+             479                               if (ntrac.eq.6)call qmax2d(grpl_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+             480                               if (ntrac.eq.ncld)call qmax2d(ozon_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+             481                              endif ! end -- myrank
+             482                             enddo !end --loop k
+             483                           enddo    !end --loop ntrac
+             484                     
+             485                     !
+             486                     !  geopotential height output
+             487                     !
+             488                             do jj =1,jlistnum
+             489                               j=jlist1(jj)
+             490                               nxj=nxdef_2d(j)
+             491                               do i=1,nxj
+             492                                 if(slp(i,jj).le.1000.1) then
+             493                                   bt1(i,jj)= t1000(i,jj)*rgas*log(slp(i,jj)*0.001)
+             494                                 else
+             495                                   bt1(i,jj) = min( sgeo(i,jj), 0.0 )
+             496                                 endif
+             497                               enddo
+             498                     !
+             499                     !  compute standard geopotentials, subtract them from sigma
+             500                     !  level values. vertical interpolation will be done on
+             501                     !  these deviation from standard values
+             502                     !
+             503                               do k=1,lev
+             504                                 call geostd (nxjp(j),plt(1,k,jj),wrk1(1,k))
+             505                                 do i=1,nxj
+             506                                   tmp(i,k,jj) = ograv*phi(i,k,jj)-wrk1(i,k)
+             507                                 enddo
+             508                               enddo
+             509                     !
+             510                     !  bottom boundary conditions
+             511                     !
+             512                               do i=1,nxj
+             513                                 bt1(i,jj) = ograv*bt1(i,jj) - bt2(i,jj)
+             514                               enddo
+             515                             enddo
+             516                     !!        call mpe_unify(bt1,nx,my,2,mpe_double)
+             517                     !
+             518                             if(myrank.eq.0)print*,' rsmout : start geopout'
+             519                     ! yj replace geopout # output unit [gpm]
+             520                             call voterp(nx,my,my_max,lev,lpout,plog,pllp,tmp,bt1 &
+             521                                 ,pkout,pres3d,tens)
+             522                           glob=0.
+             523                           do k=lpout,lpout
+             524                     !yj      do k=1,lpout
+             525                             do  jj=1, jlistnum
+             526                             j=jlist1(jj)
+             527                             nxj=nxdef_2d(j)
+             528                             do  i=1,nxj
+             529                              pres3d(i,jj,k)= pres3d(i,jj,k)+phistd(k)
+             530                             enddo
+             531                             enddo
+             532                             call unify_reduceintp(nx,my,my_max,pres3d(1,1,k),glob)
+             533                     !       call smth9(nx,my,glob,glob2,1)
+             534                     !       glob=glob2
+             535                     !       call smth9(nx,my,glob,glob2,2)
+             536                     !       glob=glob2
+             537                     
+             538                             if(myrank.eq.0) then
+             539                               call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             540                                            ,rsmoutp,0,xr,yr,.true.)
+             541                               geop_gfs(:,:)=rsmoutp(x1:x2,y1:y2)
+             542                               call qmax2d(geop_gfs(1,1),1,1,nxs,mys)
+             543                             endif
+             544                           enddo
+             545                     
+             546                     ! wind --- u and v
+             547                             do jj =1,jlistnum
+             548                               j=jlist1(jj)
+             549                               nxj=nxdef_2d(j)
+             550                               do i=1,nxj
+             551                                 bt1(i,jj)= ut(i,lev,jj)
+             552                                 bt2(i,jj)= vt(i,lev,jj)
+             553                               enddo
+             554                             enddo
+             555                     !        call mpe_unify(bt1,nx,my,2,mpe_double)
+             556                     !        call mpe_unify(bt2,nx,my,2,mpe_double)
+             557                             if(myrank.eq.0)print*,' rsmout : start windout'
+             558                     !  yj replace windout
+             559                     ! first: do the u components
+             560                           tmp=ut
+             561                           call voterp(nx,my,my_max,lev,lpout,plog,pllp,tmp,bt1 &
+             562                                      ,pkout,pres3d,tens)
+             563                     !      if( lreduce.eq.1 ) call reduceintp (bt1,nxdef,nx,my)
+             564                     !      do i =1,nx
+             565                     !        do j =1,my
+             566                     !          pklzl(i,j)=pllp(i,j)
+             567                     !        enddo
+             568                     !      enddo
+             569                     !      if( lreduce.eq.1 ) call reduceintp(pklzl,nxdef,nx,my)
+             570                     
+             571                           do k=1,lpout
+             572                     !
+             573                     !  below ground level extrapolate surface wind downward
+             574                     !  deweight wind with cos latitude, earth radius
+             575                     !
+             576                             do jj = 1, jlistnum
+             577                               j=jlist1(jj)
+             578                               nxj=nxdef_2d(j)
+             579                               xxx= rad/cosl(j)
+             580                               do i=1,nxj
+             581                                if(pkout(k).gt.pllp(i,jj)) pres3d(i,jj,k)= bt1(i,jj)
+             582                                pres3d(i,jj,k)=pres3d(i,jj,k)*xxx
+             583                               enddo
+             584                             enddo
+             585                             call unify_reduceintp(nx,my,my_max,pres3d(1,1,k),glob)
+             586                     !        do i=1,nxmy
+             587                     !          if(pkout(k).gt.pklzl(i,1)) pres3d(i,1,k)= bt1(i,1)
+             588                     !        enddo
+             589                     !
+             590                     !  deweight wind with cos latitude, earth radius
+             591                     !
+             592                     !        glob=0.
+             593                     !        do j=1,my
+             594                     !          xx= rad/cosl(j)
+             595                     !          do i=1,nx
+             596                     !            glob(i,j)= pres3d(i,j,k)*xx
+             597                     !          enddo
+             598                     !        enddo
+             599                     ! wind flag is "1" in xyintpo
+             600                             if(myrank.eq.0) then
+             601                             call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             602                                          ,rsmoutp,1,xr,yr,.true.)
+             603                               u_gfs(:,:,lpout-k+1)=rsmoutp(x1:x2,y1:y2)
+             604                               call qmax2d(u_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+             605                             endif
+             606                           enddo
+             607                     !  now the v components
+             608                           tmp=vt
+             609                           call voterp(nx,my,my_max,lev,lpout,plog,pllp,tmp,bt2 &
+             610                                      ,pkout,pres3d,tens)
+             611                     !      if( lreduce.eq.1 ) call reduceintp (bt2,nxdef,nx,my)
+             612                     !
+             613                           do k=1,lpout
+             614                     !
+             615                     !  below ground level extrapolate surface wind downward
+             616                     !  deweight wind with cos latitude, earth radius
+             617                     !
+             618                             do jj = 1, jlistnum
+             619                               j=jlist1(jj)
+             620                               nxj=nxdef_2d(j)
+             621                               xxx= rad/cosl(j)
+             622                               do i=1,nxj
+             623                                if(pkout(k).gt.pllp(i,jj)) pres3d(i,jj,k)= bt2(i,jj)
+             624                                pres3d(i,jj,k)=pres3d(i,jj,k)*xxx
+             625                               enddo
+             626                             enddo
+             627                             call unify_reduceintp(nx,my,my_max,pres3d(1,1,k),glob)
+             628                     !        call qmaxn3(glob,cdum1,cdum2,1,1,1,nx,my,1)
+             629                     
+             630                     !        do i=1,nxmy
+             631                     !          if(pkout(k).gt.pklzl(i,1)) pres3d(i,1,k)=bt2(i,1)
+             632                     !        enddo
+             633                     !        glob=0.
+             634                     !        do j=1,my
+             635                     !          xx= rad/cosl(j)
+             636                     !          do i=1,nx
+             637                     !            glob(i,j)= pres3d(i,j,k)*xx
+             638                     !          enddo
+             639                     !        enddo
+             640                     ! wind flag is "1" in xyintpo
+             641                             if(myrank.eq.0) then
+             642                             call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             643                                          ,rsmoutp,1,xr,yr,.true.)
+             644                     !          jj=0
+             645                     !          do j=y1,y2
+             646                     !            jj=jj+1
+             647                     !            ii=0
+             648                     !            do i=x1,x2
+             649                     !              ii=ii+1
+             650                     !              v_gfs(ii,jj,lpout-k+1)=rsmoutp(i,j)
+             651                     !            enddo
+             652                     !          enddo
+             653                               v_gfs(:,:,lpout-k+1)=rsmoutp(x1:x2,y1:y2)
+             654                               call qmax2d(v_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+             655                             endif
+             656                           enddo
+             657                     !
+             658                     !output the terr geopotential height,
+             659                     ! turn off by yjchen2019July, terr is not used and some index is wrong below
+             660                            do jj=1, jlistnum
+             661                              j=jlist1(jj)
+             662                              nxj=nxdef_2d(j)
+             663                              do i =1,nxj
+             664                                hld1(i,jj)=sgeo(i,jj)*ograv
+             665                              enddo
+             666                            enddo
+             667                     !byl       call mpe2d_unify(glob,hld1)
+             668                     !!      do j=1,my
+             669                     !!       nxj=nxdef(j)
+             670                     !!      do i=1,nxj
+             671                     !!        glob(i,j)=glob(i,j)*ograv
+             672                     !!      enddo
+             673                     !!      enddo
+             674                     !byl       if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+             675                            call unify_reduceintp(nx,my,my_max,hld1,glob)
+             676                            if(myrank.eq.0) then
+             677                            call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             678                                        ,rsmoutp,0,xr,yr,.true.)
+             679                     !!yj2019
+             680                     !         print*,'rsmout output terrain gfs'
+             681                     !          jj=0
+             682                     !          do j=y1,y2
+             683                     !            jj=jj+1
+             684                     !            ii=0
+             685                     !            do i=x1,x2
+             686                     !              ii=ii+1
+             687                     !              terr_gfs(ii,jj)=max(rsmoutp(i,j),0.0)
+             688                     !            enddo
+             689                     !          enddo
+             690                     !          call qmaxn3(terr_gfs(1,1),cdum1,cdum2,1,1,1,nxs,mys,1)
+             691                                terr_gfs(:,:)=max(rsmoutp(x1:x2,y1:y2),0.0)
+             692                                call qmax2d(terr_gfs(1,1),1,1,nxs,mys)
+             693                             endif
+             694                     
+             695                     
+             696                     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+             697                     !  !!!!!!!!!!!!!!!---below output the surface file for rsm (nsig2)---!!!!!
+             698                     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+             699                     !
+             700                     !
+             701                           do jj = 1, jlistnum
+             702                             j=jlist1(jj)
+             703                             nxj=nxdef_2d(j)
+             704                             do i = 1, nxj
+             705                               soil_xy(i,jj,1) = smc(i,1,jj)
+             706                               soil_xy(i,jj,2) = smc(i,2,jj)
+             707                               soil_xy(i,jj,3) = smc(i,3,jj)
+             708                               soil_xy(i,jj,4) = smc(i,4,jj)
+             709                               soil_xy(i,jj,5) = stc(i,1,jj)
+             710                               soil_xy(i,jj,6) = stc(i,2,jj)
+             711                               soil_xy(i,jj,7) = stc(i,3,jj)
+             712                               soil_xy(i,jj,8) = stc(i,4,jj)
+             713                             enddo
+             714                           enddo
+             715                     !
+             716                     ! output some 2-dimension veriable to dmsfile
+             717                     !
+             718                           if(myrank .eq. 0) print *,' rsmout : output surface file'
+             719                     !replace out2d
+             720                     ! need mpe unify
+             721                     ! ***tg***
+             722                     !byl      call mpe2d_unify(glob,tg)
+             723                     !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+             724                           hld1=tg
+             725                           call unify_reduceintp(nx,my,my_max,hld1,glob)
+             726                           if(myrank.eq.0) then
+             727                           call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             728                                       ,rsmoutp,0,xr,yr,.true.)
+             729                     !          jj=0
+             730                     !          do j=y1,y2
+             731                     !            jj=jj+1
+             732                     !            ii=0
+             733                     !            do i=x1,x2
+             734                     !              ii=ii+1
+             735                     !              tg_gfs(ii,jj)=rsmoutp(i,j)
+             736                     !            enddo
+             737                     !          enddo
+             738                               tg_gfs(:,:)=rsmoutp(x1:x2,y1:y2)
+             739                               call qmax2d(tg_gfs(1,1),1,1,nxs,mys)
+             740                           endif
+             741                     ! ***0-0.1m soil moisture content [fraction]***
+             742                     !byl      call mpe2d_unify(glob,soil_xy(1,1,1))
+             743                     !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+             744                           call unify_reduceintp(nx,my,my_max,soil_xy(1,1,1),glob)
+             745                           if(myrank.eq.0) then
+             746                           call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             747                                       ,rsmoutp,0,xr,yr,.true.)
+             748                     !          jj=0
+             749                     !          do j=y1,y2
+             750                     !            jj=jj+1
+             751                     !            ii=0
+             752                     !            do i=x1,x2
+             753                     !              ii=ii+1
+             754                     !              smc_gfs(ii,jj,1)=rsmoutp(i,j)
+             755                     !            enddo
+             756                     !          enddo
+             757                               smc_gfs(:,:,1)=rsmoutp(x1:x2,y1:y2)
+             758                               call qmax2d(smc_gfs(1,1,1),1,1,nxs,mys)
+             759                           endif
+             760                     ! ***0.1-0.4m soil moisture content [fraction]***
+             761                     !byl      call mpe2d_unify(glob,soil_xy(1,1,2))
+             762                     !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+             763                           call unify_reduceintp(nx,my,my_max,soil_xy(1,1,2),glob)
+             764                           if(myrank.eq.0) then
+             765                           call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             766                                       ,rsmoutp,0,xr,yr,.true.)
+             767                               smc_gfs(:,:,2)=rsmoutp(x1:x2,y1:y2)
+             768                               call qmax2d(smc_gfs(1,1,2),1,1,nxs,mys)
+             769                           endif
+             770                     ! ***0.4-1m soil moisture content [fraction]***
+             771                     !byl      call mpe2d_unify(glob,soil_xy(1,1,3))
+             772                     !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+             773                           call unify_reduceintp(nx,my,my_max,soil_xy(1,1,3),glob)
+             774                           if(myrank.eq.0) then
+             775                           call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             776                                       ,rsmoutp,0,xr,yr,.true.)
+             777                     !          jj=0
+             778                     !          do j=y1,y2
+             779                     !            jj=jj+1
+             780                     !            ii=0
+             781                     !            do i=x1,x2
+             782                     !              ii=ii+1
+             783                     !              smc_gfs(ii,jj,3)=rsmoutp(i,j)
+             784                     !            enddo
+             785                     !          enddo
+             786                               smc_gfs(:,:,3)=rsmoutp(x1:x2,y1:y2)
+             787                               call qmax2d(smc_gfs(1,1,3),1,1,nxs,mys)
+             788                           endif
+             789                     ! ***below 1m soil moisture content [fraction]***
+             790                     !byl      call mpe2d_unify(glob,soil_xy(1,1,4))
+             791                     !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+             792                           call unify_reduceintp(nx,my,my_max,soil_xy(1,1,4),glob)
+             793                           if(myrank.eq.0) then
+             794                           call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             795                                       ,rsmoutp,0,xr,yr,.true.)
+             796                               smc_gfs(:,:,4)=rsmoutp(x1:x2,y1:y2)
+             797                               call qmax2d(smc_gfs(1,1,4),1,1,nxs,mys)
+             798                           endif
+             799                     ! ***snr***
+             800                     !byl      call mpe2d_unify(glob,snr)
+             801                     !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+             802                           hld1=snr
+             803                           call unify_reduceintp(nx,my,my_max,hld1,glob)
+             804                           if(myrank.eq.0) then
+             805                           call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             806                                       ,rsmoutp,0,xr,yr,.true.)
+             807                     !          jj=0
+             808                     !          do j=y1,y2
+             809                     !            jj=jj+1
+             810                     !            ii=0
+             811                     !            do i=x1,x2
+             812                     !              ii=ii+1
+             813                     !              snr_gfs(ii,jj)=rsmoutp(i,j)
+             814                     !            enddo
+             815                     !          enddo
+             816                               snr_gfs(:,:)=rsmoutp(x1:x2,y1:y2)
+             817                               call qmax2d(snr_gfs(1,1),1,1,nxs,mys)
+             818                           endif
+             819                     ! ***0-0.1m soil temperature***
+             820                     !byl      call mpe2d_unify(glob,soil_xy(1,1,5))
+             821                     !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+             822                           call unify_reduceintp(nx,my,my_max,soil_xy(1,1,5),glob)
+             823                           if(myrank.eq.0) then
+             824                           call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             825                                       ,rsmoutp,0,xr,yr,.true.)
+             826                     !          jj=0
+             827                     !          do j=y1,y2
+             828                     !            jj=jj+1
+             829                     !            ii=0
+             830                     !            do i=x1,x2
+             831                     !              ii=ii+1
+             832                     !              stc_gfs(ii,jj,1)=rsmoutp(i,j)
+             833                     !            enddo
+             834                     !          enddo
+             835                               stc_gfs(:,:,1)=rsmoutp(x1:x2,y1:y2)
+             836                               call qmax2d(stc_gfs(1,1,1),1,1,nxs,mys)
+             837                           endif
+             838                     ! ***0.1-0.4m soil temperature***
+             839                     !byl      call mpe2d_unify(glob,soil_xy(1,1,6))
+             840                     !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+             841                           call unify_reduceintp(nx,my,my_max,soil_xy(1,1,6),glob)
+             842                           if(myrank.eq.0) then
+             843                           call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             844                                       ,rsmoutp,0,xr,yr,.true.)
+             845                               stc_gfs(:,:,2)=rsmoutp(x1:x2,y1:y2)
+             846                               call qmax2d(stc_gfs(1,1,2),1,1,nxs,mys)
+             847                           endif
+             848                     ! ***0.4-1m soil temperature***
+             849                     !byl      call mpe2d_unify(glob,soil_xy(1,1,7))
+             850                     !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+             851                           call unify_reduceintp(nx,my,my_max,soil_xy(1,1,7),glob)
+             852                           if(myrank.eq.0) then
+             853                           call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             854                                       ,rsmoutp,0,xr,yr,.true.)
+             855                     !          jj=0
+             856                     !          do j=y1,y2
+             857                     !            jj=jj+1
+             858                     !            ii=0
+             859                     !            do i=x1,x2
+             860                     !              ii=ii+1
+             861                     !              stc_gfs(ii,jj,3)=rsmoutp(i,j)
+             862                     !            enddo
+             863                     !          enddo
+             864                               stc_gfs(:,:,3)=rsmoutp(x1:x2,y1:y2)
+             865                               call qmax2d(stc_gfs(1,1,3),1,1,nxs,mys)
+             866                           endif
+             867                     ! ***below 1m soil temperature***
+             868                     !byl      call mpe2d_unify(glob,soil_xy(1,1,8))
+             869                     !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+             870                           call unify_reduceintp(nx,my,my_max,soil_xy(1,1,8),glob)
+             871                           if(myrank.eq.0) then
+             872                           call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             873                                       ,rsmoutp,0,xr,yr,.true.)
+             874                               stc_gfs(:,:,4)=rsmoutp(x1:x2,y1:y2)
+             875                               call qmax2d(stc_gfs(1,1,4),1,1,nxs,mys)
+             876                           endif
+             877                     ! ***land and sea mask***(land=1,sea=0)***
+             878                            glob=0.
+             879                            slmsk=0.
+             880                            do jj=1,jlistnum
+             881                              j=jlist1(jj)
+             882                              nxj=nxdef_2d(j)
+             883                            do i=1,nxj
+             884                              if(land(i,jj))slmsk(i,jj)=1.0
+             885                              if(ocean(i,jj))slmsk(i,jj)=0.0
+             886                            enddo
+             887                            enddo
+             888                     !byl       call mpe2d_unify(glob,slmsk)
+             889                     !byl       if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+             890                           hld1=slmsk
+             891                           call unify_reduceintp(nx,my,my_max,hld1,glob)
+             892                     !yj2019
+             893                            if(myrank.eq.0) then
+             894                            call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             895                                        ,rsmoutp,0,xr,yr,.true.)
+             896                                 jj=0
+             897                                 do j=y1,y2
+             898                                   jj=jj+1
+             899                                   ii=0
+             900                                   do i=x1,x2
+             901                                     ii=ii+1
+             902                                     slmsk_gfs(ii,jj)=max(min(rsmoutp(i,j),1.0),0.0)
+             903                                   enddo
+             904                                 enddo
+             905                     !           call qmaxn3(slmsk_gfs(1,1),cdum1,'--slmsk-----',1,1,1,nxs,mys,1)
+             906                     !           slmsk_gfs(:,:)=rsmoutp(x1:x2,y1:y2)
+             907                                call qmax2d(slmsk_gfs(1,1),1,1,nxs,mys)
+             908                            endif
+             909                     !! ***ice***(simk in RSM-csfcfld(:,13))
+             910                           glob=0.
+             911                           slmsk=0.
+             912                           do jj=1,jlistnum
+             913                             j=jlist1(jj)
+             914                             nxj=nxdef_2d(j)
+             915                           do i=1,nxj
+             916                             if(ice(i,jj))slmsk(i,jj)=2.0
+             917                           enddo
+             918                           enddo
+             919                     !byl      call mpe2d_unify(glob,slmsk)
+             920                     !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+             921                           hld1=slmsk
+             922                           call unify_reduceintp(nx,my,my_max,hld1,glob)
+             923                           if(myrank.eq.0) then
+             924                           call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             925                                       ,rsmoutp,0,xr,yr,.true.)
+             926                           ice_gfs(:,:)=rsmoutp(x1:x2,y1:y2)
+             927                           call qmax2d(ice_gfs(1,1),1,1,nxs,mys)
+             928                           endif
+             929                     ! ***
+             930                     #if defined(CWB_MPMD) || defined(CWBSUM)
+             931                           if(myrank.eq.0) then
+             932                           print*,'before into send_data in rsmout.f90'
+             933                           call send_data(float(itau),nxs,mys,km,lpout,temp_gfs,spfh_gfs &
+             934                          &              ,clwr_gfs,rain_gfs,qice_gfs,snow_gfs,grpl_gfs   &
+             935                          &              ,ozon_gfs,geop_gfs,u_gfs,v_gfs      &
+             936                          &              ,tg_gfs,smc_gfs,snr_gfs,stc_gfs,ice_gfs     &
+             937                     !yj2019
+             938                          &              ,terr_gfs,slmsk_gfs)
+             939                           endif
+             940                     #else
+             941                           if(myrank.eq.0) then
+             942                           print*,'before into wrte_data in rsmout.f90'
+             943                           call wrte_data(idtg,float(itau),nxs,mys,km,lpout,temp_gfs,spfh_gfs &
+             944                          &              ,clwr_gfs,rain_gfs,qice_gfs,snow_gfs,grpl_gfs   &
+             945                          &              ,ozon_gfs,geop_gfs,u_gfs,v_gfs      &
+             946                          &              ,tg_gfs,smc_gfs,snr_gfs,stc_gfs,ice_gfs     &
+             947                     !yj2019
+             948                          &              ,terr_gfs,slmsk_gfs)
+             949                           endif
+             950                     #endif
+             951                     
+             952                     !
+             953                           if (myrank.eq.0) then
+             954                           deallocate ( slmsk_gfs,terr_gfs,ice_gfs,stc_gfs, &
+             955                                        snr_gfs,smc_gfs,tg_gfs,v_gfs,u_gfs,  &
+             956                                        geop_gfs,ozon_gfs,grpl_gfs,snow_gfs, &
+             957                                        qice_gfs,rain_gfs,clwr_gfs,spfh_gfs, &
+             958                                        temp_gfs, stat=ierr)
+             959                           if (ierr/=0) stop "rsmout: deallocate fail"
+             960                           endif
+             961                           deallocate (xr, yr, stat=ierr)
+             962                           deallocate (rsmoutp, stat=ierr)
+             963                           if (ierr/=0) stop "rsmout: deallocate fail rsmoutp"
+             964                     !
+             965                     #endif
+             966                         end subroutine rsmout
+
+ Procedure information
+   Lines      : 966
+   Statements : 2
+   Stack(byte): 416
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : rsmout
+   Attribute and Cross reference of name
+     cosl
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     cp
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     grav
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     ice
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     idtg
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     itau
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     km
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     land
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     lev
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     my
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     my_max
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     ncld
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     nx
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     ocean
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     pdiff
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     phi
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     pk
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     pk2
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     plt
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     pt
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     ptop
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     qt
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     rgas
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     rsmout
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 966
+     sgeo
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     smc
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     snr
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     stc
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     t1000
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     tg
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     tt
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     ut
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     vt
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+
+ Total information
+   Procedures       : 1
+   Total lines      : 966
+   Total statements : 2
+   Total stack(byte): 416
+   Total prefetch num: 0
+

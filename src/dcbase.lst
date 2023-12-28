@@ -1,0 +1,361 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Dec 19 11:04:08 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src
+   Source file       : dcbase.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "dcbase"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine dcbase ( nx,im,lm,hltm,kcbase,zl2,ql,qls2,hl,hls2 &
+               2                                             , game,e,qcl,hcl,cu,hbase,qbase,cubase )
+               3                     !
+               4                     !***********************************************************************
+               5                     !
+               6                     !    1.   function description
+               7                     !           perform calculation of cloud base index and cloud base
+               8                     !                   condition for a-s cumulus parameterization
+               9                     !
+              10                     !    2.   common block specification
+              11                     !            none
+              12                     !
+              13                     !    3.   parameter specification
+              14                     !     input :
+              15                     !       im        :   dimension of horizontal direction
+              16                     !       nx        :   no of points in horizontal direction to process
+              17                     !       lm        :   position index in the latitudinal direction
+              18                     !       hltm      :   latent heat constant of water vapor (2.52e+6)
+              19                     !       zl2(im,lm):   height above surface (meters)
+              20                     !       ql (im,lm):   water vapor mixing ratio on model level(g/g)
+              21                     !       qls2(im,lm):   saturation water vapor mixing ratio on evenl leve
+              22                     !       hl (im,lm):   moist static energy on model level
+              23                     !       hls2(im,lm):  saturation moist static energy on model level
+              24                     !       game(im,lm)
+              25                     !     output:
+              26                     !       kcbase(im):   cloud base index
+              27                     !       e(im,lm)  :   normalized mass flux
+              28                     !       qcl(im,lm):   water vapor mixing ratio of cloud (kg/kg)
+              29                     !       hcl(im,lm):   moist static energy of cloud
+              30                     !       cu (im,lm):   saturation water vapor mixing ratio of cloud
+              31                     !
+              32                     !    4.  calling modules
+              33                     !            cup92
+              34                     !
+              35                     !    5.  usage
+              36                     !           call dcbase ( nx,im,lm,hltm,kcbase,zl2,ql,qls2,hl,hls2
+              37                     !          1            , game,e,qcl,hcl,cu,hbase,qbase,cubase )
+              38                     !
+              39                     !    6.  modules called
+              40                     !            none
+              41                     !
+              42                     !    7.  date
+              43                     !          created    1992           by      c-s chen  ( cwb  )
+              44                     !          modify to f90 by C-H Lee and sort by River Chen in 2015
+              45                     !
+              46                     !***********************************************************************
+              47                     !
+              48                           implicit  none
+              49                     
+              50                           integer   nx,im,lm
+              51                           real      hltm
+              52                     
+              53                     !     input arrays
+              54                     !
+              55                           real      zl2(im,lm),ql(im,lm),hl(im,lm),hls2(im,lm),game(im,lm)
+              56                           real      qls2(im,lm)
+              57                     !
+              58                     !     output arrays
+              59                     !
+              60                           real      e(im,lm),qcl(im,lm),hcl(im,lm),cu(im,lm)
+              61                           real      hbase(im),qbase(im),cubase(im)
+              62                           integer   kcbase(im)
+              63                     !
+              64                     
+              65                           integer   i,l
+              66                           real      tx
+              67                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 640
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.10, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      hl, ql, qcl, hbase, kcbase, hcl
+                                   <<< Loop-information  End >>>
+              68     1  pp   2v            do 10 i = 1, nx
+              69     1   p   2v            kcbase(i)= 1
+              70     1   p   2v            hbase(i) = 0.0
+              71     1   p   2v            qcl(i,lm)= ql(i,lm)
+              72     1   p   2v            hcl(i,lm)= hl(i,lm)
+              73     1   p   2v         10 continue
+              74                     !
+              75                     ! --  assume cloud base can not be higher than lm/2
+              76                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      kcbase, zl2, game, hl, qcl, hls2, hcl
+                                   <<<      ql, qls2, cu, hbase, qbase, cubase
+                                   <<< Loop-information  End >>>
+              77     1                     do 30 l = lm-1, lm/2, -1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 198
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.21, ITR: 56, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qls2, zl2, hl, hcl, game, ql, qcl
+                                   <<<      kcbase, hls2, cu, hbase, qbase, cubase
+                                   <<< Loop-information  End >>>
+              78     2  pp    v            do 40 i = 1,nx
+              79     3   p    v            if (kcbase(i).eq.1) then
+              80     3   p    v            tx= 1.0-zl2(i,l+1)/zl2(i,l)
+              81     3   p    v            qcl(i,l)= qcl(i,l+1)+tx*(ql(i,l+1)-qcl(i,l+1))
+              82     3   p    v            hcl(i,l)= hcl(i,l+1)+tx*(hl(i,l+1)-hcl(i,l+1))
+              83     3   p    v            cu(i,l) = qcl(i,l)-(qls2(i,l)+game(i,l)/((1.+game(i,l))*hltm) &
+              84     3                                                  *(hcl(i,l)-hls2(i,l)))
+              85     3               !
+              86     4   p    v            if ( cu(i,l).gt.0.0 ) then
+              87     4   p    v            kcbase(i) = l
+              88     4   p    v            hbase(i)  = hcl(i,l)
+              89     4   p    v            qbase(i)  = qcl(i,l)
+              90     4   p    v            cubase(i) = cu(i,l)
+              91     4   p    v            endif
+              92     3   p    v            endif
+              93     2   p    v        40  continue
+              94     1                 30  continue
+              95                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+              96     1  pp                 do 60 l = lm-1, lm/2, -1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      kcbase
+                                   <<< Loop-information  End >>>
+              97     2   p   2s            do 60 i = 1, nx
+              98     3   p   2m            if (l.ge.kcbase(i))  then
+              99     3   p   2s            e(i,l) = zl2(i,l)/zl2(i,kcbase(i))
+             100     3   p   2s            cu(i,l+1) = 0.0
+             101     3   p   2v            endif
+             102     1   p   2v         60 continue
+             103                     !
+             104                           return
+             105                           end
+
+ Procedure information
+   Lines      : 105
+   Statements : 42
+   Stack(byte): 1664
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : dcbase
+   Attribute and Cross reference of name
+     cu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  60
+      |(Definition)     : 83  100
+      |(Reference)      : 86  90
+     cubase
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  61
+      |(Definition)     : 90
+      |(Reference)      : 
+     dcbase
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     e
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  60
+      |(Definition)     : 99
+      |(Reference)      : 
+     game
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 83  83
+     hbase
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  61
+      |(Definition)     : 70  88
+      |(Reference)      : 
+     hcl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  60
+      |(Definition)     : 72  82
+      |(Reference)      : 82  82  83  88
+     hl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 72  82
+     hls2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 83
+     hltm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  51
+      |(Definition)     : 
+      |(Reference)      : 83
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 68  78  97
+      |(Reference)      : 69  70  71  71  72  72  79  80  80  81  81  81  81  82  82  82  82  83  83  83  83  83  83  83  86  87  88  88  89  89  90  90  98  99  99  99  99  100
+     im
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  50
+      |(Definition)     : 
+      |(Reference)      : 55  55  55  55  55  56  60  60  60  60  61  61  61  62
+     kcbase
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  62
+      |(Definition)     : 69  87
+      |(Reference)      : 79  98  99
+     l
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 77  96
+      |(Reference)      : 80  80  81  81  81  81  82  82  82  82  83  83  83  83  83  83  83  86  87  88  89  90  98  99  99  100
+     lm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  50
+      |(Definition)     : 
+      |(Reference)      : 55  55  55  55  55  56  60  60  60  60  71  71  72  72  77  77  96  96
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  50
+      |(Definition)     : 
+      |(Reference)      : 68  78  97
+     qbase
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  61
+      |(Definition)     : 89
+      |(Reference)      : 
+     qcl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  60
+      |(Definition)     : 71  81
+      |(Reference)      : 81  81  83  89
+     ql
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 71  81
+     qls2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 
+      |(Reference)      : 83
+     tx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66
+      |(Definition)     : 80
+      |(Reference)      : 81  82
+     zl2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 80  80  99  99
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         10  execution     (Definition) 73  
+                           (Reference)  68
+         30  execution     (Definition) 94  
+                           (Reference)  77
+         40  execution     (Definition) 93  
+                           (Reference)  78
+         60  execution     (Definition) 102  
+                           (Reference)  96  97
+
+ Total information
+   Procedures       : 1
+   Total lines      : 105
+   Total statements : 42
+   Total stack(byte): 1664
+   Total prefetch num: 0
+

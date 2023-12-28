@@ -1,0 +1,319 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Dec 19 11:04:28 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src
+   Source file       : gather_spec.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "gather_spec"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine gather_spec(work_io,vornow,divnow,temnow,qnow,plnow,   &
+               2                              vorold,divold,temold,qold,plold,dsqgeo,spgeo,trefs,            &
+               3                              lev,ncld,jtrun,jtmax,my,nsize)
+               4                     !
+               5                           use const, only: RTYPE
+               6                     !
+               7                           implicit  none
+               8                     
+               9                           integer   lev,ncld,jtrun,jtmax,my,nsize
+              10                     
+              11                           real(kind=RTYPE) work_io( ( ( (7+2*ncld)*2*                       &
+              12                                     lev+8)*jtrun*jtmax+my*lev)*nsize)
+              13                           real(kind=RTYPE) vornow(lev,2,jtrun,jtmax)                        &
+              14                           , divnow(lev,2,jtrun,jtmax),trefs(lev,2,jtrun,jtmax)              &
+              15                           , temnow(lev,2,jtrun,jtmax),qnow(lev*ncld,2,jtrun,jtmax)          &
+              16                           , vorold(lev,2,jtrun,jtmax),divold(lev,2,jtrun,jtmax)             &
+              17                           , temold(lev,2,jtrun,jtmax),qold(lev*ncld,2,jtrun,jtmax)
+              18                           real(kind=RTYPE) plnow(jtrun,jtmax,2), plold(jtrun,jtmax,2),      &
+              19                                            dsqgeo(jtrun,jtmax,2), spgeo(jtrun,jtmax,2)
+              20                     !
+              21                           integer   ns,len1,len2,len3,len1w,indx
+              22                     
+              23                           ns = nsize
+              24                           len1=2*lev*jtrun*jtmax
+              25                           len2=2*jtrun*jtmax
+              26                           len3=my*lev
+              27                           len1w=2*lev*ncld*jtrun*jtmax
+              28                     !
+              29                           indx=0
+              30                           call mpe_gather_io(work_io(1           ),vornow,len1,ns)
+              31                           indx=indx+len1
+              32                           call mpe_gather_io(work_io(1+ indx *ns),divnow,len1,ns)
+              33                           indx=indx+len1
+              34                           call mpe_gather_io(work_io(1+ indx *ns),temnow,len1,ns)
+              35                           indx=indx+len1
+              36                           call mpe_gather_io(work_io(1+ indx *ns),qnow  ,len1w,ns)
+              37                           indx=indx+len1w
+              38                           call mpe_gather_io(work_io(1+ indx *ns),plnow ,len2,ns)
+              39                           indx=indx+len2
+              40                           call mpe_gather_io(work_io(1+ indx *ns),vorold,len1,ns)
+              41                           indx=indx+len1
+              42                           call mpe_gather_io(work_io(1+ indx *ns),divold,len1,ns)
+              43                           indx=indx+len1
+              44                           call mpe_gather_io(work_io(1+ indx *ns),temold,len1,ns)
+              45                           indx=indx+len1
+              46                           call mpe_gather_io(work_io(1+ indx *ns),qold  ,len1w,ns)
+              47                           indx=indx+len1w
+              48                           call mpe_gather_io(work_io(1+ indx *ns),plold ,len2,ns)
+              49                           indx=indx+len2
+              50                           call mpe_gather_io(work_io(1+ indx *ns),dsqgeo,len2,ns)
+              51                           indx=indx+len2
+              52                           call mpe_gather_io(work_io(1+ indx *ns),spgeo ,len2,ns)
+              53                           indx=indx+len2
+              54                           call mpe_gather_io(work_io(1+ indx *ns),trefs ,len1,ns)
+              55                           indx=indx+len1
+              56                     !!      call mpe_gather_io(work_io(1+ indx *ns),qrefs ,len1w,ns)
+              57                     !!      indx=indx+len1w
+              58                     !
+              59                           return
+              60                           end
+
+ Procedure information
+   Lines      : 60
+   Statements : 42
+   Stack(byte): 416
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : gather_spec
+   Attribute and Cross reference of name
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 5
+     divnow
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  13
+      |(Definition)     : 32
+      |(Reference)      : 
+     divold
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  13
+      |(Definition)     : 42
+      |(Reference)      : 
+     dsqgeo
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 50
+      |(Reference)      : 
+     gather_spec
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     indx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 21
+      |(Definition)     : 29  31  33  35  37  39  41  43  45  47  49  51  53  55
+      |(Reference)      : 31  32  33  34  35  36  37  38  39  40  41  42  43  44  45  46  47  48  49  50  51  52  53  54  55
+     jtmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  9
+      |(Definition)     : 
+      |(Reference)      : 11  13  13  13  13  13  13  13  13  13  18  18  18  18  24  25  27
+     jtrun
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  9
+      |(Definition)     : 
+      |(Reference)      : 11  13  13  13  13  13  13  13  13  13  18  18  18  18  24  25  27
+     len1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 21
+      |(Definition)     : 24  30  32  34  40  42  44  54
+      |(Reference)      : 31  33  35  41  43  45  55
+     len1w
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 21
+      |(Definition)     : 27  36  46
+      |(Reference)      : 37  47
+     len2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 21
+      |(Definition)     : 25  38  48  50  52
+      |(Reference)      : 39  49  51  53
+     len3
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 21
+      |(Definition)     : 26
+      |(Reference)      : 
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  9
+      |(Definition)     : 
+      |(Reference)      : 11  11  13  13  13  13  13  13  13  13  13  24  26  27
+     mpe_gather_io
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 30  32  34  36  38  40  42  44  46  48  50  52  54
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  9
+      |(Definition)     : 
+      |(Reference)      : 11  26
+     ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  9
+      |(Definition)     : 
+      |(Reference)      : 11  13  13  27
+     ns
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 21
+      |(Definition)     : 23  30  32  34  36  38  40  42  44  46  48  50  52  54
+      |(Reference)      : 32  34  36  38  40  42  44  46  48  50  52  54
+     nsize
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  9
+      |(Definition)     : 
+      |(Reference)      : 11  23
+     plnow
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 38
+      |(Reference)      : 
+     plold
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 48
+      |(Reference)      : 
+     qnow
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  13
+      |(Definition)     : 36
+      |(Reference)      : 
+     qold
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  13
+      |(Definition)     : 46
+      |(Reference)      : 
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 5  11  13  18
+     spgeo
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 52
+      |(Reference)      : 
+     temnow
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  13
+      |(Definition)     : 34
+      |(Reference)      : 
+     temold
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  13
+      |(Definition)     : 44
+      |(Reference)      : 
+     trefs
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  13
+      |(Definition)     : 54
+      |(Reference)      : 
+     vornow
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  13
+      |(Definition)     : 30
+      |(Reference)      : 
+     vorold
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  13
+      |(Definition)     : 40
+      |(Reference)      : 
+     work_io
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  11
+      |(Definition)     : 30  32  34  36  38  40  42  44  46  48  50  52  54
+      |(Reference)      : 
+
+ Total information
+   Procedures       : 1
+   Total lines      : 60
+   Total statements : 42
+   Total stack(byte): 416
+   Total prefetch num: 0
+

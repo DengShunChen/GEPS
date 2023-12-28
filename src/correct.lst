@@ -1,0 +1,438 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Dec 19 11:04:27 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src
+   Source file       : correct.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "correct"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine correct(vorten,divten,phiten,tmcor,pmcor,vornow,  &
+               2                                              divnow,temnow,plnow,jtrun,jtmax,lev)
+               3                     !
+               4                     !  purpose :  add correction to variables for NNMI
+               5                     !-----------------------------------------------------------------------
+               6                     !  **** input ****
+               7                     !  vorten  :  vorticity correction array in spectrum domaon
+               8                     !  divten  :  divergence correction array in spectrum domain
+               9                     !  phiten  :  geopotantial correction array in spectrum domain
+              10                     !  pmcor   :  array for compute surface pressure correction
+              11                     !  tmcor   :  array for compute temperature correction
+              12                     !  lev     :  total vertical levels
+              13                     !  **** output ****
+              14                     !  vornow  : vorticity spectrum coefficient
+              15                     !  divnow  : divergence spectrum coefficient
+              16                     !  temnow  : temperature spectrum coefficient
+              17                     !  plnow   : surface pressure spectrum coefficient
+              18                     !
+              19                     ! modify to f90 in 2015 by C-H Lee
+              20                     ! modify 2015 by River Chen
+              21                     !-------------------------------------------------------------------------
+              22                     !
+              23                           use const, only : RTYPE
+              24                           use index
+              25                     !
+              26                           real(kind=RTYPE) vorten(levp,2,jtrun,jtmax),  &
+              27                                            divten(levp,2,jtrun,jtmax),  &
+              28                                            phiten(levp,2,jtrun,jtmax),  &
+              29                                            vornow(levp,2,jtrun,jtmax),  &
+              30                                            divnow(levp,2,jtrun,jtmax),  &
+              31                                            temnow(levp,2,jtrun,jtmax),  &
+              32                                            temnow1(lev,2,jtrun,jtmax),  &
+              33                                            phiten1(lev,2,jtrun,jtmax),  &
+              34                                            plnow(jtrun,jtmax,2)
+              35                           real(kind=RTYPE) tmcor(lev,lev),pmcor(lev)
+              36                     
+              37                     !2dMPI >
+              38                     
+              39                     
+              40                           call mpe2d_unify_spec_lev(phiten,phiten1,lev,levp,jtrun,jtmax,mlistnum,nsizex,row_comm)
+              41                           call mpe2d_unify_spec_lev(temnow,temnow1,lev,levp,jtrun,jtmax,mlistnum,nsizex,row_comm)
+              42                     !2dMPI <
+              43                     
+              44                     !
+              45                     !  add vorticity and divergence correction to vorticity and divergence
+              46                     !  spectrum array
+              47                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+              48     1  pp                 do 100 m=1,mlistnum
+              49     1   p                    mf=mlist(m)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      divten, divnow, vorten, vornow
+                                   <<< Loop-information  End >>>
+              50     2   p                 do 100 n=mf,jtrun
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.12, ITR: 96, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      divnow, divten, vorten, vornow
+                                   <<< Loop-information  End >>>
+              51     3   p    v            do 100 k =1,levp
+              52     3   p    v               vornow(k,1,n,m)=vornow(k,1,n,m)+vorten(k,1,n,m)
+              53     3   p    v               vornow(k,2,n,m)=vornow(k,2,n,m)+vorten(k,2,n,m)
+              54     3   p    v               divnow(k,1,n,m)=divnow(k,1,n,m)+divten(k,1,n,m)
+              55     3   p    v               divnow(k,2,n,m)=divnow(k,2,n,m)+divten(k,2,n,m)
+              56     1   p    v       100  continue
+              57                     !
+              58                     !
+              59                     !  compute surface pressure correction from geopotential correction and
+              60                     !  add to surface spectrum array
+              61                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+              62     1  pp                 do 110 m=1,mlistnum
+              63     1   p                    mf=mlist(m)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      phiten1, pmcor
+                                   <<< Loop-information  End >>>
+              64     2   p                 do 110 n=mf,jtrun
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.87, ITR: 24, MVE: 2, POL: L)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      phiten1, pmcor
+                                   <<< Loop-information  End >>>
+              65     3   p   8             do 110 k =1,lev
+              66     3               !        plnow(n,m,1)=plnow(n,m,1)+pmcor(k)*phiten(k,1,n,m)
+              67     3               !        plnow(n,m,2)=plnow(n,m,2)+pmcor(k)*phiten(k,2,n,m)
+              68     3   p   8                plnow(n,m,1)=plnow(n,m,1)+pmcor(k)*phiten1(k,1,n,m)
+              69     3   p   8                plnow(n,m,2)=plnow(n,m,2)+pmcor(k)*phiten1(k,2,n,m)
+              70     1   p   8        110  continue
+              71                     !
+              72                     !
+              73                     !  compute temperature correction from geopotential correction and
+              74                     !  add to temperature spectrum array
+              75                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+              76     1  pp                 do 140 m=1,mlistnum
+              77     1   p                    mf=mlist(m)
+              78     2   p                 do 140 n=mf,jtrun
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tmcor, temnow1
+                                   <<< Loop-information  End >>>
+              79     3   p                 do 140 i=1,lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.85, ITR: 14, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      temnow1, tmcor
+                                   <<< Loop-information  End >>>
+              80     4   p   2             do 140 k=1,lev
+              81     4               !       temnow(k,1,n,m)=temnow(k,1,n,m)+tmcor(k,i)*phiten(i,1,n,m)
+              82     4               !       temnow(k,2,n,m)=temnow(k,2,n,m)+tmcor(k,i)*phiten(i,2,n,m)
+              83     4   p   2               temnow1(k,1,n,m)=temnow1(k,1,n,m)+tmcor(k,i)*phiten1(i,1,n,m)
+              84     4   p   2               temnow1(k,2,n,m)=temnow1(k,2,n,m)+tmcor(k,i)*phiten1(i,2,n,m)
+              85     1   p   2        140  continue
+              86                     !
+              87                     
+              88                     !2dMPI >
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+              89     1  pp                 do m=1,mlistnum
+              90     1   p                    mf=mlist(m)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      Llist, temnow
+                                   <<< Loop-information  End >>>
+              91     2   p                 do n=mf,jtrun
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.50, ITR: 224, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      Llist, temnow
+                                   <<< Loop-information  End >>>
+              92     3   p   2v            do k=1,levp
+              93     3   p   2v               KK=Llist(k)
+              94     3   p   2v               temnow(k,1,n,m)=temnow1(KK,1,n,m)
+              95     3   p   2v               temnow(k,2,n,m)=temnow1(KK,2,n,m)
+              96     3   p   2v            enddo
+              97     2   p                 enddo
+              98     1   p                 enddo
+              99                     !2dMPI <
+             100                     
+             101                           return
+             102                           end
+
+ Procedure information
+   Lines      : 102
+   Statements : 43
+   Stack(byte): 1152
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : correct
+   Attribute and Cross reference of name
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 23
+     correct
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     divnow
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  26
+      |(Definition)     : 54  55
+      |(Reference)      : 54  55
+     divten
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  26
+      |(Definition)     : 
+      |(Reference)      : 54  55
+     i
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 79
+      |(Reference)      : 83  83  84  84
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 24
+     jtmax
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 40  41
+      |(Reference)      : 26  26  26  26  26  26  26  26  26
+     jtrun
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 40  41
+      |(Reference)      : 26  26  26  26  26  26  26  26  26  50  64  78  91
+     KK
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 93
+      |(Reference)      : 94  95
+     k
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 51  65  80  92
+      |(Reference)      : 52  52  52  53  53  53  54  54  54  55  55  55  68  68  69  69  83  83  83  84  84  84  93  94  95
+     Llist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 93
+     lev
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 40  41
+      |(Reference)      : 26  26  35  35  35  65  79  80
+     levp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 40  41
+      |(Reference)      : 26  26  26  26  26  26  51  92
+     m
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 48  62  76  89
+      |(Reference)      : 49  52  52  52  53  53  53  54  54  54  55  55  55  63  68  68  68  69  69  69  77  83  83  83  84  84  84  90  94  94  95  95
+     mf
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 49  63  77  90
+      |(Reference)      : 50  64  78  91
+     mlist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 49  63  77  90
+     mlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 40  41
+      |(Reference)      : 48  62  76  89
+     mpe2d_unify_spec_lev
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 40  41
+     n
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 50  64  78  91
+      |(Reference)      : 52  52  52  53  53  53  54  54  54  55  55  55  68  68  68  69  69  69  83  83  83  84  84  84  94  94  95  95
+     nsizex
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 40  41
+      |(Reference)      : 
+     phiten
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  26
+      |(Definition)     : 40
+      |(Reference)      : 
+     phiten1
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 26
+      |(Definition)     : 40
+      |(Reference)      : 68  69  83  84
+     plnow
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  26
+      |(Definition)     : 68  69
+      |(Reference)      : 68  69
+     pmcor
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  35
+      |(Definition)     : 
+      |(Reference)      : 68  69
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 23  26  35
+     row_comm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 40  41
+      |(Reference)      : 
+     temnow
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  26
+      |(Definition)     : 41  94  95
+      |(Reference)      : 
+     temnow1
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 26
+      |(Definition)     : 41  83  84
+      |(Reference)      : 83  84  94  95
+     tmcor
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  35
+      |(Definition)     : 
+      |(Reference)      : 83  84
+     vornow
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  26
+      |(Definition)     : 52  53
+      |(Reference)      : 52  53
+     vorten
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  26
+      |(Definition)     : 
+      |(Reference)      : 52  53
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        100  execution     (Definition) 56  
+                           (Reference)  48  50  51
+        110  execution     (Definition) 70  
+                           (Reference)  62  64  65
+        140  execution     (Definition) 85  
+                           (Reference)  76  78  79  80
+
+ Total information
+   Procedures       : 1
+   Total lines      : 102
+   Total statements : 43
+   Total stack(byte): 1152
+   Total prefetch num: 0
+

@@ -1,0 +1,3307 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Dec 19 11:04:18 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src
+   Source file       : shalcnv_new.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "shalcnv_new"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine shalcnv_new(im,ix,km,jcap,delt,del,prsl,ps,phil,ql_all,&
+               2                                q1,t1,u1,v1,rn,kbot,ktop,kcnv,slimsk,                        &
+               3                                dot,ncloud,hpbl,heat,evap,grav,cp,hvap,rd,t0c)
+               4                     !          dot,ncloud,hpbl,heat,evap,ud_mf,dt_mf,me)
+               5                     !
+               6                     !     use machine , only : kind_phys
+               7                     !     use funcphys , only : fpvs
+               8                     !     use physcons, grav => con_g, cp => con_cp, hvap => con_hvap
+               9                     !    &,             rv => con_rv, fv => con_fvirt, t0c => con_t0c
+              10                     !    &,             rd => con_rd, cvap => con_cvap, cliq => con_cliq
+              11                     !    &,             eps => con_eps, epsm1 => con_epsm1
+              12                           implicit none
+              13                     !
+              14                           integer            im, ix,  km, jcap, ncloud,                     &
+              15                                              kbot(im), ktop(im), kcnv(im)
+              16                     !                        me
+              17                           real delt,fpvs
+              18                           real ps(im),     del(ix,km),  prsl(ix,km),                        &
+              19                                                ql(ix,km,2),q1(ix,km),   t1(ix,km),          &
+              20                                                u1(ix,km),  v1(ix,km),   rcs(im),            &
+              21                                                rn(im),     slimsk(im),                      &
+              22                                                dot(ix,km), phil(ix,km), hpbl(im),           &
+              23                                                heat(im),   evap(im)                         &
+              24                                               ,ql_all(ix,km)                                &
+              25                     ! hchuang code change mass flux output
+              26                           ,                    ud_mf(im,km),dt_mf(im,km)
+              27                     !
+              28                           integer              i,j,indx, jmn, k, kk, latd, lond, km1
+              29                           integer              kpbl(im)
+              30                     !
+              31                           real                 c0,      cpoel,   dellat,  delta,            &
+              32                                                desdt,   deta,    detad,   dg,               &
+              33                                                dh,      dhh,     dlnsig,  dp,               &
+              34                                                dq,      dqsdp,   dqsdt,   dt,               &
+              35                                                dt2,     dtmax,   dtmin,   dv1h,             &
+              36                                                dv1q,    dv2h,    dv2q,    dv1u,             &
+              37                                                dv1v,    dv2u,    dv2v,    dv3q,             &
+              38                                                dv3h,    dv3u,    dv3v,    clam,             &
+              39                                                dz,      dz1,     e1,                        &
+              40                                                el2orc,  elocp,   aafac,                     &
+              41                                                es,      etah,    h1,      dthk,             &
+              42                                                evef,    evfact,  evfactl, fact1,            &
+              43                                                fact2,   factor,  fjcap,                     &
+              44                                                g,       gamma,   pprime,  betaw,            &
+              45                                                qlk,     qrch,    qs,      c1,               &
+              46                                                rain,    rfact,   shear,   tem1,             &
+              47                                                tem2,    terr,    val,     val1,             &
+              48                                                val2,    w1,      w1l,     w1s,              &
+              49                                                w2,      w2l,     w2s,     w3,               &
+              50                                                w3l,     w3s,     w4,      w4l,              &
+              51                                                w4s,     tem,     ptem,    ptem1,            &
+              52                                                pgcon
+              53                     !
+              54                           integer              kb(im), kbcon(im), kbcon1(im),               &
+              55                                                ktcon(im), ktcon1(im),                       &
+              56                                                kbm(im), kmax(im)
+              57                     !
+              58                           real                 aa1(im),                                     &
+              59                                                delhbar(im), delq(im),   delq2(im),          &
+              60                                                delqbar(im), delqev(im), deltbar(im),        &
+              61                                                deltv(im),   edt(im),                        &
+              62                                                wstar(im),   sflx(im),                       &
+              63                                                pdot(im),    po(im,km),                      &
+              64                                                qcond(im),   qevap(im),  hmax(im),           &
+              65                                                rntot(im),   vshear(im),                     &
+              66                                                xlamud(im),  xmb(im),    xmbmax(im),         &
+              67                                                delubar(im), delvbar(im)
+              68                     !
+              69                           real                 cincr, cincrmax, cincrmin
+              70                     !c
+              71                     !phon
+              72                           real grav,cp,hvap,rd,t0c
+              73                           real rv,fv,cvap,cliq,eps,epsm1
+              74                     !phon
+              75                           parameter(cincrmax=180.,cincrmin=120.,dthk=25.)
+              76                           parameter(terr=0.,c0=.002,c1=5.e-4)
+              77                           parameter(h1=0.33333333)
+              78                     !  physical parameters
+              79                     !     parameter(g=grav)
+              80                     !     parameter(cpoel=cp/hvap,elocp=hvap/cp,
+              81                     !    &          el2orc=hvap*hvap/(rv*cp))
+              82                     !     parameter(terr=0.,c0=.002,c1=5.e-4,delta=fv)
+              83                     !     parameter(fact1=(cvap-cliq)/rv,fact2=hvap/rv-fact1*t0c)
+              84                     !  local variables and arrays
+              85                           real                 pfld(im,km),    to(im,km),     qo(im,km),    &
+              86                                                uo(im,km),      vo(im,km),     qeso(im,km)
+              87                     !  cloud water
+              88                     !     real                 qlko_ktcon(im), dellal(im,km), tvo(im,km),
+              89                           real                 qlko_ktcon(im), dellal(im,km),               &
+              90                                                dbyo(im,km),    zo(im,km),     xlamue(im,km),&
+              91                                                heo(im,km),     heso(im,km),                 &
+              92                                                dellah(im,km),  dellaq(im,km),               &
+              93                                                dellau(im,km),  dellav(im,km), hcko(im,km),  &
+              94                                                ucko(im,km),    vcko(im,km),   qcko(im,km),  &
+              95                                                eta(im,km),     zi(im,km),     pwo(im,km),   &
+              96                                                tx1(im)
+              97                     !
+              98                           logical totflg, cnvflg(im), flg(im)
+              99                     !
+             100                           real                 tf, tcr, tcrf
+             101                           parameter (tf=233.16, tcr=263.16, tcrf=1.0/(tcr-tf))
+             102                     !
+             103                     !fong--- merge qsatq in here
+             104                           real vpsat(191),pqs,qqq,temx,t11
+             105                           integer ic
+             106                           data vpsat/                                                       &
+             107                               9.67165e-05,  1.15983e-04,  1.38819e-04,  1.65835e-04,        &
+             108                               1.97736e-04,  2.35339e-04,  2.79584e-04,  3.31553e-04,        &
+             109                               3.92489e-04,  4.63820e-04,  5.47177e-04,  6.44430e-04,        &
+             110                               7.57710e-04,  8.89450e-04,  1.04242e-03,  1.21975e-03,        &
+             111                               1.42503e-03,  1.66230e-03,  1.93614e-03,  2.25172e-03,        &
+             112                               2.61488e-03,  3.03222e-03,  3.51113e-03,  4.05995e-03,        &
+             113                               4.68804e-03,  5.40589e-03,  6.22523e-03,  7.15922e-03,        &
+             114                               8.22253e-03,  9.43153e-03,  1.08045e-02,  1.23617e-02,        &
+             115                               1.41258e-02,  1.61219e-02,  1.83779e-02,  2.09244e-02,        &
+             116                               2.37959e-02,  2.70300e-02,  3.06684e-02,  3.47573e-02,        &
+             117                               3.93475e-02,  4.44947e-02,  5.02607e-02,  5.67130e-02,        &
+             118                               6.39258e-02,  7.19807e-02,  8.09670e-02,  9.09823e-02,        &
+             119                               1.02134e-01,  1.14538e-01,  1.28323e-01,                      &
+             120                     !
+             121                                             1.45280e-01,  1.64189e-01,  1.85241e-01,        &
+             122                               2.08643e-01,  2.34615e-01,  2.63398e-01,  2.95248e-01,        &
+             123                               3.30441e-01,  3.69270e-01,  4.12053e-01,  4.59124e-01,        &
+             124                               5.10843e-01,  5.67591e-01,  6.29773e-01,  6.97819e-01,        &
+             125                               7.72185e-01,  8.53352e-01,  9.41827e-01,  1.03814e+00,        &
+             126                               1.14287e+00,  1.25659e+00,  1.37992e+00,  1.51352e+00,        &
+             127                               1.65806e+00,  1.81424e+00,  1.98279e+00,  2.16447e+00,        &
+             128                               2.36006e+00,  2.57039e+00,  2.79628e+00,  3.03858e+00,        &
+             129                               3.29819e+00,  3.57599e+00,  3.87289e+00,  4.18982e+00,        &
+             130                               4.52773e+00,  4.88753e+00,  5.27019e+00,  5.67664e+00,        &
+             131                     !
+             132                               6.10780e+00,  6.56617e+00,  7.05475e+00,  7.57526e+00,        &
+             133                               8.12946e+00,  8.71922e+00,  9.34647e+00,  1.00132e+01,        &
+             134                               1.07216e+01,  1.14739e+01,  1.22723e+01,  1.31192e+01,        &
+             135                               1.40172e+01,  1.49688e+01,  1.59767e+01,  1.70438e+01,        &
+             136                               1.81729e+01,  1.93672e+01,  2.06298e+01,  2.19639e+01,        &
+             137                               2.33729e+01,  2.48605e+01,  2.64302e+01,  2.80858e+01,        &
+             138                               2.98314e+01,  3.16708e+01,  3.36085e+01,  3.56487e+01,        &
+             139                               3.77959e+01,  4.00548e+01,  4.24303e+01,  4.49274e+01,        &
+             140                               4.75511e+01,  5.03069e+01,  5.32001e+01,  5.62365e+01,        &
+             141                               5.94220e+01,  6.27625e+01,  6.62643e+01,  6.99337e+01,        &
+             142                     !
+             143                               7.37774e+01,  7.78022e+01,  8.20150e+01,  8.64231e+01,        &
+             144                               9.10338e+01,  9.58548e+01,  1.00894e+02,  1.06159e+02,        &
+             145                               1.11659e+02,  1.17401e+02,  1.23395e+02,  1.29650e+02,        &
+             146                               1.36174e+02,  1.42978e+02,  1.50070e+02,  1.57461e+02,        &
+             147                               1.65161e+02,  1.73180e+02,  1.81529e+02,  1.90218e+02,        &
+             148                               1.99260e+02,  2.08665e+02,  2.18446e+02,  2.28613e+02,        &
+             149                               2.39180e+02,  2.50159e+02,  2.61562e+02,  2.73404e+02,        &
+             150                               2.85696e+02,  2.98453e+02,  3.11689e+02,  3.25418e+02,        &
+             151                               3.39655e+02,  3.54414e+02,  3.69711e+02,  3.85560e+02,        &
+             152                               4.01979e+02,  4.18982e+02,  4.36586e+02,  4.54808e+02,        &
+             153                     !
+             154                               4.73665e+02,  4.93175e+02,  5.13354e+02,  5.34221e+02,        &
+             155                               5.55795e+02,  5.78093e+02,  6.01135e+02,  6.24940e+02,        &
+             156                               6.49527e+02,  6.74918e+02,  7.01131e+02,  7.28188e+02,        &
+             157                               7.56110e+02,  7.84918e+02,  8.14633e+02,  8.45278e+02,        &
+             158                               8.76876e+02,  9.09448e+02,  9.43018e+02,  9.77609e+02,        &
+             159                               1.01325e+03/
+             160                     
+             161                     !-----------------------------------------------------------------------
+             162                     !c--------------------------------------------------------------------
+             163                           g=grav
+             164                           rv=4.615e+2
+             165                           fv=rv/rd-1.
+             166                           cvap=1.846e+3
+             167                           cliq=4.1855e+3
+             168                           eps=rd/rv
+             169                           epsm1=eps-1
+             170                           cpoel=cp/hvap
+             171                           elocp=hvap/cp
+             172                           el2orc=hvap*hvap/(rv*cp)
+             173                           delta=fv
+             174                           fact1=(cvap-cliq)/rv
+             175                           fact2=hvap/rv-fact1*t0c
+             176                     !oc--------------------------------
+             177                           temx = 1./1.622
+             178                     
+             179                     !
+             180                           km1 = km - 1
+             181                     !
+             182                     !  compute surface buoyancy flux
+             183                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 800
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.57, ITR: 96, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      heat, evap, t1, sflx
+                                   <<< Loop-information  End >>>
+             184     1  pp   2v            do i=1,im
+             185     1   p   2v              sflx(i) = heat(i)+fv*t1(i,1)*evap(i)
+             186     1   p   2v            enddo
+             187                     !
+             188                     !  initialize arrays
+             189                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 254
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.68, ITR: 40, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg, kcnv, sflx, rcs, vshear, aa1
+                                   <<<      edt, qlko_ktcon, pdot, kb, ktcon, kbcon
+                                   <<<      rn, kbot, ktop
+                                   <<< Loop-information  End >>>
+             190     1  pp    v            do i=1,im
+             191     1   p    v              cnvflg(i) = .true.
+             192     1   p    v              if(kcnv(i).eq.1) cnvflg(i) = .false.
+             193     1   p    v              if(sflx(i).le.0.) cnvflg(i) = .false.
+             194     2   p    v              if(cnvflg(i)) then
+             195     2   p    v                kbot(i)=km+1
+             196     2   p    v                ktop(i)=0
+             197     2   p    v              endif
+             198     1   p    v              rn(i)=0.
+             199     1   p    v              kbcon(i)=km
+             200     1   p    v              ktcon(i)=1
+             201     1   p    v              kb(i)=km
+             202     1   p    v              pdot(i) = 0.
+             203     1   p    v              qlko_ktcon(i) = 0.
+             204     1   p    v              edt(i)  = 0.
+             205     1   p    v              aa1(i)  = 0.
+             206     1   p    v              vshear(i) = 0.
+             207     1               !
+             208     1   p    v              rcs(i)=1.
+             209     1   p    v            enddo
+             210                     ! hchuang code change
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1143
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      dt_mf, ud_mf
+                                   <<< Loop-information  End >>>
+             211     1  pp   2v            do k = 1, km
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<< Loop-information  End >>>
+             212     2   p   2               do i = 1, im
+             213     2   p   2v                ud_mf(i,k) = 0.
+             214     2   p   2v                dt_mf(i,k) = 0.
+             215     2   p   2v              enddo
+             216     1   p                 enddo
+             217                     !!
+             218                           totflg = .true.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1600
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<< Loop-information  End >>>
+             219     1  pp    v            do i=1,im
+             220     1   p    v              totflg = totflg .and. (.not. cnvflg(i))
+             221     1   p    v            enddo
+             222                           if(totflg) return
+             223                     !!
+             224                     !
+             225                           dt2   = delt
+             226                           val   =         1200.
+             227                           dtmin = max(dt2, val )
+             228                           val   =         3600.
+             229                           dtmax = max(dt2, val )
+             230                     !  model tunable parameters are all here
+             231                           clam    = .3
+             232                           aafac   = .1
+             233                           betaw   = .03
+             234                     !     evef    = 0.07
+             235                           evfact  = 0.3
+             236                           evfactl = 0.3
+             237                     !
+             238                     !     pgcon   = 0.7     ! Gregory et al. (1997, QJRMS)
+             239                           pgcon   = 0.55    ! Zhang & Wu (2003,JAS)
+             240                           fjcap   = (float(jcap) / 126.) ** 2
+             241                           val     =           1.
+             242                           fjcap   = max(fjcap,val)
+             243                           w1l     = -8.e-3
+             244                           w2l     = -4.e-2
+             245                           w3l     = -5.e-3
+             246                           w4l     = -5.e-4
+             247                           w1s     = -2.e-4
+             248                           w2s     = -2.e-3
+             249                           w3s     = -1.e-3
+             250                           w4s     = -2.e-5
+             251                     !
+             252                     !  define top layer for search of the downdraft originating layer
+             253                     !  and the maximum thetae for updraft
+             254                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 762
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.39, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ps, tx1, kmax, kbm
+                                   <<< Loop-information  End >>>
+             255     1  pp   2v            do i=1,im
+             256     1   p   2v              kbm(i)   = km
+             257     1   p   2v              kmax(i)  = km
+             258     1   p   2v              tx1(i)   = 1.0 / ps(i)
+             259     1   p   2v            enddo
+             260                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tx1, prsl, kbm, kmax
+                                   <<< Loop-information  End >>>
+             261     1                     do k = 1, km
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 800
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.62, ITR: 96, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      kbm, tx1, prsl, kmax
+                                   <<< Loop-information  End >>>
+             262     2  pp   2v              do i=1,im
+             263     2   p   2v                if (prsl(i,k)*tx1(i) .gt. 0.70) kbm(i)   = k + 1
+             264     2   p   2v                if (prsl(i,k)*tx1(i) .gt. 0.60) kmax(i)  = k + 1
+             265     2   p   2v              enddo
+             266     1                     enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 728
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      kmax, kbm
+                                   <<< Loop-information  End >>>
+             267     1  pp   2v            do i=1,im
+             268     1   p   2v              kbm(i)   = min(kbm(i),kmax(i))
+             269     1   p   2v            enddo
+             270                     !
+             271                     !  hydrostatic height assume zero terr and compute
+             272                     !  updraft entrainment rate as an inverse function of height
+             273                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      phil, zo
+                                   <<< Loop-information  End >>>
+             274     1  pp                 do k = 1, km
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      phil, zo
+                                   <<< Loop-information  End >>>
+             275     2   p   2v              do i=1,im
+             276     2   p   2v                zo(i,k) = phil(i,k) / g
+             277     2   p   2v              enddo
+             278     1   p                 enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 616
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.48, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      zo, xlamue, zi
+                                   <<< Loop-information  End >>>
+             279     1  pp   2v            do k = 1, km1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<< Loop-information  End >>>
+             280     2   p   2               do i=1,im
+             281     2   p   2v                zi(i,k) = 0.5*(zo(i,k)+zo(i,k+1))
+             282     2   p   2v                xlamue(i,k) = clam / zi(i,k)
+             283     2   p   2v              enddo
+             284     1   p                 enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1143
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      xlamue
+                                   <<< Loop-information  End >>>
+             285     1  pp   2v            do i=1,im
+             286     1   p   2v              xlamue(i,km) = xlamue(i,km1)
+             287     1   p   2v            enddo
+             288                     !
+             289                     !  pbl height
+             290                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1143
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.20, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg, flg, kpbl
+                                   <<< Loop-information  End >>>
+             291     1  pp   2v            do i=1,im
+             292     1   p   2v              flg(i) = cnvflg(i)
+             293     1   p   2v              kpbl(i)= 1
+             294     1   p   2v            enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flg, zo, hpbl, kpbl
+                                   <<< Loop-information  End >>>
+             295     1                     do k = 2, km1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 640
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.73, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      zo, hpbl, flg, kpbl
+                                   <<< Loop-information  End >>>
+             296     2  pp   2v              do i=1,im
+             297     3   p   2v                if (flg(i).and.zo(i,k).le.hpbl(i)) then
+             298     3   p   2v                  kpbl(i) = k
+             299     3   p   2v                else
+             300     3   p   2v                  flg(i) = .false.
+             301     3   p   2v                endif
+             302     2   p   2v              enddo
+             303     1                     enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 728
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      kbm, kpbl
+                                   <<< Loop-information  End >>>
+             304     1  pp   2v            do i=1,im
+             305     1   p   2v              kpbl(i)= min(kpbl(i),kbm(i))
+             306     1   p   2v            enddo
+             307                     !
+             308                     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+             309                     !   convert surface pressure to mb from cb
+             310                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg, kmax, prsl, pfld, eta, t1, q1
+                                   <<<      qcko, ucko, vcko, dbyo, pwo, dellal
+                                   <<<      hcko, to, qo
+                                   <<<    PREFETCH(SOFT) : 10
+                                   <<<     SEQUENTIAL : 10
+                                   <<<      rcs: 2, u1: 2, v1: 2, uo: 2, vo: 2
+                                   <<< Loop-information  End >>>
+             311     1  pp                 do k = 1, km
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.06, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      kmax, prsl, pfld, eta, t1, q1, hcko
+                                   <<<      qcko, ucko, vcko, cnvflg, dbyo, pwo
+                                   <<<      dellal, to, qo
+                                   <<<    PREFETCH(SOFT) : 20
+                                   <<<     SEQUENTIAL : 20
+                                   <<<      u1: 4, rcs: 4, v1: 4, uo: 4, vo: 4
+                                   <<< Loop-information  End >>>
+             312     2   p    v              do i = 1, im
+             313     3   p    v                if (cnvflg(i) .and. k .le. kmax(i)) then
+             314     3   p    v                  pfld(i,k) = prsl(i,k) * 10.0
+             315     3   p    v                  eta(i,k)  = 1.
+             316     3   p    v                  hcko(i,k) = 0.
+             317     3   p    v                  qcko(i,k) = 0.
+             318     3   p    v                  ucko(i,k) = 0.
+             319     3   p    v                  vcko(i,k) = 0.
+             320     3   p    v                  dbyo(i,k) = 0.
+             321     3   p    v                  pwo(i,k)  = 0.
+             322     3   p    v                  dellal(i,k) = 0.
+             323     3   p    v                  to(i,k)   = t1(i,k)
+             324     3   p    v                  qo(i,k)   = q1(i,k)
+             325     3   p    v                  uo(i,k)   = u1(i,k) * rcs(i)
+             326     3   p    v                  vo(i,k)   = v1(i,k) * rcs(i)
+             327     3   p    v                endif
+             328     2   p    v              enddo
+             329     1   p                 enddo
+             330                     !
+             331                     !  column variables
+             332                     !  p is pressure of the layer (mb)
+             333                     !  t is temperature at t-dt (k)..tn
+             334                     !  q is mixing ratio at t-dt (kg/kg)..qn
+             335                     !  to is temperature at t+dt (k)... this is after advection and turbulan
+             336                     !  qo is mixing ratio at t+dt (kg/kg)..q1
+             337                     !
+             338     1                     do k = 1, km
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg
+                                   <<< Loop-information  End >>>
+             339     2   s    s              do i=1,im
+             340     3   p    v                if (cnvflg(i) .and. k .le. kmax(i)) then
+             341     3   m    m                qeso(i,k) = 0.01 * fpvs(to(i,k))      ! fpvs is in pa
+             342     3   p    v                qeso(i,k) = eps * qeso(i,k) / (pfld(i,k) + epsm1*qeso(i,k))
+             343     3               !cwb qsat
+             344     3               !         t11 = max(1.00001, min(190.999, to(i,k)-182.16))
+             345     3               !         ic = int(t11)
+             346     3               !         pqs = pfld(i,k)
+             347     3               !         qqq = min(temx*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic)) &
+             348     3               !                                    *(t11-float(ic)))
+             349     3               !         qeso(i,k) = 0.622*qqq/(pqs+epsm1*qqq)
+             350     3               !cwb
+             351     3   p    v                  val1      =             1.e-8
+             352     3   p    v                  qeso(i,k) = max(qeso(i,k), val1)
+             353     3   p    v                  val2      =           1.e-10
+             354     3   p    v                  qo(i,k)   = max(qo(i,k), val2 )
+             355     3               !           qo(i,k)   = min(qo(i,k),qeso(i,k))
+             356     3               !           tvo(i,k)  = to(i,k) + delta * to(i,k) * qo(i,k)
+             357     3   p    v                endif
+             358     2   p    m              enddo
+             359     1                     enddo
+             360                     !
+             361                     !  compute moist static energy
+             362                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg, kmax, phil, to, qo, qeso, heo
+                                   <<<      heso
+                                   <<< Loop-information  End >>>
+             363     1  pp                 do k = 1, km
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.15, ITR: 40, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      phil, to, kmax, cnvflg, qo, heo, qeso
+                                   <<<      heso
+                                   <<< Loop-information  End >>>
+             364     2   p    v              do i=1,im
+             365     3   p    v                if (cnvflg(i) .and. k .le. kmax(i)) then
+             366     3               !           tem       = g * zo(i,k) + cp * to(i,k)
+             367     3   p    v                  tem       = phil(i,k) + cp * to(i,k)
+             368     3   p    v                  heo(i,k)  = tem  + hvap * qo(i,k)
+             369     3   p    v                  heso(i,k) = tem  + hvap * qeso(i,k)
+             370     3               !           heo(i,k)  = min(heo(i,k),heso(i,k))
+             371     3   p    v                endif
+             372     2   p    v              enddo
+             373     1   p                 enddo
+             374                     !
+             375                     !  determine level with largest moist static energy within pbl
+             376                     !  this is the level where updraft starts
+             377                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 843
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.77, ITR: 112, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      heo, hmax, kb, cnvflg
+                                   <<< Loop-information  End >>>
+             378     1  pp   2v            do i=1,im
+             379     2   p   2v               if (cnvflg(i)) then
+             380     2   p   2v                  hmax(i) = heo(i,1)
+             381     2   p   2v                  kb(i) = 1
+             382     2   p   2v               endif
+             383     1   p   2v            enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg, kpbl, heo, hmax, kb
+                                   <<< Loop-information  End >>>
+             384     1                     do k = 2, km
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 552
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.83, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      heo, hmax, kpbl, cnvflg, kb
+                                   <<< Loop-information  End >>>
+             385     2  pp    v              do i=1,im
+             386     3   p    v                if (cnvflg(i).and.k.le.kpbl(i)) then
+             387     4   p    v                  if(heo(i,k).gt.hmax(i)) then
+             388     4   p    v                    kb(i)   = k
+             389     4   p    v                    hmax(i) = heo(i,k)
+             390     4   p    v                  endif
+             391     3   p    v                endif
+             392     2   p    v              enddo
+             393     1                     enddo
+             394                     !
+             395     1                     do k = 1, km1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 2  FILL 5
+                                   <<<      SIMD&FP   : SPILL 0  FILL 5
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             396     2   s    s              do i=1,im
+             397     3   p    v                if (cnvflg(i) .and. k .le. kmax(i)-1) then
+             398     3   p    v                  dz      = .5 * (zo(i,k+1) - zo(i,k))
+             399     3   p    v                  dp      = .5 * (pfld(i,k+1) - pfld(i,k))
+             400     3   s    s                  es      = 0.01 * fpvs(to(i,k+1))      ! fpvs is in pa
+             401     3               !cwb qsat
+             402     3               !         t11 = max(1.00001, min(190.999, to(i,k+1)-182.16))
+             403     3               !         ic = int(t11)
+             404     3               !         pqs =pfld(i,k+1)
+             405     3               !         es = min(temx*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic)) &
+             406     3               !                                    *(t11-float(ic)))
+             407     3               !cwb
+             408     3   s    s                  pprime  = pfld(i,k+1) + epsm1 * es
+             409     3   s    s                  qs      = eps * es / pprime
+             410     3   s    s                  dqsdp   = - qs / pprime
+             411     3   s    s                  desdt   = es * (fact1 / to(i,k+1) + fact2 / (to(i,k+1)**2))
+             412     3   p    v                  dqsdt   = qs * pfld(i,k+1) * desdt / (es * pprime)
+             413     3   m    m                  gamma   = el2orc * qeso(i,k+1) / (to(i,k+1)**2)
+             414     3   m    m                  dt      = (g * dz + hvap * dqsdp * dp) / (cp * (1. + gamma))
+             415     3   p    v                  dq      = dqsdt * dt + dqsdp * dp
+             416     3   s    s                  to(i,k) = to(i,k+1) + dt
+             417     3   p    v                  qo(i,k) = qo(i,k+1) + dq
+             418     3   p    v                  po(i,k) = .5 * (pfld(i,k) + pfld(i,k+1))
+             419     3   p    v                endif
+             420     2   p    m              enddo
+             421     1                     enddo
+             422                     !
+             423     1                     do k = 1, km1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 5  FILL 9
+                                   <<<      SIMD&FP   : SPILL 0  FILL 1
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             424     2   s    s              do i=1,im
+             425     3   p    v                if (cnvflg(i) .and. k .le. kmax(i)-1) then
+             426     3   m    m                  qeso(i,k) = 0.01 * fpvs(to(i,k))      ! fpvs is in pa
+             427     3   p    v                  qeso(i,k) = eps * qeso(i,k) / (po(i,k) + epsm1*qeso(i,k))
+             428     3               !cwb qsat
+             429     3               !         t11 = max(1.00001, min(190.999, to(i,k)-182.16))
+             430     3               !         ic = int(t11)
+             431     3               !         pqs =po(i,k)
+             432     3               !         qqq = min(temx*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic)) &
+             433     3               !                                    *(t11-float(ic)))
+             434     3               !         qeso(i,k) = 0.622*qqq/(pqs+epsm1*qqq)
+             435     3               !cwb
+             436     3   p    v                  val1      =             1.e-8
+             437     3   p    v                  qeso(i,k) = max(qeso(i,k), val1)
+             438     3   p    v                  val2      =           1.e-10
+             439     3   p    v                  qo(i,k)   = max(qo(i,k), val2 )
+             440     3               !           qo(i,k)   = min(qo(i,k),qeso(i,k))
+             441     3   m    m                  heo(i,k)  = .5 * g * (zo(i,k) + zo(i,k+1)) + &
+             442     3                                       cp * to(i,k) + hvap * qo(i,k)
+             443     3   p    v                  heso(i,k) = .5 * g * (zo(i,k) + zo(i,k+1)) + &
+             444     3                                       cp * to(i,k) + hvap * qeso(i,k)
+             445     3   p    v                  uo(i,k)   = .5 * (uo(i,k) + uo(i,k+1))
+             446     3   p    v                  vo(i,k)   = .5 * (vo(i,k) + vo(i,k+1))
+             447     3   p    v                endif
+             448     2   p    m              enddo
+             449     1                     enddo
+             450                     !
+             451                     !  look for the level of free convection as cloud base
+             452                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 843
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.60, ITR: 224, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg, kmax, kbcon, flg
+                                   <<< Loop-information  End >>>
+             453     1  pp   2v            do i=1,im
+             454     1   p   2v              flg(i)   = cnvflg(i)
+             455     1   p   2v              if(flg(i)) kbcon(i) = kmax(i)
+             456     1   p   2v            enddo
+             457     1                     do k = 2, km1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 411
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flg
+                                   <<< Loop-information  End >>>
+             458     2  pp    s              do i=1,im
+             459     3   p    m                if (flg(i).and.k.lt.kbm(i)) then
+             460     4   p    s                  if(k.gt.kb(i).and.heo(i,kb(i)).gt.heso(i,k)) then
+             461     4   p    s                    kbcon(i) = k
+             462     4   p    s                    flg(i)   = .false.
+             463     4   p    s                  endif
+             464     3   p    v                endif
+             465     2   p    v              enddo
+             466     1                     enddo
+             467                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 762
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.47, ITR: 96, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      kbcon, kmax, cnvflg
+                                   <<< Loop-information  End >>>
+             468     1  pp   2v            do i=1,im
+             469     2   p   2v              if(cnvflg(i)) then
+             470     2   p   2v                if(kbcon(i).eq.kmax(i)) cnvflg(i) = .false.
+             471     2   p   2v              endif
+             472     1   p   2v            enddo
+             473                     !!
+             474                           totflg = .true.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1600
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<< Loop-information  End >>>
+             475     1  pp    v            do i=1,im
+             476     1   p    v              totflg = totflg .and. (.not. cnvflg(i))
+             477     1   p    v            enddo
+             478                           if(totflg) return
+             479                     !!
+             480                     !
+             481                     !  determine critical convective inhibition
+             482                     !  as a function of vertical velocity at cloud base.
+             483                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 616
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg
+                                   <<< Loop-information  End >>>
+             484     1  pp   2s            do i=1,im
+             485     2   p   2m              if(cnvflg(i)) then
+             486     2   p   2s                pdot(i)  = 10.* dot(i,kbcon(i))
+             487     2   p   2v              endif
+             488     1   p   2v            enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 184
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg
+                                   <<< Loop-information  End >>>
+             489     1  pp    s            do i=1,im
+             490     2   p    m              if(cnvflg(i)) then
+             491     3   p    s                if(slimsk(i).eq.1.) then
+             492     3   p    s                  w1 = w1l
+             493     3   p    s                  w2 = w2l
+             494     3   p    s                  w3 = w3l
+             495     3   p    s                  w4 = w4l
+             496     3   p    s                else
+             497     3   p    s                  w1 = w1s
+             498     3   p    s                  w2 = w2s
+             499     3   p    s                  w3 = w3s
+             500     3   p    s                  w4 = w4s
+             501     3   p    s                endif
+             502     3   p    s                if(pdot(i).le.w4) then
+             503     3   p    s                  ptem = (pdot(i) - w4) / (w3 - w4)
+             504     3   p    s                elseif(pdot(i).ge.-w4) then
+             505     3   p    s                  ptem = - (pdot(i) + w4) / (w4 - w3)
+             506     3   p    s                else
+             507     3   p    s                  ptem = 0.
+             508     3   p    s                endif
+             509     2   p    s                val1    =             -1.
+             510     2   p    s                ptem = max(ptem,val1)
+             511     2   p    s                val2    =             1.
+             512     2   p    s                ptem = min(ptem,val2)
+             513     2   p    s                ptem = 1. - ptem
+             514     2   p    s                ptem1= .5*(cincrmax-cincrmin)
+             515     2   p    s                cincr = cincrmax - ptem * ptem1
+             516     2   p    s                tem1 = pfld(i,kb(i)) - pfld(i,kbcon(i))
+             517     3   p    s                if(tem1.gt.cincr) then
+             518     3   p    s                   cnvflg(i) = .false.
+             519     3   p    s                endif
+             520     2   p    v              endif
+             521     1   p    v            enddo
+             522                     !!
+             523                           totflg = .true.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1600
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<< Loop-information  End >>>
+             524     1  pp    v            do i=1,im
+             525     1   p    v              totflg = totflg .and. (.not. cnvflg(i))
+             526     1   p    v            enddo
+             527                           if(totflg) return
+             528                     !!
+             529                     !
+             530                     !  assume the detrainment rate for the updrafts to be same as
+             531                     !  the entrainment rate at cloud base
+             532                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 640
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg
+                                   <<< Loop-information  End >>>
+             533     1  pp   2s            do i = 1, im
+             534     2   p   2m              if(cnvflg(i)) then
+             535     2   p   2s                xlamud(i) = xlamue(i,kbcon(i))
+             536     2   p   2v              endif
+             537     1   p   2v            enddo
+             538                     !
+             539                     !  determine updraft mass flux for the subcloud layers
+             540                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg, kbcon, kb, xlamue, xlamud, zi
+                                   <<<      eta
+                                   <<< Loop-information  End >>>
+             541     1                     do k = km1, 1, -1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 302
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.70, ITR: 48, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      xlamue, kbcon, xlamud, zi, kb, eta
+                                   <<<      cnvflg
+                                   <<< Loop-information  End >>>
+             542     2  pp    v              do i = 1, im
+             543     3   p    v                if (cnvflg(i)) then
+             544     4   p    v                  if(k.lt.kbcon(i).and.k.ge.kb(i)) then
+             545     4   p    v                    dz       = zi(i,k+1) - zi(i,k)
+             546     4   p    v                    ptem     = 0.5*(xlamue(i,k)+xlamue(i,k+1))-xlamud(i)
+             547     4   p    v                    eta(i,k) = eta(i,k+1) / (1. + ptem * dz)
+             548     4   p    v                  endif
+             549     3   p    v                endif
+             550     2   p    v              enddo
+             551     1                     enddo
+             552                     !
+             553                     !  compute mass flux above cloud base
+             554                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg, kbcon, kmax, xlamue, xlamud, zi
+                                   <<<      eta
+                                   <<< Loop-information  End >>>
+             555     1                     do k = 2, km1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 320
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.82, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      kmax, cnvflg, eta, kbcon, xlamue, xlamud
+                                   <<<      zi
+                                   <<< Loop-information  End >>>
+             556     2  pp    v              do i = 1, im
+             557     3   p    v               if(cnvflg(i))then
+             558     4   p    v                 if(k.gt.kbcon(i).and.k.lt.kmax(i)) then
+             559     4   p    v                    dz       = zi(i,k) - zi(i,k-1)
+             560     4   p    v                    ptem     = 0.5*(xlamue(i,k)+xlamue(i,k-1))-xlamud(i)
+             561     4   p    v                    eta(i,k) = eta(i,k-1) * (1 + ptem * dz)
+             562     4   p    v                 endif
+             563     3   p    v               endif
+             564     2   p    v              enddo
+             565     1                     enddo
+             566                     !
+             567                     !  compute updraft cloud property
+             568                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 433
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg
+                                   <<< Loop-information  End >>>
+             569     1  pp   2s            do i = 1, im
+             570     2   p   2m              if(cnvflg(i)) then
+             571     2   p   2s                indx         = kb(i)
+             572     2   p   2s                hcko(i,indx) = heo(i,indx)
+             573     2   p   2s                ucko(i,indx) = uo(i,indx)
+             574     2   p   2s                vcko(i,indx) = vo(i,indx)
+             575     2   p   2v              endif
+             576     1   p   2v            enddo
+             577                     !
+             578     1                     do k = 2, km1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 135
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg, kb, kmax, heo, xlamue, zi
+                                   <<<      xlamud, hcko, uo, ucko
+                                   <<<    PREFETCH(SOFT) : 12
+                                   <<<     SEQUENTIAL : 12
+                                   <<<      vo: 4, vcko: 4, heso: 2, dbyo: 2
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 1
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             579     2  pp    v              do i = 1, im
+             580     3   p    v                if (cnvflg(i)) then
+             581     4   p    v                  if(k.gt.kb(i).and.k.lt.kmax(i)) then
+             582     4   p    v                    dz   = zi(i,k) - zi(i,k-1)
+             583     4   p    v                    tem  = 0.5 * (xlamue(i,k)+xlamue(i,k-1)) * dz
+             584     4   p    v                    tem1 = 0.5 * xlamud(i) * dz
+             585     4   p    v                    factor = 1. + tem - tem1
+             586     4   p    v                    ptem = 0.5 * tem + pgcon
+             587     4   p    v                    ptem1= 0.5 * tem - pgcon
+             588     4   p    v                    hcko(i,k) = ((1.-tem1)*hcko(i,k-1)+tem*0.5* &
+             589     4                                          (heo(i,k)+heo(i,k-1)))/factor
+             590     4   p    v                    ucko(i,k) = ((1.-tem1)*ucko(i,k-1)+ptem*uo(i,k) &
+             591     4                                          +ptem1*uo(i,k-1))/factor
+             592     4   p    v                    vcko(i,k) = ((1.-tem1)*vcko(i,k-1)+ptem*vo(i,k) &
+             593     4                                          +ptem1*vo(i,k-1))/factor
+             594     4   p    v                    dbyo(i,k) = hcko(i,k) - heso(i,k)
+             595     4   p    v                  endif
+             596     3   p    v                endif
+             597     2   p    v              enddo
+             598     1                     enddo
+             599                     !
+             600                     !   taking account into convection inhibition due to existence of
+             601                     !    dry layers below cloud base
+             602                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 942
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.33, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      kmax, cnvflg, kbcon1, flg
+                                   <<< Loop-information  End >>>
+             603     1  pp   2v            do i=1,im
+             604     1   p   2v              flg(i) = cnvflg(i)
+             605     1   p   2v              kbcon1(i) = kmax(i)
+             606     1   p   2v            enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flg, kbm, kbcon, dbyo, kbcon1
+                                   <<< Loop-information  End >>>
+             607     1                     do k = 2, km1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 517
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.45, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      kbcon, flg, dbyo, kbm, kbcon1
+                                   <<< Loop-information  End >>>
+             608     2  pp    v            do i=1,im
+             609     3   p    v              if (flg(i).and.k.lt.kbm(i)) then
+             610     4   p    v                if(k.ge.kbcon(i).and.dbyo(i,k).gt.0.) then
+             611     4   p    v                  kbcon1(i) = k
+             612     4   p    v                  flg(i)    = .false.
+             613     4   p    v                endif
+             614     3   p    v              endif
+             615     2   p    v            enddo
+             616     1                     enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 762
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.47, ITR: 96, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      kbcon1, kmax, cnvflg
+                                   <<< Loop-information  End >>>
+             617     1  pp   2v            do i=1,im
+             618     2   p   2v              if(cnvflg(i)) then
+             619     2   p   2v                if(kbcon1(i).eq.kmax(i)) cnvflg(i) = .false.
+             620     2   p   2v              endif
+             621     1   p   2v            enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 433
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg
+                                   <<< Loop-information  End >>>
+             622     1  pp   2s            do i=1,im
+             623     2   p   2m              if(cnvflg(i)) then
+             624     2   p   2s                tem = pfld(i,kbcon(i)) - pfld(i,kbcon1(i))
+             625     3   p   2s                if(tem.gt.dthk) then
+             626     3   p   2s                   cnvflg(i) = .false.
+             627     3   p   2s                endif
+             628     2   p   2v              endif
+             629     1   p   2v            enddo
+             630                     !!
+             631                           totflg = .true.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1600
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<< Loop-information  End >>>
+             632     1  pp    v            do i = 1, im
+             633     1   p    v              totflg = totflg .and. (.not. cnvflg(i))
+             634     1   p    v            enddo
+             635                           if(totflg) return
+             636                     !!
+             637                     !
+             638                     !  determine first guess cloud top as the level of zero buoyancy
+             639                     !    limited to the level of sigma=0.7
+             640                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 843
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.60, ITR: 224, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg, kbm, ktcon, flg
+                                   <<< Loop-information  End >>>
+             641     1  pp   2v            do i = 1, im
+             642     1   p   2v              flg(i) = cnvflg(i)
+             643     1   p   2v              if(flg(i)) ktcon(i) = kbm(i)
+             644     1   p   2v            enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flg, kbm, kbcon1, dbyo, ktcon
+                                   <<< Loop-information  End >>>
+             645     1                     do k = 2, km1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 517
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.45, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      kbcon1, flg, dbyo, kbm, ktcon
+                                   <<< Loop-information  End >>>
+             646     2  pp    v            do i=1,im
+             647     3   p    v              if (flg(i).and.k .lt. kbm(i)) then
+             648     4   p    v                if(k.gt.kbcon1(i).and.dbyo(i,k).lt.0.) then
+             649     4   p    v                   ktcon(i) = k
+             650     4   p    v                   flg(i)   = .false.
+             651     4   p    v                endif
+             652     3   p    v              endif
+             653     2   p    v            enddo
+             654     1                     enddo
+             655                     !
+             656                     !  turn off shallow convection if cloud top is less than pbl top
+             657                     !
+             658                     !     do i=1,im
+             659                     !       if(cnvflg(i)) then
+             660                     !         kk = kpbl(i)+1
+             661                     !         if(ktcon(i).le.kk) cnvflg(i) = .false.
+             662                     !       endif
+             663                     !     enddo
+             664                     !!
+             665                     !     totflg = .true.
+             666                     !     do i = 1, im
+             667                     !       totflg = totflg .and. (.not. cnvflg(i))
+             668                     !     enddo
+             669                     !     if(totflg) return
+             670                     !!
+             671                     !
+             672                     !  specify upper limit of mass flux at cloud base
+             673                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 534
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg
+                                   <<< Loop-information  End >>>
+             674     1  pp   2s            do i = 1, im
+             675     2   p   2m              if(cnvflg(i)) then
+             676     2               !         xmbmax(i) = .1
+             677     2               !
+             678     2   p   2s                k = kbcon(i)
+             679     2   p   2s                dp = 1000. * del(i,k)
+             680     2   p   2s                xmbmax(i) = dp / (g * dt2)
+             681     2               !
+             682     2               !         tem = dp / (g * dt2)
+             683     2               !         xmbmax(i) = min(tem, xmbmax(i))
+             684     2   p   2v              endif
+             685     1   p   2v            enddo
+             686                     !
+             687                     !  compute cloud moisture property and precipitation
+             688                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 572
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg
+                                   <<< Loop-information  End >>>
+             689     1  pp   2s            do i = 1, im
+             690     2   p   2m              if (cnvflg(i)) then
+             691     2   p   2s                aa1(i) = 0.
+             692     2   p   2s                qcko(i,kb(i)) = qo(i,kb(i))
+             693     2   p   2v              endif
+             694     1   p   2v            enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    UNSWITCHING
+                                   <<< Loop-information  End >>>
+             695     1                     do k = 2, km1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 124
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg, kb, ktcon, kbcon, eta, xlamue
+                                   <<<      zi, xlamud, qo, qcko, to, qeso, dbyo
+                                   <<<    PREFETCH(SOFT) : 20
+                                   <<<     SEQUENTIAL : 20
+                                   <<<      del: 2, aa1: 4, eta: 4, dellal: 2
+                                   <<<      qcko: 4, pwo: 4
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 2
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             696     2  pp    v              do i = 1, im
+             697     3   p    v                if (cnvflg(i)) then
+             698     4   p    v                  if(k.gt.kb(i).and.k.lt.ktcon(i)) then
+             699     4   p    v                    dz    = zi(i,k) - zi(i,k-1)
+             700     4   p    v                    gamma = el2orc * qeso(i,k) / (to(i,k)**2)
+             701     4   p    v                    qrch = qeso(i,k) &
+             702     4                                  + gamma * dbyo(i,k) / (hvap * (1. + gamma))
+             703     4               !j
+             704     4   p    v                    tem  = 0.5 * (xlamue(i,k)+xlamue(i,k-1)) * dz
+             705     4   p    v                    tem1 = 0.5 * xlamud(i) * dz
+             706     4   p    v                    factor = 1. + tem - tem1
+             707     4   p    v                    qcko(i,k) = ((1.-tem1)*qcko(i,k-1)+tem*0.5* &
+             708     4                                          (qo(i,k)+qo(i,k-1)))/factor
+             709     4               !j
+             710     4   p    v                    dq = eta(i,k) * (qcko(i,k) - qrch)
+             711     4               !
+             712     4               !             rhbar(i) = rhbar(i) + qo(i,k) / qeso(i,k)
+             713     4               !
+             714     4               !  below lfc check if there is excess moisture to release latent heat
+             715     4               !
+             716     5   p    v                    if(k.ge.kbcon(i).and.dq.gt.0.) then
+             717     5   p    v                      etah = .5 * (eta(i,k) + eta(i,k-1))
+             718     6   p    v                      if(ncloud.gt.0.) then
+             719     6   p    v                        dp = 1000. * del(i,k)
+             720     6   p    v                        qlk = dq / (eta(i,k) + etah * (c0 + c1) * dz)
+             721     6   p    v                        dellal(i,k) = etah * c1 * dz * qlk * g / dp
+             722     6   p    v                      else
+             723     6   p    v                        qlk = dq / (eta(i,k) + etah * c0 * dz)
+             724     6   p    v                      endif
+             725     5   p    v                      aa1(i) = aa1(i) - dz * g * qlk
+             726     5   p    v                      qcko(i,k)= qlk + qrch
+             727     5   p    v                      pwo(i,k) = etah * c0 * dz * qlk
+             728     5   p    v                    endif
+             729     4   p    v                  endif
+             730     3   p    v                endif
+             731     2   p    v              enddo
+             732     1                     enddo
+             733                     !
+             734                     !  calculate cloud work function
+             735                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg, kbcon, ktcon, to, qeso, zo, dbyo
+                                   <<<      qo, aa1
+                                   <<< Loop-information  End >>>
+             736     1                     do k = 2, km1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 193
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.52, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      zo, to, qeso, qo, dbyo, cnvflg, aa1
+                                   <<<      kbcon, ktcon
+                                   <<< Loop-information  End >>>
+             737     2  pp    v              do i = 1, im
+             738     3   p    v                if (cnvflg(i)) then
+             739     4   p    v                  if(k.ge.kbcon(i).and.k.lt.ktcon(i)) then
+             740     4   p    v                    dz1 = zo(i,k+1) - zo(i,k)
+             741     4   p    v                    gamma = el2orc * qeso(i,k) / (to(i,k)**2)
+             742     4   p    v                    rfact =  1. + delta * cp * gamma &
+             743     4                                      * to(i,k) / hvap
+             744     4   p    v                    aa1(i) = aa1(i) +                        &
+             745     4                                      dz1 * (g / (cp * to(i,k)))      &
+             746     4                                      * dbyo(i,k) / (1. + gamma)      &
+             747     4                                      * rfact
+             748     4   p    v                    val = 0.
+             749     4   p    v                    aa1(i)=aa1(i)+                           &
+             750     4                                      dz1 * g * delta *               &
+             751     4                                      max(val,(qeso(i,k) - qo(i,k)))
+             752     4   p    v                  endif
+             753     3   p    v                endif
+             754     2   p    v              enddo
+             755     1                     enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.55, ITR: 128, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg, aa1
+                                   <<< Loop-information  End >>>
+             756     1  pp   2v            do i = 1, im
+             757     1   p   2v              if(cnvflg(i).and.aa1(i).le.0.) cnvflg(i) = .false.
+             758     1   p   2v            enddo
+             759                     !!
+             760                           totflg = .true.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1600
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<< Loop-information  End >>>
+             761     1  pp    v            do i=1,im
+             762     1   p    v              totflg = totflg .and. (.not. cnvflg(i))
+             763     1   p    v            enddo
+             764                           if(totflg) return
+             765                     !!
+             766                     !
+             767                     !  estimate the onvective overshooting as the level
+             768                     !    where the [aafac * cloud work function] becomes zero,
+             769                     !    which is the final cloud top
+             770                     !    limited to the level of sigma=0.7
+             771                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 942
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.27, ITR: 96, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      aa1, cnvflg
+                                   <<< Loop-information  End >>>
+             772     1  pp   2v            do i = 1, im
+             773     2   p   2v              if (cnvflg(i)) then
+             774     2   p   2v                aa1(i) = aafac * aa1(i)
+             775     2   p   2v              endif
+             776     1   p   2v            enddo
+             777                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 942
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.33, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      kbm, cnvflg, ktcon1, flg
+                                   <<< Loop-information  End >>>
+             778     1  pp   2v            do i = 1, im
+             779     1   p   2v              flg(i) = cnvflg(i)
+             780     1   p   2v              ktcon1(i) = kbm(i)
+             781     1   p   2v            enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flg, ktcon, kbm, to, qeso, zo, dbyo, aa1
+                                   <<<      ktcon1
+                                   <<< Loop-information  End >>>
+             782     1                     do k = 2, km1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 217
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.50, ITR: 56, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ktcon, kbm, to, qeso, aa1, flg, zo, dbyo
+                                   <<<      ktcon1
+                                   <<< Loop-information  End >>>
+             783     2  pp    v              do i = 1, im
+             784     3   p    v                if (flg(i)) then
+             785     4   p    v                  if(k.ge.ktcon(i).and.k.lt.kbm(i)) then
+             786     4   p    v                    dz1 = zo(i,k+1) - zo(i,k)
+             787     4   p    v                    gamma = el2orc * qeso(i,k) / (to(i,k)**2)
+             788     4   p    v                    rfact =  1. + delta * cp * gamma    &
+             789     4                                      * to(i,k) / hvap
+             790     4   p    v                    aa1(i) = aa1(i) +                   &
+             791     4                                      dz1 * (g / (cp * to(i,k))) &
+             792     4                                      * dbyo(i,k) / (1. + gamma) &
+             793     4                                      * rfact
+             794     5   p    v                    if(aa1(i).lt.0.) then
+             795     5   p    v                      ktcon1(i) = k
+             796     5   p    v                      flg(i) = .false.
+             797     5   p    v                    endif
+             798     4   p    v                  endif
+             799     3   p    v                endif
+             800     2   p    v              enddo
+             801     1                     enddo
+             802                     !
+             803                     !  compute cloud moisture property, detraining cloud water
+             804                     !    and precipitation in overshooting layers
+             805                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    UNSWITCHING
+                                   <<< Loop-information  End >>>
+             806     1                     do k = 2, km1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 138
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.85, ITR: 64, MVE: 4, POL: L)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg, ktcon, ktcon1, qo, xlamue, zi
+                                   <<<      xlamud, qcko, to, qeso, dbyo, eta
+                                   <<<    PREFETCH(SOFT) : 24
+                                   <<<     SEQUENTIAL : 24
+                                   <<<      del: 2, dellal: 2, qcko: 10, pwo: 10
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 1
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             807     2  pp    v              do i = 1, im
+             808     3   p    v                if (cnvflg(i)) then
+             809     4   p    v                  if(k.ge.ktcon(i).and.k.lt.ktcon1(i)) then
+             810     4   p    v                    dz    = zi(i,k) - zi(i,k-1)
+             811     4   p    v                    gamma = el2orc * qeso(i,k) / (to(i,k)**2)
+             812     4   p    v                    qrch = qeso(i,k) + gamma * dbyo(i,k) / (hvap * (1. + gamma))
+             813     4               !j
+             814     4   p    v                    tem  = 0.5 * (xlamue(i,k)+xlamue(i,k-1)) * dz
+             815     4   p    v                    tem1 = 0.5 * xlamud(i) * dz
+             816     4   p    v                    factor = 1. + tem - tem1
+             817     4   p    v                    qcko(i,k) = ((1.-tem1)*qcko(i,k-1)+tem*0.5*  &
+             818     4                                          (qo(i,k)+qo(i,k-1)))/factor
+             819     4               !j
+             820     4   p    v                    dq = eta(i,k) * (qcko(i,k) - qrch)
+             821     4               !
+             822     4               !  check if there is excess moisture to release latent heat
+             823     4               !
+             824     5   p    v                    if(dq.gt.0.) then
+             825     5   p    v                      etah = .5 * (eta(i,k) + eta(i,k-1))
+             826     6   p    v                      if(ncloud.gt.0.) then
+             827     6   p    v                        dp = 1000. * del(i,k)
+             828     6   p    v                        qlk = dq / (eta(i,k) + etah * (c0 + c1) * dz)
+             829     6   p    v                        dellal(i,k) = etah * c1 * dz * qlk * g / dp
+             830     6   p    v                      else
+             831     6   p    v                        qlk = dq / (eta(i,k) + etah * c0 * dz)
+             832     6   p    v                      endif
+             833     5   p    v                      qcko(i,k) = qlk + qrch
+             834     5   p    v                      pwo(i,k) = etah * c0 * dz * qlk
+             835     5   p    v                    endif
+             836     4   p    v                  endif
+             837     3   p    v                endif
+             838     2   p    v              enddo
+             839     1                     enddo
+             840                     !
+             841                     ! exchange ktcon with ktcon1
+             842                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 728
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.12, ITR: 256, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ktcon, ktcon1, cnvflg
+                                   <<< Loop-information  End >>>
+             843     1  pp   2v            do i = 1, im
+             844     2   p   2v              if(cnvflg(i)) then
+             845     2   p   2v                kk = ktcon(i)
+             846     2   p   2v                ktcon(i) = ktcon1(i)
+             847     2   p   2v                ktcon1(i) = kk
+             848     2   p   2v              endif
+             849     1   p   2v            enddo
+             850                     !
+             851                     !  this section is ready for cloud water
+             852                     !
+             853     1                     if(ncloud.gt.0) then
+             854     1               !
+             855     1               !  compute liquid and vapor separation at cloud top
+             856     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 302
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.73, ITR: 80, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ktcon, cnvflg, qlko_ktcon
+                                   <<< Loop-information  End >>>
+             857     2  pp    v            do i = 1, im
+             858     3   p    v              if(cnvflg(i)) then
+             859     3   p    v                k = ktcon(i) - 1
+             860     3   p    v                gamma = el2orc * qeso(i,k) / (to(i,k)**2)
+             861     3   p    v                qrch = qeso(i,k) &
+             862     3                              + gamma * dbyo(i,k) / (hvap * (1. + gamma))
+             863     3   p    v                dq = qcko(i,k) - qrch
+             864     3               !
+             865     3               !  check if there is excess moisture to release latent heat
+             866     3               !
+             867     4   p    v                if(dq.gt.0.) then
+             868     4   p    v                  qlko_ktcon(i) = dq
+             869     4   p    v                  qcko(i,k) = qrch
+             870     4   p    v                endif
+             871     3   p    v              endif
+             872     2   p    v            enddo
+             873     1                     endif
+             874                     !
+             875                     !--- compute precipitation efficiency in terms of windshear
+             876                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1231
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.50, ITR: 144, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vshear, cnvflg
+                                   <<< Loop-information  End >>>
+             877     1  pp   2v            do i = 1, im
+             878     2   p   2v              if(cnvflg(i)) then
+             879     2   p   2v                vshear(i) = 0.
+             880     2   p   2v              endif
+             881     1   p   2v            enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg, kb, ktcon, uo, vo, vshear
+                                   <<< Loop-information  End >>>
+             882     1                     do k = 2, km
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 334
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.65, ITR: 48, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vo, ktcon, vshear, cnvflg, uo, kb
+                                   <<< Loop-information  End >>>
+             883     2  pp    v              do i = 1, im
+             884     3   p    v                if (cnvflg(i)) then
+             885     4   p    v                  if(k.gt.kb(i).and.k.le.ktcon(i)) then
+             886     4   p    v                    shear= sqrt((uo(i,k)-uo(i,k-1)) ** 2  &
+             887     4                                       + (vo(i,k)-vo(i,k-1)) ** 2)
+             888     4   p    v                    vshear(i) = vshear(i) + shear
+             889     4   p    v                  endif
+             890     3   p    v                endif
+             891     2   p    v              enddo
+             892     1                     enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 223
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg
+                                   <<< Loop-information  End >>>
+             893     1  pp    s            do i = 1, im
+             894     2   p    m              if(cnvflg(i)) then
+             895     2   p    s                vshear(i) = 1.e3 * vshear(i) / (zi(i,ktcon(i))-zi(i,kb(i)))
+             896     2   p    s                e1=1.591-.639*vshear(i) &
+             897     2                            +.0953*(vshear(i)**2)-.00496*(vshear(i)**3)
+             898     2   p    s                edt(i)=1.-e1
+             899     2   p    s                val =         .9
+             900     2   p    s                edt(i) = min(edt(i),val)
+             901     2   p    s                val =         .0
+             902     2   p    s                edt(i) = max(edt(i),val)
+             903     2   p    v              endif
+             904     1   p    v            enddo
+             905                     !
+             906                     !--- what would the change be, that a cloud with unit mass
+             907                     !--- will do to the environment?
+             908                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg, kmax, dellah, dellaq, dellau
+                                   <<<      dellav
+                                   <<< Loop-information  End >>>
+             909     1  pp                 do k = 1, km
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.83, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg, kmax, dellah, dellaq, dellau
+                                   <<<      dellav
+                                   <<< Loop-information  End >>>
+             910     2   p    v              do i = 1, im
+             911     3   p    v                if(cnvflg(i) .and. k .le. kmax(i)) then
+             912     3   p    v                  dellah(i,k) = 0.
+             913     3   p    v                  dellaq(i,k) = 0.
+             914     3   p    v                  dellau(i,k) = 0.
+             915     3   p    v                  dellav(i,k) = 0.
+             916     3   p    v                endif
+             917     2   p    v              enddo
+             918     1   p                 enddo
+             919                     !
+             920                     !--- changed due to subsidence and entrainment
+             921                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             922     1  pp                 do k = 2, km1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg, kb, ktcon, heo, eta, xlamue, zi
+                                   <<<      hcko, xlamud, del, dellah
+                                   <<<    PREFETCH(SOFT) : 30
+                                   <<<     SEQUENTIAL : 30
+                                   <<<      qcko: 4, qo: 4, dellaq: 2, ucko: 4
+                                   <<<      uo: 4, dellau: 2, vcko: 4, vo: 4
+                                   <<<      dellav: 2
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 6
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             923     2   p    v              do i = 1, im
+             924     3   p    v                if (cnvflg(i)) then
+             925     4   p    v                  if(k.gt.kb(i).and.k.lt.ktcon(i)) then
+             926     4   p    v                    dp = 1000. * del(i,k)
+             927     4   p    v                    dz = zi(i,k) - zi(i,k-1)
+             928     4               !
+             929     4   p    v                    dv1h = heo(i,k)
+             930     4   p    v                    dv2h = .5 * (heo(i,k) + heo(i,k-1))
+             931     4   p    v                    dv3h = heo(i,k-1)
+             932     4   p    v                    dv1q = qo(i,k)
+             933     4   p    v                    dv2q = .5 * (qo(i,k) + qo(i,k-1))
+             934     4   p    v                    dv3q = qo(i,k-1)
+             935     4   p    v                    dv1u = uo(i,k)
+             936     4   p    v                    dv2u = .5 * (uo(i,k) + uo(i,k-1))
+             937     4   p    v                    dv3u = uo(i,k-1)
+             938     4   p    v                    dv1v = vo(i,k)
+             939     4   p    v                    dv2v = .5 * (vo(i,k) + vo(i,k-1))
+             940     4   p    v                    dv3v = vo(i,k-1)
+             941     4               !
+             942     4   p    v                    tem  = 0.5 * (xlamue(i,k)+xlamue(i,k-1))
+             943     4   p    v                    tem1 = xlamud(i)
+             944     4               !
+             945     4   p    v                    dellah(i,k) = dellah(i,k) +                               &
+             946     4                          ( eta(i,k)*dv1h - eta(i,k-1)*dv3h                            &
+             947     4                         -  tem*eta(i,k-1)*dv2h*dz                                     &
+             948     4                         +  tem1*eta(i,k-1)*.5*(hcko(i,k)+hcko(i,k-1))*dz              &
+             949     4                              ) *g/dp
+             950     4               !
+             951     4   p    v                    dellaq(i,k) = dellaq(i,k) +                               &
+             952     4                          ( eta(i,k)*dv1q - eta(i,k-1)*dv3q                            &
+             953     4                         -  tem*eta(i,k-1)*dv2q*dz                                     &
+             954     4                         +  tem1*eta(i,k-1)*.5*(qcko(i,k)+qcko(i,k-1))*dz              &
+             955     4                              ) *g/dp
+             956     4               !
+             957     4   p    v                    dellau(i,k) = dellau(i,k) +                               &
+             958     4                          ( eta(i,k)*dv1u - eta(i,k-1)*dv3u                            &
+             959     4                         -  tem*eta(i,k-1)*dv2u*dz                                     &
+             960     4                         +  tem1*eta(i,k-1)*.5*(ucko(i,k)+ucko(i,k-1))*dz              &
+             961     4                         -  pgcon*eta(i,k-1)*(dv1u-dv3u)                               &
+             962     4                              ) *g/dp
+             963     4               !
+             964     4   p    v                    dellav(i,k) = dellav(i,k) +                               &
+             965     4                          ( eta(i,k)*dv1v - eta(i,k-1)*dv3v                            &
+             966     4                         -  tem*eta(i,k-1)*dv2v*dz                                     &
+             967     4                         +  tem1*eta(i,k-1)*.5*(vcko(i,k)+vcko(i,k-1))*dz              &
+             968     4                         -  pgcon*eta(i,k-1)*(dv1v-dv3v)                               &
+             969     4                              ) *g/dp
+             970     4               !
+             971     4   p    v                  endif
+             972     3   p    v                endif
+             973     2   p    v              enddo
+             974     1   p                 enddo
+             975                     !
+             976                     !------- cloud top
+             977                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 159
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg
+                                   <<< Loop-information  End >>>
+             978     1  pp    s            do i = 1, im
+             979     2   p    m              if(cnvflg(i)) then
+             980     2   p    s                indx = ktcon(i)
+             981     2   p    s                dp = 1000. * del(i,indx)
+             982     2   p    s                dv1h = heo(i,indx-1)
+             983     2   p    s                dellah(i,indx) = eta(i,indx-1) * (hcko(i,indx-1) - dv1h) * g / dp
+             984     2   p    s                dv1q = qo(i,indx-1)
+             985     2   p    s                dellaq(i,indx) = eta(i,indx-1) * (qcko(i,indx-1) - dv1q) * g / dp
+             986     2   p    s                dv1u = uo(i,indx-1)
+             987     2   p    s                dellau(i,indx) = eta(i,indx-1) * (ucko(i,indx-1) - dv1u) * g / dp
+             988     2   p    s                dv1v = vo(i,indx-1)
+             989     2   p    s                dellav(i,indx) = eta(i,indx-1) * (vcko(i,indx-1) - dv1v) * g / dp
+             990     2               !
+             991     2               !  cloud water
+             992     2               !
+             993     2   p    s                dellal(i,indx) = eta(i,indx-1) * qlko_ktcon(i) * g / dp
+             994     2   p    v              endif
+             995     1   p    v            enddo
+             996                     !
+             997                     !  mass flux at cloud base for shallow convection
+             998                     !  (Grant, 2001)
+             999                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 39
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg
+                                   <<< Loop-information  End >>>
+            1000     1  pp    s            do i= 1, im
+            1001     2   p    m              if(cnvflg(i)) then
+            1002     2   p    s                k = kbcon(i)
+            1003     2               !         ptem = g*sflx(i)*zi(i,k)/t1(i,1)
+            1004     2   p    s                ptem = g*sflx(i)*hpbl(i)/t1(i,1)
+            1005     2   p    s                wstar(i) = ptem**h1
+            1006     2   p    s                tem = po(i,k)*100. / (rd*t1(i,k))
+            1007     2   p    s                xmb(i) = betaw*tem*wstar(i)
+            1008     2   p    s                xmb(i) = min(xmb(i),xmbmax(i))
+            1009     2   p    v              endif
+            1010     1   p    v            enddo
+            1011                     !
+            1012                     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            1013                     !
+            1014     1                     do k = 1, km
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg
+                                   <<< Loop-information  End >>>
+            1015     2   s    s              do i = 1, im
+            1016     3   p    v                if (cnvflg(i) .and. k .le. kmax(i)) then
+            1017     3   m    m                  qeso(i,k) = 0.01 * fpvs(t1(i,k))      ! fpvs is in pa
+            1018     3   p    v                  qeso(i,k) = eps * qeso(i,k) / (pfld(i,k) + epsm1*qeso(i,k))
+            1019     3               !cwb qsat
+            1020     3               !         t11 = max(1.00001, min(190.999, t1(i,k)-182.16))
+            1021     3               !         ic = int(t11)
+            1022     3               !         pqs =pfld(i,k)
+            1023     3               !         qqq = min(temx*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic)) &
+            1024     3               !                                    *(t11-float(ic)))
+            1025     3               !         qeso(i,k) = 0.622*qqq/(pqs+epsm1*qqq)
+            1026     3               !cwb
+            1027     3   p    v                  val     =             1.e-8
+            1028     3   p    v                  qeso(i,k) = max(qeso(i,k), val )
+            1029     3   p    v                endif
+            1030     2   p    m              enddo
+            1031     1                     enddo
+            1032                     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            1033                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 696
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qcond, delvbar, delubar, deltbar
+                                   <<<      delqbar, delhbar
+                                   <<< Loop-information  End >>>
+            1034     1  pp   2v            do i = 1, im
+            1035     1   p   2v              delhbar(i) = 0.
+            1036     1   p   2v              delqbar(i) = 0.
+            1037     1   p   2v              deltbar(i) = 0.
+            1038     1   p   2v              delubar(i) = 0.
+            1039     1   p   2v              delvbar(i) = 0.
+            1040     1   p   2v              qcond(i) = 0.
+            1041     1   p   2v            enddo
+            1042     1                     do k = 1, km
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 104
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg, kb, ktcon, dellah, dellaq, xmb
+                                   <<<      t1, q1, dellau, rcs, u1, dellav, v1, del
+                                   <<<      delhbar, delqbar
+                                   <<<    PREFETCH(SOFT) : 6
+                                   <<<     SEQUENTIAL : 6
+                                   <<<      deltbar: 2, delubar: 2, delvbar: 2
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 1
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+            1043     2  pp    v              do i = 1, im
+            1044     3   p    v                if (cnvflg(i)) then
+            1045     4   p    v                  if(k.gt.kb(i).and.k.le.ktcon(i)) then
+            1046     4   p    v                    dellat = (dellah(i,k) - hvap * dellaq(i,k)) / cp
+            1047     4   p    v                    t1(i,k) = t1(i,k) + dellat * xmb(i) * dt2
+            1048     4   p    v                    q1(i,k) = q1(i,k) + dellaq(i,k) * xmb(i) * dt2
+            1049     4   p    v                    tem = 1./rcs(i)
+            1050     4   p    v                    u1(i,k) = u1(i,k) + dellau(i,k) * xmb(i) * dt2 * tem
+            1051     4   p    v                    v1(i,k) = v1(i,k) + dellav(i,k) * xmb(i) * dt2 * tem
+            1052     4   p    v                    dp = 1000. * del(i,k)
+            1053     4   p    v                    delhbar(i) = delhbar(i) + dellah(i,k)*xmb(i)*dp/g
+            1054     4   p    v                    delqbar(i) = delqbar(i) + dellaq(i,k)*xmb(i)*dp/g
+            1055     4   p    v                    deltbar(i) = deltbar(i) + dellat*xmb(i)*dp/g
+            1056     4   p    v                    delubar(i) = delubar(i) + dellau(i,k)*xmb(i)*dp/g
+            1057     4   p    v                    delvbar(i) = delvbar(i) + dellav(i,k)*xmb(i)*dp/g
+            1058     4   p    v                  endif
+            1059     3   p    v                endif
+            1060     2   p    v              enddo
+            1061     1                     enddo
+            1062     1                     do k = 1, km
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg
+                                   <<< Loop-information  End >>>
+            1063     2   s    s              do i = 1, im
+            1064     3   p    v                if (cnvflg(i)) then
+            1065     4   p    v                  if(k.gt.kb(i).and.k.le.ktcon(i)) then
+            1066     4   m    m                    qeso(i,k) = 0.01 * fpvs(t1(i,k))      ! fpvs is in pa
+            1067     4   p    v                    qeso(i,k) = eps * qeso(i,k)/(pfld(i,k) + epsm1*qeso(i,k))
+            1068     4               !cwb qsat
+            1069     4               !         t11 = max(1.00001, min(190.999, t1(i,k)-182.16))
+            1070     4               !         ic = int(t11)
+            1071     4               !         pqs =pfld(i,k)
+            1072     4               !         qqq = min(temx*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic)) &
+            1073     4               !                                    *(t11-float(ic)))
+            1074     4               !         qeso(i,k) = 0.622*qqq/(pqs+epsm1*qqq)
+            1075     4               !cwb
+            1076     4   p    v                    val     =             1.e-8
+            1077     4   p    v                    qeso(i,k) = max(qeso(i,k), val )
+            1078     4   p    v                  endif
+            1079     3   p    v                endif
+            1080     2   p    m              enddo
+            1081     1                     enddo
+            1082                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 800
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.88, ITR: 64, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flg, delq2, delqev, cnvflg, rntot
+                                   <<< Loop-information  End >>>
+            1083     1  pp   2v            do i = 1, im
+            1084     1   p   2v              rntot(i) = 0.
+            1085     1   p   2v              delqev(i) = 0.
+            1086     1   p   2v              delq2(i) = 0.
+            1087     1   p   2v              flg(i) = cnvflg(i)
+            1088     1   p   2v            enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg, ktcon, kb, pwo, xmb, rntot
+                                   <<< Loop-information  End >>>
+            1089     1                     do k = km, 1, -1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 433
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.54, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ktcon, pwo, xmb, rntot, kb, cnvflg
+                                   <<< Loop-information  End >>>
+            1090     2  pp    v              do i = 1, im
+            1091     3   p    v                if (cnvflg(i)) then
+            1092     4   p    v                  if(k.lt.ktcon(i).and.k.gt.kb(i)) then
+            1093     4   p    v                    rntot(i) = rntot(i) + pwo(i,k) * xmb(i) * .001 * dt2
+            1094     4   p    v                  endif
+            1095     3   p    v                endif
+            1096     2   p    v              enddo
+            1097     1                     enddo
+            1098                     !
+            1099                     ! evaporating rain
+            1100                     !
+            1101     1                     do k = km, 1, -1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 27
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      kmax, flg, ktcon, edt, q1, t1, qeso
+                                   <<<      cnvflg, del, qcond, kb, pwo, xmb, rn
+                                   <<<      delqev, delq2
+                                   <<<    PREFETCH(SOFT) : 14
+                                   <<<     SEQUENTIAL : 14
+                                   <<<      rntot: 2, qevap: 2, delqbar: 2, delq: 2
+                                   <<<      dellaq: 2, deltv: 2, deltbar: 2
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 6
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+            1102     2  pp    v              do i = 1, im
+            1103     3   p    v                if (k .le. kmax(i)) then
+            1104     3   p    v                  deltv(i) = 0.
+            1105     3   p    v                  delq(i) = 0.
+            1106     3   p    v                  qevap(i) = 0.
+            1107     4   p    v                  if(cnvflg(i)) then
+            1108     5   p    v                    if(k.lt.ktcon(i).and.k.gt.kb(i)) then
+            1109     5   p    v                      rn(i) = rn(i) + pwo(i,k) * xmb(i) * .001 * dt2
+            1110     5   p    v                    endif
+            1111     4   p    v                  endif
+            1112     4   p    v                  if(flg(i).and.k.lt.ktcon(i)) then
+            1113     4   p    v                    evef = edt(i) * evfact
+            1114     4   p    v                    if(slimsk(i).eq.1.) evef=edt(i) * evfactl
+            1115     4               !             if(slimsk(i).eq.1.) evef=.07
+            1116     4               !             if(slimsk(i).ne.1.) evef = 0.
+            1117     4   p    v                    qcond(i) = evef * (q1(i,k) - qeso(i,k))  &
+            1118     4                                      / (1. + el2orc * qeso(i,k) / t1(i,k)**2)
+            1119     4   p    v                    dp = 1000. * del(i,k)
+            1120     5   p    v                    if(rn(i).gt.0..and.qcond(i).lt.0.) then
+            1121     5   p    v                      qevap(i) = -qcond(i) * (1.-exp(-.32*sqrt(dt2*rn(i))))
+            1122     5   p    v                      qevap(i) = min(qevap(i), rn(i)*1000.*g/dp)
+            1123     5   p    v                      delq2(i) = delqev(i) + .001 * qevap(i) * dp / g
+            1124     5   p    v                    endif
+            1125     5   p    v                    if(rn(i).gt.0..and.qcond(i).lt.0..and.  &
+            1126     5                                delq2(i).gt.rntot(i)) then
+            1127     5   p    v                      qevap(i) = 1000.* g * (rntot(i) - delqev(i)) / dp
+            1128     5   p    v                      flg(i) = .false.
+            1129     5   p    v                    endif
+            1130     5   p    v                    if(rn(i).gt.0..and.qevap(i).gt.0.) then
+            1131     5   p    v                      tem  = .001 * dp / g
+            1132     5   p    v                      tem1 = qevap(i) * tem
+            1133     6   p    v                      if(tem1.gt.rn(i)) then
+            1134     6   p    v                        qevap(i) = rn(i) / tem
+            1135     6   p    v                        rn(i) = 0.
+            1136     6   p    v                      else
+            1137     6   p    v                        rn(i) = rn(i) - tem1
+            1138     6   p    v                      endif
+            1139     5   p    v                      q1(i,k) = q1(i,k) + qevap(i)
+            1140     5   p    v                      t1(i,k) = t1(i,k) - elocp * qevap(i)
+            1141     5   p    v                      deltv(i) = - elocp*qevap(i)/dt2
+            1142     5   p    v                      delq(i) =  + qevap(i)/dt2
+            1143     5   p    v                      delqev(i) = delqev(i) + .001*dp*qevap(i)/g
+            1144     5   p    v                    endif
+            1145     4   p    v                    dellaq(i,k) = dellaq(i,k) + delq(i) / xmb(i)
+            1146     4   p    v                    delqbar(i) = delqbar(i) + delq(i)*dp/g
+            1147     4   p    v                    deltbar(i) = deltbar(i) + deltv(i)*dp/g
+            1148     4   p    v                  endif
+            1149     3   p    v                endif
+            1150     2   p    v              enddo
+            1151     1                     enddo
+            1152                     !j
+            1153                     !     do i = 1, im
+            1154                     !     if(me.eq.31.and.cnvflg(i)) then
+            1155                     !     if(cnvflg(i)) then
+            1156                     !       print *, ' shallow delhbar, delqbar, deltbar = ',
+            1157                     !    &             delhbar(i),hvap*delqbar(i),cp*deltbar(i)
+            1158                     !       print *, ' shallow delubar, delvbar = ',delubar(i),delvbar(i)
+            1159                     !       print *, ' precip =', hvap*rn(i)*1000./dt2
+            1160                     !       print*,'pdif= ',pfld(i,kbcon(i))-pfld(i,ktcon(i))
+            1161                     !     endif
+            1162                     !     enddo
+            1163                     !j
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 422
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.69, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flg, cnvflg, ktcon, kbcon, ktop, kbot
+                                   <<<      rn, kcnv
+                                   <<< Loop-information  End >>>
+            1164     1  pp    v            do i = 1, im
+            1165     2   p    v              if(cnvflg(i)) then
+            1166     2   p    v                if(rn(i).lt.0..or..not.flg(i)) rn(i) = 0.
+            1167     2   p    v                ktop(i) = ktcon(i)
+            1168     2   p    v                kbot(i) = kbcon(i)
+            1169     2   p    v                kcnv(i) = 0
+            1170     2   p    v              endif
+            1171     1   p    v            enddo
+            1172                     !
+            1173                     !  cloud water
+            1174                     !
+            1175     1                     if (ncloud.gt.0) then
+            1176     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg, kb, ktcon, dellal, xmb, ql_all
+                                   <<< Loop-information  End >>>
+            1177     2  pp                 do k = 1, km1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.54, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      kb, dellal, xmb, ql_all, ktcon, cnvflg
+                                   <<< Loop-information  End >>>
+            1178     3   p    v              do i = 1, im
+            1179     4   p    v                if (cnvflg(i)) then
+            1180     5   p    v                  if (k.gt.kb(i).and.k.le.ktcon(i)) then
+            1181     5   p    v                    tem  = dellal(i,k) * xmb(i) * dt2
+            1182     5               !cwb
+            1183     5   p    v                    ql_all(i,k)=ql_all(i,k)+tem
+            1184     5               !cwb
+            1185     5               !             tem1 = max(0.0, min(1.0, (tcr-t1(i,k))*tcrf))
+            1186     5               !             if (ql(i,k,2) .gt. -999.0) then
+            1187     5               !               ql(i,k,1) = ql(i,k,1) + tem * tem1            ! ice
+            1188     5               !               ql(i,k,2) = ql(i,k,2) + tem *(1.0-tem1)       ! water
+            1189     5               !             else
+            1190     5               !               ql(i,k,1) = ql(i,k,1) + tem
+            1191     5               !             endif
+            1192     5   p    v                  endif
+            1193     4   p    v                endif
+            1194     3   p    v              enddo
+            1195     2   p                 enddo
+            1196     1               !
+            1197     1                     endif
+            1198                     !
+            1199                     ! hchuang code change
+            1200                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg, kb, ktop, eta, xmb, ud_mf
+                                   <<< Loop-information  End >>>
+            1201     1  pp                 do k = 1, km
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.51, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      kb, eta, xmb, ktop, cnvflg, ud_mf
+                                   <<< Loop-information  End >>>
+            1202     2   p    v              do i = 1, im
+            1203     3   p    v                if(cnvflg(i)) then
+            1204     4   p    v                  if(k.ge.kb(i) .and. k.lt.ktop(i)) then
+            1205     4   p    v                    ud_mf(i,k) = eta(i,k) * xmb(i) * dt2
+            1206     4   p    v                  endif
+            1207     3   p    v                endif
+            1208     2   p    v              enddo
+            1209     1   p                 enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 616
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cnvflg
+                                   <<< Loop-information  End >>>
+            1210     1  pp   2s            do i = 1, im
+            1211     2   p   2m              if(cnvflg(i)) then
+            1212     2   p   2s                 k = ktop(i)-1
+            1213     2   p   2s                 dt_mf(i,k) = ud_mf(i,k)
+            1214     2   p   2v              endif
+            1215     1   p   2v            enddo
+            1216                     !!
+            1217                           return
+            1218                           end
+
+ Procedure information
+   Lines      : 1218
+   Statements : 772
+   Stack(byte): 86256
+   Prefetch num: 152
+
+ Scoping unit of external sub-program : shalcnv_new
+   Attribute and Cross reference of name
+     aa1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 205  691  725  744  749  774  790
+      |(Reference)      : 725  744  749  757  774  790  794
+     aafac
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 232
+      |(Reference)      : 774
+     betaw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 233
+      |(Reference)      : 1007
+     c0
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31  76
+      |(Definition)     : 
+      |(Reference)      : 720  720  723  727  828  828  831  834
+     c1
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31  76
+      |(Definition)     : 
+      |(Reference)      : 721  829
+     cincr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 69
+      |(Definition)     : 515
+      |(Reference)      : 517
+     cincrmax
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 69  75
+      |(Definition)     : 
+      |(Reference)      : 514  514  515
+     cincrmin
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 69  75
+      |(Definition)     : 
+      |(Reference)      : 
+     clam
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 231
+      |(Reference)      : 282
+     cliq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 73
+      |(Definition)     : 167
+      |(Reference)      : 174
+     cnvflg
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 98
+      |(Definition)     : 191  192  193  470  518  619  626  757
+      |(Reference)      : 194  220  292  313  340  365  379  386  397  425  454  469  476  485  490  525  534  543  557  570  580  604  618  623  633  642  675  690  697  738  757  762  773  779  808  844  858  878  884  894  911  924  979  1001  1016  1044  1064  1087  1091  1107  1165  1179  1203  1211
+     cp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  72
+      |(Definition)     : 
+      |(Reference)      : 170  171  172  367  414  441  443  742  744  788  790  1046
+     cpoel
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 170
+      |(Reference)      : 
+     cvap
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 73
+      |(Definition)     : 166
+      |(Reference)      : 174
+     dbyo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 89
+      |(Definition)     : 320  594
+      |(Reference)      : 610  648  701  744  790  812  861
+     del
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 
+      |(Reference)      : 679  719  827  926  981  1052  1119
+     delhbar
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 1035  1053
+      |(Reference)      : 1053
+     dellah
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 89
+      |(Definition)     : 912  945  983
+      |(Reference)      : 945  1046  1053
+     dellal
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 89
+      |(Definition)     : 322  721  829  993
+      |(Reference)      : 1181
+     dellaq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 89
+      |(Definition)     : 913  951  985  1145
+      |(Reference)      : 951  1046  1048  1054  1145
+     dellat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 1046
+      |(Reference)      : 1047  1055
+     dellau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 89
+      |(Definition)     : 914  957  987
+      |(Reference)      : 957  1050  1056
+     dellav
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 89
+      |(Definition)     : 915  964  989
+      |(Reference)      : 964  1051  1057
+     delq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 1105  1142
+      |(Reference)      : 1145  1146
+     delq2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 1086  1123
+      |(Reference)      : 1125
+     delqbar
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 1036  1054  1146
+      |(Reference)      : 1054  1146
+     delqev
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 1085  1143
+      |(Reference)      : 1123  1127  1143
+     delt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 225
+     delta
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 173
+      |(Reference)      : 742  749  788
+     deltbar
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 1037  1055  1147
+      |(Reference)      : 1055  1147
+     deltv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 1104  1141
+      |(Reference)      : 1147
+     delubar
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 1038  1056
+      |(Reference)      : 1056
+     delvbar
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 1039  1057
+      |(Reference)      : 1057
+     desdt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 411
+      |(Reference)      : 412
+     deta
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 
+      |(Reference)      : 
+     detad
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 
+      |(Reference)      : 
+     dg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 
+      |(Reference)      : 
+     dh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 
+      |(Reference)      : 
+     dhh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 
+      |(Reference)      : 
+     dlnsig
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 
+      |(Reference)      : 
+     dot
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 
+      |(Reference)      : 486
+     dp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 399  679  719  827  926  981  1052  1119
+      |(Reference)      : 414  415  680  721  829  945  951  957  964  983  985  987  989  993  1053  1054  1055  1056  1057  1122  1123  1127  1131  1143  1146  1147
+     dq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 415  710  820  863
+      |(Reference)      : 417  716  720  723  824  828  831  867  868
+     dqsdp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 410
+      |(Reference)      : 414  415
+     dqsdt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 412
+      |(Reference)      : 415
+     dt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 414
+      |(Reference)      : 415  416
+     dt2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 225
+      |(Reference)      : 227  229  680  1047  1048  1050  1051  1093  1109  1121  1141  1142  1181  1205
+     dt_mf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 18
+      |(Definition)     : 214  1213
+      |(Reference)      : 
+     dthk
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31  75
+      |(Definition)     : 
+      |(Reference)      : 625
+     dtmax
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 229
+      |(Reference)      : 
+     dtmin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 227
+      |(Reference)      : 
+     dv1h
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 929  982
+      |(Reference)      : 945  983
+     dv1q
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 932  984
+      |(Reference)      : 951  985
+     dv1u
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 935  986
+      |(Reference)      : 957  957  987
+     dv1v
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 938  988
+      |(Reference)      : 964  964  989
+     dv2h
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 930
+      |(Reference)      : 945
+     dv2q
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 933
+      |(Reference)      : 951
+     dv2u
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 936
+      |(Reference)      : 957
+     dv2v
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 939
+      |(Reference)      : 964
+     dv3h
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 931
+      |(Reference)      : 945
+     dv3q
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 934
+      |(Reference)      : 951
+     dv3u
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 937
+      |(Reference)      : 957  957
+     dv3v
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 940
+      |(Reference)      : 964  964
+     dz
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 398  545  559  582  699  810  927
+      |(Reference)      : 414  547  561  583  584  704  705  720  721  723  725  727  814  815  828  829  831  834  945  945  951  951  957  957  964  964
+     dz1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 740  786
+      |(Reference)      : 744  749  790
+     e1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 896
+      |(Reference)      : 898
+     edt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 204  898  900  902
+      |(Reference)      : 900  902  1113  1114
+     el2orc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 172
+      |(Reference)      : 413  700  741  787  811  860  1117
+     elocp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 171
+      |(Reference)      : 1140  1141
+     eps
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 73
+      |(Definition)     : 168
+      |(Reference)      : 169  342  409  427  1018  1067
+     epsm1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 73
+      |(Definition)     : 169
+      |(Reference)      : 342  408  427  1018  1067
+     es
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 400
+      |(Reference)      : 408  409  411  412
+     eta
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 89
+      |(Definition)     : 315  547  561
+      |(Reference)      : 547  561  710  717  717  720  723  820  825  825  828  831  945  945  945  945  951  951  951  951  957  957  957  957  957  964  964  964  964  964  983  985  987  989  993  1205
+     etah
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 717  825
+      |(Reference)      : 720  721  723  727  828  829  831  834
+     evap
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 
+      |(Reference)      : 185
+     evef
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 1113  1114
+      |(Reference)      : 1117
+     evfact
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 235
+      |(Reference)      : 1113
+     evfactl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 236
+      |(Reference)      : 1114
+     exp
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 1121
+     fact1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 174
+      |(Reference)      : 175  411
+     fact2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 175
+      |(Reference)      : 411
+     factor
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 585  706  816
+      |(Reference)      : 588  590  592  707  817
+     fjcap
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 240  242
+      |(Reference)      : 242
+     flg
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 98
+      |(Definition)     : 292  300  454  462  604  612  642  650  779  796  1087  1128
+      |(Reference)      : 297  455  459  609  643  647  784  1112  1166
+     float
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 240
+     fpvs
+      |(Class and Type) : external function name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 341  400  426  1017  1066
+     fpvs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 17
+      |(Definition)     : 
+      |(Reference)      : 
+     fv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 73
+      |(Definition)     : 165
+      |(Reference)      : 173  185
+     g
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 163
+      |(Reference)      : 276  414  441  443  680  721  725  744  749  790  829  945  951  957  964  983  985  987  989  993  1004  1053  1054  1055  1056  1057  1122  1123  1127  1131  1143  1146  1147
+     gamma
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 413  700  741  787  811  860
+      |(Reference)      : 414  701  701  742  744  788  790  812  812  861  861
+     grav
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  72
+      |(Definition)     : 
+      |(Reference)      : 163
+     h1
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31  77
+      |(Definition)     : 
+      |(Reference)      : 1005
+     hcko
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 89
+      |(Definition)     : 316  572  588
+      |(Reference)      : 588  594  945  945  983
+     heat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 
+      |(Reference)      : 185
+     heo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 89
+      |(Definition)     : 368  441
+      |(Reference)      : 380  387  389  460  572  588  588  929  930  930  931  982
+     heso
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 89
+      |(Definition)     : 369  443
+      |(Reference)      : 460  594
+     hmax
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 380  389
+      |(Reference)      : 387
+     hpbl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 
+      |(Reference)      : 297  1004
+     hvap
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  72
+      |(Definition)     : 
+      |(Reference)      : 170  171  172  172  175  368  369  414  441  443  701  742  788  812  861  1046
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 184  190  212  219  255  262  267  275  280  285  291  296  304  312  339  364  378  385  396  424  453  458  468  475  484  489  524  533  542  556  569  579  603  608  617  622  632  641  646  674  689  696  737  756  761  772  778  783  807  843  857  877  883  893  910  923  978  1000  1015  1034  1043  1063  1083  1090  1102  1164  1178  1202  1210
+      |(Reference)      : 185  185  185  185  191  192  192  193  193  194  195  196  198  199  200  201  202  203  204  205  206  208  213  214  220  256  257  258  258  263  263  263  264  264  264  268  268  268  276  276  281  281  281  282  282  286  286  292  292  293  297  297  297  298  300  305  305  305  313  313  314  314  315  316  317  318  319  320  321  322  323  323  324  324  325  325  325  326  326  326  340  340  341  341  342  342  342  342  352  352  354  354  365  365  367  367  368  368  369  369  379  380  380  381  386  386  387  387  388  389  389  397  397  398  398  399  399  400  408  411  411  412  413  413  416  416  417  417  418  418  418  425  425  426  426  427  427  427  427  437  437  439  439  441  441  441  441  441  443  443  443  443  443  445  445  445  446  446  446  454  454  455  455  455  459  459  460  460  460  460  461  462  469  470  470  470  476  485  486  486  486  490  491  502  503  504  505  516  516  516  516  518  525  534  535  535  535  543  544  544  545  545  546  546  546  547  547  557  558  558  559  559  560  560  560  561  561  570  571  572  572  573  573  574  574  580  581  581  582  582  583  583  584  588  588  588  588  590  590  590  590  592  592  592  592  594  594  594  604  604  605  605  609  609  610  610  611  612  618  619  619  619  623  624  624  624  624  626  633  642  642  643  643  643  647  647  648  648  649  650  675  678  679  680  690  691  692  692  692  692  697  698  698  699  699  700  700  701  701  704  704  705  707  707  707  707  710  710  716  717  717  719  720  721  723  725  725  726  727  738  739  739  740  740  741  741  742  744  744  744  744  749  749  749  749  757  757  757  762  773  774  774  779  779  780  780  784  785  785  786  786  787  787  788  790  790  790  790  794  795  796  808  809  809  810  810  811  811  812  812  814  814  815  817  817  817  817  820  820  825  825  827  828  829  831  833  834  844  845  846  846  847  858  859  860  860  861  861  863  868  869  878  879  884  885  885  886  886  886  886  888  888  894  895  895  895  895  895  895  896  896  896  898  900  900  902  902  911  911  912  913  914  915  924  925  925  926  927  927  929  930  930  931  932  933  933  934  935  936  936  937  938  939  939  940  942  942  943  945  945  945  945  945  945  945  945  951  951  951  951  951  951  951  951  957  957  957  957  957  957  957  957  957  964  964  964  964  964  964  964  964  964  979  980  981  982  983  983  983  984  985  985  985  986  987  987  987  988  989  989  989  993  993  993  1001  1002  1004  1004  1004  1005  1006  1006  1007  1007  1008  1008  1008  1016  1016  1017  1017  1018  1018  1018  1018  1028  1028  1035  1036  1037  1038  1039  1040  1044  1045  1045  1046  1046  1047  1047  1047  1048  1048  1048  1048  1049  1050  1050  1050  1050  1051  1051  1051  1051  1052  1053  1053  1053  1053  1054  1054  1054  1054  1055  1055  1055  1056  1056  1056  1056  1057  1057  1057  1057  1064  1065  1065  1066  1066  1067  1067  1067  1067  1077  1077  1084  1085  1086  1087  1087  1091  1092  1092  1093  1093  1093  1093  1103  1104  1105  1106  1107  1108  1108  1109  1109  1109  1109  1112  1112  1113  1114  1114  1117  1117  1117  1117  1117  1119  1120  1120  1121  1121  1121  1122  1122  1122  1123  1123  1123  1125  1125  1125  1125  1127  1127  1127  1128  1130  1130  1132  1133  1134  1134  1135  1137  1137  1139  1139  1139  1140  1140  1140  1141  1141  1142  1142  1143  1143  1143  1145  1145  1145  1145  1146  1146  1146  1147  1147  1147  1165  1166  1166  1166  1167  1167  1168  1168  1169  1179  1180  1180  1181  1181  1183  1183  1203  1204  1204  1205  1205  1205  1211  1212  1213  1213
+     ic
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 105
+      |(Definition)     : 
+      |(Reference)      : 
+     im
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  14
+      |(Definition)     : 
+      |(Reference)      : 14  14  14  18  18  18  18  18  18  18  18  18  29  54  54  54  54  54  54  54  58  58  58  58  58  58  58  58  58  58  58  58  58  58  58  58  58  58  58  58  58  58  58  85  85  85  85  85  85  89  89  89  89  89  89  89  89  89  89  89  89  89  89  89  89  89  89  89  98  98  184  190  212  219  255  262  267  275  280  285  291  296  304  312  339  364  378  385  396  424  453  458  468  475  484  489  524  533  542  556  569  579  603  608  617  622  632  641  646  674  689  696  737  756  761  772  778  783  807  843  857  877  883  893  910  923  978  1000  1015  1034  1043  1063  1083  1090  1102  1164  1178  1202  1210
+     indx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 571  980
+      |(Reference)      : 572  572  573  573  574  574  981  982  983  983  983  984  985  985  985  986  987  987  987  988  989  989  989  993  993
+     ix
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  14
+      |(Definition)     : 
+      |(Reference)      : 18  18  18  18  18  18  18  18  18  18
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 
+      |(Reference)      : 
+     jcap
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  14
+      |(Definition)     : 
+      |(Reference)      : 240
+     jmn
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 
+      |(Reference)      : 
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 211  261  274  279  295  311  338  363  384  395  423  457  541  555  578  607  645  678  695  736  782  806  859  882  909  922  1002  1014  1042  1062  1089  1101  1177  1201  1212
+      |(Reference)      : 213  214  263  263  264  264  276  276  281  281  281  282  282  297  298  313  314  314  315  316  317  318  319  320  321  322  323  323  324  324  325  325  326  326  340  341  341  342  342  342  342  352  352  354  354  365  367  367  368  368  369  369  386  387  388  389  397  398  398  399  399  400  408  411  411  412  413  413  416  416  417  417  418  418  418  425  426  426  427  427  427  427  437  437  439  439  441  441  441  441  441  443  443  443  443  443  445  445  445  446  446  446  459  460  460  461  544  544  545  545  546  546  547  547  558  558  559  559  560  560  561  561  581  581  582  582  583  583  588  588  588  588  590  590  590  590  592  592  592  592  594  594  594  609  610  610  611  647  648  648  649  679  698  698  699  699  700  700  701  701  704  704  707  707  707  707  710  710  716  717  717  719  720  721  723  726  727  739  739  740  740  741  741  742  744  744  749  749  785  785  786  786  787  787  788  790  790  795  809  809  810  810  811  811  812  812  814  814  817  817  817  817  820  820  825  825  827  828  829  831  833  834  860  860  861  861  863  869  885  885  886  886  886  886  911  912  913  914  915  925  925  926  927  927  929  930  930  931  932  933  933  934  935  936  936  937  938  939  939  940  942  942  945  945  945  945  945  945  945  945  951  951  951  951  951  951  951  951  957  957  957  957  957  957  957  957  957  964  964  964  964  964  964  964  964  964  1006  1006  1016  1017  1017  1018  1018  1018  1018  1028  1028  1045  1045  1046  1046  1047  1047  1048  1048  1048  1050  1050  1050  1051  1051  1051  1052  1053  1054  1056  1057  1065  1065  1066  1066  1067  1067  1067  1067  1077  1077  1092  1092  1093  1103  1108  1108  1109  1112  1117  1117  1117  1117  1119  1139  1139  1140  1140  1145  1145  1180  1180  1181  1183  1183  1204  1204  1205  1205  1213  1213
+     kb
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 54
+      |(Definition)     : 201  381  388
+      |(Reference)      : 460  460  516  544  571  581  692  692  698  885  895  925  1045  1065  1092  1108  1180  1204
+     kbcon
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 54
+      |(Definition)     : 199  455  461
+      |(Reference)      : 470  486  516  535  544  558  610  624  678  716  739  1002  1168
+     kbcon1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 54
+      |(Definition)     : 605  611
+      |(Reference)      : 619  624  648
+     kbm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 54
+      |(Definition)     : 256  263  268
+      |(Reference)      : 268  305  459  609  643  647  780  785
+     kbot
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  14
+      |(Definition)     : 195  1168
+      |(Reference)      : 
+     kcnv
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  14
+      |(Definition)     : 1169
+      |(Reference)      : 192
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 845
+      |(Reference)      : 847
+     km
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  14
+      |(Definition)     : 
+      |(Reference)      : 18  18  18  18  18  18  18  18  18  18  18  18  58  85  85  85  85  85  85  89  89  89  89  89  89  89  89  89  89  89  89  89  89  89  89  89  180  195  199  201  211  256  257  261  274  286  311  338  363  384  882  909  1014  1042  1062  1089  1101  1201
+     km1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 180
+      |(Reference)      : 279  286  295  395  423  457  541  555  578  607  645  695  736  782  806  922  1177
+     kmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 54
+      |(Definition)     : 257  264
+      |(Reference)      : 268  313  340  365  397  425  455  470  558  581  605  619  911  1016  1103
+     kpbl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 29
+      |(Definition)     : 293  298  305
+      |(Reference)      : 305  386
+     ktcon
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 54
+      |(Definition)     : 200  643  649  846
+      |(Reference)      : 698  739  785  809  845  859  885  895  925  980  1045  1065  1092  1108  1112  1167  1180
+     ktcon1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 54
+      |(Definition)     : 780  795  847
+      |(Reference)      : 809  846
+     ktop
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  14
+      |(Definition)     : 196  1167
+      |(Reference)      : 1204  1212
+     latd
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 
+      |(Reference)      : 
+     lond
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 
+      |(Reference)      : 
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 227  229  242  352  354  437  439  510  749  902  1028  1077
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 268  305  512  900  1008  1122
+     ncloud
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  14
+      |(Definition)     : 
+      |(Reference)      : 718  826  853  1175
+     pdot
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 202  486
+      |(Reference)      : 502  503  504  505
+     pfld
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 85
+      |(Definition)     : 314
+      |(Reference)      : 342  399  399  408  412  418  418  516  516  624  624  1018  1067
+     pgcon
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 239
+      |(Reference)      : 586  587  957  964
+     phil
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 
+      |(Reference)      : 276  367
+     po
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 418
+      |(Reference)      : 427  1006
+     pprime
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 408
+      |(Reference)      : 409  410  412
+     pqs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 104
+      |(Definition)     : 
+      |(Reference)      : 
+     prsl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 
+      |(Reference)      : 263  264  314
+     ps
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 
+      |(Reference)      : 258
+     ptem
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 503  505  507  510  512  513  546  560  586  1004
+      |(Reference)      : 510  512  513  515  547  561  590  592  1005
+     ptem1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 514  587
+      |(Reference)      : 515  590  592
+     pwo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 89
+      |(Definition)     : 321  727  834
+      |(Reference)      : 1093  1109
+     q1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 1048  1139
+      |(Reference)      : 324  1048  1117  1139
+     qcko
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 89
+      |(Definition)     : 317  692  707  726  817  833  869
+      |(Reference)      : 707  710  817  820  863  951  951  985
+     qcond
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 1040  1117
+      |(Reference)      : 1120  1121  1125
+     qeso
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 85
+      |(Definition)     : 341  342  352  426  427  437  1017  1018  1028  1066  1067  1077
+      |(Reference)      : 342  342  352  369  413  427  427  437  443  700  701  741  749  787  811  812  860  861  1018  1018  1028  1067  1067  1077  1117  1117
+     qevap
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 1106  1121  1122  1127  1134
+      |(Reference)      : 1122  1123  1130  1132  1139  1140  1141  1142  1143
+     ql
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 
+     ql_all
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 1183
+      |(Reference)      : 1183
+     qlk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 720  723  828  831
+      |(Reference)      : 721  725  726  727  829  833  834
+     qlko_ktcon
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 89
+      |(Definition)     : 203  868
+      |(Reference)      : 993
+     qo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 85
+      |(Definition)     : 324  354  417  439
+      |(Reference)      : 354  368  417  439  441  692  707  707  749  817  817  932  933  933  934  984
+     qqq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 104
+      |(Definition)     : 
+      |(Reference)      : 
+     qrch
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 701  812  861
+      |(Reference)      : 710  726  820  833  863  869
+     qs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 409
+      |(Reference)      : 410  412
+     rain
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 
+      |(Reference)      : 
+     rcs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 18
+      |(Definition)     : 208
+      |(Reference)      : 325  326  1049
+     rd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  72
+      |(Definition)     : 
+      |(Reference)      : 165  168  1006
+     rfact
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 742  788
+      |(Reference)      : 744  790
+     rn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 198  1109  1135  1137  1166
+      |(Reference)      : 1109  1120  1121  1122  1125  1130  1133  1134  1137  1166
+     rntot
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 1084  1093
+      |(Reference)      : 1093  1125  1127
+     rv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 73
+      |(Definition)     : 164
+      |(Reference)      : 165  168  172  174  175
+     sflx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 185
+      |(Reference)      : 193  1004
+     shalcnv_new
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     shear
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 886
+      |(Reference)      : 888
+     slimsk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 
+      |(Reference)      : 491  1114
+     sqrt
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 886  1121
+     t0c
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  72
+      |(Definition)     : 
+      |(Reference)      : 175
+     t1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 1017  1047  1066  1140
+      |(Reference)      : 185  323  1004  1006  1047  1117  1140
+     t11
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 104
+      |(Definition)     : 
+      |(Reference)      : 
+     tcr
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 100  101
+      |(Definition)     : 
+      |(Reference)      : 101
+     tcrf
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 100  101
+      |(Definition)     : 
+      |(Reference)      : 
+     tem
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 367  583  624  704  814  942  1006  1049  1131  1181
+      |(Reference)      : 368  369  585  586  587  588  625  706  707  816  817  945  951  957  964  1007  1050  1051  1132  1134  1183
+     tem1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 516  584  705  815  943  1132
+      |(Reference)      : 517  585  588  590  592  706  707  816  817  945  951  957  964  1133  1137
+     tem2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 
+      |(Reference)      : 
+     temx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 104
+      |(Definition)     : 177
+      |(Reference)      : 
+     terr
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31  76
+      |(Definition)     : 
+      |(Reference)      : 
+     tf
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 100  101
+      |(Definition)     : 
+      |(Reference)      : 101
+     to
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 85
+      |(Definition)     : 323  341  400  416  426
+      |(Reference)      : 367  411  411  413  416  441  443  700  741  742  744  787  788  790  811  860
+     totflg
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 98
+      |(Definition)     : 218  220  474  476  523  525  631  633  760  762
+      |(Reference)      : 220  222  476  478  525  527  633  635  762  764
+     tx1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 89
+      |(Definition)     : 258
+      |(Reference)      : 263  264
+     u1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 1050
+      |(Reference)      : 325  1050
+     ucko
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 89
+      |(Definition)     : 318  573  590
+      |(Reference)      : 590  957  957  987
+     ud_mf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 18
+      |(Definition)     : 213  1205
+      |(Reference)      : 1213
+     uo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 85
+      |(Definition)     : 325  445
+      |(Reference)      : 445  445  573  590  590  886  886  935  936  936  937  986
+     v1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 1051
+      |(Reference)      : 326  1051
+     val
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 226  228  241  748  899  901  1027  1076
+      |(Reference)      : 227  229  242  749  900  902  1028  1077
+     val1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 351  436  509
+      |(Reference)      : 352  437  510
+     val2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 353  438  511
+      |(Reference)      : 354  439  512
+     vcko
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 89
+      |(Definition)     : 319  574  592
+      |(Reference)      : 592  964  964  989
+     vo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 85
+      |(Definition)     : 326  446
+      |(Reference)      : 446  446  574  592  592  886  886  938  939  939  940  988
+     vpsat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 104  106
+      |(Definition)     : 
+      |(Reference)      : 
+     vshear
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 206  879  888  895
+      |(Reference)      : 888  895  896  896  896
+     w1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 492  497
+      |(Reference)      : 
+     w1l
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 243
+      |(Reference)      : 492
+     w1s
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 247
+      |(Reference)      : 497
+     w2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 493  498
+      |(Reference)      : 
+     w2l
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 244
+      |(Reference)      : 493
+     w2s
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 248
+      |(Reference)      : 498
+     w3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 494  499
+      |(Reference)      : 503  505
+     w3l
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 245
+      |(Reference)      : 494
+     w3s
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 249
+      |(Reference)      : 499
+     w4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 495  500
+      |(Reference)      : 502  503  503  504  505  505
+     w4l
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 246
+      |(Reference)      : 495
+     w4s
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 250
+      |(Reference)      : 500
+     wstar
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 1005
+      |(Reference)      : 1007
+     xlamud
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 535
+      |(Reference)      : 546  560  584  705  815  943
+     xlamue
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 89
+      |(Definition)     : 282  286
+      |(Reference)      : 286  535  546  546  560  560  583  583  704  704  814  814  942  942
+     xmb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 1007  1008
+      |(Reference)      : 1008  1047  1048  1050  1051  1053  1054  1055  1056  1057  1093  1109  1145  1181  1205
+     xmbmax
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 680
+      |(Reference)      : 1008
+     zi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 89
+      |(Definition)     : 281
+      |(Reference)      : 282  545  545  559  559  582  582  699  699  810  810  895  895  927  927
+     zo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 89
+      |(Definition)     : 276
+      |(Reference)      : 281  281  297  398  398  441  441  443  443  740  740  786  786
+
+ Total information
+   Procedures       : 1
+   Total lines      : 1218
+   Total statements : 772
+   Total stack(byte): 86256
+   Total prefetch num: 152
+

@@ -1,0 +1,555 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Dec 19 11:04:26 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src
+   Source file       : cuadjtq_n.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "cuadjtq_n"
+  (inc)(line-no.)(nest)(optimize)
+               1                     
+               2                           subroutine cuadjtq_n                 &
+               3                          &    (nxj, klon, klev, kk, psp, pt, pq, ldflag,  kcall)
+               4                     !          m.tiedtke         e.c.m.w.f.     12/89
+               5                     !          purpose.
+               6                     !          --------
+               7                     !          to produce t,q and l values for cloud ascent
+               8                     
+               9                     !          interface
+              10                     !          ---------
+              11                     !          this routine is called from subroutines:
+              12                     !              *cond*     (t and q at condensation level)
+              13                     !              *cubase*   (t and q at condensation level)
+              14                     !              *cuasc*    (t and q at cloud levels)
+              15                     !              *cuini*    (environmental t and qs values at half levels)
+              16                     !          input are unadjusted t and q values,
+              17                     !          it returns adjusted values of t and q
+              18                     
+              19                     !     parameter     description                                   units
+              20                     !     ---------     -----------                                   -----
+              21                     !     input parameters (integer):
+              22                     
+              23                     !    *klon*         number of grid points per packet
+              24                     !    *klev*         number of levels
+              25                     !    *kk*           level
+              26                     !    *kcall*        defines calculation as
+              27                     !                      kcall=0  env. t and qs in*cuini*
+              28                     !                      kcall=1  condensation in updrafts  (e.g. cubase, cuasc)
+              29                     !                      kcall=2  evaporation in downdrafts (e.g. cudlfs,cuddraf)
+              30                     !     input parameters (real):
+              31                     !    *psp*          pressure                                        pa
+              32                     !     updated parameters (real):
+              33                     !    *pt*           temperature                                     k
+              34                     !    *pq*           specific humidity                             kg/kg
+              35                     !          externals
+              36                     !          ---------
+              37                     !          for condensation calculations.
+              38                     !          the tables are initialised in *suphec*.
+              39                     !----------------------------------------------------------------------
+              40                       USE mo_constants,      ONLY: vtmpc1,   &
+              41                                                    r5alvcp,  &
+              42                                                    r5alscp,  &
+              43                                                    c4les,    &
+              44                                                    c4ies,    &
+              45                                                    c3ies,    &
+              46                                                    tmelt,    &
+              47                                                    c3les,    &
+              48                                                    c2es
+              49                       USE mo_convect_tables, ONLY: tlucua,   & ! table a
+              50                                                    tlucub,   & ! table b
+              51                                                    tlucuc,   & ! table c
+              52                                                    jptlucu1, jptlucu2, &
+              53                                                    lookuperror, lookupoverflow
+              54                     
+              55                           implicit none
+              56                     
+              57                           integer  klev,klon
+              58                     
+              59                           real     pt(klon,klev),          pq(klon,klev),  &
+              60                          &         psp(klon)
+              61                           logical  ldflag(klon)
+              62                     ! local variables
+              63                           integer  jl,jk,nxj
+              64                           integer  isum,kcall,kk
+              65                           real     zqmax,zqsat,zcor,zqp,zcond,zcond1,zl,zi,zf
+              66                           real     foealfa,foeldcpm,foeewm,foedem
+              67                     !------------- ---------------------------------------------------------
+              68                     !     1.           define constants
+              69                     !                  ----------------
+              70                           zqmax=0.5
+              71                     !     2.           calculate condensation and adjust t and q accordingly
+              72                     !                  -----------------------------------------------------
+              73     1                     if ( kcall == 1 ) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ldflag
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 4  FILL 8
+                                   <<<      SIMD&FP   : SPILL 3  FILL 3
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+              74     2   s    s             do jl = 1, nxj
+              75     3   p    v              if ( ldflag(jl) ) then
+              76     3   p    v                zqp = 1./psp(jl)
+              77     3   s    s                zl = 1./(pt(jl,kk)-c4les)
+              78     3   s    s                zi = 1./(pt(jl,kk)-c4ies)
+              79     3   s    s                zqsat = c2es*(foealfa(pt(jl,kk))*exp(c3les*(pt(jl,kk)-tmelt)*zl) + &
+              80     3                               (1.-foealfa(pt(jl,kk)))*exp(c3ies*(pt(jl,kk)-tmelt)*zi))
+              81     3   s    s                zqsat = zqsat*zqp
+              82     3   s    s                zqsat = min(0.5,zqsat)
+              83     3   s    s                zcor = 1. - vtmpc1*zqsat
+              84     3   s    s                zf = foealfa(pt(jl,kk))*r5alvcp*zl**2 + &
+              85     3                              (1.-foealfa(pt(jl,kk)))*r5alscp*zi**2
+              86     3   s    s                zcond = (pq(jl,kk)*zcor**2-zqsat*zcor)/(zcor**2+zqsat*zf)
+              87     4   s    s                if ( zcond > 0. ) then
+              88     4   s    s                  pt(jl,kk) = pt(jl,kk) + foeldcpm(pt(jl,kk))*zcond
+              89     4   s    s                  pq(jl,kk) = pq(jl,kk) - zcond
+              90     4   s    s                  zl = 1./(pt(jl,kk)-c4les)
+              91     4   s    s                  zi = 1./(pt(jl,kk)-c4ies)
+              92     4   s    s                  zqsat = c2es*(foealfa(pt(jl,kk)) * &
+              93     4                             exp(c3les*(pt(jl,kk)-tmelt)*zl)+(1.-foealfa(pt(jl,kk))) * &
+              94     4                             exp(c3ies*(pt(jl,kk)-tmelt)*zi))
+              95     4   s    s                  zqsat = zqsat*zqp
+              96     4   s    s                  zqsat = min(0.5,zqsat)
+              97     4   s    s                  zcor = 1. - vtmpc1*zqsat
+              98     4   s    s                  zf = foealfa(pt(jl,kk))*r5alvcp*zl**2 + &
+              99     4                                (1.-foealfa(pt(jl,kk)))*r5alscp*zi**2
+             100     4   s    s                  zcond1 = (pq(jl,kk)*zcor**2-zqsat*zcor)/(zcor**2+zqsat*zf)
+             101     4   s    s                  if ( abs(zcond) < 1.e-20 ) zcond1 = 0.
+             102     4   s    s                  pt(jl,kk) = pt(jl,kk) + foeldcpm(pt(jl,kk))*zcond1
+             103     4   p    v                  pq(jl,kk) = pq(jl,kk) - zcond1
+             104     4   p    v                end if
+             105     3   p    v              end if
+             106     2   p    v            end do
+             107     1                     elseif ( kcall == 2 ) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ldflag
+                                   <<< Loop-information  End >>>
+             108     2   s    s            do jl = 1, nxj
+             109     3   p    v              if ( ldflag(jl) ) then
+             110     3   p    v                zqp = 1./psp(jl)
+             111     3   s    s                zqsat = foeewm(pt(jl,kk))*zqp
+             112     3   s    s                zqsat = min(0.5,zqsat)
+             113     3   s    s                zcor = 1./(1.-vtmpc1*zqsat)
+             114     3   s    s                zqsat = zqsat*zcor
+             115     3   s    s                zcond = (pq(jl,kk)-zqsat)/(1.+zqsat*zcor*foedem(pt(jl,kk)))
+             116     3   s    s                zcond = min(zcond,0.)
+             117     3   s    s                pt(jl,kk) = pt(jl,kk) + foeldcpm(pt(jl,kk))*zcond
+             118     3   s    s                pq(jl,kk) = pq(jl,kk) - zcond
+             119     3   s    s                zqsat = foeewm(pt(jl,kk))*zqp
+             120     3   s    s                zqsat = min(0.5,zqsat)
+             121     3   s    s                zcor = 1./(1.-vtmpc1*zqsat)
+             122     3   s    s                zqsat = zqsat*zcor
+             123     3   s    s                zcond1 = (pq(jl,kk)-zqsat)/(1.+zqsat*zcor*foedem(pt(jl,kk)))
+             124     3   s    s                if ( abs(zcond) < 1.e-20 ) zcond1 = min(zcond1,0.)
+             125     3   m    m                pt(jl,kk) = pt(jl,kk) + foeldcpm(pt(jl,kk))*zcond1
+             126     3   p    v                pq(jl,kk) = pq(jl,kk) - zcond1
+             127     3   p    v              end if
+             128     2   p    v            end do
+             129     1                     else if ( kcall == 0 ) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      psp, pq, pt
+                                   <<< Loop-information  End >>>
+             130     2   s    s             do jl = 1, nxj
+             131     2   p    v              zqp = 1./psp(jl)
+             132     2   s    s              zqsat = foeewm(pt(jl,kk))*zqp
+             133     2   s    s              zqsat = min(0.5,zqsat)
+             134     2   s    s              zcor = 1./(1.-vtmpc1*zqsat)
+             135     2   s    s              zqsat = zqsat*zcor
+             136     2   s    s              zcond1 = (pq(jl,kk)-zqsat)/(1.+zqsat*zcor*foedem(pt(jl,kk)))
+             137     2   s    s              pt(jl,kk) = pt(jl,kk) + foeldcpm(pt(jl,kk))*zcond1
+             138     2   s    s              pq(jl,kk) = pq(jl,kk) - zcond1
+             139     2   s    s              zqsat = foeewm(pt(jl,kk))*zqp
+             140     2   s    s              zqsat = min(0.5,zqsat)
+             141     2   s    s              zcor = 1./(1.-vtmpc1*zqsat)
+             142     2   s    s              zqsat = zqsat*zcor
+             143     2   s    s              zcond1 = (pq(jl,kk)-zqsat)/(1.+zqsat*zcor*foedem(pt(jl,kk)))
+             144     2   s    s              pt(jl,kk) = pt(jl,kk) + foeldcpm(pt(jl,kk))*zcond1
+             145     2   p    v              pq(jl,kk) = pq(jl,kk) - zcond1
+             146     2   p    v            end do
+             147     1                     end if
+             148                     
+             149                           return
+             150                           end subroutine cuadjtq_n
+
+ Procedure information
+   Lines      : 150
+   Statements : 84
+   Stack(byte): 416
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : cuadjtq_n
+   Attribute and Cross reference of name
+     abs
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101  124
+     c2es
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 40  79  92
+     c3ies
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 40  79  92
+     c3les
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 40  79  92
+     c4ies
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 40  78  91
+     c4les
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 40  77  90
+     cuadjtq_n
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 2
+      |(Reference)      : 150
+     exp
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 79  79  92  92
+     foealfa
+      |(Class and Type) : external function name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 79  79  84  84  92  92  98  98
+     foealfa
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66
+      |(Definition)     : 
+      |(Reference)      : 
+     foedem
+      |(Class and Type) : external function name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 115  123  136  143
+     foedem
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66
+      |(Definition)     : 
+      |(Reference)      : 
+     foeewm
+      |(Class and Type) : external function name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 111  119  132  139
+     foeewm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66
+      |(Definition)     : 
+      |(Reference)      : 
+     foeldcpm
+      |(Class and Type) : external function name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 88  102  117  125  137  144
+     foeldcpm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66
+      |(Definition)     : 
+      |(Reference)      : 
+     isum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 64
+      |(Definition)     : 
+      |(Reference)      : 
+     jk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 63
+      |(Definition)     : 
+      |(Reference)      : 
+     jl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 63
+      |(Definition)     : 74  108  130
+      |(Reference)      : 75  76  77  78  79  79  79  79  84  84  86  88  88  88  89  89  90  91  92  92  92  92  98  98  100  102  102  102  103  103  109  110  111  115  115  117  117  117  118  118  119  123  123  125  125  125  126  126  131  132  136  136  137  137  137  138  138  139  143  143  144  144  144  145  145
+     jptlucu1
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 49
+     jptlucu2
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 49
+     kcall
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 2  64
+      |(Definition)     : 
+      |(Reference)      : 73  107  129
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 2  64
+      |(Definition)     : 
+      |(Reference)      : 77  78  79  79  79  79  84  84  86  88  88  88  89  89  90  91  92  92  92  92  98  98  100  102  102  102  103  103  111  115  115  117  117  117  118  118  119  123  123  125  125  125  126  126  132  136  136  137  137  137  138  138  139  143  143  144  144  144  145  145
+     klev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 2  57
+      |(Definition)     : 
+      |(Reference)      : 59  59
+     klon
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 2  57
+      |(Definition)     : 
+      |(Reference)      : 59  59  59  61
+     ldflag
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  61
+      |(Definition)     : 
+      |(Reference)      : 75  109
+     lookuperror
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 49
+     lookupoverflow
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 49
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 82  96  112  116  120  124  133  140
+     mo_constants
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 40
+     mo_convect_tables
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 49
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 2  63
+      |(Definition)     : 
+      |(Reference)      : 74  108  130
+     pq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  59
+      |(Definition)     : 89  103  118  126  138  145
+      |(Reference)      : 86  89  100  103  115  118  123  126  136  138  143  145
+     psp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  59
+      |(Definition)     : 
+      |(Reference)      : 76  110  131
+     pt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  59
+      |(Definition)     : 79  79  84  84  88  88  92  92  98  98  102  102  111  115  117  117  119  123  125  125  132  136  137  137  139  143  144  144
+      |(Reference)      : 77  78  79  79  88  90  91  92  92  102  117  125  137  144
+     r5alscp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 40  84  98
+     r5alvcp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 40  84  98
+     tlucua
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 49
+     tlucub
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 49
+     tlucuc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 49
+     tmelt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 40  79  79  92  92
+     vtmpc1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 40  83  97  113  121  134  141
+     zcond
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 86  115  116
+      |(Reference)      : 87  88  89  101  116  117  118  124
+     zcond1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 100  101  123  124  136  143
+      |(Reference)      : 102  103  124  125  126  137  138  144  145
+     zcor
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 83  97  113  121  134  141
+      |(Reference)      : 86  86  86  100  100  100  114  115  122  123  135  136  142  143
+     zf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 84  98
+      |(Reference)      : 86  100
+     zi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 78  91
+      |(Reference)      : 79  84  92  98
+     zl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 77  90
+      |(Reference)      : 79  84  92  98
+     zqmax
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 70
+      |(Reference)      : 
+     zqp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 76  110  131
+      |(Reference)      : 81  95  111  119  132  139
+     zqsat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 79  81  82  92  95  96  111  112  114  119  120  122  132  133  135  139  140  142
+      |(Reference)      : 81  82  83  86  86  95  96  97  100  100  112  113  114  115  115  120  121  122  123  123  133  134  135  136  136  140  141  142  143  143
+
+ Total information
+   Procedures       : 1
+   Total lines      : 150
+   Total statements : 84
+   Total stack(byte): 416
+   Total prefetch num: 0
+
