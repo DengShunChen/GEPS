@@ -468,7 +468,7 @@ contains
     real :: dt
     real(kind=RTYPE), allocatable :: noise(:,:)
     integer(8) count, count_rate, count_max, count_trunc
-    integer(8) :: iscale = 10000000000
+    integer(8) :: iscale = 10000000000_8
     integer :: count4 
     logical :: skebrun
  
