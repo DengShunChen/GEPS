@@ -372,14 +372,6 @@ set_target_properties(${EXEC}
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-# for spectial source files
-set_source_files_properties(fftx.f90 ndslfv_pack.f90  
-  PROPERTIES COMPILE_FLAGS "-Knoparallel" 
-)
-set_source_files_properties(pbl_noah.f90 rcloud.f90    
-  PROPERTIES COMPILE_FLAGS "-Knosimd" 
-)
-
 install(TARGETS ${EXEC} DESTINATION ${CMAKE_INSTALL_PREFIX})
 target_include_directories( ${EXEC} PUBLIC "$<BUILD_INTERFACE:${TCOGFS_INCLUDE_DIRS}>")
 

@@ -3,6 +3,8 @@
 #
 #     Deng-Shun Chen
 #     dschen@cwb.gov.tw
+#
+# Copyright (c) 2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 # 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,10 +18,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-set(CMAKE_Fortran_COMPILER  mpifrtpx)
-set(CMAKE_CXX_COMPILER      mpiFCCpx)
-set(CMAKE_C_COMPILER        mpifccpx)
 
 ###########################################################################
 # Compiler Setting, TCO is built on top of MPI
@@ -38,8 +36,8 @@ if(NOT CMAKE_BUILD_TYPE)
                   CACHE STRING "Choose the type of build." FORCE)
 endif()
 
-#option(USE_ACC   "enable OpenACC"         OFF)
-#option(USE_CUDA  "enable CUDA"            OFF)
+option(USE_ACC   "enable OpenACC"         OFF)
+option(USE_CUDA  "enable CUDA"            OFF)
 #option(USE_NVTX  "enable NVTX"            OFF)
 option(USE_OMP   "enable OpenMP"                              ON)
 option(USE_PAR   "enable Auto Parallel"                       ON)
@@ -61,8 +59,8 @@ if(NOT ${USE_RSM} AND ${USE_MPMD})
 endif()
 
 message(STATUS "Build Summary")
-#message(STATUS "USE_ACC:      ${USE_ACC}")
-#message(STATUS "USE_CUDA:     ${USE_CUDA}")
+message(STATUS "USE_ACC:      ${USE_ACC}")
+message(STATUS "USE_CUDA:     ${USE_CUDA}")
 #message(STATUS "USE_NVTX:     ${USE_NVTX}")
 message(STATUS "USE_OMP:      ${USE_OMP}")
 message(STATUS "USE_PAR:      ${USE_PAR}")
@@ -74,6 +72,16 @@ message(STATUS "Install path: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "BUILD_TYPE : ${CMAKE_BUILD_TYPE}")
 
 # include CMake modules in `${PROJECT_SOURCE_DIR}/cmake/Modules`
+
+if(NOT ${USE_CUDA})
+	message(STATUS "Not use CUDA")
+	include(NoCUDA)
+endif()
+
+if(${USE_CUDA})
+	message(STATUS "use CUDA")
+	include(OpenACC)
+endif()
 
 #if(${USE_ACC})
 #    include(OpenACC)
@@ -101,34 +109,13 @@ if (${USE_MPMD})
   add_definitions(-DCWB_MPM)
 endif()
 
-# Specific flags for Fortran only:
-## Specfic flags for release build 
-#set(CMAKE_Fortran_FLAGS_RELEASE "-Kfast,parallel,openmp,ocl,autoobjstack,simd=2 -Nquickdbg") 
-set(CMAKE_Fortran_FLAGS_RELEASE "-Kfast,ocl,autoobjstack,simd=2") 
-add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-X9 -Free -CcdRR8 -Cpp -Cfpp -x- -fw -Knofp_relaxed>")
-add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 >")
-add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-SSL2BLAMP >")
-if (${USE_OMP})
-  add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-Kopenmp>")
-endif()
-if (${USE_PAR})
-  add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-Kparallel>")
-endif()
-
-# Specific flags for C only:
-## Specfic flags for release build 
-set(CMAKE_C_FLAGS_RELEASE "")
-add_compile_options("$<$<COMPILE_LANGUAGE:C>:SHELL:-Xg>")
-
 ###########################################################################
 # Include Directory (-I<path>)
 ###########################################################################
 # NetCDF
-find_package( NetCDF REQUIRED COMPONENTS Fortran )
 include_directories(${NetCDF_Fortran_INCLUDE_DIRS})
 
 # FFTW
-find_package( FFTW REQUIRED )
 include_directories(${FFTW_INCLUDE_DIR})
 
 set ( TCOGFS_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -142,29 +129,11 @@ include_directories($ENV{G2_INC_PATH})
 # Link Options (-L<path> -l<lib>), for dms, netcdf and Intel librares
 ###########################################################################
 
-# DMS
-find_package( DMS REQUIRED )
-
 # W3
 link_libraries($ENV{W3LIB_LIB})
 
 # CWB operlib
 link_libraries($ENV{OPERLIB_LIB})
-
-# Fujitsu scientific and math libraries.
-link_libraries(-SSL2BLAMP)
-
-# Auto-parallel and OpenMP
-if (${USE_OMP})
-  link_libraries(-Kopenmp)
-endif()
-if (${USE_PAR})
-  link_libraries(-Kparallel)
-endif()
-
-if (${USE_MPMD})
- find_package( MPMD REQUIRED )
-endif()
 
 # G2
 link_directories($ENV{G2_LIB_PATH})
