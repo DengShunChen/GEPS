@@ -13,6 +13,9 @@ set machine a100
 module use /users/xb80/opt/nvidia/hpc_sdk/modulefiles
 module load nvhpc/23.11
 module unuse /users/xb80/opt/nvidia/hpc_sdk/modulefiles
+setenv COMP_MP "mpif90"
+setenv CXX_COMP_MP "mpic++"
+setenv C_COMP_MP "mpicc"
 
 # Load CMake 3.21.4
 module use /data/common/gfs/modulefiles/x86_64
@@ -30,3 +33,4 @@ setenv JASPER_LIB_PATH "${JASPER_PATH}/lib"
 
 setenv W3LIB_LIB "/package/x86_64/w3lib-2.0.2/lib"
 setenv OPERLIB_LIB "/package/x86_64/operlib/lib"
+setenv FFTW3 "/usr/include"

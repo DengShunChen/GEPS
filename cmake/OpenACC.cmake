@@ -1,6 +1,3 @@
-set(CMAKE_Fortran_COMPILER  mpif90)
-set(CMAKE_CXX_COMPILER      mpic++)
-set(CMAKE_C_COMPILER        mpicc)
 add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-Mfree>)
 add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-r8>)
 add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-Mpreprocess>)
@@ -14,7 +11,6 @@ if (${USE_PAR})
 endif()
 
 set(NetCDF_Fortran_INCLUDE_DIRS "/package/x86_64/nvidia/netcdf-4.9.0/include")
-set(FFTW_INCLUDE_DIR "/usr/include")
 
 link_directories(/home/xa09/pkg/openmpi-4.0.1/lib)
 link_libraries(-lblas -llapack)

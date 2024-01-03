@@ -19,6 +19,8 @@ setenv COMP_MPI  $LANG_HOME/bin/mpifrtpx
 
 setenv C_COMP    $LANG_HOME/bin/mpifccpx
 setenv C_COMP_MP $LANG_HOME/bin/mpifccpx
+
+setenv CXX_COMP_MP $LANG_HOME/bin/mpiFCCpx
 #============================================================
 # select one of the followings :
 #  1. mpi single precision for transpose and unify
@@ -83,6 +85,7 @@ set PNG_PATH "/package/fx1000/libpng-1.6.37"
 set JASPER_PATH "/package/fx1000/jasper-1.900.1"
 setenv G2_LIB "-L${G2_PATH}/lib -lg2 "
 setenv G2_INC_PATH "${G2_PATH}/include"
+setenv G2_INC "${G2_PATH}/include"
 setenv G2_LIB_PATH "${G2_PATH}/lib"
 setenv PNG_LIB "-L${PNG_PATH}/lib -lpng"
 setenv PNG_LIB_PATH "${PNG_PATH}/lib"

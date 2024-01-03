@@ -1,7 +1,3 @@
-set(CMAKE_Fortran_COMPILER  mpifrtpx)
-set(CMAKE_CXX_COMPILER      mpiFCCpx)
-set(CMAKE_C_COMPILER        mpifccpx)
-
 set(CMAKE_Fortran_FLAGS_RELEASE "-Kfast,ocl,autoobjstack,simd=2") 
 add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-X9 -Free -CcdRR8 -Cpp -Cfpp -x- -fw -Knofp_relaxed>")
 add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 >")
