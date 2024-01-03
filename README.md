@@ -43,7 +43,7 @@ make -j`nproc`
 
 ```sh
 cd job
-pjsub TCo383L72_IC_sample_s100
+pjsub TCo383L72_IC_sample_a100
 ```
 
 ## Quick start (ARM) ##
