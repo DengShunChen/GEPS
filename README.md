@@ -14,12 +14,12 @@
    * png-1.6.37
    * jasper-1.900.1
 
-## Quick start ##
+## Quick start (x86_64 / GPU) ##
 
 ### Setup environment ###
 
 ```sh
-MACHINE="a100" # set MACHINE="fx1000" for arm machine
+MACHINE="a100"
 . /usr/share/Modules/init/bash
 module purge
 module use modulefiles
@@ -28,18 +28,6 @@ module unuse modulefiles
 ```
 
 ### Build ###
-
-The basic instructions (baseline, CPU only):
-
-```sh
-cmake -Bbuild -S. \
-	-DCMAKE_BUILD_TYPE=Release \
-	-DUSE_RSM=OFF
-cd build
-make -j`nproc`
-```
-
-To enable NVIDIA GPU:
 
 ```sh
 cmake -Bbuild -S. \
@@ -52,3 +40,23 @@ make -j`nproc`
 ```
 
 ### Run ###
+
+```sh
+cd job
+pjsub TCo383L72_IC_sample_s100
+```
+
+## Quick start (ARM) ##
+
+### Setup environment and build ###
+
+```sh
+./build.sh fx1000
+```
+
+### Run ###
+
+```sh
+cd job
+pjsub TCo383L72_IC_sample_fx1000
+```
