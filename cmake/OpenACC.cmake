@@ -1,3 +1,9 @@
+################################################################################
+# Copyright (c) 2024, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+#
+# See LICENSE for license information.
+################################################################################
+
 # Specific flags for Fortran only
 add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-Mfree>)
 add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-r8>)
