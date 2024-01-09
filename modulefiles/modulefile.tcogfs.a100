@@ -1,0 +1,36 @@
+#%Module####################################################
+##                                   ylichen@nvidia.com
+##                                   NVIDIA CORPORATION & AFFILIATES
+## TCoGFS
+##__________________________________________________________
+
+module-whatis "TCoGFS Modules for NVIDIA HPC SDK"
+
+set ver v1.0.0
+set machine a100
+
+# Load NVIDIA HPC SDK 23.11
+module use /users/xb80/opt/nvidia/hpc_sdk/modulefiles
+module load nvhpc/23.11
+module unuse /users/xb80/opt/nvidia/hpc_sdk/modulefiles
+setenv COMP_MP "mpif90"
+setenv CXX_COMP_MP "mpic++"
+setenv C_COMP_MP "mpicc"
+
+# Load CMake 3.21.4
+module use /data/common/gfs/modulefiles/x86_64
+module load cmake/3.21.4
+module unuse /data/common/gfs/modulefiles/x86_64
+
+# Add for grib2 output
+set G2_PATH "/package/x86_64/nvidia/g2lib-1.4.0"
+set PNG_PATH "/package/x86_64/libpng-1.6.37"
+set JASPER_PATH "/package/x86_64/nvidia/jasper-1.900.1"
+setenv G2_INC_PATH "${G2_PATH}/include"
+setenv G2_LIB_PATH "${G2_PATH}/lib"
+setenv PNG_LIB_PATH "${PNG_PATH}/lib"
+setenv JASPER_LIB_PATH "${JASPER_PATH}/lib"
+
+setenv W3LIB_LIB "/package/x86_64/w3lib-2.0.2/lib"
+setenv OPERLIB_LIB "/package/x86_64/operlib/lib"
+setenv FFTW3 "/usr/include"
