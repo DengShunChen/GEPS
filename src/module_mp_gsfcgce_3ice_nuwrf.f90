@@ -748,7 +748,7 @@ CONTAINS
     do n = 1 , ntimes
        vtr(:) = 0.
        precip = 0.
-       call semi_sedi('qr',ihail,improve,0,kte,dzw,rhoz,qrz,tz,vtr,precip,dtcfl)
+       call semi_sedi('qr',ihail,improve,1,kte,dzw,rhoz,qrz,tz,vtr,precip,dtcfl)
        pptrain = pptrain + precip
     enddo
 
@@ -837,7 +837,7 @@ CONTAINS
     do n = 1 , ntimes
        vts(:) = 0.
        precip = 0.
-       call semi_sedi('qs',ihail,improve,0,kte,dzw,rhoz,qsz,tz,vts,precip,dtcfl)
+       call semi_sedi('qs',ihail,improve,1,kte,dzw,rhoz,qsz,tz,vts,precip,dtcfl)
        pptsnow = pptsnow + precip
     enddo
 
@@ -936,7 +936,7 @@ CONTAINS
     do n = 1 , ntimes
        vtg(:) = 0.
        precip = 0.
-       call semi_sedi('qg',ihail,improve,0,kte,dzw,rhoz,qgz,tz,vtg,precip,dtcfl)
+       call semi_sedi('qg',ihail,improve,1,kte,dzw,rhoz,qgz,tz,vtg,precip,dtcfl)
        pptgraul = pptgraul + precip
     enddo
 
@@ -2299,8 +2299,10 @@ CONTAINS
 !JJS 20140226  variables for the calculation of effective radius of cloud species
   REAL , DIMENSION( ims:ime , jms:jme ) , INTENT(IN)   :: XLAND
   real, parameter :: roqi = 0.9179    ! ice density
-  real, parameter :: ccn_over_land = 1500  ! [#/cm3] climatological value
-  real, parameter :: ccn_over_water = 150  ! [#/cm3] climatological value
+!  real, parameter :: ccn_over_land = 1500  ! [#/cm3] climatological value
+!  real, parameter :: ccn_over_water = 150  ! [#/cm3] climatological value
+  real, parameter :: ccn_over_land = 159  ! [#/cm3] climatological value (from MERRA2)
+  real, parameter :: ccn_over_water = 66  ! [#/cm3] climatological value (from MERRA2)
   real :: L_cloud    ! cloud water [g/cm3] !
   real :: I_cloud    ! cloud water [g/cm3] !
   real :: mu, ccn_ref, lambda
@@ -2343,6 +2345,11 @@ CONTAINS
       LOGICAL, OPTIONAL, INTENT(IN) :: diagflag
       INTEGER, OPTIONAL, INTENT(IN) :: do_radar_ref
 !+---+-----------------------------------------------------------------+
+      integer, parameter :: reiflag = 1
+      ! 1 : default
+      ! 2 : Wyser 1998
+      real, parameter :: reimin = 10.0 , reimax = 150.0
+      real :: rho_0, bw98
 !
 !JJS20090623      save  
 
@@ -4887,6 +4894,17 @@ CONTAINS
 #endif
    endif ! qci(i,j,k) < cmin test
 
+   if ( reiflag .eq. 2 ) then
+      ! Wyser 1998 :
+      if ( qci(i,j,k) .ge. 1.e-12 ) then
+         rho_0 = 50.e-3
+         bw98 = - 2. + 1.e-3 * log10(rho(i,j,k)*qci(i,j,k)/rho_0)*max(0.0,tairc(i,j))**1.5
+         refi(i,k,j) = 377.4 + bw98 * (203.3 + bw98 * (37.91 + 2.3696 * bw98))
+         refi(i,k,j) = max (reimin, min (reimax, refi(i,k,j)))
+      else
+         refi(i,k,j) = reimin
+      endif
+   endif
 !JJS 20140305 ^^^^^  Calculate effective radius for all cloud species
 
  2000 continue
@@ -5445,7 +5463,6 @@ CONTAINS
       ! 2 : Heymsfield and Donner (1990), igce!= 1
       ! 3 : Hong et al. (2004)          , igce = 1 , improve = 3
       ! 4 : Deng and Mace (2008)
-      ! 5 : hybrid of HD90 and DM08
 
       real, parameter :: vimax = 0.5     ! max fall speed for cloud ice (m/s)
       real, parameter :: vimin = 0.      ! min fall speed for cloud ice (m/s)
@@ -5495,6 +5512,11 @@ CONTAINS
             if ( y1 .lt. 1.e-6 ) then
                vti = 0.
             else
+               ! fallspeed     (m/s)  : V=1.49e4*D**1.31
+               ! diameter      (m)    : D=11.9*M**0.5
+               ! concentration (m^-3) : N=5.38e7*(rho*q)**0.75
+               ! mass          (kg)   : M=rho*q/N
+               !                         =1/5.38e7*(rho*q)**0.25
                const_vt = 1.49e4
                const_d = 11.9
                const_m = 1./5.38e7
@@ -5513,14 +5535,6 @@ CONTAINS
             vti = exp(log(10.) * vti)
             vti = vti * 0.01    ! convert back to MKS
 
-         elseif ( vtiflag .eq. 5 ) then
-            ! hybrid of HD90 and DM08 :
-            tc = tz - t0
-            h1 = 0.5  !for HD90
-            h2 = 0.5  !for DM08
-            vti = 3.29 * ( rhoz * qiz ) ** 0.16 * h1 + &
-                  exp(log(10.) * (3. + log10(qiz * rhoz)) * &
-                  (tc * (aa * tc + bb) + cc) + dd * tc + ee) * 0.01 * h2
          endif
 
          vti = min ( vimax , max ( vimin , vti ) )
@@ -5693,6 +5707,15 @@ CONTAINS
                endif
                vtg = dmax1(vgcr*(r00*y1)**bgq/ftng, 0.0)
                vtg = vtg * 0.01  !convert back to MKS
+
+!               !>>> from GFDL MP :
+!!               vcong = 87.2382675
+!!               rhof = sqrt(min(10.,1.2/rhoz))
+!!               normg = 5026548245.74367
+!!               vtg = vcong * rhof * sqrt(sqrt(sqrt(qgz*rhoz/normg)))
+!               vtg = 87.2382675 * sqrt(min(10.,rhoe_s/rhoz)) * &
+!                     sqrt(sqrt(sqrt(qgz*rhoz/5026548245.74367)))
+!               !<<<
 !            endif  !end of if igce
             vtg = min ( vgmax , max ( vgmin , vtg ) )
          endif  !end of if ihail
