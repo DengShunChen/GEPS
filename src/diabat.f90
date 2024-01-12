@@ -2377,8 +2377,6 @@
             tpert = ( tt(i,k,jj) - tt_save_sppt(i,k,jj) - dtdtr ) * ru
             ru = (sppt3d(i,k,jj)*0.5 ) + 1. !test reduce q-perturb
             qpert = ( qt(i,k,jj) - qt_save_sppt(i,k,jj) ) * ru
-            !cloud fraction perturb
-            !cldpert = ( clds(i,k,jj) - cld_save_sppt(i,k,jj) ) * ru
 
             ut(i,k,jj) = ut_save_sppt(i,k,jj) + upert
             vt(i,k,jj) = vt_save_sppt(i,k,jj) + vpert
@@ -2389,9 +2387,11 @@
                qt(i,k,jj) = qnew
                tt(i,k,jj) = tt_save_sppt(i,k,jj) + tpert + dtdtr
             endif
-            !!!perturb cloud fraction
+            !cloud fraction perturb
+            !ru = (sppt3d(i,k,jj)*0.5 ) + 1.
+            !cldpert = ( clds(i,k,jj) - cld_save_sppt(i,k,jj) ) * ru
             !cldnew = cld_save_sppt(i,k,jj) + cldpert
-            !if ( cldnew .ge. qmin ) then
+            !if ( cldnew .ge. qmin .and. cldnew .lt. 1.0 ) then
             !   clds(i,k,jj) = cldnew
             !endif
           enddo

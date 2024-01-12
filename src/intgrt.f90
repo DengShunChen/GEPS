@@ -723,8 +723,6 @@
        pten=0.
 
        deldm=0.
-       forward = .true.
-       fwd= .true.
 
 
 
@@ -733,9 +731,9 @@
 !
 !     advet grid non-linear forcing from t-dt/2 to t+dt/2 via NDSL advection
 !
-      call mpe2d_transpose_ndsl_p2f(ut,ut_sl,    &
+      call mpe2d_transpose_ndsl_p2f(um,ut_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(vt,vt_sl,    &
+      call mpe2d_transpose_ndsl_p2f(vm,vt_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 
       call mpe2d_transpose_ndsl_p2f(ut,uum_sl,    &
@@ -914,7 +912,6 @@
               enddo
               plmid(n,m,i)= dtah*plten(n,m,i)+plnow(n,m,i)
             enddo
-            plmid(n,m,i)= dtah*plten(n,m,i)+plnow(n,m,i)
           enddo
         enddo
         hfiltm=mwhd*hfiltx
