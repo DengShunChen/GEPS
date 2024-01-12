@@ -757,7 +757,9 @@
         phys_hydrostatic = .true.   !flag for hydrostatic heating from physics 
         consv_te = .false.          !flag for energy conservation
         last_step = .true.          !flag for final clean-up (not sure)
-        do_inline_mp = .false.      !flag for inline GFDLMP
+        do_inline_mp = .false.      !flag for inline GFDLMP (so far must be false) :
+                                    !  = false : run in physical driver, and use real temperature
+                                    !  = true  : run in dynamical core, and use virtual temperature
         if(nmmiph.eq.12) sedi_w = sedi_w_v2  !flag for w momentum transportation during sedimentation
         if(nmmiph.eq.13) sedi_w = sedi_w_v3  !flag for w momentum transportation during sedimentation
 
