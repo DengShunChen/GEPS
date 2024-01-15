@@ -340,10 +340,10 @@
       integer i,j,k,n,jj,kk,nxj,nxjf,kn
       real    dsigp    ,qtot      ,qtota                    &
              ,sumtott  ,sumwatt   ,sumwatta                 &
-             ,odpondp  ,dta
+             ,odpondp 
       real(kind=RTYPE) pnew(nxp,my_max),pten(nxp,my_max)    &
                       ,ww1(nx,my_max),pltemp(jtrun,jtmax,2) &
-                      ,pltend(jtrun,jtmax,2)
+                      ,pltend(jtrun,jtmax,2),dta
       
       ! adjustment of surface pressure
       do jj = 1, jlistnum
