@@ -23,7 +23,7 @@ if [ $JCAP = 639 ] ; then
   export NPEX=4
   export NPEY=384
 elif [ $JCAP = 383 ] ; then
-  export NPEX=4
+  export NPEX=2
   export NPEY=96
 fi
 
