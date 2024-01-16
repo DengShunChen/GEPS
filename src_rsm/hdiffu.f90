@@ -162,7 +162,7 @@
       use mpe
       use rank
       use const, only : hdk1,hdk2,radsq,doskeb,onocos,wcfac,wdfac      &
-                      , poly,dpoly,hord,vd,RTYPE
+                      , poly,dpoly,hord,vd,factop,RTYPE
       use param, only : octahedral
 
       implicit  none
@@ -185,7 +185,7 @@
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
       real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
-      real      hfilt,hfilt2,nf,dec,coefu,factop,powd,kfac
+      real      hfilt,nf,dec,coefu,powd,kfac,dect
       real      c1,c2,c3
       logical   windchk
 
@@ -220,15 +220,11 @@
 !
       powd = float(hord) / 2.
       hfilt  = (radsq/(nf*(nf+1)))**powd
-      hfilt2 = radsq/(nf*(nf+1))
-      factop = 60.
       coefu = factop/float(hdk2(1)-hdk1)
       if ( octahedral ) then
         hfilt  = hfilt/(6.*dta)
-        hfilt2 = hfilt2/(6.*dta)
       else
         hfilt  = hfilt/dta
-        hfilt2 = hfilt2/dta
       endif
 
       do 100 k=1,levp  ! levp -> lev
@@ -240,7 +236,15 @@
         kfac = min(coefu*max(float(hdk2(1)-KL),0.),factop)!  & 
 !             + min(1.*max(float(hdk2(3)-KL),0.),4.)
 !        if ( KL .le. hdk1 ) kfac = kfac*(1.+vd*exp(-0.5*KL))
-        kfac = kfac*(1.+vd*exp(-0.5*max(float(KL-hdk1),0.)))
+!        kfac = kfac*(1.+vd*exp(-0.2*max(float(KL-hdk1),0.)))
+        dect = float(min(max(hdk1-KL,1-hdk1),hdk1-1))/float((hdk1-1))
+        if ( dect .ge. 0. ) then
+          dec  = 0.5*(1.+dect**(1./3.))
+        else
+          dect = -1.*dect
+          dec  = 0.5*(1.-dect**(1./3.))
+        endif
+        kfac = kfac*(1.+vd*dec)
         facd = max(1.,kfac)*amp
         facv = max(1.,kfac)*amp
         fact = max(1.,kfac)*amp
@@ -467,7 +471,7 @@
       use index
       use mpe
       use rank
-      use const, only : hdk1,hdk2,radsq,vd,RTYPE
+      use const, only : hdk1,hdk2,radsq,vd,factop,RTYPE,hord
       use param, only : octahedral
 
       implicit  none
@@ -487,8 +491,8 @@
       real      windmax1,windmax2,windmax3
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
-      real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
-      real      hfilt2,hfilt4,hfilt6,nf,kfac,fl,factop
+      real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu,dec,dect
+      real      hfilt,nf,kfac,fl,powd
       real      c1,c2,c3,c4
       logical   windchk
 
@@ -513,19 +517,13 @@
 !
       nf=jtrun-1
 !
-      factop = 60.
+      powd = float(hord) / 2.
       fl   = factop/float(hdk2(1)-hdk1)
-      hfilt6 = (radsq/(nf*(nf+1)))**3.
-      hfilt4 = (radsq/(nf*(nf+1)))**2.
-      hfilt2 = radsq/(nf*(nf+1))
+      hfilt = (radsq/(nf*(nf+1)))**powd
       if ( octahedral ) then
-        hfilt6 = hfilt6/(6.*dta)
-        hfilt4 = hfilt4/(6.*dta)
-        hfilt2 = hfilt2/(6.*dta)
+        hfilt = hfilt/(6.*dta)
       else
-        hfilt6 = hfilt6/dta
-        hfilt4 = hfilt4/dta
-        hfilt2 = hfilt2/dta
+        hfilt = hfilt/dta
       endif
 
       do 100 k=1,levp  ! levp -> lev
@@ -538,7 +536,16 @@
         kfac = min(fl*max(float(hdk2(1)-KL),0.),factop)!    &
 !              + min(1.*max(float(hdk2(3)-KL),0.),4.)
 !        if ( KL .le. hdk1 ) kfac = kfac*(1.+vd*exp(-0.5*KL))
-        kfac = kfac*(1.+vd*exp(-0.5*max(float(KL-hdk1),0.)))
+!        kfac = kfac*(1.+vd*exp(-0.5*max(float(KL-hdk1),0.)))
+        dect = float(min(max(hdk1-KL,1-hdk1),hdk1-1))/float((hdk1-1))
+        if ( dect .ge. 0. ) then
+          dec  = 0.5*(1.+dect**(1./3.))
+        else
+          dect = -1.*dect
+          dec  = 0.5*(1.-dect**(1./3.))
+        endif
+        kfac = kfac*(1.+vd*dec)
+
 !        facd = mwhd * max(amp,kfac)
 !        facv = max(min(amp,1.),kfac)
         facd = max(1.,kfac)*amp
@@ -555,21 +562,17 @@
           mf=mlist(m)
           do n=mf,jtrun
 
-!!            c1=1.+dta*facv*hfilt6*eps4(n,m)**3.
-!!            c2=1.+dta*facd*hfilt2*eps4(n,m)
 !            if ( KL .le. hdk1 ) then
 !              c1=1.+dta*facv*hfilt4*eps4(n,m)**2.+vd*exp(-0.7*k)
 !              c2=1.+dta*facd*hfilt4*eps4(n,m)**2.+vd*exp(-0.7*k)
 !              c3=1.+dta*fact*hfilt4*eps4(n,m)**2.+vd*exp(-0.7*k)
 !            else
-              c1=1.+dta*facv*hfilt4*eps4(n,m)**2.
-              c2=1.+dta*facd*hfilt4*eps4(n,m)**2.
-              c3=1.+dta*fact*hfilt4*eps4(n,m)**2.
-!!              c2=1.+dta*facd*hfilt6*eps4(n,m)**3.
+              c1=1.+dta*facv*hfilt*eps4(n,m)**powd
+              c2=1.+dta*facd*hfilt*eps4(n,m)**powd
+              c3=1.+dta*fact*hfilt*eps4(n,m)**powd
 !            endif
 
 
-!!            c3=1.+dta*fact*hfilt6*eps4(n,m)**3.
 
 
 

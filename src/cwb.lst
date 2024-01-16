@@ -1,5 +1,5 @@
 
- Fujitsu Fortran Version 4.6.1  Tue Dec 19 11:05:09 2023
+ Fujitsu Fortran Version 4.6.1  Mon Jan 15 10:10:23 2024
 
  Compilation information
    Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src
@@ -1333,7 +1333,7 @@
  External subroutine subprogram "adjptq"
   (inc)(line-no.)(nest)(optimize)
              328                     !
-             329                           subroutine adjptq(pltemp)
+             329                           subroutine adjptq(dta,pltemp,pltend)
              330                     
              331                           use index
              332                           use mpe
@@ -1347,81 +1347,88 @@
              340                           integer i,j,k,n,jj,kk,nxj,nxjf,kn
              341                           real    dsigp    ,qtot      ,qtota                    &
              342                                  ,sumtott  ,sumwatt   ,sumwatta                 &
-             343                                  ,odpondp
-             344                           real(kind=RTYPE) pnew(nxp,my_max)                     &
-             345                                           ,ww1(nx,my_max),pltemp(jtrun,jtmax,2)
-             346                     
-             347                           ! adjustment of surface pressure
+             343                                  ,odpondp  ,dta
+             344                           real(kind=RTYPE) pnew(nxp,my_max),pten(nxp,my_max)    &
+             345                                           ,ww1(nx,my_max),pltemp(jtrun,jtmax,2) &
+             346                                           ,pltend(jtrun,jtmax,2)
+             347                     
+             348                           ! adjustment of surface pressure
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<< Loop-information  End >>>
-             348     1  pp                 do jj = 1, jlistnum
-             349     1   p                   j=jlist1(jj)
-             350     1   p                   nxj=nxdef_2d(j)
-             351     1   p                   nxjf=nxdef(j)
-             352     2   p                   do i = 1,nxj
-             353     2   p                     sumtott=0.
-             354     2   p                     sumwatt=0.
-             355     2   p                     sumwatta=0.
-             356     3   p                     do k = 1, lev
-             357     3   p                       dsigp = dsigma(k,1)*pt(i,jj)+dsigma(k,2)
-             358     3   p                       qtot=0.
-             359     3   p                       qtota=0.
-             360     4   p   8                   do n = 1, ncld
-             361     4   p   8                      kk=k+(n-1)*lev
-             362     4   p   8                      qtot = qtot  + qp(i,kk,jj)
-             363     4   p   8                      qtota= qtota + qt(i,kk,jj)
-             364     4   p   8                   enddo
-             365     3   p                       sumtott = sumtott  + dsigp
-             366     3   p                       sumwatt = sumwatt  + dsigp * qtot
-             367     3   p                       sumwatta= sumwatta + dsigp * qtota
-             368     3   p                       tt(i,k,jj)  = tt(i,k,jj)*pk(i,k,jj) / (1.0+0.608*qt(i,k,jj))
-             369     3   p                     enddo
-             370     2   p                     pnew(i,jj) = sumtott - sumwatt + sumwatta
-             371     2   p                   enddo
-             372     1   p                 enddo
-             373                     
-             374                           call mpe2d_unify_nx(ww1,pnew)
-             375                           call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1            &
-             376                                       ,pltemp,nsizey)
-             377                           call transr1(jtrun,jtmax,nx,my,my_max,poly,pltemp,pnew,nsizey)
-             378                     
-             379                           ! mass adjustment of all tracers and virtual potential temperature
+             349     1  pp                 do jj = 1, jlistnum
+             350     1   p                   j=jlist1(jj)
+             351     1   p                   nxj=nxdef_2d(j)
+             352     1   p                   nxjf=nxdef(j)
+             353     2   p                   do i = 1,nxj
+             354     2   p                     sumtott=0.
+             355     2   p                     sumwatt=0.
+             356     2   p                     sumwatta=0.
+             357     3   p                     do k = 1, lev
+             358     3   p                       dsigp = dsigma(k,1)*pt(i,jj)+dsigma(k,2)
+             359     3   p                       qtot=0.
+             360     3   p                       qtota=0.
+             361     4   p   8                   do n = 1, ncld
+             362     4   p   8                      kk=k+(n-1)*lev
+             363     4   p   8                      qtot = qtot  + qp(i,kk,jj)
+             364     4   p   8                      qtota= qtota + qt(i,kk,jj)
+             365     4   p   8                   enddo
+             366     3   p                       sumtott = sumtott  + dsigp
+             367     3   p                       sumwatt = sumwatt  + dsigp * qtot
+             368     3   p                       sumwatta= sumwatta + dsigp * qtota
+             369     3   p                       tt(i,k,jj)  = tt(i,k,jj)*pk(i,k,jj) / (1.0+0.608*qt(i,k,jj))
+             370     3   p                     enddo
+             371     2   p                     pnew(i,jj) = sumtott - sumwatt + sumwatta
+             372     2               
+             373     2   p                   enddo
+             374     1   p                 enddo
+             375                     
+             376                           call mpe2d_unify_nx(ww1,pnew)
+             377                           call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1            &
+             378                                       ,pltemp,nsizey)
+             379                           call transr1(jtrun,jtmax,nx,my,my_max,poly,pltemp,pnew,nsizey)
              380                     
-             381     1                     do jj = 1, jlistnum
-             382     1                       j=jlist1(jj)
-             383     1                       nxj=nxdef_2d(j)
-             384     1                       call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pnew(1,jj), &
-             385     1                                               pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
+             381                           ! mass adjustment of all tracers and virtual potential temperature
+             382                     
+             383     1                     do jj = 1, jlistnum
+             384     1                       j=jlist1(jj)
+             385     1                       nxj=nxdef_2d(j)
+             386     1                       call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pnew(1,jj), &
+             387     1                                               pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<< Loop-information  End >>>
-             386     2  pp                   do i = 1,nxj
-             387     3   p                     do k = 1, lev
-             388     3   p                       odpondp =  (dsigma(k,1)*pt(i,jj)+dsigma(k,2))              &
-             389     3                                    / (dsigma(k,1)*pnew(i,jj)+dsigma(k,2))
+             388     2  pp                   do i = 1,nxj
+             389     3   p                     do k = 1, lev
+             390     3   p                       odpondp =  (dsigma(k,1)*pt(i,jj)+dsigma(k,2))              &
+             391     3                                    / (dsigma(k,1)*pnew(i,jj)+dsigma(k,2))
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 40, MVE: 11, POL: S)
                                    <<< Loop-information  End >>>
-             390     4   p   2                   do n = 1, ncld
-             391     4   p   2                     kk=k+(n-1)*lev
-             392     4   p   2                     qt(i,kk,jj) = qt(i,kk,jj) * odpondp
-             393     4   p   2                   enddo
-             394     3   p                       tt(i,k,jj) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj))/pk(i,k,jj)
-             395     3   p                     enddo
-             396     2   p                   enddo
-             397     1                     enddo
-             398                     
-             399                           return
-             400                           end
+             392     4   p   2                   do n = 1, ncld
+             393     4   p   2                     kk=k+(n-1)*lev
+             394     4   p   2                     qt(i,kk,jj) = qt(i,kk,jj) * odpondp
+             395     4   p   2                   enddo
+             396     3   p                       tt(i,k,jj) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj))/pk(i,k,jj)
+             397     3   p                     enddo
+             398     2   p                     pten(i,jj) = ( pnew(i,jj) - ptp(i,jj) ) / dta
+             399     2   p                   enddo
+             400     1                     enddo
+             401                     
+             402                           call mpe2d_unify_nx(ww1,pten)
+             403                           call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1            &
+             404                                       ,pltend,nsizey)
+             405                     
+             406                           return
+             407                           end
 
  Procedure information
-   Lines      : 73
-   Statements : 56
-   Stack(byte): 1792
+   Lines      : 80
+   Statements : 59
+   Stack(byte): 1904
    Prefetch num: 0
 
  Scoping unit of external sub-program : adjptq
@@ -1443,13 +1450,19 @@
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 357  357  388  388  388  388
+      |(Reference)      : 358  358  390  390  390  390
      dsigp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 341
-      |(Definition)     : 357
-      |(Reference)      : 365  366  367
+      |(Definition)     : 358
+      |(Reference)      : 366  367  368
+     dta
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 329  341
+      |(Definition)     : 
+      |(Reference)      : 398
      grid
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -1460,8 +1473,8 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 340
-      |(Definition)     : 352  386
-      |(Reference)      : 357  362  363  368  368  368  368  370  388  388  392  392  394  394  394  394
+      |(Definition)     : 353  388
+      |(Reference)      : 358  363  364  369  369  369  369  371  390  390  394  394  396  396  396  396  398  398  398
      index
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -1472,50 +1485,50 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 340
-      |(Definition)     : 349  382
-      |(Reference)      : 350  351  383  384
+      |(Definition)     : 350  384
+      |(Reference)      : 351  352  385  386
      jj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 340
-      |(Definition)     : 348  381
-      |(Reference)      : 349  357  362  363  368  368  368  368  370  382  384  384  384  384  388  388  392  392  394  394  394  394
+      |(Definition)     : 349  383
+      |(Reference)      : 350  358  363  364  369  369  369  369  371  384  386  386  386  386  390  390  394  394  396  396  396  396  398  398  398
      jlist1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 349  382
+      |(Reference)      : 350  384
      jlistnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 348  381
+      |(Reference)      : 349  383
      jtmax
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 375  377
-      |(Reference)      : 344
+      |(Definition)     : 377  379  403
+      |(Reference)      : 344  344
      jtrun
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 375  377
-      |(Reference)      : 344
+      |(Definition)     : 377  379  403
+      |(Reference)      : 344  344
      k
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 340
-      |(Definition)     : 356  387
-      |(Reference)      : 357  357  361  368  368  368  368  388  388  388  388  391  394  394  394  394
+      |(Definition)     : 357  389
+      |(Reference)      : 358  358  362  369  369  369  369  390  390  390  390  393  396  396  396  396
      kk
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 340
-      |(Definition)     : 361  391
-      |(Reference)      : 362  363  392  392
+      |(Definition)     : 362  393
+      |(Reference)      : 363  364  394  394
      kn
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
@@ -1526,8 +1539,8 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 384
-      |(Reference)      : 356  361  387  391
+      |(Definition)     : 386
+      |(Reference)      : 357  362  389  393
      mpe
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -1539,85 +1552,85 @@
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 374
+      |(Reference)      : 376  402
      my
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 375  377
+      |(Definition)     : 377  379  403
       |(Reference)      : 
      my_max
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 375  377
-      |(Reference)      : 344  344
+      |(Definition)     : 377  379  403
+      |(Reference)      : 344  344  344
      n
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 340
-      |(Definition)     : 360  390
-      |(Reference)      : 361  391
+      |(Definition)     : 361  392
+      |(Reference)      : 362  393
      ncld
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 360  390
+      |(Reference)      : 361  392
      nsizey
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 375  377
+      |(Definition)     : 377  379  403
       |(Reference)      : 
      nx
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 375  377
+      |(Definition)     : 377  379  403
       |(Reference)      : 344
      nxdef
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 351
+      |(Reference)      : 352
      nxdef_2d
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 350  383
+      |(Reference)      : 351  385
      nxj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 340
-      |(Definition)     : 350  383
-      |(Reference)      : 352  386
+      |(Definition)     : 351  385
+      |(Reference)      : 353  388
      nxjf
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 340
-      |(Definition)     : 351
+      |(Definition)     : 352
       |(Reference)      : 
      nxjp
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 384
+      |(Definition)     : 386
       |(Reference)      : 
      nxp
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 384
-      |(Reference)      : 344
+      |(Definition)     : 386
+      |(Reference)      : 344  344
      odpondp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 341
-      |(Definition)     : 388
-      |(Reference)      : 392
+      |(Definition)     : 390
+      |(Reference)      : 394
      param
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -1628,80 +1641,98 @@
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 384
-      |(Reference)      : 368  394
+      |(Definition)     : 386
+      |(Reference)      : 369  396
      pk2
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 384
+      |(Definition)     : 386
       |(Reference)      : 
      plt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 384
+      |(Definition)     : 386
       |(Reference)      : 
      pltemp
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 329  344
-      |(Definition)     : 375  377
+      |(Definition)     : 377  379
+      |(Reference)      : 
+     pltend
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 329  344
+      |(Definition)     : 403
       |(Reference)      : 
      pnew
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 344
-      |(Definition)     : 370  374  377  384
-      |(Reference)      : 388
+      |(Definition)     : 371  376  379  386
+      |(Reference)      : 390  398
      poly
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 375  377
+      |(Definition)     : 377  379  403
       |(Reference)      : 
      prexp_hybrid_cwb
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 384
+      |(Reference)      : 386
      pt
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 357  388
+      |(Reference)      : 358  390
+     pten
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 344
+      |(Definition)     : 398  402
+      |(Reference)      : 
      ptop
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 384
+      |(Definition)     : 386
       |(Reference)      : 
+     ptp
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 398
      qp
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 362
+      |(Reference)      : 363
      qt
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 392
-      |(Reference)      : 363  368  392  394
+      |(Definition)     : 394
+      |(Reference)      : 364  369  394  396
      qtot
-      |(Class and Type) : variable name, REAL(8)
-      |(Attributes)     : 
-      |(Declaration)    : 341
-      |(Definition)     : 358  362
-      |(Reference)      : 362  366
-     qtota
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 341
       |(Definition)     : 359  363
       |(Reference)      : 363  367
+     qtota
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 341
+      |(Definition)     : 360  364
+      |(Reference)      : 364  368
      RTYPE
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : use-associated
@@ -1718,61 +1749,61 @@
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 384
+      |(Definition)     : 386
       |(Reference)      : 
      sumtott
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 341
-      |(Definition)     : 353  365
-      |(Reference)      : 365  370
+      |(Definition)     : 354  366
+      |(Reference)      : 366  371
      sumwatt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 341
-      |(Definition)     : 354  366
-      |(Reference)      : 366  370
+      |(Definition)     : 355  367
+      |(Reference)      : 367  371
      sumwatta
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 341
-      |(Definition)     : 355  367
-      |(Reference)      : 367  370
+      |(Definition)     : 356  368
+      |(Reference)      : 368  371
      tranrs1
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 375
+      |(Reference)      : 377  403
      transr1
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 377
+      |(Reference)      : 379
      tt
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 368  394
-      |(Reference)      : 368  394
+      |(Definition)     : 369  396
+      |(Reference)      : 369  396
      weight
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 375
+      |(Definition)     : 377  403
       |(Reference)      : 
      ww1
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 344
-      |(Definition)     : 374  375
+      |(Definition)     : 376  377  402  403
       |(Reference)      : 
 
  Total information
    Procedures       : 11
-   Total lines      : 400
-   Total statements : 320
-   Total stack(byte): 24384
+   Total lines      : 407
+   Total statements : 323
+   Total stack(byte): 24496
    Total prefetch num: 0
 

@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:30:31 2023
+ Fujitsu Fortran Version 4.6.1  Thu Dec 28 15:29:05 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_rsm
    Source file       : mod_phygrid.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -91,43 +91,49 @@
               29                     
               30                           integer, allocatable,save :: il(:,:),ib(:,:)
               31                     
-              32                           real, dimension(:,:),allocatable,save :: cof
-              33                           real, dimension(:,:),allocatable,save :: xlon
-              34                           real, dimension(:)  ,allocatable,save :: xlat
-              35                     
-              36                           real, dimension(:,:),allocatable,save :: u10,v10,t2,rh2,rh10,q2  &
-              37                                                                   ,fm,fm10,fh,fh2,srflag   &
-              38                                                                   ,ustress,vstress,ssu,ssv
-              39                     
-              40                     
-              41                           real, dimension(:,:),allocatable,save :: fpsp,fpsp1
-              42                     
-              43                           real, dimension(:,:,:),allocatable,save :: e,eps,dtrad,asl,atl
-              44                           real, dimension(:,:,:),allocatable,save :: ftp,fqp,ftp1,fqp1
-              45                           real, dimension(:,:,:),allocatable,save :: deltaq,cnvwr,cnvcr
-              46                           real, dimension(:,:,:),allocatable,save :: dtcup,ducup,dvcup,    &
-              47                                                                      dtshl,dushl,dvshl,    &
-              48                                                                      dtlsp
-              49                           real(kind=RTYPE), dimension(:,:,:),allocatable,save :: o3l
-              50                     
-              51                           contains
-              52                     
-              53                              subroutine allocate_phygrid_array
-              54                     
-              55                                integer  ierr
+              32                     !helio>
+              33                           integer, dimension(:,:),allocatable,save :: ls_full(:,:)
+              34                           integer, dimension(:,:),allocatable,save :: ls_redu(:,:)
+              35                           real, dimension(:,:,:),allocatable,save :: outp(:,:,:)
+              36                     !helio<
+              37                     
+              38                           real, dimension(:,:),allocatable,save :: cof
+              39                           real, dimension(:,:),allocatable,save :: xlon
+              40                           real, dimension(:)  ,allocatable,save :: xlat
+              41                     
+              42                           real, dimension(:,:),allocatable,save :: u10,v10,t2,rh2,rh10,q2  &
+              43                                                                   ,fm,fm10,fh,fh2,srflag   &
+              44                                                                   ,ustress,vstress,ssu,ssv
+              45                     
+              46                     
+              47                           real, dimension(:,:),allocatable,save :: fpsp,fpsp1
+              48                     
+              49                           real, dimension(:,:,:),allocatable,save :: e,eps,dtrad,asl,atl
+              50                           real, dimension(:,:,:),allocatable,save :: ftp,fqp,ftp1,fqp1
+              51                           real, dimension(:,:,:),allocatable,save :: deltaq,cnvwr,cnvcr
+              52                           real, dimension(:,:,:),allocatable,save :: dtcup,ducup,dvcup,    &
+              53                                                                      dtshl,dushl,dvshl,    &
+              54                                                                      dtlsp,dulsp,dvlsp
+              55                           real(kind=RTYPE), dimension(:,:,:),allocatable,save :: o3l
               56                     
-              57                                allocate (  e(nxp,lev,my_max),  eps(nxp,lev,my_max),  &
-              58                                          o3l(nxp,lev,my_max),dtrad(nxp,lev,my_max),  &
-              59                                          asl(nxp,lev,my_max),  atl(nxp,lev,my_max),  &
-              60                                          ftp(nxp,lev,my_max),  fqp(nxp,lev,my_max),  &
-              61                                         ftp1(nxp,lev,my_max), fqp1(nxp,lev,my_max),  &
-              62                                         deltaq(nxp,lev,my_max),cnvwr(nxp,lev,my_max),&
-              63                                         cnvcr(nxp,lev,my_max),  stat=ierr)
-              64                     
-              65     1                          if (ierr/= 0) then
-              66     1                              write(6,*) 'mod_phygrid : allocate fail 1 '
-              67     1                              stop
-              68     1                          end if
+              57                           contains
+              58                     
+              59                              subroutine allocate_phygrid_array
+              60                     
+              61                                integer  ierr
+              62                     
+              63                                allocate (  e(nxp,lev,my_max),  eps(nxp,lev,my_max),  &
+              64                                          o3l(nxp,lev,my_max),dtrad(nxp,lev,my_max),  &
+              65                                          asl(nxp,lev,my_max),  atl(nxp,lev,my_max),  &
+              66                                          ftp(nxp,lev,my_max),  fqp(nxp,lev,my_max),  &
+              67                                         ftp1(nxp,lev,my_max), fqp1(nxp,lev,my_max),  &
+              68                                         deltaq(nxp,lev,my_max),cnvwr(nxp,lev,my_max),&
+              69                                         cnvcr(nxp,lev,my_max),  stat=ierr)
+              70                     
+              71     1                          if (ierr/= 0) then
+              72     1                              write(6,*) 'mod_phygrid : allocate fail 1 '
+              73     1                              stop
+              74     1                          end if
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
@@ -136,7 +142,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      deltaq
                                    <<< Loop-information  End >>>
-              69        pp   4v                 deltaq = 0.
+              75        pp   4v                 deltaq = 0.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
@@ -145,7 +151,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cnvcr
                                    <<< Loop-information  End >>>
-              70        pp   4v                 cnvcr  = 0.
+              76        pp   4v                 cnvcr  = 0.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
@@ -154,30 +160,30 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cnvwr
                                    <<< Loop-information  End >>>
-              71        pp   4v                 cnvwr  = 0.
-              72                     
-              73                                allocate (                                 &
-              74                                  snr(nxp,my_max),   gwr(nxp,my_max),     tg(nxp,my_max), &
-              75                                                 ss(nxp,my_max),     rs(nxp,my_max), &
-              76                                ustar(nxp,my_max), tstar(nxp,my_max),  qstar(nxp,my_max), &
-              77                                hflux(nxp,my_max), qflux(nxp,my_max),raintot(nxp,my_max), &
-              78                               raincu(nxp,my_max),rainlp(nxp,my_max), totalp(nxp,my_max), &
-              79                               curate(nxp,my_max),  plcl(nxp,my_max), cumtop(nxp,my_max), &
-              80                               tgclim(nxp,my_max),  gwet(nxp,my_max),     z0(nxp,my_max), &
-              81                                  alb(nxp,my_max),gwclim(nxp,my_max),  acld(lev,my), &
-              82                                 ctot(nxp,my_max),  chig(nxp,my_max),   cmid(nxp,my_max), &
-              83                                 clow(nxp,my_max),  hpbl(nxp,my_max),   cosz(nxp,my_max), &
-              84                              rainlp6(nxp,my_max),raincu6(nxp,my_max),                    &
-              85                              rainlp3(nxp,my_max),raincu3(nxp,my_max),                    &
-              86                              rainlp1(nxp,my_max),raincu1(nxp,my_max), tsflw(nxp,my_max), &
-              87                                                               stat=ierr)
-              88                     
-              89     1                          if (ierr/= 0) then
-              90     1                              write(6,*) 'mod_phygrid : allocate fail 2 '
-              91     1                              stop
-              92     1                          end if
-              93                     
-              94                     !CWB2015
+              77        pp   4v                 cnvwr  = 0.
+              78                     
+              79                                allocate (                                 &
+              80                                  snr(nxp,my_max),   gwr(nxp,my_max),     tg(nxp,my_max), &
+              81                                                 ss(nxp,my_max),     rs(nxp,my_max), &
+              82                                ustar(nxp,my_max), tstar(nxp,my_max),  qstar(nxp,my_max), &
+              83                                hflux(nxp,my_max), qflux(nxp,my_max),raintot(nxp,my_max), &
+              84                               raincu(nxp,my_max),rainlp(nxp,my_max), totalp(nxp,my_max), &
+              85                               curate(nxp,my_max),  plcl(nxp,my_max), cumtop(nxp,my_max), &
+              86                               tgclim(nxp,my_max),  gwet(nxp,my_max),     z0(nxp,my_max), &
+              87                                  alb(nxp,my_max),gwclim(nxp,my_max),  acld(lev,my), &
+              88                                 ctot(nxp,my_max),  chig(nxp,my_max),   cmid(nxp,my_max), &
+              89                                 clow(nxp,my_max),  hpbl(nxp,my_max),   cosz(nxp,my_max), &
+              90                              rainlp6(nxp,my_max),raincu6(nxp,my_max),                    &
+              91                              rainlp3(nxp,my_max),raincu3(nxp,my_max),                    &
+              92                              rainlp1(nxp,my_max),raincu1(nxp,my_max), tsflw(nxp,my_max), &
+              93                                                               stat=ierr)
+              94                     
+              95     1                          if (ierr/= 0) then
+              96     1                              write(6,*) 'mod_phygrid : allocate fail 2 '
+              97     1                              stop
+              98     1                          end if
+              99                     
+             100                     !CWB2015
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 9
@@ -186,7 +192,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ss
                                    <<< Loop-information  End >>>
-              95        pp   4v                 ss=0.
+             101        pp   4v                 ss=0.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 9
@@ -195,9 +201,9 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      rs
                                    <<< Loop-information  End >>>
-              96        pp   4v                 rs=0.
-              97                     
-              98                     !CWB2015
+             102        pp   4v                 rs=0.
+             103                     
+             104                     !CWB2015
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 9
@@ -206,7 +212,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ctot
                                    <<< Loop-information  End >>>
-              99        pp   4v                 ctot=0.
+             105        pp   4v                 ctot=0.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 9
@@ -215,7 +221,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      chig
                                    <<< Loop-information  End >>>
-             100        pp   4v                 chig=0.
+             106        pp   4v                 chig=0.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 9
@@ -224,7 +230,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cmid
                                    <<< Loop-information  End >>>
-             101        pp   4v                 cmid=0.
+             107        pp   4v                 cmid=0.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 9
@@ -233,7 +239,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      clow
                                    <<< Loop-information  End >>>
-             102        pp   4v                 clow=0.
+             108        pp   4v                 clow=0.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 9
@@ -242,9 +248,9 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      hpbl
                                    <<< Loop-information  End >>>
-             103        pp   4v                 hpbl=0.
-             104                     
-             105                     !CWB2016
+             109        pp   4v                 hpbl=0.
+             110                     
+             111                     !CWB2016
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 9
@@ -253,7 +259,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      curate
                                    <<< Loop-information  End >>>
-             106        pp   4v                 curate=0.
+             112        pp   4v                 curate=0.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 9
@@ -262,31 +268,31 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tsflw
                                    <<< Loop-information  End >>>
-             107        pp   4v                 tsflw=0.
-             108                     
-             109                                allocate (land(nxp,my_max),ice(nxp,my_max), &
-             110                                          ocean(nxp,my_max), stat=ierr)
-             111     1                          if (ierr/= 0) then
-             112     1                              write(6,*) 'mod_phygrid : allocate fail 3 '
-             113     1                              stop
-             114     1                          end if
-             115                     
-             116                                allocate (il(nxp,4),ib(nxp,4), stat=ierr)
-             117                     
-             118     1                          if (ierr/= 0) then
-             119     1                              write(6,*) 'mod_phygrid : allocate fail 4 '
-             120     1                              stop
-             121     1                          end if
-             122                     
+             113        pp   4v                 tsflw=0.
+             114                     
+             115                                allocate (land(nxp,my_max),ice(nxp,my_max), &
+             116                                          ocean(nxp,my_max), stat=ierr)
+             117     1                          if (ierr/= 0) then
+             118     1                              write(6,*) 'mod_phygrid : allocate fail 3 '
+             119     1                              stop
+             120     1                          end if
+             121                     
+             122                                allocate (il(nxp,4),ib(nxp,4), stat=ierr)
              123                     
-             124                                allocate (cof(nxp*3,4),xlon(nx,my_max),xlat(my), stat=ierr)
-             125                     
-             126     1                          if (ierr/= 0) then
-             127     1                              write(6,*) 'mod_phygrid : allocate fail 5 '
-             128     1                              stop
-             129     1                          end if
-             130                     
-             131                     !CWB2015
+             124     1                          if (ierr/= 0) then
+             125     1                              write(6,*) 'mod_phygrid : allocate fail 4 '
+             126     1                              stop
+             127     1                          end if
+             128                     
+             129                     
+             130                                allocate (cof(nxp*3,4),xlon(nx,my_max),xlat(my), stat=ierr)
+             131                     
+             132     1                          if (ierr/= 0) then
+             133     1                              write(6,*) 'mod_phygrid : allocate fail 5 '
+             134     1                              stop
+             135     1                          end if
+             136                     
+             137                     !CWB2015
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 9
@@ -295,7 +301,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      il
                                    <<< Loop-information  End >>>
-             132        pp   4v                 il=0
+             138        pp   4v                 il=0
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 9
@@ -304,7 +310,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ib
                                    <<< Loop-information  End >>>
-             133        pp   4v                 ib=0
+             139        pp   4v                 ib=0
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 9
@@ -313,20 +319,20 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cof
                                    <<< Loop-information  End >>>
-             134        pp   4v                 cof=0.
-             135                     
-             136                                allocate (u10(nxp,my_max),v10(nxp,my_max),srflag(nxp,my_max) &
-             137                                          ,t2(nxp,my_max),rh2(nxp,my_max),rh10(nxp,my_max)   &
-             138                                          ,q2(nxp,my_max),fm(nxp,my_max),fm10(nxp,my_max)    &
-             139                                          ,fh(nxp,my_max),fh2(nxp,my_max)                    &
-             140                                          ,ustress(nxp,my_max),vstress(nxp,my_max)           &
-             141                                          ,ssu(nxp,my_max),ssv(nxp,my_max), stat=ierr)
-             142                     
-             143     1                          if (ierr/= 0) then
-             144     1                              write(6,*) 'mod_phygrid : allocate fail 6 '
-             145     1                              stop
-             146     1                          end if
-             147                     !
+             140        pp   4v                 cof=0.
+             141                     
+             142                                allocate (u10(nxp,my_max),v10(nxp,my_max),srflag(nxp,my_max) &
+             143                                          ,t2(nxp,my_max),rh2(nxp,my_max),rh10(nxp,my_max)   &
+             144                                          ,q2(nxp,my_max),fm(nxp,my_max),fm10(nxp,my_max)    &
+             145                                          ,fh(nxp,my_max),fh2(nxp,my_max)                    &
+             146                                          ,ustress(nxp,my_max),vstress(nxp,my_max)           &
+             147                                          ,ssu(nxp,my_max),ssv(nxp,my_max), stat=ierr)
+             148                     
+             149     1                          if (ierr/= 0) then
+             150     1                              write(6,*) 'mod_phygrid : allocate fail 6 '
+             151     1                              stop
+             152     1                          end if
+             153                     !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 9
@@ -335,7 +341,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      rh2
                                    <<< Loop-information  End >>>
-             148        pp   4v                 rh2=0.
+             154        pp   4v                 rh2=0.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 9
@@ -344,7 +350,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      rh10
                                    <<< Loop-information  End >>>
-             149        pp   4v                 rh10=0.
+             155        pp   4v                 rh10=0.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 9
@@ -353,25 +359,26 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      gwr
                                    <<< Loop-information  End >>>
-             150        pp   4v                 gwr=0.
-             151                     !
-             152                                allocate (fpsp(nxp,my_max),fpsp1(nxp,my_max),stat=ierr)
-             153                     
-             154     1                          if (ierr/= 0) then
-             155     1                              write(6,*) 'mod_phygrid : allocate fail 7 '
-             156     1                              stop
-             157     1                          end if
-             158                     !
-             159                                allocate (dtcup(nxp,lev,my_max),ducup(nxp,lev,my_max),    &
-             160                                          dvcup(nxp,lev,my_max),dtshl(nxp,lev,my_max),    &
-             161                                          dushl(nxp,lev,my_max),dvshl(nxp,lev,my_max),    &
-             162                                          dtlsp(nxp,lev,my_max), stat=ierr)
-             163                     
-             164     1                          if (ierr/= 0) then
-             165     1                              write(6,*) 'mod_phygrid : allocate fail 8 '
-             166     1                              stop
-             167     1                          end if
-             168                     !
+             156        pp   4v                 gwr=0.
+             157                     !
+             158                                allocate (fpsp(nxp,my_max),fpsp1(nxp,my_max),stat=ierr)
+             159                     
+             160     1                          if (ierr/= 0) then
+             161     1                              write(6,*) 'mod_phygrid : allocate fail 7 '
+             162     1                              stop
+             163     1                          end if
+             164                     !
+             165                                allocate (dtcup(nxp,lev,my_max),ducup(nxp,lev,my_max),    &
+             166                                          dvcup(nxp,lev,my_max),dtshl(nxp,lev,my_max),    &
+             167                                          dushl(nxp,lev,my_max),dvshl(nxp,lev,my_max),    &
+             168                                          dtlsp(nxp,lev,my_max),dulsp(nxp,lev,my_max),    &
+             169                                          dvlsp(nxp,lev,my_max),  stat=ierr)
+             170                     
+             171     1                          if (ierr/= 0) then
+             172     1                              write(6,*) 'mod_phygrid : allocate fail 8 '
+             173     1                              stop
+             174     1                          end if
+             175                     !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
@@ -380,7 +387,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      dtcup
                                    <<< Loop-information  End >>>
-             169        pp   4v                 dtcup = 0.
+             176        pp   4v                 dtcup = 0.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
@@ -389,7 +396,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ducup
                                    <<< Loop-information  End >>>
-             170        pp   4v                 ducup = 0.
+             177        pp   4v                 ducup = 0.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
@@ -398,7 +405,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      dvcup
                                    <<< Loop-information  End >>>
-             171        pp   4v                 dvcup = 0.
+             178        pp   4v                 dvcup = 0.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
@@ -407,7 +414,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      dtshl
                                    <<< Loop-information  End >>>
-             172        pp   4v                 dtshl = 0.
+             179        pp   4v                 dtshl = 0.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
@@ -416,7 +423,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      dushl
                                    <<< Loop-information  End >>>
-             173        pp   4v                 dushl = 0.
+             180        pp   4v                 dushl = 0.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
@@ -425,7 +432,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      dvshl
                                    <<< Loop-information  End >>>
-             174        pp   4v                 dvshl = 0.
+             181        pp   4v                 dvshl = 0.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
@@ -434,41 +441,100 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      dtlsp
                                    <<< Loop-information  End >>>
-             175        pp   4v                 dtlsp = 0.
-             176                     !
-             177                                return
-             178                     
-             179                              end subroutine
-             180                     
-             181                              subroutine deallocate_phygrid_array
-             182                     
-             183                                deallocate (e,eps,o3l,dtrad,asl,atl,ftp,fqp,ftp1,fqp1)
-             184                                deallocate (deltaq,cnvwr,cnvcr)
-             185                                deallocate (                                           &
-             186                                            snr,gwr,tg,   ss,rs,                       &
-             187                                  ustar,tstar,qstar,hflux,qflux,raintot,raincu,rainlp, &
-             188                                  totalp,curate,plcl,cumtop,tgclim,gwet,z0,alb,        &
-             189                                  gwclim,acld,ctot,chig,cmid,clow,hpbl,cosz)
-             190                     
-             191                                deallocate (land,ice,ocean)
-             192                                deallocate (il,ib)
-             193                                deallocate (cof,xlon,xlat)
-             194                                deallocate (u10,v10,t2,rh2,rh10,srflag,q2,fm,fm10,fh,fh2)
-             195                                deallocate (fpsp,fpsp1)
-             196                                deallocate (rainlp6,raincu6,rainlp3,raincu3,rainlp1,raincu1)
-             197                                deallocate (tsflw)
-             198                                deallocate (dtcup,ducup,dvcup,dtshl,dushl,dvshl,dtlsp)
-             199                     
-             200                                return
-             201                     
-             202                              end subroutine
-             203                     
-             204                           end module phygrid
+             182        pp   4v                 dtlsp = 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      dulsp
+                                   <<< Loop-information  End >>>
+             183        pp   4v                 dulsp = 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      dvlsp
+                                   <<< Loop-information  End >>>
+             184        pp   4v                 dvlsp = 0.
+             185                     !
+             186                     
+             187                     !helio>
+             188                                allocate (ls_full(nx,my_max),ls_redu(nx,my_max), stat=ierr)
+             189                                allocate (outp(nx,my_max,8), stat=ierr)
+             190     1                          if (ierr/= 0) then
+             191     1                              write(6,*) 'mod_phygrid : allocate fail 9 '
+             192     1                              stop
+             193     1                          end if
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ls_full
+                                   <<< Loop-information  End >>>
+             194        pp   4v                 ls_full = 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ls_redu
+                                   <<< Loop-information  End >>>
+             195        pp   4v                 ls_redu = 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      outp
+                                   <<< Loop-information  End >>>
+             196        pp   4v                 outp = 0.
+             197                     !helio<
+             198                     
+             199                                return
+             200                     
+             201                              end subroutine
+             202                     
+             203                              subroutine deallocate_phygrid_array
+             204                     
+             205                                deallocate (e,eps,o3l,dtrad,asl,atl,ftp,fqp,ftp1,fqp1)
+             206                                deallocate (deltaq,cnvwr,cnvcr)
+             207                                deallocate (                                           &
+             208                                            snr,gwr,tg,   ss,rs,                       &
+             209                                  ustar,tstar,qstar,hflux,qflux,raintot,raincu,rainlp, &
+             210                                  totalp,curate,plcl,cumtop,tgclim,gwet,z0,alb,        &
+             211                                  gwclim,acld,ctot,chig,cmid,clow,hpbl,cosz)
+             212                     
+             213                                deallocate (land,ice,ocean)
+             214                                deallocate (il,ib)
+             215                                deallocate (cof,xlon,xlat)
+             216                                deallocate (u10,v10,t2,rh2,rh10,srflag,q2,fm,fm10,fh,fh2)
+             217                                deallocate (fpsp,fpsp1)
+             218                                deallocate (rainlp6,raincu6,rainlp3,raincu3,rainlp1,raincu1)
+             219                                deallocate (tsflw)
+             220                                deallocate (dtcup,ducup,dvcup,dtshl,dushl,dvshl,dtlsp,dulsp,dvlsp)
+             221                     !helio>
+             222                                deallocate (ls_full,ls_redu)
+             223                                deallocate (outp)
+             224                     !helio<
+             225                     
+             226                                return
+             227                     
+             228                              end subroutine
+             229                     
+             230                           end module phygrid
 
  Procedure information
-   Lines      : 204
-   Statements : 104
-   Stack(byte): 8800
+   Lines      : 230
+   Statements : 120
+   Stack(byte): 9968
    Prefetch num: 0
 
  Scoping unit of module : phygrid
@@ -488,13 +554,13 @@
      asl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 43
+      |(Declaration)    : 49
       |(Definition)     : 
       |(Reference)      : 
      atl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 43
+      |(Declaration)    : 49
       |(Definition)     : 
       |(Reference)      : 
      chig
@@ -518,19 +584,19 @@
      cnvcr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 45
+      |(Declaration)    : 51
       |(Definition)     : 
       |(Reference)      : 
      cnvwr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 45
+      |(Declaration)    : 51
       |(Definition)     : 
       |(Reference)      : 
      cof
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 32
+      |(Declaration)    : 38
       |(Definition)     : 
       |(Reference)      : 
      const
@@ -566,127 +632,139 @@
      deltaq
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 45
+      |(Declaration)    : 51
       |(Definition)     : 
       |(Reference)      : 
      dtcup
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 46
+      |(Declaration)    : 52
       |(Definition)     : 
       |(Reference)      : 
      dtlsp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 46
+      |(Declaration)    : 52
       |(Definition)     : 
       |(Reference)      : 
      dtrad
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 43
+      |(Declaration)    : 49
       |(Definition)     : 
       |(Reference)      : 
      dtshl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 46
+      |(Declaration)    : 52
       |(Definition)     : 
       |(Reference)      : 
      ducup
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 46
+      |(Declaration)    : 52
+      |(Definition)     : 
+      |(Reference)      : 
+     dulsp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 52
       |(Definition)     : 
       |(Reference)      : 
      dushl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 46
+      |(Declaration)    : 52
       |(Definition)     : 
       |(Reference)      : 
      dvcup
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 46
+      |(Declaration)    : 52
+      |(Definition)     : 
+      |(Reference)      : 
+     dvlsp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 52
       |(Definition)     : 
       |(Reference)      : 
      dvshl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 46
+      |(Declaration)    : 52
       |(Definition)     : 
       |(Reference)      : 
      e
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 43
+      |(Declaration)    : 49
       |(Definition)     : 
       |(Reference)      : 
      eps
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 43
+      |(Declaration)    : 49
       |(Definition)     : 
       |(Reference)      : 
      fh
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 36
+      |(Declaration)    : 42
       |(Definition)     : 
       |(Reference)      : 
      fh2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 36
+      |(Declaration)    : 42
       |(Definition)     : 
       |(Reference)      : 
      fm
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 36
+      |(Declaration)    : 42
       |(Definition)     : 
       |(Reference)      : 
      fm10
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 36
+      |(Declaration)    : 42
       |(Definition)     : 
       |(Reference)      : 
      fpsp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 41
+      |(Declaration)    : 47
       |(Definition)     : 
       |(Reference)      : 
      fpsp1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 41
+      |(Declaration)    : 47
       |(Definition)     : 
       |(Reference)      : 
      fqp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 44
+      |(Declaration)    : 50
       |(Definition)     : 
       |(Reference)      : 
      fqp1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 44
+      |(Declaration)    : 50
       |(Definition)     : 
       |(Reference)      : 
      ftp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 44
+      |(Declaration)    : 50
       |(Definition)     : 
       |(Reference)      : 
      ftp1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 44
+      |(Declaration)    : 50
       |(Definition)     : 
       |(Reference)      : 
      gwclim
@@ -749,16 +827,34 @@
       |(Declaration)    : 28
       |(Definition)     : 
       |(Reference)      : 
-     o3l
-      |(Class and Type) : variable name, REAL(8)
+     ls_full
+      |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 49
+      |(Declaration)    : 33
+      |(Definition)     : 
+      |(Reference)      : 
+     ls_redu
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 34
+      |(Definition)     : 
+      |(Reference)      : 
+     o3l
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 55
       |(Definition)     : 
       |(Reference)      : 
      ocean
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
       |(Declaration)    : 28
+      |(Definition)     : 
+      |(Reference)      : 
+     outp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 35
       |(Definition)     : 
       |(Reference)      : 
      param
@@ -772,7 +868,7 @@
       |(Attributes)     : 
       |(Declaration)    : 1
       |(Definition)     : 
-      |(Reference)      : 204
+      |(Reference)      : 230
      plcl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
@@ -782,7 +878,7 @@
      q2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 36
+      |(Declaration)    : 42
       |(Definition)     : 
       |(Reference)      : 
      qflux
@@ -802,7 +898,7 @@
       |(Attributes)     : PUBLIC, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 7  49
+      |(Reference)      : 7  55
      raincu
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
@@ -860,13 +956,13 @@
      rh10
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 36
+      |(Declaration)    : 42
       |(Definition)     : 
       |(Reference)      : 
      rh2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 36
+      |(Declaration)    : 42
       |(Definition)     : 
       |(Reference)      : 
      rs
@@ -884,7 +980,7 @@
      srflag
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 36
+      |(Declaration)    : 42
       |(Definition)     : 
       |(Reference)      : 
      ss
@@ -896,19 +992,19 @@
      ssu
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 36
+      |(Declaration)    : 42
       |(Definition)     : 
       |(Reference)      : 
      ssv
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 36
+      |(Declaration)    : 42
       |(Definition)     : 
       |(Reference)      : 
      t2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 36
+      |(Declaration)    : 42
       |(Definition)     : 
       |(Reference)      : 
      tg
@@ -944,7 +1040,7 @@
      u10
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 36
+      |(Declaration)    : 42
       |(Definition)     : 
       |(Reference)      : 
      ustar
@@ -956,31 +1052,31 @@
      ustress
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 36
+      |(Declaration)    : 42
       |(Definition)     : 
       |(Reference)      : 
      v10
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 36
+      |(Declaration)    : 42
       |(Definition)     : 
       |(Reference)      : 
      vstress
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 36
+      |(Declaration)    : 42
       |(Definition)     : 
       |(Reference)      : 
      xlat
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 34
+      |(Declaration)    : 40
       |(Definition)     : 
       |(Reference)      : 
      xlon
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
-      |(Declaration)    : 33
+      |(Declaration)    : 39
       |(Definition)     : 
       |(Reference)      : 
      z0
@@ -996,529 +1092,559 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      alb
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      allocate_phygrid_array
       |(Class and Type) : module subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 53
+      |(Definition)     : 59
       |(Reference)      : 
      asl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 57
+      |(Definition)     : 63
       |(Reference)      : 
      atl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 57
+      |(Definition)     : 63
       |(Reference)      : 
      chig
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73  100
+      |(Definition)     : 79  106
       |(Reference)      : 
      clow
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73  102
+      |(Definition)     : 79  108
       |(Reference)      : 
      cmid
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73  101
+      |(Definition)     : 79  107
       |(Reference)      : 
      cnvcr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 57  70
+      |(Definition)     : 63  76
       |(Reference)      : 
      cnvwr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 57  71
+      |(Definition)     : 63  77
       |(Reference)      : 
      cof
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 124  134
+      |(Definition)     : 130  140
       |(Reference)      : 
      cosz
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      ctot
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73  99
+      |(Definition)     : 79  105
       |(Reference)      : 
      cumtop
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      curate
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73  106
+      |(Definition)     : 79  112
       |(Reference)      : 
      deltaq
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 57  69
+      |(Definition)     : 63  75
       |(Reference)      : 
      dtcup
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 159  169
+      |(Definition)     : 165  176
       |(Reference)      : 
      dtlsp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 159  175
+      |(Definition)     : 165  182
       |(Reference)      : 
      dtrad
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 57
+      |(Definition)     : 63
       |(Reference)      : 
      dtshl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 159  172
+      |(Definition)     : 165  179
       |(Reference)      : 
      ducup
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 159  170
+      |(Definition)     : 165  177
+      |(Reference)      : 
+     dulsp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 165  183
       |(Reference)      : 
      dushl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 159  173
+      |(Definition)     : 165  180
       |(Reference)      : 
      dvcup
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 159  171
+      |(Definition)     : 165  178
+      |(Reference)      : 
+     dvlsp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 165  184
       |(Reference)      : 
      dvshl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 159  174
+      |(Definition)     : 165  181
       |(Reference)      : 
      e
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 57
+      |(Definition)     : 63
       |(Reference)      : 
      eps
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 57
+      |(Definition)     : 63
       |(Reference)      : 
      fh
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 136
+      |(Definition)     : 142
       |(Reference)      : 
      fh2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 136
+      |(Definition)     : 142
       |(Reference)      : 
      fm
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 136
+      |(Definition)     : 142
       |(Reference)      : 
      fm10
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 136
+      |(Definition)     : 142
       |(Reference)      : 
      fpsp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 152
+      |(Definition)     : 158
       |(Reference)      : 
      fpsp1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 152
+      |(Definition)     : 158
       |(Reference)      : 
      fqp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 57
+      |(Definition)     : 63
       |(Reference)      : 
      fqp1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 57
+      |(Definition)     : 63
       |(Reference)      : 
      ftp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 57
+      |(Definition)     : 63
       |(Reference)      : 
      ftp1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 57
+      |(Definition)     : 63
       |(Reference)      : 
      gwclim
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      gwet
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      gwr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73  150
+      |(Definition)     : 79  156
       |(Reference)      : 
      hflux
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      hpbl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73  103
+      |(Definition)     : 79  109
       |(Reference)      : 
      ib
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 116  133
+      |(Definition)     : 122  139
       |(Reference)      : 
      ice
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 109
+      |(Definition)     : 115
       |(Reference)      : 
      ierr
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 55
-      |(Definition)     : 57  73  109  116  124  136  152  159
-      |(Reference)      : 65  89  111  118  126  143  154  164
+      |(Declaration)    : 61
+      |(Definition)     : 63  79  115  122  130  142  158  165  188  189
+      |(Reference)      : 71  95  117  124  132  149  160  171  190
      il
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 116  132
+      |(Definition)     : 122  138
       |(Reference)      : 
      land
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 109
+      |(Definition)     : 115
       |(Reference)      : 
      lev
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 57  57  57  57  57  57  57  57  57  57  57  57  57  73  159  159  159  159  159  159  159
+      |(Reference)      : 63  63  63  63  63  63  63  63  63  63  63  63  63  79  165  165  165  165  165  165  165  165  165
+     ls_full
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 188  194
+      |(Reference)      : 
+     ls_redu
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 188  195
+      |(Reference)      : 
      my
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 73  124
+      |(Reference)      : 79  130
      my_max
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 57  57  57  57  57  57  57  57  57  57  57  57  57  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  109  109  109  124  136  136  136  136  136  136  136  136  136  136  136  136  136  136  136  152  152  159  159  159  159  159  159  159
+      |(Reference)      : 63  63  63  63  63  63  63  63  63  63  63  63  63  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  115  115  115  130  142  142  142  142  142  142  142  142  142  142  142  142  142  142  142  158  158  165  165  165  165  165  165  165  165  165  188  188  189
      nx
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 124
+      |(Reference)      : 130  188  188  189
      nxp
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 57  57  57  57  57  57  57  57  57  57  57  57  57  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  73  109  109  109  116  116  124  136  136  136  136  136  136  136  136  136  136  136  136  136  136  136  152  152  159  159  159  159  159  159  159
+      |(Reference)      : 63  63  63  63  63  63  63  63  63  63  63  63  63  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  79  115  115  115  122  122  130  142  142  142  142  142  142  142  142  142  142  142  142  142  142  142  158  158  165  165  165  165  165  165  165  165  165
      o3l
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 57
+      |(Definition)     : 63
       |(Reference)      : 
      ocean
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 109
+      |(Definition)     : 115
+      |(Reference)      : 
+     outp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 189  196
       |(Reference)      : 
      plcl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      q2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 136
+      |(Definition)     : 142
       |(Reference)      : 
      qflux
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      qstar
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      raincu
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      raincu1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      raincu3
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      raincu6
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      rainlp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      rainlp1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      rainlp3
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      rainlp6
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      raintot
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      rh10
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 136  149
+      |(Definition)     : 142  155
       |(Reference)      : 
      rh2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 136  148
+      |(Definition)     : 142  154
       |(Reference)      : 
      rs
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73  96
+      |(Definition)     : 79  102
       |(Reference)      : 
      snr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      srflag
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 136
+      |(Definition)     : 142
       |(Reference)      : 
      ss
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73  95
+      |(Definition)     : 79  101
       |(Reference)      : 
      ssu
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 136
+      |(Definition)     : 142
       |(Reference)      : 
      ssv
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 136
+      |(Definition)     : 142
       |(Reference)      : 
      t2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 136
+      |(Definition)     : 142
       |(Reference)      : 
      tg
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      tgclim
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      totalp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      tsflw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73  107
+      |(Definition)     : 79  113
       |(Reference)      : 
      tstar
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      u10
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 136
+      |(Definition)     : 142
       |(Reference)      : 
      ustar
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
      ustress
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 136
+      |(Definition)     : 142
       |(Reference)      : 
      v10
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 136
+      |(Definition)     : 142
       |(Reference)      : 
      vstress
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 136
+      |(Definition)     : 142
       |(Reference)      : 
      xlat
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 124
+      |(Definition)     : 130
       |(Reference)      : 
      xlon
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 124
+      |(Definition)     : 130
       |(Reference)      : 
      z0
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 73
+      |(Definition)     : 79
       |(Reference)      : 
 
  Scoping unit of module sub-program : deallocate_phygrid_array
@@ -1527,475 +1653,505 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      alb
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      asl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 183
+      |(Definition)     : 205
       |(Reference)      : 
      atl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 183
+      |(Definition)     : 205
       |(Reference)      : 
      chig
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      clow
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      cmid
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      cnvcr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 184
+      |(Definition)     : 206
       |(Reference)      : 
      cnvwr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 184
+      |(Definition)     : 206
       |(Reference)      : 
      cof
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 193
+      |(Definition)     : 215
       |(Reference)      : 
      cosz
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      ctot
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      cumtop
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      curate
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      deallocate_phygrid_array
       |(Class and Type) : module subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 181
+      |(Definition)     : 203
       |(Reference)      : 
      deltaq
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 184
+      |(Definition)     : 206
       |(Reference)      : 
      dtcup
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 198
+      |(Definition)     : 220
       |(Reference)      : 
      dtlsp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 198
+      |(Definition)     : 220
       |(Reference)      : 
      dtrad
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 183
+      |(Definition)     : 205
       |(Reference)      : 
      dtshl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 198
+      |(Definition)     : 220
       |(Reference)      : 
      ducup
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 198
+      |(Definition)     : 220
+      |(Reference)      : 
+     dulsp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 220
       |(Reference)      : 
      dushl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 198
+      |(Definition)     : 220
       |(Reference)      : 
      dvcup
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 198
+      |(Definition)     : 220
+      |(Reference)      : 
+     dvlsp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 220
       |(Reference)      : 
      dvshl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 198
+      |(Definition)     : 220
       |(Reference)      : 
      e
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 183
+      |(Definition)     : 205
       |(Reference)      : 
      eps
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 183
+      |(Definition)     : 205
       |(Reference)      : 
      fh
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 194
+      |(Definition)     : 216
       |(Reference)      : 
      fh2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 194
+      |(Definition)     : 216
       |(Reference)      : 
      fm
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 194
+      |(Definition)     : 216
       |(Reference)      : 
      fm10
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 194
+      |(Definition)     : 216
       |(Reference)      : 
      fpsp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 195
+      |(Definition)     : 217
       |(Reference)      : 
      fpsp1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 195
+      |(Definition)     : 217
       |(Reference)      : 
      fqp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 183
+      |(Definition)     : 205
       |(Reference)      : 
      fqp1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 183
+      |(Definition)     : 205
       |(Reference)      : 
      ftp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 183
+      |(Definition)     : 205
       |(Reference)      : 
      ftp1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 183
+      |(Definition)     : 205
       |(Reference)      : 
      gwclim
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      gwet
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      gwr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      hflux
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      hpbl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      ib
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 192
+      |(Definition)     : 214
       |(Reference)      : 
      ice
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 191
+      |(Definition)     : 213
       |(Reference)      : 
      il
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 192
+      |(Definition)     : 214
       |(Reference)      : 
      land
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 191
+      |(Definition)     : 213
       |(Reference)      : 
-     o3l
-      |(Class and Type) : variable name, REAL(8)
+     ls_full
+      |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 183
+      |(Definition)     : 222
+      |(Reference)      : 
+     ls_redu
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 222
+      |(Reference)      : 
+     o3l
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 205
       |(Reference)      : 
      ocean
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 191
+      |(Definition)     : 213
+      |(Reference)      : 
+     outp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 223
       |(Reference)      : 
      plcl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      q2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 194
+      |(Definition)     : 216
       |(Reference)      : 
      qflux
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      qstar
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      raincu
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      raincu1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 196
+      |(Definition)     : 218
       |(Reference)      : 
      raincu3
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 196
+      |(Definition)     : 218
       |(Reference)      : 
      raincu6
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 196
+      |(Definition)     : 218
       |(Reference)      : 
      rainlp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      rainlp1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 196
+      |(Definition)     : 218
       |(Reference)      : 
      rainlp3
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 196
+      |(Definition)     : 218
       |(Reference)      : 
      rainlp6
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 196
+      |(Definition)     : 218
       |(Reference)      : 
      raintot
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      rh10
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 194
+      |(Definition)     : 216
       |(Reference)      : 
      rh2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 194
+      |(Definition)     : 216
       |(Reference)      : 
      rs
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      snr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      srflag
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 194
+      |(Definition)     : 216
       |(Reference)      : 
      ss
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      t2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 194
+      |(Definition)     : 216
       |(Reference)      : 
      tg
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      tgclim
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      totalp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      tsflw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 197
+      |(Definition)     : 219
       |(Reference)      : 
      tstar
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      u10
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 194
+      |(Definition)     : 216
       |(Reference)      : 
      ustar
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
      v10
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 194
+      |(Definition)     : 216
       |(Reference)      : 
      xlat
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 193
+      |(Definition)     : 215
       |(Reference)      : 
      xlon
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 193
+      |(Definition)     : 215
       |(Reference)      : 
      z0
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
       |(Declaration)    : 
-      |(Definition)     : 185
+      |(Definition)     : 207
       |(Reference)      : 
 
  Total information
    Procedures       : 1
-   Total lines      : 204
-   Total statements : 104
-   Total stack(byte): 8800
+   Total lines      : 230
+   Total statements : 120
+   Total stack(byte): 9968
    Total prefetch num: 0
 

@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:30:20 2023
+ Fujitsu Fortran Version 4.6.1  Thu Dec 28 15:29:22 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_rsm
    Source file       : ioserver.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -166,7 +166,7 @@
               96                           stop
               97                     
               98                           return
-              99                           end
+              99                           end subroutine ioserver
 
  Procedure information
    Lines      : 99
@@ -247,7 +247,7 @@
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 1
-      |(Reference)      : 
+      |(Reference)      : 99
      ist
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
@@ -374,10 +374,383 @@
         100  execution     (Definition) 91  
                            (Reference)  33
 
+ External subroutine subprogram "ioserver_grb2"
+  (inc)(line-no.)(nest)(optimize)
+             100                     
+             101                     !-----------------------------
+             102                     
+             103                     subroutine ioserver_grb2(nx,my)
+             104                     use const, only : ifilout_grb,RTYPE
+             105                     use mod_grb2_param
+             106                     implicit none
+             107                     integer :: NMAX=500
+             108                     integer ::nx,my,nxmy,i,j,ist,ncnt,ntag,itau,istat
+             109                     integer*8::idtg
+             110                     !integer::ptp0(9,NMAX)
+             111                     !real*8   z(nx*my,NMAX)
+             112                     real(kind=RTYPE)::fld(nx*my)
+             113                     integer,allocatable::ptp0(:,:)
+             114                     real*4,allocatable ::z(:,:)
+             115                     character:: key*34
+             116                     integer::t12
+             117                     integer  ifromtau,itotau,istat
+             118                     ifromtau=0
+             119                     nxmy=nx*my
+             120                     
+             121                     !        memery GB                          core       real-4
+             122                     !NMAX=  (   26.    * 1024. * 1024. * 1024. / 48. ) / ( 4.  *  nxmy )
+             123                     !print*,'in ioserver NMAX=',NMAX
+             124                     allocate( ptp0(9,NMAX) , z(nx*my,NMAX) )
+             125                     
+             126                     grbid=233
+             127                     ntag=0
+             128                      133                      format( A  ,A ,I10.10 ,A , i4.4 ,A      )
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 3
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             129     1               do while (.true.)
+             130     1                 ntag=ntag+1
+             131     1                 call mpe_recv_key(key,ntag,ist)
+             132     1                 if(key(1:4).eq."DONE")exit !goto 100
+             133     2                 if(key(1:4).eq."OPEN")then
+             134     2                   read(key(15:26),'(I12)')idtg
+             135     2                   read(key(7:10),'(I4)')itau
+             136     2                   write(grbfile,133 )trim(ifilout_grb),'/GFS_',idtg/100 ,'_',itau,'.grb2'
+             137     2                   print*,'OutFileName= ',trim(grbfile)
+             138     2                   call opn_grb2(grbid,nx,my,idtg,itau,istat)
+             139     2               
+             140     2                   ncnt=0
+             141     2                   ntag=ntag+1
+             142     2                   call mpe_recv_key(key,ntag,ist)
+             143     3                   do while ( key(1:4)=='DOIT' )
+             144     3               
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fld, z
+                                   <<< Loop-information  End >>>
+             145     4                     do while ( ncnt < NMAX .and. key(1:4)=='DOIT' )
+             146     4                       ncnt=ncnt+1
+             147     4                       ntag=ntag+1
+             148     4                       call mpe_recv_int( ptp0(:,ncnt) , 9 ,ntag,ist)
+             149     4                       ntag=ntag+1
+             150     4                       call mpe_recv_data(fld(:),nx*my,ntag,ist)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1334
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fld, z
+                                   <<< Loop-information  End >>>
+             151     4  pp   2v              z(:,ncnt)=fld(:)
+             152     4               
+             153     4                       ntag=ntag+1
+             154     4                       call mpe_recv_key(key,ntag,ist)
+             155     4                       !if(key(1:4)=="CLSE")goto 101
+             156     4                     enddo
+             157     3                     101   continue
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 2
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             158     4   s    s            do j=1,ncnt
+             159     4   m    m              t12=ptp0(7,j)
+             160     5   s    s              if( ptp0(8,j)==-999 .and. ptp0(9,j)==-999 )then
+             161     5   m    m                call wrt_grb2_io(itau,ptp0(1,j),ptp0(2,j),ptp0(3,j) &
+             162     5                                 ,ptp0(4,j),ptp0(5,j) ,ptp0(6,j),t12, z(:,j) )
+             163     5   s    s              else
+             164     5   m    s                call wrt_grb2_accu_io(itau,ptp0(1,j),ptp0(2,j),ptp0(3,j),ptp0(4,j), &
+             165     5                                  ptp0(5,j),ptp0(6,j),t12,ptp0(8,j),ptp0(9,j), z(:,j) )
+             166     5   p    v              endif
+             167     4   p    v            enddo
+             168     3                     ncnt=0
+             169     3                   end do ! while ( key(1:4)='DOIT' )
+             170     2               
+             171     2                   call cls_grb2(grbid,istat)
+             172     2               
+             173     2                   !CWB20160927 for NWP control
+             174     2                   read(key(7:10),'(i4)')itotau
+             175     2                   !if(itotau == 9) call sleep(20)
+             176     3                   if((itotau /= 0).and.(itotau /= ifromtau))then
+             177     3                   call sendmsg ('gfs',ifromtau,itotau,istat)
+             178     4                   if (istat.eq.-1) then
+             179     4                       print *,'ioserver:  SENDMSG ERROR '
+             180     4                       call dmsexit(-1)
+             181     4                   endif
+             182     3                   ifromtau=itotau
+             183     3                   endif
+             184     2               
+             185     2                 endif ! (key(1:4).eq."OPEN")
+             186     1               enddo
+             187                     
+             188                     100   continue
+             189                     deallocate( z , ptp0 )
+             190                     call mpe_finalize
+             191                     call dmsexit(0)
+             192                     stop
+             193                     return
+             194                     end subroutine ioserver_grb2
+             195                     
+             196                     
+             197                     
+             198                     
+
+ Diagnostic messages: program name(ioserver_grb2)
+   jwd1061i-w  "ioserver.f90", line 117, column 26: Name 'istat' already specified in a type declaration statement.
+
+ Procedure information
+   Lines      : 99
+   Statements : 73
+   Stack(byte): 2448
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : ioserver_grb2
+   Attribute and Cross reference of name
+     cls_grb2
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 171
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 104
+     dmsexit
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 180  191
+     fld
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 112
+      |(Definition)     : 150
+      |(Reference)      : 151
+     grbfile
+      |(Class and Type) : variable name, CHARACTER(255,1)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 136
+      |(Reference)      : 137
+     grbid
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 126  138  171
+      |(Reference)      : 
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 108
+      |(Definition)     : 
+      |(Reference)      : 
+     idtg
+      |(Class and Type) : variable name, INTEGER(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 134  138
+      |(Reference)      : 136
+     ifilout_grb
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 104  136
+     ifromtau
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 117
+      |(Definition)     : 118  177  182
+      |(Reference)      : 176
+     ioserver_grb2
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 103
+      |(Reference)      : 194
+     ist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 108
+      |(Definition)     : 131  142  148  150  154
+      |(Reference)      : 
+     istat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 108  117
+      |(Definition)     : 138  171  177
+      |(Reference)      : 178
+     itau
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 108
+      |(Definition)     : 135  138  161  164
+      |(Reference)      : 136
+     itotau
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 117
+      |(Definition)     : 174  177
+      |(Reference)      : 176  176  182
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 108
+      |(Definition)     : 158
+      |(Reference)      : 159  160  160  161  161  161  161  161  161  161  164  164  164  164  164  164  164  164  164
+     key
+      |(Class and Type) : variable name, CHARACTER(34,1)
+      |(Attributes)     : 
+      |(Declaration)    : 115
+      |(Definition)     : 131  142  154
+      |(Reference)      : 132  133  134  135  143  145  174
+     mod_grb2_param
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 105
+     mpe_finalize
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 190
+     mpe_recv_data
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 150
+     mpe_recv_int
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 148
+     mpe_recv_key
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 131  142  154
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 103  108
+      |(Definition)     : 138
+      |(Reference)      : 112  119  124  150
+     NMAX
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : initialized
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 124  124  145
+     ncnt
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 108
+      |(Definition)     : 140  146  168
+      |(Reference)      : 145  146  148  151  158
+     ntag
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 108
+      |(Definition)     : 127  130  131  141  142  147  148  149  150  153  154
+      |(Reference)      : 130  141  147  149  153
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 103  108
+      |(Definition)     : 138
+      |(Reference)      : 112  119  124  150
+     nxmy
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 108
+      |(Definition)     : 119
+      |(Reference)      : 
+     opn_grb2
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 138
+     ptp0
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 113
+      |(Definition)     : 124  148  161  161  161  161  161  161  164  164  164  164  164  164  164  164  189
+      |(Reference)      : 159  160  160
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 104  112
+     sendmsg
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 177
+     t12
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 116
+      |(Definition)     : 159  161  164
+      |(Reference)      : 
+     trim
+      |(Class and Type) : intrinsic function name, CHARACTER((unknown),1)
+      |(Attributes)     : PURE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 136  137
+     wrt_grb2_accu_io
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 164
+     wrt_grb2_io
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 161
+     z
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 114
+      |(Definition)     : 124  151  161  164  189
+      |(Reference)      : 
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        100  execution     (Definition) 188
+        101  execution     (Definition) 157
+        133  format        (Definition) 128  
+                           (Reference)  136
+
  Total information
-   Procedures       : 1
-   Total lines      : 99
-   Total statements : 72
-   Total stack(byte): 71536
+   Procedures       : 2
+   Total lines      : 198
+   Total statements : 145
+   Total stack(byte): 73984
    Total prefetch num: 0
 

@@ -823,9 +823,11 @@ CONTAINS
            if (.not. vtr(k) .gt. 0.0) cycle ! EMK NUWRF Bug fix
 
             if (k .eq. 1) then
-               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtr(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtr(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vtr(k))
             else
-               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtr(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtr(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vtr(k))
             endif
           endif
       enddo !do K
@@ -852,7 +854,8 @@ CONTAINS
             fluxout=rhoz(k)*vtr(k)*qrz
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
             qrz=qrz+del_tv*flux
-            qrz=amax1(0.,qrz)
+!            qrz=amax1(0.,qrz)
+            qrz=dmax1(0.,qrz)
             qr(i,k,j)=qrz
             fluxin=fluxout
             rsed(k)=rsed(k)+fluxin
@@ -863,7 +866,8 @@ CONTAINS
             qrz=qr(i,min_q-1,j)
             qrz=qrz+del_tv*  &
                           fluxin/rhoz(min_q-1)/dzw(min_q-1)
-            qrz=amax1(0.,qrz)         !Di 10/23/2012
+!            qrz=amax1(0.,qrz)         !Di 10/23/2012
+            qrz=dmax1(0.,qrz)         !Di 10/23/2012
             qr(i,min_q-1,j)=qrz
          endif
 !
@@ -924,9 +928,11 @@ CONTAINS
             vts(k)=vts(k) * 0.01  ! convert back to MKS  
 
             if (k .eq. 1) then
-               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vts(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vts(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vts(k))
             else
-               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vts(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vts(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vts(k))
             endif !k
          endif !cmin
       enddo  ! do k
@@ -953,7 +959,8 @@ CONTAINS
             fluxout=rhoz(k)*vts(k)*qsz(k)
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
             qsz(k)=qsz(k)+del_tv*flux
-            qsz(k)=amax1(0.,qsz(k))
+!            qsz(k)=amax1(0.,qsz(k))
+            qsz(k)=dmax1(0.,qsz(k))
             qs(i,k,j)=qsz(k)
             fluxin=fluxout
             ssed(k)=ssed(k)+fluxin
@@ -963,7 +970,8 @@ CONTAINS
          else
             qsz(min_q-1)=qsz(min_q-1)+del_tv*  &
                          fluxin/rhoz(min_q-1)/dzw(min_q-1)
-            qsz(min_q-1)=amax1(0.,qsz(min_q-1))         !Di 10/23/2012
+!            qsz(min_q-1)=amax1(0.,qsz(min_q-1))         !Di 10/23/2012
+            qsz(min_q-1)=dmax1(0.,qsz(min_q-1))         !Di 10/23/2012
             qs(i,min_q-1,j)=qsz(min_q-1)
          endif
 !
@@ -1011,20 +1019,24 @@ CONTAINS
                  endif
                  call sgmap(2,qsz(k),qgz(k),qgz2,qhz(k),qhz2,r00(k),tairc,ftng0) !ftng0 is graupel intercept
                  ftng=ftng0**bgq
-                 vtg(k)=amax1(vgcr*(r00(k)*y1)**bgq/ftng, 0.0)
+!                 vtg(k)=amax1(vgcr*(r00(k)*y1)**bgq/ftng, 0.0)
+                 vtg(k)=dmax1(vgcr*(r00(k)*y1)**bgq/ftng, 0.0)
                                        ! bg, vgcr, bgq are defined in new consat_s
                  vtg(k)=vtg(k) * 0.01  ! convert back to MKS
                  if (y1.gt.qrog2)then                              !Di
                     ftng=ftng0**bgq2                                                !Di
-                    vtg(k)=amax1(vgcr2*(r00(k)*y1)**bgq2/ftng, 0.0)                    !Di
+!                    vtg(k)=amax1(vgcr2*(r00(k)*y1)**bgq2/ftng, 0.0)                    !Di
+                    vtg(k)=dmax1(vgcr2*(r00(k)*y1)**bgq2/ftng, 0.0)                    !Di
                                        ! bg, vgcr, bgq are defined in new consat_s  !Di
                     vtg(k)=vtg(k) * 0.01  ! convert back to MKS
                  endif 
 
             if (k .eq. 1) then
-               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtg(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtg(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vtg(k))
             else
-               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtg(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtg(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vtg(k))
             endif 
 !
          endif !qgz
@@ -1052,7 +1064,8 @@ CONTAINS
             fluxout=rhoz(k)*vtg(k)*qgz(k)
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
             qgz(k)=qgz(k)+del_tv*flux
-            qgz(k)=amax1(0.,qgz(k))
+!            qgz(k)=amax1(0.,qgz(k))
+            qgz(k)=dmax1(0.,qgz(k))
             qg(i,k,j)=qgz(k)
             fluxin=fluxout
             gsed(k)=gsed(k)+fluxin
@@ -1062,7 +1075,8 @@ CONTAINS
          else
             qgz(min_q-1)=qgz(min_q-1)+del_tv*  &
                          fluxin/rhoz(min_q-1)/dzw(min_q-1)
-            qgz(min_q-1)=amax1(0.,qgz(min_q-1))         !Di 10/23/2012
+!            qgz(min_q-1)=amax1(0.,qgz(min_q-1))         !Di 10/23/2012
+            qgz(min_q-1)=dmax1(0.,qgz(min_q-1))         !Di 10/23/2012
             qg(i,min_q-1,j)=qgz(min_q-1)
          endif
 !
@@ -1094,13 +1108,16 @@ CONTAINS
 ! new codes from Steve's in cgs
                  y1 = qhz(k)
                  vhcr=vhc/sqrt(r00(k))                                 !Di              
-                 vth(k)=amax1(vhcr*(y1*r00(k))**bhq, 0.e0)             !Di
+!                 vth(k)=amax1(vhcr*(y1*r00(k))**bhq, 0.e0)             !Di
+                 vth(k)=dmax1(vhcr*(y1*r00(k))**bhq, 0.e0)             !Di
                  vth(k)=vth(k) * 0.01  ! convert back to MKS
 
             if (k .eq. 1) then
-               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vth(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vth(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vth(k))
             else
-               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vth(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vth(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vth(k))
             endif
 !
          endif !qhz
@@ -1128,7 +1145,8 @@ CONTAINS
             fluxout=rhoz(k)*vth(k)*qhz(k)
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
             qhz(k)=qhz(k)+del_tv*flux
-            qhz(k)=amax1(0.,qhz(k))
+!            qhz(k)=amax1(0.,qhz(k))
+            qhz(k)=dmax1(0.,qhz(k))
             qh(i,k,j)=qhz(k)
             fluxin=fluxout
             hsed(k)=hsed(k)+fluxin
@@ -1138,7 +1156,8 @@ CONTAINS
          else
             qhz(min_q-1)=qhz(min_q-1)+del_tv*  &
                          fluxin/rhoz(min_q-1)/dzw(min_q-1)
-            qhz(min_q-1)=amax1(0.,qhz(min_q-1))         !Di 10/23/2012
+!            qhz(min_q-1)=amax1(0.,qhz(min_q-1))         !Di 10/23/2012
+            qhz(min_q-1)=dmax1(0.,qhz(min_q-1))         !Di 10/23/2012
             qh(i,min_q-1,j)=qhz(min_q-1)
          endif
 !
@@ -1183,9 +1202,11 @@ CONTAINS
 ! EMK: prevent divsion by zero and underflow value
           if (vti(k) .gt. 1.e-20) then
             if (k .eq. 1) then
-               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vti(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vti(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vti(k))
             else
-               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vti(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vti(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vti(k))
             endif
           endif
 !         else
@@ -1217,7 +1238,8 @@ CONTAINS
             fluxout=rhoz(k)*vti(k)*qiz
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
             qiz=qiz+del_tv*flux
-            qiz=amax1(0.,qiz)
+!            qiz=amax1(0.,qiz)
+            qiz=dmax1(0.,qiz)
             qi(i,k,j)=qiz
             fluxin=fluxout
             ised(k)=ised(k)+fluxin
@@ -1228,7 +1250,8 @@ CONTAINS
             qiz=qi(i,min_q-1,j)
             qiz=qiz+del_tv*  &
                          fluxin/rhoz(min_q-1)/dzw(min_q-1)
-            qiz=amax1(0.,qiz)         !Di 10/23/2012
+!            qiz=amax1(0.,qiz)         !Di 10/23/2012
+            qiz=dmax1(0.,qiz)         !Di 10/23/2012
             qi(i,min_q-1,j)=qiz
          endif
 !
@@ -1344,7 +1367,8 @@ CONTAINS
      do k=kts,kte
         do j=jts,jte
            do i=its,ite
-           X(i,k,j)=A0*AMAX1(X(i,k,j), 0.0)
+!           X(i,k,j)=A0*AMAX1(X(i,k,j), 0.0)
+           X(i,k,j)=A0*DMAX1(X(i,k,j), 0.0)
            enddo
         enddo
      enddo
@@ -4247,8 +4271,10 @@ CONTAINS
 !!!!!!!!!!!DDDDDDDDDDDDDD double check
             sccc=cnd(i)
             seee=dd(i)+ern(i)
-            sddd=dep(i)+amax1(pint(i),0.0)+psdep(i)+pgdep(i)+phdep(i)
-            ssss=dd1(i)-amin1(pint(i),0.0)+pssub(i)+pgsub(i)+phsub(i)+pmlts(i)+pmltg(i)
+!            sddd=dep(i)+amax1(pint(i),0.0)+psdep(i)+pgdep(i)+phdep(i)
+            sddd=dep(i)+dmax1(pint(i),0.0)+psdep(i)+pgdep(i)+phdep(i)
+!            ssss=dd1(i)-amin1(pint(i),0.0)+pssub(i)+pgsub(i)+phsub(i)+pmlts(i)+pmltg(i)
+            ssss=dd1(i)-dmin1(pint(i),0.0)+pssub(i)+pgsub(i)+phsub(i)+pmlts(i)+pmltg(i)
             smmm=psmlt(i)+pgmlt(i)+pimlt(i)+qracs(i)+phmlt(i)+qracg(i) &
                  -del*whacr(i)
             sfff=psacw(i)*d2t+piacr(i)*d2t+psfw(i)*d2t+pgfr(i)*d2t   &
@@ -4318,11 +4344,13 @@ CONTAINS
 
          IF (TAIR(i).LT.273.16) THEN
             ZDRY = MAX(1.e-9,A_11+A_22+A_33+A_44) !rain,snow,graupel,hail,cloud ice,cloud water
-            DBZ(i,k) = 10.*ALOG10(ZDRY)
+!            DBZ(i,k) = 10.*ALOG10(ZDRY)
+            DBZ(i,k) = 10.*DLOG10(ZDRY)
          ELSE         
             ZWET0 = A_11+UWET*(A_22+A_33+A_44)**.95
             ZWET = MAX(1.e-9,ZWET0)
-            DBZ(i,k) = 10.*ALOG10(ZWET)
+!            DBZ(i,k) = 10.*ALOG10(ZWET)
+            DBZ(i,k) = 10.*DLOG10(ZWET)
          ENDIF
 
 !JJS   2010/10/19  ^^^^^

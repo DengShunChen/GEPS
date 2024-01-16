@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:31:11 2023
+ Fujitsu Fortran Version 4.6.1  Thu Dec 28 15:29:05 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_rsm
    Source file       : gfcst.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -58,7 +58,7 @@
                           -Nsetvalue=nostack -Nsetvalue=noscalar
                           -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
 
- External subroutine subprogram "gfcst"
+ Main program "gfcst"
   (inc)(line-no.)(nest)(optimize)
                1                     #ifndef TIMCOMCPL
                2                           program gfcst
@@ -130,41 +130,40 @@
               68                     !
               69                           call mpe_finalize
               70                     #else
-              71                           call intgrt
-              72                     !
-              73                           call mpe_finalize
-              74                           call dmsexit(0)
-              75                     !
-              76                           stop
-              77                     #endif
-              78                           end
+              71     1                     if ( ttl ) then
+              72     1                       call intgrt
+              73     1                     else
+              74     1                       call intgrt_3tl
+              75     1                     endif
+              76                     
+              77                     !
+              78                           call mpe_finalize
+              79                           call dmsexit(0)
+              80                     !
+              81                           stop
+              82                     #endif
+              83                           end
 
  Procedure information
-   Lines      : 78
-   Statements : 19
-   Stack(byte): 368
+   Lines      : 83
+   Statements : 22
+   Stack(byte): 352
    Prefetch num: 0
 
- Scoping unit of external sub-program : gfcst
+ Scoping unit of program : gfcst
    Attribute and Cross reference of name
      arrhyd
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 61
       |(Reference)      : 
      arsddt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 61
       |(Reference)      : 
-     compid
-      |(Class and Type) : variable name, INTEGER(4)
-      |(Attributes)     : INTENT(IN), dummy-argument
-      |(Declaration)    : 4  18
-      |(Definition)     : 
-      |(Reference)      : 42  67
      cons
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
@@ -183,6 +182,12 @@
       |(Declaration)    : 
       |(Definition)     : 61
       |(Reference)      : 
+     dmsexit
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 79
      donnmi
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
@@ -190,25 +195,25 @@
       |(Definition)     : 
       |(Reference)      : 54
      dsigma
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 61
       |(Reference)      : 
      eigval
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 61
       |(Reference)      : 
      evecin
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 61
       |(Reference)      : 
      evectr
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 61
@@ -220,23 +225,11 @@
       |(Definition)     : 
       |(Reference)      : 47
      gfcst
-      |(Class and Type) : external subroutine name
+      |(Class and Type) : program name
       |(Attributes)     : 
-      |(Declaration)    : 
-      |(Definition)     : 4
+      |(Declaration)    : 2
+      |(Definition)     : 
       |(Reference)      : 
-     gfs_cpl
-      |(Class and Type) : module name
-      |(Attributes)     : 
-      |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 5
-     gfs_cpl_init
-      |(Class and Type) : module subroutine name
-      |(Attributes)     : use-associated
-      |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 5  42
      initial
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
@@ -248,7 +241,13 @@
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 67
+      |(Reference)      : 72
+     intgrt_3tl
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 74
      jtmax
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
@@ -284,19 +283,13 @@
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 69
+      |(Reference)      : 78
      mpe_init
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 33
-     mpi_comm_mct
-      |(Class and Type) : variable name, INTEGER(4)
-      |(Attributes)     : INTENT(IN), dummy-argument
-      |(Declaration)    : 4  18
-      |(Definition)     : 
-      |(Reference)      : 33
+      |(Reference)      : 35
      my
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
@@ -328,13 +321,13 @@
       |(Definition)     : 
       |(Reference)      : 11
      pmcor
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 61
       |(Reference)      : 
      ptmeans
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 61
@@ -346,13 +339,13 @@
       |(Definition)     : 61
       |(Reference)      : 
      sigma
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 61
       |(Reference)      : 
      spalm
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 61
@@ -364,22 +357,28 @@
       |(Definition)     : 
       |(Reference)      : 54
      tmcor
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 61
       |(Reference)      : 
      tmeans
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 61
       |(Reference)      : 
+     ttl
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 71
 
  Total information
    Procedures       : 1
-   Total lines      : 78
-   Total statements : 19
-   Total stack(byte): 368
+   Total lines      : 83
+   Total statements : 22
+   Total stack(byte): 352
    Total prefetch num: 0
 

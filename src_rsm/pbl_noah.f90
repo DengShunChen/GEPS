@@ -1,16 +1,16 @@
       subroutine pbl_noah (nxj,nx,lev,ktpbl,dt,g,r,cp,xkapa,hltm,ptop   &
-                        , tice,hice,tg,z0,land,topo,phi,pss,u,v,t,q,ut  &
-                        , vt,tt,qt,pk,pk2,ustar,tstar,qstar,e,eps,hflux &
-                        , qflux,itstp,gwclim,tgclim,ocean,ice,sheleg    &
-                        , totalp,ss,rs,alb,imx,xkmx,idg,xkmd,itype      &
-                        , t2,q2,rh2,rh10,u10,v10,fm,fh,fm10,fh2,srflag  &
-                        , rld,stbo                                      &
+                        , tice,hice,tg,z0,land,topo,phi,phii,pss,u,v,t  &
+                        , q,ut,vt,tt,qt,pk,pk2,ustar,tstar,qstar,e,eps  &
+                        , hflux,qflux,itstp,gwclim,tgclim,ocean,ice     &
+                        , sheleg,totalp,ss,rs,alb,imx,xkmx,idg,xkmd     &
+                        , itype,t2,q2,rh2,rh10,u10,v10,fm,fh,fm10,fh2   &
+                        , srflag,rld,stbo                               &
                         , km,smc,stc,canopy,runoff,sigmaf,istyp,ivegtyp &
                         , ncld,dsigma,islopetyp,slc,sncover,snwdph      &
                         , shdmax,shdmin,snoalb,albedo2                  &
                         , sld,zice,cice,xtice,hpbl,asl,atl,xmu,gfx      &
                         , kpbl,nmpbl,nmmiph,jj,isot,ivegsrc,sfemis_g    &
-                        , dudt,dvdt,dtdt,dqdt )
+                        , dudt,dvdt,dtdt,dqdt,ustress,vstress,ssu, ssv)
 !
 !#######################################################################
 !                     subroutine description
@@ -176,7 +176,7 @@
                qflux(nx),pkd(nx),pk2d(nx),gwclim(nx),                      &
                tgclim(nx),snr(nx),totalp(nx),                              &
                ss(nx),rs(nx),alb(nx),xkmx(2),xkmd(lev),                    &
-               t2(nx),u10(nx),v10(nx)
+               t2(nx),u10(nx),v10(nx),ustress(nx),vstress(nx),ssu(nx),ssv(nx)
       real(kind=RTYPE) qt(nx,lev*ncld),q(nx,lev*ncld),phi(nx,lev),         &
                        topo(nx),pss(nx),ut(nx,lev),vt(nx,lev),tt(nx,lev),  &
                        pk(nx,lev),pk2(nx,lev)
@@ -193,7 +193,7 @@
 !ch   real     hgt(im,lm),xkm(im,lm),xkh(im,lm),ts(im),                    &
 !ch            qsfc(im),zl(im),czh(im),ps(im),sfcw(im),                    &
 !ch            dhgt(im,lm),ro2(im,lm),dhgtz(im,lm)
-      real     hgt(nx),xkm(nx,lev),xkh(nx,lev),ts(nx),                     &
+      real     hgt(nx),xkm(nx,lev),xkh(nx,lev),                            &
                qsfc(nx),zl(nx),czh(nx),ps(nx),sfcw(nx),                    &
                dhgt,ro2(nx),dhgtz(nx,lev)
 !soil
@@ -292,12 +292,6 @@
 !
 ! --- compute surface pres and surface air temp at current time level
 !
-      do 50 i = 1, nxj
-      ps(i) = pss(i) + ptop
-      ttt = tt(i,lev)*(1.+0.608*qt(i,lev))
-      ts(i) = ttt/pk(i,lev)*pk2(i,lev)
-  50  continue
-!
       do k=1,lev
       pkd(:) =pk(:,k)
       pk2d(:)=pk2(:,k)
@@ -311,34 +305,11 @@
       call vexp(pkx(1,k), pkx(1,k), nxj)
       enddo
 !
-!      do 100 k = 1, lev
-      do 100 i = 1, nxj
-!      hgt(i,k) = (phi(i,k) - topo(i) ) / g
-       hgt(i) = (phi(i,lev) - topo(i) ) / g
-  100 continue
-
+      do 50 i = 1, nxj
+      ps(i)  = pss(i) + ptop
+      hgt(i) = (phi(i,lev) - topo(i) ) / g
+  50  continue
 !
-      do 105 i = 1, nxj
-      ppd = pk2x(i,1) * 1000.
-      dhgt= ( ppd - ptop ) * 100. / g
-!byl      ppp = pkx(i,1) * 1000.+ptop
-      ppp = pkx(i,1) * 1000.
-      ttt = tt(i,1)*(1.+0.608*qt(i,1))
-      dhgtz(i,1)= dhgt * r * ttt / (100.*ppp)
-  105 continue
-!
-      do 110 k=2, lev
-      do 110 i=1, nxj
-      ppu = pk2x(i,k-1) * 1000.
-      ppd = pk2x(i,k) * 1000.
-!byl      dhgt(i,k) = ( ppd - ppu ) * 100. / g
-      dhgt= ( ppd - ppu ) * 100. / g
-!byl      ppp = pkx(i,k) * 1000.+ptop
-      ppp = pkx(i,k) * 1000.
-      ttt = tt(i,k)*(1.+0.608*qt(i,k))
-      dhgtz(i,k)= dhgt * r * ttt / (100.*ppp)
-  110 continue
-
       do 120 i = 1, nxj
       qqq = max(qt(i,lev), 1.0e-8)
       ttt = tt(i,lev)*(1.+0.608*qqq)
@@ -484,7 +455,7 @@
                     stress,fm,fh,                                       &
                     ustar,sfcw,ddvel,fm10,fh2,fh10,                   &
                     sigmaf,ivegtyp,shdmax,ivegsrc,                      &
-                    tsurf,flag_iter,redrag)
+                    tsurf,flag_iter,redrag,ustress,vstress,ssu,ssv)
 !
 !     print*,'pblnoah,diff'
          do i=1,nxj
@@ -500,7 +471,7 @@
 !                     flag_iter)
       call sfc_ocean(nxj,nx,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev), &
                      tg,cd,cdq,prsl1,prslki,islmsk,ddvel,flag_iter,      &
-                     qsurf,gfx,qflux,hflux,ep1d)
+                     qsurf,gfx,qflux,hflux,ep1d,ssu,ssv)
 !
 !     print*,'pblnoah,ocean'
 !
@@ -600,17 +571,6 @@
 !                                                                      c
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !
-      do i=1,nxj
-!byl         phi2(i,lev+1)=0.
-         phii(i,1)=0.
-      enddo
-       do k=lev,1,-1
-          kc=lev-k+2
-       do i = 1, nxj
-!byl          phi2(i,k)=phi2(i,k+1)+dhgtz(i,k)*g
-          phii(i,kc)=phii(i,kc-1)+dhgtz(i,k)*g
-      enddo
-      enddo
 !
       if ( nmmiph .eq. 6 ) then  !WSM6
         do k=1,lev
@@ -883,6 +843,7 @@
        qflux(i)=qflux(i)*ro2(i)*hltm        ! transfer to W/m2
        tstar(i)=-heat(i)/ustar(i)
        qstar(i)=-evap(i)/ustar(i)
+       runoff(i)=(drain(i)+runof(i))*dth + runoff(i) !wei add at 20231012
        enddo
 !     if(jj.eq.jo)then
 !     print*,'after mixpbl -----------------'

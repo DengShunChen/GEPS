@@ -1,5 +1,5 @@
 
- Fujitsu Fortran Version 4.6.1  Mon Dec  4 10:57:38 2023
+ Fujitsu Fortran Version 4.6.1  Thu Dec 28 14:57:07 2023
 
  Compilation information
    Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_4cpl
@@ -152,7 +152,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tt, plt, qt, pt, pp, p2, p10, pla
                                    <<<    SPILLS :
-                                   <<<      GENERAL   : SPILL 7  FILL 77
+                                   <<<      GENERAL   : SPILL 7  FILL 76
                                    <<<      SIMD&FP   : SPILL 5  FILL 25
                                    <<<      SCALABLE  : SPILL 10  FILL 10
                                    <<<      PREDICATE : SPILL 0  FILL 0
@@ -628,7 +628,12 @@
                                    <<< Loop-information  End >>>
              302     1  pp   4v            runoff(:,:)=0.0 !6 hr zero out
              303     1               
-             304     1                     !!!sea ice fraction
+             304     1                     endif !mod(float(itau)+0.00001, 6. ) .lt. 0.01
+             305                     
+             306                     !
+             307                     
+             308     1                     if (mod(float(itau)+0.00001, 24. ) .lt. 0.01) then
+             309     1                     !!!sea ice fraction
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 5
@@ -638,19 +643,19 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cice, wrk
                                    <<< Loop-information  End >>>
-             305     1  pp   2v            wrk=cice
-             306     1                     call syslbl ('w00091',idtg,itau,ggdef,ihdg)
-             307     1                     call unify_reduceintp(nx,my,my_max,wrk,glob)
-             308     1                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             310     1  pp   2v            wrk=cice
+             311     1                     call syslbl ('w00091',idtg,itau,ggdef,ihdg)
+             312     1                     call unify_reduceintp(nx,my,my_max,wrk,glob)
+             313     1                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 1600
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 16)
                                    <<< Loop-information  End >>>
-             309     1   s    v            ptp0=(/10,2,0,2,103,0,0,-999,-999/)
-             310     1                     call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
-             311     1                     !!!sea ice thickness
+             314     1   s    v            ptp0=(/10,2,0,2,103,0,0,-999,-999/)
+             315     1                     call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
+             316     1                     !!!sea ice thickness
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 5
@@ -660,96 +665,45 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      zice, wrk
                                    <<< Loop-information  End >>>
-             312     1  pp   2v            wrk=zice
-             313     1                     call syslbl ('w00092',idtg,itau,ggdef,ihdg)
-             314     1                     call unify_reduceintp(nx,my,my_max,wrk,glob)
-             315     1                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             317     1  pp   2v            wrk=zice
+             318     1                     call syslbl ('w00092',idtg,itau,ggdef,ihdg)
+             319     1                     call unify_reduceintp(nx,my,my_max,wrk,glob)
+             320     1                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 1600
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 16)
                                    <<< Loop-information  End >>>
-             316     1   s    v            ptp0=(/10,2,1,2,103,0,0,-999,-999/)
-             317     1                     call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
-             318     1               
-             319     1               !land sea mask
-             320     1               ! 0:ocean
-             321     1               ! 1:land
-             322     1               ! 2:sea ice
-                                   <<< Loop-information Start >>>
-                                   <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 9
-                                   <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 16)
-                                   <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      wrk
-                                   <<< Loop-information  End >>>
-             323     1  pp   4v            wrk=2.0
-                                   <<< Loop-information Start >>>
-                                   <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 2
-                                   <<<  [OPTIMIZATION]
-                                   <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      land, ocean, wrk
-                                   <<< Loop-information  End >>>
-             324     2  pp                 do  jj = 1, jlistnum
-             325     2   p                   j=jlist1(jj)
-             326     2   p                   nxj=nxdef_2d(j)
-                                   <<< Loop-information Start >>>
-                                   <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 16)
-                                   <<<    SOFTWARE PIPELINING(IPC: 0.50, ITR: 96, MVE: 2, POL: S)
-                                   <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      ocean, land, wrk
-                                   <<< Loop-information  End >>>
-             327     3   p   2v              do  i=1,nxj
-             328     4   p   2v               if( land(i,jj)  )then
-             329     4   p   2v                  wrk(i,jj) = 1.0
-             330     4   p   2v               elseif( ocean(i,jj) )then
-             331     4   p   2v                  wrk(i,jj) = 0.0
-             332     4   p   2v               endif
-             333     3   p   2v              enddo
-             334     2   p                 enddo
-             335     1                     call syslbl ('s00070',idtg,itau,ggdef,ihdg)
-             336     1                     call unify_reduceintp(nx,my,my_max,wrk,glob)
-             337     1                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-                                   <<< Loop-information Start >>>
-                                   <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 1600
-                                   <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 16)
-                                   <<< Loop-information  End >>>
-             338     1   s    v            ptp0=(/2,0,0,2,103,0,0,-999,-999/)
-             339     1                     call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
-             340     1               
-             341     1               
-             342     1                     endif !mod(float(itau)+0.00001, 6. ) .lt. 0.01
-             343                     !
-             344     1                     if(outdms.gt.0)then
-             345     1                     if ( myrank .lt. nc )             &
-             346     1                        call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
-             347     1                     endif
-             348                     
-             349     1                     if(outgrb2 == 1 )then
-             350     2                      if ( myrank .lt. nc ) then
-             351     3                       if(ptp1(8)==-999)then
-             352     3                       call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
-             353     3                           ,ptp1(6),ptp1(7),mout,ihdg2)
-             354     3                       else
-             355     3                       call wrt_grb2_accu_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
-             356     3                           ,ptp1(6),ptp1(7),ptp1(8),ptp1(9),mout,ihdg2)
-             357     3                       endif
-             358     2                      endif
-             359     1                     endif
-             360                     !
-             361                     !=======================================================================
-             362                           return
-             363                           end
+             321     1   s    v            ptp0=(/10,2,1,2,103,0,0,-999,-999/)
+             322     1                     call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
+             323     1                     endif
+             324                     
+             325                     !
+             326     1                     if(outdms.gt.0)then
+             327     1                     if ( myrank .lt. nc )             &
+             328     1                        call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
+             329     1                     endif
+             330                     
+             331     1                     if(outgrb2 == 1 )then
+             332     2                      if ( myrank .lt. nc ) then
+             333     3                       if(ptp1(8)==-999)then
+             334     3                       call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+             335     3                           ,ptp1(6),ptp1(7),mout,ihdg2)
+             336     3                       else
+             337     3                       call wrt_grb2_accu_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+             338     3                           ,ptp1(6),ptp1(7),ptp1(8),ptp1(9),mout,ihdg2)
+             339     3                       endif
+             340     2                      endif
+             341     1                     endif
+             342                     !
+             343                     !=======================================================================
+             344                           return
+             345                           end
 
  Procedure information
-   Lines      : 363
-   Statements : 259
+   Lines      : 345
+   Statements : 244
    Stack(byte): 10352
    Prefetch num: 0
 
@@ -790,7 +744,7 @@
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 14  305
+      |(Reference)      : 14  310
      const
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -814,7 +768,7 @@
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 345
+      |(Reference)      : 327
      exp
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
@@ -826,18 +780,18 @@
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 265
+      |(Reference)      : 265  308
      ggdef
       |(Class and Type) : variable name, CHARACTER(4,1)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  32
-      |(Definition)     : 176  184  191  199  206  214  224  245  259  266  274  282  296  306  313  335
+      |(Definition)     : 176  184  191  199  206  214  224  245  259  266  274  282  296  311  318
       |(Reference)      : 
      glob
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 38
-      |(Definition)     : 178  180  186  188  193  195  201  203  208  210  216  218  226  228  246  248  260  262  268  269  271  276  277  279  289  290  292  297  298  301  307  308  310  314  315  317  336  337  339
+      |(Definition)     : 178  180  186  188  193  195  201  203  208  210  216  218  226  228  246  248  260  262  268  269  271  276  277  279  289  290  292  297  298  301  312  313  315  319  320  322
       |(Reference)      : 
      grav
       |(Class and Type) : variable name, REAL(8)
@@ -855,8 +809,8 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 44
-      |(Definition)     : 84  165  234  238  254  286  327
-      |(Reference)      : 86  86  86  86  86  86  90  90  91  91  92  92  93  93  98  98  98  98  101  103  104  105  105  105  105  106  106  107  107  107  107  108  108  111  111  112  112  113  113  114  114  114  115  115  115  117  117  118  118  118  124  124  125  126  126  126  127  127  128  128  128  129  129  130  130  130  131  131  131  132  132  132  137  138  139  139  139  139  140  140  141  141  141  141  142  142  143  143  143  143  144  144  144  144  145  145  145  145  166  166  167  167  235  235  235  235  239  239  240  240  240  241  241  255  255  287  287  287  328  329  330  331
+      |(Definition)     : 84  165  234  238  254  286
+      |(Reference)      : 86  86  86  86  86  86  90  90  91  91  92  92  93  93  98  98  98  98  101  103  104  105  105  105  105  106  106  107  107  107  107  108  108  111  111  112  112  113  113  114  114  114  115  115  115  117  117  118  118  118  124  124  125  126  126  126  127  127  128  128  128  129  129  130  130  130  131  131  131  132  132  132  137  138  139  139  139  139  140  140  141  141  141  141  142  142  143  143  143  143  144  144  144  144  145  145  145  145  166  166  167  167  235  235  235  235  239  239  240  240  240  241  241  255  255  287  287  287
      ice
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
@@ -867,13 +821,13 @@
       |(Class and Type) : variable name, INTEGER(8)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  33
-      |(Definition)     : 176  184  191  199  206  214  224  245  259  266  274  282  296  306  313  335
+      |(Definition)     : 176  184  191  199  206  214  224  245  259  266  274  282  296  311  318
       |(Reference)      : 72
      ifilout
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  32
-      |(Definition)     : 180  188  195  203  210  218  228  248  262  271  279  292  301  310  317  339  345
+      |(Definition)     : 180  188  195  203  210  218  228  248  262  271  279  292  301  315  322  327
       |(Reference)      : 
      ifilout_grb
       |(Class and Type) : variable name, CHARACTER(80,1)
@@ -885,13 +839,13 @@
       |(Class and Type) : variable name, CHARACTER(26,1)
       |(Attributes)     : 
       |(Declaration)    : 32
-      |(Definition)     : 176  180  184  188  191  195  199  203  206  210  214  218  224  228  245  248  259  262  266  269  269  271  274  277  277  279  282  290  290  292  296  298  298  301  306  308  308  310  313  315  315  317  335  337  337  339
+      |(Definition)     : 176  180  184  188  191  195  199  203  206  210  214  218  224  228  245  248  259  262  266  269  269  271  274  277  277  279  282  290  290  292  296  298  298  301  311  313  313  315  318  320  320  322
       |(Reference)      : 
      ihdg2
       |(Class and Type) : variable name, CHARACTER(26,1)
       |(Attributes)     : 
       |(Declaration)    : 32
-      |(Definition)     : 180  188  195  203  210  218  228  248  262  271  279  292  301  310  317  339  345  352  355
+      |(Definition)     : 180  188  195  203  210  218  228  248  262  271  279  292  301  315  322  327  334  337
       |(Reference)      : 
      index
       |(Class and Type) : module name
@@ -903,38 +857,38 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 19
-      |(Definition)     : 345
+      |(Definition)     : 327
       |(Reference)      : 
      itau
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  19
-      |(Definition)     : 176  184  191  199  206  214  224  245  259  266  274  282  296  306  313  335  352  355
-      |(Reference)      : 72  76  265
+      |(Definition)     : 176  184  191  199  206  214  224  245  259  266  274  282  296  311  318  334  337
+      |(Reference)      : 72  76  265  308
      j
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 44
-      |(Definition)     : 82  162  232  252  284  325
-      |(Reference)      : 83  110  163  164  233  253  285  326
+      |(Definition)     : 82  162  232  252  284
+      |(Reference)      : 83  110  163  164  233  253  285
      jj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 44
-      |(Definition)     : 81  161  231  251  283  324
-      |(Reference)      : 82  86  86  86  86  86  86  90  90  91  91  92  92  93  93  98  98  98  98  101  103  104  105  105  105  105  106  106  107  107  107  107  108  108  111  111  112  112  113  113  114  114  114  115  115  115  117  117  118  118  118  124  124  125  126  126  126  127  127  128  128  128  129  129  130  130  130  131  131  131  132  132  132  137  138  139  139  139  139  140  140  141  141  141  141  142  142  143  143  143  143  144  144  144  144  145  145  145  145  162  166  166  167  167  232  235  235  235  235  237  237  239  240  240  240  241  241  252  255  255  284  287  287  287  325  328  329  330  331
+      |(Definition)     : 81  161  231  251  283
+      |(Reference)      : 82  86  86  86  86  86  86  90  90  91  91  92  92  93  93  98  98  98  98  101  103  104  105  105  105  105  106  106  107  107  107  107  108  108  111  111  112  112  113  113  114  114  114  115  115  115  117  117  118  118  118  124  124  125  126  126  126  127  127  128  128  128  129  129  130  130  130  131  131  131  132  132  132  137  138  139  139  139  139  140  140  141  141  141  141  142  142  143  143  143  143  144  144  144  144  145  145  145  145  162  166  166  167  167  232  235  235  235  235  237  237  239  240  240  240  241  241  252  255  255  284  287  287  287
      jlist1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 82  162  232  252  284  325
+      |(Reference)      : 82  162  232  252  284
      jlistnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 81  161  231  251  283  324
+      |(Reference)      : 81  161  231  251  283
      k
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
@@ -946,7 +900,7 @@
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 11  345
+      |(Reference)      : 11  327
      kk
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
@@ -976,7 +930,7 @@
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 15  328
+      |(Reference)      : 15
      layer
       |(Class and Type) : variable name, CHARACTER(3,1)
       |(Attributes)     : DIMENSION, initialized
@@ -987,7 +941,7 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 19
-      |(Definition)     : 62  180  188  195  203  210  218  228  248  262  271  279  292  301  310  317  339  345
+      |(Definition)     : 62  180  188  195  203  210  218  228  248  262  271  279  292  301  315  322  327
       |(Reference)      : 
      lev
       |(Class and Type) : variable name, INTEGER(4)
@@ -1030,7 +984,7 @@
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 265
+      |(Reference)      : 265  308
      mod_grb2_param
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -1041,7 +995,7 @@
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 38
-      |(Definition)     : 180  188  195  203  210  218  228  248  262  271  279  292  301  310  317  339  345  352  355
+      |(Definition)     : 180  188  195  203  210  218  228  248  262  271  279  292  301  315  322  327  334  337
       |(Reference)      : 
      mpe
       |(Class and Type) : module name
@@ -1053,20 +1007,20 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  19
-      |(Definition)     : 178  180  186  188  193  195  201  203  208  210  216  218  226  228  246  248  260  262  268  269  271  276  277  279  289  290  292  297  298  301  307  308  310  314  315  317  336  337  339  345
+      |(Definition)     : 178  180  186  188  193  195  201  203  208  210  216  218  226  228  246  248  260  262  268  269  271  276  277  279  289  290  292  297  298  301  312  313  315  319  320  322  327
       |(Reference)      : 27  38  38  62
      my_max
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  19
-      |(Definition)     : 178  186  193  201  208  216  226  246  260  268  276  289  297  307  314  336
+      |(Definition)     : 178  186  193  201  208  216  226  246  260  268  276  289  297  312  319
       |(Reference)      : 23  23  23  23  23  23  23  23  27  27  27  27  27  27  27  38  38  46  46  46  46  46  46  46  46  46  52
      myrank
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 73  76  345  350
+      |(Reference)      : 73  76  327  332
      n
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
@@ -1077,8 +1031,8 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 19
-      |(Definition)     : 63  180  188  195  203  210  218  228  248  262  271  279  292  301  310  317  339
-      |(Reference)      : 345  350
+      |(Definition)     : 63  180  188  195  203  210  218  228  248  262  271  279  292  301  315  322
+      |(Reference)      : 327  332
      ncld
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
@@ -1113,20 +1067,20 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  19
-      |(Definition)     : 178  180  186  188  193  195  201  203  208  210  216  218  226  228  246  248  260  262  268  269  271  276  277  279  289  290  292  297  298  301  307  308  310  314  315  317  336  337  339  345
+      |(Definition)     : 178  180  186  188  193  195  201  203  208  210  216  218  226  228  246  248  260  262  268  269  271  276  277  279  289  290  292  297  298  301  312  313  315  319  320  322  327
       |(Reference)      : 38  38  62
      nxdef_2d
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 83  163  233  253  285  326
+      |(Reference)      : 83  163  233  253  285
      nxj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 44
-      |(Definition)     : 83  163  233  237  253  285  326
-      |(Reference)      : 84  165  234  238  254  286  327
+      |(Definition)     : 83  163  233  237  253  285
+      |(Reference)      : 84  165  234  238  254  286
      nxp
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
@@ -1138,7 +1092,7 @@
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 15  330
+      |(Reference)      : 15
      ofdir
       |(Class and Type) : variable name, CHARACTER(255,1)
       |(Attributes)     : use-associated
@@ -1174,7 +1128,7 @@
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 11  344
+      |(Reference)      : 11  326
      outflds_green
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
@@ -1186,7 +1140,7 @@
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 11  70  349
+      |(Reference)      : 11  70  331
      ov
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
@@ -1257,20 +1211,20 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 34
-      |(Definition)     : 179  180  187  188  194  195  202  203  209  210  217  218  227  228  247  248  261  262  270  271  278  279  291  292  300  301  309  310  316  317  338  339
+      |(Definition)     : 179  180  187  188  194  195  202  203  209  210  217  218  227  228  247  248  261  262  270  271  278  279  291  292  300  301  314  315  321  322
       |(Reference)      : 
      ptp1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 34
-      |(Definition)     : 180  188  195  203  210  218  228  248  262  271  279  292  301  310  317  339  352  352  352  352  352  352  352  355  355  355  355  355  355  355  355  355
-      |(Reference)      : 351
+      |(Definition)     : 180  188  195  203  210  218  228  248  262  271  279  292  301  315  322  334  334  334  334  334  334  334  337  337  337  337  337  337  337  337  337
+      |(Reference)      : 333
      qmaxn3
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 269  277  290  298  308  315  337
+      |(Reference)      : 269  277  290  298  313  320
      qsatq
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
@@ -1360,7 +1314,7 @@
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 180  188  195  203  210  218  228  248  262  271  279  292  301  310  317  339
+      |(Reference)      : 180  188  195  203  210  218  228  248  262  271  279  292  301  315  322
      ss
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
@@ -1372,7 +1326,7 @@
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 176  184  191  199  206  214  224  245  259  266  274  282  296  306  313  335
+      |(Reference)      : 176  184  191  199  206  214  224  245  259  266  274  282  296  311  318
      system
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
@@ -1426,7 +1380,7 @@
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 178  186  193  201  208  216  226  246  260  268  276  289  297  307  314  336
+      |(Reference)      : 178  186  193  201  208  216  226  246  260  268  276  289  297  312  319
      ut
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
@@ -1473,20 +1427,20 @@
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 38
-      |(Definition)     : 177  178  185  186  192  193  200  201  207  208  215  216  225  226  255  260  267  268  275  276  287  289  295  297  305  307  312  314  323  329  331  336
+      |(Definition)     : 177  178  185  186  192  193  200  201  207  208  215  216  225  226  255  260  267  268  275  276  287  289  295  297  310  312  317  319
       |(Reference)      : 
      wrt_grb2_accu_v2
       |(Class and Type) : module subroutine name
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 13  355
+      |(Reference)      : 13  337
      wrt_grb2_v2
       |(Class and Type) : module subroutine name
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 13  352
+      |(Reference)      : 13  334
      wtemp
       |(Class and Type) : variable name, CHARACTER(6,1)
       |(Attributes)     : 
@@ -1504,7 +1458,7 @@
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 14  312
+      |(Reference)      : 14  317
    Cross reference of label
      (Label) (label-kind)               (line-no.)
      ------- ------------- ------------ ----------
@@ -1519,17 +1473,17 @@
 
  External subroutine subprogram "sigmap"
   (inc)(line-no.)(nest)(optimize)
-             364                     
-             365                     !***********************************************************************
-             366                           subroutine sigmap(layer,aki,bki,psfc,p)
-             367                     !
-             368                           use const, only: RTYPE
-             369                     !
-             370                           implicit none
-             371                           integer i, layer
-             372                           real p(layer)
-             373                           real(kind=RTYPE) psfc,aki(layer), bki(layer)
-             374                     
+             346                     
+             347                     !***********************************************************************
+             348                           subroutine sigmap(layer,aki,bki,psfc,p)
+             349                     !
+             350                           use const, only: RTYPE
+             351                     !
+             352                           implicit none
+             353                           integer i, layer
+             354                           real p(layer)
+             355                           real(kind=RTYPE) psfc,aki(layer), bki(layer)
+             356                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 843
@@ -1539,11 +1493,11 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      bki, aki, p
                                    <<< Loop-information  End >>>
-             375     1  pp   2v            do i=1,layer
-             376     1   p   2v            p(i)=aki(i)+(bki(i)*psfc)
-             377     1   p   2v            enddo
-             378                           return
-             379                           end
+             357     1  pp   2v            do i=1,layer
+             358     1   p   2v            p(i)=aki(i)+(bki(i)*psfc)
+             359     1   p   2v            enddo
+             360                           return
+             361                           end
 
  Procedure information
    Lines      : 16
@@ -1556,62 +1510,62 @@
      aki
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 366  373
+      |(Declaration)    : 348  355
       |(Definition)     : 
-      |(Reference)      : 376
+      |(Reference)      : 358
      bki
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 366  373
+      |(Declaration)    : 348  355
       |(Definition)     : 
-      |(Reference)      : 376
+      |(Reference)      : 358
      const
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 368
+      |(Reference)      : 350
      i
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 371
-      |(Definition)     : 375
-      |(Reference)      : 376  376  376
+      |(Declaration)    : 353
+      |(Definition)     : 357
+      |(Reference)      : 358  358  358
      layer
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 366  371
+      |(Declaration)    : 348  353
       |(Definition)     : 
-      |(Reference)      : 372  373  373  375
+      |(Reference)      : 354  355  355  357
      p
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 366  372
-      |(Definition)     : 376
+      |(Declaration)    : 348  354
+      |(Definition)     : 358
       |(Reference)      : 
      psfc
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 366  373
+      |(Declaration)    : 348  355
       |(Definition)     : 
-      |(Reference)      : 376
+      |(Reference)      : 358
      RTYPE
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 368  373
+      |(Reference)      : 350  355
      sigmap
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 366
+      |(Definition)     : 348
       |(Reference)      : 
 
  Total information
    Procedures       : 2
-   Total lines      : 379
-   Total statements : 270
+   Total lines      : 361
+   Total statements : 255
    Total stack(byte): 11136
    Total prefetch num: 0
 

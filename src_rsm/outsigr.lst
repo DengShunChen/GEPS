@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:31:14 2023
+ Fujitsu Fortran Version 4.6.1  Thu Dec 28 15:30:04 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_rsm
    Source file       : outsigr.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -106,7 +106,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2000
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      work
                                    <<< Loop-information  End >>>
@@ -136,7 +136,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      fusl, work1
                                    <<< Loop-information  End >>>
@@ -164,7 +164,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      fdsl, work1
                                    <<< Loop-information  End >>>
@@ -192,7 +192,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      fuir, work1
                                    <<< Loop-information  End >>>
@@ -220,7 +220,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      fdir, work1
                                    <<< Loop-information  End >>>
@@ -248,7 +248,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      fuslr, work1
                                    <<< Loop-information  End >>>
@@ -276,7 +276,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      fdslr, work1
                                    <<< Loop-information  End >>>
@@ -304,7 +304,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      fuirr, work1
                                    <<< Loop-information  End >>>
@@ -332,7 +332,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      fdirr, work1
                                    <<< Loop-information  End >>>
@@ -360,7 +360,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 144, MVE: 4, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 4.00, ITR: 160, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      fdsl, fusl, work1
                                    <<< Loop-information  End >>>
@@ -388,7 +388,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 144, MVE: 4, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 4.00, ITR: 160, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      fdslr, fuslr, work1
                                    <<< Loop-information  End >>>
@@ -416,7 +416,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 144, MVE: 4, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 4.00, ITR: 160, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      fuir, fdir, work1
                                    <<< Loop-information  End >>>
@@ -444,7 +444,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 144, MVE: 4, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 4.00, ITR: 160, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      fuirr, fdirr, work1
                                    <<< Loop-information  End >>>
@@ -472,9 +472,9 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 96, MVE: 2, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 96, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      fdir, fuir, fusl, fdsl, work1
+                                   <<<      fdsl, fdir, fuir, fusl, work1
                                    <<< Loop-information  End >>>
              227     3   p   2v            do 285 i = 1,nxj
              228     3   p   2v             work1(i,jj)=fdsl(i,k,jj)-fusl(i,k,jj)+fdir(i,k,jj)-fuir(i,k,jj)
@@ -500,9 +500,9 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 96, MVE: 2, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 96, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      fdirr, fuirr, fuslr, fdslr, work1
+                                   <<<      fdslr, fdirr, fuirr, fuslr, work1
                                    <<< Loop-information  End >>>
              241     3   p   2v            do 286 i = 1,nxj
              242     3   p   2v             work1(i,jj)=fdslr(i,k,jj)-fuslr(i,k,jj)+fdirr(i,k,jj)-fuirr(i,k,jj)
@@ -531,7 +531,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      asl, work1
                                    <<< Loop-information  End >>>
@@ -557,7 +557,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      atl, work1
                                    <<< Loop-information  End >>>
@@ -583,7 +583,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      asl_clr, work1
                                    <<< Loop-information  End >>>
@@ -609,7 +609,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      atl_clr, work1
                                    <<< Loop-information  End >>>
@@ -635,7 +635,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      dtrad, work1
                                    <<< Loop-information  End >>>
@@ -661,7 +661,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 144, MVE: 4, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 4.00, ITR: 160, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      asl_clr, atl_clr, work1
                                    <<< Loop-information  End >>>
@@ -687,7 +687,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cldcov, work1
                                    <<< Loop-information  End >>>
@@ -712,8 +712,8 @@
              341     2   p                  nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      sd, work1
                                    <<< Loop-information  End >>>
@@ -732,294 +732,294 @@
              354                     !------------------------------------------------------------
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 7
+                                   <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ss, work1
                                    <<< Loop-information  End >>>
-             355        pp   4v            work1=ss
+             355        pp   2v            work1=ss
              356                           call unify_reduceintp(nx,my,my_max,work1,work)
              357                           call syslbl ('s00310',idtg,itau,ggdef,ihdg)
              358                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
              359                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 7
+                                   <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      rs, work1
                                    <<< Loop-information  End >>>
-             360        pp   4v            work1=rs
+             360        pp   2v            work1=rs
              361                           call unify_reduceintp(nx,my,my_max,work1,work)
              362                           call syslbl ('s00320',idtg,itau,ggdef,ihdg)
              363                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
              364                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 7
+                                   <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      asol, work1
                                    <<< Loop-information  End >>>
-             365        pp   4v            work1=asol
+             365        pp   2v            work1=asol
              366                           call unify_reduceintp(nx,my,my_max,work1,work)
              367                           call syslbl ('X00330',idtg,itau,ggdef,ihdg)
              368                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
              369                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 7
+                                   <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      olr, work1
                                    <<< Loop-information  End >>>
-             370        pp   4v            work1=olr
+             370        pp   2v            work1=olr
              371                           call unify_reduceintp(nx,my,my_max,work1,work)
              372                           call syslbl ('X00340',idtg,itau,ggdef,ihdg)
              373                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
              374                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 7
+                                   <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      sld, work1
                                    <<< Loop-information  End >>>
-             375        pp   4v            work1=sld
+             375        pp   2v            work1=sld
              376                           call unify_reduceintp(nx,my,my_max,work1,work)
              377                           call syslbl ('S003U0',idtg,itau,ggdef,ihdg)
              378                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
              379                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 7
+                                   <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      rld, work1
                                    <<< Loop-information  End >>>
-             380        pp   4v            work1=rld
+             380        pp   2v            work1=rld
              381                           call unify_reduceintp(nx,my,my_max,work1,work)
              382                           call syslbl ('S003X0',idtg,itau,ggdef,ihdg)
              383                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
              384                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 7
+                                   <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ss_clr, work1
                                    <<< Loop-information  End >>>
-             385        pp   4v            work1=ss_clr
+             385        pp   2v            work1=ss_clr
              386                           call unify_reduceintp(nx,my,my_max,work1,work)
              387                           call syslbl ('s0031C',idtg,itau,ggdef,ihdg)
              388                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
              389                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 7
+                                   <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      rs_clr, work1
                                    <<< Loop-information  End >>>
-             390        pp   4v            work1=rs_clr
+             390        pp   2v            work1=rs_clr
              391                           call unify_reduceintp(nx,my,my_max,work1,work)
              392                           call syslbl ('s0032C',idtg,itau,ggdef,ihdg)
              393                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
              394                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 7
+                                   <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      asol_clr, work1
                                    <<< Loop-information  End >>>
-             395        pp   4v            work1=asol_clr
+             395        pp   2v            work1=asol_clr
              396                           call unify_reduceintp(nx,my,my_max,work1,work)
              397                           call syslbl ('X0033C',idtg,itau,ggdef,ihdg)
              398                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
              399                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 7
+                                   <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      olr_clr, work1
                                    <<< Loop-information  End >>>
-             400        pp   4v            work1=olr_clr
+             400        pp   2v            work1=olr_clr
              401                           call unify_reduceintp(nx,my,my_max,work1,work)
              402                           call syslbl ('X0034C',idtg,itau,ggdef,ihdg)
              403                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
              404                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 7
+                                   <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      sld_clr, work1
                                    <<< Loop-information  End >>>
-             405        pp   4v            work1=sld_clr
+             405        pp   2v            work1=sld_clr
              406                           call unify_reduceintp(nx,my,my_max,work1,work)
              407                           call syslbl ('S003UC',idtg,itau,ggdef,ihdg)
              408                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
              409                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 7
+                                   <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      rld_clr, work1
                                    <<< Loop-information  End >>>
-             410        pp   4v            work1=rld_clr
+             410        pp   2v            work1=rld_clr
              411                           call unify_reduceintp(nx,my,my_max,work1,work)
              412                           call syslbl ('S003XC',idtg,itau,ggdef,ihdg)
              413                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
              414                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 7
+                                   <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ctot, work1
                                    <<< Loop-information  End >>>
-             415        pp   4v            work1=ctot
+             415        pp   2v            work1=ctot
              416                           call unify_reduceintp(nx,my,my_max,work1,work)
              417                           call syslbl ('X00770',idtg,itau,ggdef,ihdg)
              418                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
              419                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 7
+                                   <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      chig, work1
                                    <<< Loop-information  End >>>
-             420        pp   4v            work1=chig
+             420        pp   2v            work1=chig
              421                           call unify_reduceintp(nx,my,my_max,work1,work)
              422                           call syslbl ('X00760',idtg,itau,ggdef,ihdg)
              423                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
              424                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 7
+                                   <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cmid, work1
                                    <<< Loop-information  End >>>
-             425        pp   4v            work1=cmid
+             425        pp   2v            work1=cmid
              426                           call unify_reduceintp(nx,my,my_max,work1,work)
              427                           call syslbl ('X00750',idtg,itau,ggdef,ihdg)
              428                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
              429                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 7
+                                   <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      clow, work1
                                    <<< Loop-information  End >>>
-             430        pp   4v            work1=clow
+             430        pp   2v            work1=clow
              431                           call unify_reduceintp(nx,my,my_max,work1,work)
              432                           call syslbl ('X00740',idtg,itau,ggdef,ihdg)
              433                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
              434                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 7
+                                   <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cice, work1
                                    <<< Loop-information  End >>>
-             435        pp   4v            work1=cice
+             435        pp   2v            work1=cice
              436                           call unify_reduceintp(nx,my,my_max,work1,work)
              437                           call syslbl ('W00093',idtg,itau,ggdef,ihdg)
              438                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
              439                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 7
+                                   <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      xtice, work1
                                    <<< Loop-information  End >>>
-             440        pp   4v            work1=xtice
+             440        pp   2v            work1=xtice
              441                           call unify_reduceintp(nx,my,my_max,work1,work)
              442                           call syslbl ('W00094',idtg,itau,ggdef,ihdg)
              443                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
              444                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 7
+                                   <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      snr, work1
                                    <<< Loop-information  End >>>
-             445        pp   4v            work1=snr
+             445        pp   2v            work1=snr
              446                           call unify_reduceintp(nx,my,my_max,work1,work)
              447                           call syslbl ('b00650',idtg,itau,ggdef,ihdg)
              448                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
              449                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 7
+                                   <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      sncover, work1
                                    <<< Loop-information  End >>>
-             450        pp   4v            work1=sncover
+             450        pp   2v            work1=sncover
              451                           call unify_reduceintp(nx,my,my_max,work1,work)
              452                           call syslbl ('B00651',idtg,itau,ggdef,ihdg)
              453                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
              454                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 7
+                                   <<<    Standard iteration count: 5
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      snoalb, work1
                                    <<< Loop-information  End >>>
-             455        pp   4v            work1=snoalb
+             455        pp   2v            work1=snoalb
              456                           call unify_reduceintp(nx,my,my_max,work1,work)
              457                           call syslbl ('S0003X',idtg,itau,ggdef,ihdg)
              458                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
@@ -1030,7 +1030,7 @@
  Procedure information
    Lines      : 461
    Statements : 324
-   Stack(byte): 19680
+   Stack(byte): 19632
    Prefetch num: 0
 
  Scoping unit of external sub-program : outsigr
@@ -1372,7 +1372,7 @@
       |(Definition)     : 
       |(Reference)      : 390
      sd
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  36
       |(Definition)     : 
@@ -1438,13 +1438,13 @@
       |(Definition)     : 
       |(Reference)      : 63  77  91  105  119  133  147  161  175  189  203  217  231  245  262  274  286  298  310  322  334  346  356  361  366  371  376  381  386  391  396  401  406  411  416  421  426  431  436  441  446  451  456
      work
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 36
       |(Definition)     : 44  63  66  77  80  91  94  105  108  119  122  133  136  147  150  161  164  175  178  189  192  203  206  217  220  231  234  245  248  262  265  274  277  286  289  298  301  310  313  322  325  334  337  346  349  356  358  361  363  366  368  371  373  376  378  381  383  386  388  391  393  396  398  401  403  406  408  411  413  416  418  421  423  426  428  431  433  436  438  441  443  446  448  451  453  456  458
       |(Reference)      : 
      work1
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 36
       |(Definition)     : 60  63  74  77  88  91  102  105  116  119  130  133  144  147  158  161  172  175  186  189  200  203  214  217  228  231  242  245  259  262  271  274  283  286  295  298  307  310  319  322  331  334  343  346  355  356  360  361  365  366  370  371  375  376  380  381  385  386  390  391  395  396  400  401  405  406  410  411  415  416  420  421  425  426  430  431  435  436  440  441  445  446  450  451  455  456
@@ -1511,6 +1511,6 @@
    Procedures       : 1
    Total lines      : 461
    Total statements : 324
-   Total stack(byte): 19680
+   Total stack(byte): 19632
    Total prefetch num: 0
 

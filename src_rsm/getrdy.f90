@@ -49,7 +49,7 @@
       use module_mp_thompson_make_number_concentrations,                &
                              only: make_IceNumber, make_RainNumber
 !-----------------------------------------------------------------------
-      use mod_grb2_param , only : grbid ,grbfile ,opn_grb2 ,cls_grb2,grbnxmy
+      use mod_grb2_param , only : grbnxmy
 
       implicit   none
 
@@ -156,7 +156,8 @@
  107  format('global_idw.t',i3.3,'.',i4.4,'.',i3.3,'.dat')
  108  format('global_idw.t',i3.3,'.',i3.3,'.',i3.3,'.dat')
 
-      open(71,file=f71,form='unformatted',access='direct',recl=8*nx*my)
+      open(71,file=f71,form='unformatted',access='direct',    &
+           recl=8*nx*my,convert="big_endian")
 
       do k=1,8
         read(71,rec=k) ww1
@@ -341,6 +342,10 @@
         ftp1=0.
         fqp1=0.
         itaui=0
+! give the initial forward weighting for Semi-implicit
+        alphax = alpha
+! give the initial coefficient for horizontal diffusion
+        hfiltx = hfilt
 !
 ! new start gfcst: read climate data, initialize parameters
 !
@@ -360,18 +365,6 @@
         call readalb(bckfile,nx,my,my_max,julian,ggdef,         &
                    alvsf,alvwf,alnsf,alnwf,facsf,facwf)
         if (myrank.eq.0) print *, 'irad=2, readalb ok!!'
-        do jj=1,jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          do i=1,nxj
-            alvsf(i,jj)=alvsf(i,jj)*0.01
-            alvwf(i,jj)=alvwf(i,jj)*0.01
-            alnsf(i,jj)=alnsf(i,jj)*0.01
-            alnwf(i,jj)=alnwf(i,jj)*0.01
-            facsf(i,jj)=facsf(i,jj)*0.01
-            facwf(i,jj)=facwf(i,jj)*0.01
-          enddo
-        enddo
       endif
 ! ------------------------------------------------------------
       if(.not.cstar)then
@@ -492,7 +485,14 @@
                   zice(i,jj) = max(zice(i,jj),1.*cice(i,jj))
                   icwarn = icwarn + 1 
                 endif
+                shdmax(i,jj) = cice(i,jj)
               endif            
+! set snow depth to zero on ocean point
+              if ( ocean(i,jj) ) then
+                snr(i,jj)    = 0.
+                sndepth(i,jj)= 0.
+                sncover(i,jj)= 0.
+              endif
             enddo             
           enddo
 !
@@ -917,6 +917,13 @@
         call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pt(1,jj) &
                           ,pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
  160  continue
+!                  
+!  computing global mean surface pressure at initial time
+!
+      if ( .not. restrt ) then
+        pdryi = 0.
+        call ptot(pdryi,dpprt)
+      endif
 !
 !  compute globel moisture budget and p-coordinate variables
 !
@@ -1290,21 +1297,7 @@
 !        flash=0.   !xb110, flash density
 
 !!       open grib2 file
-        if( outgrb2 == 1 .and. myrank == 0 )then
-          if(io_quilting)then 
-              grbnxmy=nx*my
-              write( keydoit,'(A14,I12.12,A8)') &
-              "OPEN..0000....",idtg,"H...DOIT"
-              ntag=ntag+1
-              call mpe_send_key(keydoit,ntag,istat)
-          else
-            grbid=233  ! 231 outflds  232 out24  233 mfc
- 133                    format( A  ,A ,I10.10 ,A       )
-            write(grbfile,133 )trim(ifilout_grb),'/GFS_',idtg/100 ,'_0000.grb2'
-            if(myrank==0) print*,'OutFileName= ',trim(grbfile)
-            call opn_grb2(nx,my,idtg, 0 ,istat)
-          endif
-        endif
+        if( outgrb2 == 1) grbnxmy=nx*my
 
         call outflds ( 0,nx,my,my_max,lev,ncld,lmax,numout,idtg,ifilout &
              , outdir,ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo           &
@@ -1320,31 +1313,19 @@
 ! add 40m 100m output for green energy plan
 
       if(out_green)then
-
-        
         call  outflds_green(0,nx,my,my_max,lev,ncld                     &
               , idtg,ifilout,cp,rgas,grav,t2,u10,v10,ss,pk           &
               , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6       &
               , ggdef)
       endif
-!
-!#ifdef RSM_sigp
-        if(outgrb2==1.and.myrank==0)then
-            if(io_quilting)then 
-              keydoit(1:4)='CLSE'
-              ntag=ntag+1
-              call mpe_send_key(keydoit,ntag,istat)
-            else
-              call cls_grb2(istat)
-            endif
-        endif
 
+!#ifdef RSM_sigp
 #ifdef RSM
        if(outrsm) then
         if(myrank.eq.0)print*,' output: rsm date',idtg
         write(dtgrsm,'(I12)') idtg
         read(dtgrsm,'(I10,I2)')idtgrsm,ii   ! ii is dummy integer
-#ifdef CWB_MPMD
+#if defined(CWB_MPMD) || defined(CWBSUM)
         call send_idate(idtgrsm)
 #else
         call wrte_idate(idtgrsm)

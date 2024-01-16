@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:30:31 2023
+ Fujitsu Fortran Version 4.6.1  Thu Dec 28 15:29:22 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_rsm
    Source file       : incrini.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -107,10 +107,10 @@
               40     2                         if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 1067
+                                   <<<    Standard iteration count: 843
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 160, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      hld1, hld3
                                    <<< Loop-information  End >>>
@@ -139,10 +139,10 @@
               58     2                         if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 1067
+                                   <<<    Standard iteration count: 843
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 160, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      hld1, hld3
                                    <<< Loop-information  End >>>
@@ -168,10 +168,10 @@
               73     1                       if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 843
+                                   <<<    Standard iteration count: 728
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 160, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      hld1, pt
                                    <<< Loop-information  End >>>
@@ -182,10 +182,10 @@
               78     1               !ch
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 1143
+                                   <<<    Standard iteration count: 889
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 160, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      hld1, pt1
                                    <<< Loop-information  End >>>
@@ -208,10 +208,10 @@
               90     2                         if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 1143
+                                   <<<    Standard iteration count: 889
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      hld1, hld3
                                    <<< Loop-information  End >>>
@@ -239,10 +239,10 @@
              107     2                         if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 1143
+                                   <<<    Standard iteration count: 889
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      hld1, hld4
                                    <<< Loop-information  End >>>
@@ -270,10 +270,10 @@
              124     3                           if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 1143
+                                   <<<    Standard iteration count: 889
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      hld1, hld4
                                    <<< Loop-information  End >>>
@@ -300,10 +300,10 @@
              140     4                           if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 1143
+                                   <<<    Standard iteration count: 889
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      hld1, hld4
                                    <<< Loop-information  End >>>
@@ -333,10 +333,10 @@
              159     2                         if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 1067
+                                   <<<    Standard iteration count: 843
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 160, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      hld1, hld3
                                    <<< Loop-information  End >>>
@@ -371,9 +371,9 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 0.51, ITR: 48, MVE: 2, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.70, ITR: 64, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      qt, pk, tt
+                                   <<<      pk, tt, qt
                                    <<< Loop-information  End >>>
              179     3   p   2v                do i=1,nxj
              180     3   p   2v                  tt(i,k,jj)= tt(i,k,jj)*(1.0+0.608*qt(i,k,jj))/pk(i,k,jj)
@@ -399,7 +399,7 @@
              196     2   p                   if (mf.eq.1) then
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      vornow, divnow
                                    <<< Loop-information  End >>>
@@ -444,8 +444,8 @@
              226     2   p                   do n=mf,jtrun
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 40, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 80, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      vorten, divten, vorold, divold
                                    <<< Loop-information  End >>>
@@ -470,13 +470,13 @@
  Scoping unit of external sub-program : incrini
    Attribute and Cross reference of name
      cc
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 19
       |(Definition)     : 185  186  210  211  212  213  214  215
       |(Reference)      : 
      cim
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 191  219
@@ -488,31 +488,31 @@
       |(Definition)     : 
       |(Reference)      : 8  12
      cosl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 39  57
      divnow
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 191  198  199  212  217
       |(Reference)      : 
      divold
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 228  229
       |(Reference)      : 
      divten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 228  229
      dlpl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 219
@@ -530,19 +530,19 @@
       |(Definition)     : 
       |(Reference)      : 35  53  86  103  120  136  155
      dpoly
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 191  217  219
       |(Reference)      : 
      dtpl
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 219
       |(Reference)      : 
      dummy
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 19
       |(Definition)     : 185  185  185  211  211  211  213  213  213  215  215  215
@@ -590,13 +590,13 @@
       |(Definition)     : 35  40  53  58  68  73  86  90  103  107  120  124  136  140  155  159
       |(Reference)      : 42  60  75  79  92  109  126  142  161
      hld3
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 19
       |(Definition)     : 42  46  60  64  92  96  161  165
       |(Reference)      : 
      hld4
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 19
       |(Definition)     : 109  126  142  148
@@ -878,7 +878,7 @@
       |(Definition)     : 46  64  96  148  165  171
       |(Reference)      : 
      onocos
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 191  217
@@ -890,25 +890,25 @@
       |(Definition)     : 
       |(Reference)      : 5
      phi
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 165
       |(Reference)      : 
      pk
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 171
       |(Reference)      : 180
      pk2
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 171
       |(Reference)      : 
      plnow
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 189  216  219
@@ -920,7 +920,7 @@
       |(Definition)     : 171
       |(Reference)      : 
      poly
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 186  189  191  210  212  214  216  217  219
@@ -932,13 +932,13 @@
       |(Definition)     : 
       |(Reference)      : 171
      pt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 75  171  216
       |(Reference)      : 
      pt1
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 17
       |(Definition)     : 79  189
@@ -950,7 +950,7 @@
       |(Definition)     : 171
       |(Reference)      : 75  79
      qt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 148
@@ -974,7 +974,7 @@
       |(Definition)     : 
       |(Reference)      : 6
      rdiv
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 213
@@ -992,13 +992,13 @@
       |(Definition)     : 46  64  96  148  165
       |(Reference)      : 
      rvor
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 211
       |(Reference)      : 
      sigma
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 171
@@ -1022,13 +1022,13 @@
       |(Definition)     : 
       |(Reference)      : 28
      temnow
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 186  214
       |(Reference)      : 
      temold
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 222
@@ -1082,7 +1082,7 @@
       |(Definition)     : 
       |(Reference)      : 219
      tt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 96  180  185  215
@@ -1100,49 +1100,49 @@
       |(Definition)     : 
       |(Reference)      : 211  213  215
      ut
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 46  191  217
       |(Reference)      : 
      vornow
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 191  200  201  210  217
       |(Reference)      : 
      vorold
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 230  231
       |(Reference)      : 
      vorten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 230  231
      vt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 64  191  217
       |(Reference)      : 
      wcfac
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 217
       |(Reference)      : 
      wdfac
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 217
       |(Reference)      : 
      weight
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 186  189  191

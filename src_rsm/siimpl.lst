@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:30:31 2023
+ Fujitsu Fortran Version 4.6.1  Thu Dec 28 15:29:23 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_rsm
    Source file       : siimpl.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -120,8 +120,8 @@
               58                           real(kind=RTYPE) divavg(lev,2),phiave(lev,2,jtrun),eps4e(lev,jtrun)
               59                     
               60                           integer   m,mf,k,n,l,j
-              61                           real      dta,alpha
-              62                           real(kind=RTYPE) dd,odd,dd2,ptmean,tem,s1,s2,d1,d2,dp
+              61                           real      alpha
+              62                           real(kind=RTYPE) dta,dd,odd,dd2,ptmean,tem,s1,s2,d1,d2,dp
               63                     
               64                           real(kind=RTYPE) wrk1(lev,2,jtp),wrk2(lev,2,jtp),wrk3(lev,2,jtp),&
               65                                            wrk4(lev,2,jtp),wrk5(lev,2,jtp),wrk6(lev,2,jtp)
@@ -171,10 +171,10 @@
              104     1               
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 800
+                                   <<<    Standard iteration count: 616
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 0.36, ITR: 48, MVE: 2, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.51, ITR: 64, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      eigval, eps4e
                                    <<< Loop-information  End >>>
@@ -188,8 +188,8 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 433
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 48, MVE: 2, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 96, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      wrk1, wrk3, wrk2, divavg
                                    <<< Loop-information  End >>>
@@ -200,20 +200,19 @@
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      divavg
                                    <<< Loop-information  End >>>
              115     3  pp                     do 130 k = 1, lev
              116     3   p                       s1= spalm(k)*(ploldL(m,1)+dd*pltenL(m,1)-plnowL(m,1))
              117     3   p                       s2= spalm(k)*(ploldL(m,2)+dd*pltenL(m,2)-plnowL(m,2))
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.06, ITR: 512, MVE: 2, POL: L)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      divavg
-                                   <<<    SPILLS :
-                                   <<<      GENERAL   : SPILL 0  FILL 0
-                                   <<<      SIMD&FP   : SPILL 0  FILL 0
-                                   <<<      SCALABLE  : SPILL 1  FILL 1
-                                   <<<      PREDICATE : SPILL 0  FILL 0
                                    <<< Loop-information  End >>>
              118     4   p   8v                  do 125 L = 1, lev
              119     4   p   8v                    s1= s1+arrhyd(k,L)*divavg(L,1)
@@ -237,7 +236,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 1231
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      wrk6
                                    <<< Loop-information  End >>>
@@ -251,13 +250,17 @@
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wrk6
                                    <<< Loop-information  End >>>
              143     3  pp                     do 170 L = 1, lev
              144     3   p                       d1= evecin(L,1)*wrk6(1,1,m)
              145     3   p                       d2= evecin(L,1)*wrk6(1,2,m)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.06, ITR: 512, MVE: 2, POL: L)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      wrk6
                                    <<< Loop-information  End >>>
@@ -272,13 +275,17 @@
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      divavg
                                    <<< Loop-information  End >>>
              154     3  pp                     do 195 k = 1, lev
              155     3   p                       s1= evectr(k,1)*divavg(1,1)
              156     3   p                       s2= evectr(k,1)*divavg(1,2)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.06, ITR: 512, MVE: 2, POL: L)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      divavg
                                    <<< Loop-information  End >>>
@@ -298,13 +305,17 @@
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wrk6
                                    <<< Loop-information  End >>>
              170     3  pp                     do 205 k = 1, lev
              171     3   p                       s1=wrk3(k,1,m)
              172     3   p                       s2=wrk3(k,2,m)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.06, ITR: 512, MVE: 2, POL: L)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      wrk6
                                    <<< Loop-information  End >>>
@@ -332,8 +343,8 @@
              187     3  pp                    do 230 j = 1, 2
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.18, ITR: 256, MVE: 2, POL: L)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.18, ITR: 512, MVE: 2, POL: L)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      wrk5, wrk4, wrk6, dsigma
                                    <<< Loop-information  End >>>
@@ -361,7 +372,7 @@
  Procedure information
    Lines      : 207
    Statements : 104
-   Stack(byte): 3648
+   Stack(byte): 4272
    Prefetch num: 0
 
  Scoping unit of external sub-program : siimpl
@@ -373,13 +384,13 @@
       |(Definition)     : 
       |(Reference)      : 67
      arrhyd
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  50
       |(Definition)     : 
       |(Reference)      : 119  120
      arsddt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  50
       |(Definition)     : 
@@ -391,103 +402,103 @@
       |(Definition)     : 
       |(Reference)      : 44
      d1
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 62
       |(Definition)     : 144  147
       |(Reference)      : 147  150
      d2
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 62
       |(Definition)     : 145  148
       |(Reference)      : 148  151
      dd
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 62
       |(Definition)     : 67
       |(Reference)      : 68  69  69  112  113  116  117  124  126
      dd2
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 62
       |(Definition)     : 69
       |(Reference)      : 106
      divavg
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 58
       |(Definition)     : 112  113  150  151
       |(Reference)      : 119  120  155  156  158  159
      divnow
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  53
       |(Definition)     : 94
       |(Reference)      : 
      divold
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  53
       |(Definition)     : 91
       |(Reference)      : 
      divten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  53
       |(Definition)     : 97  203
       |(Reference)      : 
      dp
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 62
       |(Definition)     : 189
       |(Reference)      : 190
      dsigma
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  50
       |(Definition)     : 
       |(Reference)      : 189  189
      dta
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  61
+      |(Declaration)    : 1  62
       |(Definition)     : 
       |(Reference)      : 67
      eigval
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  50
       |(Definition)     : 
       |(Reference)      : 106
      eps4
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  50
       |(Definition)     : 
       |(Reference)      : 
      eps4L
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 44  107  122  123
      eps4e
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 58
       |(Definition)     : 107
       |(Reference)      : 150  151
      evecin
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  50
       |(Definition)     : 
       |(Reference)      : 144  145  147  148
      evectr
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  50
       |(Definition)     : 
@@ -625,7 +636,7 @@
       |(Definition)     : 82  85  88  91  94  97  202  203
       |(Reference)      : 
      odd
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 62
       |(Definition)     : 68
@@ -637,49 +648,49 @@
       |(Definition)     : 
       |(Reference)      : 43
      phiave
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 58
       |(Definition)     : 122  123
       |(Reference)      : 124  126
      plnow
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  56
       |(Definition)     : 79
       |(Reference)      : 
      plnowL
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 79
       |(Reference)      : 45  116  117
      plold
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  56
       |(Definition)     : 80
       |(Reference)      : 
      ploldL
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 80
       |(Reference)      : 45  116  117
      plten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  56
       |(Definition)     : 78  197
       |(Reference)      : 
      pltenL
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 78  190  197
       |(Reference)      : 45  116  117  190
      ptmean
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  62
       |(Definition)     : 
@@ -697,13 +708,13 @@
       |(Definition)     : 82  85  88  91  94  97  202  203
       |(Reference)      : 
      s1
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 62
       |(Definition)     : 116  119  155  158  171  174
       |(Reference)      : 119  122  158  161  174  177
      s2
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 62
       |(Definition)     : 117  120  156  159  172  175
@@ -715,7 +726,7 @@
       |(Definition)     : 1
       |(Reference)      : 
      spalm
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  50
       |(Definition)     : 
@@ -727,61 +738,61 @@
       |(Definition)     : 
       |(Reference)      : 45
      tem
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
       |(Declaration)    : 62
       |(Definition)     : 106
       |(Reference)      : 107
      temnow
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  53
       |(Definition)     : 85
       |(Reference)      : 
      temold
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  53
       |(Definition)     : 82
       |(Reference)      : 
      temten
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  53
       |(Definition)     : 88  202
       |(Reference)      : 
      wrk1
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 64
       |(Definition)     : 82
       |(Reference)      : 112  113
      wrk2
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 64
       |(Definition)     : 85
       |(Reference)      : 112  113
      wrk3
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 64
       |(Definition)     : 88  177  178  202
       |(Reference)      : 112  113  171  172
      wrk4
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 64
       |(Definition)     : 91
       |(Reference)      : 124  126  191
      wrk5
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 64
       |(Definition)     : 94
       |(Reference)      : 124  126  191
      wrk6
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 64
       |(Definition)     : 97  124  126  137  138  161  162  191  203
@@ -818,6 +829,6 @@
    Procedures       : 1
    Total lines      : 207
    Total statements : 104
-   Total stack(byte): 3648
+   Total stack(byte): 4272
    Total prefetch num: 0
 

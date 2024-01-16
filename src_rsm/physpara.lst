@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:30:19 2023
+ Fujitsu Fortran Version 4.6.1  Thu Dec 28 15:29:04 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_rsm
    Source file       : physpara.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -227,33 +227,35 @@
              165                     
              166                           logical, save :: lgfdlmprad =.true.  ! GFDL MP and radiation consistency flag
              167                           logical, save :: effr_in =.true. ! flag for using effective radii of hydrometeors in radiation process (GFDLMP)
-             168                     
-             169                     ! ............................................. !
-             170                     !  -2.5- for module radiation_surface           !
+             168                           logical, save :: is_aerosol_aware =.false. ! flag for aerosol-aware Thompson MP
+             169                           logical, save :: merra2_aerosol_aware =.false. ! flag for MERRA2 aerosol-aware Thompson MP
+             170                     
              171                     ! ............................................. !
-             172                           integer, save :: ialbflg = 0      ! surface albedo scheme control flag
-             173                           integer, save :: iemsflg = 0      ! surface emissivity scheme control flag
-             174                     
-             175                           character, save :: semis_file*26  ! external sfc emissivity data table
-             176                           data semis_file   / 'sfc_emissivity_idx.txt    ' /
-             177                     
-             178                     ! ............................................. !
-             179                     !  -2.6- general purpose                        !
+             172                     !  -2.5- for module radiation_surface           !
+             173                     ! ............................................. !
+             174                           integer, save :: ialbflg = 0      ! surface albedo scheme control flag
+             175                           integer, save :: iemsflg = 0      ! surface emissivity scheme control flag
+             176                     
+             177                           character, save :: semis_file*26  ! external sfc emissivity data table
+             178                           data semis_file   / 'sfc_emissivity_idx.txt    ' /
+             179                     
              180                     ! ............................................. !
-             181                     
-             182                     !cmy  integer, save :: ivflip  = 1      ! vertical profile indexing flag
-             183                           integer, save :: ivflip  = 0      ! vertical profile indexing flag
-             184                           integer, save :: isubcsw = 0      ! sub-column cloud approx flag in sw radiation
-             185                           integer, save :: isubclw = 0      ! sub-column cloud approx flag in lw radiation
-             186                           integer, save :: ipsd0   = 0      ! initial permutation seed for mcica radiation
-             187                     !
-             188                     !...................................!
-             189                           end module physpara           !
-             190                     !===================================!
+             181                     !  -2.6- general purpose                        !
+             182                     ! ............................................. !
+             183                     
+             184                     !cmy  integer, save :: ivflip  = 1      ! vertical profile indexing flag
+             185                           integer, save :: ivflip  = 0      ! vertical profile indexing flag
+             186                           integer, save :: isubcsw = 0      ! sub-column cloud approx flag in sw radiation
+             187                           integer, save :: isubclw = 0      ! sub-column cloud approx flag in lw radiation
+             188                           integer, save :: ipsd0   = 0      ! initial permutation seed for mcica radiation
+             189                     !
+             190                     !...................................!
+             191                           end module physpara           !
+             192                     !===================================!
 
  Procedure information
-   Lines      : 190
-   Statements : 53
+   Lines      : 192
+   Statements : 55
    Stack(byte): 352
    Prefetch num: 0
 
@@ -310,7 +312,7 @@
      ialbflg
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : PUBLIC, SAVE, initialized
-      |(Declaration)    : 172
+      |(Declaration)    : 174
       |(Definition)     : 
       |(Reference)      : 
      icldflg
@@ -340,7 +342,7 @@
      iemsflg
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : PUBLIC, SAVE, initialized
-      |(Declaration)    : 173
+      |(Declaration)    : 175
       |(Definition)     : 
       |(Reference)      : 
      ilwcice
@@ -388,7 +390,13 @@
      ipsd0
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : PUBLIC, SAVE, initialized
-      |(Declaration)    : 186
+      |(Declaration)    : 188
+      |(Definition)     : 
+      |(Reference)      : 
+     is_aerosol_aware
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : PUBLIC, SAVE, initialized
+      |(Declaration)    : 168
       |(Definition)     : 
       |(Reference)      : 
      isolar
@@ -400,13 +408,13 @@
      isubclw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : PUBLIC, SAVE, initialized
-      |(Declaration)    : 185
+      |(Declaration)    : 187
       |(Definition)     : 
       |(Reference)      : 
      isubcsw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : PUBLIC, SAVE, initialized
-      |(Declaration)    : 184
+      |(Declaration)    : 186
       |(Definition)     : 
       |(Reference)      : 
      iswcice
@@ -442,7 +450,7 @@
      ivflip
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : PUBLIC, SAVE, initialized
-      |(Declaration)    : 183
+      |(Declaration)    : 185
       |(Definition)     : 
       |(Reference)      : 
      lalw1bd
@@ -505,16 +513,22 @@
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 41
+     merra2_aerosol_aware
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : PUBLIC, SAVE, initialized
+      |(Declaration)    : 169
+      |(Definition)     : 
+      |(Reference)      : 
      physpara
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 33
       |(Definition)     : 
-      |(Reference)      : 189
+      |(Reference)      : 191
      semis_file
       |(Class and Type) : variable name, CHARACTER(26,1)
       |(Attributes)     : PUBLIC, SAVE, initialized
-      |(Declaration)    : 175  176
+      |(Declaration)    : 177  178
       |(Definition)     : 
       |(Reference)      : 
      solar_file
@@ -526,8 +540,8 @@
 
  Total information
    Procedures       : 1
-   Total lines      : 190
-   Total statements : 53
+   Total lines      : 192
+   Total statements : 55
    Total stack(byte): 352
    Total prefetch num: 0
 

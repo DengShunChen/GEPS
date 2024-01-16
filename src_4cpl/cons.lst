@@ -1,5 +1,5 @@
 
- Fujitsu Fortran Version 4.6.1  Mon Dec  4 10:58:31 2023
+ Fujitsu Fortran Version 4.6.1  Thu Dec 28 14:58:01 2023
 
  Compilation information
    Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_4cpl
@@ -146,7 +146,7 @@
               84                                           , cmbk,cgwd,nmmiph,spl1,spl2                      &
               85                                           , weightSIT,dSITdt_intv,mwhd,doclx,doslavepp      &
               86                                           , outdms,outgrb2,alpha,two_loop,ttl,tfilt,factop  &
-              87                                           , mass_dp,dpprt,outfv3
+              87                                           , mass_dp,dpprt,outfv3,itter,vd
               88                     !
               89                           real    si(lev+1)
               90                           logical flag
@@ -1011,7 +1011,7 @@
  Procedure information
    Lines      : 825
    Statements : 543
-   Stack(byte): 77024
+   Stack(byte): 77168
    Prefetch num: 0
 
  Scoping unit of external sub-program : cons
@@ -1988,6 +1988,12 @@
       |(Declaration)    : 54
       |(Definition)     : 216  234
       |(Reference)      : 237  238
+     itter
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
      itypbl
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, namelist-group-object, use-associated
@@ -3440,6 +3446,12 @@
       |(Declaration)    : 109
       |(Definition)     : 
       |(Reference)      : 
+     vd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
      Wflag
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
@@ -3552,6 +3564,6 @@
    Procedures       : 1
    Total lines      : 825
    Total statements : 543
-   Total stack(byte): 77024
+   Total stack(byte): 77168
    Total prefetch num: 0
 

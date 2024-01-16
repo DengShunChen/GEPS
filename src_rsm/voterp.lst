@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:31:12 2023
+ Fujitsu Fortran Version 4.6.1  Thu Dec 28 15:30:01 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_rsm
    Source file       : voterp.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -101,11 +101,11 @@
               39                     !byl      , pk(nxp,lev,my_max),tensy(lev+1),pklp(nx,my),flp(nx,my)
               40                           real      ff(nxp,lev,my_max),pkout(lpout)                        &
               41                           , pk(nxp,lev,my_max),tensy(lev+1),pklp(nxp,my_max)               &
-              42                           , flp(nxp,my_max)
-              43                     !
-              44                           real(kind=RTYPE) fxx(nxp,lev+1),fyy(nxp,lev+1),pjy(nxp,lpout,4)  &
-              45                           , tp1(nxp,lpout,4),pkk(nxp,lev+1),f(nxp,lev+1)                   &
-              46                           , pout(nxp,lpout),t(nxp,my_max,lpout)
+              42                           , flp(nxp,my_max),tp1(nxp,lpout,4),pout(nxp,lpout)               &
+              43                           , pkk(nxp,lev+1)
+              44                     !
+              45                           real(kind=RTYPE) fxx(nxp,lev+1),fyy(nxp,lev+1),pjy(nxp,lpout,4)  &
+              46                           , f(nxp,lev+1),t(nxp,my_max,lpout)
               47                     
               48                           integer   ipt(nxp,lpout)
               49                     !
@@ -156,7 +156,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.50, ITR: 80, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 112, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ff, pk, (unknown)
                                    <<< Loop-information  End >>>
@@ -169,7 +169,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.50, ITR: 80, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 112, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      flp, pklp, (unknown)
                                    <<< Loop-information  End >>>
@@ -193,7 +193,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 144, MVE: 4, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 4.00, ITR: 160, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      (unknown)
                                    <<< Loop-information  End >>>
@@ -210,8 +210,8 @@
              101     2   p                 do k=1,jym2
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 0.48, ITR: 24, MVE: 2, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.48, ITR: 48, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      (unknown)
                                    <<< Loop-information  End >>>
@@ -230,8 +230,8 @@
              109     2   p                 do k=1,jym2
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 0.29, ITR: 48, MVE: 2, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.29, ITR: 96, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      (unknown)
                                    <<< Loop-information  End >>>
@@ -244,7 +244,7 @@
              116     1               !
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      (unknown)
                                    <<< Loop-information  End >>>
@@ -264,7 +264,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 256, MVE: 9, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 320, MVE: 11, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      (unknown)
                                    <<< Loop-information  End >>>
@@ -285,7 +285,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.87, ITR: 56, MVE: 2, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.80, ITR: 64, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      t, (unknown)
                                    <<< Loop-information  End >>>
@@ -325,7 +325,7 @@
  Procedure information
    Lines      : 165
    Statements : 68
-   Stack(byte): 3680
+   Stack(byte): 3728
    Prefetch num: 0
 
  Scoping unit of external sub-program : voterp
@@ -337,9 +337,9 @@
       |(Definition)     : 
       |(Reference)      : 30
      f
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 44
+      |(Declaration)    : 45
       |(Definition)     : 80  86  130
       |(Reference)      : 57  103  103  103  103
      ff
@@ -355,15 +355,15 @@
       |(Definition)     : 
       |(Reference)      : 86
      fxx
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 44
+      |(Declaration)    : 45
       |(Definition)     : 97  111  115
       |(Reference)      : 57  103  103  103  103  103  111  111
      fyy
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 44
+      |(Declaration)    : 45
       |(Definition)     : 103  115  118  119  126  130
       |(Reference)      : 57  126
      gathv
@@ -437,7 +437,7 @@
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  34
       |(Definition)     : 
-      |(Reference)      : 40  40  40  44  44  44  44  54  77  95  115  115
+      |(Reference)      : 40  40  40  40  45  45  45  54  77  95  115  115
      levp1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
@@ -455,7 +455,7 @@
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  34
       |(Definition)     : 
-      |(Reference)      : 40  44  44  44  44  48  68  71  89  89  89  89  130  130  133
+      |(Reference)      : 40  40  40  45  45  48  68  71  89  89  89  89  130  130  133
      mn
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
@@ -479,7 +479,7 @@
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  34
       |(Definition)     : 
-      |(Reference)      : 40  40  40  40  44
+      |(Reference)      : 40  40  40  40  45
      nx
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
@@ -509,11 +509,11 @@
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 40  40  40  40  44  44  44  44  44  44  44  44  48
+      |(Reference)      : 40  40  40  40  40  40  40  45  45  45  45  45  48
      pjy
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 44
+      |(Declaration)    : 45
       |(Definition)     : 89
       |(Reference)      : 57  135  135  135  135
      pk
@@ -525,7 +525,7 @@
      pkk
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 44
+      |(Declaration)    : 40
       |(Definition)     : 79  85  89
       |(Reference)      : 57  97  97
      pklp
@@ -543,7 +543,7 @@
      pout
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 44
+      |(Declaration)    : 40
       |(Definition)     : 73  89
       |(Reference)      : 57
      RTYPE
@@ -551,7 +551,7 @@
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 30  44
+      |(Reference)      : 30  45
      setupv
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
@@ -559,9 +559,9 @@
       |(Definition)     : 
       |(Reference)      : 89
      t
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  44
+      |(Declaration)    : 1  45
       |(Definition)     : 135
       |(Reference)      : 
      tensy
@@ -573,7 +573,7 @@
      tp1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 44
+      |(Declaration)    : 40
       |(Definition)     : 89  130
       |(Reference)      : 57  135  135  135  135
      trdivv
@@ -598,6 +598,6 @@
    Procedures       : 1
    Total lines      : 165
    Total statements : 68
-   Total stack(byte): 3680
+   Total stack(byte): 3728
    Total prefetch num: 0
 

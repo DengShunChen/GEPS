@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:30:28 2023
+ Fujitsu Fortran Version 4.6.1  Thu Dec 28 15:29:17 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_rsm
    Source file       : ujoinsr.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -89,7 +89,7 @@
  Scoping unit of external sub-program : ujoinsr
    Attribute and Cross reference of name
      cc
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  6
       |(Definition)     : 9  11  13  15
@@ -143,25 +143,25 @@
       |(Definition)     : 
       |(Reference)      : 3  6
      r1
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  6
       |(Definition)     : 9  11  13  15
       |(Reference)      : 
      r2
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  6
       |(Definition)     : 11  13  15
       |(Reference)      : 
      r3
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  6
       |(Definition)     : 13  15
       |(Reference)      : 
      r4
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  6
       |(Definition)     : 15
@@ -217,88 +217,115 @@
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
-                                   <<< Loop-information  End >>>
-              35     1  pp                 do jj=1,jlistnum
-              36     2   p                 do n=1,ncld
-                                   <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      cc, bufA
+                                   <<<      bufA
                                    <<< Loop-information  End >>>
-              37     3   p                 do k=1,levp
+              35        pp   4v            bufA=0.
                                    <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      cc, bufA
+                                   <<<      bufB
                                    <<< Loop-information  End >>>
-              38     4   p   2v            do i=1,nx
-              39     4   p   2v               bufA(i,k,n,jj)=cc(i,k,n,jj)
-              40     4   p   2v            enddo
-              41     3   p                 enddo
-              42     2   p                 enddo
-              43     1   p                 enddo
-              44                     
-              45                           call mpe2d_transpose_nx_levp(bufA,bufB,nxp,nx,lev,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
-              46                     
+              36        pp   4v            bufB=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      r1
+                                   <<< Loop-information  End >>>
+              37        pp   4v            r1=0.
+              38                     !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<< Loop-information  End >>>
-              47     1  pp                 do jj =1, jlistnum
-              48     2   p                 do n=1,ncld
-              49     2   p                 nk=(n-1)*lev
+              39     1  pp                 do jj=1,jlistnum
+              40     2   p                 do n=1,ncld
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cc, bufA
+                                   <<< Loop-information  End >>>
+              41     3   p                 do k=1,levp
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cc, bufA
+                                   <<< Loop-information  End >>>
+              42     4   p   2v            do i=1,nx
+              43     4   p   2v               bufA(i,k,n,jj)=cc(i,k,n,jj)
+              44     4   p   2v            enddo
+              45     3   p                 enddo
+              46     2   p                 enddo
+              47     1   p                 enddo
+              48                     
+              49                           call mpe2d_transpose_nx_levp(bufA,bufB,nxp,nx,lev,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
+              50                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+              51     1  pp                 do jj =1, jlistnum
+              52     2   p                 do n=1,ncld
+              53     2   p                 nk=(n-1)*lev
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      bufB, r1
                                    <<< Loop-information  End >>>
-              50     3   p                 do k=1,lev
-              51     3   p                 kk=nk+k
+              54     3   p                 do k=1,lev
+              55     3   p                 kk=nk+k
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      bufB, r1
                                    <<< Loop-information  End >>>
-              52     4   p   2v            do i=1,nxp
-              53     4   p   2v              r1(i,kk,jj)=bufB(i,k,n,jj)
-              54     4   p   2v            enddo
-              55     3   p                 enddo
-              56     2   p                 enddo
-              57     1   p                 enddo
-              58                     
-              59                           return
-              60                           end
+              56     4   p   2v            do i=1,nxp
+              57     4   p   2v              r1(i,kk,jj)=bufB(i,k,n,jj)
+              58     4   p   2v            enddo
+              59     3   p                 enddo
+              60     2   p                 enddo
+              61     1   p                 enddo
+              62                           return
+              63                           end
 
  Procedure information
-   Lines      : 41
-   Statements : 33
-   Stack(byte): 1392
+   Lines      : 44
+   Statements : 36
+   Stack(byte): 1360
    Prefetch num: 0
 
  Scoping unit of external sub-program : ujoin1sr
    Attribute and Cross reference of name
      bufA
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 30
-      |(Definition)     : 39  45
+      |(Definition)     : 35  43  49
       |(Reference)      : 
      bufB
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 31
-      |(Definition)     : 45
-      |(Reference)      : 53
+      |(Definition)     : 36  49
+      |(Reference)      : 57
      cc
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 21  28
       |(Definition)     : 
-      |(Reference)      : 39
+      |(Reference)      : 43
      const
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -309,8 +336,8 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 33
-      |(Definition)     : 38  52
-      |(Reference)      : 39  39  53  53
+      |(Definition)     : 42  56
+      |(Reference)      : 43  43  57  57
      index
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -327,20 +354,20 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 33
-      |(Definition)     : 35  47
-      |(Reference)      : 39  39  53  53
+      |(Definition)     : 39  51
+      |(Reference)      : 43  43  57  57
      jlen
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 45
+      |(Definition)     : 49
       |(Reference)      : 
      jlistnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 45
-      |(Reference)      : 35  47
+      |(Definition)     : 49
+      |(Reference)      : 39  51
      jnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
@@ -351,74 +378,74 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 33
-      |(Definition)     : 37  50
-      |(Reference)      : 39  39  51  53
+      |(Definition)     : 41  54
+      |(Reference)      : 43  43  55  57
      kk
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 33
-      |(Definition)     : 51
-      |(Reference)      : 53
+      |(Definition)     : 55
+      |(Reference)      : 57
      lev
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 21  32
-      |(Definition)     : 45
-      |(Reference)      : 29  31  49  50
+      |(Definition)     : 49
+      |(Reference)      : 29  31  53  54
      levp
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 45
-      |(Reference)      : 28  30  37
+      |(Definition)     : 49
+      |(Reference)      : 28  30  41
      mpe2d_transpose_nx_levp
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 45
+      |(Reference)      : 49
      my_max
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 21  32
-      |(Definition)     : 45
+      |(Definition)     : 49
       |(Reference)      : 28  29  30  31
      myf
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 45
+      |(Definition)     : 49
       |(Reference)      : 
      n
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 33
-      |(Definition)     : 36  48
-      |(Reference)      : 39  39  49  53
+      |(Definition)     : 40  52
+      |(Reference)      : 43  43  53  57
      ncld
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 21  32
-      |(Definition)     : 45
-      |(Reference)      : 28  29  30  31  36  48
+      |(Definition)     : 49
+      |(Reference)      : 28  29  30  31  40  52
      nk
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 33
-      |(Definition)     : 49
-      |(Reference)      : 51
+      |(Definition)     : 53
+      |(Reference)      : 55
      nsizex
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 45
+      |(Definition)     : 49
       |(Reference)      : 
      nx
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 21  32
-      |(Definition)     : 45
-      |(Reference)      : 28  30  38
+      |(Definition)     : 49
+      |(Reference)      : 28  30  42
      nxj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
@@ -429,8 +456,8 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 45
-      |(Reference)      : 29  31  52
+      |(Definition)     : 49
+      |(Reference)      : 29  31  56
      RTYPE
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : use-associated
@@ -438,16 +465,16 @@
       |(Definition)     : 
       |(Reference)      : 25  28  29  30  31
      r1
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 21  29
-      |(Definition)     : 53
+      |(Definition)     : 37  57
       |(Reference)      : 
      row_comm
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 45
+      |(Definition)     : 49
       |(Reference)      : 
      ujoin1sr
       |(Class and Type) : external subroutine name
@@ -458,695 +485,751 @@
 
  External subroutine subprogram "ujoin2sr"
   (inc)(line-no.)(nest)(optimize)
-              61                     !
-              62                           subroutine ujoin2sr(cc,r1,r2,nx,my_max,lev,jnum,ncld)
-              63                     !     include '../include/index.h'
-              64                           use index
-              65                           use const, only: RTYPE
-              66                     
-              67                           implicit  none
-              68                           real(kind=RTYPE) cc(nx+2,levp,1+ncld,my_max)
-              69                           real(kind=RTYPE) r1(nxp,lev,my_max)
-              70                           real(kind=RTYPE) r2(nxp,lev*ncld,my_max)
-              71                           real(kind=RTYPE) bufA(nx,levp,1+ncld,my_max)
-              72                           real(kind=RTYPE) bufB(nxp,lev,1+ncld,my_max)
-              73                           integer   nx,my_max,lev,jnum,ncld
-              74                           integer   jj,j,nxj,k,i,nk,kk,n
-              75                     !
+              64                     !
+              65                           subroutine ujoin2sr(cc,r1,r2,nx,my_max,lev,jnum,ncld)
+              66                     !     include '../include/index.h'
+              67                           use index
+              68                           use const, only: RTYPE
+              69                     
+              70                           implicit  none
+              71                           real(kind=RTYPE) cc(nx+2,levp,1+ncld,my_max)
+              72                           real(kind=RTYPE) r1(nxp,lev,my_max)
+              73                           real(kind=RTYPE) r2(nxp,lev*ncld,my_max)
+              74                           real(kind=RTYPE) bufA(nx,levp,1+ncld,my_max)
+              75                           real(kind=RTYPE) bufB(nxp,lev,1+ncld,my_max)
+              76                           integer   nx,my_max,lev,jnum,ncld
+              77                           integer   jj,j,nxj,k,i,nk,kk,n
+              78                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      bufA
+                                   <<< Loop-information  End >>>
+              79        pp   4v            bufA=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      bufB
+                                   <<< Loop-information  End >>>
+              80        pp   4v            bufB=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      r1
+                                   <<< Loop-information  End >>>
+              81        pp   4v            r1=0.
+              82                     !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<< Loop-information  End >>>
-              76     1  pp                 do jj=1,jlistnum
-              77     2   p                 do n=1,1+ncld
+              83     1  pp                 do jj=1,jlistnum
+              84     2   p                 do n=1,1+ncld
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cc, bufA
                                    <<< Loop-information  End >>>
-              78     3   p                 do k=1,levp
+              85     3   p                 do k=1,levp
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cc, bufA
                                    <<< Loop-information  End >>>
-              79     4   p   2v            do i=1,nx
-              80     4   p   2v               bufA(i,k,n,jj)=cc(i,k,n,jj)
-              81     4   p   2v            enddo
-              82     3   p                 enddo
-              83     2   p                 enddo
-              84     1   p                 enddo
-              85                     
-              86                           call mpe2d_transpose_nx_levp(bufA,bufB,nxp,nx,lev,levp,1+ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
-              87                     
+              86     4   p   2v            do i=1,nx
+              87     4   p   2v               bufA(i,k,n,jj)=cc(i,k,n,jj)
+              88     4   p   2v            enddo
+              89     3   p                 enddo
+              90     2   p                 enddo
+              91     1   p                 enddo
+              92                     
+              93                           call mpe2d_transpose_nx_levp(bufA,bufB,nxp,nx,lev,levp,1+ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
+              94                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<< Loop-information  End >>>
-              88     1  pp                 do jj=1,jlistnum
+              95     1  pp                 do jj=1,jlistnum
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      bufB, r1
                                    <<< Loop-information  End >>>
-              89     2   p                 do k=1,lev
+              96     2   p                 do k=1,lev
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      bufB, r1
                                    <<< Loop-information  End >>>
-              90     3   p   2v            do i=1,nxp
-              91     3   p   2v               r1(i,k,jj)=bufB(i,k,1,jj)
-              92     3   p   2v            enddo
-              93     2   p                 enddo
-              94     1   p                 enddo
-              95                     
+              97     3   p   2v            do i=1,nxp
+              98     3   p   2v               r1(i,k,jj)=bufB(i,k,1,jj)
+              99     3   p   2v            enddo
+             100     2   p                 enddo
+             101     1   p                 enddo
+             102                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<< Loop-information  End >>>
-              96     1  pp                 do jj =1, jlistnum
-              97     2   p                 do n=1,ncld
-              98     2   p                 nk=(n-1)*lev
+             103     1  pp                 do jj =1, jlistnum
+             104     2   p                 do n=1,ncld
+             105     2   p                 nk=(n-1)*lev
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      bufB, r2
                                    <<< Loop-information  End >>>
-              99     3   p                 do k=1,lev
-             100     3   p                 kk=nk+k
+             106     3   p                 do k=1,lev
+             107     3   p                 kk=nk+k
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      bufB, r2
                                    <<< Loop-information  End >>>
-             101     4   p   2v            do i=1,nxp
-             102     4   p   2v              r2(i,kk,jj)=bufB(i,k,1+n,jj)
-             103     4   p   2v            enddo
-             104     3   p                 enddo
-             105     2   p                 enddo
-             106     1   p                 enddo
-             107                     !
-             108                           return
-             109                           end
+             108     4   p   2v            do i=1,nxp
+             109     4   p   2v              r2(i,kk,jj)=bufB(i,k,1+n,jj)
+             110     4   p   2v            enddo
+             111     3   p                 enddo
+             112     2   p                 enddo
+             113     1   p                 enddo
+             114                     !
+             115                           return
+             116                           end
 
  Procedure information
-   Lines      : 49
-   Statements : 41
-   Stack(byte): 1328
+   Lines      : 53
+   Statements : 44
+   Stack(byte): 1312
    Prefetch num: 0
 
  Scoping unit of external sub-program : ujoin2sr
    Attribute and Cross reference of name
      bufA
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 71
-      |(Definition)     : 80  86
+      |(Declaration)    : 74
+      |(Definition)     : 79  87  93
       |(Reference)      : 
      bufB
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 72
-      |(Definition)     : 86
-      |(Reference)      : 91  102
+      |(Declaration)    : 75
+      |(Definition)     : 80  93
+      |(Reference)      : 98  109
      cc
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 62  68
+      |(Declaration)    : 65  71
       |(Definition)     : 
-      |(Reference)      : 80
+      |(Reference)      : 87
      const
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 65
+      |(Reference)      : 68
      i
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 74
-      |(Definition)     : 79  90  101
-      |(Reference)      : 80  80  91  91  102  102
+      |(Declaration)    : 77
+      |(Definition)     : 86  97  108
+      |(Reference)      : 87  87  98  98  109  109
      index
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 64
+      |(Reference)      : 67
      j
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 74
+      |(Declaration)    : 77
       |(Definition)     : 
       |(Reference)      : 
      jj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 74
-      |(Definition)     : 76  88  96
-      |(Reference)      : 80  80  91  91  102  102
+      |(Declaration)    : 77
+      |(Definition)     : 83  95  103
+      |(Reference)      : 87  87  98  98  109  109
      jlen
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 86
+      |(Definition)     : 93
       |(Reference)      : 
      jlistnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 86
-      |(Reference)      : 76  88  96
+      |(Definition)     : 93
+      |(Reference)      : 83  95  103
      jnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 62  73
+      |(Declaration)    : 65  76
       |(Definition)     : 
       |(Reference)      : 
      k
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 74
-      |(Definition)     : 78  89  99
-      |(Reference)      : 80  80  91  91  100  102
+      |(Declaration)    : 77
+      |(Definition)     : 85  96  106
+      |(Reference)      : 87  87  98  98  107  109
      kk
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 74
-      |(Definition)     : 100
-      |(Reference)      : 102
+      |(Declaration)    : 77
+      |(Definition)     : 107
+      |(Reference)      : 109
      lev
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 62  73
-      |(Definition)     : 86
-      |(Reference)      : 69  70  72  89  98  99
+      |(Declaration)    : 65  76
+      |(Definition)     : 93
+      |(Reference)      : 72  73  75  96  105  106
      levp
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 86
-      |(Reference)      : 68  71  78
+      |(Definition)     : 93
+      |(Reference)      : 71  74  85
      mpe2d_transpose_nx_levp
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 86
+      |(Reference)      : 93
      my_max
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 62  73
-      |(Definition)     : 86
-      |(Reference)      : 68  69  70  71  72
+      |(Declaration)    : 65  76
+      |(Definition)     : 93
+      |(Reference)      : 71  72  73  74  75
      myf
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 86
+      |(Definition)     : 93
       |(Reference)      : 
      n
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 74
-      |(Definition)     : 77  97
-      |(Reference)      : 80  80  98  102
+      |(Declaration)    : 77
+      |(Definition)     : 84  104
+      |(Reference)      : 87  87  105  109
      ncld
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 62  73
+      |(Declaration)    : 65  76
       |(Definition)     : 
-      |(Reference)      : 68  70  71  72  77  86  97
+      |(Reference)      : 71  73  74  75  84  93  104
      nk
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 74
-      |(Definition)     : 98
-      |(Reference)      : 100
+      |(Declaration)    : 77
+      |(Definition)     : 105
+      |(Reference)      : 107
      nsizex
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 86
+      |(Definition)     : 93
       |(Reference)      : 
      nx
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 62  73
-      |(Definition)     : 86
-      |(Reference)      : 68  71  79
+      |(Declaration)    : 65  76
+      |(Definition)     : 93
+      |(Reference)      : 71  74  86
      nxj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 74
+      |(Declaration)    : 77
       |(Definition)     : 
       |(Reference)      : 
      nxp
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 86
-      |(Reference)      : 69  70  72  90  101
+      |(Definition)     : 93
+      |(Reference)      : 72  73  75  97  108
      RTYPE
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 65  68  69  70  71  72
+      |(Reference)      : 68  71  72  73  74  75
      r1
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 62  69
-      |(Definition)     : 91
+      |(Declaration)    : 65  72
+      |(Definition)     : 81  98
       |(Reference)      : 
      r2
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 62  70
-      |(Definition)     : 102
+      |(Declaration)    : 65  73
+      |(Definition)     : 109
       |(Reference)      : 
      row_comm
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 86
+      |(Definition)     : 93
       |(Reference)      : 
      ujoin2sr
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 62
+      |(Definition)     : 65
       |(Reference)      : 
 
  External subroutine subprogram "ujoin3sr"
   (inc)(line-no.)(nest)(optimize)
-             110                     !
-             111                           subroutine ujoin3sr(cc,r1,r2,r3,nx,my_max,lev,jnum,ncld)
-             112                     !
-             113                     !     include '../include/index.h'
-             114                           use index
-             115                           use const, only: RTYPE
-             116                     
-             117                           implicit  none
-             118                           real(kind=RTYPE) cc(nx+2,levp,2+ncld,my_max)
-             119                           real(kind=RTYPE) r1(nxp,lev,my_max)
-             120                           real(kind=RTYPE) r2(nxp,lev,my_max)
-             121                           real(kind=RTYPE) r3(nxp,lev*ncld,my_max)
-             122                           real(kind=RTYPE) bufA(nx,levp,2+ncld,my_max)
-             123                           real(kind=RTYPE) bufB(nxp,lev,2+ncld,my_max)
-             124                           integer   nx,my_max,lev,jnum,ncld
-             125                           integer   jj,j,nxj,k,i,nk,kk,n
-             126                     !
+             117                     !
+             118                           subroutine ujoin3sr(cc,r1,r2,r3,nx,my_max,lev,jnum,ncld)
+             119                     !
+             120                     !     include '../include/index.h'
+             121                           use index
+             122                           use const, only: RTYPE
+             123                     
+             124                           implicit  none
+             125                           real(kind=RTYPE) cc(nx+2,levp,2+ncld,my_max)
+             126                           real(kind=RTYPE) r1(nxp,lev,my_max)
+             127                           real(kind=RTYPE) r2(nxp,lev,my_max)
+             128                           real(kind=RTYPE) r3(nxp,lev*ncld,my_max)
+             129                           real(kind=RTYPE) bufA(nx,levp,2+ncld,my_max)
+             130                           real(kind=RTYPE) bufB(nxp,lev,2+ncld,my_max)
+             131                           integer   nx,my_max,lev,jnum,ncld
+             132                           integer   jj,j,nxj,k,i,nk,kk,n
+             133                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      bufA
+                                   <<< Loop-information  End >>>
+             134        pp   4v            bufA=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      bufB
+                                   <<< Loop-information  End >>>
+             135        pp   4v            bufB=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      r1
+                                   <<< Loop-information  End >>>
+             136        pp   4v            r1=0.
+             137                     !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<< Loop-information  End >>>
-             127     1  pp                 do jj=1,jlistnum
-             128     2   p                 do n=1,2+ncld
+             138     1  pp                 do jj=1,jlistnum
+             139     2   p                 do n=1,2+ncld
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cc, bufA
                                    <<< Loop-information  End >>>
-             129     3   p                 do k=1,levp
+             140     3   p                 do k=1,levp
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cc, bufA
                                    <<< Loop-information  End >>>
-             130     4   p   2v            do i=1,nx
-             131     4   p   2v               bufA(i,k,n,jj)=cc(i,k,n,jj)
-             132     4   p   2v            enddo
-             133     3   p                 enddo
-             134     2   p                 enddo
-             135     1   p                 enddo
-             136                     
-             137                           call mpe2d_transpose_nx_levp(bufA,bufB,nxp,nx,lev,levp,2+ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
-             138                     
-                                   <<< Loop-information Start >>>
-                                   <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 2
-                                   <<< Loop-information  End >>>
-             139     1  pp                 do jj=1,jlistnum
-                                   <<< Loop-information Start >>>
-                                   <<<  [OPTIMIZATION]
-                                   <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      bufB, r2, r1
-                                   <<< Loop-information  End >>>
-             140     2   p                 do k=1,lev
-                                   <<< Loop-information Start >>>
-                                   <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.50, ITR: 80, MVE: 3, POL: S)
-                                   <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      bufB, r2, r1
-                                   <<< Loop-information  End >>>
-             141     3   p   2v            do i=1,nxp
-             142     3   p   2v               r1(i,k,jj)=bufB(i,k,1,jj)
-             143     3   p   2v               r2(i,k,jj)=bufB(i,k,2,jj)
-             144     3   p   2v            enddo
+             141     4   p   2v            do i=1,nx
+             142     4   p   2v               bufA(i,k,n,jj)=cc(i,k,n,jj)
+             143     4   p   2v            enddo
+             144     3   p                 enddo
              145     2   p                 enddo
              146     1   p                 enddo
              147                     
+             148                           call mpe2d_transpose_nx_levp(bufA,bufB,nxp,nx,lev,levp,2+ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
+             149                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<< Loop-information  End >>>
-             148     1  pp                 do jj =1, jlistnum
-             149     2   p                 do n=1,ncld
-             150     2   p                 nk=(n-1)*lev
+             150     1  pp                 do jj=1,jlistnum
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      bufB, r2, r1
+                                   <<< Loop-information  End >>>
+             151     2   p                 do k=1,lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.50, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      bufB, r2, r1
+                                   <<< Loop-information  End >>>
+             152     3   p   2v            do i=1,nxp
+             153     3   p   2v               r1(i,k,jj)=bufB(i,k,1,jj)
+             154     3   p   2v               r2(i,k,jj)=bufB(i,k,2,jj)
+             155     3   p   2v            enddo
+             156     2   p                 enddo
+             157     1   p                 enddo
+             158                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             159     1  pp                 do jj =1, jlistnum
+             160     2   p                 do n=1,ncld
+             161     2   p                 nk=(n-1)*lev
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      bufB, r3
                                    <<< Loop-information  End >>>
-             151     3   p                 do k=1,lev
-             152     3   p                 kk=nk+k
+             162     3   p                 do k=1,lev
+             163     3   p                 kk=nk+k
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      bufB, r3
                                    <<< Loop-information  End >>>
-             153     4   p   2v            do i=1,nxp
-             154     4   p   2v              r3(i,kk,jj)=bufB(i,k,2+n,jj)
-             155     4   p   2v            enddo
-             156     3   p                 enddo
-             157     2   p                 enddo
-             158     1   p                 enddo
-             159                     !
-             160                           return
-             161                           end
+             164     4   p   2v            do i=1,nxp
+             165     4   p   2v              r3(i,kk,jj)=bufB(i,k,2+n,jj)
+             166     4   p   2v            enddo
+             167     3   p                 enddo
+             168     2   p                 enddo
+             169     1   p                 enddo
+             170                     !
+             171                           return
+             172                           end
 
  Procedure information
-   Lines      : 52
-   Statements : 43
-   Stack(byte): 1392
+   Lines      : 56
+   Statements : 46
+   Stack(byte): 1344
    Prefetch num: 0
 
  Scoping unit of external sub-program : ujoin3sr
    Attribute and Cross reference of name
      bufA
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 122
-      |(Definition)     : 131  137
+      |(Declaration)    : 129
+      |(Definition)     : 134  142  148
       |(Reference)      : 
      bufB
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 123
-      |(Definition)     : 137
-      |(Reference)      : 142  143  154
+      |(Declaration)    : 130
+      |(Definition)     : 135  148
+      |(Reference)      : 153  154  165
      cc
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 111  118
+      |(Declaration)    : 118  125
       |(Definition)     : 
-      |(Reference)      : 131
+      |(Reference)      : 142
      const
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 115
+      |(Reference)      : 122
      i
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 125
-      |(Definition)     : 130  141  153
-      |(Reference)      : 131  131  142  142  143  143  154  154
+      |(Declaration)    : 132
+      |(Definition)     : 141  152  164
+      |(Reference)      : 142  142  153  153  154  154  165  165
      index
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 114
+      |(Reference)      : 121
      j
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 125
+      |(Declaration)    : 132
       |(Definition)     : 
       |(Reference)      : 
      jj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 125
-      |(Definition)     : 127  139  148
-      |(Reference)      : 131  131  142  142  143  143  154  154
+      |(Declaration)    : 132
+      |(Definition)     : 138  150  159
+      |(Reference)      : 142  142  153  153  154  154  165  165
      jlen
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 137
+      |(Definition)     : 148
       |(Reference)      : 
      jlistnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 137
-      |(Reference)      : 127  139  148
+      |(Definition)     : 148
+      |(Reference)      : 138  150  159
      jnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 111  124
+      |(Declaration)    : 118  131
       |(Definition)     : 
       |(Reference)      : 
      k
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 125
-      |(Definition)     : 129  140  151
-      |(Reference)      : 131  131  142  142  143  143  152  154
+      |(Declaration)    : 132
+      |(Definition)     : 140  151  162
+      |(Reference)      : 142  142  153  153  154  154  163  165
      kk
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 125
-      |(Definition)     : 152
-      |(Reference)      : 154
+      |(Declaration)    : 132
+      |(Definition)     : 163
+      |(Reference)      : 165
      lev
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 111  124
-      |(Definition)     : 137
-      |(Reference)      : 119  120  121  123  140  150  151
+      |(Declaration)    : 118  131
+      |(Definition)     : 148
+      |(Reference)      : 126  127  128  130  151  161  162
      levp
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 137
-      |(Reference)      : 118  122  129
+      |(Definition)     : 148
+      |(Reference)      : 125  129  140
      mpe2d_transpose_nx_levp
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 137
+      |(Reference)      : 148
      my_max
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 111  124
-      |(Definition)     : 137
-      |(Reference)      : 118  119  120  121  122  123
+      |(Declaration)    : 118  131
+      |(Definition)     : 148
+      |(Reference)      : 125  126  127  128  129  130
      myf
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 137
+      |(Definition)     : 148
       |(Reference)      : 
      n
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 125
-      |(Definition)     : 128  149
-      |(Reference)      : 131  131  150  154
+      |(Declaration)    : 132
+      |(Definition)     : 139  160
+      |(Reference)      : 142  142  161  165
      ncld
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 111  124
+      |(Declaration)    : 118  131
       |(Definition)     : 
-      |(Reference)      : 118  121  122  123  128  137  149
+      |(Reference)      : 125  128  129  130  139  148  160
      nk
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 125
-      |(Definition)     : 150
-      |(Reference)      : 152
+      |(Declaration)    : 132
+      |(Definition)     : 161
+      |(Reference)      : 163
      nsizex
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 137
+      |(Definition)     : 148
       |(Reference)      : 
      nx
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 111  124
-      |(Definition)     : 137
-      |(Reference)      : 118  122  130
+      |(Declaration)    : 118  131
+      |(Definition)     : 148
+      |(Reference)      : 125  129  141
      nxj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 125
+      |(Declaration)    : 132
       |(Definition)     : 
       |(Reference)      : 
      nxp
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 137
-      |(Reference)      : 119  120  121  123  141  153
+      |(Definition)     : 148
+      |(Reference)      : 126  127  128  130  152  164
      RTYPE
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 115  118  119  120  121  122  123
+      |(Reference)      : 122  125  126  127  128  129  130
      r1
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 111  119
-      |(Definition)     : 142
+      |(Declaration)    : 118  126
+      |(Definition)     : 136  153
       |(Reference)      : 
      r2
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 111  120
-      |(Definition)     : 143
+      |(Declaration)    : 118  127
+      |(Definition)     : 154
       |(Reference)      : 
      r3
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 111  121
-      |(Definition)     : 154
+      |(Declaration)    : 118  128
+      |(Definition)     : 165
       |(Reference)      : 
      row_comm
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 137
+      |(Definition)     : 148
       |(Reference)      : 
      ujoin3sr
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 111
+      |(Definition)     : 118
       |(Reference)      : 
 
  External subroutine subprogram "ujoin4sr"
   (inc)(line-no.)(nest)(optimize)
-             162                     
-             163                           subroutine ujoin4sr(cc,r1,r2,r3,r4,nx,my_max,lev,jnum,ncld)
-             164                     
-             165                     !     include '../include/index.h'
-             166                           use index
-             167                           use const, only: RTYPE
-             168                     
-             169                           implicit  none
-             170                           real(kind=RTYPE) cc(nx+2,levp,3+ncld,my_max)
-             171                           real(kind=RTYPE) r1(nxp,lev,my_max)
-             172                           real(kind=RTYPE) r2(nxp,lev,my_max)
-             173                           real(kind=RTYPE) r3(nxp,lev,my_max)
-             174                           real(kind=RTYPE) r4(nxp,lev*ncld,my_max)
-             175                           real(kind=RTYPE) bufA(nx,levp,3+ncld,my_max)
-             176                           real(kind=RTYPE) bufB(nxp,lev,3+ncld,my_max)
-             177                           integer   nx,my_max,lev,jnum,ncld
-             178                           integer   jj,j,nxj,k,i,nk,kk,n
-             179                     !
+             173                     
+             174                           subroutine ujoin4sr(cc,r1,r2,r3,r4,nx,my_max,lev,jnum,ncld)
+             175                     
+             176                     !     include '../include/index.h'
+             177                           use index
+             178                           use const, only: RTYPE
+             179                     
+             180                           implicit  none
+             181                           real(kind=RTYPE) cc(nx+2,levp,3+ncld,my_max)
+             182                           real(kind=RTYPE) r1(nxp,lev,my_max)
+             183                           real(kind=RTYPE) r2(nxp,lev,my_max)
+             184                           real(kind=RTYPE) r3(nxp,lev,my_max)
+             185                           real(kind=RTYPE) r4(nxp,lev*ncld,my_max)
+             186                           real(kind=RTYPE) bufA(nx,levp,3+ncld,my_max)
+             187                           real(kind=RTYPE) bufB(nxp,lev,3+ncld,my_max)
+             188                           integer   nx,my_max,lev,jnum,ncld
+             189                           integer   jj,j,nxj,k,i,nk,kk,n
+             190                     !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<< Loop-information  End >>>
-             180     1  pp                 do jj=1,jlistnum
-             181     2   p                 do n=1,3+ncld
+             191     1  pp                 do jj=1,jlistnum
+             192     2   p                 do n=1,3+ncld
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cc, bufA
                                    <<< Loop-information  End >>>
-             182     3   p                 do k=1,levp
+             193     3   p                 do k=1,levp
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cc, bufA
                                    <<< Loop-information  End >>>
-             183     4   p   2v            do i=1,nx
-             184     4   p   2v               bufA(i,k,n,jj)=cc(i,k,n,jj)
-             185     4   p   2v            enddo
-             186     3   p                 enddo
-             187     2   p                 enddo
-             188     1   p                 enddo
-             189                     
-             190                           call mpe2d_transpose_nx_levp(bufA,bufB,nxp,nx,lev,levp,3+ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
-             191                     
+             194     4   p   2v            do i=1,nx
+             195     4   p   2v               bufA(i,k,n,jj)=cc(i,k,n,jj)
+             196     4   p   2v            enddo
+             197     3   p                 enddo
+             198     2   p                 enddo
+             199     1   p                 enddo
+             200                     
+             201                           call mpe2d_transpose_nx_levp(bufA,bufB,nxp,nx,lev,levp,3+ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
+             202                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<< Loop-information  End >>>
-             192     1  pp                 do jj=1,jlistnum
+             203     1  pp                 do jj=1,jlistnum
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      bufB, r2, r1, r3
                                    <<< Loop-information  End >>>
-             193     2   p                 do k=1,lev
+             204     2   p                 do k=1,lev
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.33, ITR: 64, MVE: 2, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.33, ITR: 128, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      r2, bufB, r1, r3
                                    <<< Loop-information  End >>>
-             194     3   p   2v            do i=1,nxp
-             195     3   p   2v               r1(i,k,jj)=bufB(i,k,1,jj)
-             196     3   p   2v               r2(i,k,jj)=bufB(i,k,2,jj)
-             197     3   p   2v               r3(i,k,jj)=bufB(i,k,3,jj)
-             198     3   p   2v            enddo
-             199     2   p                 enddo
-             200     1   p                 enddo
-             201                     
+             205     3   p   2v            do i=1,nxp
+             206     3   p   2v               r1(i,k,jj)=bufB(i,k,1,jj)
+             207     3   p   2v               r2(i,k,jj)=bufB(i,k,2,jj)
+             208     3   p   2v               r3(i,k,jj)=bufB(i,k,3,jj)
+             209     3   p   2v            enddo
+             210     2   p                 enddo
+             211     1   p                 enddo
+             212                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<< Loop-information  End >>>
-             202     1  pp                 do jj =1, jlistnum
-             203     2   p                 do n=1,ncld
-             204     2   p                 nk=(n-1)*lev
+             213     1  pp                 do jj =1, jlistnum
+             214     2   p                 do n=1,ncld
+             215     2   p                 nk=(n-1)*lev
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      bufB, r4
                                    <<< Loop-information  End >>>
-             205     3   p                 do k=1,lev
-             206     3   p                 kk=nk+k
+             216     3   p                 do k=1,lev
+             217     3   p                 kk=nk+k
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      bufB, r4
                                    <<< Loop-information  End >>>
-             207     4   p   2v            do i=1,nxp
-             208     4   p   2v              r4(i,kk,jj)=bufB(i,k,3+n,jj)
-             209     4   p   2v            enddo
-             210     3   p                 enddo
-             211     2   p                 enddo
-             212     1   p                 enddo
-             213                     !
-             214                           return
-             215                           end
+             218     4   p   2v            do i=1,nxp
+             219     4   p   2v              r4(i,kk,jj)=bufB(i,k,3+n,jj)
+             220     4   p   2v            enddo
+             221     3   p                 enddo
+             222     2   p                 enddo
+             223     1   p                 enddo
+             224                     !
+             225                           return
+             226                           end
 
  Procedure information
    Lines      : 54
@@ -1157,202 +1240,202 @@
  Scoping unit of external sub-program : ujoin4sr
    Attribute and Cross reference of name
      bufA
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 175
-      |(Definition)     : 184  190
+      |(Declaration)    : 186
+      |(Definition)     : 195  201
       |(Reference)      : 
      bufB
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 176
-      |(Definition)     : 190
-      |(Reference)      : 195  196  197  208
+      |(Declaration)    : 187
+      |(Definition)     : 201
+      |(Reference)      : 206  207  208  219
      cc
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 163  170
+      |(Declaration)    : 174  181
       |(Definition)     : 
-      |(Reference)      : 184
+      |(Reference)      : 195
      const
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 167
+      |(Reference)      : 178
      i
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 178
-      |(Definition)     : 183  194  207
-      |(Reference)      : 184  184  195  195  196  196  197  197  208  208
+      |(Declaration)    : 189
+      |(Definition)     : 194  205  218
+      |(Reference)      : 195  195  206  206  207  207  208  208  219  219
      index
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 166
+      |(Reference)      : 177
      j
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 178
+      |(Declaration)    : 189
       |(Definition)     : 
       |(Reference)      : 
      jj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 178
-      |(Definition)     : 180  192  202
-      |(Reference)      : 184  184  195  195  196  196  197  197  208  208
+      |(Declaration)    : 189
+      |(Definition)     : 191  203  213
+      |(Reference)      : 195  195  206  206  207  207  208  208  219  219
      jlen
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 190
+      |(Definition)     : 201
       |(Reference)      : 
      jlistnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 190
-      |(Reference)      : 180  192  202
+      |(Definition)     : 201
+      |(Reference)      : 191  203  213
      jnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 163  177
+      |(Declaration)    : 174  188
       |(Definition)     : 
       |(Reference)      : 
      k
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 178
-      |(Definition)     : 182  193  205
-      |(Reference)      : 184  184  195  195  196  196  197  197  206  208
+      |(Declaration)    : 189
+      |(Definition)     : 193  204  216
+      |(Reference)      : 195  195  206  206  207  207  208  208  217  219
      kk
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 178
-      |(Definition)     : 206
-      |(Reference)      : 208
+      |(Declaration)    : 189
+      |(Definition)     : 217
+      |(Reference)      : 219
      lev
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 163  177
-      |(Definition)     : 190
-      |(Reference)      : 171  172  173  174  176  193  204  205
+      |(Declaration)    : 174  188
+      |(Definition)     : 201
+      |(Reference)      : 182  183  184  185  187  204  215  216
      levp
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 190
-      |(Reference)      : 170  175  182
+      |(Definition)     : 201
+      |(Reference)      : 181  186  193
      mpe2d_transpose_nx_levp
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 190
+      |(Reference)      : 201
      my_max
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 163  177
-      |(Definition)     : 190
-      |(Reference)      : 170  171  172  173  174  175  176
+      |(Declaration)    : 174  188
+      |(Definition)     : 201
+      |(Reference)      : 181  182  183  184  185  186  187
      myf
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 190
+      |(Definition)     : 201
       |(Reference)      : 
      n
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 178
-      |(Definition)     : 181  203
-      |(Reference)      : 184  184  204  208
+      |(Declaration)    : 189
+      |(Definition)     : 192  214
+      |(Reference)      : 195  195  215  219
      ncld
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 163  177
+      |(Declaration)    : 174  188
       |(Definition)     : 
-      |(Reference)      : 170  174  175  176  181  190  203
+      |(Reference)      : 181  185  186  187  192  201  214
      nk
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 178
-      |(Definition)     : 204
-      |(Reference)      : 206
+      |(Declaration)    : 189
+      |(Definition)     : 215
+      |(Reference)      : 217
      nsizex
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 190
+      |(Definition)     : 201
       |(Reference)      : 
      nx
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 163  177
-      |(Definition)     : 190
-      |(Reference)      : 170  175  183
+      |(Declaration)    : 174  188
+      |(Definition)     : 201
+      |(Reference)      : 181  186  194
      nxj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 178
+      |(Declaration)    : 189
       |(Definition)     : 
       |(Reference)      : 
      nxp
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 190
-      |(Reference)      : 171  172  173  174  176  194  207
+      |(Definition)     : 201
+      |(Reference)      : 182  183  184  185  187  205  218
      RTYPE
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 167  170  171  172  173  174  175  176
+      |(Reference)      : 178  181  182  183  184  185  186  187
      r1
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 163  171
-      |(Definition)     : 195
+      |(Declaration)    : 174  182
+      |(Definition)     : 206
       |(Reference)      : 
      r2
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 163  172
-      |(Definition)     : 196
+      |(Declaration)    : 174  183
+      |(Definition)     : 207
       |(Reference)      : 
      r3
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 163  173
-      |(Definition)     : 197
+      |(Declaration)    : 174  184
+      |(Definition)     : 208
       |(Reference)      : 
      r4
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 163  174
-      |(Definition)     : 208
+      |(Declaration)    : 174  185
+      |(Definition)     : 219
       |(Reference)      : 
      row_comm
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 190
+      |(Definition)     : 201
       |(Reference)      : 
      ujoin4sr
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 163
+      |(Definition)     : 174
       |(Reference)      : 
 
  Total information
    Procedures       : 5
-   Total lines      : 215
-   Total statements : 173
-   Total stack(byte): 5872
+   Total lines      : 226
+   Total statements : 182
+   Total stack(byte): 5776
    Total prefetch num: 0
 

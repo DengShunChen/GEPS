@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:31:11 2023
+ Fujitsu Fortran Version 4.6.1  Thu Dec 28 15:30:00 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_rsm
    Source file       : readalb.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -276,31 +276,60 @@
              170     2   p    v            enddo
              171     1   p                 enddo
              172                     
-             173                     
-             174                     !     if (myrank .eq. 0) then
-             175                     !         print *,'*** for readalb.f ***'
-             176                     !         print *,'julian :',julian
-             177                     !         print *,'*** alvsf :'
-             178                     !         call qmax2d(alvsf,1,1,nx,my)
-             179                     !         print *,'*** alvwf :'
-             180                     !         call qmax2d(alvwf,1,1,nx,my)
-             181                     !         print *,'*** alnsf :'
-             182                     !         call qmax2d(alnsf,1,1,nx,my)
-             183                     !         print *,'*** alnwf :'
-             184                     !         call qmax2d(alnwf,1,1,nx,my)
-             185                     !         print *,'*** facsf :'
-             186                     !         call qmax2d(facsf,1,1,nx,my)
-             187                     !         print *,'*** facwf :'
-             188                     !         call qmax2d(facwf,1,1,nx,my)
-             189                     !     endif
-             190                     !
-             191                           return
-             192                           end
+             173                     !
+             174                     !---  unit change
+             175                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      facsf, alvwf, alnwf, alvsf, alnsf, facwf
+                                   <<< Loop-information  End >>>
+             176     1  pp                 do jj=1,jlistnum
+             177     1   p                   j=jlist1(jj)
+             178     1   p                   nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.77, ITR: 48, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      facsf, alvwf, alnwf, alvsf, alnsf, facwf
+                                   <<< Loop-information  End >>>
+             179     2   p    v              do i=1,nxj
+             180     2   p    v                alvsf(i,jj)=alvsf(i,jj)*0.01
+             181     2   p    v                alvwf(i,jj)=alvwf(i,jj)*0.01
+             182     2   p    v                alnsf(i,jj)=alnsf(i,jj)*0.01
+             183     2   p    v                alnwf(i,jj)=alnwf(i,jj)*0.01
+             184     2   p    v                facsf(i,jj)=facsf(i,jj)*0.01
+             185     2   p    v                facwf(i,jj)=facwf(i,jj)*0.01
+             186     2   p    v              enddo
+             187     1   p                 enddo
+             188                     
+             189                     !     if (myrank .eq. 0) then
+             190                     !         print *,'*** for readalb.f ***'
+             191                     !         print *,'julian :',julian
+             192                     !         print *,'*** alvsf :'
+             193                     !         call qmax2d(alvsf,1,1,nx,my)
+             194                     !         print *,'*** alvwf :'
+             195                     !         call qmax2d(alvwf,1,1,nx,my)
+             196                     !         print *,'*** alnsf :'
+             197                     !         call qmax2d(alnsf,1,1,nx,my)
+             198                     !         print *,'*** alnwf :'
+             199                     !         call qmax2d(alnwf,1,1,nx,my)
+             200                     !         print *,'*** facsf :'
+             201                     !         call qmax2d(facsf,1,1,nx,my)
+             202                     !         print *,'*** facwf :'
+             203                     !         call qmax2d(facwf,1,1,nx,my)
+             204                     !     endif
+             205                     !
+             206                           return
+             207                           end
 
  Procedure information
-   Lines      : 192
-   Statements : 93
-   Stack(byte): 56224
+   Lines      : 207
+   Statements : 105
+   Stack(byte): 56160
    Prefetch num: 0
 
  Scoping unit of external sub-program : readalb
@@ -309,8 +338,8 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  41
-      |(Definition)     : 168
-      |(Reference)      : 
+      |(Definition)     : 168  182
+      |(Reference)      : 182
      alnsfcl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
@@ -321,8 +350,8 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  41
-      |(Definition)     : 169
-      |(Reference)      : 
+      |(Definition)     : 169  183
+      |(Reference)      : 183
      alnwfcl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
@@ -333,8 +362,8 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  41
-      |(Definition)     : 166
-      |(Reference)      : 
+      |(Definition)     : 166  180
+      |(Reference)      : 180
      alvsfcl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
@@ -345,8 +374,8 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  41
-      |(Definition)     : 167
-      |(Reference)      : 
+      |(Definition)     : 167  181
+      |(Reference)      : 181
      alvwfcl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
@@ -387,14 +416,14 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  41
-      |(Definition)     : 135
-      |(Reference)      : 
+      |(Definition)     : 135  184
+      |(Reference)      : 184
      facwf
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  41
-      |(Definition)     : 143
-      |(Reference)      : 
+      |(Definition)     : 143  185
+      |(Reference)      : 185
      float
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
@@ -411,8 +440,8 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 45
-      |(Definition)     : 165
-      |(Reference)      : 166  166  166  167  167  167  168  168  168  169  169  169
+      |(Definition)     : 165  179
+      |(Reference)      : 166  166  166  167  167  167  168  168  168  169  169  169  180  180  181  181  182  182  183  183  184  184  185  185
      ialbflg
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
@@ -441,26 +470,26 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 45
-      |(Definition)     : 163
-      |(Reference)      : 164
+      |(Definition)     : 163  177
+      |(Reference)      : 164  178
      jj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 45
-      |(Definition)     : 162
-      |(Reference)      : 163  166  166  166  167  167  167  168  168  168  169  169  169
+      |(Definition)     : 162  176
+      |(Reference)      : 163  166  166  166  167  167  167  168  168  168  169  169  169  177  180  180  181  181  182  182  183  183  184  184  185  185
      jlist1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 163
+      |(Reference)      : 163  177
      jlistnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 162
+      |(Reference)      : 162  176
      jul
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
@@ -568,13 +597,13 @@
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 164
+      |(Reference)      : 164  178
      nxj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 45
-      |(Definition)     : 164
-      |(Reference)      : 165
+      |(Definition)     : 164  178
+      |(Reference)      : 165  179
      nxp
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
@@ -637,8 +666,8 @@
 
  Total information
    Procedures       : 1
-   Total lines      : 192
-   Total statements : 93
-   Total stack(byte): 56224
+   Total lines      : 207
+   Total statements : 105
+   Total stack(byte): 56160
    Total prefetch num: 0
 

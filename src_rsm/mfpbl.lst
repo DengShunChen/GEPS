@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:30:23 2023
+ Fujitsu Fortran Version 4.6.1  Thu Dec 28 15:29:08 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_rsm
    Source file       : mfpbl.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -320,9 +320,11 @@
              192                     !     bb2 = 2.
              193                     !
              194                     !  from our tuning
-             195                           bb1 = 1.8
-             196                           bb2 = 3.5
-             197                     !
+             195                     !      bb1 = 1.8    !(org)
+             196                           bb1 = 2.8     !(lin)
+             197                     
+             198                           bb2 = 3.5
+             199                     !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 517
@@ -332,30 +334,30 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      zi, xlamue, buo, cnvflg, wu2
                                    <<< Loop-information  End >>>
-             198     1  pp   2v            do i = 1, im
-             199     2   p   2v              if(cnvflg(i)) then
-             200     2               !
-             201     2               !         tem = zi(i,1)/hpbl(i)
-             202     2               !         tem1 = usws3(i) + 0.6*tem
-             203     2               !         tem2 = max((1.-tem), zfmin)
-             204     2               !         ptem = (tem1**h1) * sqrt(tem2)
-             205     2               !         ptem1 = 1.3 * ptem * wstar(i)
-             206     2               !         wu2(i,1) = d1*d1*ptem1*ptem1
-             207     2               !
-             208     2   p   2v                dz   = zi(i,1)
-             209     2   p   2v                tem  = 0.5*bb1*xlamue(i,1)*dz
-             210     2   p   2v                tem1 = bb2 * buo(i,1) * dz
-             211     2   p   2v                ptem1 = 1. + tem
-             212     2   p   2v                wu2(i,1) = tem1 / ptem1
-             213     2               !
-             214     2   p   2v              endif
-             215     1   p   2v            enddo
+             200     1  pp   2v            do i = 1, im
+             201     2   p   2v              if(cnvflg(i)) then
+             202     2               !
+             203     2               !         tem = zi(i,1)/hpbl(i)
+             204     2               !         tem1 = usws3(i) + 0.6*tem
+             205     2               !         tem2 = max((1.-tem), zfmin)
+             206     2               !         ptem = (tem1**h1) * sqrt(tem2)
+             207     2               !         ptem1 = 1.3 * ptem * wstar(i)
+             208     2               !         wu2(i,1) = d1*d1*ptem1*ptem1
+             209     2               !
+             210     2   p   2v                dz   = zi(i,1)
+             211     2   p   2v                tem  = 0.5*bb1*xlamue(i,1)*dz
+             212     2   p   2v                tem1 = bb2 * buo(i,1) * dz
+             213     2   p   2v                ptem1 = 1. + tem
+             214     2   p   2v                wu2(i,1) = tem1 / ptem1
+             215     2               !
+             216     2   p   2v              endif
+             217     1   p   2v            enddo
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cnvflg, xlamue, zi, buo, wu2
                                    <<< Loop-information  End >>>
-             216     1                     do k = 2, kmpbl
+             218     1                     do k = 2, kmpbl
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 341
@@ -365,22 +367,22 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      buo, cnvflg, wu2, xlamue, zi
                                    <<< Loop-information  End >>>
-             217     2  pp    v              do i = 1, im
-             218     3   p    v                if(cnvflg(i)) then
-             219     3   p    v                  dz    = zi(i,k) - zi(i,k-1)
-             220     3   p    v                  tem  = 0.25*bb1*(xlamue(i,k)+xlamue(i,k-1))*dz
-             221     3   p    v                  tem1 = bb2 * buo(i,k) * dz
-             222     3   p    v                  ptem = (1. - tem) * wu2(i,k-1)
-             223     3   p    v                  ptem1 = 1. + tem
-             224     3   p    v                  wu2(i,k) = (ptem + tem1) / ptem1
-             225     3   p    v                endif
-             226     2   p    v              enddo
-             227     1                     enddo
-             228                     !
-             229                     !  update pbl height as the height where updraft velocity vanishes
+             219     2  pp    v              do i = 1, im
+             220     3   p    v                if(cnvflg(i)) then
+             221     3   p    v                  dz    = zi(i,k) - zi(i,k-1)
+             222     3   p    v                  tem  = 0.25*bb1*(xlamue(i,k)+xlamue(i,k-1))*dz
+             223     3   p    v                  tem1 = bb2 * buo(i,k) * dz
+             224     3   p    v                  ptem = (1. - tem) * wu2(i,k-1)
+             225     3   p    v                  ptem1 = 1. + tem
+             226     3   p    v                  wu2(i,k) = (ptem + tem1) / ptem1
+             227     3   p    v                endif
+             228     2   p    v              enddo
+             229     1                     enddo
              230                     !
-             231                     !>  ## Recalculate the PBL height and the parcel's entrainment rate.
-             232                     !!  Find the level where the updraft vertical velocity is less than zero and linearly interpolate to find the height where it would be exactly zero. Set the PBL height to this determined height.
+             231                     !  update pbl height as the height where updraft velocity vanishes
+             232                     !
+             233                     !>  ## Recalculate the PBL height and the parcel's entrainment rate.
+             234                     !!  Find the level where the updraft vertical velocity is less than zero and linearly interpolate to find the height where it would be exactly zero. Set the PBL height to this determined height.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 728
@@ -390,19 +392,19 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      flg, wu2, cnvflg, rbup
                                    <<< Loop-information  End >>>
-             233     1  pp   2v            do i=1,im
-             234     1   p   2v               flg(i)  = .true.
-             235     2   p   2v               if(cnvflg(i)) then
-             236     2   p   2v                 flg(i)  = .false.
-             237     2   p   2v                 rbup(i) = wu2(i,1)
-             238     2   p   2v               endif
-             239     1   p   2v            enddo
+             235     1  pp   2v            do i=1,im
+             236     1   p   2v               flg(i)  = .true.
+             237     2   p   2v               if(cnvflg(i)) then
+             238     2   p   2v                 flg(i)  = .false.
+             239     2   p   2v                 rbup(i) = wu2(i,1)
+             240     2   p   2v               endif
+             241     1   p   2v            enddo
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      flg, wu2, rbup, rbdn, kpbl
                                    <<< Loop-information  End >>>
-             240     1                     do k = 2, kmpbl
+             242     1                     do k = 2, kmpbl
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 471
@@ -412,15 +414,15 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      rbdn, wu2, flg, rbup, kpbl
                                    <<< Loop-information  End >>>
-             241     2  pp    v            do i = 1, im
-             242     3   p    v              if(.not.flg(i)) then
-             243     3   p    v                rbdn(i) = rbup(i)
-             244     3   p    v                rbup(i) = wu2(i,k)
-             245     3   p    v                kpbl(i) = k
-             246     3   p    v                flg(i)  = rbup(i).le.0.
-             247     3   p    v              endif
-             248     2   p    v            enddo
-             249     1                     enddo
+             243     2  pp    v            do i = 1, im
+             244     3   p    v              if(.not.flg(i)) then
+             245     3   p    v                rbdn(i) = rbup(i)
+             246     3   p    v                rbup(i) = wu2(i,k)
+             247     3   p    v                kpbl(i) = k
+             248     3   p    v                flg(i)  = rbup(i).le.0.
+             249     3   p    v              endif
+             250     2   p    v            enddo
+             251     1                     enddo
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 327
@@ -428,21 +430,21 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cnvflg
                                    <<< Loop-information  End >>>
-             250     1  pp    s            do i = 1,im
-             251     2   p    m              if(cnvflg(i)) then
-             252     2   p    s                 k = kpbl(i)
-             253     3   p    s                 if(rbdn(i) <= 0.) then
-             254     3   p    s                    rbint = 0.
-             255     3   p    s                 elseif(rbup(i) >= 0.) then
-             256     3   p    s                    rbint = 1.
-             257     3   p    s                 else
-             258     3   p    s                    rbint = rbdn(i)/(rbdn(i)-rbup(i))
-             259     3   p    s                 endif
-             260     2   p    s                 hpbl(i) = zi(i,k-1) + rbint*(zi(i,k)-zi(i,k-1))
-             261     2   p    v              endif
-             262     1   p    v            enddo
-             263                     !
-             264                     !>  Recalculate the entrainment rate as before except use the updated value of the PBL height.
+             252     1  pp    s            do i = 1,im
+             253     2   p    m              if(cnvflg(i)) then
+             254     2   p    s                 k = kpbl(i)
+             255     3   p    s                 if(rbdn(i) <= 0.) then
+             256     3   p    s                    rbint = 0.
+             257     3   p    s                 elseif(rbup(i) >= 0.) then
+             258     3   p    s                    rbint = 1.
+             259     3   p    s                 else
+             260     3   p    s                    rbint = rbdn(i)/(rbdn(i)-rbup(i))
+             261     3   p    s                 endif
+             262     2   p    s                 hpbl(i) = zi(i,k-1) + rbint*(zi(i,k)-zi(i,k-1))
+             263     2   p    v              endif
+             264     1   p    v            enddo
+             265                     !
+             266                     !>  Recalculate the entrainment rate as before except use the updated value of the PBL height.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 341
@@ -450,124 +452,124 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cnvflg
                                    <<< Loop-information  End >>>
-             265     1  pp    s            do i=1,im
-             266     2   p    m              if(cnvflg(i)) then
-             267     2   p    s                k = kpbl(i) / 2
-             268     2   p    s                k = max(k, 1)
-             269     2   p    s                delz(i) = zl(i,k+1) - zl(i,k)
-             270     2   p    s                xlamax(i) = ce0 / delz(i)
-             271     2   p    v              endif
-             272     1   p    v            enddo
-             273                     !
-             274                     !  update entrainment rate
+             267     1  pp    s            do i=1,im
+             268     2   p    m              if(cnvflg(i)) then
+             269     2   p    s                k = kpbl(i) / 2
+             270     2   p    s                k = max(k, 1)
+             271     2   p    s                delz(i) = zl(i,k+1) - zl(i,k)
+             272     2   p    s                xlamax(i) = ce0 / delz(i)
+             273     2   p    v              endif
+             274     1   p    v            enddo
              275                     !
-             276                     !     do k = 1, kmpbl
-             277                     !       do i=1,im
-             278                     !         if(cnvflg(i)) then
-             279                     !           if(k < kpbl(i)) then
-             280                     !             tem = tau * sqrt(wu2(i,k))
-             281                     !             tem1 = 1. / tem
-             282                     !             ptem = ce0 / zi(i,k)
-             283                     !             xlamue(i,k) = max(tem1, ptem)
-             284                     !           else
-             285                     !             xlamue(i,k) = xlamax(i)
-             286                     !           endif
-             287                     !         endif
-             288                     !       enddo
-             289                     !     enddo
-             290                     !
+             276                     !  update entrainment rate
+             277                     !
+             278                     !     do k = 1, kmpbl
+             279                     !       do i=1,im
+             280                     !         if(cnvflg(i)) then
+             281                     !           if(k < kpbl(i)) then
+             282                     !             tem = tau * sqrt(wu2(i,k))
+             283                     !             tem1 = 1. / tem
+             284                     !             ptem = ce0 / zi(i,k)
+             285                     !             xlamue(i,k) = max(tem1, ptem)
+             286                     !           else
+             287                     !             xlamue(i,k) = xlamax(i)
+             288                     !           endif
+             289                     !         endif
+             290                     !       enddo
+             291                     !     enddo
+             292                     !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
-                                   <<<    FUSED(lines: 291,330)
+                                   <<<    FUSED(lines: 293,332)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cnvflg, kpbl, delz, hpbl, zi, zl, wu2
                                    <<<      xlamax, xlamue, xmf
                                    <<< Loop-information  End >>>
-             291     1  pp                 do k = 1, kmpbl
+             293     1  pp                 do k = 1, kmpbl
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    FUSED(lines: 292,331)
+                                   <<<    FUSED(lines: 294,333)
                                    <<<    SIMD(VL: 8)
                                    <<<    SOFTWARE PIPELINING(IPC: 0.45, ITR: 40, MVE: 2, POL: L)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      kpbl, xlamue, delz, hpbl, zi, zl, wu2
                                    <<<      xlamax, xmf, cnvflg
                                    <<< Loop-information  End >>>
-             292     2   p    v              do i=1,im
-             293     3   p    v                if(cnvflg(i)) then
-             294     4   p    v                  if(k < kpbl(i)) then
-             295     4   p    v                    ptem = 1./(zi(i,k)+delz(i))
-             296     4   p    v                    tem = max((hpbl(i)-zi(i,k)+delz(i)) ,delz(i))
-             297     4   p    v                    ptem1 = 1./tem
-             298     4   p    v                    xlamue(i,k) = ce0 * (ptem+ptem1)
-             299     4   p    v                  else
-             300     4   p    v                    xlamue(i,k) = xlamax(i)
-             301     4   p    v                  endif
-             302     3   p    v                endif
-             303     2   p    v              enddo
-             304     1   p                 enddo
-             305                     !
-             306                     !  updraft mass flux as a function of sigmaw
-             307                     !   (0.3*sigmaw[square root of vertical turbulence variance])
-             308                     !
-             309                     !>  ## Calculate the mass flux profile and updraft properties.
-             310                     !     do k = 1, kmpbl
-             311                     !       do i=1,im
-             312                     !         if(cnvflg(i) .and. k < kpbl(i)) then
-             313                     !           tem = zi(i,k)/hpbl(i)
-             314                     !           tem1 = usws3(i) + 0.6*tem
-             315                     !           tem2 = max((1.-tem), zfmin)
-             316                     !           ptem = (tem1**h1) * sqrt(tem2)
-             317                     !           ptem1 = 1.3 * ptem * wstar(i)
-             318                     !           xmf(i,k) = c1 * ptem1
-             319                     !         endif
-             320                     !       enddo
-             321                     !     enddo
-             322                     !
-             323                     !  updraft mass flux as a function of updraft velocity profile
+             294     2   p    v              do i=1,im
+             295     3   p    v                if(cnvflg(i)) then
+             296     4   p    v                  if(k < kpbl(i)) then
+             297     4   p    v                    ptem = 1./(zi(i,k)+delz(i))
+             298     4   p    v                    tem = max((hpbl(i)-zi(i,k)+delz(i)) ,delz(i))
+             299     4   p    v                    ptem1 = 1./tem
+             300     4   p    v                    xlamue(i,k) = ce0 * (ptem+ptem1)
+             301     4   p    v                  else
+             302     4   p    v                    xlamue(i,k) = xlamax(i)
+             303     4   p    v                  endif
+             304     3   p    v                endif
+             305     2   p    v              enddo
+             306     1   p                 enddo
+             307                     !
+             308                     !  updraft mass flux as a function of sigmaw
+             309                     !   (0.3*sigmaw[square root of vertical turbulence variance])
+             310                     !
+             311                     !>  ## Calculate the mass flux profile and updraft properties.
+             312                     !     do k = 1, kmpbl
+             313                     !       do i=1,im
+             314                     !         if(cnvflg(i) .and. k < kpbl(i)) then
+             315                     !           tem = zi(i,k)/hpbl(i)
+             316                     !           tem1 = usws3(i) + 0.6*tem
+             317                     !           tem2 = max((1.-tem), zfmin)
+             318                     !           ptem = (tem1**h1) * sqrt(tem2)
+             319                     !           ptem1 = 1.3 * ptem * wstar(i)
+             320                     !           xmf(i,k) = c1 * ptem1
+             321                     !         endif
+             322                     !       enddo
+             323                     !     enddo
              324                     !
-             325                     !>  Calculate the mass flux:
-             326                     !!  \f[
-             327                     !!  M = a_uw_u
-             328                     !!  \f]
-             329                     !!  where \f$a_u\f$ is the tunable parameter that represents the fractional area of updrafts (currently set to 0.08). Limit the computed mass flux to be less than \f$\frac{\Delta z}{\Delta t}\f$. This is different than what is done in Siebesma et al. (200
+             325                     !  updraft mass flux as a function of updraft velocity profile
+             326                     !
+             327                     !>  Calculate the mass flux:
+             328                     !!  \f[
+             329                     !!  M = a_uw_u
+             330                     !!  \f]
+             331                     !!  where \f$a_u\f$ is the tunable parameter that represents the fractional area of updrafts (currently set to 0.08). Limit the computed mass flux to be less than \f$\frac{\Delta z}{\Delta t}\f$. This is different than what is done in Siebesma et al. (200
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    FUSED
                                    <<< Loop-information  End >>>
-             330     1                     do k = 1, kmpbl
+             332     1                     do k = 1, kmpbl
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    FUSED
                                    <<< Loop-information  End >>>
-             331     2                       do i = 1, im
-             332     3   p                     if (cnvflg(i) .and. k < kpbl(i)) then
-             333     3   p                        xmf(i,k) = a1 * sqrt(wu2(i,k))
-             334     3   p                        dz   = zl(i,k+1) - zl(i,k)
-             335     3   p                        xmmx = dz / dt2
-             336     3   p                        xmf(i,k) = min(xmf(i,k),xmmx)
-             337     3   p                     endif
-             338     2                       enddo
-             339     1                     enddo
-             340                     !
-             341                     !c!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-             342                     !  compute updraft property
-             343                     !
-             344                     !>  The updraft properties are calculated according to the entraining updraft equation
-             345                     !!  \f[
-             346                     !!  \frac{\partial \phi}{\partial z}=-\epsilon\left(\phi_u - \overline{\phi}\right)
-             347                     !!  \f]
-             348                     !!  where \f$\phi\f$ is \f$T\f$ or \f$q\f$. The equation is discretized according to
-             349                     !!  \f[
-             350                     !!  \frac{\phi_{u,k} - \phi_{u,k-1}}{\Delta z}=-\epsilon_{k-1}\left[\frac{1}{2}\left(\phi_{u,k} + \phi_{u,k-1}\right)-\frac{1}{2}\left(\overline{\phi}_k + \overline{\phi}_{k-1}\right)\right]
-             351                     !!  \f]
-             352                     !!  The exception is for the horizontal momentum components, which have been modified to account for the updraft-induced pressure gradient force, and use the following equation, following Han and Pan (2006) \cite han_and_pan_2006
-             353                     !!  \f[
-             354                     !!  \frac{\partial v}{\partial z} = -\epsilon\left(v_u - \overline{v}\right)+d_1\frac{\partial \overline{v}}{\partial z}
-             355                     !!  \f]
-             356                     !!  where \f$d_1=0.55\f$ is a tunable constant.
+             333     2                       do i = 1, im
+             334     3   p                     if (cnvflg(i) .and. k < kpbl(i)) then
+             335     3   p                        xmf(i,k) = a1 * sqrt(wu2(i,k))
+             336     3   p                        dz   = zl(i,k+1) - zl(i,k)
+             337     3   p                        xmmx = dz / dt2
+             338     3   p                        xmf(i,k) = min(xmf(i,k),xmmx)
+             339     3   p                     endif
+             340     2                       enddo
+             341     1                     enddo
+             342                     !
+             343                     !c!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+             344                     !  compute updraft property
+             345                     !
+             346                     !>  The updraft properties are calculated according to the entraining updraft equation
+             347                     !!  \f[
+             348                     !!  \frac{\partial \phi}{\partial z}=-\epsilon\left(\phi_u - \overline{\phi}\right)
+             349                     !!  \f]
+             350                     !!  where \f$\phi\f$ is \f$T\f$ or \f$q\f$. The equation is discretized according to
+             351                     !!  \f[
+             352                     !!  \frac{\phi_{u,k} - \phi_{u,k-1}}{\Delta z}=-\epsilon_{k-1}\left[\frac{1}{2}\left(\phi_{u,k} + \phi_{u,k-1}\right)-\frac{1}{2}\left(\overline{\phi}_k + \overline{\phi}_{k-1}\right)\right]
+             353                     !!  \f]
+             354                     !!  The exception is for the horizontal momentum components, which have been modified to account for the updraft-induced pressure gradient force, and use the following equation, following Han and Pan (2006) \cite han_and_pan_2006
+             355                     !!  \f[
+             356                     !!  \frac{\partial v}{\partial z} = -\epsilon\left(v_u - \overline{v}\right)+d_1\frac{\partial \overline{v}}{\partial z}
+             357                     !!  \f]
+             358                     !!  where \f$d_1=0.55\f$ is a tunable constant.
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
@@ -577,7 +579,7 @@
                                    <<<     SEQUENTIAL : 4
                                    <<<      vcko: 4
                                    <<< Loop-information  End >>>
-             357     1                     do k = 2, kmpbl
+             359     1                     do k = 2, kmpbl
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 164
@@ -591,34 +593,34 @@
                                    <<<     SEQUENTIAL : 4
                                    <<<      vcko: 4
                                    <<< Loop-information  End >>>
-             358     2  pp    v              do i = 1, im
-             359     3   p    v                if (cnvflg(i) .and. k <= kpbl(i)) then
-             360     3   p    v                   dz   = zl(i,k) - zl(i,k-1)
-             361     3   p    v                   tem  = 0.5 * xlamue(i,k-1) * dz
-             362     3   p    v                   factor = 1. + tem
-             363     3   p    v                   ptem = tem + pgcon
-             364     3   p    v                   ptem1= tem - pgcon
-             365     3               !
-             366     3   p    v                   tcko(i,k) = ((1.-tem)*tcko(i,k-1)+tem* &
-             367     3                                         (t1(i,k)+t1(i,k-1))-gocp*dz)/factor
-             368     3   p    v                   ucko(i,k) = ((1.-tem)*ucko(i,k-1)+ptem*u1(i,k) &
-             369     3                                         +ptem1*u1(i,k-1))/factor
-             370     3   p    v                   vcko(i,k) = ((1.-tem)*vcko(i,k-1)+ptem*v1(i,k) &
-             371     3                                         +ptem1*v1(i,k-1))/factor
-             372     3   p    v                endif
-             373     2   p    v              enddo
-             374     1                     enddo
+             360     2  pp    v              do i = 1, im
+             361     3   p    v                if (cnvflg(i) .and. k <= kpbl(i)) then
+             362     3   p    v                   dz   = zl(i,k) - zl(i,k-1)
+             363     3   p    v                   tem  = 0.5 * xlamue(i,k-1) * dz
+             364     3   p    v                   factor = 1. + tem
+             365     3   p    v                   ptem = tem + pgcon
+             366     3   p    v                   ptem1= tem - pgcon
+             367     3               !
+             368     3   p    v                   tcko(i,k) = ((1.-tem)*tcko(i,k-1)+tem* &
+             369     3                                         (t1(i,k)+t1(i,k-1))-gocp*dz)/factor
+             370     3   p    v                   ucko(i,k) = ((1.-tem)*ucko(i,k-1)+ptem*u1(i,k) &
+             371     3                                         +ptem1*u1(i,k-1))/factor
+             372     3   p    v                   vcko(i,k) = ((1.-tem)*vcko(i,k-1)+ptem*v1(i,k) &
+             373     3                                         +ptem1*v1(i,k-1))/factor
+             374     3   p    v                endif
+             375     2   p    v              enddo
+             376     1                     enddo
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<< Loop-information  End >>>
-             375     1  pp                 do n = 1, ntrac
+             377     1  pp                 do n = 1, ntrac
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cnvflg, kpbl, zl, xlamue, q1, qcko
                                    <<< Loop-information  End >>>
-             376     2   p                 do k = 2, kmpbl
+             378     2   p                 do k = 2, kmpbl
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -626,25 +628,25 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      kpbl, q1, qcko, zl, xlamue, cnvflg
                                    <<< Loop-information  End >>>
-             377     3   p    v              do i = 1, im
-             378     4   p    v                if (cnvflg(i) .and. k <= kpbl(i)) then
-             379     4   p    v                   dz   = zl(i,k) - zl(i,k-1)
-             380     4   p    v                   tem  = 0.5 * xlamue(i,k-1) * dz
-             381     4   p    v                   factor = 1. + tem
-             382     4               
-             383     4   p    v                   qcko(i,k,n) = ((1.-tem)*qcko(i,k-1,n)+tem* &
-             384     4                                         (q1(i,k,n)+q1(i,k-1,n)))/factor
-             385     4   p    v                endif
-             386     3   p    v              enddo
-             387     2   p                 enddo
-             388     1   p                 enddo
-             389                     !
-             390                           return
-             391                           end
-             392                     !> @}
+             379     3   p    v              do i = 1, im
+             380     4   p    v                if (cnvflg(i) .and. k <= kpbl(i)) then
+             381     4   p    v                   dz   = zl(i,k) - zl(i,k-1)
+             382     4   p    v                   tem  = 0.5 * xlamue(i,k-1) * dz
+             383     4   p    v                   factor = 1. + tem
+             384     4               
+             385     4   p    v                   qcko(i,k,n) = ((1.-tem)*qcko(i,k-1,n)+tem* &
+             386     4                                         (q1(i,k,n)+q1(i,k-1,n)))/factor
+             387     4   p    v                endif
+             388     3   p    v              enddo
+             389     2   p                 enddo
+             390     1   p                 enddo
+             391                     !
+             392                           return
+             393                           end
+             394                     !> @}
 
  Procedure information
-   Lines      : 392
+   Lines      : 394
    Statements : 194
    Stack(byte): 18240
    Prefetch num: 12
@@ -656,7 +658,7 @@
       |(Attributes)     : 
       |(Declaration)    : 65  90
       |(Definition)     : 
-      |(Reference)      : 333
+      |(Reference)      : 335
      alp
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
@@ -673,20 +675,20 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 65
-      |(Definition)     : 195
-      |(Reference)      : 209  220
+      |(Definition)     : 196
+      |(Reference)      : 211  222
      bb2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 65
-      |(Definition)     : 196
-      |(Reference)      : 210  221
+      |(Definition)     : 198
+      |(Reference)      : 212  223
      buo
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 79
       |(Definition)     : 151  171
-      |(Reference)      : 210  221
+      |(Reference)      : 212  223
      c1
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
@@ -698,13 +700,13 @@
       |(Attributes)     : 
       |(Declaration)    : 65  89
       |(Definition)     : 
-      |(Reference)      : 120  130  270  298
+      |(Reference)      : 120  130  272  300
      cnvflg
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 38  50
       |(Definition)     : 
-      |(Reference)      : 102  108  116  125  142  164  199  218  235  251  266  293  332  359  378
+      |(Reference)      : 102  108  116  125  142  164  201  220  237  253  268  295  334  361  380
      con_cp
       |(Class and Type) : use name
       |(Attributes)     : 
@@ -739,20 +741,20 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 76
-      |(Definition)     : 119  269
-      |(Reference)      : 120  127  128  128  270  295  296  296
+      |(Definition)     : 119  271
+      |(Reference)      : 120  127  128  128  272  297  298  298
      dt2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 65
       |(Definition)     : 98
-      |(Reference)      : 335
+      |(Reference)      : 337
      dz
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 65
-      |(Definition)     : 165  208  219  334  360  379
-      |(Reference)      : 166  209  210  220  221  335  361  366  380
+      |(Definition)     : 165  210  221  336  362  381
+      |(Reference)      : 166  211  212  222  223  337  363  368  382
      f1
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
@@ -763,14 +765,14 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 65
-      |(Definition)     : 362  381
-      |(Reference)      : 366  368  370  383
+      |(Definition)     : 364  383
+      |(Reference)      : 368  370  372  385
      flg
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 83
-      |(Definition)     : 234  236  246
-      |(Reference)      : 242
+      |(Definition)     : 236  238  248
+      |(Reference)      : 244
      g
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
@@ -782,7 +784,7 @@
       |(Attributes)     : 
       |(Declaration)    : 65  87
       |(Definition)     : 
-      |(Reference)      : 366
+      |(Reference)      : 368
      grav
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : use-associated
@@ -799,20 +801,20 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 38  52
-      |(Definition)     : 260
-      |(Reference)      : 128  143  296
+      |(Definition)     : 262
+      |(Reference)      : 128  143  298
      i
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 63
-      |(Definition)     : 101  107  115  124  141  163  198  217  233  241  250  265  292  331  358  377
-      |(Reference)      : 102  108  109  109  116  117  119  119  119  120  120  125  126  127  127  128  128  128  128  130  132  132  142  143  143  144  144  144  145  148  148  149  149  150  150  151  151  151  164  165  165  166  169  169  170  170  171  171  171  199  208  209  210  212  218  219  219  220  220  221  222  224  234  235  236  237  237  242  243  243  244  244  245  246  246  251  252  253  255  258  258  258  260  260  260  260  266  267  269  269  269  270  270  293  294  295  295  296  296  296  296  298  300  300  332  332  333  333  334  334  336  336  359  359  360  360  361  366  366  366  366  368  368  368  368  370  370  370  370  378  378  379  379  380  383  383  383  383
+      |(Definition)     : 101  107  115  124  141  163  200  219  235  243  252  267  294  333  360  379
+      |(Reference)      : 102  108  109  109  116  117  119  119  119  120  120  125  126  127  127  128  128  128  128  130  132  132  142  143  143  144  144  144  145  148  148  149  149  150  150  151  151  151  164  165  165  166  169  169  170  170  171  171  171  201  210  211  212  214  220  221  221  222  222  223  224  226  236  237  238  239  239  244  245  245  246  246  247  248  248  253  254  255  257  260  260  260  262  262  262  262  268  269  271  271  271  272  272  295  296  297  297  298  298  298  298  300  302  302  334  334  335  335  336  336  338  338  361  361  362  362  363  368  368  368  368  370  370  370  370  372  372  372  372  380  380  381  381  382  385  385  385  385
      im
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 38  47
       |(Definition)     : 
-      |(Reference)      : 49  50  52  52  52  52  52  52  52  52  52  52  52  52  76  76  76  76  76  76  79  79  79  79  79  83  101  107  115  124  141  163  198  217  233  241  250  265  292  331  358  377
+      |(Reference)      : 49  50  52  52  52  52  52  52  52  52  52  52  52  52  76  76  76  76  76  76  79  79  79  79  79  83  101  107  115  124  141  163  200  219  235  243  252  267  294  333  360  379
      ix
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
@@ -829,8 +831,8 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 63
-      |(Definition)     : 106  117  118  123  162  216  240  252  267  268  291  330  357  376
-      |(Reference)      : 109  109  118  119  119  126  127  128  130  132  165  165  166  169  169  170  170  171  171  171  219  219  220  220  221  222  224  244  245  260  260  260  268  269  269  294  295  296  298  300  332  333  333  334  334  336  336  359  360  360  361  366  366  366  366  368  368  368  368  370  370  370  370  378  379  379  380  383  383  383  383
+      |(Definition)     : 106  117  118  123  162  218  242  254  269  270  293  332  359  378
+      |(Reference)      : 109  109  118  119  119  126  127  128  130  132  165  165  166  169  169  170  170  171  171  171  221  221  222  222  223  224  226  246  247  262  262  262  270  271  271  296  297  298  300  302  334  335  335  336  336  338  338  361  362  362  363  368  368  368  368  370  370  370  370  372  372  372  372  380  381  381  382  385  385  385  385
      kind_phys
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : use-associated
@@ -848,13 +850,13 @@
       |(Attributes)     : 
       |(Declaration)    : 63
       |(Definition)     : 97
-      |(Reference)      : 123  162  216  240  291  330  357  376
+      |(Reference)      : 123  162  218  242  293  332  359  378
      kpbl
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 38  49
-      |(Definition)     : 245
-      |(Reference)      : 117  126  252  267  294  332  359  378
+      |(Definition)     : 247
+      |(Reference)      : 117  126  254  269  296  334  361  380
      machine
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -866,7 +868,7 @@
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 118  128  146  268  296
+      |(Reference)      : 118  128  146  270  298
      mfpbl
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
@@ -878,25 +880,25 @@
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 336
+      |(Reference)      : 338
      n
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 63
-      |(Definition)     : 375
-      |(Reference)      : 383  383  383  383
+      |(Definition)     : 377
+      |(Reference)      : 385  385  385  385
      ntrac
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 38  47
       |(Definition)     : 
-      |(Reference)      : 52  52  375
+      |(Reference)      : 52  52  377
      pgcon
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 65  89
       |(Definition)     : 
-      |(Reference)      : 363  364
+      |(Reference)      : 365  366
      physcons
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -907,14 +909,14 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 65
-      |(Definition)     : 127  147  167  222  295  363
-      |(Reference)      : 130  148  168  169  224  298  368  370
+      |(Definition)     : 127  147  167  224  297  365
+      |(Reference)      : 130  148  168  169  226  300  370  372
      ptem1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 65
-      |(Definition)     : 129  149  168  211  223  297  364
-      |(Reference)      : 130  150  170  212  224  298  368  370
+      |(Definition)     : 129  149  168  213  225  299  366
+      |(Reference)      : 130  150  170  214  226  300  370  372
      ptem2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
@@ -926,13 +928,13 @@
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 38  52
       |(Definition)     : 
-      |(Reference)      : 383  383
+      |(Reference)      : 385  385
      qcko
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 38  52
-      |(Definition)     : 383
-      |(Reference)      : 383
+      |(Definition)     : 385
+      |(Reference)      : 385
      qmin
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
@@ -943,20 +945,20 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 76
-      |(Definition)     : 243
-      |(Reference)      : 253  258  258
+      |(Definition)     : 245
+      |(Reference)      : 255  260  260
      rbint
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 65
-      |(Definition)     : 254  256  258
-      |(Reference)      : 260
+      |(Definition)     : 256  258  260
+      |(Reference)      : 262
      rbup
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 76
-      |(Definition)     : 237  244
-      |(Reference)      : 243  246  255  258
+      |(Definition)     : 239  246
+      |(Reference)      : 245  248  257  260
      sflx
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
@@ -974,13 +976,13 @@
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 147  333
+      |(Reference)      : 147  335
      t1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 38  52
       |(Definition)     : 
-      |(Reference)      : 366  366
+      |(Reference)      : 368  368
      tau
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
@@ -991,20 +993,20 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 38  52
-      |(Definition)     : 366
-      |(Reference)      : 366
+      |(Definition)     : 368
+      |(Reference)      : 368
      tem
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 65
-      |(Definition)     : 128  143  166  209  220  296  361  380
-      |(Reference)      : 129  145  146  167  168  169  211  222  223  297  362  363  364  366  366  368  370  381  383  383
+      |(Definition)     : 128  143  166  211  222  298  363  382
+      |(Reference)      : 129  145  146  167  168  169  213  224  225  299  364  365  366  368  368  370  372  383  385  385
      tem1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 65
-      |(Definition)     : 145  169  210  221
-      |(Reference)      : 147  170  212  224
+      |(Definition)     : 145  169  212  223
+      |(Reference)      : 147  170  214  226
      tem2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
@@ -1034,13 +1036,13 @@
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 38  52
       |(Definition)     : 
-      |(Reference)      : 368  368
+      |(Reference)      : 370  370
      ucko
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 38  52
-      |(Definition)     : 368
-      |(Reference)      : 368
+      |(Definition)     : 370
+      |(Reference)      : 370
      ustar
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
@@ -1058,13 +1060,13 @@
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 38  52
       |(Definition)     : 
-      |(Reference)      : 370  370
+      |(Reference)      : 372  372
      vcko
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 38  52
-      |(Definition)     : 370
-      |(Reference)      : 370
+      |(Definition)     : 372
+      |(Reference)      : 372
      wstar
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
@@ -1075,32 +1077,32 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 79
-      |(Definition)     : 212  224
-      |(Reference)      : 222  237  244  333
+      |(Definition)     : 214  226
+      |(Reference)      : 224  239  246  335
      xlamax
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 76
-      |(Definition)     : 120  270
-      |(Reference)      : 132  300
+      |(Definition)     : 120  272
+      |(Reference)      : 132  302
      xlamue
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 79
-      |(Definition)     : 130  132  298  300
-      |(Reference)      : 166  209  220  220  361  380
+      |(Definition)     : 130  132  300  302
+      |(Reference)      : 166  211  222  222  363  382
      xmf
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 38  52
-      |(Definition)     : 333  336
-      |(Reference)      : 336
+      |(Definition)     : 335  338
+      |(Reference)      : 338
      xmmx
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 65
-      |(Definition)     : 335
-      |(Reference)      : 336
+      |(Definition)     : 337
+      |(Reference)      : 338
      zfmin
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
@@ -1112,13 +1114,13 @@
       |(Attributes)     : DIMENSION
       |(Declaration)    : 79
       |(Definition)     : 109
-      |(Reference)      : 127  128  208  219  219  260  260  260  295  296
+      |(Reference)      : 127  128  210  221  221  262  262  262  297  298
      zl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 38  52
       |(Definition)     : 
-      |(Reference)      : 119  119  143  165  165  269  269  334  334  360  360  379  379
+      |(Reference)      : 119  119  143  165  165  271  271  336  336  362  362  381  381
      zm
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
@@ -1128,7 +1130,7 @@
 
  Total information
    Procedures       : 1
-   Total lines      : 392
+   Total lines      : 394
    Total statements : 194
    Total stack(byte): 18240
    Total prefetch num: 12

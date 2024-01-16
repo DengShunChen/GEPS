@@ -1,5 +1,6 @@
       subroutine sendmsg(str_model,i_fromtau,i_totau,i_status)
 
+      integer i_fromtau,i_totau,i_status
       character*3 str_model
       character tauchk*10
 
@@ -23,7 +24,7 @@
       subroutine recmsg(model,ifrom,ito,istatus)
       character*3 model
       
-      integer tau(9999),cnt,ip
+      integer tau(9999),cnt,ip,istatus,ifrom,ito
       save    tau,cnt,ip
 
       istatus=0
@@ -257,5 +258,150 @@
       do 10 j=1,n
       y(j)=sqrt(x(j))
    10 continue
+      return
+      end
+
+      subroutine ptot(pdrym,lprint)
+
+      use index
+      use mpe
+      use rank
+      use const
+      use param
+      use grid
+
+      implicit none
+
+      integer i,j,k,n,jj,kk,nxj,nxjf,kn
+      logical lprint
+      real    sumtot   ,sumwat    ,dsigp                    &
+             ,sumtotm  ,sumwatm   ,pdrym                    &
+             ,sumtott  ,sumwatt   ,qtot 
+      
+
+      ! dry air mass conservation
+      sumtot=0.
+      sumwat=0.
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        nxjf=nxdef(j)
+        do i = 1,nxj
+          sumtott=0.
+          sumwatt=0.
+          do k = 1, lev
+            dsigp = dsigma(k,1)*pt(i,jj)+dsigma(k,2)
+            qtot=0.
+            do n = 1, ncld
+               kk=k+(n-1)*lev
+               qtot = qtot + qt(i,kk,jj)
+            enddo
+            sumtott = sumtott  + dsigp
+            sumwatt = sumwatt  + dsigp * qtot
+          enddo
+          sumtot = sumtot + sumtott * cosl(j) * nx / nxjf
+          sumwat = sumwat + sumwatt * cosl(j) * nx / nxjf
+        enddo
+      enddo
+
+!          call mpe_global_sum(kn,1,mpe_integer)
+      call mpe_global_sum(sumtot,1,mpe_double)
+      call mpe_global_sum(sumwat,1,mpe_double)
+
+      kn      = nx * my
+      sumtotm = sumtot / float(kn)
+      sumwatm = sumwat / float(kn)
+      pdrym   = sumtotm - sumwatm
+
+      if( myrank .eq. 0 .and. lprint ) then
+        open(35,file='pdry.txt',form='formatted',status='unknown', &
+             position='append')
+        write(35,*)pdrym,sumwatm,sumtotm
+        close(35)
+        print*,'dry air mass = ',pdrym,' hPa'
+        print*,'water mass = ',sumwatm,' hPa'
+        print*,'total air mass = ',sumtotm,' hPa'
+      endif
+
+      return
+      end
+!
+      subroutine adjptq(dta,pltemp,pltend)
+
+      use index
+      use mpe
+      use rank
+      use const
+      use param
+      use grid
+
+      implicit none
+
+      integer i,j,k,n,jj,kk,nxj,nxjf,kn
+      real    dsigp    ,qtot      ,qtota                    &
+             ,sumtott  ,sumwatt   ,sumwatta                 &
+             ,odpondp  ,dta
+      real(kind=RTYPE) pnew(nxp,my_max),pten(nxp,my_max)    &
+                      ,ww1(nx,my_max),pltemp(jtrun,jtmax,2) &
+                      ,pltend(jtrun,jtmax,2)
+      
+      ! adjustment of surface pressure
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        nxjf=nxdef(j)
+        do i = 1,nxj
+          sumtott=0.
+          sumwatt=0.
+          sumwatta=0.
+          do k = 1, lev
+            dsigp = dsigma(k,1)*pt(i,jj)+dsigma(k,2)
+            qtot=0.
+            qtota=0.
+            do n = 1, ncld
+               kk=k+(n-1)*lev
+               qtot = qtot  + qp(i,kk,jj)
+               qtota= qtota + qt(i,kk,jj)
+            enddo
+            sumtott = sumtott  + dsigp
+            sumwatt = sumwatt  + dsigp * qtot
+            sumwatta= sumwatta + dsigp * qtota
+            tt(i,k,jj)  = tt(i,k,jj)*pk(i,k,jj) / (1.0+0.608*qt(i,k,jj))
+          enddo
+          pnew(i,jj) = sumtott - sumwatt + sumwatta
+
+        enddo
+      enddo
+
+      call mpe2d_unify_nx(ww1,pnew)
+      call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1            &
+                  ,pltemp,nsizey)            
+      call transr1(jtrun,jtmax,nx,my,my_max,poly,pltemp,pnew,nsizey)
+
+      ! mass adjustment of all tracers and virtual potential temperature
+
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pnew(1,jj), &
+                                pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
+        do i = 1,nxj
+          do k = 1, lev
+            odpondp =  (dsigma(k,1)*pt(i,jj)+dsigma(k,2))              &
+                     / (dsigma(k,1)*pnew(i,jj)+dsigma(k,2))
+            do n = 1, ncld
+              kk=k+(n-1)*lev
+              qt(i,kk,jj) = qt(i,kk,jj) * odpondp
+            enddo
+            tt(i,k,jj) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj))/pk(i,k,jj)
+          enddo
+          pten(i,jj) = ( pnew(i,jj) - ptp(i,jj) ) / dta
+        enddo
+      enddo
+
+      call mpe2d_unify_nx(ww1,pten)
+      call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1            &
+                  ,pltend,nsizey)            
+
       return
       end

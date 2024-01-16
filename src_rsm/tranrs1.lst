@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:30:26 2023
+ Fujitsu Fortran Version 4.6.1  Thu Dec 28 15:29:15 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_rsm
    Source file       : tranrs1.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -118,7 +118,7 @@
                                    <<<    Standard iteration count: 1778
                                    <<<  [OPTIMIZATION]
                                    <<<    COLLAPSED
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      twcc_fk
                                    <<< Loop-information  End >>>
@@ -130,7 +130,7 @@
                                    <<<    Standard iteration count: 1778
                                    <<<  [OPTIMIZATION]
                                    <<<    COLLAPSED
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      gwk1
                                    <<< Loop-information  End >>>
@@ -156,8 +156,8 @@
               69     1               !ocl repeat(im)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      r, cc
                                    <<< Loop-information  End >>>
@@ -190,9 +190,9 @@
               88     2   p                   j= jlist1(jj)
               89     2   p                   nxj=nxdef(j)
               90     2               #ifdef SP
-              91     2                       call rfftmlt_sp(cc(1,jj),gwk1(1,jj),trigsj(1,j),ifaxj(1,j), &
+              91     2   p                   call rfftmlt_sp(cc(1,jj),gwk1(1,jj),trigsj(1,j),ifaxj(1,j), &
               92     2               #else
-              93     2   p                   call rfftmlt(cc(1,jj),gwk1(1,jj),trigsj(1,j),ifaxj(1,j), &
+              93     2                       call rfftmlt(cc(1,jj),gwk1(1,jj),trigsj(1,j),ifaxj(1,j), &
               94     2               #endif
               95     2                                    1,nx+2,nxj,1,-1)
               96     2   p                 enddo
@@ -204,7 +204,7 @@
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      cc, nlist
+                                   <<<      nlist, cc
                                    <<< Loop-information  End >>>
              100     1  pp                 do j =1, jlistnum
              101     1   p                    jj = jlist1(j)
@@ -212,8 +212,8 @@
              103     1               !ocl repeat(jtr)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 1.75, ITR: 80, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.08, ITR: 160, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cc, nlist
                                    <<< Loop-information  End >>>
@@ -245,7 +245,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 1455
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      wss
                                    <<< Loop-information  End >>>
@@ -264,8 +264,8 @@
              128     2  pp                 do j = 1, myhalf
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 112, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 224, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      poly
                                    <<< Loop-information  End >>>
@@ -356,7 +356,7 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 391
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<< Loop-information  End >>>
              182     3  pp    v            do j=1,myhalf
              183     3   p    v            jj=my-j+1
@@ -371,8 +371,8 @@
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 843
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.50, ITR: 80, MVE: 3, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.50, ITR: 160, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      wss, s
                                    <<< Loop-information  End >>>
@@ -389,16 +389,16 @@
  Procedure information
    Lines      : 199
    Statements : 124
-   Stack(byte): 30448
+   Stack(byte): 30400
    Prefetch num: 0
 
  Scoping unit of external sub-program : tranrs1
    Attribute and Cross reference of name
      cc
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 44
-      |(Definition)     : 71  80  93
+      |(Definition)     : 71  78  91
       |(Reference)      : 83  108  109
      col_comm
       |(Class and Type) : variable name, INTEGER(4)
@@ -419,16 +419,16 @@
       |(Definition)     : 
       |(Reference)      : 26
      fj_polyw
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 48
       |(Definition)     : 130
       |(Reference)      : 155  156  157  158  159  160  161  162  172  173  174  175  185  186
      gwk1
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 39
-      |(Definition)     : 57  80  93
+      |(Definition)     : 57  78  91
       |(Reference)      : 83
      i
       |(Class and Type) : variable name, INTEGER(4)
@@ -458,13 +458,13 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 80
+      |(Definition)     : 78
       |(Reference)      : 
      ifaxj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 93
+      |(Definition)     : 91
       |(Reference)      : 83
      index
       |(Class and Type) : module name
@@ -477,7 +477,7 @@
       |(Attributes)     : 
       |(Declaration)    : 31
       |(Definition)     : 67  88  100  128  138  151  169  182
-      |(Reference)      : 68  83  89  93  93  101  108  108  109  109  130  130  130  139  140  141  142  143  144  145  152  153  155  155  156  156  157  157  158  158  159  159  160  160  161  161  162  162  170  171  172  172  173  173  174  174  175  175  183  184  185  185  186  186
+      |(Reference)      : 68  83  89  91  91  101  108  108  109  109  130  130  130  139  140  141  142  143  144  145  152  153  155  155  156  156  157  157  158  158  159  159  160  160  161  161  162  162  170  171  172  172  173  173  174  174  175  175  183  184  185  185  186  186
      j1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
@@ -495,7 +495,7 @@
       |(Attributes)     : 
       |(Declaration)    : 31
       |(Definition)     : 66  87  101  152  170  183
-      |(Reference)      : 67  71  71  83  88  93  93  102
+      |(Reference)      : 67  71  71  83  88  91  91  102
      jlist1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
@@ -512,7 +512,7 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 80
+      |(Definition)     : 78
       |(Reference)      : 66  83  87  100
      jtmax
       |(Class and Type) : variable name, INTEGER(4)
@@ -638,8 +638,8 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 80
-      |(Reference)      : 35  39  44  80  83  93
+      |(Definition)     : 78
+      |(Reference)      : 35  39  44  78  83  91
      nxdef
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
@@ -650,7 +650,7 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 31
-      |(Definition)     : 68  89  93
+      |(Definition)     : 68  89  91
       |(Reference)      : 70  83
      paramt
       |(Class and Type) : module name
@@ -659,7 +659,7 @@
       |(Definition)     : 
       |(Reference)      : 25
      poly
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  34
       |(Definition)     : 
@@ -671,19 +671,19 @@
       |(Definition)     : 
       |(Reference)      : 23  34  35  36  39  41  42  43  44  46  47  48
      r
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  35
       |(Definition)     : 
       |(Reference)      : 71
-     rfftmlt
+     rfftmlt_sp
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 80  93
+      |(Reference)      : 78  91
      s
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  36
       |(Definition)     : 192  193
@@ -698,40 +698,40 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 80
+      |(Definition)     : 78
       |(Reference)      : 
      trigsj
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 93
+      |(Definition)     : 91
       |(Reference)      : 83
      twcc_fk
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 42
       |(Definition)     : 54  108  109  114
       |(Reference)      : 
      w
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  34
       |(Definition)     : 
       |(Reference)      : 130
      wccDIF
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 47
       |(Definition)     : 143  145
       |(Reference)      : 156  158  160  162  173  175
      wccSUM
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 46
       |(Definition)     : 142  144
       |(Reference)      : 155  157  159  161  172  174  185  186
      wcc_fk
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 41
       |(Definition)     : 114
@@ -743,7 +743,7 @@
       |(Definition)     : 
       |(Reference)      : 
      wss
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 43
       |(Definition)     : 124  125  155  156  157  158  159  160  161  162  172  173  174  175  185  186
@@ -758,6 +758,6 @@
    Procedures       : 1
    Total lines      : 199
    Total statements : 124
-   Total stack(byte): 30448
+   Total stack(byte): 30400
    Total prefetch num: 0
 

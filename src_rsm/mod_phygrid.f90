@@ -40,7 +40,9 @@
       real, dimension(:)  ,allocatable,save :: xlat
 
       real, dimension(:,:),allocatable,save :: u10,v10,t2,rh2,rh10,q2  &
-                                              ,fm,fm10,fh,fh2,srflag
+                                              ,fm,fm10,fh,fh2,srflag   &
+                                              ,ustress,vstress,ssu,ssv
+
  
       real, dimension(:,:),allocatable,save :: fpsp,fpsp1
 
@@ -140,7 +142,9 @@
            allocate (u10(nxp,my_max),v10(nxp,my_max),srflag(nxp,my_max) &
                      ,t2(nxp,my_max),rh2(nxp,my_max),rh10(nxp,my_max)   &
                      ,q2(nxp,my_max),fm(nxp,my_max),fm10(nxp,my_max)    &
-                     ,fh(nxp,my_max),fh2(nxp,my_max), stat=ierr)
+                     ,fh(nxp,my_max),fh2(nxp,my_max)                    &
+                     ,ustress(nxp,my_max),vstress(nxp,my_max)           &
+                     ,ssu(nxp,my_max),ssv(nxp,my_max), stat=ierr)
 
            if (ierr/= 0) then
                write(6,*) 'mod_phygrid : allocate fail 6 '

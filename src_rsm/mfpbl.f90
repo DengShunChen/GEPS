@@ -192,7 +192,9 @@
 !     bb2 = 2.
 !
 !  from our tuning
-      bb1 = 1.8
+!      bb1 = 1.8    !(org)
+      bb1 = 2.8     !(lin)
+
       bb2 = 3.5
 !
       do i = 1, im

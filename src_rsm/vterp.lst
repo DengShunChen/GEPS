@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:30:27 2023
+ Fujitsu Fortran Version 4.6.1  Thu Dec 28 15:29:17 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_rsm
    Source file       : vterp.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -91,124 +91,125 @@
               29                           integer   nx,my,lmaxp,lev
               30                     
               31                           real      f(nx,lmaxp,my),dout(nx*lev,my),yr(nx,lmaxp,my) &
-              32                           , yin(nx*lev,my),tensy(lmaxp)
+              32                           , yin(nx*lev,my),tensy(lmaxp),tp1(nx*lev*4)
               33                     !
               34                     !sun  include '../include/paramt.h' .. change im,lm to nx,lev
               35                     !
-              36                           real(kind=RTYPE) fxx(nx,lmaxp),fyy(nx,lmaxp),pjy(nx*lev*4),tp1(nx*lev*4)
+              36                           real(kind=RTYPE) fxx(nx,lmaxp),fyy(nx,lmaxp),pjy(nx*lev*4)
               37                     
-              38                           integer   ipt(nx*lev)
-              39                     
-              40                           integer   jym2,nxjym2,mn,j,ll,i,k,i1,i2,i3
-              41                     !
-              42                     !          compute ipt and pjy
-              43                     !
-              44                           jym2=lmaxp-2
-              45                           nxjym2=nx*jym2
-              46                           mn= nx*lev
+              38                     
+              39                           integer   ipt(nx*lev)
+              40                     
+              41                           integer   jym2,nxjym2,mn,j,ll,i,k,i1,i2,i3
+              42                     !
+              43                     !          compute ipt and pjy
+              44                     !
+              45                           jym2=lmaxp-2
+              46                           nxjym2=nx*jym2
+              47                           mn= nx*lev
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      pjy, tp1, dout
                                    <<< Loop-information  End >>>
-              47     1                     do 200 j=1,my
-              48     1               !
-              49     1                     call setupv(yr(1,1,j),yin(1,j),mn,nx,lmaxp,pjy,ipt,tp1)
-              50     1               !
-              51     1               !          compute fyy
-              52     1               !
-              53     1                     ll= nxjym2+nx
+              48     1                     do 200 j=1,my
+              49     1               !
+              50     1                     call setupv(yr(1,1,j),yin(1,j),mn,nx,lmaxp,pjy,ipt,tp1)
+              51     1               !
+              52     1               !          compute fyy
+              53     1               !
+              54     1                     ll= nxjym2+nx
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 942
+                                   <<<    Standard iteration count: 800
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 144, MVE: 4, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 4.00, ITR: 160, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      yr, fxx
                                    <<< Loop-information  End >>>
-              54     2  pp   2v            do 110 i=1,ll
-              55     2   p   2v            fxx(i,2)= yr(i,2,j)-yr(i,1,j)
-              56     2   p   2v        110 continue
-              57     1               !
+              55     2  pp   2v            do 110 i=1,ll
+              56     2   p   2v            fxx(i,2)= yr(i,2,j)-yr(i,1,j)
+              57     2   p   2v        110 continue
+              58     1               !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 373
+                                   <<<    Standard iteration count: 291
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 0.53, ITR: 24, MVE: 2, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.63, ITR: 32, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      f, fxx, fyy
                                    <<< Loop-information  End >>>
-              58     2  pp    v            do 210 i=1,nxjym2
-              59     2   p    v            fyy(i,2)= (fxx(i,3)*(f(i,1,j)-f(i,2,j))+fxx(i,2)*(f(i,3,j) &
-              60     2                      -f(i,2,j)))/(fxx(i,3)*fxx(i,3)*fxx(i,2))
-              61     2   p    v            fxx(i,2)= fxx(i,2)/fxx(i,3)
-              62     2   p    v        210 continue
-              63     1               !
-              64     1               !      call trdivv(nx,jym2,fxx(1,2),tp1,fyy(1,2))
-              65     1                     call trdivv(nx,jym2,fxx(1,2),fyy(1,2))
-              66     1               !
+              59     2  pp    v            do 210 i=1,nxjym2
+              60     2   p    v            fyy(i,2)= (fxx(i,3)*(f(i,1,j)-f(i,2,j))+fxx(i,2)*(f(i,3,j) &
+              61     2                      -f(i,2,j)))/(fxx(i,3)*fxx(i,3)*fxx(i,2))
+              62     2   p    v            fxx(i,2)= fxx(i,2)/fxx(i,3)
+              63     2   p    v        210 continue
+              64     1               !
+              65     1               !      call trdivv(nx,jym2,fxx(1,2),tp1,fyy(1,2))
+              66     1                     call trdivv(nx,jym2,fxx(1,2),fyy(1,2))
+              67     1               !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 1231
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
+                                   <<<    SIMD(VL: 16)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      fyy
                                    <<< Loop-information  End >>>
-              67     2  pp   2v            do 100 i=1,nx
-              68     2   p   2v            fyy(i,1)= 0.0
-              69     2   p   2v            fyy(i,lmaxp)=0.0
-              70     2   p   2v        100 continue
-              71     1               !
-              72     1               !  apply tension
-              73     1               !
+              68     2  pp   2v            do 100 i=1,nx
+              69     2   p   2v            fyy(i,1)= 0.0
+              70     2   p   2v            fyy(i,lmaxp)=0.0
+              71     2   p   2v        100 continue
+              72     1               !
+              73     1               !  apply tension
+              74     1               !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 4
+                                   <<<    Standard iteration count: 3
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      fyy
                                    <<< Loop-information  End >>>
-              74     2  pp                 do 5 k=1,lmaxp
+              75     2  pp                 do 5 k=1,lmaxp
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 256, MVE: 9, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 320, MVE: 11, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      fyy
                                    <<< Loop-information  End >>>
-              75     3   p   2v            do 5 i=1,nx
-              76     3   p   2v            fyy(i,k)= fyy(i,k)*tensy(k)
-              77     2   p   2v          5 continue
-              78     1               !
-              79     1                     call gathv(mn,nx,lev,ipt,fyy,f(1,1,j),tp1)
-              80     1               !
-              81     1                     i1= mn
-              82     1                     i2= mn*2
-              83     1                     i3= mn*3
+              76     3   p   2v            do 5 i=1,nx
+              77     3   p   2v            fyy(i,k)= fyy(i,k)*tensy(k)
+              78     2   p   2v          5 continue
+              79     1               !
+              80     1                     call gathv(mn,nx,lev,ipt,fyy,f(1,1,j),tp1)
+              81     1               !
+              82     1                     i1= mn
+              83     1                     i2= mn*2
+              84     1                     i3= mn*3
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 341
+                                   <<<    Standard iteration count: 272
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.87, ITR: 64, MVE: 2, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.70, ITR: 56, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tp1, pjy, dout
                                    <<< Loop-information  End >>>
-              84     2  pp    v            do 130 i=1,mn
-              85     2   p    v            dout(i,j)=tp1(i)*pjy(i)+tp1(i+i1)*pjy(i+i1)+tp1(i+i2)*pjy(i+i2) &
-              86     2                      +tp1(i+i3)*pjy(i+i3)
-              87     2   p    v        130 continue
-              88     1                 200 continue
-              89                           return
-              90                           end
+              85     2  pp    v            do 130 i=1,mn
+              86     2   p    v            dout(i,j)=tp1(i)*pjy(i)+tp1(i+i1)*pjy(i+i1)+tp1(i+i2)*pjy(i+i2) &
+              87     2                      +tp1(i+i3)*pjy(i+i3)
+              88     2   p    v        130 continue
+              89     1                 200 continue
+              90                           return
+              91                           end
 
  Procedure information
-   Lines      : 90
+   Lines      : 91
    Statements : 40
-   Stack(byte): 1632
+   Stack(byte): 1648
    Prefetch num: 0
 
  Scoping unit of external sub-program : vterp
@@ -223,128 +224,128 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  31
-      |(Definition)     : 85
+      |(Definition)     : 86
       |(Reference)      : 
      f
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  31
-      |(Definition)     : 79
-      |(Reference)      : 59  59  59  59
+      |(Definition)     : 80
+      |(Reference)      : 60  60  60  60
      fxx
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 36
-      |(Definition)     : 55  61  65
-      |(Reference)      : 59  59  59  59  59  61  61
+      |(Definition)     : 56  62  66
+      |(Reference)      : 60  60  60  60  60  62  62
      fyy
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 36
-      |(Definition)     : 59  65  68  69  76  79
-      |(Reference)      : 76
+      |(Definition)     : 60  66  69  70  77  80
+      |(Reference)      : 77
      gathv
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 79
+      |(Reference)      : 80
      i
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 40
-      |(Definition)     : 54  58  67  75  84
-      |(Reference)      : 55  55  55  59  59  59  59  59  59  59  59  59  59  61  61  61  68  69  76  76  85  85  85  85  85  85  85  85  85
+      |(Declaration)    : 41
+      |(Definition)     : 55  59  68  76  85
+      |(Reference)      : 56  56  56  60  60  60  60  60  60  60  60  60  60  62  62  62  69  70  77  77  86  86  86  86  86  86  86  86  86
      i1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 40
-      |(Definition)     : 81
-      |(Reference)      : 85  85
+      |(Declaration)    : 41
+      |(Definition)     : 82
+      |(Reference)      : 86  86
      i2
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 40
-      |(Definition)     : 82
-      |(Reference)      : 85  85
+      |(Declaration)    : 41
+      |(Definition)     : 83
+      |(Reference)      : 86  86
      i3
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 40
-      |(Definition)     : 83
-      |(Reference)      : 85  85
+      |(Declaration)    : 41
+      |(Definition)     : 84
+      |(Reference)      : 86  86
      ipt
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 38
-      |(Definition)     : 49  79
+      |(Declaration)    : 39
+      |(Definition)     : 50  80
       |(Reference)      : 
      j
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 40
-      |(Definition)     : 47
-      |(Reference)      : 49  49  55  55  59  59  59  59  79  85
+      |(Declaration)    : 41
+      |(Definition)     : 48
+      |(Reference)      : 50  50  56  56  60  60  60  60  80  86
      jym2
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 40
-      |(Definition)     : 44  65
-      |(Reference)      : 45
+      |(Declaration)    : 41
+      |(Definition)     : 45  66
+      |(Reference)      : 46
      k
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 40
-      |(Definition)     : 74
-      |(Reference)      : 76  76  76
+      |(Declaration)    : 41
+      |(Definition)     : 75
+      |(Reference)      : 77  77  77
      lev
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  29
-      |(Definition)     : 79
-      |(Reference)      : 31  31  36  36  38  46
+      |(Definition)     : 80
+      |(Reference)      : 31  31  31  36  39  47
      ll
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 40
-      |(Definition)     : 53
-      |(Reference)      : 54
+      |(Declaration)    : 41
+      |(Definition)     : 54
+      |(Reference)      : 55
      lmaxp
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  29
-      |(Definition)     : 49
-      |(Reference)      : 31  31  31  36  36  44  69  74
+      |(Definition)     : 50
+      |(Reference)      : 31  31  31  36  36  45  70  75
      mn
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 40
-      |(Definition)     : 46  49  79
-      |(Reference)      : 81  82  83  84
+      |(Declaration)    : 41
+      |(Definition)     : 47  50  80
+      |(Reference)      : 82  83  84  85
      my
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  29
       |(Definition)     : 
-      |(Reference)      : 31  31  31  31  47
+      |(Reference)      : 31  31  31  31  48
      nx
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  29
-      |(Definition)     : 49  65  79
-      |(Reference)      : 31  31  31  31  36  36  36  36  38  45  46  53  67  75
+      |(Definition)     : 50  66  80
+      |(Reference)      : 31  31  31  31  31  36  36  36  39  46  47  54  68  76
      nxjym2
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 40
-      |(Definition)     : 45
-      |(Reference)      : 53  58
+      |(Declaration)    : 41
+      |(Definition)     : 46
+      |(Reference)      : 54  59
      pjy
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 36
-      |(Definition)     : 49
-      |(Reference)      : 85  85  85  85
+      |(Definition)     : 50
+      |(Reference)      : 86  86  86  86
      RTYPE
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : use-associated
@@ -356,25 +357,25 @@
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 49
+      |(Reference)      : 50
      tensy
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  31
       |(Definition)     : 
-      |(Reference)      : 76
+      |(Reference)      : 77
      tp1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 36
-      |(Definition)     : 49  79
-      |(Reference)      : 85  85  85  85
+      |(Declaration)    : 31
+      |(Definition)     : 50  80
+      |(Reference)      : 86  86  86  86
      trdivv
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 65
+      |(Reference)      : 66
      vterp
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
@@ -385,34 +386,34 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  31
-      |(Definition)     : 49
+      |(Definition)     : 50
       |(Reference)      : 
      yr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  31
-      |(Definition)     : 49
-      |(Reference)      : 55  55
+      |(Definition)     : 50
+      |(Reference)      : 56  56
    Cross reference of label
      (Label) (label-kind)               (line-no.)
      ------- ------------- ------------ ----------
-          5  execution     (Definition) 77  
-                           (Reference)  74  75
-        100  execution     (Definition) 70  
-                           (Reference)  67
-        110  execution     (Definition) 56  
-                           (Reference)  54
-        130  execution     (Definition) 87  
-                           (Reference)  84
-        200  execution     (Definition) 88  
-                           (Reference)  47
-        210  execution     (Definition) 62  
-                           (Reference)  58
+          5  execution     (Definition) 78  
+                           (Reference)  75  76
+        100  execution     (Definition) 71  
+                           (Reference)  68
+        110  execution     (Definition) 57  
+                           (Reference)  55
+        130  execution     (Definition) 88  
+                           (Reference)  85
+        200  execution     (Definition) 89  
+                           (Reference)  48
+        210  execution     (Definition) 63  
+                           (Reference)  59
 
  Total information
    Procedures       : 1
-   Total lines      : 90
+   Total lines      : 91
    Total statements : 40
-   Total stack(byte): 1632
+   Total stack(byte): 1648
    Total prefetch num: 0
 

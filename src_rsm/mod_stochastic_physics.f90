@@ -1,16 +1,17 @@
 module mod_stochastic_physics
-  use mpe, only : mpe_bcast, mpe_double
+  use mpe, only : mpe_bcast, mpe_double, mpe_integer
   use rank, only : myrank
   use index
   use param
-  use const, only : aki, bki, first_call, dosppt, doshum, doskeb, dossst ,poly, RTYPE
+  use const, only : aki, bki, first_call, dosppt, doshum, doskeb, dossst, &
+                    poly, dpoly, wdfac, wcfac, onocos, radsq, weight, RTYPE 
   use mersenne_twister, only: random_setseed,random_gauss,random_stat
   implicit none
   private 
 
   type random_pattern
-    real, allocatable :: n2du(:,:,:)
-    real, allocatable :: n2dv(:,:,:)
+    real(kind=RTYPE), allocatable :: n2du(:,:,:)
+    real(kind=RTYPE), allocatable :: n2dv(:,:,:)
     real(kind=RTYPE), allocatable :: n2d(:,:)
     real, allocatable :: kenorm(:,:)
     real(kind=RTYPE), allocatable :: spec(:,:)
@@ -28,7 +29,7 @@ module mod_stochastic_physics
     integer, public :: seed
   end type random_pattern
 
-  integer :: recn=1
+  integer,save :: recnsppt=1, recnskeb=1
   real ::  dt
   logical, public :: ncep_seeds=.false.
   real,allocatable :: sl(:)
@@ -101,7 +102,7 @@ module mod_stochastic_physics
            run_stochastic_physics, &
        destroy_stochastic_physics
 
-  public spptout,skebout
+  public spptout,skebout,skebest
   public avevar_sppt2d
 
 contains
@@ -265,8 +266,9 @@ contains
     endif
 
     do k=1,lev
-      if (myrank == 0) print *,'mod_stochastic_physics : k,sl,vfact_sppt',k,sl(k),vfact_sppt(k)
+      if (myrank == 0) print 301,'mod_stochastic_physics : k,sl,vfact_sppt',k,sl(k),vfact_sppt(k)
     enddo
+    301 format ( A , I4 , 2F20.12 )
 
   end subroutine init_sppt
 
@@ -306,8 +308,9 @@ contains
          if (sl(k).LT. 2*shum_sigefold) then
             vfact_shum(k)=0.0
          endif
-        if (myrank == 0) print *,'mod_stochastic_physics : k,sl,vfact_shum',k,sl(k),vfact_shum(k)
+        if (myrank == 0) print 301,'mod_stochastic_physics : k,sl,vfact_shum',k,sl(k),vfact_shum(k)
       enddo
+    301 format ( A , I4 , 2F20.12 )
   end subroutine init_shum
 
   subroutine init_skeb(dtau)
@@ -378,8 +381,9 @@ contains
     enddo
 
     do k=1,lev
-      if (myrank == 0) print *,'mod_stochastic_physics : k,sl,vfact_skeb',k,sl(k),vfact_skeb(k)
+      if (myrank == 0) print 301,'mod_stochastic_physics : k,sl,vfact_skeb',k,sl(k),vfact_skeb(k)
     enddo
+    301 format ( A , I4 , 2F20.12 )
     ! calculate vertical interpolation weights
     do k=1,skeblevs
       skeb_vloc(k)=sl(lev)-real(skeblevs-k)/real(skeblevs-1.0)*(sl(lev)-sl(1))
@@ -400,13 +404,13 @@ contains
       enddo
     enddo
     deallocate(skeb_vloc)
+    skeb_vwts(:,1)=1.0-skeb_vwts(:,2)
+    skeb_vpts(:,2)=skeb_vpts(:,1)+1
     if (myrank .eq. 0) then
       do k=1,lev
         print*,'skeb vpts ',skeb_vpts(k,1),skeb_vwts(k,2)
       enddo
     endif
-    skeb_vwts(:,1)=1.0-skeb_vwts(:,2)
-    skeb_vpts(:,2)=skeb_vpts(:,1)+1
 
   end subroutine init_skeb
 
@@ -488,6 +492,8 @@ contains
         allocate(rpattern(n)%n2du(nxp,my_max,skeblevs))
         allocate(rpattern(n)%n2dv(nxp,my_max,skeblevs))
         allocate(rpattern(n)%kenorm(rpattern(n)%mlmax,2))
+        rpattern(n)%n2du(:,:,:)=0.0
+        rpattern(n)%n2dv(:,:,:)=0.0
       endif
       allocate(rpattern(n)%spec(rpattern(n)%mlmax,2))
       allocate(rpattern(n)%varspec(rpattern(n)%mlmax))
@@ -509,7 +515,8 @@ contains
           count4 = count - count_trunc
         endif
       endif
-      call mpe_bcast(count4,1,0,mpe_double) 
+!     call mpe_bcast(count4,1,0,mpe_double) 
+      call mpe_bcast(count4,1,0,mpe_integer)
       if (rpattern(n)%seed == -999 ) then
         rpattern(n)%seed = count4
       endif
@@ -700,7 +707,8 @@ contains
     integer, intent(in) :: nscale
     real, intent(in) :: vfact(nlev) 
     type(random_pattern), intent(inout) :: rpattern(nscale)
-    real(kind=RTYPE), intent(  out) :: n3du(nxp,nlev,my_max),n3dv(nxp,nlev,my_max) 
+    real(kind=RTYPE), intent(  out) :: n3du(nxp,nlev,my_max),n3dv(nxp,nlev,my_max)
+
  
     n3du = 0.
     n3dv = 0.
@@ -751,7 +759,6 @@ contains
 
   subroutine gen_random_pattern_2d(rpattern)
 
-    use const, only : poly ,RTYPE
     implicit none
     type(random_pattern), intent(inout) :: rpattern
     !real(kind=RTYPE), intent(out) :: sppt2d(nxp,my_max)
@@ -793,11 +800,11 @@ contains
   end subroutine gen_random_pattern_2d
 
   subroutine gen_random_pattern_2d_vect(rpattern,k)
-    use const, only : poly, dpoly, wdfac, wcfac, onocos,RTYPE 
+
     implicit none
     type(random_pattern), intent(inout) :: rpattern
     integer :: ml, ns, ms, k
-    real, allocatable ::            specpv(:,:,:),specpd(:,:,:)
+    real(kind=RTYPE), allocatable :: specpv(:,:,:),specpd(:,:,:)
     real(kind=RTYPE), allocatable :: bufr2d(:,:,:) ,noise(:,:) ,specf(:,:)
 
     allocate(bufr2d(jtrun,jtmax*nsizey,2)) 
@@ -843,62 +850,6 @@ contains
     deallocate(specpv)
 
   end subroutine gen_random_pattern_2d_vect
-
-  subroutine get_legendre_poly(mlmax,jtrun,poly)
-    implicit none
-    integer, intent(in) :: mlmax,jtrun
-    real(kind=RTYPE),intent(out)   ::  poly(mlmax,my/2) 
-
-    !   Spheric Harmonic Constants
-    integer ::  msort(mlmax),lsort(mlmax),mlsort(mlmax,jtrun)
-    real(kind=RTYPE) :: dpoly(mlmax,my/2),eps4(mlmax),cim(mlmax)
-    real(kind=RTYPE) :: cosl(my),onocos(my)
-    real(kind=RTYPE) :: weight(my),sinl(my)
-    real :: cp,capa,rgas,pi,radsq,rad,one,onem,irad
-    integer :: rl,rm,rlm,ml
-    integer :: j,my2
-
-    !   prepare spheric harmonic coefficients
-    cp=1004.24
-    capa= 1.0/3.5
-    rgas= capa*cp
-    pi  = 4.0*atan(1.0)
-    rad = 6.371e6
-    radsq= rad*rad
-! 
-!   build pointer arrays for locating zonal and total wavenumber
-!   values in the one-dimensional spherical harmonic arrays.
-    call sortml (jtrun,mlmax,msort,lsort,mlsort)
-! 
-    do ml = 1, mlmax
-      rl = lsort(ml)
-      rm = msort(ml)-1
-      rlm= rl-1.0
-      if (msort(ml).eq.1)  rm= 0.0
-      if (lsort(ml).eq.1)  rlm= 0.0
-      eps4(ml)= rl*rlm/radsq
-      cim(ml)= rm
-    enddo
- 
-!   gaussian quadrature weights and latitudes
-    one = 1.0
-    onem= -one
-    call gausl3 (my,onem,one,weight,sinl)
-! 
-    my2= my/2
-    do j = 1, my2
-      sinl(my+1-j)  = -sinl(j)
-      weight(my+1-j)= weight(j)
-      onocos(j)     = 1.0/(1.0-sinl(j)*sinl(j))
-      onocos(my+1-j)= onocos(j)
-      cosl(j)       = 1.0/sqrt(onocos(j))
-      cosl(my+1-j)  = cosl(j)
-    enddo
-! 
-!   define associated legendre polynomials and their derivatives 
-    call lgndr_sppt(my2,jtrun,mlmax,mlsort,sinl,poly,dpoly)
-
-  end subroutine get_legendre_poly  
 
   SUBROUTINE avevar_sppt(data,n,ave,var,std)
       INTEGER n
@@ -954,248 +905,7 @@ contains
     var=(var-ep**2/nmdim)/nmdim
     std=sqrt(var) 
   end SUBROUTINE avevar_sppt2d
-
-  subroutine removegt2std(scaleval,nx,my,aves,stds)
-    integer i,j,nx,my
-    real scaleval(nx,my),aves,stds
-    real vcheck2p,vcheck2n
-
-    vcheck2p=2.0*stds
-    vcheck2n=-2.0*stds
-    do j=1,my
-    do i=1,nx
-      if ((scaleval(i,j)-aves).gt.vcheck2p) scaleval(i,j)=vcheck2p
-      if ((scaleval(i,j)-aves).lt.vcheck2n) scaleval(i,j)=vcheck2n 
-    enddo
-    enddo
-  end subroutine removegt2std
-
-  subroutine removegt3std(scaleval,nx,my,aves,stds)
-    integer i,j,nx,my
-    real scaleval(nx,my),aves,stds
-    real vcheck3p,vcheck3n
-
-    vcheck3p=3.0*stds
-    vcheck3n=-3.0*stds
-
-    do j=1,my
-    do i=1,nx
-      if ((scaleval(i,j)-aves).gt.vcheck3p) scaleval(i,j)=vcheck3p
-      if ((scaleval(i,j)-aves).lt.vcheck3n) scaleval(i,j)=vcheck3n 
-    enddo
-    enddo    
-  end subroutine removegt3std
-
-  subroutine lgndr_sppt(my2,jtrun,mlmax,mlsort,sinl,poly,dpoly)
-! 
-!   generate legendre polynomials and their derivatives on the
-!   gaussian latitudes
-! 
-!  ***input***
-! 
-!   my2:  number of gaussian latitudes from south pole and equator
-!   jtrun:  zonal wavenumber truncation limit
-!   mlmax: total number of triangular truncation spherical harmonics
-!   mlsort: pointer array of 1-d indexs at functions of zonal and
-!           total wavenumbers
-!   sinl: sin of gaussian latitudes
-! 
-!   ***output***
-! 
-!   poly: associated legendre coefficients
-!   dpoly: d(poly)/d(sinl)
-! 
-!  ******************************************************************
-! 
-!  ref= belousov, s. l., 1962= tables of normalized associated
-!         legendre polynomials. pergamon press, new york
-! 
-      integer :: j, n, np, kp, k, mp, m, nps, l, ml, m1, mk
-      integer :: my2, jtrun, mlmax, jtrunp
-      real(kind=RTYPE) :: poly(mlmax,my2),dpoly(mlmax,my2),sinl(my2)
-      integer :: mlsort(jtrun,jtrun)
-! 
-!       parameter (jtrunx= 100)
-      real :: pnm(jtrun+1,jtrun+1),dpnm(jtrun+1,jtrun+1)
-      real :: xx, sn, sn2i, rt2, c1, fn, fn2, fn2s, c3, s1, s2, c4, c5, c6, cf
-      real :: a, b, fk, fm, fm1, fm2, fm3, c7, c8, c, d, e, fms, fnp, fnp2
-      real :: theta, ang
-! 
-!  sinl is sin(latitude) = cos(colatitude)
-!  pnm(np,mp) is legendre polynomial p(n,m) with np=n+1, mp=m+1
-!  pnm(mp,np+1) is x derivative of p(n,m) with np=n+1, mp=m+1
-! 
-      jtrunp= jtrun+1
-      do 1001 j=1,my2
-      xx= sinl(j)
-      sn= sqrt(1.0-xx*xx)
-  sn2i = 1.0/(1.0 - xx*xx)
-      rt2= sqrt(2.0)
-  c1 = rt2
-! 
-  pnm(1,1) = 1.0/rt2
-      theta=-atan(xx/sqrt(1.0-xx*xx))+2.0*atan(1.0)
-! 
-      do 20 n=1,jtrun
-  np = n + 1
-      fn=n
-  fn2 = fn + fn
-  fn2s = fn2*fn2
-!  eq 22
-      c1= c1*sqrt(1.0-1.0/fn2s)
-      c3= c1/sqrt(fn*(fn+1.0))
-  ang = fn*theta
-  s1 = 0.0
-  s2 = 0.0
-  c4 = 1.0
-  c5 = fn
-  a = -1.0
-  b = 0.0
-! 
-      do 27 kp=1,np,2
-  k = kp - 1
-      s2= s2+c5*sin(ang)*c4
-      if (k.eq.n) c4 = 0.5*c4
-      s1= s1+c4*cos(ang)
-  a = a + 2.0
-  b = b + 1.0
-      fk=k
-  ang = theta*(fn - fk - 2.0)
-  c4 = (a*(fn - b + 1.0)/(b*(fn2 - a)))*c4
-  c5 = c5 - 2.0
-   27 continue
-!  eq 19
-  pnm(np,1) = s1*c1
-!  eq 21
-  pnm(np,2) = s2*c3
-   20 continue
-! 
-      do 4 mp=3,jtrunp
-  m = mp - 1
-      fm= m
-  fm1 = fm - 1.0
-  fm2 = fm - 2.0
-  fm3 = fm - 3.0
-      c6= sqrt(1.0+1.0/(fm+fm))
-!  eq 23
-  pnm(mp,mp) = c6*sn*pnm(m,m)
-      if (mp - jtrunp) 3,4,4
-    3 continue
-  nps = mp + 1
-! 
-      do 41 np=nps,jtrunp
-  n = np - 1
-      fn= n
-  fn2 = fn + fn
-  c7 = (fn2 + 1.0)/(fn2 - 1.0)
-  c8 = (fm1 + fn)/((fm + fn)*(fm2 + fn))
-      c= sqrt((fn2+1.0)*c8*(fm3+fn)/(fn2-3.0))
-      d= -sqrt(c7*c8*(fn-fm1))
-      e= sqrt(c7*(fn-fm)/(fn+fm))
-!  eq 17
-  pnm(np,mp) = c*pnm(np-2,mp-2) &
-                 + xx*(d*pnm(np-1,mp-2) + e*pnm(np - 1,mp))
-   41 continue
-    4 continue
-! 
-      do 50 mp=1,jtrun
-      fm= mp-1.0
-  fms = fm*fm
-      do 50 np=mp,jtrun
-      fnp= np
-  fnp2 = fnp + fnp
-  cf = (fnp*fnp - fms)*(fnp2 - 1.0)/(fnp2 + 1.0)
-      cf= sqrt(cf)
-!  der
-      dpnm(np,mp)   = -sn2i*(cf*pnm(np+1,mp) - fnp*xx*pnm(np,mp))
-   50 continue
-! 
-      do 71 m=1,jtrun
-      do 71 l=m,jtrun
-      ml= mlsort(m,l)
-      poly(ml,j)= pnm(l,m)
-      dpoly(ml,j)=dpnm(l,m)
-   71 continue
-      dpoly(1,j)= 0.0
- 1001 continue
-      
-  end subroutine lgndr_sppt
-
-  subroutine transr_sppt (jtrun,mlmax,nx,my,ll,poly,s,r)
-!   subroutine to transform a spectral coefficient field to
-!   grid point form
-! 
-!  *** const ***
-! 
-!   jtrun: zonal wavenumber resolution limit
-!   mlmax: number of spectral coefficients (horizontal field)
-!   nx: e-w dimension no.
-!   my: n-s dimension no.
-!   ll: number of levels to transform
-!   poly: legendre polynomials
-! 
-!  *** input variable ***
-! 
-!   s: spectral coefficient array to transform
-! 
-!  *** output variable ***
-! 
-!   r: 3-d output grid point fields
-! 
-!   **************************************
-
-      use fftcom  
-      real :: poly(mlmax,my/2),s(mlmax,2,ll),r(nx,ll,my)
-      real :: cc(nx+2,my),work(nx*my,2)
-      integer :: mlmax,my,nx,ll,jtrun
-      integer :: mlx,i,k,m,j,jj,ml,mm,mp
-      integer :: m1, l, mk, n
-
-      mlx= (jtrun/2)*((jtrun+1)/2)
-      do k=1,ll
-        do m=1,(nx+2)*my/2
-          cc(m,1)= 0.0
-          cc(m,my/2+1)= 0.0
-        enddo
-        do j=1,my/2
-          jj = my+1-j
-          ml = 2*mlx
-          do m=2,jtrun,2
-            ml = ml+1
-            mm = 2*m-1
-            mp = mm+1
-            cc(mm,j ) = poly(ml,j)*s(ml,1,k)
-            cc(mp,j ) = poly(ml,j)*s(ml,2,k)
-            cc(mm,jj) = cc(mm,j)
-            cc(mp,jj) = cc(mp,j)
-          enddo
-
-          m1= 0
-          do l=jtrun-1,1,-2
-            do m=1,l
-              mm = 2*m-1
-              mp = mm+1
-              ml = m+m1
-              mk = ml+mlx
-              cc(mm,j ) = cc(mm,j ) + poly(ml,j)*s(ml,1,k) + poly(mk,j)*s(mk,1,k)
-              cc(mm,jj) = cc(mm,jj) + poly(ml,j)*s(ml,1,k) - poly(mk,j)*s(mk,1,k)
-              cc(mp,j ) = cc(mp,j ) + poly(ml,j)*s(ml,2,k) + poly(mk,j)*s(mk,2,k)
-              cc(mp,jj) = cc(mp,jj) + poly(ml,j)*s(ml,2,k) - poly(mk,j)*s(mk,2,k)
-            enddo
-            m1= m1+l
-          enddo
-        enddo
-!       call fft991(cc,work,trigs,ifax,1,nx+3,nx,my,1)
-        call rfftmlt(cc,work,trigs,ifax,1,nx+2,nx,my,1)
-        do j=1,my
-          do i=1,nx
-            r(i,k,j)= cc(i,j)
-          enddo
-        enddo
-      enddo
-      
-  end subroutine transr_sppt
-
+!
   subroutine spptout(tau)
     implicit none
     integer      :: i, j, k, jj, nxj, ihead, n
@@ -1214,8 +924,8 @@ contains
       call unify_reduceintp(nx,my,my_max,rpattern_sppt(n)%n2d,glob)   
       if ( myrank .eq. 0 ) then
         glob4=glob
-        write(ihead,rec=recn) glob4
-        recn=recn+1
+        write(ihead,rec=recnsppt) glob4
+        recnsppt=recnsppt+1
       endif
     enddo
     do k=lev,1,-1
@@ -1229,8 +939,8 @@ contains
       call unify_reduceintp(nx,my,my_max,temp,glob)   
       if ( myrank.eq.0 ) then
         glob4=glob
-        write(ihead,rec=recn) glob4
-        recn=recn+1
+        write(ihead,rec=recnsppt) glob4
+        recnsppt=recnsppt+1
       endif
     enddo
 
@@ -1241,13 +951,63 @@ contains
  
   end subroutine spptout
 !----
+  subroutine skebest(um,vm)
+    use grid,  only : ut,vt
+    implicit none
+
+    integer :: n, ii, i, jj, j, k, nxj
+    real    :: xx
+    real(kind=RTYPE) :: spectmp(levp,2,jtrun,jtmax),                 &
+                        cc(nx+2,levp,1,my_max),                      &
+                        um(nxp,lev,my_max),vm(nxp,lev,my_max),       &
+                        dummy
+
+    ! estimate the dissipation of kinectic energy for SKEB
+        do jj =1,jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          do k=1,lev
+            do i=1,nxj
+              diss_est(i,k,jj)=(um(i,k,jj)*ut(i,k,jj)                &
+                               +vm(i,k,jj)*vt(i,k,jj))               &
+                               +0.5*(um(i,k,jj)**2.+vm(i,k,jj)**2.)
+            enddo
+          enddo
+        enddo
+        call joinrs(cc,diss_est,dummy,dummy,dummy,nx,my_max,lev      &
+                   ,jlistnum,1,1)
+        call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc     &
+                   ,spectmp,1,nsizey)
+        ! apply spectral filter of the dissipation of kinetic energy
+        call filter_skeb(jtrun,jtmax,levp,spectmp,skebfilt)
+        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,spectmp,cc,1,nsizey)
+        call ujoinsr(cc,diss_est,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+!
+!        if ( myrank .eq. 0 ) print *,'intgrt: diss_est(1,72,1)=',diss_est(1,72,1)
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          xx=radsq*onocos(j)
+          do k = 1, lev
+            do i = 1, nxj
+              keb(i,k,jj)=0.5*(ut(i,k,jj)**2.+vt(i,k,jj)**2.)*xx
+              ut(i,k,jj)=ut(i,k,jj)+skeb3du(i,k,jj)*diss_est(i,k,jj)
+              vt(i,k,jj)=vt(i,k,jj)+skeb3dv(i,k,jj)*diss_est(i,k,jj)
+              kea(i,k,jj)=0.5*(ut(i,k,jj)**2.+vt(i,k,jj)**2.)*xx
+            enddo
+          enddo
+        enddo
+!        if ( myrank .eq. 0 ) print *,'intgrt: keb(1,72,1)=',keb(1,72,1)
+!        if ( myrank .eq. 0 ) print *,'intgrt: kea(1,72,1)=',kea(1,72,1)
+
+  end subroutine skebest
+!----
   subroutine skebout(tau)
-    use const, only : radsq,onocos
     implicit none
     integer      :: i, j, k, jj, nxj, ihead, n
     integer      :: nxmy4
     real         :: tau,xx
-    real         :: glob(nx,my),temp(nxp,my_max)
+    real(kind=RTYPE):: glob(nx,my),temp(nxp,my_max)
     real(kind=4) :: glob4(nx,my)
 
 
@@ -1268,8 +1028,8 @@ contains
       call unify_reduceintp(nx,my,my_max,temp,glob)   
       if ( myrank.eq.0 ) then
         glob4=glob
-        write(ihead,rec=recn) glob4
-        recn=recn+1
+        write(ihead,rec=recnskeb) glob4
+        recnskeb=recnskeb+1
       endif
     enddo
 
@@ -1284,8 +1044,8 @@ contains
       call unify_reduceintp(nx,my,my_max,temp,glob)
       if ( myrank.eq.0 ) then
         glob4=glob
-        write(ihead,rec=recn) glob4
-        recn=recn+1
+        write(ihead,rec=recnskeb) glob4
+        recnskeb=recnskeb+1
       endif
     enddo
 
@@ -1301,8 +1061,8 @@ contains
       call unify_reduceintp(nx,my,my_max,temp,glob)
       if ( myrank.eq.0 ) then
         glob4=glob
-        write(ihead,rec=recn) glob4
-        recn=recn+1
+        write(ihead,rec=recnskeb) glob4
+        recnskeb=recnskeb+1
       endif
     enddo
 
@@ -1317,8 +1077,8 @@ contains
       call unify_reduceintp(nx,my,my_max,temp,glob)
       if ( myrank.eq.0 ) then
         glob4=glob
-        write(ihead,rec=recn) glob4
-        recn=recn+1
+        write(ihead,rec=recnskeb) glob4
+        recnskeb=recnskeb+1
       endif
     enddo
 
@@ -1333,8 +1093,8 @@ contains
       call unify_reduceintp(nx,my,my_max,temp,glob)
       if ( myrank.eq.0 ) then
         glob4=glob
-        write(ihead,rec=recn) glob4
-        recn=recn+1
+        write(ihead,rec=recnskeb) glob4
+        recnskeb=recnskeb+1
       endif
     enddo
 

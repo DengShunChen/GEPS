@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:30:16 2023
+ Fujitsu Fortran Version 4.6.1  Thu Dec 28 15:30:00 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_rsm
    Source file       : cwb.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -Knosimd -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -22,7 +22,7 @@
                           -Kloop_fission -Kloop_nofission_stripmining
                           -Kloop_fission_threshold=50 -Kloop_fusion
                           -Kloop_interchange -Kloop_part_parallel
-                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_nopart_simd -Kloop_perfect_nest
                           -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
                           -Komitfp -Knooptlib_string -Koptmsg=2
                           -Knopc_relative_literal_loads -Kplt -Knopreex
@@ -30,11 +30,11 @@
                           -Kprefetch_sequential=auto -Kprefetch_nostride
                           -Kprefetch_cache_level=all -Kprefetch_noinfer
                           -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
-                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
-                          -Ksimd=auto -Ksimd_packed_promotion
-                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls -Knosimd
+                          -Ksimd_nopacked_promotion
+                          -Ksimd_noreduction_product -Ksimd_reg_size=512
                           -Ksimd_nouncounted_loop
-                          -Ksimd_use_multiple_structures -Knostriping
+                          -Ksimd_nouse_multiple_structures -Knostriping
                           -Knosubscript_opt -Kswp -Kswp_freg_rate=100
                           -Kswp_ireg_rate=100 -Kswp_preg_rate=100
                           -Kswp_policy=auto -Ktemparraystack -Kunroll
@@ -62,51 +62,52 @@
   (inc)(line-no.)(nest)(optimize)
                1                           subroutine sendmsg(str_model,i_fromtau,i_totau,i_status)
                2                     
-               3                           character*3 str_model
-               4                           character tauchk*10
-               5                     
-               6                           i_status=-1
-               7                     
-               8                           tauchk='zzz.tauchk'
-               9                     
-              10                           write(tauchk(1:3),'(a3)')str_model
-              11                     
-              12                           open(1,file=tauchk,form='formatted',status='unknown', &
-              13                                position='append')
-              14                           write(1,'(i4.4,x,i4.4)')i_fromtau,i_totau
-              15                           close(1)
-              16                     
-              17                           i_status=0
-              18                     
-              19                           return
-              20                           end
+               3                           integer i_fromtau,i_totau,i_status
+               4                           character*3 str_model
+               5                           character tauchk*10
+               6                     
+               7                           i_status=-1
+               8                     
+               9                           tauchk='zzz.tauchk'
+              10                     
+              11                           write(tauchk(1:3),'(a3)')str_model
+              12                     
+              13                           open(1,file=tauchk,form='formatted',status='unknown', &
+              14                                position='append')
+              15                           write(1,'(i4.4,x,i4.4)')i_fromtau,i_totau
+              16                           close(1)
+              17                     
+              18                           i_status=0
+              19                     
+              20                           return
+              21                           end
 
  Procedure information
-   Lines      : 20
-   Statements : 12
+   Lines      : 21
+   Statements : 13
    Stack(byte): 1104
    Prefetch num: 0
 
  Scoping unit of external sub-program : sendmsg
    Attribute and Cross reference of name
      i_fromtau
-      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1
+      |(Declaration)    : 1  3
       |(Definition)     : 
-      |(Reference)      : 14
+      |(Reference)      : 15
      i_status
-      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1
-      |(Definition)     : 6  17
+      |(Declaration)    : 1  3
+      |(Definition)     : 7  18
       |(Reference)      : 
      i_totau
-      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1
+      |(Declaration)    : 1  3
       |(Definition)     : 
-      |(Reference)      : 14
+      |(Reference)      : 15
      sendmsg
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
@@ -116,45 +117,45 @@
      str_model
       |(Class and Type) : variable name, CHARACTER(3,1)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  3
+      |(Declaration)    : 1  4
       |(Definition)     : 
-      |(Reference)      : 10
+      |(Reference)      : 11
      tauchk
       |(Class and Type) : variable name, CHARACTER(10,1)
       |(Attributes)     : 
-      |(Declaration)    : 4
-      |(Definition)     : 8  10
-      |(Reference)      : 12
+      |(Declaration)    : 5
+      |(Definition)     : 9  11
+      |(Reference)      : 13
 
  External subroutine subprogram "recmsg"
   (inc)(line-no.)(nest)(optimize)
-              21                     
-              22                     !----------------------------------------------------------------------
-              23                           subroutine recmsg(model,ifrom,ito,istatus)
-              24                           character*3 model
-              25                     
-              26                           integer tau(512),cnt,ip
-              27                           save    tau,cnt,ip
-              28                     
-              29                           istatus=0
-              30     1                     if(ip.eq.0)then
-              31     1                       open(1,file=model//'ctl',form='formatted',status='old')
-              32     2        s              do i=1,512
-              33     2        s                 read(1,'(I4)',end=100)tau(i)
-              34     2        s                 cnt=cnt+1
-              35     2        s              enddo
-              36     1               100     close(1)
-              37     1                       ip=1
-              38     1                     endif
-              39     1                     if(ip.ge.cnt) then
-              40     1                       istatus=1
-              41     1                       return
-              42     1                     endif
-              43                           ifrom=tau(ip)
-              44                           ip=ip+1
-              45                           ito=tau(ip)
-              46                           return
-              47                           end
+              22                     
+              23                     !----------------------------------------------------------------------
+              24                           subroutine recmsg(model,ifrom,ito,istatus)
+              25                           character*3 model
+              26                     
+              27                           integer tau(9999),cnt,ip,istatus,ifrom,ito
+              28                           save    tau,cnt,ip
+              29                     
+              30                           istatus=0
+              31     1                     if(ip.eq.0)then
+              32     1                       open(1,file=model//'ctl',form='formatted',status='old')
+              33     2                       do i=1,9999
+              34     2                          read(1,'(I4)',end=100)tau(i)
+              35     2                          cnt=cnt+1
+              36     2                       enddo
+              37     1               100     close(1)
+              38     1                       ip=1
+              39     1                     endif
+              40     1                     if(ip.ge.cnt) then
+              41     1                       istatus=1
+              42     1                       return
+              43     1                     endif
+              44                           ifrom=tau(ip)
+              45                           ip=ip+1
+              46                           ito=tau(ip)
+              47                           return
+              48                           end
 
  Procedure information
    Lines      : 27
@@ -167,139 +168,139 @@
      cnt
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE
-      |(Declaration)    : 26  27
-      |(Definition)     : 34
-      |(Reference)      : 34  39
+      |(Declaration)    : 27  28
+      |(Definition)     : 35
+      |(Reference)      : 35  40
      i
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 32
-      |(Reference)      : 33
+      |(Definition)     : 33
+      |(Reference)      : 34
      ifrom
-      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 23
-      |(Definition)     : 43
+      |(Declaration)    : 24  27
+      |(Definition)     : 44
       |(Reference)      : 
      ip
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE
-      |(Declaration)    : 26  27
-      |(Definition)     : 37  44
-      |(Reference)      : 30  39  43  44  45
+      |(Declaration)    : 27  28
+      |(Definition)     : 38  45
+      |(Reference)      : 31  40  44  45  46
      istatus
-      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 23
-      |(Definition)     : 29  40
+      |(Declaration)    : 24  27
+      |(Definition)     : 30  41
       |(Reference)      : 
      ito
-      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 23
-      |(Definition)     : 45
+      |(Declaration)    : 24  27
+      |(Definition)     : 46
       |(Reference)      : 
      model
       |(Class and Type) : variable name, CHARACTER(3,1)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 23  24
+      |(Declaration)    : 24  25
       |(Definition)     : 
-      |(Reference)      : 31
+      |(Reference)      : 32
      recmsg
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 23
+      |(Definition)     : 24
       |(Reference)      : 
      tau
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, SAVE
-      |(Declaration)    : 26  27
-      |(Definition)     : 33
-      |(Reference)      : 43  45
+      |(Declaration)    : 27  28
+      |(Definition)     : 34
+      |(Reference)      : 44  46
    Cross reference of label
      (Label) (label-kind)               (line-no.)
      ------- ------------- ------------ ----------
-        100  execution     (Definition) 36  
-                           (Reference)  33
+        100  execution     (Definition) 37  
+                           (Reference)  34
 
  External subroutine subprogram "dtgfix12"
   (inc)(line-no.)(nest)(optimize)
-              48                     
-              49                           subroutine dtgfix12(idtg1,idtg2,chg)
-              50                     
-              51                           integer*8 idtg1,idtg2
-              52                           integer   chg,yyyy,mm,dd,hh,ii,dt,diff,rem
-              53                           integer   month(12)
-              54                           character*12 cdtg
-              55                           data      month/31,28,31,30,31,30,31,31,30,31,30,31/
-              56                     
-              57                           write(cdtg,'(i12)')idtg1
-              58                           read(cdtg,'(i4,i2,i2,i2,i2)')yyyy,mm,dd,hh,ii
-              59                     
-              60     1                     if(((mod(yyyy,4) .eq.0) .and. (mod(yyyy,100) .ne.0)) .or.  &
-              61     1                        ((mod(yyyy,100) .eq. 0) .and. (mod(yyyy,400) .eq. 0))) then
-              62     1                        month(2)=29
-              63     1                     endif
-              64                     
-              65                           dt=hh+chg
-              66     1                     if(dt .lt. 0) then
-              67     1               	  diff=chg*(-1)/24
-              68     1                         rem=mod(chg*(-1),24)
-              69     1                         hh=hh-rem
-              70     2               	  if (hh .lt. 0)then
-              71     2                            diff=diff+1
-              72     2               	     hh=hh+24
-              73     2                         endif
-              74     1                         dd=dd-diff
-              75     2                         if(dd .lt. 1)then
-              76     2                            mm=mm-1
-              77     3               	     if(mm .gt. 0) then
-              78     3                              dd=dd+month(mm)
-              79     3                            else
-              80     3                              yyyy=yyyy-1
-              81     3                              mm=12
-              82     3                              dd=31
-              83     3                            endif
-              84     2                         endif
-              85     1                      elseif (dt .gt. 23)then
-              86     1                         diff=chg/24
-              87     1                         rem=mod(chg,24)
-              88     1                         hh=hh+rem
-              89     2               	  if(hh .gt. 23)then
-              90     2               	     hh=hh-24
-              91     2                            diff=diff+1
-              92     2                         endif
-              93     1                         dd=dd+diff
-              94     2                         do while (dd.gt.month(mm))
-              95     2               !          if(dd .gt. month(mm))then
-              96     2                           dd=dd-month(mm)
-              97     3                           if(mm .eq. 12)then
-              98     3               	      yyyy=yyyy+1
-              99     3                             mm=1
-             100     3                           else
-             101     3                             mm=mm+1
-             102     3                           endif
-             103     3                           if(((mod(yyyy,4) .eq.0) .and. (mod(yyyy,100) .ne.0)) .or.  &
-             104     3                             ((mod(yyyy,100) .eq. 0) .and. (mod(yyyy,400) .eq. 0))) then
-             105     3                             month(2)=29
-             106     3                           else
-             107     3                             month(2)=28
-             108     3                           endif
-             109     2               !          endif
-             110     2                         enddo
-             111     1                      else
-             112     1                        hh=dt
-             113     1                      endif
-             114                     !      idtg2=yyyy*100000000+mm*1000000+dd*10000+hh*100+ii
-             115                            write(cdtg,'(i4,i2.2,i2.2,i2.2,i2.2)')yyyy,mm,dd,hh,ii
-             116                            read(cdtg,'(i12)')idtg2
-             117                            return
-             118                     
-             119                     100    print *,'dtgfix12 error, idtg1=',idtg1
-             120                            return
-             121                            end
+              49                     
+              50                           subroutine dtgfix12(idtg1,idtg2,chg)
+              51                     
+              52                           integer*8 idtg1,idtg2
+              53                           integer   chg,yyyy,mm,dd,hh,ii,dt,diff,rem
+              54                           integer   month(12)
+              55                           character*12 cdtg
+              56                           data      month/31,28,31,30,31,30,31,31,30,31,30,31/
+              57                     
+              58                           write(cdtg,'(i12)')idtg1
+              59                           read(cdtg,'(i4,i2,i2,i2,i2)')yyyy,mm,dd,hh,ii
+              60                     
+              61     1                     if(((mod(yyyy,4) .eq.0) .and. (mod(yyyy,100) .ne.0)) .or.  &
+              62     1                        ((mod(yyyy,100) .eq. 0) .and. (mod(yyyy,400) .eq. 0))) then
+              63     1                        month(2)=29
+              64     1                     endif
+              65                     
+              66                           dt=hh+chg
+              67     1                     if(dt .lt. 0) then
+              68     1               	  diff=chg*(-1)/24
+              69     1                         rem=mod(chg*(-1),24)
+              70     1                         hh=hh-rem
+              71     2               	  if (hh .lt. 0)then
+              72     2                            diff=diff+1
+              73     2               	     hh=hh+24
+              74     2                         endif
+              75     1                         dd=dd-diff
+              76     2                         if(dd .lt. 1)then
+              77     2                            mm=mm-1
+              78     3               	     if(mm .gt. 0) then
+              79     3                              dd=dd+month(mm)
+              80     3                            else
+              81     3                              yyyy=yyyy-1
+              82     3                              mm=12
+              83     3                              dd=31
+              84     3                            endif
+              85     2                         endif
+              86     1                      elseif (dt .gt. 23)then
+              87     1                         diff=chg/24
+              88     1                         rem=mod(chg,24)
+              89     1                         hh=hh+rem
+              90     2               	  if(hh .gt. 23)then
+              91     2               	     hh=hh-24
+              92     2                            diff=diff+1
+              93     2                         endif
+              94     1                         dd=dd+diff
+              95     2                         do while (dd.gt.month(mm))
+              96     2               !          if(dd .gt. month(mm))then
+              97     2                           dd=dd-month(mm)
+              98     3                           if(mm .eq. 12)then
+              99     3               	      yyyy=yyyy+1
+             100     3                             mm=1
+             101     3                           else
+             102     3                             mm=mm+1
+             103     3                           endif
+             104     3                           if(((mod(yyyy,4) .eq.0) .and. (mod(yyyy,100) .ne.0)) .or.  &
+             105     3                             ((mod(yyyy,100) .eq. 0) .and. (mod(yyyy,400) .eq. 0))) then
+             106     3                             month(2)=29
+             107     3                           else
+             108     3                             month(2)=28
+             109     3                           endif
+             110     2               !          endif
+             111     2                         enddo
+             112     1                      else
+             113     1                        hh=dt
+             114     1                      endif
+             115                     !      idtg2=yyyy*100000000+mm*1000000+dd*10000+hh*100+ii
+             116                            write(cdtg,'(i4,i2.2,i2.2,i2.2,i2.2)')yyyy,mm,dd,hh,ii
+             117                            read(cdtg,'(i12)')idtg2
+             118                            return
+             119                     
+             120                     100    print *,'dtgfix12 error, idtg1=',idtg1
+             121                            return
+             122                            end
 
  Procedure information
    Lines      : 74
@@ -312,181 +313,181 @@
      cdtg
       |(Class and Type) : variable name, CHARACTER(12,1)
       |(Attributes)     : 
-      |(Declaration)    : 54
-      |(Definition)     : 57  115
-      |(Reference)      : 58  116
+      |(Declaration)    : 55
+      |(Definition)     : 58  116
+      |(Reference)      : 59  117
      chg
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 49  52
+      |(Declaration)    : 50  53
       |(Definition)     : 
-      |(Reference)      : 65  67  68  86  87
+      |(Reference)      : 66  68  69  87  88
      dd
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 52
-      |(Definition)     : 58  74  78  82  93  96
-      |(Reference)      : 74  75  78  93  94  96  115
+      |(Declaration)    : 53
+      |(Definition)     : 59  75  79  83  94  97
+      |(Reference)      : 75  76  79  94  95  97  116
      diff
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 52
-      |(Definition)     : 67  71  86  91
-      |(Reference)      : 71  74  91  93
+      |(Declaration)    : 53
+      |(Definition)     : 68  72  87  92
+      |(Reference)      : 72  75  92  94
      dt
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 52
-      |(Definition)     : 65
-      |(Reference)      : 66  85  112
+      |(Declaration)    : 53
+      |(Definition)     : 66
+      |(Reference)      : 67  86  113
      dtgfix12
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 49
+      |(Definition)     : 50
       |(Reference)      : 
      hh
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 52
-      |(Definition)     : 58  69  72  88  90  112
-      |(Reference)      : 65  69  70  72  88  89  90  115
+      |(Declaration)    : 53
+      |(Definition)     : 59  70  73  89  91  113
+      |(Reference)      : 66  70  71  73  89  90  91  116
      idtg1
       |(Class and Type) : variable name, INTEGER(8)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 49  51
+      |(Declaration)    : 50  52
       |(Definition)     : 
-      |(Reference)      : 57  119
+      |(Reference)      : 58  120
      idtg2
       |(Class and Type) : variable name, INTEGER(8)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 49  51
-      |(Definition)     : 116
+      |(Declaration)    : 50  52
+      |(Definition)     : 117
       |(Reference)      : 
      ii
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 52
-      |(Definition)     : 58
-      |(Reference)      : 115
+      |(Declaration)    : 53
+      |(Definition)     : 59
+      |(Reference)      : 116
      mm
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 52
-      |(Definition)     : 58  76  81  99  101
-      |(Reference)      : 76  77  78  94  96  97  101  115
+      |(Declaration)    : 53
+      |(Definition)     : 59  77  82  100  102
+      |(Reference)      : 77  78  79  95  97  98  102  116
      mod
       |(Class and Type) : intrinsic function name, INTEGER(4)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 60  60  60  60  68  87  103  103  103  103
+      |(Reference)      : 61  61  61  61  69  88  104  104  104  104
      month
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, initialized
-      |(Declaration)    : 53  55
-      |(Definition)     : 62  105  107
-      |(Reference)      : 78  94  96
+      |(Declaration)    : 54  56
+      |(Definition)     : 63  106  108
+      |(Reference)      : 79  95  97
      rem
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 52
-      |(Definition)     : 68  87
-      |(Reference)      : 69  88
+      |(Declaration)    : 53
+      |(Definition)     : 69  88
+      |(Reference)      : 70  89
      yyyy
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 52
-      |(Definition)     : 58  80  98
-      |(Reference)      : 60  60  60  60  80  98  103  103  103  103  115
+      |(Declaration)    : 53
+      |(Definition)     : 59  81  99
+      |(Reference)      : 61  61  61  61  81  99  104  104  104  104  116
    Cross reference of label
      (Label) (label-kind)               (line-no.)
      ------- ------------- ------------ ----------
-        100  execution     (Definition) 119
+        100  execution     (Definition) 120
 
  External subroutine subprogram "dtgfix12_new"
   (inc)(line-no.)(nest)(optimize)
-             122                     !
-             123                     !ch 2019-05-10 for prerrtmg potential problem found by Pang-Yen Liu (b827)
-             124                           subroutine dtgfix12_new(idtg1,i1,i2,i3,i4,i5,chg)
-             125                     
-             126                           implicit none
-             127                           integer*8 idtg1
-             128                           integer   i1,i2,i3,i4,i5
-             129                           integer   chg,yyyy,mm,dd,hh,ii,dt,diff,rem
-             130                           integer   month(12)
-             131                           character*12 cdtg
-             132                           data      month/31,28,31,30,31,30,31,31,30,31,30,31/
-             133                     
-             134                           write(cdtg,'(i12)')idtg1
-             135                           read(cdtg,'(i4,i2,i2,i2,i2)')yyyy,mm,dd,hh,ii
-             136                     
-             137     1                     if(((mod(yyyy,4) .eq.0) .and. (mod(yyyy,100) .ne.0)) .or.  &
-             138     1                        ((mod(yyyy,100) .eq. 0) .and. (mod(yyyy,400) .eq. 0))) then
-             139     1                        month(2)=29
-             140     1                     endif
-             141                     
-             142                           dt=hh+chg
-             143     1                     if(dt .lt. 0) then
-             144     1                         diff=chg*(-1)/24
-             145     1                         rem=mod(chg*(-1),24)
-             146     1                         hh=hh-rem
-             147     2                         if (hh .lt. 0)then
-             148     2                            diff=diff+1
-             149     2                            hh=hh+24
-             150     2                         endif
-             151     1                         dd=dd-diff
-             152     2                         if(dd .lt. 1)then
-             153     2                            mm=mm-1
-             154     3                            if(mm .gt. 0) then
-             155     3                              dd=dd+month(mm)
-             156     3                            else
-             157     3                              yyyy=yyyy-1
-             158     3                              mm=12
-             159     3                              dd=31
-             160     3                            endif
-             161     2                         endif
-             162     1                      elseif (dt .gt. 23)then
-             163     1                         diff=chg/24
-             164     1                         rem=mod(chg,24)
-             165     1                         hh=hh+rem
-             166     2                         if(hh .gt. 23)then
-             167     2                            hh=hh-24
-             168     2                            diff=diff+1
-             169     2                         endif
-             170     1                         dd=dd+diff
-             171     2                         do while (dd.gt.month(mm))
-             172     2               !          if(dd .gt. month(mm))then
-             173     2                           dd=dd-month(mm)
-             174     3                           if(mm .eq. 12)then
-             175     3                             yyyy=yyyy+1
-             176     3                             mm=1
-             177     3                           else
-             178     3                             mm=mm+1
-             179     3                           endif
-             180     3                           if(((mod(yyyy,4) .eq.0) .and. (mod(yyyy,100) .ne.0)) .or.  &
-             181     3                             ((mod(yyyy,100) .eq. 0) .and. (mod(yyyy,400) .eq. 0))) then
-             182     3                             month(2)=29
-             183     3                           else
-             184     3                             month(2)=28
-             185     3                           endif
-             186     2               !          endif
-             187     2                         enddo
-             188     1                      else
-             189     1                        hh=dt
-             190     1                      endif
-             191                     
-             192                            i1=yyyy
-             193                            i2=mm
-             194                            i3=dd
-             195                            i4=hh
-             196                            i5=ii
-             197                     
-             198                            return
-             199                     
-             200                     100    print *,'dtgfix12 error, idtg1=',idtg1
-             201                            return
-             202                            end
+             123                     !
+             124                     !ch 2019-05-10 for prerrtmg potential problem found by Pang-Yen Liu (b827)
+             125                           subroutine dtgfix12_new(idtg1,i1,i2,i3,i4,i5,chg)
+             126                     
+             127                           implicit none
+             128                           integer*8 idtg1
+             129                           integer   i1,i2,i3,i4,i5
+             130                           integer   chg,yyyy,mm,dd,hh,ii,dt,diff,rem
+             131                           integer   month(12)
+             132                           character*12 cdtg
+             133                           data      month/31,28,31,30,31,30,31,31,30,31,30,31/
+             134                     
+             135                           write(cdtg,'(i12)')idtg1
+             136                           read(cdtg,'(i4,i2,i2,i2,i2)')yyyy,mm,dd,hh,ii
+             137                     
+             138     1                     if(((mod(yyyy,4) .eq.0) .and. (mod(yyyy,100) .ne.0)) .or.  &
+             139     1                        ((mod(yyyy,100) .eq. 0) .and. (mod(yyyy,400) .eq. 0))) then
+             140     1                        month(2)=29
+             141     1                     endif
+             142                     
+             143                           dt=hh+chg
+             144     1                     if(dt .lt. 0) then
+             145     1                         diff=chg*(-1)/24
+             146     1                         rem=mod(chg*(-1),24)
+             147     1                         hh=hh-rem
+             148     2                         if (hh .lt. 0)then
+             149     2                            diff=diff+1
+             150     2                            hh=hh+24
+             151     2                         endif
+             152     1                         dd=dd-diff
+             153     2                         if(dd .lt. 1)then
+             154     2                            mm=mm-1
+             155     3                            if(mm .gt. 0) then
+             156     3                              dd=dd+month(mm)
+             157     3                            else
+             158     3                              yyyy=yyyy-1
+             159     3                              mm=12
+             160     3                              dd=31
+             161     3                            endif
+             162     2                         endif
+             163     1                      elseif (dt .gt. 23)then
+             164     1                         diff=chg/24
+             165     1                         rem=mod(chg,24)
+             166     1                         hh=hh+rem
+             167     2                         if(hh .gt. 23)then
+             168     2                            hh=hh-24
+             169     2                            diff=diff+1
+             170     2                         endif
+             171     1                         dd=dd+diff
+             172     2                         do while (dd.gt.month(mm))
+             173     2               !          if(dd .gt. month(mm))then
+             174     2                           dd=dd-month(mm)
+             175     3                           if(mm .eq. 12)then
+             176     3                             yyyy=yyyy+1
+             177     3                             mm=1
+             178     3                           else
+             179     3                             mm=mm+1
+             180     3                           endif
+             181     3                           if(((mod(yyyy,4) .eq.0) .and. (mod(yyyy,100) .ne.0)) .or.  &
+             182     3                             ((mod(yyyy,100) .eq. 0) .and. (mod(yyyy,400) .eq. 0))) then
+             183     3                             month(2)=29
+             184     3                           else
+             185     3                             month(2)=28
+             186     3                           endif
+             187     2               !          endif
+             188     2                         enddo
+             189     1                      else
+             190     1                        hh=dt
+             191     1                      endif
+             192                     
+             193                            i1=yyyy
+             194                            i2=mm
+             195                            i3=dd
+             196                            i4=hh
+             197                            i5=ii
+             198                     
+             199                            return
+             200                     
+             201                     100    print *,'dtgfix12 error, idtg1=',idtg1
+             202                            return
+             203                            end
 
  Procedure information
    Lines      : 81
@@ -499,149 +500,149 @@
      cdtg
       |(Class and Type) : variable name, CHARACTER(12,1)
       |(Attributes)     : 
-      |(Declaration)    : 131
-      |(Definition)     : 134
-      |(Reference)      : 135
+      |(Declaration)    : 132
+      |(Definition)     : 135
+      |(Reference)      : 136
      chg
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 124  129
+      |(Declaration)    : 125  130
       |(Definition)     : 
-      |(Reference)      : 142  144  145  163  164
+      |(Reference)      : 143  145  146  164  165
      dd
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 129
-      |(Definition)     : 135  151  155  159  170  173
-      |(Reference)      : 151  152  155  170  171  173  194
+      |(Declaration)    : 130
+      |(Definition)     : 136  152  156  160  171  174
+      |(Reference)      : 152  153  156  171  172  174  195
      diff
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 129
-      |(Definition)     : 144  148  163  168
-      |(Reference)      : 148  151  168  170
+      |(Declaration)    : 130
+      |(Definition)     : 145  149  164  169
+      |(Reference)      : 149  152  169  171
      dt
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 129
-      |(Definition)     : 142
-      |(Reference)      : 143  162  189
+      |(Declaration)    : 130
+      |(Definition)     : 143
+      |(Reference)      : 144  163  190
      dtgfix12_new
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 124
+      |(Definition)     : 125
       |(Reference)      : 
      hh
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 129
-      |(Definition)     : 135  146  149  165  167  189
-      |(Reference)      : 142  146  147  149  165  166  167  195
+      |(Declaration)    : 130
+      |(Definition)     : 136  147  150  166  168  190
+      |(Reference)      : 143  147  148  150  166  167  168  196
      i1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 124  128
-      |(Definition)     : 192
+      |(Declaration)    : 125  129
+      |(Definition)     : 193
       |(Reference)      : 
      i2
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 124  128
-      |(Definition)     : 193
+      |(Declaration)    : 125  129
+      |(Definition)     : 194
       |(Reference)      : 
      i3
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 124  128
-      |(Definition)     : 194
+      |(Declaration)    : 125  129
+      |(Definition)     : 195
       |(Reference)      : 
      i4
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 124  128
-      |(Definition)     : 195
+      |(Declaration)    : 125  129
+      |(Definition)     : 196
       |(Reference)      : 
      i5
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 124  128
-      |(Definition)     : 196
+      |(Declaration)    : 125  129
+      |(Definition)     : 197
       |(Reference)      : 
      idtg1
       |(Class and Type) : variable name, INTEGER(8)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 124  127
+      |(Declaration)    : 125  128
       |(Definition)     : 
-      |(Reference)      : 134  200
+      |(Reference)      : 135  201
      ii
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 129
-      |(Definition)     : 135
-      |(Reference)      : 196
+      |(Declaration)    : 130
+      |(Definition)     : 136
+      |(Reference)      : 197
      mm
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 129
-      |(Definition)     : 135  153  158  176  178
-      |(Reference)      : 153  154  155  171  173  174  178  193
+      |(Declaration)    : 130
+      |(Definition)     : 136  154  159  177  179
+      |(Reference)      : 154  155  156  172  174  175  179  194
      mod
       |(Class and Type) : intrinsic function name, INTEGER(4)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 137  137  137  137  145  164  180  180  180  180
+      |(Reference)      : 138  138  138  138  146  165  181  181  181  181
      month
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, initialized
-      |(Declaration)    : 130  132
-      |(Definition)     : 139  182  184
-      |(Reference)      : 155  171  173
+      |(Declaration)    : 131  133
+      |(Definition)     : 140  183  185
+      |(Reference)      : 156  172  174
      rem
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 129
-      |(Definition)     : 145  164
-      |(Reference)      : 146  165
+      |(Declaration)    : 130
+      |(Definition)     : 146  165
+      |(Reference)      : 147  166
      yyyy
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 129
-      |(Definition)     : 135  157  175
-      |(Reference)      : 137  137  137  137  157  175  180  180  180  180  192
+      |(Declaration)    : 130
+      |(Definition)     : 136  158  176
+      |(Reference)      : 138  138  138  138  158  176  181  181  181  181  193
    Cross reference of label
      (Label) (label-kind)               (line-no.)
      ------- ------------- ------------ ----------
-        100  execution     (Definition) 200
+        100  execution     (Definition) 201
 
  External subroutine subprogram "GETFNAME"
   (inc)(line-no.)(nest)(optimize)
-             203                     
              204                     
-             205                           subroutine GETFNAME(pathname,logicfile,truefile,istat)
-             206                           character pathname*80,logicfile*80,truefile*80,value*80,blank*80
-             207                     !     integer getenv
-             208                     
-             209                           truefile(1:80)=' '
-             210                           value(1:80)=' '
-             211                           blank(1:80)=' '
-             212                     !     i = getenv(pathname,value)
-             213                     !     if (i .eq. 0) then
-             214                           ix=index(pathname,' ')
-             215                           call getenv(pathname(1:ix-1),value)
-             216     1                     if (value(1:80) .eq. blank(1:80)) then
-             217     1                	istat=-1
-             218     1                     else
-             219     1               	j=index(value,' ')
-             220     1               	k=index(logicfile,' ')
-             221     1               	truefile(1:j-1)=value(1:j-1)
-             222     1               	truefile(j:j)='/'
-             223     1               	truefile(j+1:j+k-1)=logicfile(1:k-1)
-             224     1               	istat=0
-             225     1                     endif
-             226                           return
-             227                           end
+             205                     
+             206                           subroutine GETFNAME(pathname,logicfile,truefile,istat)
+             207                           character pathname*80,logicfile*80,truefile*80,value*80,blank*80
+             208                     !     integer getenv
+             209                     
+             210                           truefile(1:80)=' '
+             211                           value(1:80)=' '
+             212                           blank(1:80)=' '
+             213                     !     i = getenv(pathname,value)
+             214                     !     if (i .eq. 0) then
+             215                           ix=index(pathname,' ')
+             216                           call getenv(pathname(1:ix-1),value)
+             217     1                     if (value(1:80) .eq. blank(1:80)) then
+             218     1                	istat=-1
+             219     1                     else
+             220     1               	j=index(value,' ')
+             221     1               	k=index(logicfile,' ')
+             222     1               	truefile(1:j-1)=value(1:j-1)
+             223     1               	truefile(j:j)='/'
+             224     1               	truefile(j+1:j+k-1)=logicfile(1:k-1)
+             225     1               	istat=0
+             226     1                     endif
+             227                           return
+             228                           end
 
  Procedure information
    Lines      : 25
@@ -654,97 +655,96 @@
      blank
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : 
-      |(Declaration)    : 206
-      |(Definition)     : 211
-      |(Reference)      : 216
+      |(Declaration)    : 207
+      |(Definition)     : 212
+      |(Reference)      : 217
      GETFNAME
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 205
+      |(Definition)     : 206
       |(Reference)      : 
      getenv
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 215
+      |(Reference)      : 216
      index
       |(Class and Type) : intrinsic function name, INTEGER(4)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 214  219  220
+      |(Reference)      : 215  220  221
      istat
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 205
-      |(Definition)     : 217  224
+      |(Declaration)    : 206
+      |(Definition)     : 218  225
       |(Reference)      : 
      ix
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 214
-      |(Reference)      : 215
+      |(Definition)     : 215
+      |(Reference)      : 216
      j
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 219
-      |(Reference)      : 221  221  222  222  223  223
+      |(Definition)     : 220
+      |(Reference)      : 222  222  223  223  224  224
      k
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 220
-      |(Reference)      : 223  223
+      |(Definition)     : 221
+      |(Reference)      : 224  224
      logicfile
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 205  206
+      |(Declaration)    : 206  207
       |(Definition)     : 
-      |(Reference)      : 220  223
+      |(Reference)      : 221  224
      pathname
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 205  206
-      |(Definition)     : 215
-      |(Reference)      : 214
+      |(Declaration)    : 206  207
+      |(Definition)     : 216
+      |(Reference)      : 215
      truefile
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 205  206
-      |(Definition)     : 209  221  222  223
+      |(Declaration)    : 206  207
+      |(Definition)     : 210  222  223  224
       |(Reference)      : 
      value
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : 
-      |(Declaration)    : 206
-      |(Definition)     : 210  215
-      |(Reference)      : 216  219  221
+      |(Declaration)    : 207
+      |(Definition)     : 211  216
+      |(Reference)      : 217  220  222
 
  External subroutine subprogram "vexp"
   (inc)(line-no.)(nest)(optimize)
-             228                     
-             229                     ! IBM libmassv compatibility
-             230                     
-             231                           subroutine vexp(y,x,n)
-             232                           real*8 x(*),y(*)
+             229                     
+             230                     ! IBM libmassv compatibility
+             231                     
+             232                           subroutine vexp(y,x,n)
+             233                           real*8 x(*),y(*)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 45
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 0.91, ITR: 72, MVE: 5, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.64, ITR: 4, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      x, y
+                                   <<<      y
                                    <<< Loop-information  End >>>
-             233     1  pp    v            do 10 j=1,n
-             234     1   p    v            y(j)=exp(x(j))
-             235     1   p    v         10 continue
-             236                           return
-             237                           end
+             234     1  pp                 do 10 j=1,n
+             235     1   p                 y(j)=exp(x(j))
+             236     1   p              10 continue
+             237                           return
+             238                           end
 
  Procedure information
    Lines      : 10
@@ -759,62 +759,61 @@
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 234
+      |(Reference)      : 235
      j
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 233
-      |(Reference)      : 234  234
+      |(Definition)     : 234
+      |(Reference)      : 235  235
      n
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 231
+      |(Declaration)    : 232
       |(Definition)     : 
-      |(Reference)      : 233
+      |(Reference)      : 234
      vexp
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 231
+      |(Definition)     : 232
       |(Reference)      : 
      x
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 231  232
+      |(Declaration)    : 232  233
       |(Definition)     : 
-      |(Reference)      : 234
+      |(Reference)      : 235
      y
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 231  232
-      |(Definition)     : 234
+      |(Declaration)    : 232  233
+      |(Definition)     : 235
       |(Reference)      : 
    Cross reference of label
      (Label) (label-kind)               (line-no.)
      ------- ------------- ------------ ----------
-         10  execution     (Definition) 235  
-                           (Reference)  233
+         10  execution     (Definition) 236  
+                           (Reference)  234
 
  External subroutine subprogram "vlog"
   (inc)(line-no.)(nest)(optimize)
-             238                     
-             239                           subroutine vlog(y,x,n)
-             240                           real*8 x(*),y(*)
+             239                     
+             240                           subroutine vlog(y,x,n)
+             241                           real*8 x(*),y(*)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 45
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 1.02, ITR: 48, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.40, ITR: 6, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      x, y
+                                   <<<      y
                                    <<< Loop-information  End >>>
-             241     1  pp    v            do 10 j=1,n
-             242     1   p    v            y(j)=log(x(j))
-             243     1   p    v         10 continue
-             244                           return
-             245                           end
+             242     1  pp                 do 10 j=1,n
+             243     1   p                 y(j)=log(x(j))
+             244     1   p              10 continue
+             245                           return
+             246                           end
 
  Procedure information
    Lines      : 8
@@ -828,63 +827,62 @@
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 241
-      |(Reference)      : 242  242
+      |(Definition)     : 242
+      |(Reference)      : 243  243
      log
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 242
+      |(Reference)      : 243
      n
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 239
+      |(Declaration)    : 240
       |(Definition)     : 
-      |(Reference)      : 241
+      |(Reference)      : 242
      vlog
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 239
+      |(Definition)     : 240
       |(Reference)      : 
      x
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 239  240
+      |(Declaration)    : 240  241
       |(Definition)     : 
-      |(Reference)      : 242
+      |(Reference)      : 243
      y
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 239  240
-      |(Definition)     : 242
+      |(Declaration)    : 240  241
+      |(Definition)     : 243
       |(Reference)      : 
    Cross reference of label
      (Label) (label-kind)               (line-no.)
      ------- ------------- ------------ ----------
-         10  execution     (Definition) 243  
-                           (Reference)  241
+         10  execution     (Definition) 244  
+                           (Reference)  242
 
  External subroutine subprogram "vrec"
   (inc)(line-no.)(nest)(optimize)
-             246                     
-             247                           subroutine vrec(y,x,n)
-             248                           real*8 x(*),y(*)
+             247                     
+             248                           subroutine vrec(y,x,n)
+             249                           real*8 x(*),y(*)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 1067
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 0.24, ITR: 48, MVE: 2, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.23, ITR: 6, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      x, y
                                    <<< Loop-information  End >>>
-             249     1  pp   2v            do 10 j=1,n
-             250     1   p   2v            y(j)=1.d0/x(j)
-             251     1   p   2v         10 continue
-             252                           return
-             253                           end
+             250     1  pp   2             do 10 j=1,n
+             251     1   p   2             y(j)=1.d0/x(j)
+             252     1   p   2          10 continue
+             253                           return
+             254                           end
 
  Procedure information
    Lines      : 8
@@ -898,57 +896,56 @@
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 249
-      |(Reference)      : 250  250
+      |(Definition)     : 250
+      |(Reference)      : 251  251
      n
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 247
+      |(Declaration)    : 248
       |(Definition)     : 
-      |(Reference)      : 249
+      |(Reference)      : 250
      vrec
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 247
+      |(Definition)     : 248
       |(Reference)      : 
      x
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 247  248
+      |(Declaration)    : 248  249
       |(Definition)     : 
-      |(Reference)      : 250
+      |(Reference)      : 251
      y
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 247  248
-      |(Definition)     : 250
+      |(Declaration)    : 248  249
+      |(Definition)     : 251
       |(Reference)      : 
    Cross reference of label
      (Label) (label-kind)               (line-no.)
      ------- ------------- ------------ ----------
-         10  execution     (Definition) 251  
-                           (Reference)  249
+         10  execution     (Definition) 252  
+                           (Reference)  250
 
  External subroutine subprogram "vsqrt"
   (inc)(line-no.)(nest)(optimize)
-             254                     
-             255                           subroutine vsqrt(y,x,n)
-             256                           real*8 x(*),y(*)
+             255                     
+             256                           subroutine vsqrt(y,x,n)
+             257                           real*8 x(*),y(*)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 1231
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 0.24, ITR: 48, MVE: 2, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.18, ITR: 12, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      x, y
                                    <<< Loop-information  End >>>
-             257     1  pp   2v            do 10 j=1,n
-             258     1   p   2v            y(j)=sqrt(x(j))
-             259     1   p   2v         10 continue
-             260                           return
-             261                           end
+             258     1  pp   4             do 10 j=1,n
+             259     1   p   4             y(j)=sqrt(x(j))
+             260     1   p   4          10 continue
+             261                           return
+             262                           end
 
  Procedure information
    Lines      : 8
@@ -962,48 +959,851 @@
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 257
-      |(Reference)      : 258  258
+      |(Definition)     : 258
+      |(Reference)      : 259  259
      n
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 255
+      |(Declaration)    : 256
       |(Definition)     : 
-      |(Reference)      : 257
+      |(Reference)      : 258
      sqrt
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 258
+      |(Reference)      : 259
      vsqrt
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 255
+      |(Definition)     : 256
       |(Reference)      : 
      x
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 255  256
+      |(Declaration)    : 256  257
       |(Definition)     : 
-      |(Reference)      : 258
+      |(Reference)      : 259
      y
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 255  256
-      |(Definition)     : 258
+      |(Declaration)    : 256  257
+      |(Definition)     : 259
       |(Reference)      : 
    Cross reference of label
      (Label) (label-kind)               (line-no.)
      ------- ------------- ------------ ----------
-         10  execution     (Definition) 259  
-                           (Reference)  257
+         10  execution     (Definition) 260  
+                           (Reference)  258
+
+ External subroutine subprogram "ptot"
+  (inc)(line-no.)(nest)(optimize)
+             263                     
+             264                           subroutine ptot(pdrym,lprint)
+             265                     
+             266                           use index
+             267                           use mpe
+             268                           use rank
+             269                           use const
+             270                           use param
+             271                           use grid
+             272                     
+             273                           implicit none
+             274                     
+             275                           integer i,j,k,n,jj,kk,nxj,nxjf,kn
+             276                           logical lprint
+             277                           real    sumtot   ,sumwat    ,dsigp                    &
+             278                                  ,sumtotm  ,sumwatm   ,pdrym                    &
+             279                                  ,sumtott  ,sumwatt   ,qtot
+             280                     
+             281                     
+             282                           ! dry air mass conservation
+             283                           sumtot=0.
+             284                           sumwat=0.
+             285     1                     do jj = 1, jlistnum
+             286     1                       j=jlist1(jj)
+             287     1                       nxj=nxdef_2d(j)
+             288     1                       nxjf=nxdef(j)
+             289     2                       do i = 1,nxj
+             290     2                         sumtott=0.
+             291     2                         sumwatt=0.
+             292     3                         do k = 1, lev
+             293     3                           dsigp = dsigma(k,1)*pt(i,jj)+dsigma(k,2)
+             294     3                           qtot=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1334
+                                   <<< Loop-information  End >>>
+             295     4  pp                       do n = 1, ncld
+             296     4   p                          kk=k+(n-1)*lev
+             297     4   p                          qtot = qtot + qt(i,kk,jj)
+             298     4   p                       enddo
+             299     3                           sumtott = sumtott  + dsigp
+             300     3                           sumwatt = sumwatt  + dsigp * qtot
+             301     3                         enddo
+             302     2                         sumtot = sumtot + sumtott * cosl(j) * nx / nxjf
+             303     2                         sumwat = sumwat + sumwatt * cosl(j) * nx / nxjf
+             304     2                       enddo
+             305     1                     enddo
+             306                     
+             307                     !          call mpe_global_sum(kn,1,mpe_integer)
+             308                           call mpe_global_sum(sumtot,1,mpe_double)
+             309                           call mpe_global_sum(sumwat,1,mpe_double)
+             310                     
+             311                           kn      = nx * my
+             312                           sumtotm = sumtot / float(kn)
+             313                           sumwatm = sumwat / float(kn)
+             314                           pdrym   = sumtotm - sumwatm
+             315                     
+             316     1                     if( myrank .eq. 0 .and. lprint ) then
+             317     1                       open(35,file='pdry.txt',form='formatted',status='unknown', &
+             318     1                            position='append')
+             319     1                       write(35,*)pdrym,sumwatm,sumtotm
+             320     1                       close(35)
+             321     1                       print*,'dry air mass = ',pdrym,' hPa'
+             322     1                       print*,'water mass = ',sumwatm,' hPa'
+             323     1                       print*,'total air mass = ',sumtotm,' hPa'
+             324     1                     endif
+             325                     
+             326                           return
+             327                           end
+
+ Procedure information
+   Lines      : 65
+   Statements : 50
+   Stack(byte): 15184
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : ptot
+   Attribute and Cross reference of name
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 269
+     cosl
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 302  303
+     dsigma
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 293  293
+     dsigp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 277
+      |(Definition)     : 293
+      |(Reference)      : 299  300
+     float
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 312  313
+     grid
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 271
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 275
+      |(Definition)     : 289
+      |(Reference)      : 293  297
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 266
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 275
+      |(Definition)     : 286
+      |(Reference)      : 287  288  302  303
+     jj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 275
+      |(Definition)     : 285
+      |(Reference)      : 286  293  297
+     jlist1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 286
+     jlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 285
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 275
+      |(Definition)     : 292
+      |(Reference)      : 293  293  296
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 275
+      |(Definition)     : 296
+      |(Reference)      : 297
+     kn
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 275
+      |(Definition)     : 311
+      |(Reference)      : 312  313
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 292  296
+     lprint
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 264  276
+      |(Definition)     : 
+      |(Reference)      : 316
+     mpe
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 267
+     mpe_double
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 308  309
+     mpe_global_sum
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 308  309
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 311
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 316
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 275
+      |(Definition)     : 295
+      |(Reference)      : 296
+     ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 295
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 302  303  311
+     nxdef
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 288
+     nxdef_2d
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 287
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 275
+      |(Definition)     : 287
+      |(Reference)      : 289
+     nxjf
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 275
+      |(Definition)     : 288
+      |(Reference)      : 302  303
+     param
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 270
+     pdrym
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 264  277
+      |(Definition)     : 314
+      |(Reference)      : 319  321
+     pt
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 293
+     ptot
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 264
+      |(Reference)      : 
+     qt
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 297
+     qtot
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 277
+      |(Definition)     : 294  297
+      |(Reference)      : 297  300
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 268
+     sumtot
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 277
+      |(Definition)     : 283  302  308
+      |(Reference)      : 302  312
+     sumtotm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 277
+      |(Definition)     : 312
+      |(Reference)      : 314  319  323
+     sumtott
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 277
+      |(Definition)     : 290  299
+      |(Reference)      : 299  302
+     sumwat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 277
+      |(Definition)     : 284  303  309
+      |(Reference)      : 303  313
+     sumwatm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 277
+      |(Definition)     : 313
+      |(Reference)      : 314  319  322
+     sumwatt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 277
+      |(Definition)     : 291  300
+      |(Reference)      : 300  303
+
+ External subroutine subprogram "adjptq"
+  (inc)(line-no.)(nest)(optimize)
+             328                     !
+             329                           subroutine adjptq(dta,pltemp,pltend)
+             330                     
+             331                           use index
+             332                           use mpe
+             333                           use rank
+             334                           use const
+             335                           use param
+             336                           use grid
+             337                     
+             338                           implicit none
+             339                     
+             340                           integer i,j,k,n,jj,kk,nxj,nxjf,kn
+             341                           real    dsigp    ,qtot      ,qtota                    &
+             342                                  ,sumtott  ,sumwatt   ,sumwatta                 &
+             343                                  ,odpondp  ,dta
+             344                           real(kind=RTYPE) pnew(nxp,my_max),pten(nxp,my_max)    &
+             345                                           ,ww1(nx,my_max),pltemp(jtrun,jtmax,2) &
+             346                                           ,pltend(jtrun,jtmax,2)
+             347                     
+             348                           ! adjustment of surface pressure
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             349     1  pp                 do jj = 1, jlistnum
+             350     1   p                   j=jlist1(jj)
+             351     1   p                   nxj=nxdef_2d(j)
+             352     1   p                   nxjf=nxdef(j)
+             353     2   p                   do i = 1,nxj
+             354     2   p                     sumtott=0.
+             355     2   p                     sumwatt=0.
+             356     2   p                     sumwatta=0.
+             357     3   p                     do k = 1, lev
+             358     3   p                       dsigp = dsigma(k,1)*pt(i,jj)+dsigma(k,2)
+             359     3   p                       qtot=0.
+             360     3   p                       qtota=0.
+             361     4   p   8                   do n = 1, ncld
+             362     4   p   8                      kk=k+(n-1)*lev
+             363     4   p   8                      qtot = qtot  + qp(i,kk,jj)
+             364     4   p   8                      qtota= qtota + qt(i,kk,jj)
+             365     4   p   8                   enddo
+             366     3   p                       sumtott = sumtott  + dsigp
+             367     3   p                       sumwatt = sumwatt  + dsigp * qtot
+             368     3   p                       sumwatta= sumwatta + dsigp * qtota
+             369     3   p                       tt(i,k,jj)  = tt(i,k,jj)*pk(i,k,jj) / (1.0+0.608*qt(i,k,jj))
+             370     3   p                     enddo
+             371     2   p                     pnew(i,jj) = sumtott - sumwatt + sumwatta
+             372     2               
+             373     2   p                   enddo
+             374     1   p                 enddo
+             375                     
+             376                           call mpe2d_unify_nx(ww1,pnew)
+             377                           call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1            &
+             378                                       ,pltemp,nsizey)
+             379                           call transr1(jtrun,jtmax,nx,my,my_max,poly,pltemp,pnew,nsizey)
+             380                     
+             381                           ! mass adjustment of all tracers and virtual potential temperature
+             382                     
+             383     1                     do jj = 1, jlistnum
+             384     1                       j=jlist1(jj)
+             385     1                       nxj=nxdef_2d(j)
+             386     1                       call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pnew(1,jj), &
+             387     1                                               pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             388     2  pp                   do i = 1,nxj
+             389     3   p                     do k = 1, lev
+             390     3   p                       odpondp =  (dsigma(k,1)*pt(i,jj)+dsigma(k,2))              &
+             391     3                                    / (dsigma(k,1)*pnew(i,jj)+dsigma(k,2))
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 40, MVE: 11, POL: S)
+                                   <<< Loop-information  End >>>
+             392     4   p   2                   do n = 1, ncld
+             393     4   p   2                     kk=k+(n-1)*lev
+             394     4   p   2                     qt(i,kk,jj) = qt(i,kk,jj) * odpondp
+             395     4   p   2                   enddo
+             396     3   p                       tt(i,k,jj) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj))/pk(i,k,jj)
+             397     3   p                     enddo
+             398     2   p                     pten(i,jj) = ( pnew(i,jj) - ptp(i,jj) ) / dta
+             399     2   p                   enddo
+             400     1                     enddo
+             401                     
+             402                           call mpe2d_unify_nx(ww1,pten)
+             403                           call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1            &
+             404                                       ,pltend,nsizey)
+             405                     
+             406                           return
+             407                           end
+
+ Procedure information
+   Lines      : 80
+   Statements : 59
+   Stack(byte): 1904
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : adjptq
+   Attribute and Cross reference of name
+     adjptq
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 329
+      |(Reference)      : 
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 334
+     dsigma
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 358  358  390  390  390  390
+     dsigp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 341
+      |(Definition)     : 358
+      |(Reference)      : 366  367  368
+     dta
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 329  341
+      |(Definition)     : 
+      |(Reference)      : 398
+     grid
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 336
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 340
+      |(Definition)     : 353  388
+      |(Reference)      : 358  363  364  369  369  369  369  371  390  390  394  394  396  396  396  396  398  398  398
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 331
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 340
+      |(Definition)     : 350  384
+      |(Reference)      : 351  352  385  386
+     jj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 340
+      |(Definition)     : 349  383
+      |(Reference)      : 350  358  363  364  369  369  369  369  371  384  386  386  386  386  390  390  394  394  396  396  396  396  398  398  398
+     jlist1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 350  384
+     jlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 349  383
+     jtmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 377  379  403
+      |(Reference)      : 344  344
+     jtrun
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 377  379  403
+      |(Reference)      : 344  344
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 340
+      |(Definition)     : 357  389
+      |(Reference)      : 358  358  362  369  369  369  369  390  390  390  390  393  396  396  396  396
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 340
+      |(Definition)     : 362  393
+      |(Reference)      : 363  364  394  394
+     kn
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 340
+      |(Definition)     : 
+      |(Reference)      : 
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 386
+      |(Reference)      : 357  362  389  393
+     mpe
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 332
+     mpe2d_unify_nx
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 376  402
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 377  379  403
+      |(Reference)      : 
+     my_max
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 377  379  403
+      |(Reference)      : 344  344  344
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 340
+      |(Definition)     : 361  392
+      |(Reference)      : 362  393
+     ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 361  392
+     nsizey
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 377  379  403
+      |(Reference)      : 
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 377  379  403
+      |(Reference)      : 344
+     nxdef
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 352
+     nxdef_2d
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 351  385
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 340
+      |(Definition)     : 351  385
+      |(Reference)      : 353  388
+     nxjf
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 340
+      |(Definition)     : 352
+      |(Reference)      : 
+     nxjp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 386
+      |(Reference)      : 
+     nxp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 386
+      |(Reference)      : 344  344
+     odpondp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 341
+      |(Definition)     : 390
+      |(Reference)      : 394
+     param
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 335
+     pk
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 386
+      |(Reference)      : 369  396
+     pk2
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 386
+      |(Reference)      : 
+     plt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 386
+      |(Reference)      : 
+     pltemp
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 329  344
+      |(Definition)     : 377  379
+      |(Reference)      : 
+     pltend
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 329  344
+      |(Definition)     : 403
+      |(Reference)      : 
+     pnew
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 344
+      |(Definition)     : 371  376  379  386
+      |(Reference)      : 390  398
+     poly
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 377  379  403
+      |(Reference)      : 
+     prexp_hybrid_cwb
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 386
+     pt
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 358  390
+     pten
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 344
+      |(Definition)     : 398  402
+      |(Reference)      : 
+     ptop
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 386
+      |(Reference)      : 
+     ptp
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 398
+     qp
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 363
+     qt
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 394
+      |(Reference)      : 364  369  394  396
+     qtot
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 341
+      |(Definition)     : 359  363
+      |(Reference)      : 363  367
+     qtota
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 341
+      |(Definition)     : 360  364
+      |(Reference)      : 364  368
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 344
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 333
+     sigma
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 386
+      |(Reference)      : 
+     sumtott
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 341
+      |(Definition)     : 354  366
+      |(Reference)      : 366  371
+     sumwatt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 341
+      |(Definition)     : 355  367
+      |(Reference)      : 367  371
+     sumwatta
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 341
+      |(Definition)     : 356  368
+      |(Reference)      : 368  371
+     tranrs1
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 377  403
+     transr1
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 379
+     tt
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 369  396
+      |(Reference)      : 369  396
+     weight
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 377  403
+      |(Reference)      : 
+     ww1
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 344
+      |(Definition)     : 376  377  402  403
+      |(Reference)      : 
 
  Total information
-   Procedures       : 9
-   Total lines      : 261
-   Total statements : 213
-   Total stack(byte): 7408
+   Procedures       : 11
+   Total lines      : 407
+   Total statements : 323
+   Total stack(byte): 24496
    Total prefetch num: 0
 

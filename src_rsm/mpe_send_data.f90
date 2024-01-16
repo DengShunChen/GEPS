@@ -3,7 +3,7 @@
 #if defined(RSM) && defined(CWB_MPMD)
       use rank, only : root_io,MPI_COMM_gfs_all
 #else
-      use rank, only : root_io
+      use rank, only : root_io,MPI_COMM_atm
 #endif
       use mpi
 
@@ -14,8 +14,15 @@
 #endif
 
 #if defined(RSM) && defined(CWB_MPMD)
+
+#ifdef SP
+      call MPI_SEND( SBUF, n, MPI_REAL, root_io, J, &
+                     MPI_COMM_gfs_all, ist )
+#else
       call MPI_SEND( SBUF, n, MPI_DOUBLE_PRECISION, root_io, J, &
                      MPI_COMM_gfs_all, ist )
+#endif
+!=======================
 #else
 
 #ifdef SP
@@ -23,7 +30,7 @@
                      MPI_COMM_WORLD, ist )
 #else
       call MPI_SEND( SBUF, n, MPI_DOUBLE_PRECISION, root_io, J, &
-                     MPI_COMM_WORLD, ist )
+                     MPI_COMM_atm, ist )
 #endif
 
 #endif

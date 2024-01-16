@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:30:24 2023
+ Fujitsu Fortran Version 4.6.1  Thu Dec 28 15:29:13 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_rsm
    Source file       : reduceintp.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -103,7 +103,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.83, ITR: 192, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      (unknown)
                                    <<< Loop-information  End >>>
@@ -114,7 +114,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.83, ITR: 192, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      (unknown)
                                    <<< Loop-information  End >>>
@@ -126,8 +126,8 @@
               45     2               
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      a, (unknown)
                                    <<< Loop-information  End >>>
@@ -140,8 +140,8 @@
               52     2               
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      a, (unknown)
                                    <<< Loop-information  End >>>
@@ -163,7 +163,7 @@
  Scoping unit of external sub-program : reduceintp
    Attribute and Cross reference of name
      a
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  13
       |(Definition)     : 53
@@ -247,13 +247,13 @@
       |(Definition)     : 
       |(Reference)      : 30
      new
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 15
       |(Definition)     : 48
       |(Reference)      : 26  53
      old
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 15
       |(Definition)     : 46  48
@@ -289,22 +289,584 @@
       |(Definition)     : 23
       |(Reference)      : 24  32  44
      xnext
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 16
       |(Definition)     : 41  48
       |(Reference)      : 26
      xpast
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 16
       |(Definition)     : 37  48
       |(Reference)      : 26
 
+ External subroutine subprogram "reduceintp_idw"
+  (inc)(line-no.)(nest)(optimize)
+              61                     
+              62                     !helio>
+              63                     ! --------------------------------------
+              64                     ! inverse distance interpolation
+              65                     ! by helio
+              66                     ! --------------------------------------
+              67                           subroutine reduceintp_idw(a,lonfd,lonf,my,jj)
+              68                           use rank
+              69                           use index
+              70                           use phygrid ,only : outp,ls_full,ls_redu
+              71                           use const   ,only : RTYPE
+              72                     
+              73                           implicit none
+              74                     
+              75                           integer   i,j,k,h,jj,my
+              76                           integer   lonf,imp,lonfd !lonf=nx
+              77                           real(kind=RTYPE) a(lonf)
+              78                           real      old(lonf),new(lonf)
+              79                     
+              80                     !for idw
+              81                           integer  al1,al2,al3,al4
+              82                           real     tmplist(4)
+              83                           real     dlist(4),axb(4)
+              84                           real     eab,ea,d
+              85                     
+              86                     !for lat avg
+              87                           integer  lonr(my),dlonr(my/2),head,tail
+              88                           real     tmp,suma,m
+              89                           integer  z,fdum,rdum
+              90                     
+              91                     !for checking each point
+              92                           integer  chk
+              93                     
+              94                     !===================================
+              95                     ! lon points for each lat
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1455
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.75, ITR: 192, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      dlonr
+                                   <<< Loop-information  End >>>
+              96     1  pp   2v            do i = 1,my/2
+              97     1   p   2v               dlonr(i) = lonf-4*(i-1)
+              98     1   p   2v            end do
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1455
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      dlonr, lonr
+                                   <<< Loop-information  End >>>
+              99        pp   2v            lonr(my/2+1:my) = dlonr
+             100                     
+             101                     ! reverse 1d array
+             102                           head = 1
+             103                           tail = my/2
+             104     1                     do while (head .lt. tail)
+             105     1                        tmp = dlonr(head)
+             106     1                        dlonr(head) = dlonr(tail)
+             107     1                        dlonr(tail) = tmp
+             108     1                        head = head+1
+             109     1                        tail = tail-1
+             110     1                     end do
+             111                     ! reverse 1d array end
+             112                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1600
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 320, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      dlonr, lonr
+                                   <<< Loop-information  End >>>
+             113        pp   4v            lonr(1:my/2) = dlonr
+             114                     
+             115                     !===================================
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2286
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      new
+                                   <<< Loop-information  End >>>
+             116        pp   4v            new(:)      = 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             117             f             tmplist(:)  = 0.
+             118             f             dlist(:)    = 0.
+             119             f             axb(:)      = 0.
+             120                           j           = jlist1(jj)
+             121                     
+             122                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    UNSWITCHING
+                                   <<< Loop-information  End >>>
+             123     1                     do i = 1,lonf
+             124     1                       suma = 0.
+             125     1                       m    = 0.
+             126     1               
+             127     1                       dlist(1)   = outp(i,jj,1)
+             128     1                       dlist(2)   = outp(i,jj,2)
+             129     1                       dlist(3)   = outp(i,jj,3)
+             130     1                       dlist(4)   = outp(i,jj,4)
+             131     1                       al1 = int(outp(i,jj,5)+0.00001)
+             132     1                       al2 = int(outp(i,jj,6)+0.00001)
+             133     1                       al3 = int(outp(i,jj,7)+0.00001)
+             134     1                       al4 = int(outp(i,jj,8)+0.00001)
+             135     1               
+             136     1                       h=0
+             137     2                       if (al1.gt.0) then
+             138     2                          h=1
+             139     2                          tmplist(1)=a(al1)
+             140     2                       end if
+             141     2                       if (al2.gt.0) then
+             142     2                          h=2
+             143     2                          tmplist(2)=a(al2)
+             144     2                       end if
+             145     2                       if (al3.gt.0) then
+             146     2                          h=3
+             147     2                          tmplist(3)=a(al3)
+             148     2                       end if
+             149     2                       if (al4.gt.0) then
+             150     2                          h=4
+             151     2                          tmplist(4)=a(al4)
+             152     2                       end if
+             153     1               
+             154     2                       if (h.eq.0) then
+             155     2               !if no value, average latitude with land sea mask
+             156     2                          fdum = ls_full(i,jj)
+             157     2               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 37
+                                   <<<  [OPTIMIZATION]
+                                   <<<    UNSWITCHING
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 1
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 22
+                                   <<<      PREDICATE : SPILL 5  FILL 5
+                                   <<< Loop-information  End >>>
+             158     3  pp    s                 do z = 1,lonr(j)
+             159     3   p    s                    rdum = ls_redu(z,jj)
+             160     3               !             if (j.eq.118) print*,'fdum',fdum,'rdum',rdum
+             161     4   p    s                    if (fdum.eq.0) then
+             162     5        v                       if (my.eq.1280.and.i.eq.1802.and.j.eq.106) then
+             163     5        v                          suma = suma+a(z)
+             164     5        v                          m = m+1.
+             165     5        v                       else if (my.eq.1280.and.i.eq.1803.and.j.eq.106) then
+             166     5        v                          suma = suma+a(z)
+             167     5        v                          m = m+1.
+             168     5        v                       else if (my.eq.1280.and.i.eq.1179.and.j.eq.86) then
+             169     5        v                          suma = suma+a(z)
+             170     5        v                          m = m+1.
+             171     5        v                       else if (my.eq.1280.and.i.eq.1180.and.j.eq.86) then
+             172     5        v                          suma = suma+a(z)
+             173     5        v                          m = m+1.
+             174     5        v                       else if (my.eq.1280.and.i.eq.1181.and.j.eq.86) then
+             175     5        v                          suma = suma+a(z)
+             176     5        v                          m = m+1.
+             177     5        v                       end if
+             178     5        v                       if (rdum.eq.0) then
+             179     5        v                          suma = suma+a(z)
+             180     5        v                          m = m+1.
+             181     5        v                       end if
+             182     4   p    s                    else if (fdum.eq.1)then
+             183     5   p    v                       if (my.eq.768.and.j.eq.118) then
+             184     5   p    v                          suma = suma+a(z)
+             185     5   p    v                          m = m+1.
+             186     5   p    v                       else if (my.eq.1280.and.i.eq.1190.and.j.eq.280) then
+             187     5   p    v                          suma = suma+a(z)
+             188     5   p    v                          m = m+1.
+             189     5   p    v                       else if (my.eq.1280.and.i.eq.495.and.j.eq.294) then
+             190     5   p    v                          suma = suma+a(z)
+             191     5   p    v                          m = m+1.
+             192     5   p    v                       else if (my.eq.1280.and.i.eq.271.and.j.eq.307) then
+             193     5   p    v                          suma = suma+a(z)
+             194     5   p    v                          m = m+1.
+             195     5   p    v                       else if (my.eq.1280.and.i.eq.2129.and.j.eq.192) then
+             196     5   p    v                          suma = suma+a(z)
+             197     5   p    v                          m = m+1.
+             198     5   p    v                       else if (my.eq.1280.and.i.eq.1236.and.j.eq.352) then
+             199     5   p    v                          suma = suma+a(z)
+             200     5   p    v                          m = m+1.
+             201     5   p    v                       else if (my.eq.1280.and.i.eq.1048.and.j.eq.363) then
+             202     5   p    v                          suma = suma+a(z)
+             203     5   p    v                          m = m+1.
+             204     5   p    v                       else if (my.eq.1280.and.i.eq.2184.and.j.eq.392) then
+             205     5   p    v                          suma = suma+a(z)
+             206     5   p    v                          m = m+1.
+             207     5   p    v                       else if (my.eq.1280.and.i.eq.2130.and.j.eq.193) then
+             208     5   p    v                          suma = suma+a(z)
+             209     5   p    v                          m = m+1.
+             210     5   p    v                       else if (my.eq.1280.and.i.eq.2162.and.j.eq.200) then
+             211     5   p    v                          suma = suma+a(z)
+             212     5   p    v                          m = m+1.
+             213     5   p    v                       else if (my.eq.1280.and.i.eq.2181.and.j.eq.205) then
+             214     5   p    v                          suma = suma+a(z)
+             215     5   p    v                          m = m+1.
+             216     5   p    v                       else if (my.eq.1280.and.i.eq.2182.and.j.eq.205) then
+             217     5   p    v                          suma = suma+a(z)
+             218     5   p    v                          m = m+1.
+             219     5   p    v                       end if
+             220     5   p    v                       if (rdum.eq.1) then
+             221     5   p    v                          suma = suma+a(z)
+             222     5   p    v                          m = m+1.
+             223     5                                end if
+             224     4   p    s                    end if
+             225     3   p    s                 end do
+             226     2               
+             227     2                          new(i) = suma/m
+             228     2               
+             229     2               !          print*,'helio AVG i',i,'j',j,'ls=',fdum,'new = ',new(i)
+             230     2                       else if (h.gt.0) then
+             231     2                          fdum = ls_full(i,jj)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1067
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tmplist, dlist, axb
+                                   <<< Loop-information  End >>>
+             232     2  pp    v                 axb(1:h) = dlist(1:h)*tmplist(h:1:-1)
+             233     2               
+             234     2                          eab = 0.
+             235     2                          ea  = 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1231
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             236     3  pp    v                 do k = 1,h
+             237     3   p    v                   eab = eab+axb(k)
+             238     3   p    v                   ea  = ea +dlist(k)
+             239     3   p    v                 end do
+             240     2                          new(i) = eab/ea
+             241     2               
+             242     3                          if (dlist(1).le.0) then
+             243     3                             new(i) = tmplist(1)
+             244     3                          end if
+             245     2               
+             246     2               
+             247     2               !          print*,'helio IDW i',i,'j',j,'ls=',fdum,'new = ',new(i)
+             248     2               
+             249     2                       end if
+             250     1               
+             251     1                     end do
+             252                     
+             253                     !check missing data
+             254                     !     do i = 1,lonf
+             255                     !      if ((new(i).gt.0)) then
+             256                     !      else
+             257                     !      print*,'helio i = ',i,'j = ',j,'new = ',new(i),'ls =',ls_full(i,jj)
+             258                     !      end if
+             259                     !     end do
+             260                     
+             261                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1231
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      new, a
+                                   <<< Loop-information  End >>>
+             262        pp   2v            a(1:lonf)=new(1:lonf)
+             263                     
+             264                           return
+             265                           end subroutine reduceintp_idw
+             266                     
+             267                     !helio<
+             268                     
+             269                     
+
+ Procedure information
+   Lines      : 209
+   Statements : 153
+   Stack(byte): 165392
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : reduceintp_idw
+   Attribute and Cross reference of name
+     a
+      |(Class and Type) : variable name, REAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 67  77
+      |(Definition)     : 262
+      |(Reference)      : 139  143  147  151  163  166  169  172  175  179  184  187  190  193  196  199  202  205  208  211  214  217  221
+     al1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 81
+      |(Definition)     : 131
+      |(Reference)      : 137  139
+     al2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 81
+      |(Definition)     : 132
+      |(Reference)      : 141  143
+     al3
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 81
+      |(Definition)     : 133
+      |(Reference)      : 145  147
+     al4
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 81
+      |(Definition)     : 134
+      |(Reference)      : 149  151
+     axb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 83
+      |(Definition)     : 119  232
+      |(Reference)      : 237
+     chk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 92
+      |(Definition)     : 
+      |(Reference)      : 
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 71
+     d
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 84
+      |(Definition)     : 
+      |(Reference)      : 
+     dlist
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 83
+      |(Definition)     : 118  127  128  129  130
+      |(Reference)      : 232  238  242
+     dlonr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 87
+      |(Definition)     : 97  106  107
+      |(Reference)      : 99  105  106  113
+     ea
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 84
+      |(Definition)     : 235  238
+      |(Reference)      : 238  240
+     eab
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 84
+      |(Definition)     : 234  237
+      |(Reference)      : 237  240
+     fdum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 89
+      |(Definition)     : 156  231
+      |(Reference)      : 161  182
+     h
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 75
+      |(Definition)     : 136  138  142  146  150
+      |(Reference)      : 154  230  232  232  232  236
+     head
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 87
+      |(Definition)     : 102  108
+      |(Reference)      : 104  105  106  108
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 75
+      |(Definition)     : 96  123
+      |(Reference)      : 97  97  127  128  129  130  131  132  133  134  156  162  165  168  171  174  186  189  192  195  198  201  204  207  210  213  216  227  231  240  243
+     imp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 76
+      |(Definition)     : 
+      |(Reference)      : 
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 69
+     int
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 131  132  133  134
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 75
+      |(Definition)     : 120
+      |(Reference)      : 158  162  165  168  171  174  183  186  189  192  195  198  201  204  207  210  213  216
+     jj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 67  75
+      |(Definition)     : 
+      |(Reference)      : 120  127  128  129  130  131  132  133  134  156  159  231
+     jlist1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 120
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 75
+      |(Definition)     : 236
+      |(Reference)      : 237  238
+     lonf
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 67  76
+      |(Definition)     : 
+      |(Reference)      : 77  78  78  97  123  262  262
+     lonfd
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 67  76
+      |(Definition)     : 
+      |(Reference)      : 
+     lonr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 87
+      |(Definition)     : 99  113
+      |(Reference)      : 158
+     ls_full
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 70  156  231
+     ls_redu
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 70  159
+     m
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 88
+      |(Definition)     : 125  164  167  170  173  176  180  185  188  191  194  197  200  203  206  209  212  215  218  222
+      |(Reference)      : 164  167  170  173  176  180  185  188  191  194  197  200  203  206  209  212  215  218  222  227
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 67  75
+      |(Definition)     : 
+      |(Reference)      : 87  87  96  99  99  103  113  162  165  168  171  174  183  186  189  192  195  198  201  204  207  210  213  216
+     new
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 78
+      |(Definition)     : 116  227  240  243
+      |(Reference)      : 262
+     old
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 78
+      |(Definition)     : 
+      |(Reference)      : 
+     outp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 70  127  128  129  130  131  132  133  134
+     phygrid
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 70
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 71  77
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 68
+     rdum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 89
+      |(Definition)     : 159
+      |(Reference)      : 178  220
+     reduceintp_idw
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 67
+      |(Reference)      : 265
+     suma
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 88
+      |(Definition)     : 124  163  166  169  172  175  179  184  187  190  193  196  199  202  205  208  211  214  217  221
+      |(Reference)      : 163  166  169  172  175  179  184  187  190  193  196  199  202  205  208  211  214  217  221  227
+     tail
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 87
+      |(Definition)     : 103  109
+      |(Reference)      : 104  106  107  109
+     tmp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 88
+      |(Definition)     : 105
+      |(Reference)      : 107
+     tmplist
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 82
+      |(Definition)     : 117  139  143  147  151
+      |(Reference)      : 232  243
+     z
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 89
+      |(Definition)     : 158
+      |(Reference)      : 159  163  166  169  172  175  179  184  187  190  193  196  199  202  205  208  211  214  217  221
+
  Total information
-   Procedures       : 1
-   Total lines      : 60
-   Total statements : 33
-   Total stack(byte): 912
+   Procedures       : 2
+   Total lines      : 269
+   Total statements : 186
+   Total stack(byte): 166304
    Total prefetch num: 0
 

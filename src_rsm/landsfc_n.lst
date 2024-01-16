@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:30:25 2023
+ Fujitsu Fortran Version 4.6.1  Thu Dec 28 15:29:10 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_rsm
    Source file       : landsfc_n.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -514,10 +514,10 @@
              389                     !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 942
+                                   <<<    Standard iteration count: 800
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 144, MVE: 4, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 4.00, ITR: 160, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tt, pk, twork
                                    <<< Loop-information  End >>>
@@ -530,7 +530,7 @@
              396                     ! define surfce specific humidity
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 243
+                                   <<<    Standard iteration count: 232
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ocean, qsfc
@@ -550,12 +550,12 @@
              409                     !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 259
+                                   <<<    Standard iteration count: 247
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 0.56, ITR: 24, MVE: 2, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.58, ITR: 32, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      ustar, ut, ocean, vt, sfcw, z0
+                                   <<<      ustar, vt, ocean, ut, sfcw, z0
                                    <<< Loop-information  End >>>
              410     1  pp    v            do 100 i = 1, nxj
              411     2   p    v            if ( ocean(i) )  then
@@ -731,19 +731,19 @@
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      qsfc, tg, wt2, pk2, tt, hgt, qt, adtv
-                                   <<<      dtv, wt1, zsz0, sfcw, rb, ocean, ustar
+                                   <<<      qsfc, tg, wt2, pk2, tt, qt, adtv, dtv
+                                   <<<      wt1, hgt, zsz0, sfcw, rb, ocean, ustar
                                    <<<      z0
                                    <<<    PREFETCH(SOFT) : 34
                                    <<<     SEQUENTIAL : 34
                                    <<<      pm10: 2, z0max: 2, restar: 2, rat: 2
                                    <<<      ztmax: 2, olinf: 2, hl1: 2, hlinf: 2
-                                   <<<      fm10: 2, phim: 2, pm: 2, fm: 2, ph2: 2
+                                   <<<      fm10: 2, fm: 2, pm: 2, phim: 2, ph2: 2
                                    <<<      fh2: 2, ph: 2, phih: 2, fh: 2
                                    <<<    SPILLS :
-                                   <<<      GENERAL   : SPILL 0  FILL 14
+                                   <<<      GENERAL   : SPILL 0  FILL 15
                                    <<<      SIMD&FP   : SPILL 0  FILL 0
-                                   <<<      SCALABLE  : SPILL 57  FILL 93
+                                   <<<      SCALABLE  : SPILL 41  FILL 82
                                    <<<      PREDICATE : SPILL 0  FILL 0
                                    <<< Loop-information  End >>>
              578     2  pp    v            do  i=1,nxj
@@ -906,12 +906,12 @@
              735     1               !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 135
+                                   <<<    Standard iteration count: 118
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      ustar, tg, hgt, sfcw, phih, qt, qsfc, tt
-                                   <<<      pk2, vt, ut, wq, wt, wv, wu
+                                   <<<      hgt, qt, vt, ustar, sfcw, phih, qsfc, ut
+                                   <<<      tt, pk2, tg, wt, wv, wq, wu
                                    <<< Loop-information  End >>>
              736     2  pp    v            do i=1,nxj
              737     2               !     if(.not. ocean(i))then
@@ -930,12 +930,12 @@
              750     1               !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 153
+                                   <<<    Standard iteration count: 134
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      qt, vt, ut, wq, tt, wt, wv, wu, phim
-                                   <<<      phih, qsfc, pk2, qstar, tg, tstar, ustar
+                                   <<<      qt, wq, tt, wt, vt, wv, ut, wu, phim
+                                   <<<      phih, qsfc, qstar, pk2, tg, tstar, ustar
                                    <<<    PREFETCH(SOFT) : 2
                                    <<<     SEQUENTIAL : 2
                                    <<<      sfcw: 2
@@ -959,8 +959,8 @@
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      ps, fh2, rosfc, p2, fh, tg, pk2, wt, t2
-                                   <<<      qsfc, wq, fm10, q2, wu, fm, u10
+                                   <<<      ps, fh, rosfc, tg, p2, fh2, pk2, wt, t2
+                                   <<<      qsfc, wq, q2, fm10, wu, fm, u10
                                    <<<    PREFETCH(SOFT) : 4
                                    <<<     SEQUENTIAL : 4
                                    <<<      wv: 2, v10: 2
@@ -1077,7 +1077,7 @@
              839                     !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 137
+                                   <<<    Standard iteration count: 131
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
                                    <<<    PREFETCH(HARD) Expected by compiler :
@@ -2115,13 +2115,13 @@
             1409                     !     enddo
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 286
+                                   <<<    Standard iteration count: 272
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 0.85, ITR: 32, MVE: 2, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.87, ITR: 32, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      tg, phih, sfcw, qstar, ustar, rosfc
-                                   <<<      qflux, pk2, wt, hflux, tstar
+                                   <<<      tg, phih, sfcw, qstar, pk2, ustar, qflux
+                                   <<<      rosfc, wt, hflux, tstar
                                    <<< Loop-information  End >>>
             1410     1  pp    v            do 400 i = 1, nxj
             1411     1               !cc   tstar(i)=phih(i)*(sfcw(i)*(tt(i,kk)*pk2(i,kk)-tg(i)))/ustar(i)
@@ -2207,7 +2207,7 @@
  Procedure information
    Lines      : 1463
    Statements : 810
-   Stack(byte): 11664
+   Stack(byte): 11712
    Prefetch num: 86
 
  Scoping unit of external sub-program : landsfc_n
@@ -3089,13 +3089,13 @@
       |(Definition)     : 460
       |(Reference)      : 467  529
      pk
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  167
       |(Definition)     : 
       |(Reference)      : 391
      pk2
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  167
       |(Definition)     : 
@@ -3119,7 +3119,7 @@
       |(Definition)     : 394
       |(Reference)      : 305  306  548  775
      q
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  167
       |(Definition)     : 
@@ -3167,7 +3167,7 @@
       |(Definition)     : 508  512  760  1091  1098
       |(Reference)      : 453  512  1098  1415
      qt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  167
       |(Definition)     : 
@@ -3545,7 +3545,7 @@
       |(Definition)     : 315  394  1059  1078  1350  1354
       |(Reference)      : 826  830  1073  1074  1078  1211  1354  1371
      tt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  167
       |(Definition)     : 
@@ -3581,7 +3581,7 @@
       |(Definition)     : 506  509  510  731  758  1095  1096
       |(Reference)      : 412  412  439  439  453  453  485  485  491  509  510  582  582  599  738  738  759  760  796  796  797  797  1091  1095  1096  1412  1414  1415  1437  1437  1438  1441  1441  1446  1451  1451
      ut
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  167
       |(Definition)     : 
@@ -3605,7 +3605,7 @@
       |(Definition)     : 
       |(Reference)      : 599
      vt
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  167
       |(Definition)     : 
@@ -3814,6 +3814,6 @@
    Procedures       : 1
    Total lines      : 1463
    Total statements : 810
-   Total stack(byte): 11664
+   Total stack(byte): 11712
    Total prefetch num: 86
 

@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:31:16 2023
+ Fujitsu Fortran Version 4.6.1  Thu Dec 28 15:30:41 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_rsm
    Source file       : rad_initialize.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -246,69 +246,79 @@
              184     2                         icmphys = 6                   ! WSM6 microphysics
              185     2                       elseif ( nmmiph == 8 ) then
              186     2                         icmphys = 8                   ! Thompson microphysics
-             187     2                       elseif ( nmmiph == 11 ) then
-             188     2                         icmphys = 11                  ! GFDL microphysics
-             189     2                       endif
-             190     1                     else
-             191     1                       icldflg = 0                     ! diagnostic cloud optical prop scheme
-             192     1                     endif
-             193                           iovrsw = iovr_sw                  ! cloud overlapping control flag for sw
-             194                           iovrlw = iovr_lw                  ! cloud overlapping control flag for lw
-             195                     
-             196                           lsashal = sashal                  ! shallow convection scheme flag
-             197                           lcrick  = crick_proof             ! control flag for eliminating CRICK
-             198                           lcnorm  = ccnorm                  ! control flag for in-cld condensate
-             199                           lnoprec = norad_precip            ! precip effect on radiation flag (ferrier microphysics)
-             200                           isubcsw = isubc_sw                ! sub-column cloud approx flag in sw radiation
-             201                           isubclw = isubc_lw                ! sub-column cloud approx flag in lw radiation
-             202                           iswcliq = icliq_sw                ! sw liq-cld opt prop scheme flag in sw radiation
-             203                           iswcice = icice_sw                ! sw ice-cld opt prop scheme flag in sw radiation
-             204                           ilwcliq = icliq_lw                ! lw liq-cld opt prop scheme flag in lw radiation
-             205                           ilwcice = icice_lw                ! lw ice-cld opt prop scheme flag in lw radiation
-             206                     
-             207                           ialbflg= ialb                     ! surface albedo control flag
-             208                           iemsflg= iems                     ! surface emissivity control flag
-             209                     
-             210                           ivflip = iflip                    ! vertical index direction control flag
-             211                     
-             212                     !  ---  assign initial permutation seed for mcica cloud-radiation
-             213     1                     if ( isubc_sw>0 .or. isubc_lw>0 ) then
-             214     1               !       ipsd0 = 17*idate(1)+43*idate(2)+37*idate(3)+23*idate(4) + ipsd0
-             215     1                       ipsd0 = 17*idate(5)+43*idate(2)+37*idate(3)+23*idate(1)
-             216     1                     endif
-             217                     
-             218     1                     if ( me == 0 .and. myrank == 0 ) then
-             219     1                       print *,'  In rad_initialize, before calling radinit'
-             220     1                       print *,' si =',si
-             221     1                       print *,' levr=',levr,' ictm=',ictm,' isol=',isol,' ico2=',ico2,&
-             222     1                               ' iaer=',iaer,' ialb=',ialb,' iems=',iems,' ntcw=',ntcw
-             223     1                       print *,' nmmiph=',nmmiph,' ntoz=',ntoz,' iovr_sw=',iovr_sw,    &
-             224     1                               ' iovr_lw=',iovr_lw,' isubc_sw=',isubc_sw,              &
-             225     1                               ' isubc_lw=',isubc_lw,' iflip=',iflip,'  me=',me
-             226     1                       print *,' sashal=',sashal,' crick_proof=',crick_proof,          &
-             227     1                               ' ccnorm=',ccnorm,' norad_precip=',norad_precip
-             228     1                     endif
-             229                     
-             230                           call radinit                                                      &
-             231                     !  ---  inputs:
-             232                          &     (  si, levr, me, myrank )
-             233                     !  ---  outputs:
-             234                     !          ( none )
-             235                     
-             236     1                     if ( me == 0  .and. myrank  == 0 ) then
-             237     1                       print *,'  Radiation sub-cloud initial seed =',ipsd0,           &
-             238     1                    &          ' IC-idate =',idate
-             239     1                       print *,' return from rad_initialize - after calling radinit'
-             240     1                     endif
-             241                     !
-             242                           return
-             243                     !...................................
-             244                           end subroutine rad_initialize
-             245                     !-----------------------------------
+             187     2                       elseif ( nmmiph == 18 ) then
+             188     2                         icmphys = 18                  ! 2M Thompson microphysics
+             189     2                       elseif ( nmmiph == 11 ) then
+             190     2                         icmphys = 11                  ! GFDL microphysics version 1
+             191     2                       elseif ( nmmiph == 12 ) then
+             192     2                         icmphys = 12                  ! GFDL microphysics version 2
+             193     2                       elseif ( nmmiph == 13 ) then
+             194     2                         icmphys = 13                  ! GFDL microphysics version 3
+             195     2                       elseif ( nmmiph == 15 ) then
+             196     2                         icmphys = 15                  ! Goddard (GCE) 3ICE microphysics
+             197     2                       elseif ( nmmiph == 16 ) then
+             198     2                         icmphys = 16                  ! Goddard (GCE) 4ICE microphysics
+             199     2                       endif
+             200     1                     else
+             201     1                       icldflg = 0                     ! diagnostic cloud optical prop scheme
+             202     1                     endif
+             203                           iovrsw = iovr_sw                  ! cloud overlapping control flag for sw
+             204                           iovrlw = iovr_lw                  ! cloud overlapping control flag for lw
+             205                     
+             206                           lsashal = sashal                  ! shallow convection scheme flag
+             207                           lcrick  = crick_proof             ! control flag for eliminating CRICK
+             208                           lcnorm  = ccnorm                  ! control flag for in-cld condensate
+             209                           lnoprec = norad_precip            ! precip effect on radiation flag (ferrier microphysics)
+             210                           isubcsw = isubc_sw                ! sub-column cloud approx flag in sw radiation
+             211                           isubclw = isubc_lw                ! sub-column cloud approx flag in lw radiation
+             212                           iswcliq = icliq_sw                ! sw liq-cld opt prop scheme flag in sw radiation
+             213                           iswcice = icice_sw                ! sw ice-cld opt prop scheme flag in sw radiation
+             214                           ilwcliq = icliq_lw                ! lw liq-cld opt prop scheme flag in lw radiation
+             215                           ilwcice = icice_lw                ! lw ice-cld opt prop scheme flag in lw radiation
+             216                     
+             217                           ialbflg= ialb                     ! surface albedo control flag
+             218                           iemsflg= iems                     ! surface emissivity control flag
+             219                     
+             220                           ivflip = iflip                    ! vertical index direction control flag
+             221                     
+             222                     !  ---  assign initial permutation seed for mcica cloud-radiation
+             223     1                     if ( isubc_sw>0 .or. isubc_lw>0 ) then
+             224     1               !       ipsd0 = 17*idate(1)+43*idate(2)+37*idate(3)+23*idate(4) + ipsd0
+             225     1                       ipsd0 = 17*idate(5)+43*idate(2)+37*idate(3)+23*idate(1)
+             226     1                     endif
+             227                     
+             228     1                     if ( me == 0 .and. myrank == 0 ) then
+             229     1                       print *,'  In rad_initialize, before calling radinit'
+             230     1                       print *,' si =',si
+             231     1                       print *,' levr=',levr,' ictm=',ictm,' isol=',isol,' ico2=',ico2,&
+             232     1                               ' iaer=',iaer,' ialb=',ialb,' iems=',iems,' ntcw=',ntcw
+             233     1                       print *,' nmmiph=',nmmiph,' ntoz=',ntoz,' iovr_sw=',iovr_sw,    &
+             234     1                               ' iovr_lw=',iovr_lw,' isubc_sw=',isubc_sw,              &
+             235     1                               ' isubc_lw=',isubc_lw,' iflip=',iflip,'  me=',me
+             236     1                       print *,' sashal=',sashal,' crick_proof=',crick_proof,          &
+             237     1                               ' ccnorm=',ccnorm,' norad_precip=',norad_precip
+             238     1                     endif
+             239                     
+             240                           call radinit                                                      &
+             241                     !  ---  inputs:
+             242                          &     (  si, levr, me, myrank )
+             243                     !  ---  outputs:
+             244                     !          ( none )
+             245                     
+             246     1                     if ( me == 0  .and. myrank  == 0 ) then
+             247     1                       print *,'  Radiation sub-cloud initial seed =',ipsd0,           &
+             248     1                    &          ' IC-idate =',idate
+             249     1                       print *,' return from rad_initialize - after calling radinit'
+             250     1                     endif
+             251                     !
+             252                           return
+             253                     !...................................
+             254                           end subroutine rad_initialize
+             255                     !-----------------------------------
 
  Procedure information
-   Lines      : 245
-   Statements : 78
+   Lines      : 255
+   Statements : 88
    Stack(byte): 2256
    Prefetch num: 0
 
@@ -319,7 +329,7 @@
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  141
       |(Definition)     : 
-      |(Reference)      : 198  226
+      |(Reference)      : 208  236
      const
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -331,13 +341,13 @@
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  141
       |(Definition)     : 
-      |(Reference)      : 197  226
+      |(Reference)      : 207  236
      iaer
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  134
       |(Definition)     : 
-      |(Reference)      : 159  161  166  221
+      |(Reference)      : 159  161  166  231
      iaerflg
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
@@ -355,25 +365,25 @@
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  134
       |(Definition)     : 
-      |(Reference)      : 207  221
+      |(Reference)      : 217  231
      ialbflg
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 207
+      |(Definition)     : 217
       |(Reference)      : 120
      icice_lw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  134
       |(Definition)     : 
-      |(Reference)      : 205
+      |(Reference)      : 215
      icice_sw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  134
       |(Definition)     : 
-      |(Reference)      : 203
+      |(Reference)      : 213
      icld
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
@@ -384,32 +394,32 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 173  191
+      |(Definition)     : 173  201
       |(Reference)      : 120
      icliq_lw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  134
       |(Definition)     : 
-      |(Reference)      : 204
+      |(Reference)      : 214
      icliq_sw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  134
       |(Definition)     : 
-      |(Reference)      : 202
+      |(Reference)      : 212
      icmphys
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 177  179  182  184  186  188
+      |(Definition)     : 177  179  182  184  186  188  190  192  194  196  198
       |(Reference)      : 120
      ico2
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  134
       |(Definition)     : 
-      |(Reference)      : 155  221
+      |(Reference)      : 155  231
      ico2flg
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
@@ -421,7 +431,7 @@
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  134
       |(Definition)     : 
-      |(Reference)      : 154  158  158  221
+      |(Reference)      : 154  158  158  231
      ictmflg
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
@@ -433,60 +443,60 @@
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
       |(Declaration)    : 2  134
       |(Definition)     : 
-      |(Reference)      : 215  215  215  215  237
+      |(Reference)      : 225  225  225  225  247
      iems
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  134
       |(Definition)     : 
-      |(Reference)      : 208  221
+      |(Reference)      : 218  231
      iemsflg
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 208
+      |(Definition)     : 218
       |(Reference)      : 120
      iflip
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  134
       |(Definition)     : 
-      |(Reference)      : 210  223
+      |(Reference)      : 220  233
      ilwcice
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 205
+      |(Definition)     : 215
       |(Reference)      : 120
      ilwcliq
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 204
+      |(Definition)     : 214
       |(Reference)      : 120
      iovr_lw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  134
       |(Definition)     : 
-      |(Reference)      : 194  223
+      |(Reference)      : 204  233
      iovr_sw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  134
       |(Definition)     : 
-      |(Reference)      : 193  223
+      |(Reference)      : 203  233
      iovrlw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 194
+      |(Definition)     : 204
       |(Reference)      : 120
      iovrsw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 193
+      |(Definition)     : 203
       |(Reference)      : 120
      ioznflg
       |(Class and Type) : variable name, INTEGER(4)
@@ -498,14 +508,14 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 215
-      |(Reference)      : 120  237
+      |(Definition)     : 225
+      |(Reference)      : 120  247
      isol
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  134
       |(Definition)     : 
-      |(Reference)      : 152  221
+      |(Reference)      : 152  231
      isolar
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
@@ -517,42 +527,42 @@
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  134
       |(Definition)     : 
-      |(Reference)      : 201  213  223
+      |(Reference)      : 211  223  233
      isubc_sw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  134
       |(Definition)     : 
-      |(Reference)      : 200  213  223
+      |(Reference)      : 210  223  233
      isubclw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 201
+      |(Definition)     : 211
       |(Reference)      : 120
      isubcsw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 200
+      |(Definition)     : 210
       |(Reference)      : 120
      iswcice
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 203
+      |(Definition)     : 213
       |(Reference)      : 120
      iswcliq
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 202
+      |(Definition)     : 212
       |(Reference)      : 120
      ivflip
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 210
+      |(Definition)     : 220
       |(Reference)      : 120
      kind_phys
       |(Class and Type) : named constant, INTEGER(4)
@@ -582,38 +592,38 @@
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 198
+      |(Definition)     : 208
       |(Reference)      : 120
      lcrick
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 197
+      |(Definition)     : 207
       |(Reference)      : 120
      levr
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  134
       |(Definition)     : 
-      |(Reference)      : 139  221  230
+      |(Reference)      : 139  231  240
      lnoprec
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 199
+      |(Definition)     : 209
       |(Reference)      : 120
      lsashal
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 196
+      |(Definition)     : 206
       |(Reference)      : 120
      me
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  134
       |(Definition)     : 
-      |(Reference)      : 218  223  230  236
+      |(Reference)      : 228  233  240  246
      mod
       |(Class and Type) : intrinsic function name, INTEGER(4)
       |(Attributes)     : PURE, ELEMENTAL
@@ -631,31 +641,31 @@
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  134
       |(Definition)     : 
-      |(Reference)      : 168  218  230  236
+      |(Reference)      : 168  228  240  246
      nmmiph
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  134
       |(Definition)     : 
-      |(Reference)      : 175  181  183  185  187  223
+      |(Reference)      : 175  181  183  185  187  189  191  193  195  197  233
      norad_precip
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  141
       |(Definition)     : 
-      |(Reference)      : 199  226
+      |(Reference)      : 209  236
      ntcw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  134
       |(Definition)     : 
-      |(Reference)      : 172  221
+      |(Reference)      : 172  231
      ntoz
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  134
       |(Definition)     : 
-      |(Reference)      : 156  223
+      |(Reference)      : 156  233
      pdfcloud
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : use-associated
@@ -673,30 +683,30 @@
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 2
-      |(Reference)      : 244
+      |(Reference)      : 254
      radinit
       |(Class and Type) : module subroutine name
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 127  230
+      |(Reference)      : 127  240
      sashal
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 2  141
       |(Definition)     : 
-      |(Reference)      : 196  226
+      |(Reference)      : 206  236
      si
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
       |(Declaration)    : 2  139
       |(Definition)     : 
-      |(Reference)      : 220  230
+      |(Reference)      : 230  240
 
  Total information
    Procedures       : 1
-   Total lines      : 245
-   Total statements : 78
+   Total lines      : 255
+   Total statements : 88
    Total stack(byte): 2256
    Total prefetch num: 0
 

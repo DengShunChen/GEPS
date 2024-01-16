@@ -20,7 +20,8 @@
       use index
       use mod_outflds
       use radn, only : ntcw,ntiw,ntoz
-      use const, only : RTYPE,nmmiph
+      use const, only : RTYPE,nmmiph,outgrb2,ifilout_grb
+      use mod_grb2_param , only :ofdir
       use raddiag, only:clds !cloud fraction on sigma levels
       implicit  none
 
@@ -137,6 +138,12 @@
 !
       call whttau (itau,numout,outdir,ntau,taudir)
       if(ntau.eq.0) return
+
+      if( outgrb2 == 1)then
+ 134                    format( A  ,A ,I10.10 , i4.4       )
+           write(ofdir,134 )trim(ifilout_grb),'/',idtg/100 ,itau
+           if(myrank==0) call system("mkdir -p "//trim(ofdir) )
+      endif
 
 !
 !  copy qt into local qt arrays

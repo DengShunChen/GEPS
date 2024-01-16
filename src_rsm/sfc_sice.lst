@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:30:28 2023
+ Fujitsu Fortran Version 4.6.1  Thu Dec 28 15:29:16 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_rsm
    Source file       : sfc_sice.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -180,42 +180,42 @@
              118                           real(kind=kind_phys), parameter :: timin = 173.0    ! minimum temperature allowed for snow/ice
              119                           real(kind=kind_phys), parameter :: albfw = 0.06     ! albedo for lead
              120                           real(kind=kind_phys), parameter :: dsi   = 1.0/0.33
-             121                     
-             122                     !  ---  inputs:
-             123                           integer, intent(in) :: im, km, lsm, imj
-             124                     !     logical, intent(in) :: lprnt
-             125                     
-             126                           real (kind=RTYPE), dimension(im), intent(in) :: u1, v1, t1, q1
-             127                           real (kind=kind_phys), dimension(im), intent(in) :: ps,           &
-             128                                  sfcemis, dlwflx, sfcnsw, sfcdsw, srflag, cm, ch,           &
-             129                                  prsl1, prslki, ddvel
-             130                     
-             131                           integer, dimension(im), intent(in) :: islimsk
-             132                           real (kind=kind_phys), intent(in)  :: delt
-             133                     
-             134                           logical, intent(in) :: flag_iter(im), mom4ice
-             135                     
-             136                     !  ---  input/outputs:
-             137                           real (kind=kind_phys), dimension(im), intent(inout) :: hice,      &
-             138                                  fice, tice, weasd, tskin, tprcp, ep
-             139                     
-             140                           real (kind=kind_phys), dimension(im,km), intent(inout) :: stc
-             141                     
-             142                     !  ---  outputs:
-             143                     !     real (kind=kind_phys), dimension(im), intent(out) :: snwdph,      &
-             144                           real (kind=kind_phys), dimension(im) :: snwdph,      &
-             145                                  qsurf, snowmt, gflux, cmm, chh, evap, hflx
-             146                     
-             147                     !  ---  locals:
-             148                           real (kind=kind_phys), dimension(im) :: ffw, evapi, evapw,        &
-             149                                  sneti, snetw, hfd, hfi,                                    &
-             150                     !    &       hflxi, hflxw, sneti, snetw, qssi, qssw, hfd, hfi, hfw,     &
-             151                                  focn, snof, hi_save, hs_save,                 rch, rho,    &
-             152                                  snowd, theta1, ttmp
-             153                     
-             154                           real (kind=kind_phys) :: t12, t14, tem, stsice(im,kmi) &
-             155                           ,                   hflxi, hflxw, q0, qs1, wind, qssi, qssw,fpvs
-             156                           real (kind=kind_phys), parameter :: cimin=0.15 !  --- minimum ice concentration
+             121                           real(kind=kind_phys), parameter :: cimin = 0.15     !  --- minimum ice concentration
+             122                     
+             123                     !  ---  inputs:
+             124                           integer, intent(in) :: im, km, lsm, imj
+             125                     !     logical, intent(in) :: lprnt
+             126                     
+             127                           real (kind=RTYPE), dimension(im), intent(in) :: u1, v1, t1, q1
+             128                           real (kind=kind_phys), dimension(im), intent(in) :: ps,           &
+             129                                  sfcemis, dlwflx, sfcnsw, sfcdsw, srflag, cm, ch,           &
+             130                                  prsl1, prslki, ddvel
+             131                     
+             132                           integer, dimension(im), intent(in) :: islimsk
+             133                           real (kind=kind_phys), intent(in)  :: delt
+             134                     
+             135                           logical, intent(in) :: flag_iter(im), mom4ice
+             136                     
+             137                     !  ---  input/outputs:
+             138                           real (kind=kind_phys), dimension(im), intent(inout) :: hice,      &
+             139                                  fice, tice, weasd, tskin, tprcp, ep
+             140                     
+             141                           real (kind=kind_phys), dimension(im,km), intent(inout) :: stc
+             142                     
+             143                     !  ---  outputs:
+             144                     !     real (kind=kind_phys), dimension(im), intent(out) :: snwdph,      &
+             145                           real (kind=kind_phys), dimension(im) :: snwdph,      &
+             146                                  qsurf, snowmt, gflux, cmm, chh, evap, hflx
+             147                     
+             148                     !  ---  locals:
+             149                           real (kind=kind_phys), dimension(im) :: ffw, evapi, evapw,        &
+             150                                  sneti, snetw, hfd, hfi,                                    &
+             151                     !    &       hflxi, hflxw, sneti, snetw, qssi, qssw, hfd, hfi, hfw,     &
+             152                                  focn, snof, hi_save, hs_save,                 rch, rho,    &
+             153                                  snowd, theta1, ttmp
+             154                     
+             155                           real (kind=kind_phys) :: t12, t14, tem, stsice(im,kmi) &
+             156                           ,                   hflxi, hflxw, q0, qs1, wind, qssi, qssw,fpvs
              157                     
              158                           integer :: i, k, ipr
              159                     
@@ -502,14 +502,14 @@
              358                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 198
+                                   <<<    Standard iteration count: 191
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 1.39, ITR: 40, MVE: 3, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.41, ITR: 40, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      ffw, evapw, rch, snowd, rho, theta1
-                                   <<<      tice, q1, flag, evapi, fice, qsurf
-                                   <<<      weasd, snwdph, hflx, evap
+                                   <<<      rch, evapw, ffw, q1, snowd, rho, theta1
+                                   <<<      tice, flag, evapi, fice, qsurf, weasd
+                                   <<<      snwdph, hflx, evap
                                    <<< Loop-information  End >>>
              359     1  pp    v            do i = 1, imj
              360     2   p    v              if (flag(i)) then
@@ -726,111 +726,113 @@
              556     2   p    v                stsice(i,1) = -(sqrt(b1*b1 - 4.0*a1*c1) + b1)/(a1+a1)
              557     2   p    v                tice(i) = (k12*stsice(i,1) - ai) / (k12 + bi)
              558     2               
-             559     3   p    v                if (tice(i) > tsf) then
-             560     3   p    v                  a1 = a10 + k12
-             561     3   p    v                  b1 = b10 - k12*tsf
-             562     3   p    v                  stsice(i,1) = -(sqrt(b1*b1 - 4.0*a1*c1) + b1)/(a1+a1)
-             563     3   p    v                  tice(i) = tsf
-             564     3   p    v                  tmelt   = (k12*(stsice(i,1)-tsf) - (ai+bi*tsf)) * delt
-             565     3   p    v                else
-             566     3   p    v                  tmelt    = 0.0
-             567     3   p    v                  snowd(i) = snowd(i) + snof(i)*delt
-             568     3   p    v                endif
-             569     2               
-             570     2   p    v                stsice(i,2) = (dt2*k32*(stsice(i,1) + tfw + tfw)                &
-             571     2                                     +  dici*hice(i)*stsice(i,2)) * wrk
-             572     2               
-             573     2   p    v                bmelt = (focn(i) + ki4*(stsice(i,2) - tfw)/hice(i)) * delt
-             574     2               
-             575     2               !  --- ...  resize the ice ...
+             559     2                         !!! top ice melt
+             560     3   p    v                if (tice(i) > tsf) then
+             561     3   p    v                  a1 = a10 + k12
+             562     3   p    v                  b1 = b10 - k12*tsf
+             563     3   p    v                  stsice(i,1) = -(sqrt(b1*b1 - 4.0*a1*c1) + b1)/(a1+a1)
+             564     3   p    v                  tice(i) = tsf
+             565     3   p    v                  tmelt   = (k12*(stsice(i,1)-tsf) - (ai+bi*tsf)) * delt
+             566     3   p    v                else
+             567     3   p    v                  tmelt    = 0.0
+             568     3   p    v                  snowd(i) = snowd(i) + snof(i)*delt
+             569     3   p    v                endif
+             570     2               
+             571     2   p    v                stsice(i,2) = (dt2*k32*(stsice(i,1) + tfw + tfw)                &
+             572     2                                     +  dici*hice(i)*stsice(i,2)) * wrk
+             573     2               
+             574     2                         !!! bottom melt
+             575     2   p    v                bmelt = (focn(i) + ki4*(stsice(i,2) - tfw)/hice(i)) * delt
              576     2               
-             577     2   p    v                h1 = 0.5 * hice(i)
-             578     2   p    v                h2 = 0.5 * hice(i)
-             579     2               
-             580     2               !  --- ...  top ...
+             577     2               !  --- ...  resize the ice ...
+             578     2               
+             579     2   p    v                h1 = 0.5 * hice(i)
+             580     2   p    v                h2 = 0.5 * hice(i)
              581     2               
-             582     3   p    v                if (tmelt <= snowd(i)*dsli) then
-             583     3   p    v                  snowmt(i) = tmelt / dsli
-             584     3   p    v                  snowd (i) = snowd(i) - snowmt(i)
-             585     3   p    v                else
-             586     3   p    v                  snowmt(i) = snowd(i)
-             587     3   p    v                  h1 = h1 - (tmelt - snowd(i)*dsli)                             &
-             588     3                              / (di * (ci - li/stsice(i,1)) * (tfi - stsice(i,1)))
-             589     3   p    v                  snowd(i) = 0.0
-             590     3   p    v                endif
-             591     2               
-             592     2               !  --- ...  and bottom
+             582     2               !  --- ...  top ...
+             583     2               
+             584     3   p    v                if (tmelt <= snowd(i)*dsli) then
+             585     3   p    v                  snowmt(i) = tmelt / dsli
+             586     3   p    v                  snowd (i) = snowd(i) - snowmt(i)
+             587     3   p    v                else
+             588     3   p    v                  snowmt(i) = snowd(i)
+             589     3   p    v                  h1 = h1 - (tmelt - snowd(i)*dsli)                             &
+             590     3                              / (di * (ci - li/stsice(i,1)) * (tfi - stsice(i,1)))
+             591     3   p    v                  snowd(i) = 0.0
+             592     3   p    v                endif
              593     2               
-             594     3   p    v                if (bmelt < 0.0) then
-             595     3   p    v                  dh = -bmelt / (dili + dici*(tfi - tfw))
-             596     3   p    v                  stsice(i,2) = (h2*stsice(i,2) + dh*tfw) / (h2 + dh)
-             597     3   p    v                  h2 = h2 + dh
-             598     3   p    v                else
-             599     3   p    v                  h2 = h2 - bmelt / (dili + dici*(tfi - stsice(i,2)))
-             600     3   p    v                endif
-             601     2               
-             602     2               !  --- ...  if ice remains, even up 2 layers, else, pass negative energy back in snow
+             594     2               !  --- ...  and bottom
+             595     2               
+             596     3   p    v                if (bmelt < 0.0) then
+             597     3   p    v                  dh = -bmelt / (dili + dici*(tfi - tfw))
+             598     3   p    v                  stsice(i,2) = (h2*stsice(i,2) + dh*tfw) / (h2 + dh)
+             599     3   p    v                  h2 = h2 + dh
+             600     3   p    v                else
+             601     3   p    v                  h2 = h2 - bmelt / (dili + dici*(tfi - stsice(i,2)))
+             602     3   p    v                endif
              603     2               
-             604     2   p    v                hice(i) = h1 + h2
+             604     2               !  --- ...  if ice remains, even up 2 layers, else, pass negative energy back in snow
              605     2               
-             606     3   p    v                if (hice(i) > 0.0) then
-             607     4   p    v                  if (h1 > 0.5*hice(i)) then
-             608     4   p    v                    f1 = 1.0 - (h2+h2) / hice(i)
-             609     4   p    v                    stsice(i,2) = f1 * (stsice(i,1) + li*tfi/(ci*stsice(i,1)))  &
-             610     4                                         + (1.0 - f1)*stsice(i,2)
-             611     4               
-             612     5   p    v                    if (stsice(i,2) > tfi) then
-             613     5   p    v                      hice(i) = hice(i) - h2*ci*(stsice(i,2) - tfi)/ (li*delt)
-             614     5   p    v                      stsice(i,2) = tfi
-             615     5   p    v                    endif
-             616     4   p    v                  else
-             617     4   p    v                    f1 = (h1+h1) / hice(i)
-             618     4   p    v                    stsice(i,1) = f1 * (stsice(i,1) + li*tfi/(ci*stsice(i,1)))  &
-             619     4                                         + (1.0 - f1)*stsice(i,2)
-             620     4   p    v                    stsice(i,1) = (stsice(i,1) - sqrt(stsice(i,1)*stsice(i,1)   &
-             621     4                                         - 4.0*tfi*li/ci)) * 0.5
-             622     4   p    v                  endif
-             623     3               
-             624     3   p    v                  k12      = ki4*ks / (ks*hice(i) + ki4*snowd(i))
-             625     3   p    v                  gflux(i) = k12 * (stsice(i,1) - tice(i))
-             626     3   p    v                else
-             627     3   p    v                  snowd(i) = snowd(i) + (h1*(ci*(stsice(i,1) - tfi)             &
-             628     3                                    - li*(1.0 - tfi/stsice(i,1)))                        &
-             629     3                                    + h2*(ci*(stsice(i,2) - tfi) - li)) / li
-             630     3               
-             631     3   p    v                  hice(i)     = max(0.0, snowd(i)*dsdi)
-             632     3   p    v                  snowd(i)    = 0.0
-             633     3   p    v                  stsice(i,1) = tfw
-             634     3   p    v                  stsice(i,2) = tfw
-             635     3   p    v                  gflux(i)    = 0.0
-             636     3   p    v                endif   ! end if_hice_block
-             637     2               
-             638     2   p    v                gflux(i)    = fice(i) * gflux(i)
-             639     2   p    v                snowmt(i)   = snowmt(i) * dsdw
-             640     2   p    v                snowd(i)    = snowd(i) * dsdw
-             641     2   p    v                tice(i)     = tice(i) + t0c
-             642     2   p    v                stsice(i,1) = stsice(i,1) + t0c
-             643     2   p    v                stsice(i,2) = stsice(i,2) + t0c
-             644     2   p    v              endif   ! end if_flag_block
-             645     1   p    v            enddo   ! end do_i_loop
-             646                     
-             647                           return
-             648                     !...................................
-             649                           end subroutine ice3lay
-             650                     !-----------------------------------
-             651                     
-             652                     ! =========================== !
-             653                     !     end contain programs    !
+             606     2   p    v                hice(i) = h1 + h2
+             607     2               
+             608     3   p    v                if (hice(i) > 0.0) then
+             609     4   p    v                  if (h1 > 0.5*hice(i)) then
+             610     4   p    v                    f1 = 1.0 - (h2+h2) / hice(i)
+             611     4   p    v                    stsice(i,2) = f1 * (stsice(i,1) + li*tfi/(ci*stsice(i,1)))  &
+             612     4                                         + (1.0 - f1)*stsice(i,2)
+             613     4               
+             614     5   p    v                    if (stsice(i,2) > tfi) then
+             615     5   p    v                      hice(i) = hice(i) - h2*ci*(stsice(i,2) - tfi)/ (li*delt)
+             616     5   p    v                      stsice(i,2) = tfi
+             617     5   p    v                    endif
+             618     4   p    v                  else
+             619     4   p    v                    f1 = (h1+h1) / hice(i)
+             620     4   p    v                    stsice(i,1) = f1 * (stsice(i,1) + li*tfi/(ci*stsice(i,1)))  &
+             621     4                                         + (1.0 - f1)*stsice(i,2)
+             622     4   p    v                    stsice(i,1) = (stsice(i,1) - sqrt(stsice(i,1)*stsice(i,1)   &
+             623     4                                         - 4.0*tfi*li/ci)) * 0.5
+             624     4   p    v                  endif
+             625     3               
+             626     3   p    v                  k12      = ki4*ks / (ks*hice(i) + ki4*snowd(i))
+             627     3   p    v                  gflux(i) = k12 * (stsice(i,1) - tice(i))
+             628     3   p    v                else
+             629     3   p    v                  snowd(i) = snowd(i) + (h1*(ci*(stsice(i,1) - tfi)             &
+             630     3                                    - li*(1.0 - tfi/stsice(i,1)))                        &
+             631     3                                    + h2*(ci*(stsice(i,2) - tfi) - li)) / li
+             632     3               
+             633     3   p    v                  hice(i)     = max(0.0, snowd(i)*dsdi)
+             634     3   p    v                  snowd(i)    = 0.0
+             635     3   p    v                  stsice(i,1) = tfw
+             636     3   p    v                  stsice(i,2) = tfw
+             637     3   p    v                  gflux(i)    = 0.0
+             638     3   p    v                endif   ! end if_hice_block
+             639     2               
+             640     2   p    v                gflux(i)    = fice(i) * gflux(i)
+             641     2   p    v                snowmt(i)   = snowmt(i) * dsdw
+             642     2   p    v                snowd(i)    = snowd(i) * dsdw
+             643     2   p    v                tice(i)     = tice(i) + t0c
+             644     2   p    v                stsice(i,1) = stsice(i,1) + t0c
+             645     2   p    v                stsice(i,2) = stsice(i,2) + t0c
+             646     2   p    v              endif   ! end if_flag_block
+             647     1   p    v            enddo   ! end do_i_loop
+             648                     
+             649                           return
+             650                     !...................................
+             651                           end subroutine ice3lay
+             652                     !-----------------------------------
+             653                     
              654                     ! =========================== !
-             655                     
-             656                     !...................................
-             657                           end subroutine sfc_sice
-             658                     !-----------------------------------
+             655                     !     end contain programs    !
+             656                     ! =========================== !
+             657                     
+             658                     !...................................
+             659                           end subroutine sfc_sice
+             660                     !-----------------------------------
 
  Procedure information
-   Lines      : 658
+   Lines      : 660
    Statements : 294
-   Stack(byte): 5136
+   Stack(byte): 5120
    Prefetch num: 0
 
  Scoping unit of external sub-program : sfc_sice
@@ -844,31 +846,31 @@
      ch
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 2  127
+      |(Declaration)    : 2  128
       |(Definition)     : 
       |(Reference)      : 261
      chh
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 144
+      |(Declaration)    : 145
       |(Definition)     : 261
       |(Reference)      : 262
      cimin
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 156
+      |(Declaration)    : 121
       |(Definition)     : 
       |(Reference)      : 230  232
      cm
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 2  127
+      |(Declaration)    : 2  128
       |(Definition)     : 
       |(Reference)      : 260
      cmm
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 144
+      |(Declaration)    : 145
       |(Definition)     : 260
       |(Reference)      : 
      con_cp
@@ -952,19 +954,19 @@
      ddvel
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 2  127
+      |(Declaration)    : 2  128
       |(Definition)     : 
       |(Reference)      : 217
      delt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : INTENT(IN), dummy-argument
-      |(Declaration)    : 2  132
+      |(Declaration)    : 2  133
       |(Definition)     : 
       |(Reference)      : 
      dlwflx
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 2  127
+      |(Declaration)    : 2  128
       |(Definition)     : 
       |(Reference)      : 281
      dsi
@@ -982,7 +984,7 @@
      ep
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 2  137
+      |(Declaration)    : 2  138
       |(Definition)     : 195
       |(Reference)      : 
      eps
@@ -1000,31 +1002,31 @@
      evap
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 2  144
+      |(Declaration)    : 2  145
       |(Definition)     : 366  379
       |(Reference)      : 370  379
      evapi
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 148
+      |(Declaration)    : 149
       |(Definition)     : 266
       |(Reference)      : 281  366
      evapw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 148
+      |(Declaration)    : 149
       |(Definition)     : 267
       |(Reference)      : 366
      ffw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 148
+      |(Declaration)    : 149
       |(Definition)     : 229  233
       |(Reference)      : 273  274  347  365  366
      fice
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 2  137
+      |(Declaration)    : 2  138
       |(Definition)     : 170  232
       |(Reference)      : 229  230  231  233  236  247  274  347  365  366
      flag
@@ -1036,13 +1038,13 @@
      flag_iter
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 2  134
+      |(Declaration)    : 2  135
       |(Definition)     : 
       |(Reference)      : 167  168
      focn
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 148
+      |(Declaration)    : 149
       |(Definition)     : 294
       |(Reference)      : 
      fpvs
@@ -1054,13 +1056,13 @@
      fpvs
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 154
+      |(Declaration)    : 155
       |(Definition)     : 
       |(Reference)      : 
      gflux
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 2  144
+      |(Declaration)    : 2  145
       |(Definition)     : 
       |(Reference)      : 
      grav
@@ -1072,43 +1074,43 @@
      hfd
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 148
+      |(Declaration)    : 149
       |(Definition)     : 283
       |(Reference)      : 
      hfi
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 148
+      |(Declaration)    : 149
       |(Definition)     : 281
       |(Reference)      : 
      hflx
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 2  144
+      |(Declaration)    : 2  145
       |(Definition)     : 365  378
       |(Reference)      : 378
      hflxi
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 154
+      |(Declaration)    : 155
       |(Definition)     : 363
       |(Reference)      : 365
      hflxw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 154
+      |(Declaration)    : 155
       |(Definition)     : 364
       |(Reference)      : 365
      hi_save
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 148
+      |(Declaration)    : 149
       |(Definition)     : 187
       |(Reference)      : 319
      hice
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 2  137
+      |(Declaration)    : 2  138
       |(Definition)     : 169  297  319
       |(Reference)      : 187  297  300  302  302
      himax
@@ -1126,7 +1128,7 @@
      hs_save
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 148
+      |(Declaration)    : 149
       |(Definition)     : 188
       |(Reference)      : 320
      hsmax
@@ -1162,13 +1164,13 @@
      im
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
-      |(Declaration)    : 2  123
+      |(Declaration)    : 2  124
       |(Definition)     : 
-      |(Reference)      : 126  126  126  126  127  127  127  127  127  127  127  127  127  127  127  131  134  137  137  137  137  137  137  137  140  144  144  144  144  144  144  144  144  148  148  148  148  148  148  148  148  148  148  148  148  148  148  148  148  154  160
+      |(Reference)      : 127  127  127  127  128  128  128  128  128  128  128  128  128  128  128  132  135  138  138  138  138  138  138  138  141  145  145  145  145  145  145  145  145  149  149  149  149  149  149  149  149  149  149  149  149  149  149  149  149  155  160
      imj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
-      |(Declaration)    : 2  123
+      |(Declaration)    : 2  124
       |(Definition)     : 
       |(Reference)      : 166  177  185  192  209  317  325  352  359
      ipr
@@ -1180,7 +1182,7 @@
      islimsk
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 2  131
+      |(Declaration)    : 2  132
       |(Definition)     : 
       |(Reference)      : 167  168
      k
@@ -1194,19 +1196,19 @@
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 99  112  113  114  115  116  117  118  119  120  127  132  137  140  144  148  154  156
+      |(Reference)      : 99  112  113  114  115  116  117  118  119  120  121  128  133  138  141  145  149  155
      km
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
-      |(Declaration)    : 2  123
+      |(Declaration)    : 2  124
       |(Definition)     : 
-      |(Reference)      : 140
+      |(Reference)      : 141
      kmi
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 111
       |(Definition)     : 
-      |(Reference)      : 154  176  351
+      |(Reference)      : 155  176  351
      lprnt
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : 
@@ -1216,7 +1218,7 @@
      lsm
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
-      |(Declaration)    : 2  123
+      |(Declaration)    : 2  124
       |(Definition)     : 
       |(Reference)      : 191
      machine
@@ -1240,7 +1242,7 @@
      mom4ice
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : INTENT(IN), dummy-argument
-      |(Declaration)    : 2  134
+      |(Declaration)    : 2  135
       |(Definition)     : 
       |(Reference)      : 184  246  316
      physcons
@@ -1252,55 +1254,55 @@
      prsl1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 2  127
+      |(Declaration)    : 2  128
       |(Definition)     : 
       |(Reference)      : 223  226
      prslki
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 2  127
+      |(Declaration)    : 2  128
       |(Definition)     : 
       |(Reference)      : 222
      ps
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 2  127
+      |(Declaration)    : 2  128
       |(Definition)     : 
       |(Reference)      : 240  242
      q0
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 154
+      |(Declaration)    : 155
       |(Definition)     : 220  227
       |(Reference)      : 223  227  266  267
      q1
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 2  126
+      |(Declaration)    : 2  127
       |(Definition)     : 
       |(Reference)      : 220  370
      qs1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 154
+      |(Declaration)    : 155
       |(Definition)     : 225  226
       |(Reference)      : 226  226  227  283
      qssi
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 154
+      |(Declaration)    : 155
       |(Definition)     : 239  240
       |(Reference)      : 240  240  266
      qssw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 154
+      |(Declaration)    : 155
       |(Definition)     : 241  242
       |(Reference)      : 242  242  267
      qsurf
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 2  144
+      |(Declaration)    : 2  145
       |(Definition)     : 370
       |(Reference)      : 
      RTYPE
@@ -1308,11 +1310,11 @@
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 106  126
+      |(Reference)      : 106  127
      rch
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 148
+      |(Declaration)    : 149
       |(Definition)     : 262
       |(Reference)      : 266  267  281  283  363  364  370
      rd
@@ -1324,7 +1326,7 @@
      rho
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 148
+      |(Declaration)    : 149
       |(Definition)     : 223
       |(Reference)      : 261  377
      rvrdm1
@@ -1344,63 +1346,63 @@
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 2
-      |(Reference)      : 657
+      |(Reference)      : 659
      sfcdsw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 2  127
+      |(Declaration)    : 2  128
       |(Definition)     : 
       |(Reference)      : 272
      sfcemis
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 2  127
+      |(Declaration)    : 2  128
       |(Definition)     : 
       |(Reference)      : 281  283
      sfcnsw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 2  127
+      |(Declaration)    : 2  128
       |(Definition)     : 
       |(Reference)      : 273  274
      sneti
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 148
+      |(Declaration)    : 149
       |(Definition)     : 274
       |(Reference)      : 
      snetw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 148
+      |(Declaration)    : 149
       |(Definition)     : 272  273
       |(Reference)      : 273  274
      snof
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 148
+      |(Declaration)    : 149
       |(Definition)     : 295
       |(Reference)      : 
      snowd
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 148
+      |(Declaration)    : 149
       |(Definition)     : 247  249  298  302  320
       |(Reference)      : 298  300  301  303  374
      snowmt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 2  144
+      |(Declaration)    : 2  145
       |(Definition)     : 
       |(Reference)      : 
      snwdph
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 2  144
+      |(Declaration)    : 2  145
       |(Definition)     : 375
       |(Reference)      : 
      sqrt
-      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Class and Type) : intrinsic function name, REAL(4)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
@@ -1408,19 +1410,19 @@
      srflag
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 2  127
+      |(Declaration)    : 2  128
       |(Definition)     : 
       |(Reference)      : 194
      stc
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 2  140
+      |(Declaration)    : 2  141
       |(Definition)     : 354
       |(Reference)      : 179
      stsice
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 154
+      |(Declaration)    : 155
       |(Definition)     : 179  337  343
       |(Reference)      : 334  335  338  341  342  344  354
      t0c
@@ -1430,27 +1432,27 @@
       |(Definition)     : 
       |(Reference)      : 101  354
      t1
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 2  126
+      |(Declaration)    : 2  127
       |(Definition)     : 
       |(Reference)      : 222  223  224
      t12
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 154
+      |(Declaration)    : 155
       |(Definition)     : 276  286
       |(Reference)      : 277  277  283  283  287  287
      t14
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 154
+      |(Declaration)    : 155
       |(Definition)     : 277  287
       |(Reference)      : 281
      tem
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 154
+      |(Declaration)    : 155
       |(Definition)     : 377
       |(Reference)      : 378  379
      tgice
@@ -1462,13 +1464,13 @@
      theta1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 148
+      |(Declaration)    : 149
       |(Definition)     : 222
       |(Reference)      : 281  363  364
      tice
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 2  137
+      |(Declaration)    : 2  138
       |(Definition)     : 234  239  330
       |(Reference)      : 276  276  281  283  327  328  331  347  363
      timin
@@ -1480,43 +1482,43 @@
      tprcp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 2  137
+      |(Declaration)    : 2  138
       |(Definition)     : 197
       |(Reference)      : 196
      tskin
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 2  137
+      |(Declaration)    : 2  138
       |(Definition)     : 235  347
       |(Reference)      : 
      ttmp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 148
+      |(Declaration)    : 149
       |(Definition)     : 224  225
       |(Reference)      : 
      u1
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 2  126
+      |(Declaration)    : 2  127
       |(Definition)     : 
       |(Reference)      : 217  217
      v1
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 2  126
+      |(Declaration)    : 2  127
       |(Definition)     : 
       |(Reference)      : 217  217
      weasd
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 2  137
+      |(Declaration)    : 2  138
       |(Definition)     : 196  374
       |(Reference)      : 188  196  247  249  375
      wind
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 154
+      |(Declaration)    : 155
       |(Definition)     : 217
       |(Reference)      : 260  261
 
@@ -1526,80 +1528,80 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 499
-      |(Definition)     : 552  560
-      |(Reference)      : 556  556  556  562  562  562
+      |(Definition)     : 552  561
+      |(Reference)      : 556  556  556  563  563  563
      a10
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 499
       |(Definition)     : 546
-      |(Reference)      : 552  560
+      |(Reference)      : 552  561
      ai
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 499
       |(Definition)     : 541
-      |(Reference)      : 553  557  564
+      |(Reference)      : 553  557  565
      b1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 499
-      |(Definition)     : 553  561
-      |(Reference)      : 556  556  556  562  562  562
+      |(Definition)     : 553  562
+      |(Reference)      : 556  556  556  563  563  563
      b10
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 499
       |(Definition)     : 547
-      |(Reference)      : 553  561
+      |(Reference)      : 553  562
      bi
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 499
       |(Definition)     : 540
-      |(Reference)      : 541  551  552  557  564
+      |(Reference)      : 541  551  552  557  565
      bmelt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 499
-      |(Definition)     : 573
-      |(Reference)      : 594  595  599
+      |(Definition)     : 575
+      |(Reference)      : 596  597  601
      c1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 499
       |(Definition)     : 554
-      |(Reference)      : 556  562
+      |(Reference)      : 556  563
      ci
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 465
       |(Definition)     : 
-      |(Reference)      : 472  547  587  609  613  618  620  627  627
+      |(Reference)      : 472  547  589  611  615  620  622  629  629
      delt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : INTENT(IN), dummy-argument, host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 507  508  509  564  567  573  613
+      |(Reference)      : 507  508  509  565  568  575  615
      dh
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 499
-      |(Definition)     : 595
-      |(Reference)      : 596  596  597
+      |(Definition)     : 597
+      |(Reference)      : 598  598  599
      di
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 462
       |(Definition)     : 
-      |(Reference)      : 463  464  472  473  547  587
+      |(Reference)      : 463  464  472  473  547  589
      dici
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 472
       |(Definition)     : 
-      |(Reference)      : 545  546  546  547  570  595  599
+      |(Reference)      : 545  546  546  547  571  597  601
      didw
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
@@ -1611,7 +1613,7 @@
       |(Attributes)     : 
       |(Declaration)    : 473
       |(Definition)     : 
-      |(Reference)      : 554  554  595  599
+      |(Reference)      : 554  554  597  601
      ds
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
@@ -1623,25 +1625,25 @@
       |(Attributes)     : 
       |(Declaration)    : 464
       |(Definition)     : 
-      |(Reference)      : 519  631
+      |(Reference)      : 519  633
      dsdw
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 456
       |(Definition)     : 
-      |(Reference)      : 515  639  640
+      |(Reference)      : 515  641  642
      dsli
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 474
       |(Definition)     : 
-      |(Reference)      : 582  583  587
+      |(Reference)      : 584  585  589
      dt2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 499
       |(Definition)     : 507
-      |(Reference)      : 510  570
+      |(Reference)      : 510  571
      dt2i
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
@@ -1676,14 +1678,14 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 499
-      |(Definition)     : 608  617
-      |(Reference)      : 609  609  618  618
+      |(Definition)     : 610  619
+      |(Reference)      : 611  611  620  620
      fice
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument, host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 638
+      |(Reference)      : 640
      flag
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : DIMENSION, host-associated
@@ -1695,25 +1697,25 @@
       |(Attributes)     : DIMENSION, host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 573
+      |(Reference)      : 575
      gflux
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument, host-associated
       |(Declaration)    : 
-      |(Definition)     : 625  635  638
-      |(Reference)      : 638
+      |(Definition)     : 627  637  640
+      |(Reference)      : 640
      h1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 499
-      |(Definition)     : 577  587
-      |(Reference)      : 587  604  607  617  617  627
+      |(Definition)     : 579  589
+      |(Reference)      : 589  606  609  619  619  629
      h2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 499
-      |(Definition)     : 578  597  599
-      |(Reference)      : 596  596  597  599  604  608  608  613  627
+      |(Definition)     : 580  599  601
+      |(Reference)      : 598  598  599  601  606  610  610  615  629
      hdi
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
@@ -1736,8 +1738,8 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument, host-associated
       |(Declaration)    : 
-      |(Definition)     : 520  604  613  631
-      |(Reference)      : 515  517  518  519  520  542  543  545  546  546  547  547  554  570  573  577  578  606  607  608  613  617  624
+      |(Definition)     : 520  606  615  633
+      |(Reference)      : 515  517  518  519  520  542  543  545  546  546  547  547  554  571  575  579  580  608  609  610  615  619  626
      hsni
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
@@ -1749,7 +1751,7 @@
       |(Attributes)     : 
       |(Declaration)    : 503
       |(Definition)     : 512
-      |(Reference)      : 513  514  514  515  515  517  518  518  518  519  520  520  523  523  524  524  525  525  526  526  528  529  534  536  536  540  541  541  541  542  542  543  545  546  546  547  547  547  547  547  554  556  557  557  559  562  563  564  567  567  567  570  570  570  570  573  573  573  577  578  582  583  584  584  584  586  586  587  587  587  589  596  596  599  604  606  607  608  609  609  609  609  612  613  613  613  614  617  618  618  618  618  620  620  620  620  624  624  625  625  625  627  627  627  627  627  631  631  632  633  634  635  638  638  638  639  639  640  640  641  641  642  642  643  643
+      |(Reference)      : 513  514  514  515  515  517  518  518  518  519  520  520  523  523  524  524  525  525  526  526  528  529  534  536  536  540  541  541  541  542  542  543  545  546  546  547  547  547  547  547  554  556  557  557  560  563  564  565  568  568  568  571  571  571  571  575  575  575  579  580  584  585  586  586  586  588  588  589  589  589  591  598  598  601  606  608  609  610  611  611  611  611  614  615  615  615  616  619  620  620  620  620  622  622  622  622  626  626  627  627  627  629  629  629  629  629  633  633  634  635  636  637  640  640  640  641  641  642  642  643  643  644  644  645  645
      i0
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
@@ -1761,7 +1763,7 @@
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 391
-      |(Reference)      : 649
+      |(Reference)      : 651
      imj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument, host-associated
@@ -1778,14 +1780,14 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 499
-      |(Definition)     : 542  624
-      |(Reference)      : 551  551  557  557  560  561  564  625
+      |(Definition)     : 542  626
+      |(Reference)      : 551  551  557  557  561  562  565  627
      k32
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 499
       |(Definition)     : 543
-      |(Reference)      : 545  546  546  547  547  570
+      |(Reference)      : 545  546  546  547  547  571
      ki
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
@@ -1797,7 +1799,7 @@
       |(Attributes)     : 
       |(Declaration)    : 475
       |(Definition)     : 
-      |(Reference)      : 542  542  542  573  624  624  624
+      |(Reference)      : 542  542  542  575  626  626  626
      kind_phys
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : host-associated
@@ -1809,19 +1811,19 @@
       |(Attributes)     : 
       |(Declaration)    : 459
       |(Definition)     : 
-      |(Reference)      : 542  624
+      |(Reference)      : 542  626
      li
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 466
       |(Definition)     : 
-      |(Reference)      : 473  474  547  547  587  609  609  613  618  618  620  627  627  627
+      |(Reference)      : 473  474  547  547  589  611  611  615  620  620  622  629  629  629
      max
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 631
+      |(Reference)      : 633
      min
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
@@ -1851,43 +1853,43 @@
       |(Attributes)     : DIMENSION, host-associated
       |(Declaration)    : 
       |(Definition)     : 523
-      |(Reference)      : 523  567
+      |(Reference)      : 523  568
      snowd
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, host-associated
       |(Declaration)    : 
-      |(Definition)     : 514  518  567  584  589  627  632  640
-      |(Reference)      : 514  515  518  529  542  567  582  584  586  587  624  627  631  640
+      |(Definition)     : 514  518  568  586  591  629  634  642
+      |(Reference)      : 514  515  518  529  542  568  584  586  588  589  626  629  633  642
      snowmt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument, host-associated
       |(Declaration)    : 
-      |(Definition)     : 583  586  639
-      |(Reference)      : 584  639
+      |(Definition)     : 585  588  641
+      |(Reference)      : 586  641
      sqrt
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 556  562  620
+      |(Reference)      : 556  563  622
      stsice
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, host-associated
       |(Declaration)    : 
-      |(Definition)     : 525  526  556  562  570  596  609  614  618  620  633  634  642  643
-      |(Reference)      : 525  526  547  547  547  557  564  570  570  573  587  587  596  599  609  609  609  612  613  618  618  618  620  620  620  625  627  627  627  642  643
+      |(Definition)     : 525  526  556  563  571  598  611  616  620  622  635  636  644  645
+      |(Reference)      : 525  526  547  547  547  557  565  571  571  575  589  589  598  601  611  611  611  614  615  620  620  620  622  622  622  627  629  629  629  644  645
      t0c
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 458
       |(Definition)     : 
-      |(Reference)      : 524  525  526  641  642  643
+      |(Reference)      : 524  525  526  643  644  645
      tfi
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 469
       |(Definition)     : 
-      |(Reference)      : 471  533  587  595  595  599  612  613  614  620  627  627  627
+      |(Reference)      : 471  533  589  597  597  601  614  615  616  622  629  629  629
      tfi0
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
@@ -1899,31 +1901,31 @@
       |(Attributes)     : 
       |(Declaration)    : 470
       |(Definition)     : 
-      |(Reference)      : 547  570  570  573  596  633  634
+      |(Reference)      : 547  571  571  575  598  635  636
      tice
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument, host-associated
       |(Declaration)    : 
-      |(Definition)     : 524  536  557  563  641
-      |(Reference)      : 524  536  541  559  625  641
+      |(Definition)     : 524  536  557  564  643
+      |(Reference)      : 524  536  541  560  627  643
      tmelt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 499
-      |(Definition)     : 564  566
-      |(Reference)      : 582  583  587
+      |(Definition)     : 565  567
+      |(Reference)      : 584  585  589
      tsf
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 499
       |(Definition)     : 530  533
-      |(Reference)      : 536  559  561  563  564  564
+      |(Reference)      : 536  560  562  564  565  565
      wrk
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 499
       |(Definition)     : 545
-      |(Reference)      : 546  547  570
+      |(Reference)      : 546  547  571
      wrk1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
@@ -1933,8 +1935,8 @@
 
  Total information
    Procedures       : 1
-   Total lines      : 658
+   Total lines      : 660
    Total statements : 294
-   Total stack(byte): 5136
+   Total stack(byte): 5120
    Total prefetch num: 0
 

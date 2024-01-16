@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:30:30 2023
+ Fujitsu Fortran Version 4.6.1  Thu Dec 28 15:29:21 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_rsm
    Source file       : dcyc2.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -163,76 +163,79 @@
              101                     !
              102                           use machine,         only : kind_phys
              103                           use physcons,        only : con_pi, con_sbc
-             104                     
-             105                           implicit none
-             106                     !
-             107                     !  ---  constant parameters:
-             108                           real(kind=kind_phys), parameter :: f_eps  = 0.0001
-             109                           real(kind=kind_phys), parameter :: hour12 = 12.0
-             110                     
-             111                     !  ---  inputs:
-             112                           integer, intent(in) :: ix, im, levs
-             113                     
-             114                           real(kind=kind_phys), intent(in) :: solhr, slag, cdec, sdec,     &
-             115                                sinlat, coslat
-             116                     
+             104                           use const,           only : RTYPE
+             105                     
+             106                           implicit none
+             107                     !
+             108                     !  ---  constant parameters:
+             109                           real(kind=kind_phys), parameter :: f_eps  = 0.0001
+             110                           real(kind=kind_phys), parameter :: hour12 = 12.0
+             111                     
+             112                     !  ---  inputs:
+             113                           integer, intent(in) :: ix, im, levs
+             114                     
+             115                           real(kind=kind_phys), intent(in) :: solhr, slag, cdec, sdec,     &
+             116                                sinlat, coslat
              117                     
-             118                           real(kind=kind_phys), dimension(ix), intent(in) ::               &
-             119                                xlon, coszen, tsea, tf, tsflw, sfcdlw,                      &
-             120                                sfcdsw, sfcnsw
-             121                     
-             122                           real(kind=kind_phys), dimension(ix,levs), intent(in) :: swh, hlw
-             123                           real(kind=kind_phys), dimension(ix,levs), intent(in) :: swhc, hlwc
+             118                     
+             119                           real(kind=kind_phys), dimension(ix), intent(in) ::               &
+             120                                xlon, coszen, tsea, tsflw, sfcdlw,                          &
+             121                                sfcdsw, sfcnsw
+             122                           real(kind=RTYPE), dimension(ix), intent(in) ::                   &
+             123                                tf
              124                     
-             125                     !  ---  input/output:
-             126                           real(kind=kind_phys), dimension(ix,levs), intent(inout) :: dtrad &
-             127                                                                                     ,dtradc
-             128                     
-             129                     !  ---  outputs:
-             130                           real(kind=kind_phys), dimension(ix), intent(out) ::              &
-             131                                adjsfcdsw, adjsfcnsw, adjsfcdlw, adjsfcnlw, xmu
-             132                     
-             133                     !  ---  locals:
-             134                           integer :: i, k
-             135                           real(kind=kind_phys) :: cns, ss, cc, ch, tem1, tem2, xlw(im)
-             136                     !
-             137                     !     adjsfculw(im)- real, sfc upward lw flux at current time (w/m**2)  !
-             138                           real(kind=kind_phys), dimension(ix) :: adjsfculw
-             139                     !===> ...  begin here
-             140                     !
-             141                     !  --- ...  compute cosine of solar zenith angle for both hemispheres.
-             142                     
-             143                           cns = con_pi * (solhr - hour12) / hour12 + slag
-             144                     
+             125                           real(kind=kind_phys), dimension(ix,levs), intent(in) :: swh, hlw
+             126                           real(kind=kind_phys), dimension(ix,levs), intent(in) :: swhc, hlwc
+             127                     
+             128                     !  ---  input/output:
+             129                           real(kind=kind_phys), dimension(ix,levs), intent(inout) :: dtrad &
+             130                                                                                     ,dtradc
+             131                     
+             132                     !  ---  outputs:
+             133                           real(kind=kind_phys), dimension(ix), intent(out) ::              &
+             134                                adjsfcdsw, adjsfcnsw, adjsfcdlw, adjsfcnlw, xmu
+             135                     
+             136                     !  ---  locals:
+             137                           integer :: i, k
+             138                           real(kind=kind_phys) :: cns, ss, cc, ch, tem1, tem2, xlw(im)
+             139                     !
+             140                     !     adjsfculw(im)- real, sfc upward lw flux at current time (w/m**2)  !
+             141                           real(kind=kind_phys), dimension(ix) :: adjsfculw
+             142                     !===> ...  begin here
+             143                     !
+             144                     !  --- ...  compute cosine of solar zenith angle for both hemispheres.
+             145                     
+             146                           cns = con_pi * (solhr - hour12) / hour12 + slag
+             147                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 43
+                                   <<<    Standard iteration count: 42
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 0.80, ITR: 64, MVE: 4, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.81, ITR: 56, MVE: 4, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      tsflw, tf, xlw, xlon, xmu
+                                   <<<      xlon, tf, tsflw, xlw, xmu
                                    <<< Loop-information  End >>>
-             145     1  pp    v            do i = 1, im
-             146     1   p    v              ss     = sinlat * sdec
-             147     1   p    v              cc     = coslat * cdec
-             148     1   p    v              ch     = cc * cos( xlon(i)+cns )
-             149     1   p    v              xmu(i) = ch + ss
-             150     1               
-             151     1               !  --- ...  for lw time-step adjustment: compute 4th power of the ratio of
-             152     1               !           layer 1 temperature over the value during radiation calculation
+             148     1  pp    v            do i = 1, im
+             149     1   p    v              ss     = sinlat * sdec
+             150     1   p    v              cc     = coslat * cdec
+             151     1   p    v              ch     = cc * cos( xlon(i)+cns )
+             152     1   p    v              xmu(i) = ch + ss
              153     1               
-             154     1   p    v              tem1   = tf(i) / tsflw(i)
-             155     1   p    v              xlw(i) = tem1 * tem1
-             156     1   p    v            enddo
-             157                     
-             158                     !  --- ...  normalize by average value over radiation period for daytime.
-             159                     
+             154     1               !  --- ...  for lw time-step adjustment: compute 4th power of the ratio of
+             155     1               !           layer 1 temperature over the value during radiation calculation
+             156     1               
+             157     1   p    v              tem1   = tf(i) / tsflw(i)
+             158     1   p    v              xlw(i) = tem1 * tem1
+             159     1   p    v            enddo
+             160                     
+             161                     !  --- ...  normalize by average value over radiation period for daytime.
+             162                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 247
                                    <<<  [OPTIMIZATION]
-                                   <<<    FUSED(lines: 160,169)
+                                   <<<    FUSED(lines: 163,172)
                                    <<<    SIMD(VL: 8)
                                    <<<    SOFTWARE PIPELINING(IPC: 1.04, ITR: 32, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
@@ -240,39 +243,39 @@
                                    <<<      adjsfculw, adjsfcnlw, xlw, sfcdlw
                                    <<<      adjsfcdlw, adjsfcdsw, adjsfcnsw
                                    <<< Loop-information  End >>>
-             160     1  pp    v            do i = 1, im
-             161     1               !        xcosz(i) = xmu(i)
-             162     2   p    v              if ( xmu(i) > f_eps .and. coszen(i) > f_eps ) then
-             163     2   p    v                xmu(i) = xmu(i) / coszen(i)
-             164     2   p    v              else
-             165     2   p    v                xmu(i) = 0.0
-             166     2   p    v              endif
-             167     1   p    v            enddo
-             168                     
+             163     1  pp    v            do i = 1, im
+             164     1               !        xcosz(i) = xmu(i)
+             165     2   p    v              if ( xmu(i) > f_eps .and. coszen(i) > f_eps ) then
+             166     2   p    v                xmu(i) = xmu(i) / coszen(i)
+             167     2   p    v              else
+             168     2   p    v                xmu(i) = 0.0
+             169     2   p    v              endif
+             170     1   p    v            enddo
+             171                     
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    FUSED
                                    <<< Loop-information  End >>>
-             169     1                     do i = 1, im
-             170     1               !  --- ...  adjust sfc downward lw flux to account for t changes in layer 1.
-             171     1               !           1st line is for original version, 2nd one is for updated version
-             172     1                       adjsfcdlw(i) = sfcdlw(i) * xlw(i) * xlw(i)
-             173     1               
-             174     1               !  --- ...  compute sfc upward lw flux from current temp,
-             175     1               !      note: sfc emiss effect is not appied at this time
-             176     1                       tem1         = tsea(i) * tsea(i)
-             177     1                       adjsfculw(i) =  con_sbc * tem1 * tem1
-             178     1               
-             179     1                       adjsfcnlw(i) = adjsfculw(i)-adjsfcdlw(i)
-             180     1               
-             181     1               !  --- ...  adjust sfc net and downward sw fluxes for zenith angle changes
-             182     1                       adjsfcnsw(i) = sfcnsw(i) * xmu(i)
-             183     1                       adjsfcdsw(i) = sfcdsw(i) * xmu(i)
-             184     1                     enddo
-             185                     
-             186                     !  --- ...  adjust sw heating rates with zenith angle change and
-             187                     !           add with lw heating to temperature tendency
+             172     1                     do i = 1, im
+             173     1               !  --- ...  adjust sfc downward lw flux to account for t changes in layer 1.
+             174     1               !           1st line is for original version, 2nd one is for updated version
+             175     1                       adjsfcdlw(i) = sfcdlw(i) * xlw(i) * xlw(i)
+             176     1               
+             177     1               !  --- ...  compute sfc upward lw flux from current temp,
+             178     1               !      note: sfc emiss effect is not appied at this time
+             179     1                       tem1         = tsea(i) * tsea(i)
+             180     1                       adjsfculw(i) =  con_sbc * tem1 * tem1
+             181     1               
+             182     1                       adjsfcnlw(i) = adjsfculw(i)-adjsfcdlw(i)
+             183     1               
+             184     1               !  --- ...  adjust sfc net and downward sw fluxes for zenith angle changes
+             185     1                       adjsfcnsw(i) = sfcnsw(i) * xmu(i)
+             186     1                       adjsfcdsw(i) = sfcdsw(i) * xmu(i)
+             187     1                     enddo
              188                     
+             189                     !  --- ...  adjust sw heating rates with zenith angle change and
+             190                     !           add with lw heating to temperature tendency
+             191                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
@@ -280,7 +283,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      swhc, swh, xmu, hlwc, hlw, dtradc, dtrad
                                    <<< Loop-information  End >>>
-             189     1  pp                 do k = 1, levs
+             192     1  pp                 do k = 1, levs
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -288,21 +291,21 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      swhc, xmu, hlwc, dtradc, swh, hlw, dtrad
                                    <<< Loop-information  End >>>
-             190     2   p    v              do i = 1, im
-             191     2   p    v                dtrad(i,k) = swh(i,k)*xmu(i) + hlw(i,k)
-             192     2   p    v                dtradc(i,k) = swhc(i,k)*xmu(i) + hlwc(i,k)
-             193     2   p    v              enddo
-             194     1   p                 enddo
-             195                     !
-             196                           return
-             197                     !...................................
-             198                           end subroutine dcyc2t3
-             199                     !-----------------------------------
-             200                     
+             193     2   p    v              do i = 1, im
+             194     2   p    v                dtrad(i,k) = swh(i,k)*xmu(i) + hlw(i,k)
+             195     2   p    v                dtradc(i,k) = swhc(i,k)*xmu(i) + hlwc(i,k)
+             196     2   p    v              enddo
+             197     1   p                 enddo
+             198                     !
+             199                           return
+             200                     !...................................
+             201                           end subroutine dcyc2t3
+             202                     !-----------------------------------
+             203                     
 
  Procedure information
-   Lines      : 200
-   Statements : 48
+   Lines      : 203
+   Statements : 50
    Stack(byte): 1344
    Prefetch num: 0
 
@@ -311,165 +314,171 @@
      adjsfcdlw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
-      |(Declaration)    : 89  130
-      |(Definition)     : 172
-      |(Reference)      : 179
+      |(Declaration)    : 89  133
+      |(Definition)     : 175
+      |(Reference)      : 182
      adjsfcdsw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
-      |(Declaration)    : 89  130
-      |(Definition)     : 183
+      |(Declaration)    : 89  133
+      |(Definition)     : 186
       |(Reference)      : 
      adjsfcnlw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
-      |(Declaration)    : 89  130
-      |(Definition)     : 179
+      |(Declaration)    : 89  133
+      |(Definition)     : 182
       |(Reference)      : 
      adjsfcnsw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
-      |(Declaration)    : 89  130
-      |(Definition)     : 182
+      |(Declaration)    : 89  133
+      |(Definition)     : 185
       |(Reference)      : 
      adjsfculw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 138
-      |(Definition)     : 177
-      |(Reference)      : 179
+      |(Declaration)    : 141
+      |(Definition)     : 180
+      |(Reference)      : 182
      cc
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 135
-      |(Definition)     : 147
-      |(Reference)      : 148
+      |(Declaration)    : 138
+      |(Definition)     : 150
+      |(Reference)      : 151
      cdec
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : INTENT(IN), dummy-argument
-      |(Declaration)    : 89  114
+      |(Declaration)    : 89  115
       |(Definition)     : 
-      |(Reference)      : 147
+      |(Reference)      : 150
      ch
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 135
-      |(Definition)     : 148
-      |(Reference)      : 149
+      |(Declaration)    : 138
+      |(Definition)     : 151
+      |(Reference)      : 152
      cns
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 135
-      |(Definition)     : 143
-      |(Reference)      : 148
+      |(Declaration)    : 138
+      |(Definition)     : 146
+      |(Reference)      : 151
      con_pi
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 103  143
+      |(Reference)      : 103  146
      con_sbc
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 103  177
+      |(Reference)      : 103  180
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 104
      cos
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 148
+      |(Reference)      : 151
      coslat
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : INTENT(IN), dummy-argument
-      |(Declaration)    : 89  114
+      |(Declaration)    : 89  115
       |(Definition)     : 
-      |(Reference)      : 147
+      |(Reference)      : 150
      coszen
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 89  118
+      |(Declaration)    : 89  119
       |(Definition)     : 
-      |(Reference)      : 162  163
+      |(Reference)      : 165  166
      dcyc2t3
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 89
-      |(Reference)      : 198
+      |(Reference)      : 201
      dtrad
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 89  126
-      |(Definition)     : 191
+      |(Declaration)    : 89  129
+      |(Definition)     : 194
       |(Reference)      : 
      dtradc
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 89  126
-      |(Definition)     : 192
+      |(Declaration)    : 89  129
+      |(Definition)     : 195
       |(Reference)      : 
      f_eps
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 108
+      |(Declaration)    : 109
       |(Definition)     : 
-      |(Reference)      : 162  162
+      |(Reference)      : 165  165
      hlw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 89  122
+      |(Declaration)    : 89  125
       |(Definition)     : 
-      |(Reference)      : 191
+      |(Reference)      : 194
      hlwc
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 89  123
+      |(Declaration)    : 89  126
       |(Definition)     : 
-      |(Reference)      : 192
+      |(Reference)      : 195
      hour12
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 109
+      |(Declaration)    : 110
       |(Definition)     : 
-      |(Reference)      : 143  143
+      |(Reference)      : 146  146
      i
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 134
-      |(Definition)     : 145  160  169  190
-      |(Reference)      : 148  149  154  154  155  162  162  163  163  163  165  172  172  172  172  176  176  177  179  179  179  182  182  182  183  183  183  191  191  191  191  192  192  192  192
+      |(Declaration)    : 137
+      |(Definition)     : 148  163  172  193
+      |(Reference)      : 151  152  157  157  158  165  165  166  166  166  168  175  175  175  175  179  179  180  182  182  182  185  185  185  186  186  186  194  194  194  194  195  195  195  195
      im
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
-      |(Declaration)    : 89  112
+      |(Declaration)    : 89  113
       |(Definition)     : 
-      |(Reference)      : 135  145  160  169  190
+      |(Reference)      : 138  148  163  172  193
      ix
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
-      |(Declaration)    : 89  112
+      |(Declaration)    : 89  113
       |(Definition)     : 
-      |(Reference)      : 118  118  118  118  118  118  118  118  122  122  123  123  126  126  130  130  130  130  130  138
+      |(Reference)      : 119  119  119  119  119  119  119  122  125  125  126  126  129  129  133  133  133  133  133  141
      k
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 134
-      |(Definition)     : 189
-      |(Reference)      : 191  191  191  192  192  192
+      |(Declaration)    : 137
+      |(Definition)     : 192
+      |(Reference)      : 194  194  194  195  195  195
      kind_phys
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 102  108  109  114  118  122  123  126  130  135  138
+      |(Reference)      : 102  109  110  115  119  125  126  129  133  138  141
      levs
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
-      |(Declaration)    : 89  112
+      |(Declaration)    : 89  113
       |(Definition)     : 
-      |(Reference)      : 122  122  123  123  126  126  189
+      |(Reference)      : 125  125  126  126  129  129  192
      machine
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -482,119 +491,125 @@
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 103
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 104  122
      sdec
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : INTENT(IN), dummy-argument
-      |(Declaration)    : 89  114
+      |(Declaration)    : 89  115
       |(Definition)     : 
-      |(Reference)      : 146
+      |(Reference)      : 149
      sfcdlw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 89  118
+      |(Declaration)    : 89  119
       |(Definition)     : 
-      |(Reference)      : 172
+      |(Reference)      : 175
      sfcdsw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 89  118
+      |(Declaration)    : 89  119
       |(Definition)     : 
-      |(Reference)      : 183
+      |(Reference)      : 186
      sfcnsw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 89  118
+      |(Declaration)    : 89  119
       |(Definition)     : 
-      |(Reference)      : 182
+      |(Reference)      : 185
      sinlat
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : INTENT(IN), dummy-argument
-      |(Declaration)    : 89  114
+      |(Declaration)    : 89  115
       |(Definition)     : 
-      |(Reference)      : 146
+      |(Reference)      : 149
      slag
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : INTENT(IN), dummy-argument
-      |(Declaration)    : 89  114
+      |(Declaration)    : 89  115
       |(Definition)     : 
-      |(Reference)      : 143
+      |(Reference)      : 146
      solhr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : INTENT(IN), dummy-argument
-      |(Declaration)    : 89  114
+      |(Declaration)    : 89  115
       |(Definition)     : 
-      |(Reference)      : 143
+      |(Reference)      : 146
      ss
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 135
-      |(Definition)     : 146
-      |(Reference)      : 149
+      |(Declaration)    : 138
+      |(Definition)     : 149
+      |(Reference)      : 152
      swh
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 89  122
+      |(Declaration)    : 89  125
       |(Definition)     : 
-      |(Reference)      : 191
+      |(Reference)      : 194
      swhc
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 89  123
+      |(Declaration)    : 89  126
       |(Definition)     : 
-      |(Reference)      : 192
+      |(Reference)      : 195
      tem1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 135
-      |(Definition)     : 154  176
-      |(Reference)      : 155  155  177  177
+      |(Declaration)    : 138
+      |(Definition)     : 157  179
+      |(Reference)      : 158  158  180  180
      tem2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 135
+      |(Declaration)    : 138
       |(Definition)     : 
       |(Reference)      : 
      tf
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 89  118
+      |(Declaration)    : 89  122
       |(Definition)     : 
-      |(Reference)      : 154
+      |(Reference)      : 157
      tsea
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 89  118
+      |(Declaration)    : 89  119
       |(Definition)     : 
-      |(Reference)      : 176  176
+      |(Reference)      : 179  179
      tsflw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 89  118
+      |(Declaration)    : 89  119
       |(Definition)     : 
-      |(Reference)      : 154
+      |(Reference)      : 157
      xlon
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 89  118
+      |(Declaration)    : 89  119
       |(Definition)     : 
-      |(Reference)      : 148
+      |(Reference)      : 151
      xlw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 135
-      |(Definition)     : 155
-      |(Reference)      : 172  172
+      |(Declaration)    : 138
+      |(Definition)     : 158
+      |(Reference)      : 175  175
      xmu
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
-      |(Declaration)    : 89  130
-      |(Definition)     : 149  163  165
-      |(Reference)      : 162  163  182  183  191  192
+      |(Declaration)    : 89  133
+      |(Definition)     : 152  166  168
+      |(Reference)      : 165  166  185  186  194  195
 
  Total information
    Procedures       : 1
-   Total lines      : 200
-   Total statements : 48
+   Total lines      : 203
+   Total statements : 50
    Total stack(byte): 1344
    Total prefetch num: 0
 

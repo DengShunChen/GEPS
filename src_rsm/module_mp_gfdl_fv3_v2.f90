@@ -114,7 +114,8 @@ module module_mp_gfdl_v2
     real (kind = r8), parameter :: d2ice = cp_vap - c_ice ! - 260.0, isobaric heating / cooling
     real (kind = r8), parameter :: li2 = lv0 + li0 ! 2.9220216e6, sublimation latent heat coefficient at 0 deg k
     
-    real, parameter :: qrmin = 1.e-8 ! min value for cloud condensates
+!    real, parameter :: qrmin = 1.e-8 ! min value for cloud condensates
+    real, parameter :: qrmin = 1.e-15 ! min value for cloud condensates
     real, parameter :: qvmin = 1.e-20 ! min value for water vapor (treated as zero)
     real, parameter :: qcmin = 1.e-12 ! min value for cloud condensates
     
@@ -1937,7 +1938,8 @@ subroutine icloud (ks, ke, tzk, p1, qvk, qlk, qrk, qik, qsk, qgk, dp1, den, &
                 
                 tc = tz - tice
                 
-                if (qr > 1.e-7 .and. tc < 0.) then
+!                if (qr > 1.e-7 .and. tc < 0.) then
+                if (qr > qrmin .and. tc < 0.) then
                     
                     ! -----------------------------------------------------------------------
                     ! * sink * terms to qr: psacr + pgfr
@@ -1973,6 +1975,15 @@ subroutine icloud (ks, ke, tzk, p1, qvk, qlk, qrk, qik, qsk, qgk, dp1, den, &
                     pgfr = factor * pgfr
                     
                     sink = psacr + pgfr
+                    !xb141 >>>
+                    ! pgfr could be greater than 1.e-9, and lead to negative values of qr (about -1.e-25).
+                    ! let psacr & pgfr divided in portion :
+                    if ( sink > qr ) then
+                       psacr = qr * psacr / sink
+                       pgfr = qr * pgfr / sink
+                       sink = qr
+                    endif
+                    !xb141 <<<
                     qr = qr - sink
                     qs = qs + psacr
                     qg = qg + pgfr

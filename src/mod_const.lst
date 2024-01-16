@@ -1,5 +1,5 @@
 
- Fujitsu Fortran Version 4.6.1  Tue Dec 19 11:04:12 2023
+ Fujitsu Fortran Version 4.6.1  Mon Jan 15 10:09:26 2024
 
  Compilation information
    Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src
@@ -91,7 +91,7 @@
               29                                 nnmiit,nnmivm,itypbl,                          &
               30                                 nmgwor,nmgwcv,mtnvar,                          &
               31                                 ktrop,ncpu,nmcup,nmpbl,nmland,numreduce,nmshl, &
-              32                                 nmmiph
+              32                                 nmmiph,itter
               33                     
               34                         common/constI/                                         &
               35                                 numout,ipadding,jm2,ksgeo,                     &
@@ -99,7 +99,7 @@
               37                                 nnmiit,nnmivm,itypbl,                          &
               38                                 nmgwor,nmgwcv,mtnvar,                          &
               39                                 ktrop,ncpu,nmcup,nmpbl,nmland,numreduce,nmshl, &
-              40                                 nmmiph
+              40                                 nmmiph,itter
               41                     
               42                     !    real, dimension(:), allocatable, save  ::              &
               43                     !         weight,sinl,cosl,cor,onocos
@@ -837,6 +837,12 @@
       |(Definition)     : 
       |(Reference)      : 
      ipadding
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 27  34
+      |(Definition)     : 
+      |(Reference)      : 
+     itter
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : PUBLIC, common-block-object
       |(Declaration)    : 27  34

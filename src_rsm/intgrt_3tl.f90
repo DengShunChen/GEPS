@@ -76,7 +76,7 @@
                 vvm_sl(nx,levp,my_max),                            &
                 uum_sl(nx,levp,my_max),ddtempr(nxp,lev,my_max)
 !
-      integer   ierr,itter,itt,year,yrd
+      integer   ierr,itt,year,yrd
 !
       real(kind=RTYPE) glob(nx,my)
       real      hf24(nxp,my_max),qf24(nxp,my_max),ss24(nxp,my_max),rs24(nxp,my_max), &
@@ -143,7 +143,7 @@
               istst,ii,nxjf !,n_stable,n_unstable,nc_stable
 
       real    www,dtx,dta,thdai,tkei,tpei,dsigp,            &
-              cosw,tengi,dt24,tg2,dtx_tau,hfiltx,sqhaf,     &
+              cosw,tengi,dt24,tg2,dtx_tau,sqhaf,            &
               dummy,dt1,sptend,wmax,xx,facw,dtaup!!,          &
 !!              sptendmax2,sptendmax1,dt_chg
 ! sppt variables
@@ -680,7 +680,7 @@
 !!      else if(tau.gt.24. .and. tau.le.36.)then
 !!         hfiltx=hfilt*2.
 !!      else
-       hfiltx=hfilt
+!!       hfiltx=hfilt
 !!      endif
 !
 !  global mean tempertures (tbar) and specific humid (qbar)
@@ -745,7 +745,6 @@
        ddtempr=0.
        pten=0.
 !
-       itter=1
        ndsldta = 0.5*dta
        ndsldtah= ndsldta/float(itter)
 
