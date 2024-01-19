@@ -2808,7 +2808,8 @@ CONTAINS
                 endif
 
 !                call vqrqi(1,improve,r00,fv0,qr(i,j),vr(i,j))
-                call vtr_mks(r00,qr(i,j),vr(i,j))
+                call vtr_mks(rho_mks(i,k,j),qr(i,j),vr(i,j))  !in MKS
+                vr(i,j) = vr(i,j) * 0.01  !in CGS
 
 !* 21 * PRAUT   AUTOCONVERSION OF QC TO QR                        **21**
 !* 22 * PRACW : ACCRETION OF QC BY QR                             **22**
@@ -2913,7 +2914,8 @@ CONTAINS
 !               else
 !                  vr(i,j)=max(vrcf*dd(i,j)**bwq, 0.)
 !               endif
-               call vtr_mks(r00,qr(i,j),vr(i,j))
+               call vtr_mks(rho_mks(i,k,j),qr(i,j),vr(i,j))  !in MKS
+               vr(i,j) = vr(i,j) * 0.01  !in CGS
             endif
 
             if (qs(i,j) .gt. cmin) then
@@ -2927,7 +2929,8 @@ CONTAINS
                zs(i,j)=zsc/y1(i,j)*ftns(i,j)
 !               if (improve.gt.2) ftns(i,j)=ftns0(i,j)**bsq
 !               vs(I,J)=MAX(vscf*dd(I,J)**bsq/ftns(i,j), 0.)
-               call vts_mks(improve,r00,qs(i,j),tair(i,j),vs(i,j))
+               call vts_mks(improve,rho_mks(i,k,j),qs(i,j),tair(i,j),vs(i,j))  !in MKS
+               vs(i,j) = vs(i,j) * 0.01  !in CGS
             endif
 
             if (qg(i,j) .gt. cmin) then
@@ -2942,11 +2945,13 @@ CONTAINS
                zg(i,j)=zgc/y1(i,j)*ftng(i,j)
 !               if (improve.gt.2)ftng(i,j)=ftng0(i,j)**bgq
 !               vg(i,j)=max(vgcf*dd(i,j)**bgq/ftng(i,j), 0.0)
-               call vtg_mks(ihail,improve,r00,qg(i,j),tair(i,j),vg(i,j))
+               call vtg_mks(ihail,improve,rho_mks(i,k,j),qg(i,j),tair(i,j),vg(i,j))  !in MKS
+               vg(i,j) = vg(i,j) * 0.01  !in CGS
             endif
 
 !            call vqrqi(2,improve,r00,fv0,qi(i,j),vi(i,j))
-            call vti_mks(improve,r00,tair(i,j),qi(i,j),vi(i,j))
+            call vti_mks(improve,rho_mks(i,k,j),tair(i,j),qi(i,j),vi(i,j))  !in MKS
+            vi(i,j) = vi(i,j) * 0.01  !in CGS
 
             if (qr(i,j) .le. cmin1) vr(i,j)=0.0
             if (qs(i,j) .le. cmin1) vs(i,j)=0.0
