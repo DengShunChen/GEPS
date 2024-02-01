@@ -14,11 +14,11 @@
       use mpe
       use const, only: RTYPE,kflag
 !
-      dimension fusl(nxp,lev+1,my_max),fdsl(nxp,lev+1,my_max)    &
-              , fuir(nxp,lev+1,my_max),fdir(nxp,lev+1,my_max)    &
-              , fuslr(nxp,lev+1,my_max),fdslr(nxp,lev+1,my_max)  &
-              , fuirr(nxp,lev+1,my_max),fdirr(nxp,lev+1,my_max)  &
-              , asl(nxp,lev,my_max),atl(nxp,lev,my_max)          &
+      real(kind=RTYPE)  fusl(nxp,lev+1,my_max) ,fdsl(nxp,lev+1,my_max)   &
+                      , fuir(nxp,lev+1,my_max) ,fdir(nxp,lev+1,my_max)   &
+                      , fuslr(nxp,lev+1,my_max),fdslr(nxp,lev+1,my_max)  &
+                      , fuirr(nxp,lev+1,my_max),fdirr(nxp,lev+1,my_max)  
+      dimension  asl(nxp,lev,my_max),atl(nxp,lev,my_max)         &
               , asl_clr(nxp,lev,my_max),atl_clr(nxp,lev,my_max)  &
               , dtrad(nxp,lev,my_max),dtrad0(nxp,lev,my_max)     &
               , cldcov(nxp,lev,my_max)                           &
