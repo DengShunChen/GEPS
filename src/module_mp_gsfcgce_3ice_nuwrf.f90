@@ -98,8 +98,6 @@ MODULE module_mp_gsfcgce_3ice_nuwrf
 
    REAL,    PRIVATE, DIMENSION( 31 ) ::    BergCon1,  BergCon2,       &
                                            BergCon3,  BergCon4
-   ! semi-Lagrangian sedimentation threshold
-   real,    private, parameter :: qfmin = 1.e-20
 
 !
    REAL,    PRIVATE, DIMENSION( 31 )  ::      aa1,  aa2
@@ -2348,8 +2346,12 @@ CONTAINS
       integer, parameter :: reiflag = 1
       ! 1 : default
       ! 2 : Wyser 1998
-      real, parameter :: reimin = 10.0 , reimax = 150.0
-      real :: rho_0, bw98
+      ! 3 : Fu 2007 (not yet)
+      ! 4 : Heymsfild et al. 2014
+      ! 5 : Dolinar et al. 2022 (not yet)
+      real :: reimin, reimax
+      real :: iwc_0, bw98
+      real :: md22, bd22, sigma, cd22, xd22
 !
 !JJS20090623      save  
 
@@ -4900,15 +4902,78 @@ CONTAINS
    endif ! qci(i,j,k) < cmin test
 
    if ( reiflag .eq. 2 ) then
-      ! Wyser 1998 :
+      ! Wyser 1998 , equation 15 and 35:
+      reimin = 10.0
       if ( qci(i,j,k) .ge. 1.e-12 ) then
-         rho_0 = 50.e-3
-         bw98 = - 2. + 1.e-3 * log10(rho(i,j,k)*qci(i,j,k)/rho_0)*max(0.0,tairc(i,j))**1.5
+         iwc_0 = 50.e-3  ! IWC_0 = 50 g/m^3 = 50.e-3 kg/m^3
+         bw98 = - 2. + 1.e-3 * log10(rho(i,j,k)*qci(i,j,k)/iwc_0)*max(0.0,-tairc(i,j))**1.5
          refi(i,k,j) = 377.4 + bw98 * (203.3 + bw98 * (37.91 + 2.3696 * bw98))
+         refi(i,k,j) = max (reimin, refi(i,k,j))
+      else
+         refi(i,k,j) = 0.0
+      endif
+   endif
+
+   if ( reiflag .eq. 3 ) then
+      ! Fu 2007 :
+      reimin = 10.0 ; reimax = 150.0
+      if ( qci(i,j,k) .ge. 1.e-12 ) then
+         if ( tairc(i,j) .gt. -10.0 ) then
+            refi(i,k,j) = 100.0 + tairc(i,j)*5.94
+         else
+            refi(i,k,j) = 47.05 + tairc(i,j)*(0.6624 + 0.001741*tairc(i,j))
+         endif
          refi(i,k,j) = max (reimin, min (reimax, refi(i,k,j)))
       else
-         refi(i,k,j) = reimin
+         refi(i,k,j) = 0.0
       endif
+   endif
+
+   if ( reiflag .eq. 4 ) then
+      ! Heymsfield et al. 2014 , equation 9e :
+      reimin = 10.0
+      if ( qci(i,j,k) .ge. 1.e-12 ) then
+         if ( tairc(i,j) >= -56.0 .and. tairc(i,j) < 0.0 ) then
+            refi(i,k,j) = 308.4 * exp ( 0.0152 * tairc(i,j) )      ! 131.657 ~ 308.4 micron
+         elseif ( tairc(i,j) >= -71.0 .and. tairc(i,j) < -56.0 ) then
+            refi(i,k,j) = 9.1744e+4 * exp ( 0.117 * tairc(i,j) )   ! 22.641 ~ 130.942 micron
+         elseif ( tairc(i,j) < -71.0 ) then
+            refi(i,k,j) = 83.3 * exp ( 0.0184 * tairc(i,j) )       ! 10 ~ 22.557 micron
+         endif
+         refi(i,k,j) = max (reimin, refi(i,k,j))
+      else
+         refi(i,k,j) = 0.0
+      endif
+   endif
+
+   if ( reiflag .eq. 5 ) then
+      reimin = 0.0
+      ! Dolinar et al. 2022, equation 2~9
+      ! all-ice cloud parameterization from CALIOP-CloudSat 2C-ICE data :
+      if ( qci(i,j,k) .ge. 1.e-12 ) then
+         ! calculate extinction sigma : 
+         md22 = 5.17581 + tair(i,j)*(-0.06242+tair(i,j)*(0.00028-tair(i,j)*4.25497e-7))
+         bd22 = 28.00394 + tair(i,j)*(-0.32662+tair(i,j)*(0.00143-tair(i,j)*2.12271e-6))
+         sigma = exp(md22*log(qci(i,j,k)*rho(i,j,k)*1.e+3)+bd22)  ! sigma in km^-1, IWC in g m^-3
+         ! calculate scaling factor xd22 :
+         if ( sigma.le.2.4 ) then
+            cd22 = 35.6336 + 11.9597*sigma
+         else
+            cd22 = 56.3089 + 3.2007*sigma
+         endif
+         xd22 = cd22 - 61.0842
+         ! calculate effective radius :
+         if ( tair(i,j).le.210.0 ) then
+            refi(i,k,j) = xd22 - 1583.9369 + tair(i,j)* &
+                          (20.6833+tair(i,j)*(-0.0865+tair(i,j)*0.00012))
+         else
+            refi(i,k,j) = xd22 + 2544.9612 + tair(i,j)* &
+                          (-33.3326+tair(i,j)*(0.1438-tair(i,j)*0.00020))
+         endif
+         refi(i,k,j) = max (reimin, refi(i,k,j))
+      endif
+   else
+      refi(i,k,j) = 0.0
    endif
 !JJS 20140305 ^^^^^  Calculate effective radius for all cloud species
 
@@ -5535,9 +5600,14 @@ CONTAINS
             ! Deng and Mace 2008 :
             ! IWC in g/m^3 , tc in oC , and vti in cm/s
             tc = tz - t0
+            ! old code from GFDL MP :
+!            vti = (3. + log10(qiz * rhoz)) * &
+!                  (tc * (aa * tc + bb) + cc) + dd * tc + ee
+!            vti = exp(log(10.) * vti)
+            ! new code from paper :
             vti = (3. + log10(qiz * rhoz)) * &
-                  (tc * (aa * tc + bb) + cc) + dd * tc + ee
-            vti = exp(log(10.) * vti)
+                  (tc * (aa * tc + bb) + cc) * log(10.) + dd * tc + ee
+            vti = exp( vti )
             vti = vti * 0.01    ! convert back to MKS
 
          endif
