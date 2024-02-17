@@ -99,6 +99,9 @@ MODULE module_mp_gsfcgce_3ice_nuwrf
    REAL,    PRIVATE, DIMENSION( 31 ) ::    BergCon1,  BergCon2,       &
                                            BergCon3,  BergCon4
 
+   ! critical q of hydrometeor characteristics (eg. fall speed, radius)
+   REAL,    PRIVATE :: cimin, crmin, csmin, cgmin
+
 !
    REAL,    PRIVATE, DIMENSION( 31 )  ::      aa1,  aa2
    DATA aa1/.7939e-7, .7841e-6, .3369e-5, .4336e-5, .5285e-5,         &
@@ -769,7 +772,7 @@ CONTAINS
 
          vtr(k)=0.
 
-         if (qrz(k) .gt. cmin) then
+         if (qrz(k) .gt. crmin) then
             min_q=min0(min_q,k)
             max_q=max0(max_q,k)
 
@@ -857,7 +860,7 @@ CONTAINS
       do k=kts,kte-1
          vts(k)=0.
 
-         if (qsz(k) .gt. cmin) then
+         if (qsz(k) .gt. csmin) then
             min_q=min0(min_q,k)
             max_q=max0(max_q,k)
 
@@ -955,7 +958,7 @@ CONTAINS
       do k=kts,kte-1
           vtg(k)=0.
 
-         if (qgz(k) .gt. cmin) then
+         if (qgz(k) .gt. cgmin) then
             min_q=min0(min_q,k)
             max_q=max0(max_q,k)
 
@@ -1045,8 +1048,7 @@ CONTAINS
           
          vti(k)=0.
 
-!         if (qiz(k) .gt. cmin) then
-         if (qiz(k) .gt. 1.e-12) then
+         if (qiz(k) .gt. cimin) then
             min_q=min0(min_q,k)
             max_q=max0(max_q,k)
 
@@ -1708,6 +1710,12 @@ CONTAINS
          xnoh = xnog          !intercept parameter of hail (m^-4)
          rhohail = rhograul   !density of hail (kg/m^3)
       endif
+
+      ! critical q of hydrometeor characteristics (eg. fall speed, radius)
+      cimin = 1.e-12
+      crmin = 1.e-10
+      csmin = 1.e-10
+      cgmin = 1.e-10
 
     return
   END SUBROUTINE consat_s 
@@ -2955,10 +2963,10 @@ CONTAINS
             call vti_mks(improve,rho_mks(i,k,j),tair(i,j),qi(i,j),vi(i,j))  !in MKS
             vi(i,j) = vi(i,j) * 100.  !in CGS
 
-            if (qr(i,j) .le. cmin1) vr(i,j)=0.0
-            if (qs(i,j) .le. cmin1) vs(i,j)=0.0
-            if (qg(i,j) .le. cmin1) vg(i,j)=0.0
-            if (qi(i,j) .le. cmin1) vi(i,j)=0.0
+            if (qr(i,j) .le. crmin) vr(i,j)=0.0
+            if (qs(i,j) .le. csmin) vs(i,j)=0.0
+            if (qg(i,j) .le. cgmin) vg(i,j)=0.0
+            if (qi(i,j) .le. cimin) vi(i,j)=0.0
 
 !     ******************************************************************
 !     ***   Y1 : DYNAMIC VISCOSITY OF AIR (U)
@@ -5536,7 +5544,6 @@ CONTAINS
 
       real, parameter :: vimax = 0.5     ! max fall speed for cloud ice (m/s)
       real, parameter :: vimin = 0.      ! min fall speed for cloud ice (m/s)
-      real, parameter :: cminf = 1.e-12  ! min value for sedimentation (kg/kg)
 
       !local variables
       integer :: ic
@@ -5555,7 +5562,7 @@ CONTAINS
       real    :: tc
       real    :: h1, h2
 
-      if ( qiz .ge. cminf ) then
+      if ( qiz .ge. cimin ) then
          if ( vtiflag .eq. 1 ) then
             ! Starr and Cox 1985 :
             y1 = rhoz * 1000. * qiz           ! y1 in g/m^3
@@ -5630,7 +5637,6 @@ CONTAINS
 
       real, parameter :: vrmax = 12.0    !(m/s)
       real, parameter :: vrmin = 0.0     !(m/s)
-      real, parameter :: cminf = 1.e-10  !(kg/kg)
 
       !local variables
       integer :: igce
@@ -5640,7 +5646,7 @@ CONTAINS
       pi = acos(-1.)
       gambp4 = gammagce(constb+4.)
 
-      if ( qrz .ge. cminf ) then
+      if ( qrz .ge. crmin ) then
          fv = sqrt( rhoe_s/rhoz )
          igce = 1
          if ( igce .ne. 1 ) then
@@ -5679,7 +5685,6 @@ CONTAINS
 
       real, parameter :: vsmax = 5.0     !(m/s)
       real, parameter :: vsmin = 0.0     !(m/s)
-      real, parameter :: cminf = 1.e-10  !(kg/kg)
 
       !local variables
       integer :: igce
@@ -5690,7 +5695,7 @@ CONTAINS
       pi = acos(-1.)
       gamdp4 = gammagce(constd+4.)
 
-      if ( qsz .ge. cminf ) then
+      if ( qsz .ge. csmin ) then
          y1 = rhoz*qsz*0.001  !in CGS
          fv = sqrt( rhoe_s/rhoz )
          igce = 1
@@ -5737,7 +5742,6 @@ CONTAINS
 
       real, parameter :: vgmax = 8.0     !(m/s)
       real, parameter :: vgmin = 0.0     !(m/s)
-      real, parameter :: cminf = 1.e-10  !(kg/kg)
 
       !local variables
       integer :: igce
@@ -5748,7 +5752,7 @@ CONTAINS
       grav = 9.80665e+0
       gam4pt5 = gammagce(4.5)
 
-      if ( qgz .ge. cminf ) then
+      if ( qgz .ge. cgmin ) then
          if (ihail .eq. 1) then
             ! for hail, based on Lin et al (1983)
             tmp1 = sqrt(pi*rhohail*xnoh/rhoz/qgz)
