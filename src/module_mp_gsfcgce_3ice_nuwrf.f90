@@ -4787,19 +4787,19 @@ CONTAINS
 !   eff_rad is a function of the slope parameter (Lambda)
         
     ! rain
-      if (qrn(i,j,k) .lt. cmin) then   
+      if (qrn(i,j,k) .lt. crmin) then
          refr(i,k,j) = 0.e0  
       else 
          refr(i,k,j) = eff_rad(zr(i,j))    
       endif  
     ! snow
-      if (qcs(i,j,k) .lt. cmin) then   
+      if (qcs(i,j,k) .lt. csmin) then
          refs(i,k,j) = 0.e0 
       else 
          refs(i,k,j) = eff_rad(zs(i,j))    
       endif  
     ! graupel/hail
-      if (qcg(i,j,k) .lt. cmin) then   
+      if (qcg(i,j,k) .lt. cgmin) then
          refg(i,k,j) = 0.e0  
       else 
          refg(i,k,j) = eff_rad(zg(i,j))    
@@ -4807,7 +4807,7 @@ CONTAINS
 
 ! for cloud water
 
-   if (qcl(i,j,k) .lt. cmin) then   
+   if (qcl(i,j,k) .lt. cmin) then
       refc(i,k,j) = 0.e0
    else
       L_cloud = qcl(i,j,k) * rho(i,j,k)             ! cloud water [g/cm3]
@@ -4868,7 +4868,8 @@ CONTAINS
 
 ! for cloud ice
 
-   if (qci(i,j,k) .lt. cmin) then   
+!   if (qci(i,j,k) .lt. cmin) then
+   if (qci(i,j,k) .lt. cimin) then
       refi(i,k,j) = 0.e0
    else
 #if ( WRF_CHEM == 1)
@@ -4912,8 +4913,9 @@ CONTAINS
    if ( reiflag .eq. 2 ) then
       ! Wyser 1998 , equation 15 and 35:
       reimin = 10.0
-      if ( qci(i,j,k) .ge. 1.e-12 ) then
-         iwc_0 = 50.e-3  ! IWC_0 = 50 g/m^3 = 50.e-3 kg/m^3
+      if ( qci(i,j,k) .ge. cimin ) then
+         iwc_0 = 50.e-6  ! note that rho here is in CGS
+                         ! IWC_0 (50 g/m^-3) must be converted to g/cm^3
          bw98 = - 2. + 1.e-3 * log10(rho(i,j,k)*qci(i,j,k)/iwc_0)*max(0.0,-tairc(i,j))**1.5
          refi(i,k,j) = 377.4 + bw98 * (203.3 + bw98 * (37.91 + 2.3696 * bw98))
          refi(i,k,j) = max (reimin, refi(i,k,j))
@@ -4925,7 +4927,7 @@ CONTAINS
    if ( reiflag .eq. 3 ) then
       ! Fu 2007 :
       reimin = 10.0 ; reimax = 150.0
-      if ( qci(i,j,k) .ge. 1.e-12 ) then
+      if ( qci(i,j,k) .ge. cimin ) then
          if ( tairc(i,j) .gt. -10.0 ) then
             refi(i,k,j) = 100.0 + tairc(i,j)*5.94
          else
@@ -4940,7 +4942,7 @@ CONTAINS
    if ( reiflag .eq. 4 ) then
       ! Heymsfield et al. 2014 , equation 9e :
       reimin = 10.0
-      if ( qci(i,j,k) .ge. 1.e-12 ) then
+      if ( qci(i,j,k) .ge. cimin ) then
          if ( tairc(i,j) >= -56.0 .and. tairc(i,j) < 0.0 ) then
             refi(i,k,j) = 308.4 * exp ( 0.0152 * tairc(i,j) )      ! 131.657 ~ 308.4 micron
          elseif ( tairc(i,j) >= -71.0 .and. tairc(i,j) < -56.0 ) then
@@ -4958,11 +4960,12 @@ CONTAINS
       reimin = 0.0
       ! Dolinar et al. 2022, equation 2~9
       ! all-ice cloud parameterization from CALIOP-CloudSat 2C-ICE data :
-      if ( qci(i,j,k) .ge. 1.e-12 ) then
+      if ( qci(i,j,k) .ge. cimin ) then
          ! calculate extinction sigma : 
          md22 = 5.17581 + tair(i,j)*(-0.06242+tair(i,j)*(0.00028-tair(i,j)*4.25497e-7))
          bd22 = 28.00394 + tair(i,j)*(-0.32662+tair(i,j)*(0.00143-tair(i,j)*2.12271e-6))
-         sigma = exp(md22*log(qci(i,j,k)*rho(i,j,k)*1.e+3)+bd22)  ! sigma in km^-1, IWC in g m^-3
+         sigma = exp(md22*log(qci(i,j,k)*rho(i,j,k)*1.e+6)+bd22)  ! sigma in 1/km, IWC in g/m^3
+                                                                  ! rho (g/cm^3) must be converted in g/m^3
          ! calculate scaling factor xd22 :
          if ( sigma.le.2.4 ) then
             cd22 = 35.6336 + 11.9597*sigma
@@ -4979,9 +4982,9 @@ CONTAINS
                           (-33.3326+tair(i,j)*(0.1438-tair(i,j)*0.00020))
          endif
          refi(i,k,j) = max (reimin, refi(i,k,j))
+      else
+         refi(i,k,j) = 0.0
       endif
-   else
-      refi(i,k,j) = 0.0
    endif
 !JJS 20140305 ^^^^^  Calculate effective radius for all cloud species
 
