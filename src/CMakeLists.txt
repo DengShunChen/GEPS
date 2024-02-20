@@ -343,6 +343,15 @@ wrte_idate.f90
 xyintpo.f90
 )
 
+if(${USE_CUDA})
+    list(APPEND TCO_SRC
+        nvidia/cuda_init.f90
+        nvidia/cublas_wrapper.f90
+        nvidia/cufft_plan_cache.cc
+        nvidia/cufft_wrapper.f90
+    )
+endif()
+
 if(NOT ${USE_RSM})
   set(EXEC "tcogfs.x")
 else()
@@ -362,11 +371,26 @@ set_target_properties(${EXEC}
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
+if(NOT ${USE_CUDA})
+	# For special source files
+	set_source_files_properties(fftx.f90 ndslfv_pack.f90
+		PROPERTIES COMPILE_FLAGS "-Knoparallel"
+	)
+	set_source_files_properties(pbl_noah.f90 rcloud.f90 gscond.f90 gscondp.f90
+		PROPERTIES COMPILE_FLAGS "-Knosimd"
+	)
+	target_link_options(${EXEC} PUBLIC "-Kopenmp,parallel")
+else()
+	set_source_files_properties(pbl_noah.f90 rcloud.f90 gscond.f90 gscondp.f90
+		PROPERTIES COMPILE_FLAGS "-Mvect=nosimd"
+	)
+	target_link_options(${EXEC} PUBLIC "-Mconcur")
+endif()
+
 install(TARGETS ${EXEC} DESTINATION ${CMAKE_INSTALL_PREFIX})
 target_include_directories( ${EXEC} PUBLIC "$<BUILD_INTERFACE:${TCOGFS_INCLUDE_DIRS}>")
 
 target_link_libraries( ${EXEC} ${NetCDF_Fortran_LIBRARIES}
                                ${DMS_LIBRARIES}
-                               ${FFTW_LIBRARIES}
                                ${W3_LIBRARIES}
 )

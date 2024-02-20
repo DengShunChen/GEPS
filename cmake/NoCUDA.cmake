@@ -5,8 +5,8 @@
 ################################################################################
 
 # Specific flags for Fortran only
-set(CMAKE_Fortran_FLAGS_RELEASE "-Kfast,ocl,autoobjstack,simd=2")
-add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-X9 -Free -CcdRR8 -Cpp -Cfpp -x- -fw -Knofp_relaxed>")
+add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-Kfast,ocl,autoobjstack>")
+add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-X9 -Free -CcdRR8 -Cpp -x- -fw -Knofp_relaxed>")
 add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 >")
 add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-SSL2BLAMP >")
 
@@ -29,12 +29,6 @@ find_package( DMS REQUIRED )
 if (${USE_MPMD})
  find_package( MPMD REQUIRED )
 endif()
-link_libraries(-SSL2BLAMP)
-
-# For special source files
-set_source_files_properties(fftx.f90 ndslfv_pack.f90
-	PROPERTIES COMPILE_FLAGS "-Knoparallel"
-)
-set_source_files_properties(pbl_noah.f90 rcloud.f90
-	PROPERTIES COMPILE_FLAGS "-Knosimd"
-)
+# Link library FFTW
+link_directories(/users/xa09/pkg/fx1000/fftw-3.3.10/lib)
+link_libraries(-lfftw3_threads -lfftw3 -lfftw3f_threads -lfftw3f)
