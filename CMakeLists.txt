@@ -2,7 +2,7 @@
 # Copyright (c) 2021, Fujitsu
 #      Deng-Shun Chen
 #      dschen@cwb.gov.tw
-# Copyright (c) 2020-2024, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# Copyright (c) 2024, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 #
 # See LICENSE for license information.
 ################################################################################
@@ -38,8 +38,10 @@ option(USE_OMP   "enable OpenMP"                              ON)
 option(USE_PAR   "enable Auto Parallel"                       ON)
 option(USE_RSM   "enable output RSM initial/basefield data"  OFF)
 option(USE_MPMD  "enable output RSM via MPMD "               OFF)
+option(USE_PCAST "enable OpenACC data correctness check"     OFF)
 
 set(GPU_ARCHS "80" CACHE STRING "GPU architecture(V100=70;A100=80)")
+set(CUDA_RUNTIME_VERSION "11.8" CACHE STRING "CUDA runtime version")
 #set(TCO_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/src" CACHE STRING "TCO destination")
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -61,31 +63,20 @@ message(STATUS "USE_OMP:      ${USE_OMP}")
 message(STATUS "USE_PAR:      ${USE_PAR}")
 message(STATUS "USE_RSM:      ${USE_RSM}")
 message(STATUS "USE_MPMD:     ${USE_MPMD}")
+message(STATUS "USE_PCAST:    ${USE_PCAST}")
 message(STATUS "GPU_ARCHS:    ${GPU_ARCHS}")
 message(STATUS "Output path:  ${TCO_OUTPUT_PATH}")
 message(STATUS "Install path: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "BUILD_TYPE : ${CMAKE_BUILD_TYPE}")
 
-# include CMake modules in `${PROJECT_SOURCE_DIR}/cmake/Modules`
-
 if(${USE_CUDA})
-	include(OpenACC)
+    include(OpenACC)
+    if(${USE_NVTX})
+        include(NVTX)
+    endif()
 else()
-	include(NoCUDA)
+    include(NoCUDA)
 endif()
-
-#if(${USE_ACC})
-#    include(OpenACC)
-#endif()
-
-#if(NOT ${USE_CUDA})
-    # Use FFTW and Intel MKL
-    #include(NoCUDA)
-#endif()
-
-#if(${USE_NVTX})
-#    include(NVTX)
-#endif()
 
 ###########################################################################
 # Compiler Options (-c -D<macro> -flag)
@@ -144,5 +135,10 @@ link_libraries(-ljasper)
 # Build Target, TCO
 ###########################################################################
 add_subdirectory(src)
+
+###########################################################################
+# Build Unit Tests
+###########################################################################
+include(CTest)
 add_subdirectory(test)
 
