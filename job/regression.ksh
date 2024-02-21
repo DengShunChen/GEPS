@@ -45,8 +45,8 @@
 
   export LNCP='ln -fs'
 
-  # maybe no need to change
-  export source="/data/common/gfs/dms_data/TCo${JCAP}L72_ncep.ufs/TCo${JCAP}l72_${dtg}"           # TCo IC data path
+  # TCo IC data path
+  export source="/data/common/gfs/dms_data/ncep_ana.ufs/TCo${JCAP}l72_${dtg}"
 
   # link/copy DMS files
   export target="${dmsdb_home}/${idmsdb}.ufs"
@@ -204,8 +204,11 @@ cat > ${GFSWRK}/namlsts << EOF
 
 EOF
 
-
- FCT_MODEL=$MDIR/src/$EXEC
+ if [ $CMAKE_BUILD = 1 ] ; then
+	FCT_MODEL=$MDIR/build/bin/tcogfs.x
+ else
+	FCT_MODEL=$MDIR/src/$EXEC
+ fi
  /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} -Wl,-T
 
  if [ $? != 0 ] ; then
