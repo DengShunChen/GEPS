@@ -8,6 +8,7 @@ dev-build:
   only:
     - development
     - cicd
+    - hotfix
   script:
     - echo "dev build"
     - hostname ; pwd
