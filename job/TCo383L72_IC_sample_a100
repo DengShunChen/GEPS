@@ -1,0 +1,45 @@
+#!/bin/bash
+#PJM -L vnode=1
+#PJM -L vnode-core=32
+#PJM -L rscunit=rscunit_pg01
+#PJM -L rscgrp=gpu-rd-large
+#PJM -L elapse=02:30:00
+#PJM -L node-mem=unlimited
+#PJM -L gpu=8
+#PJM --no-stging
+#PJM --mpi "proc=8"
+#PJM -j
+#PJM -S
+#PJM -N "JTCo383L72"
+#PJM -x PJM_CACHE_MODE=4
+
+set -x
+
+MDIR=$(cd ..; pwd)
+echo "MDIR=${MDIR}"
+
+machine=a100
+TERR=GMTED30
+JCAP=383
+
+MPI=8
+OMP=1
+
+if [ $JCAP = 639 ] ; then
+  NPEX=8
+  NPEY=320
+elif [ $JCAP = 383 ] ; then
+  NPEX=1
+  NPEY=8
+fi
+
+. /usr/share/Modules/init/bash
+
+module purge
+module use ${MDIR}/modulefiles
+module load modulefile.tcogfs.a100
+module unuse ${MDIR}/modulefiles
+
+CMAKE_BUILD=1
+
+. ${MDIR}/job/regression.ksh

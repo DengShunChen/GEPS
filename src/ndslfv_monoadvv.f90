@@ -1,5 +1,5 @@
       subroutine ndslfv_monoadvv (ddtemp,qvadv,vdzonl,vdmerd,pdot      &
-                                , pt,lonsperlat,deltim)
+                                , pt,lonsperlat,deltim,forward)
 !
 ! a routine to do non-iteration semi-Lagrangain advection
 ! considering advection  with monotonicity in interpolation
@@ -49,6 +49,7 @@
       integer ii,i,n,k,kk,lon,lan,lat,lons_lat
       integer kqq, ktt, kuu, kvv
       integer kq , kt , ku , kv
+      logical forward
 !
 !     lprint = .false.
 
@@ -167,7 +168,7 @@
         mass=0
 !ch     call vertical_cell_advect (lons_lat,lonfull,lev,nvars, &
         call vertical_cell_advect (lons_lat,nxp,    lev,nvars, &
-                  deltim,plev,pdot(1,1,lan),qqlon(1,1,lan),mass)
+                  deltim,plev,pdot(1,1,lan),qqlon(1,1,lan),mass,forward)
 !
 ! dp with mass conserving
 !       do k=1,levs
@@ -281,7 +282,7 @@
 !
 ! -------------------------------
       subroutine ndslfv_monoadvv_fgnl(vdzonl,vdmerd,ddtemp,pdot      &
-                                , pt,lonsperlat,deltim,nvars)
+                                , pt,lonsperlat,deltim,nvars,forward)
 !
 ! a routine to do non-iteration semi-Lagrangain advection
 ! considering advection  with monotonicity in interpolation
@@ -314,6 +315,7 @@
       integer ii,i,n,k,kk,lon,lan,lat,lons_lat
       integer kuu, kvv, ktt
       integer ku , kv, kt
+      logical forward
 !
 !     lprint = .false.
 
@@ -382,7 +384,7 @@
         mass=0
 !
         call vertical_cell_advect (lons_lat,nxp,    lev,nvars, &
-                  deltim,plev,pdot(1,1,lan),qqlon(1,1,lan),mass)
+                  deltim,plev,pdot(1,1,lan),qqlon(1,1,lan),mass,forward)
 !
 !
 ! u v t tendency at n

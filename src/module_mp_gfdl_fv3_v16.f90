@@ -289,7 +289,7 @@ module module_mp_gfdl
     logical :: fast_sat_adj = .false. !< has fast saturation adjustments
     logical :: z_slope_liq = .true. !< use linear mono slope for autocconversions
     logical :: z_slope_ice = .false. !< use linear mono slope for autocconversions
-    logical :: use_ccn = .false. !< must be true when prog_ccn is false
+    logical :: use_ccn = .true. !< must be true when prog_ccn is false
     logical :: use_ppm = .false. !< use ppm fall scheme
     logical :: mono_prof = .true. !< perform terminal fall with mono ppm scheme
     logical :: mp_print = .false. !< cloud microphysics debugging printout
@@ -4708,14 +4708,12 @@ subroutine cloud_diagnosis                                              &
 !   --- output :
           rew, rei, rer, res, reg)
 !
-    use const, only: RTYPE
-!    
     implicit none
     
     integer, intent (in) :: is, ie, ks, ke
     integer, intent (in), dimension (is:ie) :: lsm ! land sea mask, 0: ocean, 1: land, 2: sea ice
     
-    real(kind=RTYPE), intent (in), dimension (is:ie, ks:ke) :: t
+    real, intent (in), dimension (is:ie, ks:ke) :: t
     real, intent (in), dimension (is:ie, ks:ke) :: den, delp
     real, intent (in), dimension (is:ie, ks:ke) :: qmw, qmi, qmr, qms, qmg !< units: kg / kg
     

@@ -4617,13 +4617,12 @@ subroutine cloud_diagnosis                                              &
 !   --- output :
           rew, rei, rer, res, reg)
 !         qcw, qci, qcr, qcs, qcg, rew, rei, rer, res, reg)
-    use const, only: RTYPE
 !    
     implicit none
     
     integer, intent (in) :: is, ie, js, je
     
-    real(kind=RTYPE), intent (in), dimension (is:ie, js:je) :: t
+    real, intent (in), dimension (is:ie, js:je) :: t
     real, intent (in), dimension (is:ie, js:je) :: den
     real, intent (in), dimension (is:ie, js:je) :: qw, qi, qr, qs, qg !< units: kg / kg
     

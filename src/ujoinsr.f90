@@ -32,6 +32,10 @@
       integer   nx,my_max,lev,jnum,ncld
       integer   jj,j,nxj,k,i,nk,kk,n
 !
+      bufA=0.
+      bufB=0.
+      r1=0.
+!      
       do jj=1,jlistnum
       do n=1,ncld
       do k=1,levp
@@ -40,7 +44,7 @@
       enddo
       enddo
       enddo
-      enddo
+      enddo 
 
       call mpe2d_transpose_nx_levp(bufA,bufB,nxp,nx,lev,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 
@@ -55,7 +59,6 @@
       enddo
       enddo
       enddo
-
       return
       end
 !
@@ -72,6 +75,10 @@
       real(kind=RTYPE) bufB(nxp,lev,1+ncld,my_max)
       integer   nx,my_max,lev,jnum,ncld
       integer   jj,j,nxj,k,i,nk,kk,n
+!
+      bufA=0.
+      bufB=0.
+      r1=0.
 !
       do jj=1,jlistnum
       do n=1,1+ncld
@@ -123,6 +130,10 @@
       real(kind=RTYPE) bufB(nxp,lev,2+ncld,my_max)
       integer   nx,my_max,lev,jnum,ncld
       integer   jj,j,nxj,k,i,nk,kk,n
+!
+      bufA=0.
+      bufB=0.
+      r1=0.
 !
       do jj=1,jlistnum
       do n=1,2+ncld

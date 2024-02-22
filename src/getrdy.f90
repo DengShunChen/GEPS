@@ -118,6 +118,7 @@
       real  tem,rho,ttr,ttv
 
       lmax=26
+      cc=0.
 !
       nxmy   = nx*my
       mlmax2 = mlmax * 2
@@ -341,6 +342,10 @@
         ftp1=0.
         fqp1=0.
         itaui=0
+! give the initial forward weighting for Semi-implicit
+        alphax = alpha
+! give the initial coefficient for horizontal diffusion
+        hfiltx = hfilt
 !
 ! new start gfcst: read climate data, initialize parameters
 !
@@ -492,6 +497,7 @@
                   zice(i,jj) = max(zice(i,jj),1.*cice(i,jj))
                   icwarn = icwarn + 1 
                 endif
+                shdmax(i,jj) = cice(i,jj)
               endif            
 ! set snow depth to zero on ocean point
               if ( ocean(i,jj) ) then
@@ -923,6 +929,13 @@
         call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pt(1,jj) &
                           ,pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
  160  continue
+!                  
+!  computing global mean surface pressure at initial time
+!
+      if ( .not. restrt ) then
+        pdryi = 0.
+        call ptot(pdryi,dpprt)
+      endif
 !
 !  compute globel moisture budget and p-coordinate variables
 !

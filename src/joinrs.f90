@@ -22,12 +22,13 @@
       implicit  none
       real(kind=RTYPE) cc(nx+2,levp,ncld,my_max)
       real(kind=RTYPE) r1(nxp,lev*ncld,my_max)
-      real      bufA(nxp,lev, ncld,my_max)
-      real      bufB(nx ,levp,ncld,my_max)
+      real(kind=RTYPE) bufA(nxp,lev, ncld,my_max)
+      real(kind=RTYPE) bufB(nx ,levp,ncld,my_max)
       integer   nx,my_max,lev,jnum,ncld
       integer   jj,j,nxj,k,i,n,nk,kk
 !
 !CWB 2019
+      bufA=0.
       bufB=0.
 !
       do jj =1, jlistnum
@@ -67,12 +68,13 @@
       real(kind=RTYPE) cc(nx+2,levp,1+ncld,my_max)
       real(kind=RTYPE) r1(nxp,lev,my_max)
       real(kind=RTYPE) r2(nxp,lev*ncld,my_max)
-      real      bufA(nxp,lev, 1+ncld,my_max)
-      real      bufB(nx ,levp,1+ncld,my_max)
+      real(kind=RTYPE) bufA(nxp,lev, 1+ncld,my_max)
+      real(kind=RTYPE) bufB(nx ,levp,1+ncld,my_max)
       integer   nx,my_max,lev,jnum,ncld
       integer   jj,j,nxj,k,i,n,nk,kk
 !
 !CWB 2019
+      bufA=0.
       bufB=0.
 !
       do jj =1, jlistnum
@@ -121,10 +123,13 @@
       real(kind=RTYPE) r1(nxp,lev,my_max)
       real(kind=RTYPE) r2(nxp,lev,my_max)
       real(kind=RTYPE) r3(nxp,lev*ncld,my_max)
-      real      bufA(nxp,lev, 2+ncld,my_max)
-      real      bufB(nx ,levp,2+ncld,my_max)
+      real(kind=RTYPE) bufA(nxp,lev, 2+ncld,my_max)
+      real(kind=RTYPE) bufB(nx ,levp,2+ncld,my_max)
       integer   nx,my_max,lev,jnum,ncld
       integer   jj,j,nxj,k,i,n,nk,kk
+!
+      bufA=0.
+      bufB=0.
 !
       do jj =1, jlistnum
       do k=1,lev

@@ -314,7 +314,7 @@
 !
 !
 ! -------------------------------------------------------------------------------
-      subroutine cyclic_cell_massadvxl(im,imf,levs,nvars,delt,uc,qq,mass)
+      subroutine cyclic_cell_massadvxl(im,imf,levs,nvars,delt,uc,qq,mass,forward)
 !
 ! compute local positive advection with mass conservation
 ! qq is advected by uc from past to next position
@@ -342,6 +342,7 @@
       real(kind=RTYPE), parameter :: fa2 = 1./16.
 
       integer  	i,k,n,nn,nf,nv,nst,nstep
+      logical   forward
 
 !     sc = ggloni(im+1)-ggloni(1)
       pi = 4.0 * atan(1.0)
@@ -380,29 +381,43 @@
 !
        do nst = 1, nstep
 !
-        do i=1,im+1
-          dist_step = dist(i)*step(nst)
-          xpast(i) = xreg(i) - dist_step
-          xnext(i) = xreg(i) + dist_step
-        enddo
+        if ( forward ) then
+          do i=1,im+1
+            dist_step = dist(i)*step(nst)
+            xpast(i) = xreg(i)
+            xnext(i) = xreg(i) + dist_step
+          enddo
+        else
+          do i=1,im+1
+            dist_step = dist(i)*step(nst)
+            xpast(i) = xreg(i) - dist_step
+            xnext(i) = xreg(i) + dist_step
+          enddo
+        endif
         if( mass.eq.1 ) then
          do i=1,im
           dxfact(i) = (xpast(i+1)-xpast(i)) / (xnext(i+1)-xnext(i))
          enddo
         endif
 !
-        do n=1,nv
-          past(1:im,n) = qq(1:im,k,n)
-        enddo
-!        call cyclic_cell_ppm_intp(xreg,past,xpast,da,im,nv,im,im,sc)
-        call cyclic_cell_plm_intp(xreg,past,xpast,da,im,nv,im,im,sc)
+        if ( forward ) then
+          do n=1,nv
+            da(1:im,n) = qq(1:im,k,n)
+          enddo
+        else
+          do n=1,nv
+            past(1:im,n) = qq(1:im,k,n)
+          enddo
+          call cyclic_cell_ppm_intp(xreg,past,xpast,da,im,nv,im,im,sc)
+!          call cyclic_cell_plm_intp(xreg,past,xpast,da,im,nv,im,im,sc)
+        endif
         if( mass.eq.1) then
           do n=1,nv
             da(1:im,n) = da(1:im,n) * dxfact(1:im)
           enddo
         endif
-!        call cyclic_cell_ppm_intp(xnext,da,xreg,next,im,nv,im,im,sc)
-        call cyclic_cell_plm_intp(xnext,da,xreg,next,im,nv,im,im,sc)
+        call cyclic_cell_ppm_intp(xnext,da,xreg,next,im,nv,im,im,sc)
+!        call cyclic_cell_plm_intp(xnext,da,xreg,next,im,nv,im,im,sc)
         do n=1,nv
           qq(1:im,k,n) = next(1:im,n)
         enddo
@@ -523,7 +538,7 @@
       end subroutine cyclic_cell_massadvy
 !
 !-------------------------------------------------------------------
-      subroutine cyclic_cell_massadvyl(jm,lev,nvars,delt,vc,qq,mass)
+      subroutine cyclic_cell_massadvyl(jm,lev,nvars,delt,vc,qq,mass,forward)
 !
 ! compute local positive advection with mass conserving
 ! qq will be advect by vc from past to next location with 2*delt
@@ -550,6 +565,7 @@
       real(kind=RTYPE)      sc
 
       integer   n,k,j,jmh,nv,nst,nstep
+      logical   forward
 !
 ! preparations ---------------------------
 !
@@ -593,30 +609,44 @@
 !
        do nst = 1, nstep
 !
-        do j=1,jm+1
-          dist_step = dist(j)*step(nst)
-          ypast(j) = gglati(j) - dist_step
-          ynext(j) = gglati(j) + dist_step
-        enddo
+        if ( forward ) then
+          do j=1,jm+1
+            dist_step = dist(j)*step(nst)
+            ypast(j) = gglati(j)
+            ynext(j) = gglati(j) + dist_step
+          enddo
+        else
+          do j=1,jm+1
+            dist_step = dist(j)*step(nst)
+            ypast(j) = gglati(j) - dist_step
+            ynext(j) = gglati(j) + dist_step
+          enddo
+        endif
         if( mass.eq.1 ) then
          do j=1,jm
           dyfact(j) = (ypast(j+1)-ypast(j)) / (ynext(j+1)-ynext(j))
          enddo
         endif
 
-        do n=1,nv
-          past(1:jm,n) = qq(1:jm,k,n)
-        enddo
-!        call cyclic_cell_ppm_intp(gglati,past,ypast,da,jm,nv,jm,jm,sc)
-        call cyclic_cell_plm_intp(gglati,past,ypast,da,jm,nv,jm,jm,sc)
+        if ( forward ) then
+          do n=1,nv
+            da(1:jm,n) = qq(1:jm,k,n)
+          enddo
+        else
+          do n=1,nv
+            past(1:jm,n) = qq(1:jm,k,n)
+          enddo
+          call cyclic_cell_ppm_intp(gglati,past,ypast,da,jm,nv,jm,jm,sc)
+!          call cyclic_cell_plm_intp(gglati,past,ypast,da,jm,nv,jm,jm,sc)
+        endif
 
         if( mass.eq.1 ) then
           do n=1,nv
             da(1:jm,n) = da(1:jm,n) * dyfact(1:jm)
           enddo
         endif
-!        call cyclic_cell_ppm_intp(ynext,da,gglati,next,jm,nv,jm,jm,sc)
-        call cyclic_cell_plm_intp(ynext,da,gglati,next,jm,nv,jm,jm,sc)
+        call cyclic_cell_ppm_intp(ynext,da,gglati,next,jm,nv,jm,jm,sc)
+!        call cyclic_cell_plm_intp(ynext,da,gglati,next,jm,nv,jm,jm,sc)
 
         do n=1,nv
           qq(1:jm,k,n) = next(1:jm,n)
@@ -1190,7 +1220,7 @@
 !
 ! ------------------------------------------------------------------------
       subroutine vertical_cell_advect(lons,londim,levs,nvars,           & 
-                                      deltim,ssi,wwi,qql,mass)
+                                      deltim,ssi,wwi,qql,mass,forward)
 !
       use const, only : RTYPE
 
@@ -1208,6 +1238,7 @@
       real(kind=RTYPE) dsfact(levs), sstmp, dpdt, check
       real(kind=RTYPE) rqmm(levs,nvars),rqnn(levs,nvars),rqda(levs,nvars)
       integer km,i,k,n,nst,nstep
+      logical forward
 
       do i=1,lons
 
@@ -1231,30 +1262,52 @@
 !         ssia(k)=-ssi(i,k)-dd(k)
 !       enddo
 !hmhj give direction for value larger with k larger
-        do k=1,levs+1
-          dd_step= dd(k)*step(nst)
+        if ( forward ) then
+          do k=1,levs+1
+            dd_step= dd(k)*step(nst)
 ! for ppm interpolation
-          ssii(k)=ssi(i,k)
-          ssid(k)=ssi(i,k)-dd_step
-          ssia(k)=ssi(i,k)+dd_step
+            ssii(k)=ssi(i,k)
+            ssid(k)=ssi(i,k)
+            ssia(k)=ssi(i,k)+dd_step
 ! for plm interpolation
-!          ssii(k)=-ssi(i,k)
-!          ssid(k)=-ssi(i,k)+dd_step
-!          ssia(k)=-ssi(i,k)-dd_step
-        enddo
+!            ssii(k)=-ssi(i,k)
+!            ssid(k)=-ssi(i,k)+dd_step
+!            ssia(k)=-ssi(i,k)-dd_step
+          enddo
+        else
+          do k=1,levs+1
+            dd_step= dd(k)*step(nst)
+! for ppm interpolation
+            ssii(k)=ssi(i,k)
+            ssid(k)=ssi(i,k)-dd_step
+            ssia(k)=ssi(i,k)+dd_step
+! for plm interpolation
+!            ssii(k)=-ssi(i,k)
+!            ssid(k)=-ssi(i,k)+dd_step
+!            ssia(k)=-ssi(i,k)-dd_step
+          enddo
+        endif
         if( mass.eq.1 ) then
           do k=1,levs
             dsfact(k)=(ssid(k)-ssid(k+1))/(ssia(k)-ssia(k+1))
           enddo
         endif
 !
-        do n=1,nvars
-          do k=1,levs
-            rqmm(k,n) = qql(i,k,n)
+        if ( forward ) then
+          do n=1,nvars
+            do k=1,levs
+              rqda(k,n) = qql(i,k,n)
+            enddo
           enddo
-        enddo
-        call vertical_cell_ppm_intp(ssii,rqmm,ssid,rqda,levs,nvars,i)
-!        call fixend_cell_plm_intp(ssii,rqmm,ssid,rqda,levs,nvars)
+        else
+          do n=1,nvars
+            do k=1,levs
+              rqmm(k,n) = qql(i,k,n)
+            enddo
+          enddo
+          call vertical_cell_ppm_intp(ssii,rqmm,ssid,rqda,levs,nvars,i)
+!          call fixend_cell_plm_intp(ssii,rqmm,ssid,rqda,levs,nvars)
+        endif
         if( mass.eq.1 ) then
           do n=1,nvars
             do k=1,levs
@@ -1849,7 +1902,7 @@
 !
 ! ------------------------------------------------------------------------
 !
-      subroutine ndslfv_update (lonsperlat,vdzonl,vdmerd,vdzonlr,vdmerdr,deltim)
+      subroutine ndslfv_update (lonsperlat,vdzonl,vdmerd,vdzonlr,vdmerdr,deltim,forward)
 
 !  update all horizontal components into momentum eqs
 !  for Semi-Lagrangian vertical advection
@@ -1866,8 +1919,13 @@
       real(kind=RTYPE)    vdmerdr(nxp,lev,my_max),vdzonlr(nxp,lev,my_max)
       integer i,ii,k,lan,lat,lons_lat
       integer dt2
+      logical forward
 
-      dt2 = 2. * deltim
+      if ( forward ) then
+        dt2 = deltim
+      else
+        dt2 = 2. * deltim
+      endif
 !
 !$omp parallel do                                                   &
 !$omp private(lan,lat,lons_lat,i,k)                                 &
@@ -1894,6 +1952,51 @@
 !
       return
       end subroutine ndslfv_update
+!
+      subroutine ndslfv_update_3tl (lonsperlat,vdzonl,vdmerd,vdzonlr,vdmerdr,deltim)
+
+!  update all horizontal components into momentum eqs
+!  for Semi-Lagrangian vertical advection for 3tl
+
+      use index
+      use param, only : nx,my,lev,my_max
+      use const, only : onocos,radsq,RTYPE
+      use grid , only : dlphi,dtphi
+
+      integer,intent(in):: lonsperlat(my)
+      real(kind=RTYPE),   intent(in):: deltim
+
+!ch   real    vdmerd(nx+3,lev,my_max),vdzonl(nx+3,lev,my_max)
+      real(kind=RTYPE) vdmerd(nxp,lev,my_max),vdzonl(nxp,lev,my_max)
+      real(kind=RTYPE) vdmerdr(nxp,lev,my_max),vdzonlr(nxp,lev,my_max)
+      integer i,ii,k,lan,lat,lons_lat
+      integer dt2
+
+      dt2 = 2. * deltim
+!
+!$omp parallel do                                                   &
+!$omp private(lan,lat,lons_lat,i,k)                                 &
+!$omp schedule(dynamic)
+      do lan=1,jlistnum
+!
+        lat = jlist1(lan)
+        lons_lat = lonsperlat(lat)
+!
+        do k=1,lev
+         do i=1,lons_lat
+           vdzonl(i,k,lan) = (vdzonlr(i,k,lan)-dlphi(i,k,lan)/radsq) &
+                             * dt2 + vdzonl(i,k,lan)
+           vdmerd(i,k,lan) = (vdmerdr(i,k,lan)-dtphi(i,k,lan)/radsq  &
+                             / onocos(lat))*dt2 + vdmerd(i,k,lan)
+         enddo
+        enddo
+      enddo
+!$omp end parallel do
+!
+! ===============================
+!
+      return
+      end subroutine ndslfv_update_3tl
 
 !-------------------------------------------------------------------------
 !CWB2021 note, the double precision is called by reducepick/reduceintp

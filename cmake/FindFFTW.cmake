@@ -33,13 +33,7 @@ find_path(FFTW_INCLUDE_DIR NAMES fftw3.h PATHS
 
 #Check whether to search static or dynamic libs
 set(CMAKE_FIND_LIBRARY_SUFFIXES_SAV ${CMAKE_FIND_LIBRARY_SUFFIXES})
-
-set(FFTW_USE_STATIC_LIBS YES)
-if (${FFTW_USE_STATIC_LIBS})
-  set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
-else ()
-  set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_SHARED_LIBRARY_SUFFIX})
-endif ()
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".a")
 
 set( FFTW_LIBRARIES )
 foreach( _lib IN ITEMS fftw3f fftw3f_threads fftw3 fftw3_threads )
@@ -53,6 +47,7 @@ foreach( _lib IN ITEMS fftw3f fftw3f_threads fftw3 fftw3_threads )
     $ENV{FFTW3}/.libs
     /usr/local/lib
     /usr/lib
+    /usr/lib64
     /opt/fftw3/lib
     DOC "Specify the fttw3 library here."
     NO_DEFAULT_PATH

@@ -27,11 +27,10 @@
 
       integer   nx,lmaxp,lev
 
-      real      f(nx,lmaxp),dout(nx*lev),yr(nx,lmaxp)  &
-              , yout(nx*lev),tensy(lmaxp)
+      real      tp1(nx*lev*4),tensy(lmaxp),yout(nx*lev),yr(nx,lmaxp)
 !
-      real(kind=RTYPE) fxx(nx,lmaxp),fyy(nx,lmaxp),pjy(nx*lev*4) &
-              , tp1(nx*lev*4)
+      real(kind=RTYPE) fxx(nx,lmaxp),fyy(nx,lmaxp),pjy(nx*lev*4)  &
+              , f(nx,lmaxp),dout(nx*lev)
 
       integer   ipt(nx*lev)
 
