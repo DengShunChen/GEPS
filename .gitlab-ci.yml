@@ -7,6 +7,7 @@ dev-build:
   stage: build
   only:
     - development
+    - cicd
   script:
     - echo "dev build"
     - hostname ; pwd
@@ -17,6 +18,7 @@ dev-deploy:
   stage: deploy
   only:
     - development
+    - cicd
   script:
     - echo "dev deploy"
 
@@ -24,6 +26,7 @@ dev-test:
   stage: test
   only:
     - development
+    - cicd
   script:
     - echo "dev testing"
 
