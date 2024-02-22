@@ -1,0 +1,54 @@
+stages:
+  - build
+  - deploy
+  - test
+
+dev-build:
+  stage: build
+  only:
+    - development
+    - cicd
+  script:
+    - echo "dev build"
+    - hostname ; pwd
+    - ./compile fx1000
+    - ./compile a100
+
+dev-deploy:
+  stage: deploy
+  only:
+    - development
+    - cicd
+  script:
+    - echo "dev deploy"
+
+dev-test:
+  stage: test
+  only:
+    - development
+    - cicd
+  script:
+    - echo "dev testing"
+
+stg-build:
+  stage: build
+  only:
+    - master
+  script:
+    - echo "stg build"
+    - hostname ; pwd
+    - ./compile
+
+stg-deploy:
+  stage: deploy
+  only:
+    - master
+  script:
+    - echo "stg deploy"
+
+stg-test:
+  stage: test
+  only:
+    - master
+  script:
+    - echo "stg testing"
