@@ -1,26 +1,37 @@
-#!/bin/bash
+#!/bin/bash -x
 set -e
 
-MACHINE="fx1000"
+#MACHINE="a100"
+MACHINE=${1:-"fx1000"}
 
 . /usr/share/Modules/init/bash
 
 # Loading fujitsu TCS library and cmake
 module purge
-module use /data/common/gfs/modulefiles/x86_64
-module load tcsds/1.2.33
-module load cmake/3.21.4
-module unuse /data/common/gfs/modulefiles/x86_64
 
 # Loading gfs modules
 module use modulefiles
 module load modulefile.tcogfs.${MACHINE}
 module unuse modulefiles
 
+[[ -e build ]] && rm -rf build
+if [[ ${MACHINE} == 'fx1000' ]] ; then
 # Compilation
 cmake -Bbuild -S. \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DUSE_RSM=OFF
+\time --verbose cmake --build build --verbose -j $((`nproc`/2))
+elif [[ ${MACHINE} == 'a100' ]] ; then
+# Compilation
+cmake -Bbuild -S. \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DUSE_RSM=OFF \
+  -DUSE_CUDA=ON \
+  -DUSE_ACC=ON
+\time --verbose cmake --build build --verbose -j $((`nproc`/2))
+else
+  echo "[ERROR] Fatal error unknow MACHINE !" ; exit -1
+fi
 
-\time --verbose cmake --build build -j $((`nproc`/2))
+
 
