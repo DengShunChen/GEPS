@@ -195,9 +195,9 @@
       close(2)
 ! transfer idtg8 to idtg*12
       if(idtg8.gt.60000000)then
-        idtg = 190000000000 + idtg8*100
+        idtg = 190000000000_8 + idtg8*100
       else
-        idtg = 200000000000 + idtg8*100
+        idtg = 200000000000_8 + idtg8*100
       endif
 !
       write(cdtg,900)idtg
