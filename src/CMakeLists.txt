@@ -352,6 +352,7 @@ if(${USE_CUDA})
         nvidia/cublas_wrapper.f90
         nvidia/cufft_plan_cache.cc
         nvidia/cufft_wrapper.f90
+        nvidia/trngra3_gpu.f90
     )
 endif()
 

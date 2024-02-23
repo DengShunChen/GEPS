@@ -56,5 +56,6 @@ link_libraries(-acc=gpu -gpu=cc${GPU_ARCHS},cuda${CUDA_RUNTIME_VERSION} -cuda -c
 if (${USE_PCAST})
     add_compile_options(-gpu=redundant)
     add_compile_options(-DUSE_PCAST=1)
+    link_libraries(-gpu=redundant)
 endif()
 
