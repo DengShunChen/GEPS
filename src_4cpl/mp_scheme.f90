@@ -839,7 +839,7 @@
                   prefluxr, prefluxi, prefluxs, prefluxg,               &
                   cond0, dep0, evap0, sub0,                             &
 #endif
-                  rhc2d, last_step, do_inline_mp )
+                  rhc2d, last_step, do_inline_mp, me )
 
         ! GFDL MP v3
         if ( nmmiph .eq. 13 )                                           &

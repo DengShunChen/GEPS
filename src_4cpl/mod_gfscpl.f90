@@ -208,7 +208,6 @@ subroutine gfs_cpl_recv4gocn(compid, mask_lnd, tgfs, ssufs, ssvfs)
       call reducepick(ssv_glb(1,j), nxdef(j), nx, 1)
     end if
 
-      
     do i = 1, nxj
       if(.not.mask_lnd(i,jj).and.sst_glb(ii,j).gt.271.0) then
         tgfs(i,jj)  = sst_glb(ii,j) 

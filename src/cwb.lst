@@ -1,5 +1,5 @@
 
- Fujitsu Fortran Version 4.6.1  Mon Jan 15 10:10:23 2024
+ Fujitsu Fortran Version 4.6.1  Wed Jan 17 08:42:42 2024
 
  Compilation information
    Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src
@@ -1347,10 +1347,10 @@
              340                           integer i,j,k,n,jj,kk,nxj,nxjf,kn
              341                           real    dsigp    ,qtot      ,qtota                    &
              342                                  ,sumtott  ,sumwatt   ,sumwatta                 &
-             343                                  ,odpondp  ,dta
+             343                                  ,odpondp
              344                           real(kind=RTYPE) pnew(nxp,my_max),pten(nxp,my_max)    &
              345                                           ,ww1(nx,my_max),pltemp(jtrun,jtmax,2) &
-             346                                           ,pltend(jtrun,jtmax,2)
+             346                                           ,pltend(jtrun,jtmax,2),dta
              347                     
              348                           ! adjustment of surface pressure
                                    <<< Loop-information Start >>>
@@ -1458,9 +1458,9 @@
       |(Definition)     : 358
       |(Reference)      : 366  367  368
      dta
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 329  341
+      |(Declaration)    : 329  344
       |(Definition)     : 
       |(Reference)      : 398
      grid

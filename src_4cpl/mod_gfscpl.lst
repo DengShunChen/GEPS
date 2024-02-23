@@ -1,5 +1,5 @@
 
- Fujitsu Fortran Version 4.6.1  Thu Dec 28 14:57:06 2023
+ Fujitsu Fortran Version 4.6.1  Thu Feb 15 10:00:05 2024
 
  Compilation information
    Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_4cpl
@@ -605,7 +605,6 @@
              208     2                     call reducepick(ssv_glb(1,j), nxdef(j), nx, 1)
              209     2                   end if
              210     1               
-             211     1               
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 445
@@ -616,22 +615,22 @@
                                    <<<      tgfs, mask_lnd, ssu_glb, sst_glb
                                    <<<      ssv_glb, ssufs, ssvfs
                                    <<< Loop-information  End >>>
-             212     2  pp    v          do i = 1, nxj
-             213     3   p    v            if(.not.mask_lnd(i,jj).and.sst_glb(ii,j).gt.271.0) then
-             214     3   p    v              tgfs(i,jj)  = sst_glb(ii,j)
-             215     3   p    v              ssufs(i,jj) = ssu_glb(ii,j)
-             216     3   p    v              ssvfs(i,jj) = ssv_glb(ii,j)
-             217     3   p    v            end if
-             218     2   p    v            ii = ii + 1
-             219     2   p    v          end do
-             220     1                 end do
-             221                     
-             222                     end subroutine gfs_cpl_recv4gocn
-             223                     
-             224                     end module gfs_cpl
+             211     2  pp    v          do i = 1, nxj
+             212     3   p    v            if(.not.mask_lnd(i,jj).and.sst_glb(ii,j).gt.271.0) then
+             213     3   p    v              tgfs(i,jj)  = sst_glb(ii,j)
+             214     3   p    v              ssufs(i,jj) = ssu_glb(ii,j)
+             215     3   p    v              ssvfs(i,jj) = ssv_glb(ii,j)
+             216     3   p    v            end if
+             217     2   p    v            ii = ii + 1
+             218     2   p    v          end do
+             219     1                 end do
+             220                     
+             221                     end subroutine gfs_cpl_recv4gocn
+             222                     
+             223                     end module gfs_cpl
 
  Procedure information
-   Lines      : 224
+   Lines      : 223
    Statements : 166
    Stack(byte): 9664
    Prefetch num: 0
@@ -643,7 +642,7 @@
       |(Attributes)     : 
       |(Declaration)    : 1
       |(Definition)     : 
-      |(Reference)      : 224
+      |(Reference)      : 223
 
  Scoping unit of module sub-program : gfs_cpl_init
    Attribute and Cross reference of name
@@ -1246,7 +1245,7 @@
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 126
-      |(Reference)      : 222
+      |(Reference)      : 221
      gfs_recv_gocn_Attr
       |(Class and Type) : use name
       |(Attributes)     : 
@@ -1257,8 +1256,8 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 151
-      |(Definition)     : 168  212
-      |(Reference)      : 170  171  172  213  214  215  216
+      |(Definition)     : 168  211
+      |(Reference)      : 170  171  172  212  213  214  215
      id_gocn
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : use-associated
@@ -1269,8 +1268,8 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 151
-      |(Definition)     : 203  218
-      |(Reference)      : 213  214  215  216  218
+      |(Definition)     : 203  217
+      |(Reference)      : 212  213  214  215  217
      index
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -1282,13 +1281,13 @@
       |(Attributes)     : 
       |(Declaration)    : 151
       |(Definition)     : 166  202
-      |(Reference)      : 203  204  206  206  207  207  208  208  213  214  215  216
+      |(Reference)      : 203  204  206  206  207  207  208  208  212  213  214  215
      jj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 151
       |(Definition)     : 165  201
-      |(Reference)      : 166  170  171  172  202  213  214  215  216
+      |(Reference)      : 166  170  171  172  202  212  213  214  215
      jlist1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
@@ -1312,7 +1311,7 @@
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
       |(Declaration)    : 126  139
       |(Definition)     : 
-      |(Reference)      : 213
+      |(Reference)      : 212
      mpe
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -1372,7 +1371,7 @@
       |(Attributes)     : 
       |(Declaration)    : 151
       |(Definition)     : 167  204
-      |(Reference)      : 168  212
+      |(Reference)      : 168  211
      nxjstart
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
@@ -1462,7 +1461,7 @@
       |(Attributes)     : DIMENSION
       |(Declaration)    : 141
       |(Definition)     : 156  206
-      |(Reference)      : 180  213  214
+      |(Reference)      : 180  212  213
      sst_nxj
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
@@ -1474,24 +1473,24 @@
       |(Attributes)     : DIMENSION
       |(Declaration)    : 141
       |(Definition)     : 160  207
-      |(Reference)      : 184  215
+      |(Reference)      : 184  214
      ssufs
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
       |(Declaration)    : 126  140
-      |(Definition)     : 162  215
+      |(Definition)     : 162  214
       |(Reference)      : 
      ssv_glb
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 141
       |(Definition)     : 161  208
-      |(Reference)      : 188  216
+      |(Reference)      : 188  215
      ssvfs
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
       |(Declaration)    : 126  140
-      |(Definition)     : 163  216
+      |(Definition)     : 163  215
       |(Reference)      : 
      tg_glb
       |(Class and Type) : variable name, REAL(8)
@@ -1503,7 +1502,7 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
       |(Declaration)    : 126  140
-      |(Definition)     : 214
+      |(Definition)     : 213
       |(Reference)      : 176
      unify_reduceintp
       |(Class and Type) : external subroutine name
@@ -1514,7 +1513,7 @@
 
  Total information
    Procedures       : 1
-   Total lines      : 224
+   Total lines      : 223
    Total statements : 166
    Total stack(byte): 9664
    Total prefetch num: 0

@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Thu Dec 28 15:30:41 2023
+ Fujitsu Fortran Version 4.6.1  Mon Jan 15 10:11:08 2024
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_rsm
+   Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src
    Source file       : intgrt.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd -L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 -L/package/fx1000/libpng-1.6.37/lib -lpng -L/package/fx1000/jasper-1.900.1/lib -ljasper -L/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -587,29 +587,33 @@
              381        pp   4v            rdivm=0.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 9
+                                   <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.14, ITR: 24, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      flash
+                                   <<<      snow_cpl, rain_cpl, lwdn_cpl, swdn_cpl
+                                   <<<      swup_cpl, pslv_cpl, q02m_cpl, t02m_cpl
+                                   <<<      v10m_cpl, u10m_cpl, vocn_cpl, uocn_cpl
+                                   <<<      tocn_cpl, flash
                                    <<< Loop-information  End >>>
-             382        pp   4v            flash=0.
-             383                           pdry=0.
+             382        pp    v            flash=0.
+             383         p                 pdry=0.
              384                     
              385                     #ifdef TIMCOMCPL
-             386                           tocn_cpl = 0.
-             387                           uocn_cpl = 0.
-             388                           vocn_cpl = 0.
-             389                           u10m_cpl = 0.
-             390                           v10m_cpl = 0.
-             391                           t02m_cpl = 0.
-             392                           q02m_cpl = 0.
-             393                           pslv_cpl = 0.
-             394                           swup_cpl = 0.
-             395                           swdn_cpl = 0.
-             396                           lwdn_cpl = 0.
-             397                           rain_cpl = 0.
-             398                           snow_cpl = 0.
+             386         p    v            tocn_cpl = 0.
+             387         p    v            uocn_cpl = 0.
+             388         p    v            vocn_cpl = 0.
+             389         p    v            u10m_cpl = 0.
+             390         p    v            v10m_cpl = 0.
+             391         p    v            t02m_cpl = 0.
+             392         p    v            q02m_cpl = 0.
+             393         p    v            pslv_cpl = 0.
+             394         p    v            swup_cpl = 0.
+             395         p    v            swdn_cpl = 0.
+             396         p    v            lwdn_cpl = 0.
+             397         p    v            rain_cpl = 0.
+             398         p    v            snow_cpl = 0.
              399                           cpl_send_init = .true.
              400                     #endif
              401                     !
@@ -1204,7 +1208,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SPILLS :
-                                   <<<      GENERAL   : SPILL 12  FILL 31
+                                   <<<      GENERAL   : SPILL 13  FILL 32
                                    <<<      SIMD&FP   : SPILL 0  FILL 0
                                    <<<      SCALABLE  : SPILL 0  FILL 0
                                    <<<      PREDICATE : SPILL 0  FILL 0
@@ -2829,58 +2833,180 @@
             2004     1                     endif   !end lopgsst
             2005                     !
             2006                     #ifdef TIMCOMCPL
-            2007                           u10m_cpl = u10m_cpl + u10*dtx
-            2008                           v10m_cpl = v10m_cpl + v10*dtx
-            2009                           t02m_cpl = t02m_cpl +  t2*dtx
-            2010                           q02m_cpl = q02m_cpl +  q2*dtx
-            2011                           pslv_cpl = pslv_cpl + (pt+pdiff)*dtx
-            2012                           swup_cpl = swup_cpl + (ss-sld)*dtx
-            2013                           swdn_cpl = swdn_cpl + sld*dtx
-            2014                           lwdn_cpl = lwdn_cpl + rld*dtx
-            2015                           rain_cpl = rain_cpl + totalp
-            2016                           snow_cpl = snow_cpl
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 192, MVE: 7, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      u10, u10m_cpl
+                                   <<< Loop-information  End >>>
+            2007        pp   2v            u10m_cpl = u10m_cpl + u10*dtx
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 192, MVE: 7, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      v10, v10m_cpl
+                                   <<< Loop-information  End >>>
+            2008        pp   2v            v10m_cpl = v10m_cpl + v10*dtx
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 192, MVE: 7, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      t2, t02m_cpl
+                                   <<< Loop-information  End >>>
+            2009        pp   2v            t02m_cpl = t02m_cpl +  t2*dtx
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 192, MVE: 7, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      q2, q02m_cpl
+                                   <<< Loop-information  End >>>
+            2010        pp   2v            q02m_cpl = q02m_cpl +  q2*dtx
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 176, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pt, pdiff, pslv_cpl
+                                   <<< Loop-information  End >>>
+            2011        pp   2v            pslv_cpl = pslv_cpl + (pt+pdiff)*dtx
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.80, ITR: 176, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sld, ss, swup_cpl
+                                   <<< Loop-information  End >>>
+            2012        pp   2v            swup_cpl = swup_cpl + (ss-sld)*dtx
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 192, MVE: 7, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sld, swdn_cpl
+                                   <<< Loop-information  End >>>
+            2013        pp   2v            swdn_cpl = swdn_cpl + sld*dtx
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.75, ITR: 96, MVE: 6, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rld, rain_cpl, totalp, lwdn_cpl
+                                   <<< Loop-information  End >>>
+            2014        pp    v            lwdn_cpl = lwdn_cpl + rld*dtx
+            2015         p    v            rain_cpl = rain_cpl + totalp
+            2016         p    v            snow_cpl = snow_cpl
             2017                           dt_cpl   = dt_cpl + dtx
-            2018                           if(cpl_send_init)then
-            2019                             call gfs_cpl_send2gocn(compid,  u10m_cpl/dtx, v10m_cpl/dtx, &
-            2020                                                             t02m_cpl/dtx, q02m_cpl/dtx, &
-            2021                                                             pslv_cpl/dtx, swup_cpl/dtx, &
-            2022                                                             swdn_cpl/dtx, lwdn_cpl/dtx, &
-            2023                                                             rain_cpl/dtx, snow_cpl/dtx, tg)
-            2024                             cpl_send_init = .false.
-            2025                           endif
+            2018     1                     if(cpl_send_init)then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      u10m_cpl, v10m_cpl, t02m_cpl, q02m_cpl
+                                   <<<      pslv_cpl, swup_cpl, swdn_cpl, lwdn_cpl
+                                   <<<      rain_cpl, snow_cpl, (unknown)
+                                   <<< Loop-information  End >>>
+            2019     1  pp   2v              call gfs_cpl_send2gocn(compid,  u10m_cpl/dtx, v10m_cpl/dtx, &
+            2020     1                                                       t02m_cpl/dtx, q02m_cpl/dtx, &
+            2021     1                                                       pslv_cpl/dtx, swup_cpl/dtx, &
+            2022     1                                                       swdn_cpl/dtx, lwdn_cpl/dtx, &
+            2023     1                                                       rain_cpl/dtx, snow_cpl/dtx, tg)
+            2024     1                       cpl_send_init = .false.
+            2025     1                     endif
             2026                     
             2027                           dtaup = mod(tau+0.001, 2.0)
-            2028                           if( dtaup .lt. dtx_tau ) then
-            2029                             if(myrank .eq. 0) write(*,*) "TCo time to coupler", tau
-            2030                     
-            2031                             call gfs_cpl_recv4gocn(compid, land, tg, ssu, ssv)
-            2032                             u10m_cpl = u10m_cpl/dt_cpl
-            2033                             v10m_cpl = v10m_cpl/dt_cpl
-            2034                             t02m_cpl = t02m_cpl/dt_cpl
-            2035                             q02m_cpl = q02m_cpl/dt_cpl
-            2036                             pslv_cpl = pslv_cpl/dt_cpl
-            2037                             swup_cpl = swup_cpl/dt_cpl
-            2038                             swdn_cpl = swdn_cpl/dt_cpl
-            2039                             lwdn_cpl = lwdn_cpl/dt_cpl
-            2040                             rain_cpl = rain_cpl/dt_cpl
-            2041                             snow_cpl = snow_cpl/dt_cpl
-            2042                             call gfs_cpl_send2gocn(compid, u10m_cpl, v10m_cpl, &
-            2043                                                            t02m_cpl, q02m_cpl, &
-            2044                                                            pslv_cpl, swup_cpl, &
-            2045                                                            swdn_cpl, lwdn_cpl, &
-            2046                                                            rain_cpl, snow_cpl, tg)
-            2047                             u10m_cpl = 0.
-            2048                             v10m_cpl = 0.
-            2049                             t02m_cpl = 0.
-            2050                             q02m_cpl = 0.
-            2051                             pslv_cpl = 0.
-            2052                             swup_cpl = 0.
-            2053                             swdn_cpl = 0.
-            2054                             lwdn_cpl = 0.
-            2055                             rain_cpl = 0.
-            2056                             snow_cpl = 0.
-            2057                             dt_cpl   = 0.
-            2058                           end if
+            2028     1                     if( dtaup .lt. dtx_tau ) then
+            2029     1                       if(myrank .eq. 0) write(*,*) "TCo time to coupler", tau
+            2030     1               
+            2031     1                       call gfs_cpl_recv4gocn(compid, land, tg, ssu, ssv)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.65, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rain_cpl, lwdn_cpl, swdn_cpl, swup_cpl
+                                   <<<      pslv_cpl, q02m_cpl, t02m_cpl, v10m_cpl
+                                   <<<      u10m_cpl
+                                   <<< Loop-information  End >>>
+            2032     1  pp    v              u10m_cpl = u10m_cpl/dt_cpl
+            2033     1   p    v              v10m_cpl = v10m_cpl/dt_cpl
+            2034     1   p    v              t02m_cpl = t02m_cpl/dt_cpl
+            2035     1   p    v              q02m_cpl = q02m_cpl/dt_cpl
+            2036     1   p    v              pslv_cpl = pslv_cpl/dt_cpl
+            2037     1   p    v              swup_cpl = swup_cpl/dt_cpl
+            2038     1   p    v              swdn_cpl = swdn_cpl/dt_cpl
+            2039     1   p    v              lwdn_cpl = lwdn_cpl/dt_cpl
+            2040     1   p    v              rain_cpl = rain_cpl/dt_cpl
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 256, MVE: 9, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      snow_cpl
+                                   <<< Loop-information  End >>>
+            2041     1  pp   2v              snow_cpl = snow_cpl/dt_cpl
+            2042     1                       call gfs_cpl_send2gocn(compid, u10m_cpl, v10m_cpl, &
+            2043     1                                                      t02m_cpl, q02m_cpl, &
+            2044     1                                                      pslv_cpl, swup_cpl, &
+            2045     1                                                      swdn_cpl, lwdn_cpl, &
+            2046     1                                                      rain_cpl, snow_cpl, tg)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.22, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      lwdn_cpl, swdn_cpl, swup_cpl, pslv_cpl
+                                   <<<      q02m_cpl, rain_cpl, t02m_cpl, v10m_cpl
+                                   <<<      u10m_cpl
+                                   <<< Loop-information  End >>>
+            2047     1  pp    v              u10m_cpl = 0.
+            2048     1   p    v              v10m_cpl = 0.
+            2049     1   p    v              t02m_cpl = 0.
+            2050     1   p    v              q02m_cpl = 0.
+            2051     1   p    v              pslv_cpl = 0.
+            2052     1   p    v              swup_cpl = 0.
+            2053     1   p    v              swdn_cpl = 0.
+            2054     1   p    v              lwdn_cpl = 0.
+            2055     1   p    v              rain_cpl = 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      snow_cpl
+                                   <<< Loop-information  End >>>
+            2056     1  pp   4v              snow_cpl = 0.
+            2057     1                       dt_cpl   = 0.
+            2058     1                     end if
             2059                     #endif
             2060                     
             2061                           itau=tau+0.001
@@ -2965,8 +3091,8 @@
 
  Procedure information
    Lines      : 2139
-   Statements : 1050
-   Stack(byte): 210528
+   Statements : 1112
+   Stack(byte): 218960
    Prefetch num: 16
 
  Scoping unit of external sub-program : intgrt
@@ -3211,6 +3337,12 @@
       |(Declaration)    : 
       |(Definition)     : 1265
       |(Reference)      : 
+     compid
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 2  206
+      |(Definition)     : 
+      |(Reference)      : 622  2019  2031  2042
      const
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -3247,6 +3379,12 @@
       |(Declaration)    : 
       |(Definition)     : 818  1007  1265  1737  1794  1901
       |(Reference)      : 491
+     cpl_send_init
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 205
+      |(Definition)     : 399  2024
+      |(Reference)      : 2018
      ctau
       |(Class and Type) : variable name, CHARACTER(6,1)
       |(Attributes)     : 
@@ -3601,6 +3739,12 @@
       |(Declaration)    : 148
       |(Definition)     : 
       |(Reference)      : 
+     dt_cpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 204
+      |(Definition)     : 2017  2057
+      |(Reference)      : 2017  2032  2033  2034  2035  2036  2037  2038  2039  2040  2041
      dt_trk
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : use-associated
@@ -3629,8 +3773,8 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 148
-      |(Definition)     : 1480  1595  1599  1605
-      |(Reference)      : 1481  1596  1600  1606
+      |(Definition)     : 1480  1595  1599  1605  2027
+      |(Reference)      : 1481  1596  1600  1606  2028
      dtgfix12
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
@@ -3672,13 +3816,13 @@
       |(Attributes)     : 
       |(Declaration)    : 148
       |(Definition)     : 461  1265  1959
-      |(Reference)      : 463  635  654  1498  1499  1500  1501  1502  1503  1506  1509  1996
+      |(Reference)      : 463  635  654  1498  1499  1500  1501  1502  1503  1506  1509  1996  2007  2008  2009  2010  2011  2012  2013  2014  2017  2019  2019  2019  2019  2019  2019  2019  2019  2019  2019
      dtx_tau
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 148
       |(Definition)     : 635
-      |(Reference)      : 674  1481  1556  1600  1606
+      |(Reference)      : 674  1481  1556  1600  1606  2028
      dummy
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : 
@@ -3913,6 +4057,24 @@
       |(Declaration)    : 109
       |(Definition)     : 753  770  1265
       |(Reference)      : 
+     gfs_cpl
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 3
+     gfs_cpl_recv4gocn
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 622  2031
+     gfs_cpl_send2gocn
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 2019  2042
      gfx
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
@@ -4283,7 +4445,7 @@
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 5
+      |(Definition)     : 2
       |(Reference)      : 2139
      io_quilting
       |(Class and Type) : variable name, LOGICAL(4)
@@ -4571,7 +4733,7 @@
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 1265
+      |(Definition)     : 622  1265  2031
       |(Reference)      : 
      latpart
       |(Class and Type) : variable name, INTEGER(4)
@@ -4747,6 +4909,12 @@
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 35
+     lwdn_cpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 200
+      |(Definition)     : 396  2014  2039  2054
+      |(Reference)      : 2014  2019  2039  2042
      lwoa0
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : SAVE, namelist-group-object, use-associated
@@ -4838,11 +5006,11 @@
       |(Definition)     : 
       |(Reference)      : 49
      mod
-      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 237  674  1480  1556  1595  1599  1605  1848  1880  1899  1906  1914  1949
+      |(Reference)      : 237  674  1480  1556  1595  1599  1605  1848  1880  1899  1906  1914  1949  2027
      mod_sit_control
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -4974,7 +5142,7 @@
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 779  781  784  786  788  796  798  800  829  830  832  858  886  888  890  944  963  975  977  978  979  980  981  982  1016  1017  1019  1041  1043  1045  1047  1049  1053  1079  1083  1085  1087  1108  1119  1143  1145  1147  1192  1243  1249  1250  1251  1253  1265  1304  1311  1312  1317  1348  1350  1352  1397  1448  1453  1459  1522  1523  1524  1525  1526  1538  1543  1737  1750  1792  1793  1794  1867  1885  1901  1924
-      |(Reference)      : 68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  88  88  88  88  88  88  88  88  88  88  88  88  96  96  98  98  116  162  162  166  197  197
+      |(Reference)      : 68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  88  88  88  88  88  88  88  88  88  88  88  88  96  96  98  98  116  162  162  166  197  197  200  200  200  200  200  200  200  200  200  200  200  200  200  200
      myf
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
@@ -4986,7 +5154,7 @@
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 408  516  519  611  616  616  637  658  684  1211  1416  1554  1560  1565  1570  1609  1615  1721  1723  1725  1748  1763  1834  1859  1866  1883  1915  1962  1972  1982  2068  2076  2079  2110
+      |(Reference)      : 408  516  519  611  616  616  637  658  684  1211  1416  1554  1560  1565  1570  1609  1615  1721  1723  1725  1748  1763  1834  1859  1866  1883  1915  1962  1972  1982  2029  2068  2076  2079  2110
      NINT
       |(Class and Type) : intrinsic function name, INTEGER(4)
       |(Attributes)     : PURE, ELEMENTAL
@@ -5250,7 +5418,7 @@
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 359  779  781  784  786  788  796  798  800  814  818  1001  1007  1041  1043  1045  1047  1049  1053  1079  1083  1085  1087  1532
-      |(Reference)      : 68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  88  88  88  88  88  88  88  88  88  88  88  88  96  96  116  162  162  166  191  197  197
+      |(Reference)      : 68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  68  88  88  88  88  88  88  88  88  88  88  88  88  96  96  116  162  162  166  191  197  197  200  200  200  200  200  200  200  200  200  200  200  200  200  200
      o3l
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
@@ -5419,6 +5587,12 @@
       |(Declaration)    : 
       |(Definition)     : 1123
       |(Reference)      : 1154  1155  1359  1360
+     pdiff
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 2011
      pdot
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
@@ -5521,12 +5695,18 @@
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 359  814  1001  1532
+     pslv_cpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 200
+      |(Definition)     : 393  2011  2036  2051
+      |(Reference)      : 2011  2019  2036  2042
      pt
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 359  1119  1253  1265  1526  1532  1737  1794  1885  1901
-      |(Reference)      : 485  737  738
+      |(Reference)      : 485  737  738  2011
      pten
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
@@ -5575,12 +5755,18 @@
       |(Declaration)    : 
       |(Definition)     : 737  1265
       |(Reference)      : 
+     q02m_cpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 200
+      |(Definition)     : 392  2010  2035  2050
+      |(Reference)      : 2010  2019  2035  2042
      q2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 1265  1794  1867  1885
-      |(Reference)      : 
+      |(Reference)      : 2010
      qf24
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
@@ -5671,6 +5857,12 @@
       |(Declaration)    : 88
       |(Definition)     : 534  1504  1924  1940
       |(Reference)      : 1504
+     rain_cpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 200
+      |(Definition)     : 397  2015  2040  2055
+      |(Reference)      : 2015  2019  2040  2042
      raincu
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
@@ -5844,7 +6036,7 @@
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 378  562  1265  1750  1794  1885
-      |(Reference)      : 
+      |(Reference)      : 2014
      rld_clr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
@@ -6024,7 +6216,7 @@
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 379  560  1265  1750  1794  1885
-      |(Reference)      : 
+      |(Reference)      : 2012  2013
      sld_clr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
@@ -6061,6 +6253,12 @@
       |(Declaration)    : 
       |(Definition)     : 1265  1750
       |(Reference)      : 
+     snow_cpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 200
+      |(Definition)     : 398  2016  2041  2056
+      |(Reference)      : 2016  2019  2041  2042
      snr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
@@ -6132,7 +6330,7 @@
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 558  1265  1750  1794  1901
-      |(Reference)      : 1500
+      |(Reference)      : 1500  2012
      ss24
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
@@ -6167,13 +6365,13 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 1265
+      |(Definition)     : 622  1265  2031
       |(Reference)      : 
      ssv
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 1265
+      |(Definition)     : 622  1265  2031
       |(Reference)      : 
      stbo
       |(Class and Type) : variable name, REAL(8)
@@ -6193,24 +6391,42 @@
       |(Declaration)    : 
       |(Definition)     : 1265
       |(Reference)      : 
+     swdn_cpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 200
+      |(Definition)     : 395  2013  2038  2053
+      |(Reference)      : 2013  2019  2038  2042
+     swup_cpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 200
+      |(Definition)     : 394  2012  2037  2052
+      |(Reference)      : 2012  2019  2037  2042
      system_clock
       |(Class and Type) : intrinsic subroutine name
       |(Attributes)     : PURE
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 1609  1963
+     t02m_cpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 200
+      |(Definition)     : 391  2009  2034  2049
+      |(Reference)      : 2009  2019  2034  2042
      t2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 1265  1794  1885  1901
-      |(Reference)      : 1583  1584  1585  1586  1587  1588
+      |(Reference)      : 1583  1584  1585  1586  1587  1588  2009
      tau
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 460  654  1265  1488  1836  1951  1954  1959
-      |(Reference)      : 609  654  658  674  1467  1480  1549  1556  1595  1597  1599  1605  1614  1734  1834  1867  1901  1996  2061
+      |(Reference)      : 609  654  658  674  1467  1480  1549  1556  1595  1597  1599  1605  1614  1734  1834  1867  1901  1996  2027  2029  2061
      taue
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : common-block-object, use-associated
@@ -6341,8 +6557,8 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 1265  1482  1488  1737  1794
-      |(Reference)      : 561  561
+      |(Definition)     : 622  1265  1482  1488  1737  1794  2031
+      |(Reference)      : 561  561  2019  2042
      tg2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
@@ -6354,6 +6570,12 @@
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 1265
+      |(Reference)      : 
+     tgfs_cpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 200
+      |(Definition)     : 
       |(Reference)      : 
      thdai
       |(Class and Type) : variable name, REAL(8)
@@ -6559,6 +6781,12 @@
       |(Declaration)    : 140
       |(Definition)     : 268  311  1689  1717
       |(Reference)      : 
+     tocn_cpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 200
+      |(Definition)     : 386
+      |(Reference)      : 
      tofd
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, use-associated
@@ -6576,7 +6804,7 @@
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 1265
-      |(Reference)      : 1504
+      |(Reference)      : 1504  2015
      toutend
       |(Class and Type) : variable name, INTEGER(8)
       |(Attributes)     : 
@@ -6762,7 +6990,13 @@
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 1265  1794  1885  1901
-      |(Reference)      : 
+      |(Reference)      : 2007
+     u10m_cpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 200
+      |(Definition)     : 389  2007  2032  2047
+      |(Reference)      : 2007  2019  2032  2042
      ugws
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
@@ -6781,6 +7015,12 @@
       |(Declaration)    : 68
       |(Definition)     : 725  818  944  963  975  1007  1041  1243  1315  1448  1456
       |(Reference)      : 866
+     uocn_cpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 200
+      |(Definition)     : 387
+      |(Reference)      : 
      up
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
@@ -6828,7 +7068,13 @@
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 1265  1794  1885  1901
-      |(Reference)      : 
+      |(Reference)      : 2008
+     v10m_cpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 200
+      |(Definition)     : 390  2008  2033  2048
+      |(Reference)      : 2008  2019  2033  2042
      vdmerd
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : DIMENSION
@@ -6889,6 +7135,12 @@
       |(Declaration)    : 68
       |(Definition)     : 726  818  944  963  975  1007  1043  1243  1315  1448  1456
       |(Reference)      : 867
+     vocn_cpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 200
+      |(Definition)     : 388
+      |(Reference)      : 
      vormid
       |(Class and Type) : variable name, REAL(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
@@ -7132,7 +7384,7 @@
  Total information
    Procedures       : 1
    Total lines      : 2139
-   Total statements : 1050
-   Total stack(byte): 210528
+   Total statements : 1112
+   Total stack(byte): 218960
    Total prefetch num: 16
 

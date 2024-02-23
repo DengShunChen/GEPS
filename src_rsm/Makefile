@@ -3,7 +3,7 @@ SHELL = /bin/sh
 RANLIB = ranlib
 AR = ar cq
 RM = rm -f
-TIMCOMCPL = FALSE
+TIMCOMCPL = TRUE
 
 SRCS_f90  = \
   ancrt.f90 \

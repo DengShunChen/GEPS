@@ -1,5 +1,5 @@
 
- Fujitsu Fortran Version 4.6.1  Thu Dec 28 14:56:31 2023
+ Fujitsu Fortran Version 4.6.1  Thu Jan 25 09:51:30 2024
 
  Compilation information
    Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_4cpl
@@ -481,7 +481,7 @@
              419                                   prefluxr, prefluxi, prefluxs, prefluxg,                      &
              420                                   condensation, deposition, evaporation, sublimation,          &
              421                     #endif
-             422                                   rhc, last_step, do_inline_mp )
+             422                                   rhc, last_step, do_inline_mp, me )
              423                     
              424                         implicit none
              425                     
@@ -522,7 +522,7 @@
              460                         real, dimension (is:ie) :: condensation, deposition
              461                         real, dimension (is:ie) :: evaporation, sublimation
              462                     #endif
-             463                     
+             463                         integer me
              464     1                   if (last_step) then
              465     1                       p_min = p0_min ! final clean - up
              466     1                   else
@@ -581,7 +581,7 @@
              519                     !        w_var, vt_r, vt_s, vt_g, vt_i,
              520                             q_con, cappa, consv_te, te, &
              521                             prefluxr, prefluxi, prefluxs, prefluxg, condensation, deposition, &
-             522                             evaporation, sublimation, rhc, last_step, do_inline_mp)
+             522                             evaporation, sublimation, rhc, last_step, do_inline_mp, me)
              523                     
              524                     end subroutine gfdl_cld_mp_driver
              525                     
@@ -609,7 +609,7 @@
              547                     !        w_var, vt_r, vt_s, vt_g, vt_i,
              548                             q_con, cappa, consv_te, te, &
              549                             prefluxr, prefluxi, prefluxs, prefluxg, condensation, deposition, &
-             550                             evaporation, sublimation, rhc, last_step, do_inline_mp )
+             550                             evaporation, sublimation, rhc, last_step, do_inline_mp, me )
              551                     
              552                         implicit none
              553                     
@@ -668,7 +668,7 @@
              606                         real :: nl, ni
              607                         real :: cond, dep, reevap, sub
              608                     
-             609                         integer :: i, k, n
+             609                         integer :: i, k, n, me
              610                     
              611                         logical  :: last_step_cld=.false.
              612                     
@@ -7308,8 +7308,8 @@
 
  Procedure information
    Lines      : 5672
-   Statements : 3238
-   Stack(byte): 460176
+   Statements : 3239
+   Stack(byte): 460192
    Prefetch num: 26
 
  Scoping unit of module : module_mp_gfdl_v2
@@ -9141,6 +9141,12 @@
       |(Declaration)    : 457
       |(Definition)     : 513
       |(Reference)      : 
+     me
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 412  463
+      |(Definition)     : 513
+      |(Reference)      : 
      mpdrv
       |(Class and Type) : module subroutine name
       |(Attributes)     : 
@@ -9768,6 +9774,12 @@
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 613  790  791  832  839
+     me
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 541  609
+      |(Definition)     : 
+      |(Reference)      : 
      min
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
@@ -19536,7 +19548,7 @@
  Total information
    Procedures       : 1
    Total lines      : 5672
-   Total statements : 3238
-   Total stack(byte): 460176
+   Total statements : 3239
+   Total stack(byte): 460192
    Total prefetch num: 26
 
