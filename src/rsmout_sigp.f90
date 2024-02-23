@@ -14,7 +14,7 @@
       use index
       use mpe
       use radn, only : ntoz,ntcw,ntrw,ntiw,ntsw,ntgl
-
+      use noah, only : cice
 #if defined(CWB_MPMD) || defined(CWBSUM)
       use rank, only : root_rsm,myrank,itag
 #else
@@ -604,14 +604,7 @@
       endif
 #endif
 !! ***ice***(simk in RSM-csfcfld(:,13))
-      wrk1(:,:)=0.0
-      do jj=1,jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-      do i=1,nxj
-        if(ice(i,jj))wrk1(i,jj)=2.0
-      enddo
-      enddo
+      wrk1=cice
       call unify_reduceintp(nx,my,my_max,wrk1,work)
 !
 #ifdef write_RSM

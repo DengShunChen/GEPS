@@ -175,7 +175,7 @@ integer*4,parameter :: numcoord=1 !number of values in array
       ! Contains the data values for the specified Product Definition Template
       ! ( N=ipdsnum ).  Each element of this integer array  contains an entry
       ! (in the order specified) of Product Defintion Template 4.N
-       data ipdstmpl/ -1, -1, -1,  0, 53,  0,  0,  1, -1, -1, -1, -1,255,  0,  0/
+       data ipdstmpl/ -1, -1, -1,  0, 53,  0,  0,  1, -1, -1, -1, -1,255,  0,  0, 0, 0, 0/
       ! ipdstmpl(1)=    !Parameter category ( See Code Table 4.1 )
       ! ipdstmpl(2)=    !Parameter number ( See Code Table 4.2 )
       ! ipdstmpl(3)=    !Type of generating process ( See Code Table 4.3 )
