@@ -212,6 +212,6 @@ EOF
  /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} -Wl,-T
 
  if [ $? != 0 ] ; then
-  echo "error occured: fct model fail !!"
+  echo "error occured: fct model fail !!" ; exit 9
  fi
 
