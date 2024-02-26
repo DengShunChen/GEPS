@@ -12,6 +12,10 @@ arm-build:
     - echo "dev build"
     - hostname ; pwd
     - ./compile fx1000
+  artifacts:
+    paths:
+      - build/bin/tcogfs.x
+    expire_in: 1 day
   tags:
     - h6ln19
 
