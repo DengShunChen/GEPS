@@ -29,6 +29,9 @@ dev-test:
     - cicd
   script:
     - echo "dev testing"
+    - cd job
+    - JID=$(pjsub -z jid TCo383L72_IC_sample_fx1000)
+    - /usr/bin/pjwait ${JID}
 
 stg-build:
   stage: build
