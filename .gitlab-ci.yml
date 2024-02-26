@@ -3,7 +3,7 @@ stages:
   - deploy
   - test
 
-dev-build:
+arm-build:
   stage: build
   only:
     - development
@@ -12,9 +12,8 @@ dev-build:
     - echo "dev build"
     - hostname ; pwd
     - ./compile fx1000
-    - ./compile a100
 
-dev-deploy:
+arm-deploy:
   stage: deploy
   only:
     - development
@@ -22,7 +21,7 @@ dev-deploy:
   script:
     - echo "dev deploy"
 
-dev-test:
+arm-test:
   stage: test
   only:
     - development
@@ -30,7 +29,33 @@ dev-test:
   script:
     - echo "dev testing"
     - cd job
-    - JID=$(pjsub -z jid TCo383L72_IC_sample_fx1000)
+    - JID=$(pjsub -z jid TCo383L72_IC_sample_fx1000 -x CMAKE_BUILD=1)
+    - /usr/bin/pjwait ${JID}
+
+gpu-build:
+  stage: build
+  only:
+    - master
+  script:
+    - echo "dev build"
+    - hostname ; pwd
+    - ./compile a100
+
+gpu-deploy:
+  stage: deploy
+  only:
+    - master
+  script:
+    - echo "dev deploy"
+
+gpu-test:
+  stage: test
+  only:
+    - master
+  script:
+    - echo "dev testing"
+    - cd job
+    - JID=$(pjsub -z jid TCo383L72_IC_sample_a100)
     - /usr/bin/pjwait ${JID}
 
 stg-build:
