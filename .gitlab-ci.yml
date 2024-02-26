@@ -12,6 +12,8 @@ arm-build:
     - echo "dev build"
     - hostname ; pwd
     - ./compile fx1000
+  tags:
+    - h6ln19
 
 arm-deploy:
   stage: deploy
@@ -20,6 +22,8 @@ arm-deploy:
     - cicd
   script:
     - echo "dev deploy"
+  tags:
+    - h6ln19
 
 arm-test:
   stage: test
@@ -31,6 +35,8 @@ arm-test:
     - cd job
     - JID=$(pjsub -z jid TCo383L72_IC_sample_fx1000 -x CMAKE_BUILD=1)
     - /usr/bin/pjwait ${JID}
+  tags:
+    - h6ln19
 
 gpu-build:
   stage: build
