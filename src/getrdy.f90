@@ -118,6 +118,7 @@
       real  tem,rho,ttr,ttv
 
       lmax=26
+      cc=0.
 !
       nxmy   = nx*my
       mlmax2 = mlmax * 2
@@ -155,7 +156,8 @@
  107  format('global_idw.t',i3.3,'.',i4.4,'.',i3.3,'.dat')
  108  format('global_idw.t',i3.3,'.',i3.3,'.',i3.3,'.dat')
 
-      open(71,file=f71,form='unformatted',access='direct',recl=8*nx*my)
+      open(71,file=f71,form='unformatted',access='direct',    &
+           recl=8*nx*my,convert="big_endian")
 
       do k=1,8
         read(71,rec=k) ww1
@@ -339,6 +341,11 @@
         fqp=0.
         ftp1=0.
         fqp1=0.
+        itaui=0
+! give the initial forward weighting for Semi-implicit
+        alphax = alpha
+! give the initial coefficient for horizontal diffusion
+        hfiltx = hfilt
 !
 ! new start gfcst: read climate data, initialize parameters
 !
@@ -490,7 +497,14 @@
                   zice(i,jj) = max(zice(i,jj),1.*cice(i,jj))
                   icwarn = icwarn + 1 
                 endif
+                shdmax(i,jj) = cice(i,jj)
               endif            
+! set snow depth to zero on ocean point
+              if ( ocean(i,jj) ) then
+                snr(i,jj)    = 0.
+                sndepth(i,jj)= 0.
+                sncover(i,jj)= 0.
+              endif
             enddo             
           enddo
 !
@@ -915,6 +929,13 @@
         call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pt(1,jj) &
                           ,pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
  160  continue
+!                  
+!  computing global mean surface pressure at initial time
+!
+      if ( .not. restrt ) then
+        pdryi = 0.
+        call ptot(pdryi,dpprt)
+      endif
 !
 !  compute globel moisture budget and p-coordinate variables
 !
@@ -1325,6 +1346,8 @@
               , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6       &
               , ggdef)
       endif
+!
+!#ifdef RSM_sigp
         if(outgrb2==1.and.myrank==0)then
             if(io_quilting)then 
               keydoit(1:4)='CLSE'
@@ -1336,7 +1359,7 @@
         endif
 
 #ifdef RSM
-      if (outrsm) then
+       if(outrsm) then
         if(myrank.eq.0)print*,' output: rsm date',idtg
         write(dtgrsm,'(I12)') idtg
         read(dtgrsm,'(I10,I2)')idtgrsm,ii   ! ii is dummy integer
@@ -1345,14 +1368,31 @@
 #else
         call wrte_idate(idtgrsm)
 #endif
-        call rsmout(idtg,0,nx,my,my_max,lev,ncld      &
-                , ptop,cp,rgas,grav,sgeo,pdiff        &
-                , t1000,pt,plt,pk,pk2,phi,ut,vt       &
-                , tt,qt,tg,snr,cosl                   &
-                , km_soil,smc,stc                     &
-                , ice,land,ocean)
-      endif
+        call rsmout_sigp( itaui,nx,my,my_max,lev,ncld        &
+                     , idtg,ptop,rad,grav,cosl           &
+                     , pt,sgeo,snr,gwr,tg,pk             &
+                     , ut,vt,tt,qt,km_soil,smc,stc       &
+                     , ice,land,ocean,xlon,xlat)
+       endif
 #endif
+!#ifdef RSM
+!      if (outrsm) then
+!        if(myrank.eq.0)print*,' output: rsm date',idtg
+!        write(dtgrsm,'(I12)') idtg
+!        read(dtgrsm,'(I10,I2)')idtgrsm,ii   ! ii is dummy integer
+!#ifdef CWB_MPMD
+!        call send_idate(idtgrsm)
+!#else
+!        call wrte_idate(idtgrsm)
+!#endif
+!        call rsmout(idtg,0,nx,my,my_max,lev,ncld      &
+!                , ptop,cp,rgas,grav,sgeo,pdiff        &
+!                , t1000,pt,plt,pk,pk2,phi,ut,vt       &
+!                , tt,qt,tg,snr,cosl                   &
+!                , km_soil,smc,stc                     &
+!                , ice,land,ocean)
+!      endif
+!#endif
 !
 !
         if(typhoon)then

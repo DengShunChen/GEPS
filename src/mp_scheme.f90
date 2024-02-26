@@ -135,11 +135,11 @@
       implicit none
 
 !  ---  inputs:
-      integer,  intent(in)    :: nmmiph,nx,nxj,lev,ncld,kdt,me
+      integer,  intent(in)    :: nmmiph,nx,nxj,jj,lev,ncld,kdt,me
 !      integer,  intent(in)    :: ntcw,ntrw,ntiw,ntsw,ntgl,ntinc,ntrnc
       integer,  intent(in)    :: islimsk(nx)
       integer,  intent(in)    :: itimestep
-      real,     intent(in)    :: tpi,dta,jj
+      real,     intent(in)    :: tpi,dta
       real,     intent(in)    :: phii(nx,lev+1),phi(nx,lev)
       real,     intent(in)    :: area
       real,     intent(in)    :: ptop
@@ -150,10 +150,10 @@
       real,     intent(in)    :: plt(nx,lev)
       real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),dsigma(lev,2)
 !  ---  inputs/outputs:
-      real(kind=RTYPE), intent(inout) :: tt(nx,lev)
+      real, intent(inout) :: tt(nx,lev)
       real,     intent(inout) :: qa(nx,lev)
       real,     intent(inout) :: vvel(nx,lev) !mb/s
-      real(kind=RTYPE), intent(inout) :: ut(nx,lev),vt(nx,lev)
+      real, intent(inout) :: ut(nx,lev),vt(nx,lev)
       real(kind=RTYPE), intent(inout) :: qt(nx,lev*ncld)
 #ifdef update_dp
       real(kind=RTYPE), intent(inout) :: pst(nx)

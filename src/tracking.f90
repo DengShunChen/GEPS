@@ -258,10 +258,10 @@ subroutine tracking(tau,dt_trk,dt,nx,my,                                  &
      cdtg=idtgc(1:10)
  if(WriteTrack)then
     if(myrank.eq.0)then
-     if(idtg.ge.200000000000)then
-     idtg8=(idtg-200000000000)/100
+     if(idtg.ge.200000000000_8)then
+     idtg8=(idtg-200000000000_8)/100
      else
-     idtg8=(idtg-190000000000)/100
+     idtg8=(idtg-190000000000_8)/100
      endif
     call dmsmsg('ERR',ist)
       print *,'dmsdb= ',dfile,'  ist= ',ist,'cdtg=',cdtg,'mem=',mem

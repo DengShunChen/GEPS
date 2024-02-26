@@ -19,6 +19,8 @@ setenv COMP_MPI  $LANG_HOME/bin/mpifrtpx
 
 setenv C_COMP    $LANG_HOME/bin/mpifccpx
 setenv C_COMP_MP $LANG_HOME/bin/mpifccpx
+
+setenv CXX_COMP_MP $LANG_HOME/bin/mpiFCCpx
 #============================================================
 # select one of the followings :
 #  1. mpi single precision for transpose and unify
@@ -63,6 +65,7 @@ setenv CFLAGS_COM "-c -Xg"
 # Known conflicts
 module use /data/common/gfs/modulefiles/x86_64
 module load tcsds
+module load cmake/3.21.4
 module unuse /data/common/gfs/modulefiles/x86_64
 
 # Loading gfs modules
@@ -78,7 +81,14 @@ module load w3lib/2.0.2
 module unuse /data/common/gfs/modulefiles/$machine
 
 #===add for grib2 output
-setenv G2_LIB "-L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 "
-setenv G2_INC "/package/fx1000/g2lib-1.4.0_cwb/include"
-setenv PNG_LIB " -L/package/fx1000/libpng-1.6.37/lib -lpng "
-setenv JASPER_LIB "-L/package/fx1000/jasper-1.900.1/lib -ljasper"
+set G2_PATH "/package/fx1000/g2lib-1.4.0_cwb"
+set PNG_PATH "/package/fx1000/libpng-1.6.37"
+set JASPER_PATH "/package/fx1000/jasper-1.900.1"
+setenv G2_LIB "-L${G2_PATH}/lib -lg2 "
+setenv G2_INC_PATH "${G2_PATH}/include"
+setenv G2_INC "${G2_PATH}/include"
+setenv G2_LIB_PATH "${G2_PATH}/lib"
+setenv PNG_LIB "-L${PNG_PATH}/lib -lpng"
+setenv PNG_LIB_PATH "${PNG_PATH}/lib"
+setenv JASPER_LIB "-L${JASPER_PATH}/lib -ljasper"
+setenv JASPER_LIB_PATH "${JASPER_PATH}/lib"

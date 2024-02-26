@@ -1,5 +1,5 @@
       subroutine out24 (nx,my,my_max,hf24,qf24,ss24,rs24,asol24,olr24  &
-                      ,rain24,dt24,ifilout,glob,itau,idtg,ggdef,flash24)
+                      ,rain24,rainlp24,dt24,ifilout,glob,itau,idtg,ggdef,flash24)
 !
       use index
       use mpe
@@ -13,7 +13,7 @@
 
       real      hf24(nxp,my_max),qf24(nxp,my_max),ss24(nxp,my_max),rs24(nxp,my_max), &
                 asol24(nxp,my_max),olr24(nxp,my_max),rain24(nxp,my_max)              &
-               ,flash24(nxp,my_max)
+               ,flash24(nxp,my_max),rainlp24(nxp,my_max)
 
       real(kind=RTYPE) glob(nx,my),wrk(nxp,my_max)
 !
@@ -90,6 +90,18 @@
       call syslbl ('b00626',idtg,itau,ggdef,ihdg)
       if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
       if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,1,8,2,103,0,0.,1,24,glob)
+!
+!  Total precipitation  24-hours
+      do jj=1,jlistnum
+         j=jlist1(jj)
+         nxj=nxdef_2d(j)
+         do i=1,nxj
+          wrk(i,jj)=rainlp24(i,jj)
+         enddo
+      enddo
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
+      call syslbl ('b00646',idtg,itau,ggdef,ihdg)
+      if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
 
 !  The average of latent heat flux release for total precipitation within 24-hours
       do jj=1,jlistnum

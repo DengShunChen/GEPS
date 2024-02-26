@@ -92,7 +92,6 @@
 !                other input variables unmodified.
 !   ********************************************************************
 !lzl +add === #
-      use mpe
       use rank
       use index
 !lzl -end === #

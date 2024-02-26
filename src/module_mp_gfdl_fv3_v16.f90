@@ -109,9 +109,11 @@ module module_mp_gfdl
     real, parameter :: d2ice = dc_vap + dc_ice !< - 126, isobaric heating / cooling
     real, parameter :: li2 = lv0 + li00 !< 2.86799816e6, sublimation latent heat coefficient at 0 deg k
     
-    real, parameter :: qrmin = 1.e-8 ! min value for ???
+!    real, parameter :: qrmin = 1.e-8 ! min value for ???
+    real, parameter :: qrmin = 1.e-15 ! min value for precipitating condensates
     real, parameter :: qvmin = 1.e-20 !< min value for water vapor (treated as zero)
-    real, parameter :: qcmin = 1.e-12 !< min value for cloud condensates
+!    real, parameter :: qcmin = 1.e-12 !< min value for cloud condensates
+    real, parameter :: qcmin = 1.e-15 !< min value for cloud condensates
     
     real, parameter :: vr_min = 1.e-3 !< min fall speed for rain
     real, parameter :: vf_min = 1.e-5 !< min fall speed for cloud ice, snow, graupel
@@ -287,7 +289,7 @@ module module_mp_gfdl
     logical :: fast_sat_adj = .false. !< has fast saturation adjustments
     logical :: z_slope_liq = .true. !< use linear mono slope for autocconversions
     logical :: z_slope_ice = .false. !< use linear mono slope for autocconversions
-    logical :: use_ccn = .false. !< must be true when prog_ccn is false
+    logical :: use_ccn = .true. !< must be true when prog_ccn is false
     logical :: use_ppm = .false. !< use ppm fall scheme
     logical :: mono_prof = .true. !< perform terminal fall with mono ppm scheme
     logical :: mp_print = .false. !< cloud microphysics debugging printout
@@ -1837,7 +1839,8 @@ subroutine icloud (ktop, kbot, tzk, p1, qvk, qlk, qrk, qik, qsk, qgk, dp1, &
             
             tc = tz - tice
             
-            if (qr > 1.e-7 .and. tc < 0.) then
+!            if (qr > 1.e-7 .and. tc < 0.) then
+            if (qr > qrmin .and. tc < 0.) then
                 
                 ! -----------------------------------------------------------------------
                 ! * sink * terms to qr: psacr + pgfr
@@ -4705,14 +4708,12 @@ subroutine cloud_diagnosis                                              &
 !   --- output :
           rew, rei, rer, res, reg)
 !
-    use const, only: RTYPE
-!    
     implicit none
     
     integer, intent (in) :: is, ie, ks, ke
     integer, intent (in), dimension (is:ie) :: lsm ! land sea mask, 0: ocean, 1: land, 2: sea ice
     
-    real(kind=RTYPE), intent (in), dimension (is:ie, ks:ke) :: t
+    real, intent (in), dimension (is:ie, ks:ke) :: t
     real, intent (in), dimension (is:ie, ks:ke) :: den, delp
     real, intent (in), dimension (is:ie, ks:ke) :: qmw, qmi, qmr, qms, qmg !< units: kg / kg
     

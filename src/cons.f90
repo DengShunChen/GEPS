@@ -77,13 +77,15 @@
                       , otgreen,out_hp,dosppt,dospptout, doshum, dossst &
                       , doskeb, doskebout, ndsladvh2,hord               &
                       , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
-                      , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud,updatetg    &
+                      , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud,updatetg       &
 ! output data for RSM (Also, RSM compiling flag is necessary)
-                      , outrsm,rsmoutinv,rlon1,rlon2,rlat1,rlat2,rgrdsz &
-                      , cmbk,cgwd,nmmiph,spl1,spl2                      &
-                      , weightSIT,dSITdt_intv,af,mwhd,doclx,doslavepp   &
-                      , outdms,outgrb2
+                      , outrsm,rsmoutinv,rlon1,rlon2,rlat1,rlat2,rgrdsz,rsmsfcmgrhr &
 !
+                      , cmbk,cgwd,nmmiph,spl1,spl2                      &
+                      , weightSIT,dSITdt_intv,mwhd,doclx,doslavepp      &
+                      , outdms,outgrb2,alpha,two_loop,ttl,tfilt,factop  &
+                      , mass_dp,dpprt,itter,vd
+!                       
       real    si(lev+1)
       logical flag
       character*10 fulldtg,Wfulldtg
@@ -193,9 +195,9 @@
       close(2)
 ! transfer idtg8 to idtg*12
       if(idtg8.gt.60000000)then
-        idtg = 190000000000 + idtg8*100
+        idtg = 190000000000_8 + idtg8*100
       else
-        idtg = 200000000000 + idtg8*100
+        idtg = 200000000000_8 + idtg8*100
       endif
 !
       write(cdtg,900)idtg
@@ -338,8 +340,8 @@
         prslp=sigma(k,2)+sigma(k,1)*1000.+ptop
         if ( prslp .le. spl1  ) hdk1=k
         if ( prslp .le. spl2  ) hdk2(1)=k
-        if ( prslp .le. 200.  ) hdk2(2)=k
-        if ( prslp .le. 400.  ) hdk2(3)=k
+        if ( prslp .le.  50.  ) hdk2(2)=k
+        if ( prslp .le. 200.  ) hdk2(3)=k
       enddo
 !
 !

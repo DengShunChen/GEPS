@@ -94,6 +94,7 @@ SRCS_f90  = \
   init_block.f90 \
   initial.f90 \
   intgrt.f90 \
+  intgrt_3tl.f90 \
   invmtx.f90 \
   ioserver.f90 \
   iounitdef.f90 \
@@ -256,10 +257,13 @@ SRCS_f90  = \
   rqkir.f90 \
   rrtmg.f90 \
   rsmout.f90 \
+  rsmout_sigp.f90 \
   rstrandz.f90 \
   rstrantq.f90 \
   samfdeepcnv.f90 \
   samfshalcnv.f90 \
+  samfdeepcnv_kh.f90 \
+  samfshalcnv_kh.f90 \
   sascnv.f90 \
   sascnv_n.f90 \
   sascnv_sa.f90 \
