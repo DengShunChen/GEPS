@@ -11,12 +11,14 @@
       use physcons, grav => con_g,       cp => con_cp    &
       ,             rvrdm1 => con_fvirt, rd => con_rd    &
       ,             eps => con_eps, epsm1 => con_epsm1
+      use const,    only : RTYPE
 
       implicit none
 !
       integer              im, ivegsrc, imj
-      real(kind=kind_phys), dimension(im) :: ps,  u1, v1, t1               &
-      ,                                      q1,  z1, tskin, z0rl          &
+      real(kind=RTYPE), dimension(im) ::     u1,  v1, t1, q1
+      real(kind=kind_phys), dimension(im) :: ps                            &
+      ,                                      z1, tskin, z0rl               &
       ,                                      cm,  ch, rb, prsl1, prslki    &
       ,                                      stress,  fm, fh, ustar        &
       ,                                      wind, ddvel, fm10, fh2,fh10   &
@@ -37,7 +39,7 @@
                            fms,    fhs,    hl0,    hl0inf, hlinf, &
                            hl110,  hlt,    hltinf, olinf, &
                            restar, czilc,  tem1,   tem2, &
-                           ztmin1, ztmax1, beta,   hmgn, fpvs
+                           ztmin1, ztmax1, beta,   hmgn, fpvs, ttmp
 !
       real(kind=kind_phys), parameter ::    &
                     charnock=.014, ca=.4    &! ca - von karman constant 
@@ -75,7 +77,8 @@
           tem1    = 1.0 + rvrdm1 * max(q1(i),1.e-8)
           thv1    = t1(i) * prslki(i) * tem1
           tvs     = 0.5 * (tsurf(i)+tskin(i)) * tem1
-          qs1     = fpvs(t1(i))
+          ttmp    = t1(i)
+          qs1     = fpvs(ttmp)
           qs1     = max(1.0e-8, eps * qs1 / (prsl1(i) + epsm1 * qs1))
 
           z0      = 0.01 * z0rl(i)
@@ -124,7 +127,11 @@
 !           z0max = exp( tem2*log01 + tem1*log01 )
             z0max = 0.01
           else
-            z0max = exp( tem2*log01 + tem1*log(z0max) )
+            if (islimsk(i) == 2) then
+              z0max = exp( tem2*log(0.0002) + tem1*log(z0max) )
+            else
+              z0max = exp( tem2*log01 + tem1*log(z0max) )
+            endif
           endif
 
          elseif (ivegsrc == 0 ) then
@@ -140,7 +147,11 @@
 !             z0max = exp( tem2*log01 + tem1*log01 )
               z0max = 0.01
             else
-              z0max = exp( tem2*log01 + tem1*log(z0max) )
+              if (islimsk(i) == 2) then
+                z0max = exp( tem2*log(0.0002) + tem1*log(z0max) )
+              else
+                z0max = exp( tem2*log01 + tem1*log(z0max) )
+              endif
             endif
 
          endif

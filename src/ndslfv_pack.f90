@@ -15,19 +15,19 @@
       use rank
       use index
       use grid
-      use const, only : ndsladvh2
+      use const, only : ndsladvh2, RTYPE
 !
       implicit none
 
-      real   ,intent(in):: coslat(latg)
-!      real   ,intent(in):: colrad(latg/2)
-      real   ,intent(in):: wgt   (latg/2)
+      real(kind=RTYPE),intent(in):: coslat(latg)
+!      real(kind=RTYPE)   ,intent(in):: colrad(latg/2)
+      real(kind=RTYPE),intent(in):: wgt   (latg/2)
 !      integer,intent(in):: lats_nodes_a(nsize), lonf, latg, ntrac
       integer,intent(in)::  lonf, latg, ntrac
 !
       integer	jm2,jm,jmh,i,j
-      real 	pi,hfpi,twopi
-      real, dimension(:), allocatable ::  gglat,ggfact
+      real(kind=RTYPE) 	pi,hfpi,twopi
+      real(kind=RTYPE), dimension(:), allocatable ::  gglat,ggfact
 
 !      logical   lprint
 !
@@ -71,7 +71,7 @@
       enddo
 
 !
-! real latitude values first at edge, use temporary ggfact
+! real(kind=RTYPE) latitude values first at edge, use temporary ggfact
       gglati(1) = hfpi
       do j=1,jmh
         gglati(j+1) = asin( sin(gglati(j)) - wgt(j) )
@@ -146,16 +146,12 @@
 !
       lonfull = lonf
       lonhalf = lonf / 2	! lonf has to be even
-!ch   lonpart = (lonhalf-1)/nsize+1
       lonpart = (lonhalf-1)/nsizey+1
 !
-!ch   lonp = lonhalf / nsize
       lonp = lonhalf / nsizey
-!ch   do n=1,nsize
       do n=1,nsizey
         lonlen(n)=lonp
       enddo
-!ch   nr=mod(lonhalf,nsize)
       nr=mod(lonhalf,nsizey)
       if( nr.ne.0 ) then
         do n=1,nr
@@ -163,7 +159,6 @@
         enddo
       endif
       nm=1
-!ch   do n=1,nsize
       do n=1,nsizey
         lonstr(n) = nm
         nm = nm + lonlen(n)
@@ -173,7 +168,6 @@
       latfull = my * 2
       lathalf = my
       latpart = 0
-!ch   do n=1,nsize
       do n=1,nsizey
         latpart=max(latpart,jlistnum_sl(n))
         latlen(n) = jlistnum_sl(n)
@@ -186,7 +180,6 @@
 !      endif
 
       nm=1
-!ch   do n=1,nsize
       do n=1,nsizey
         latstr(n) = nm
         nm = nm + latlen(n)
@@ -195,15 +188,12 @@
 !
       lonlenmax=0
       latlenmax=0
-!ch   do n=1,nsize
       do n=1,nsizey
         lonlenmax = max(lonlenmax,lonlen(n))
         latlenmax = max(latlenmax,latlen(n))
       enddo
 !
-!ch   mylonlen = lonlen(myrank+1)
       mylonlen = lonlen(col_rank+1)
-!ch   mylatlen = latlen(myrank+1)
       mylatlen = latlen(col_rank+1)
 !
 !!      ndslhvar = 4 + ntrac 	! u,v,t,ps,tracers
@@ -232,20 +222,22 @@
 !      use grid
 !      use gfs_dyn_layout1
 !
+      use const, only : RTYPE
+
       implicit none
 !
       integer	im,imf,levs,nvars,mass
-      real	delt,pi
-      real	uc(imf,levs)
-      real	qq(imf,levs,nvars)
+      real(kind=RTYPE)	delt,pi
+      real(kind=RTYPE)	uc(imf,levs)
+      real(kind=RTYPE)	qq(imf,levs,nvars)
 !
-      real	past(im,nvars),next(im,nvars),da(im,nvars)
-      real	dxfact(im)
-      real	xreg(im+1),xpast(im+1),xnext(im+1)
-      real	uint(im+1)
-      real 	dist(im+1),sc,ds(im+1),step(10),dist_step
-      real, parameter :: fa1 = 9./16.
-      real, parameter :: fa2 = 1./16.
+      real(kind=RTYPE)	past(im,nvars),next(im,nvars),da(im,nvars)
+      real(kind=RTYPE)	dxfact(im)
+      real(kind=RTYPE)	xreg(im+1),xpast(im+1),xnext(im+1)
+      real(kind=RTYPE)	uint(im+1)
+      real(kind=RTYPE) 	dist(im+1),sc,ds(im+1),step(10),dist_step
+      real(kind=RTYPE), parameter :: fa1 = 9./16.
+      real(kind=RTYPE), parameter :: fa2 = 1./16.
 
       integer  	i,k,n,nn,nf,nv,nst,nstep
 
@@ -322,7 +314,7 @@
 !
 !
 ! -------------------------------------------------------------------------------
-      subroutine cyclic_cell_massadvxl(im,imf,levs,nvars,delt,uc,qq,mass)
+      subroutine cyclic_cell_massadvxl(im,imf,levs,nvars,delt,uc,qq,mass,forward)
 !
 ! compute local positive advection with mass conservation
 ! qq is advected by uc from past to next position
@@ -332,22 +324,25 @@
 !      use grid
 !      use gfs_dyn_layout1
 !
+      use const, only : RTYPE
+
       implicit none
 !
       integer	im,imf,levs,nvars,mass
-      real	delt,pi
-      real	uc(imf,levs)
-      real	qq(imf,levs,nvars)
+      real(kind=RTYPE)	delt,pi
+      real(kind=RTYPE)	uc(imf,levs)
+      real(kind=RTYPE)	qq(imf,levs,nvars)
 !
-      real	past(im,nvars),next(im,nvars),da(im,nvars)
-      real	dxfact(im)
-      real	xreg(im+1),xpast(im+1),xnext(im+1)
-      real	uint(im+1)
-      real 	dist(im+1),sc,ds(im+1),step(10),dist_step
-      real, parameter :: fa1 = 9./16.
-      real, parameter :: fa2 = 1./16.
+      real(kind=RTYPE)	past(im,nvars),next(im,nvars),da(im,nvars)
+      real(kind=RTYPE)	dxfact(im)
+      real(kind=RTYPE)	xreg(im+1),xpast(im+1),xnext(im+1)
+      real(kind=RTYPE)	uint(im+1)
+      real(kind=RTYPE) 	dist(im+1),sc,ds(im+1),step(10),dist_step
+      real(kind=RTYPE), parameter :: fa1 = 9./16.
+      real(kind=RTYPE), parameter :: fa2 = 1./16.
 
       integer  	i,k,n,nn,nf,nv,nst,nstep
+      logical   forward
 
 !     sc = ggloni(im+1)-ggloni(1)
       pi = 4.0 * atan(1.0)
@@ -386,29 +381,43 @@
 !
        do nst = 1, nstep
 !
-        do i=1,im+1
-          dist_step = dist(i)*step(nst)
-          xpast(i) = xreg(i) - dist_step
-          xnext(i) = xreg(i) + dist_step
-        enddo
+        if ( forward ) then
+          do i=1,im+1
+            dist_step = dist(i)*step(nst)
+            xpast(i) = xreg(i)
+            xnext(i) = xreg(i) + dist_step
+          enddo
+        else
+          do i=1,im+1
+            dist_step = dist(i)*step(nst)
+            xpast(i) = xreg(i) - dist_step
+            xnext(i) = xreg(i) + dist_step
+          enddo
+        endif
         if( mass.eq.1 ) then
          do i=1,im
           dxfact(i) = (xpast(i+1)-xpast(i)) / (xnext(i+1)-xnext(i))
          enddo
         endif
 !
-        do n=1,nv
-          past(1:im,n) = qq(1:im,k,n)
-        enddo
-!        call cyclic_cell_ppm_intp(xreg,past,xpast,da,im,nv,im,im,sc)
-        call cyclic_cell_plm_intp(xreg,past,xpast,da,im,nv,im,im,sc)
+        if ( forward ) then
+          do n=1,nv
+            da(1:im,n) = qq(1:im,k,n)
+          enddo
+        else
+          do n=1,nv
+            past(1:im,n) = qq(1:im,k,n)
+          enddo
+          call cyclic_cell_ppm_intp(xreg,past,xpast,da,im,nv,im,im,sc)
+!          call cyclic_cell_plm_intp(xreg,past,xpast,da,im,nv,im,im,sc)
+        endif
         if( mass.eq.1) then
           do n=1,nv
             da(1:im,n) = da(1:im,n) * dxfact(1:im)
           enddo
         endif
-!        call cyclic_cell_ppm_intp(xnext,da,xreg,next,im,nv,im,im,sc)
-        call cyclic_cell_plm_intp(xnext,da,xreg,next,im,nv,im,im,sc)
+        call cyclic_cell_ppm_intp(xnext,da,xreg,next,im,nv,im,im,sc)
+!        call cyclic_cell_plm_intp(xnext,da,xreg,next,im,nv,im,im,sc)
         do n=1,nv
           qq(1:im,k,n) = next(1:im,n)
         enddo
@@ -432,19 +441,21 @@
 !
       use grid     , only : gglati,fa1,fa2,fa3,fa4
 !
+      use const, only : RTYPE
+
       implicit none
 !
       integer   jm,lev,nvars,mass
-      real      delt
-      real      vc(jm,lev)
-      real      qq(jm,lev,nvars)
+      real(kind=RTYPE)      delt
+      real(kind=RTYPE)      vc(jm,lev)
+      real(kind=RTYPE)      qq(jm,lev,nvars)
 !
-      real      var(jm)
-      real      past(jm,nvars),da(jm,nvars),next(jm,nvars)
-      real      dyfact(jm)
-      real      ypast(jm+1),ynext(jm+1)
-      real      dist (jm+1), ds(jm), step(10), dist_step
-      real      sc
+      real(kind=RTYPE)      var(jm)
+      real(kind=RTYPE)      past(jm,nvars),da(jm,nvars),next(jm,nvars)
+      real(kind=RTYPE)      dyfact(jm)
+      real(kind=RTYPE)      ypast(jm+1),ynext(jm+1)
+      real(kind=RTYPE)      dist (jm+1), ds(jm), step(10), dist_step
+      real(kind=RTYPE)      sc
 
       integer   n,k,j,jmh,nv,nst,nstep
 !
@@ -527,7 +538,7 @@
       end subroutine cyclic_cell_massadvy
 !
 !-------------------------------------------------------------------
-      subroutine cyclic_cell_massadvyl(jm,lev,nvars,delt,vc,qq,mass)
+      subroutine cyclic_cell_massadvyl(jm,lev,nvars,delt,vc,qq,mass,forward)
 !
 ! compute local positive advection with mass conserving
 ! qq will be advect by vc from past to next location with 2*delt
@@ -537,21 +548,24 @@
 !
       use grid     , only : gglati,fa1,fa2,fa3,fa4
 !
+      use const, only : RTYPE
+
       implicit none
 !
       integer   jm,lev,nvars,mass
-      real      delt
-      real      vc(jm,lev)
-      real      qq(jm,lev,nvars)
+      real(kind=RTYPE)      delt
+      real(kind=RTYPE)      vc(jm,lev)
+      real(kind=RTYPE)      qq(jm,lev,nvars)
 !
-      real      var(jm)
-      real      past(jm,nvars),da(jm,nvars),next(jm,nvars)
-      real      dyfact(jm)
-      real      ypast(jm+1),ynext(jm+1)
-      real      dist (jm+1), ds(jm), step(10), dist_step
-      real      sc
+      real(kind=RTYPE)      var(jm)
+      real(kind=RTYPE)      past(jm,nvars),da(jm,nvars),next(jm,nvars)
+      real(kind=RTYPE)      dyfact(jm)
+      real(kind=RTYPE)      ypast(jm+1),ynext(jm+1)
+      real(kind=RTYPE)      dist (jm+1), ds(jm), step(10), dist_step
+      real(kind=RTYPE)      sc
 
       integer   n,k,j,jmh,nv,nst,nstep
+      logical   forward
 !
 ! preparations ---------------------------
 !
@@ -595,30 +609,44 @@
 !
        do nst = 1, nstep
 !
-        do j=1,jm+1
-          dist_step = dist(j)*step(nst)
-          ypast(j) = gglati(j) - dist_step
-          ynext(j) = gglati(j) + dist_step
-        enddo
+        if ( forward ) then
+          do j=1,jm+1
+            dist_step = dist(j)*step(nst)
+            ypast(j) = gglati(j)
+            ynext(j) = gglati(j) + dist_step
+          enddo
+        else
+          do j=1,jm+1
+            dist_step = dist(j)*step(nst)
+            ypast(j) = gglati(j) - dist_step
+            ynext(j) = gglati(j) + dist_step
+          enddo
+        endif
         if( mass.eq.1 ) then
          do j=1,jm
           dyfact(j) = (ypast(j+1)-ypast(j)) / (ynext(j+1)-ynext(j))
          enddo
         endif
 
-        do n=1,nv
-          past(1:jm,n) = qq(1:jm,k,n)
-        enddo
-!        call cyclic_cell_ppm_intp(gglati,past,ypast,da,jm,nv,jm,jm,sc)
-        call cyclic_cell_plm_intp(gglati,past,ypast,da,jm,nv,jm,jm,sc)
+        if ( forward ) then
+          do n=1,nv
+            da(1:jm,n) = qq(1:jm,k,n)
+          enddo
+        else
+          do n=1,nv
+            past(1:jm,n) = qq(1:jm,k,n)
+          enddo
+          call cyclic_cell_ppm_intp(gglati,past,ypast,da,jm,nv,jm,jm,sc)
+!          call cyclic_cell_plm_intp(gglati,past,ypast,da,jm,nv,jm,jm,sc)
+        endif
 
         if( mass.eq.1 ) then
           do n=1,nv
             da(1:jm,n) = da(1:jm,n) * dyfact(1:jm)
           enddo
         endif
-!        call cyclic_cell_ppm_intp(ynext,da,gglati,next,jm,nv,jm,jm,sc)
-        call cyclic_cell_plm_intp(ynext,da,gglati,next,jm,nv,jm,jm,sc)
+        call cyclic_cell_ppm_intp(ynext,da,gglati,next,jm,nv,jm,jm,sc)
+!        call cyclic_cell_plm_intp(ynext,da,gglati,next,jm,nv,jm,jm,sc)
 
         do n=1,nv
           qq(1:jm,k,n) = next(1:jm,n)
@@ -642,22 +670,24 @@
       use grid     , only : gslati
 !      use gfs_dyn_layout1
 !
+      use const, only : RTYPE
+
       implicit none
 !
       integer   jm,jmh,levs,nvars,mass
-      real	delt
-      real	vc(jm,levs)
-      real	qq(jm,levs,nvars)
+      real(kind=RTYPE)	delt
+      real(kind=RTYPE)	vc(jm,levs)
+      real(kind=RTYPE)	qq(jm,levs,nvars)
 !
-      real	var(jmh)
-      real	past(jmh,nvars),da(jmh,nvars),next(jmh,nvars)
-      real	dyfact(jmh)
-      real	ypast(jmh+1),ynext(jmh+1)
-      real	dist (jmh+1), ds(jmh)
-      real	step(10), dist_step
-      real 	hfpi,pi
-      real, parameter :: fa1 = 9./16.
-      real, parameter :: fa2 = 1./16.
+      real(kind=RTYPE)	var(jmh)
+      real(kind=RTYPE)	past(jmh,nvars),da(jmh,nvars),next(jmh,nvars)
+      real(kind=RTYPE)	dyfact(jmh)
+      real(kind=RTYPE)	ypast(jmh+1),ynext(jmh+1)
+      real(kind=RTYPE)	dist (jmh+1), ds(jmh)
+      real(kind=RTYPE)	step(10), dist_step
+      real(kind=RTYPE) 	hfpi,pi
+      real(kind=RTYPE), parameter :: fa1 = 9./16.
+      real(kind=RTYPE), parameter :: fa2 = 1./16.
 
       integer  	n,k,j,nv,nst,nstep
 !
@@ -766,15 +796,17 @@
 ! author: hann-ming henry juang 2008
 !
       use grid      , only : lonfull
-!      use gfs_dyn_layout1
+!     use gfs_dyn_layout1
+      use const, only : RTYPE
+
       implicit none
 !
       integer	 levs, imp, imf
-      real	 qq(lonfull,levs)
+      real(kind=RTYPE)	 qq(lonfull,levs)
 !
-      real	old(lonfull,levs),new(lonfull,levs)
-      real	xpast(lonfull+1),xnext(lonfull+1)
-      real	two_pi,dxp,dxf,hfdxp,hfdxf,sc,pi
+      real(kind=RTYPE)	old(lonfull,levs),new(lonfull,levs)
+      real(kind=RTYPE)	xpast(lonfull+1),xnext(lonfull+1)
+      real(kind=RTYPE)	two_pi,dxp,dxf,hfdxp,hfdxf,sc,pi
 !
       integer  	i,k,im
 !
@@ -822,14 +854,16 @@
 !
       use grid      , only : lonfull
 !      use gfs_dyn_layout1
+      use const      , only : RTYPE
+
       implicit none
 !
       integer	 levs, imp, imf
-      real	 qq(lonfull,levs)
+      real(kind=RTYPE)	 qq(lonfull,levs)
 !
-      real	old(lonfull,levs),new(lonfull,levs)
-      real	xpast(lonfull+1),xnext(lonfull+1)
-      real	two_pi,dxp,dxf,hfdxp,hfdxf,sc,pi
+      real(kind=RTYPE)	old(lonfull,levs),new(lonfull,levs)
+      real(kind=RTYPE)	xpast(lonfull+1),xnext(lonfull+1)
+      real(kind=RTYPE)	two_pi,dxp,dxf,hfdxp,hfdxf,sc,pi
 !
       integer  	i,k,im
 !
@@ -886,22 +920,24 @@
 !
 !      use gfs_dyn_layout1
 !
+      use const      , only : RTYPE
+
       implicit none
 !
-      real      pp(lons+1)
-      real      qq(lons  ,nv)
-      real      pn(lons+1)
-      real      qn(lons  ,nv)
+      real(kind=RTYPE)      pp(lons+1)
+      real(kind=RTYPE)      qq(lons  ,nv)
+      real(kind=RTYPE)      pn(lons+1)
+      real(kind=RTYPE)      qn(lons  ,nv)
       integer   lons,lonp,lonn,nv
-      real      sc
+      real(kind=RTYPE)      sc
 !
-      real      px(lonp+2),ps(lonp+2)
-      real      hfds(lonp+1),rdsi(lonp+1)
-      real      locs(lonp+lonn+3),dp(lonp+lonn+2),dt(lonp+lonn+2)
-      real      qc(0:lonp+2),dq(lonp+1),qmi(lonp+1),qpi(lonp+1)
-      real      vals(lonp+lonn+2)
-      real      rdd(lonn)
-      real      shift,hfsc,dd,check,ss
+      real(kind=RTYPE)      px(lonp+2),ps(lonp+2)
+      real(kind=RTYPE)      hfds(lonp+1),rdsi(lonp+1)
+      real(kind=RTYPE)      locs(lonp+lonn+3),dp(lonp+lonn+2),dt(lonp+lonn+2)
+      real(kind=RTYPE)      qc(0:lonp+2),dq(lonp+1),qmi(lonp+1),qpi(lonp+1)
+      real(kind=RTYPE)      vals(lonp+lonn+2)
+      real(kind=RTYPE)      rdd(lonn)
+      real(kind=RTYPE)      shift,hfsc,dd,check,ss
       integer   js(lonn+1),ix4i(lonp+2),i4j(lonp+lonn+3)
       integer   i,j,n,ip,ix,is,in
 !
@@ -1077,20 +1113,22 @@
 !      use gfs_dyn_layout1
 !
       use index, only : col_rank
+      use const, only : RTYPE
+
       implicit none
 !
-      real      pp(lons+1)
-      real      qq(lons  ,nv)
-      real      pn(lons+1)
-      real      qn(lons  ,nv)
+      real(kind=RTYPE)      pp(lons+1)
+      real(kind=RTYPE)      qq(lons  ,nv)
+      real(kind=RTYPE)      pn(lons+1)
+      real(kind=RTYPE)      qn(lons  ,nv)
       integer   lons,nv
 !
-      real      hfdp(lons),rdsi(lons)
-      real      locf(lons+lons),df(lons+lons-1),dt(lons+lons-1)
-      real      qc(lons),dq(lons),qmi(lons),qpi(lons)
-      real      valf(lons+lons-1)
-      real      rdd(lons)
-      real      dd,check,ss
+      real(kind=RTYPE)      hfdp(lons),rdsi(lons)
+      real(kind=RTYPE)      locf(lons+lons),df(lons+lons-1),dt(lons+lons-1)
+      real(kind=RTYPE)      qc(lons),dq(lons),qmi(lons),qpi(lons)
+      real(kind=RTYPE)      valf(lons+lons-1)
+      real(kind=RTYPE)      rdd(lons)
+      real(kind=RTYPE)      dd,check,ss
       integer   js(lons+1),i4j(lons+lons)
       integer   i,j,n,ip,in
 !
@@ -1182,22 +1220,25 @@
 !
 ! ------------------------------------------------------------------------
       subroutine vertical_cell_advect(lons,londim,levs,nvars,           & 
-                                      deltim,ssi,wwi,qql,mass)
+                                      deltim,ssi,wwi,qql,mass,forward)
 !
+      use const, only : RTYPE
+
       implicit none
 
       integer 	londim,levs,nvars,lons,mass
-      real 	deltim
-      real	ssi(londim,levs+1)
-      real	wwi(londim,levs+1)
-      real	qql(londim,levs,nvars)
+      real(kind=RTYPE) 	deltim
+      real(kind=RTYPE)	ssi(londim,levs+1)
+      real(kind=RTYPE)	wwi(londim,levs+1)
+      real(kind=RTYPE)	qql(londim,levs,nvars)
 
-      real ssii(levs+1)
-      real ssid(levs+1),ssia(levs+1)
-      real dd(levs+1),ds(levs),step(10),dd_step
-      real dsfact(levs), sstmp, dpdt, check
-      real rqmm(levs,nvars),rqnn(levs,nvars),rqda(levs,nvars)
+      real(kind=RTYPE) ssii(levs+1)
+      real(kind=RTYPE) ssid(levs+1),ssia(levs+1)
+      real(kind=RTYPE) dd(levs+1),ds(levs),step(10),dd_step
+      real(kind=RTYPE) dsfact(levs), sstmp, dpdt, check
+      real(kind=RTYPE) rqmm(levs,nvars),rqnn(levs,nvars),rqda(levs,nvars)
       integer km,i,k,n,nst,nstep
+      logical forward
 
       do i=1,lons
 
@@ -1221,30 +1262,52 @@
 !         ssia(k)=-ssi(i,k)-dd(k)
 !       enddo
 !hmhj give direction for value larger with k larger
-        do k=1,levs+1
-          dd_step= dd(k)*step(nst)
+        if ( forward ) then
+          do k=1,levs+1
+            dd_step= dd(k)*step(nst)
 ! for ppm interpolation
-          ssii(k)=ssi(i,k)
-          ssid(k)=ssi(i,k)-dd_step
-          ssia(k)=ssi(i,k)+dd_step
+            ssii(k)=ssi(i,k)
+            ssid(k)=ssi(i,k)
+            ssia(k)=ssi(i,k)+dd_step
 ! for plm interpolation
-!          ssii(k)=-ssi(i,k)
-!          ssid(k)=-ssi(i,k)+dd_step
-!          ssia(k)=-ssi(i,k)-dd_step
-        enddo
+!            ssii(k)=-ssi(i,k)
+!            ssid(k)=-ssi(i,k)+dd_step
+!            ssia(k)=-ssi(i,k)-dd_step
+          enddo
+        else
+          do k=1,levs+1
+            dd_step= dd(k)*step(nst)
+! for ppm interpolation
+            ssii(k)=ssi(i,k)
+            ssid(k)=ssi(i,k)-dd_step
+            ssia(k)=ssi(i,k)+dd_step
+! for plm interpolation
+!            ssii(k)=-ssi(i,k)
+!            ssid(k)=-ssi(i,k)+dd_step
+!            ssia(k)=-ssi(i,k)-dd_step
+          enddo
+        endif
         if( mass.eq.1 ) then
           do k=1,levs
             dsfact(k)=(ssid(k)-ssid(k+1))/(ssia(k)-ssia(k+1))
           enddo
         endif
 !
-        do n=1,nvars
-          do k=1,levs
-            rqmm(k,n) = qql(i,k,n)
+        if ( forward ) then
+          do n=1,nvars
+            do k=1,levs
+              rqda(k,n) = qql(i,k,n)
+            enddo
           enddo
-        enddo
-        call vertical_cell_ppm_intp(ssii,rqmm,ssid,rqda,levs,nvars,i)
-!        call fixend_cell_plm_intp(ssii,rqmm,ssid,rqda,levs,nvars)
+        else
+          do n=1,nvars
+            do k=1,levs
+              rqmm(k,n) = qql(i,k,n)
+            enddo
+          enddo
+          call vertical_cell_ppm_intp(ssii,rqmm,ssid,rqda,levs,nvars,i)
+!          call fixend_cell_plm_intp(ssii,rqmm,ssid,rqda,levs,nvars)
+        endif
         if( mass.eq.1 ) then
           do n=1,nvars
             do k=1,levs
@@ -1270,6 +1333,675 @@
 !
 ! -------------------------------------------------------------------------
       subroutine cyclic_cell_ppm_intp(pp,qq,pn,qn,lons,nv,lonp,lonn,sc)
+!
+! mass conservation in cyclic bc interpolation: interpolate a group
+! of grid point  coordiante call pp at interface with quantity qq at
+! cell averaged to a group of new grid point coordinate call pn at
+! interface with quantity qn at cell average with ppm spline.
+! in horizontal with mass conservation is under the condition that
+! variable value at pp(1)= pp(lons+1)=pn(lons+1)
+!
+! pp    location at interfac point as input
+! qq    quantity at averaged-cell as input
+! pn    location at interface of new grid structure as input
+! qn    quantity at averaged-cell as output
+! lons  numer of cells for dimension
+! lonp  numer of cells for input
+! lonn  numer of cells for output
+! levs  number of vertical layers
+! mono  monotonicity o:no, 1:yes
+!
+! author : henry.juang@noaa.gov
+!
+!
+      use const, only : RTYPE
+      implicit none
+!
+      real(kind=RTYPE)      pp(lons+1)
+      real(kind=RTYPE)      qq(lons  ,nv)
+      real(kind=RTYPE)      pn(lons+1)
+      real(kind=RTYPE)      qn(lons  ,nv)
+      integer   lons,lonp,lonn,nv
+      real(kind=RTYPE)      sc
+!
+      integer   ik,le,kstr,kend
+      integer   i,k, kl, kh, kk, kkl, kkh, n
+      integer, parameter :: mono=1
+
+      real(kind=RTYPE) locs  (3*lonp)
+      real(kind=RTYPE) mass  (3*lonp,nv)
+      real(kind=RTYPE) hh    (3*lonp)
+      real(kind=RTYPE) fm    (3*lonp)
+      real(kind=RTYPE) fn    (3*lonp)
+      real(kind=RTYPE) dqmono(3*lonp,nv)
+      real(kind=RTYPE) qmi   (3*lonp,nv)
+      real(kind=RTYPE) qpi   (3*lonp,nv)
+      real(kind=RTYPE) cyclic_length
+      real(kind=RTYPE) pnmin,pnmax,locbndmin,locbndmax
+      real(kind=RTYPE) dqi,dqimax,dqimin
+      real(kind=RTYPE) tl,tl2,tl3,qql,tlp,tlm,tlc
+      real(kind=RTYPE) th,th2,th3,qqh,thp,thm,thc
+      real(kind=RTYPE) dql(nv),dqh(nv)
+      real(kind=RTYPE) dpp,dqq,c1,c2,cc,r3,r6
+!
+!     cyclic_length = pp(lonp+1) - pp(1)
+      cyclic_length = sc
+!
+! arrange input array cover output location with cyclic boundary
+! condition
+!
+      locs(lonp+1:2*lonp) = pp(1:lonp)
+      do i=1,lonp
+        locs(i) = locs(i+lonp) - cyclic_length
+        locs(i+2*lonp) = locs(i+lonp) + cyclic_length
+      enddo
+      mass(1       :  lonp,1:nv) = qq(1:lonp,1:nv)
+      mass(1+  lonp:2*lonp,1:nv) = qq(1:lonp,1:nv)
+      mass(1+2*lonp:3*lonp,1:nv) = qq(1:lonp,1:nv)
+
+      pnmin = pn(1)
+      pnmax = pn(lonn+1)
+!!    do i=2,lonn
+!!      pnmin = min( pnmin, pn(i) )
+!!      pnmax = max( pnmax, pn(i) )
+!!    enddo
+
+      locbndmin=locs(  lonp+4)
+      locbndmax=locs(2*lonp-4)
+      if( pnmin.lt.locbndmin-sc ) then
+        do i=1,lonn+1
+          pn(i)=pn(i)+int((locbndmin-pnmin)/sc)*sc
+        enddo
+      else if( pnmin.gt.locbndmax ) then
+        do i=1,lonn+1
+          pn(i)=pn(i)+(int((locbndmax-pnmin)/sc)-1)*sc
+        enddo
+      endif
+
+      pnmin = pn(1)
+      pnmax = pn(lonn+1)
+!!    do i=2,lonn
+!!      pnmin = min( pnmin, pn(i) )
+!!      pnmax = max( pnmax, pn(i) )
+!!    enddo
+
+      if( pnmin.lt.locs(lonp+1) ) then
+        do i=lonp,1,-1
+          if( pnmin.ge.locs(i) .and. pnmin.lt.locs(i+1) ) then
+            kstr = i
+            go to 10
+          endif
+        enddo
+      else
+        do i=lonp+1,2*lonp
+          if( pnmin.ge.locs(i) .and. pnmin.lt.locs(i+1) ) then
+            kstr = i
+            go to 10
+          endif
+        enddo
+      endif
+      print *,' Error: can not find kstr: pnmin locs(1) locs(2*lonp) ',&
+                                          pnmin,locs(1),locs(2*lonp)
+      print *,' Error: pn(1) pn(2) pn(3) ',pn(1),pn(2),pn(3)
+
+ 10   kstr=max(3,kstr)
+
+      if( pnmax.lt.locs(2*lonp+1) ) then
+        do i=2*lonp,lonp,-1
+          if( pnmax.ge.locs(i) .and. pnmax.lt.locs(i+1) ) then
+            kend = i+1
+            go to 20
+          endif
+        enddo
+      else
+        do i=2*lonp+1,3*lonp-1
+          if( pnmax.ge.locs(i) .and. pnmax.lt.locs(i+1) ) then
+            kend = i+1
+            go to 20
+          endif
+        enddo
+      endif
+      print *,' Error: cannot get kend: pnmax locs(lonp) locs(3*lonp)',&
+                                  kend, pnmax,locs(lonp),locs(3*lonp)
+      print *,' Error: pn(lonn-1) pn(lonn) pn(lonn+1) ',               &
+                       pn(lonn-1),pn(lonn),pn(lonn+1)
+
+ 20   kend=min(3*lonp-2,kend)
+!
+! prepare grid spacing
+!
+      do i=kstr-2,kend+2
+        hh(i) = locs(i+1)-locs(i)
+      enddo
+      do i=kstr-1,kend+2
+       cc = 1./(hh(i)+hh(i-1))
+       fm(i) = hh(i  ) * cc
+       fn(i) = hh(i-1) * cc
+      enddo
+!
+! prepare location with monotonic concerns
+!
+      do n=1,nv
+      do i=kstr-2,kend+2
+        dqi = 0.25*(mass(i+1,n)-mass(i-1,n))
+        dqimax = max(mass(i-1,n),mass(i,n),mass(i+1,n)) - mass(i,n)
+        dqimin = mass(i,n) - min(mass(i-1,n),mass(i,n),mass(i+1,n))
+        dqmono(i,n) = sign( min( abs(dqi), dqimin, dqimax ), dqi)
+      enddo
+      enddo
+!
+! compute value at interface with monotone
+!
+      r3 = 1./3.
+      do n=1,nv
+      do i=kstr-1,kend+2
+        qmi(i,n)=mass(i-1,n)*fm(i)+mass(i,n)*fn(i)                 &
+             +(dqmono(i-1,n)-dqmono(i,n))*r3
+      enddo
+      enddo
+      qpi(kstr-1:kend+1,1:nv) = qmi(kstr:kend+2,1:nv)
+!
+! do less diffusive
+!
+!!      do n=1,nv
+!!      do i=kstr-1,kend+2
+!!        qmi(i,n)=mass(i,n)-sign(min(abs(2.*dqmono(i,n)),           &
+!!                            abs(qmi(i,n)-mass(i,n))),              &
+!!                            2.*dqmono(i,n))
+!!        qpi(i,n)=mass(i,n)+sign(min(abs(2.*dqmono(i,n)),           &
+!!                            abs(qpi(i,n)-mass(i,n))),              &
+!!                            2.*dqmono(i,n))
+!!      enddo
+!!      enddo
+!
+! do monotonicity within cell
+!
+      r6 = 1./6.
+      if( mono.eq.1 ) then
+        do n=1,nv
+        do i=kstr-1,kend+1
+          c1=qpi(i,n)-mass(i,n)
+          c2=mass(i,n)-qmi(i,n)
+          if( c1*c2.le.0.0 ) then
+            qmi(i,n)=mass(i,n)
+            qpi(i,n)=mass(i,n)
+          else
+            cc=qpi(i,n)-qmi(i,n)
+            c1=cc*(mass(i,n)-0.5*(qpi(i,n)+qmi(i,n)))
+            c2=cc*cc*r6
+            if( c1.gt.c2 ) then
+              qmi(i,n)=3.*mass(i,n)-2.*qpi(i,n)
+            else if( c1.lt.-c2 ) then
+              qpi(i,n)=3.*mass(i,n)-2.*qmi(i,n)
+            endif
+          endif
+        enddo
+        enddo
+      endif
+!
+! start interpolation by integral of ppm
+!
+      kkl = kstr
+      tl=(pn(1)-locs(kkl))/hh(kkl)
+      tl2=tl*tl
+      tl3=tl2*tl
+      tlp = tl3-tl2
+      tlm = tl3-2.*tl2+tl
+      tlc = -2.*tl3+3.*tl2
+      do n=1,nv
+        dql(n)=tlp*qpi(kkl,n)+tlm*qmi(kkl,n)+tlc*mass(kkl,n)
+      enddo
+
+      do i=1,lonn
+
+        kl = i
+        kh = i + 1
+! find kkh
+        do kk=kkl+1,kend+2
+          if( pn(kh).lt.locs(kk) ) then
+            kkh = kk-1
+            go to 100
+          endif
+        enddo
+
+        print *,' Error in cyclic_cell_ppm_intp location not found '
+        print *,' lons=',lons,' lonp=',lonp,' lonn=',lonn
+        print *,' pnmin=',pnmin,' pnmax=',pnmax
+        print *,' pn(1)=',pn(1),' pn(lonn+1)=',pn(lonn+1)
+        print *,' kstr =',kstr ,' kend =',kend
+        print *,' kh=',kh,' pn(kh)=',pn(kh)
+        print *,' kkl +1=',kkl +1,' locs(kkl +1)=',locs(kkl +1)
+        print *,' kend+1=',kend+1,' locs(kend+1)=',locs(kend+1)
+        call abort
+
+ 100    continue
+! mass interpolate
+        th=(pn(kh)-locs(kkh))/hh(kkh)
+        th2=th*th
+        th3=th2*th
+        thp = th3-th2
+        thm = th3-2.*th2+th
+        thc = -2.*th3+3.*th2
+        do n=1,nv
+          dqh(n)=thp*qpi(kkh,n)+thm*qmi(kkh,n)+thc*mass(kkh,n)
+        enddo
+        if( kkh.eq.kkl ) then
+          do n=1,nv
+            qn(i,n) = (dqh(n)-dql(n))/(th-tl)
+          enddo
+        else if( kkh.gt.kkl ) then
+          dpp  = (1.-tl)*hh(kkl) + th*hh(kkh)
+          do kk=kkl+1,kkh-1
+            dpp = dpp + hh(kk)
+          enddo
+          do n=1,nv
+            dql(n) = mass(kkl,n)-dql(n)
+            dqq  = dql(n)*hh(kkl) + dqh(n)*hh(kkh)
+            do kk=kkl+1,kkh-1
+              dqq = dqq + mass(kk,n)*hh(kk)
+            enddo
+            qn(i,n) = dqq / dpp
+          enddo
+        else
+          print *,' Error in cyclic_cell_ppm_intp location messed up '
+          print *,' kkl=',kkl,' kkh=',kkh
+          print *,' kh=',kh,' pn(kh)=',pn(kh)
+          print *,' kkl-1=',kkl-1,' locs(kkl-1)=',locs(kkl-1)
+          call abort
+        endif
+
+! next one
+        kkl = kkh
+        tl = th
+        do n=1,nv
+          dql(n) = dqh(n)
+        enddo
+
+      enddo
+!
+      return
+      end subroutine cyclic_cell_ppm_intp
+!
+! ------------------------------------------------------------------------
+      subroutine vertical_cell_ppm_intp(pp,qq,pn,qn,levs,nvars,i)
+!
+! mass conservation in vertical interpolation: interpolate a group
+! of grid point  coordiante call pp at interface with quantity qq at
+! cell averaged to a group of new grid point coordinate call pn at
+! interface with quantity qn at cell average with ppm spline.
+! in vertical with mass conservation is under the condition that
+! pp(1)=pn(1), pp(levs+1)=pn(levs+1)
+!
+! pp    pressure at interfac level as input
+! qq    quantity at layer as input
+! pn    pressure at interface of new grid structure as input
+! qn    quantity at layer as output
+! levs  numer of verical layers
+!
+! author : henry.juang@noaa.gov
+!
+      use const, only : RTYPE
+
+      implicit none
+!
+      real(kind=RTYPE)      pp(levs+1)
+      real(kind=RTYPE)      qq(levs,nvars)
+      real(kind=RTYPE)      pn(levs+1)
+      real(kind=RTYPE)      qn(levs,nvars)
+      integer   levs,nvars
+!
+      real(kind=RTYPE)      massm,massc,massp,massbot,masstop
+      real(kind=RTYPE)      qmi(levs,nvars),qpi(levs,nvars)
+      real(kind=RTYPE)      dql(nvars),dqh(nvars)
+      real(kind=RTYPE)      hh(levs)
+      real(kind=RTYPE)      dqi,dqimax,dqimin,dqmono(levs,nvars)
+      real(kind=RTYPE)      tl,tl2,tl3,tlp,tlm,tlc
+      real(kind=RTYPE)      th,th2,th3,thp,thm,thc
+      real(kind=RTYPE)      dpp,dqq,c1,c2
+      integer   i,k, kl, kh, kk, kkl, kkh,n
+      integer, parameter :: mono=1
+!
+      if( pp(1).ne.pn(1) .or. pp(levs+1).ne.pn(levs+1) ) then
+        print *,' Error in vertical_cell_ppm_intp for domain values '
+        print *,' i pp1 pn1 ppt pnt ',i,                            &
+                pp(1),pn(1),pp(levs+1),pn(levs+1)
+        call abort
+      endif
+!
+! prepare thickness for grid
+!
+      do k=1,levs
+        hh(k) = pp(k+1)-pp(k)
+      enddo
+!
+! prepare location with monotonic concerns
+!
+      do n=1,nvars
+        massbot=(3.*hh(1)+hh(2))*qq(1,n)-2.*hh(1)*qq(2,n)
+        massm = massbot/(hh(1)+hh(2))
+        massc = qq(1  ,n)
+        massp = qq(1+1,n)
+        dqi = 0.25*(massp-massm)
+        dqimax = max(massm,massc,massp) - massc
+        dqimin = massc - min(massm,massc,massp)
+        dqmono(1,n) = sign( min( abs(dqi), dqimin, dqimax ), dqi)
+        do k=2,levs-1
+          massp = qq(k+1,n)
+          massc = qq(k  ,n)
+          massm = qq(k-1,n)
+          dqi = 0.25*(massp-massm)
+          dqimax = max(massm,massc,massp) - massc
+          dqimin = massc - min(massm,massc,massp)
+          dqmono(k,n) = sign( min( abs(dqi), dqimin, dqimax ), dqi)
+        enddo
+        masstop=(3.*hh(levs)+hh(levs-1))*qq(levs,n)                  &
+                   -2.*hh(levs)*qq(levs-1,n)
+        massp = masstop/(hh(levs)+hh(levs-1))
+        massc = qq(levs  ,n)
+        massm = qq(levs-1,n)
+        dqi = 0.25*(massp-massm)
+        dqimax = max(massm,massc,massp) - massc
+        dqimin = massc - min(massm,massc,massp)
+        dqmono(levs,n) = sign( min( abs(dqi), dqimin, dqimax ), dqi)
+!
+! compute value at interface with momotone
+!
+        do k=2,levs
+          qmi(k,n)=(qq(k-1,n)*hh(k)+qq(k,n)*hh(k-1))/(hh(k)+hh(k-1)) &
+             +(dqmono(k-1,n)-dqmono(k,n))/3.0
+        enddo
+        do k=1,levs-1
+          qpi(k,n)=qmi(k+1,n)
+        enddo
+        qmi(1,n)=qq(1,n)
+        qpi(1,n)=qq(1,n)
+        qmi(levs,n)=qq(levs,n)
+        qpi(levs,n)=qq(levs,n)
+      enddo
+!
+! do monotonicity
+!
+      if( mono.eq.1 ) then
+        do n=1,nvars
+        do k=1,levs
+          c1=qpi(k,n)-qq(k,n)
+          c2=qq(k,n)-qmi(k,n)
+          if( c1*c2.le.0.0 ) then
+            qmi(k,n)=qq(k,n)
+            qpi(k,n)=qq(k,n)
+          endif
+        enddo
+        do k=1,levs
+          c1=(qpi(k,n)-qmi(k,n))*(qq(k,n)-0.5*(qpi(k,n)+qmi(k,n)))
+          c2=(qpi(k,n)-qmi(k,n))*(qpi(k,n)-qmi(k,n))/6.
+          if( c1.gt.c2 ) then
+            qmi(k,n)=3.*qq(k,n)-2.*qpi(k,n)
+          else if( c1.lt.-c2 ) then
+            qpi(k,n)=3.*qq(k,n)-2.*qmi(k,n)
+          endif
+        enddo
+        enddo
+      endif
+!
+! start interpolation by integral of ppm spline
+!
+      kkl = 1
+      tl=0
+      do n=1,nvars
+        dql(n)=0.0
+      enddo
+
+      do k=1,levs
+
+        kl = k
+        kh = k + 1
+! find kkh
+        do kk=kkl+1,levs+1
+          if( pn(kh).ge.pp(kk) ) then
+            kkh = kk-1
+            go to 100
+          endif
+        enddo
+        print *,' Error in vertical_cell_ppm_intp for no lev found '
+        print *,' i kh kl ',i,kh,kl
+        print *,' pn ',(pn(kk),kk=1,levs+1)
+        print *,' pp ',(pp(kk),kk=1,levs+1)
+        call abort
+ 100    continue
+        th=(pn(kh)-pp(kkh))/hh(kkh)
+        th2=th*th
+        th3=th2*th
+        thp = th3-th2
+        thm = th3-2.*th2+th
+        thc = -2.*th3+3.*th2
+        do n=1,nvars
+          dqh(n)=thp*qpi(kkh,n)+thm*qmi(kkh,n)+thc*qq(kkh,n)
+        enddo
+! mass interpolate
+        if( kkh.eq.kkl ) then
+          do n=1,nvars
+            qn(k,n) = (dqh(n)-dql(n))/(th-tl)
+          enddo
+        else if( kkh.gt.kkl ) then
+          dpp  = (1.-tl)*hh(kkl) + th*hh(kkh)
+          do kk=kkl+1,kkh-1
+            dpp = dpp + hh(kk)
+          enddo
+          do n=1,nvars
+            dql(n) = qq(kkl,n)-dql(n)
+            dqq  = dql(n)*hh(kkl) + dqh(n)*hh(kkh)
+            do kk=kkl+1,kkh-1
+              dqq = dqq + qq(kk,n)*hh(kk)
+            enddo
+            qn(k,n) = dqq / dpp
+          enddo
+        else
+          print *,' Error in vertical_cell_ppm_intp for lev messed up '
+          print *,' i kh kl ',i,kh,kl
+          print *,' pn ',(pn(kk),kk=1,levs+1)
+          print *,' pp ',(pp(kk),kk=1,levs+1)
+          call abort
+        endif
+! next one
+        kkl = kkh
+        tl  = th
+        do n=1,nvars
+          dql(n) = dqh(n)
+        enddo
+
+      enddo     ! end of k loop
+!
+      return
+      end subroutine vertical_cell_ppm_intp
+!!
+!!
+      subroutine def_cfl_step (im,dist,del,step,nstep,k,job)
+!
+! compute the deformation cfl condition
+! select the maxima value of the deformation CFL and provide step to
+! avoid it.
+!
+!
+      use const, only : RTYPE
+
+      implicit none
+!
+      integer im,nstep
+      real(kind=RTYPE) dist(im),del(im-1),step(10)
+! local
+      integer   n,k,nchk
+      real(kind=RTYPE)      rstep,check,check_max,check_point
+      real(kind=RTYPE)      safe_step,last_step
+      character*4 job
+!
+      check_point=1.00
+      safe_step=0.99
+      nstep = 1
+      step(1) = 1.0
+
+      check_max = 0.0
+      check_loop: do n=1,im-1
+        check = abs ( (dist(n+1)-dist(n))/del(n) )
+        if( check.lt.check_point ) then
+          cycle check_loop
+        else
+          if ( check .gt. check_max ) then
+             nchk=n
+             check_max=check
+          endif
+!!          check_max = max( check_max, check )
+        endif
+      enddo check_loop
+      if(check_max.ge.check_point) then
+        nstep = int(check_max/safe_step) + 1
+        if ( job .eq. 'advv' ) then
+          print *,' max def_cfl ',check_max,' needs ',nstep,    &
+          'steps at level',im+1-nchk,'of',im,'in ',job,' processing'
+        else if ( job .eq. 'advx' .and. im .gt. 25 ) then
+          print *,' max def_cfl ',check_max,' needs ',nstep,    &
+          'steps in',nchk,'of',im,'at level',k,'in ',job,' processing'
+        else if ( job .eq. 'advy' ) then
+          print *,' max def_cfl ',check_max,' needs ',nstep,    &
+          'steps in',nchk,'of',im,'at level',k,'in ',job,' processing'
+        endif
+        rstep =  safe_step / check_max
+        do n=1,nstep-1
+          step(n) = rstep
+        enddo
+        last_step = 1. - ( nstep - 1 ) * rstep
+        step(nstep) = last_step
+      endif
+!
+      return
+      end subroutine def_cfl_step
+!!
+      subroutine mymaxmin(a,im,ix,kx,ch)
+      use const, only : RTYPE
+        implicit none
+        real(kind=RTYPE) :: fmax
+        real(kind=RTYPE) :: fmin
+        integer :: i
+        integer :: im
+        integer :: ix
+        integer :: k
+        integer :: kx
+
+      real(kind=RTYPE) a(ix,kx)
+      character*(*) ch
+      do k=1,kx
+        fmin=a(1,k)
+        fmax=a(1,k)
+        do i=1,im
+          fmin=min(fmin,a(i,k))
+          fmax=max(fmax,a(i,k))
+        enddo
+        print *,' max=',fmax,' min=',fmin,' at k=',k,' for ',ch
+      enddo
+      return
+      end subroutine mymaxmin
+!
+! ------------------------------------------------------------------------
+!
+      subroutine ndslfv_update (lonsperlat,vdzonl,vdmerd,vdzonlr,vdmerdr,deltim,forward)
+
+!  update all horizontal components into momentum eqs
+!  for Semi-Lagrangian vertical advection
+
+      use index
+      use param, only : nx,my,lev,my_max
+      use const, only : onocos,radsq,RTYPE
+      use grid , only : dlphi,dtphi
+
+      integer,intent(in):: lonsperlat(my)
+      real(kind=RTYPE),   intent(in):: deltim
+
+      real(kind=RTYPE)    vdmerd(nxp,lev,my_max),vdzonl(nxp,lev,my_max)
+      real(kind=RTYPE)    vdmerdr(nxp,lev,my_max),vdzonlr(nxp,lev,my_max)
+      integer i,ii,k,lan,lat,lons_lat
+      integer dt2
+      logical forward
+
+      if ( forward ) then
+        dt2 = deltim
+      else
+        dt2 = 2. * deltim
+      endif
+!
+!$omp parallel do                                                   &
+!$omp private(lan,lat,lons_lat,i,k)                                 &
+!$omp schedule(dynamic)
+      do lan=1,jlistnum
+!
+        lat = jlist1(lan)
+        lons_lat = lonsperlat(lat)
+!
+        do k=1,lev
+         do i=1,lons_lat
+!ttl           vdzonl(i,k,lan) = (vdzonlr(i,k,lan)-dlphi(i,k,lan)/radsq) &
+!ttl                             * dt2 + vdzonl(i,k,lan)
+!ttl           vdmerd(i,k,lan) = (vdmerdr(i,k,lan)-dtphi(i,k,lan)/radsq  &
+!ttl                             / onocos(lat))*dt2 + vdmerd(i,k,lan)
+           vdzonl(i,k,lan) = vdzonlr(i,k,lan) * dt2 + vdzonl(i,k,lan)
+           vdmerd(i,k,lan) = vdmerdr(i,k,lan) * dt2 + vdmerd(i,k,lan)
+         enddo
+        enddo
+      enddo
+!$omp end parallel do
+!
+! ===============================
+!
+      return
+      end subroutine ndslfv_update
+!
+      subroutine ndslfv_update_3tl (lonsperlat,vdzonl,vdmerd,vdzonlr,vdmerdr,deltim)
+
+!  update all horizontal components into momentum eqs
+!  for Semi-Lagrangian vertical advection for 3tl
+
+      use index
+      use param, only : nx,my,lev,my_max
+      use const, only : onocos,radsq,RTYPE
+      use grid , only : dlphi,dtphi
+
+      integer,intent(in):: lonsperlat(my)
+      real(kind=RTYPE),   intent(in):: deltim
+
+!ch   real    vdmerd(nx+3,lev,my_max),vdzonl(nx+3,lev,my_max)
+      real(kind=RTYPE) vdmerd(nxp,lev,my_max),vdzonl(nxp,lev,my_max)
+      real(kind=RTYPE) vdmerdr(nxp,lev,my_max),vdzonlr(nxp,lev,my_max)
+      integer i,ii,k,lan,lat,lons_lat
+      integer dt2
+
+      dt2 = 2. * deltim
+!
+!$omp parallel do                                                   &
+!$omp private(lan,lat,lons_lat,i,k)                                 &
+!$omp schedule(dynamic)
+      do lan=1,jlistnum
+!
+        lat = jlist1(lan)
+        lons_lat = lonsperlat(lat)
+!
+        do k=1,lev
+         do i=1,lons_lat
+           vdzonl(i,k,lan) = (vdzonlr(i,k,lan)-dlphi(i,k,lan)/radsq) &
+                             * dt2 + vdzonl(i,k,lan)
+           vdmerd(i,k,lan) = (vdmerdr(i,k,lan)-dtphi(i,k,lan)/radsq  &
+                             / onocos(lat))*dt2 + vdmerd(i,k,lan)
+         enddo
+        enddo
+      enddo
+!$omp end parallel do
+!
+! ===============================
+!
+      return
+      end subroutine ndslfv_update_3tl
+
+!-------------------------------------------------------------------------
+!CWB2021 note, the double precision is called by reducepick/reduceintp
+!-------------------------------------------------------------------------
+      subroutine cyclic_cell_ppm_intp_dp(pp,qq,pn,qn,lons,nv,lonp,lonn,sc)
 !
 ! mass conservation in cyclic bc interpolation: interpolate a group
 ! of grid point  coordiante call pp at interface with quantity qq at
@@ -1555,326 +2287,4 @@
       enddo
 !
       return
-      end subroutine cyclic_cell_ppm_intp
-!
-! ------------------------------------------------------------------------
-      subroutine vertical_cell_ppm_intp(pp,qq,pn,qn,levs,nvars,i)
-!
-! mass conservation in vertical interpolation: interpolate a group
-! of grid point  coordiante call pp at interface with quantity qq at
-! cell averaged to a group of new grid point coordinate call pn at
-! interface with quantity qn at cell average with ppm spline.
-! in vertical with mass conservation is under the condition that
-! pp(1)=pn(1), pp(levs+1)=pn(levs+1)
-!
-! pp    pressure at interfac level as input
-! qq    quantity at layer as input
-! pn    pressure at interface of new grid structure as input
-! qn    quantity at layer as output
-! levs  numer of verical layers
-!
-! author : henry.juang@noaa.gov
-!
-      implicit none
-!
-      real      pp(levs+1)
-      real      qq(levs,nvars)
-      real      pn(levs+1)
-      real      qn(levs,nvars)
-      integer   levs,nvars
-!
-      real      massm,massc,massp,massbot,masstop
-      real      qmi(levs,nvars),qpi(levs,nvars)
-      real      dql(nvars),dqh(nvars)
-      real      hh(levs)
-      real      dqi,dqimax,dqimin,dqmono(levs,nvars)
-      real      tl,tl2,tl3,tlp,tlm,tlc
-      real      th,th2,th3,thp,thm,thc
-      real      dpp,dqq,c1,c2
-      integer   i,k, kl, kh, kk, kkl, kkh,n
-      integer, parameter :: mono=1
-!
-      if( pp(1).ne.pn(1) .or. pp(levs+1).ne.pn(levs+1) ) then
-        print *,' Error in vertical_cell_ppm_intp for domain values '
-        print *,' i pp1 pn1 ppt pnt ',i,                            &
-                pp(1),pn(1),pp(levs+1),pn(levs+1)
-        call abort
-      endif
-!
-! prepare thickness for grid
-!
-      do k=1,levs
-        hh(k) = pp(k+1)-pp(k)
-      enddo
-!
-! prepare location with monotonic concerns
-!
-      do n=1,nvars
-        massbot=(3.*hh(1)+hh(2))*qq(1,n)-2.*hh(1)*qq(2,n)
-        massm = massbot/(hh(1)+hh(2))
-        massc = qq(1  ,n)
-        massp = qq(1+1,n)
-        dqi = 0.25*(massp-massm)
-        dqimax = max(massm,massc,massp) - massc
-        dqimin = massc - min(massm,massc,massp)
-        dqmono(1,n) = sign( min( abs(dqi), dqimin, dqimax ), dqi)
-        do k=2,levs-1
-          massp = qq(k+1,n)
-          massc = qq(k  ,n)
-          massm = qq(k-1,n)
-          dqi = 0.25*(massp-massm)
-          dqimax = max(massm,massc,massp) - massc
-          dqimin = massc - min(massm,massc,massp)
-          dqmono(k,n) = sign( min( abs(dqi), dqimin, dqimax ), dqi)
-        enddo
-        masstop=(3.*hh(levs)+hh(levs-1))*qq(levs,n)                  &
-                   -2.*hh(levs)*qq(levs-1,n)
-        massp = masstop/(hh(levs)+hh(levs-1))
-        massc = qq(levs  ,n)
-        massm = qq(levs-1,n)
-        dqi = 0.25*(massp-massm)
-        dqimax = max(massm,massc,massp) - massc
-        dqimin = massc - min(massm,massc,massp)
-        dqmono(levs,n) = sign( min( abs(dqi), dqimin, dqimax ), dqi)
-!
-! compute value at interface with momotone
-!
-        do k=2,levs
-          qmi(k,n)=(qq(k-1,n)*hh(k)+qq(k,n)*hh(k-1))/(hh(k)+hh(k-1)) &
-             +(dqmono(k-1,n)-dqmono(k,n))/3.0
-        enddo
-        do k=1,levs-1
-          qpi(k,n)=qmi(k+1,n)
-        enddo
-        qmi(1,n)=qq(1,n)
-        qpi(1,n)=qq(1,n)
-        qmi(levs,n)=qq(levs,n)
-        qpi(levs,n)=qq(levs,n)
-      enddo
-!
-! do monotonicity
-!
-      if( mono.eq.1 ) then
-        do n=1,nvars
-        do k=1,levs
-          c1=qpi(k,n)-qq(k,n)
-          c2=qq(k,n)-qmi(k,n)
-          if( c1*c2.le.0.0 ) then
-            qmi(k,n)=qq(k,n)
-            qpi(k,n)=qq(k,n)
-          endif
-        enddo
-        do k=1,levs
-          c1=(qpi(k,n)-qmi(k,n))*(qq(k,n)-0.5*(qpi(k,n)+qmi(k,n)))
-          c2=(qpi(k,n)-qmi(k,n))*(qpi(k,n)-qmi(k,n))/6.
-          if( c1.gt.c2 ) then
-            qmi(k,n)=3.*qq(k,n)-2.*qpi(k,n)
-          else if( c1.lt.-c2 ) then
-            qpi(k,n)=3.*qq(k,n)-2.*qmi(k,n)
-          endif
-        enddo
-        enddo
-      endif
-!
-! start interpolation by integral of ppm spline
-!
-      kkl = 1
-      tl=0
-      do n=1,nvars
-        dql(n)=0.0
-      enddo
-
-      do k=1,levs
-
-        kl = k
-        kh = k + 1
-! find kkh
-        do kk=kkl+1,levs+1
-          if( pn(kh).ge.pp(kk) ) then
-            kkh = kk-1
-            go to 100
-          endif
-        enddo
-        print *,' Error in vertical_cell_ppm_intp for no lev found '
-        print *,' i kh kl ',i,kh,kl
-        print *,' pn ',(pn(kk),kk=1,levs+1)
-        print *,' pp ',(pp(kk),kk=1,levs+1)
-        call abort
- 100    continue
-        th=(pn(kh)-pp(kkh))/hh(kkh)
-        th2=th*th
-        th3=th2*th
-        thp = th3-th2
-        thm = th3-2.*th2+th
-        thc = -2.*th3+3.*th2
-        do n=1,nvars
-          dqh(n)=thp*qpi(kkh,n)+thm*qmi(kkh,n)+thc*qq(kkh,n)
-        enddo
-! mass interpolate
-        if( kkh.eq.kkl ) then
-          do n=1,nvars
-            qn(k,n) = (dqh(n)-dql(n))/(th-tl)
-          enddo
-        else if( kkh.gt.kkl ) then
-          dpp  = (1.-tl)*hh(kkl) + th*hh(kkh)
-          do kk=kkl+1,kkh-1
-            dpp = dpp + hh(kk)
-          enddo
-          do n=1,nvars
-            dql(n) = qq(kkl,n)-dql(n)
-            dqq  = dql(n)*hh(kkl) + dqh(n)*hh(kkh)
-            do kk=kkl+1,kkh-1
-              dqq = dqq + qq(kk,n)*hh(kk)
-            enddo
-            qn(k,n) = dqq / dpp
-          enddo
-        else
-          print *,' Error in vertical_cell_ppm_intp for lev messed up '
-          print *,' i kh kl ',i,kh,kl
-          print *,' pn ',(pn(kk),kk=1,levs+1)
-          print *,' pp ',(pp(kk),kk=1,levs+1)
-          call abort
-        endif
-! next one
-        kkl = kkh
-        tl  = th
-        do n=1,nvars
-          dql(n) = dqh(n)
-        enddo
-
-      enddo     ! end of k loop
-!
-      return
-      end subroutine vertical_cell_ppm_intp
-!!
-!!
-      subroutine def_cfl_step (im,dist,del,step,nstep,k,job)
-!
-! compute the deformation cfl condition
-! select the maxima value of the deformation CFL and provide step to
-! avoid it.
-!
-!
-      implicit none
-!
-      integer im,nstep
-      real dist(im),del(im-1),step(10)
-! local
-      integer   n,k,nchk
-      real      rstep,check,check_max,check_point
-      real      safe_step,last_step
-      character*4 job
-!
-      check_point=1.00
-      safe_step=0.99
-      nstep = 1
-      step(1) = 1.0
-
-      check_max = 0.0
-      check_loop: do n=1,im-1
-        check = abs ( (dist(n+1)-dist(n))/del(n) )
-        if( check.lt.check_point ) then
-          cycle check_loop
-        else
-          if ( check .gt. check_max ) then
-             nchk=n
-             check_max=check
-          endif
-!!          check_max = max( check_max, check )
-        endif
-      enddo check_loop
-      if(check_max.ge.check_point) then
-        nstep = int(check_max/safe_step) + 1
-        if ( job .eq. 'advv' ) then
-          print *,' max def_cfl ',check_max,' needs ',nstep,    &
-          'steps at level',im+1-nchk,'of',im,'in ',job,' processing'
-        else if ( job .eq. 'advx' .and. im .gt. 25 ) then
-          print *,' max def_cfl ',check_max,' needs ',nstep,    &
-          'steps in',nchk,'of',im,'at level',k,'in ',job,' processing'
-        else if ( job .eq. 'advy' ) then
-          print *,' max def_cfl ',check_max,' needs ',nstep,    &
-          'steps in',nchk,'of',im,'at level',k,'in ',job,' processing'
-        endif
-        rstep =  safe_step / check_max
-        do n=1,nstep-1
-          step(n) = rstep
-        enddo
-        last_step = 1. - ( nstep - 1 ) * rstep
-        step(nstep) = last_step
-      endif
-!
-      return
-      end subroutine def_cfl_step
-!!
-      subroutine mymaxmin(a,im,ix,kx,ch)
-        implicit none
-        real :: fmax
-        real :: fmin
-        integer :: i
-        integer :: im
-        integer :: ix
-        integer :: k
-        integer :: kx
-
-      real a(ix,kx)
-      character*(*) ch
-      do k=1,kx
-        fmin=a(1,k)
-        fmax=a(1,k)
-        do i=1,im
-          fmin=min(fmin,a(i,k))
-          fmax=max(fmax,a(i,k))
-        enddo
-        print *,' max=',fmax,' min=',fmin,' at k=',k,' for ',ch
-      enddo
-      return
-      end subroutine mymaxmin
-!
-! ------------------------------------------------------------------------
-!
-      subroutine ndslfv_update (lonsperlat,vdzonl,vdmerd,vdzonlr,vdmerdr,deltim)
-
-!  update all horizontal components into momentum eqs
-!  for Semi-Lagrangian vertical advection
-
-      use index
-      use param, only : nx,my,lev,my_max
-      use const, only : onocos,radsq
-      use grid , only : dlphi,dtphi
-
-      integer,intent(in):: lonsperlat(my)
-      real,   intent(in):: deltim
-
-!ch   real    vdmerd(nx+3,lev,my_max),vdzonl(nx+3,lev,my_max)
-      real    vdmerd(nxp,lev,my_max),vdzonl(nxp,lev,my_max)
-      real    vdmerdr(nxp,lev,my_max),vdzonlr(nxp,lev,my_max)
-      integer i,ii,k,lan,lat,lons_lat
-      integer dt2
-
-      dt2 = 2. * deltim
-!
-!$omp parallel do                                                   &
-!$omp private(lan,lat,lons_lat,i,k)                                 &
-!$omp schedule(dynamic)
-      do lan=1,jlistnum
-!
-        lat = jlist1(lan)
-        lons_lat = lonsperlat(lat)
-!
-        do k=1,lev
-         do i=1,lons_lat
-!ttl           vdzonl(i,k,lan) = (vdzonlr(i,k,lan)-dlphi(i,k,lan)/radsq) &
-!ttl                             * dt2 + vdzonl(i,k,lan)
-!ttl           vdmerd(i,k,lan) = (vdmerdr(i,k,lan)-dtphi(i,k,lan)/radsq  &
-!ttl                             / onocos(lat))*dt2 + vdmerd(i,k,lan)
-           vdzonl(i,k,lan) = vdzonlr(i,k,lan) * dt2 + vdzonl(i,k,lan)
-           vdmerd(i,k,lan) = vdmerdr(i,k,lan) * dt2 + vdmerd(i,k,lan)
-         enddo
-        enddo
-      enddo
-!$omp end parallel do
-!
-! ===============================
-!
-      return
-      end subroutine ndslfv_update
+      end subroutine cyclic_cell_ppm_intp_dp

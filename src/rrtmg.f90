@@ -32,6 +32,7 @@
       use rank
       use index
       use radn
+      use const, only: RTYPE
 ! -------------------------------------------------------------------
 ! --- for rrtmg input :
 !
@@ -39,8 +40,10 @@
       integer ntrac,nfxr,nx,nxj,lev,ipt,ncld,kdt,nmmiph,nclds
 ! --- 3d parameters
 !
-      real    sigma(lev+1,2),pst(nx),plt(nx,lev),std(nx),tg(nx),  &
-              tt(nx,lev),qt(nx,lev*ncld),o3l(nx,lev),sd(nx,lev)
+      real    plt(nx,lev),std(nx),tg(nx),                         &
+              tt(nx,lev),sd(nx,lev)
+      real(kind=RTYPE)    qt(nx,lev*ncld),o3l(nx,lev),pst(nx),    &
+                          sigma(lev+1,2)
 !
 ! --- 2d parameters
 !
@@ -81,9 +84,9 @@
 ! --- for pdf cloud
       real    sup
       real    deltaq(nx,lev),cnvw(nx,lev),cnvc(nx,lev)
-! --- for MP WSM6 & Thompson & GFDL
+! --- for WSM6 & Thompson & GFDL MP
       real    ftp(nx,lev),ftp1(nx,lev),fqp(nx,lev),fqp1(nx,lev)
-      real    phy3d(nx,lev,5)
+      real    phy3d(nxj,lev,5)
 
 ! -------------------------------------------------------------------
 ! --- for rrtmg output:
@@ -105,9 +108,9 @@
 !      real    dtrad(nx,lev)
       real    ctot(nx),chig(nx),cmid(nx),clow(nx),csbl(nx)
 
-! for GFDL MP
+! for WSM6 & Thompson & GFDL MP
       real    cldcov(nx,lev)   ! input/output layer cloud fraction
-      real    dummy3(nx,lev)
+      real    dummy3(nxj,lev)
       
 
 !
@@ -188,7 +191,7 @@
        tracer(i,kc,ntoz) = tracer(i,kc,ntoz)*fac_o3
       end do
       end do
-      if ( nmmiph.eq.6 .or. nmmiph.eq.8 ) then
+      if ( nmmiph.eq.6 .or. nmmiph.eq.8 .or. nmmiph.eq.18 ) then
         nclds=3
 ! for MP WSM6 & Thompson effective radius
         do k = 1, lev
@@ -200,9 +203,22 @@
         enddo
       endif
 
-      if ( nmmiph.eq.11 ) then
+      if ( nmmiph.eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 ) then
 ! for MP GFDL effective radius
         nclds = 5  ! number of effective cloud condensates used in radiation processes
+        do k = 1, lev
+          do i = 1, nxj
+            phy3d(i,k,1) = ftp(i,k)    ! effective radius for liquid water (micron)
+            phy3d(i,k,2) = ftp1(i,k)   ! effective radius for ice water    (micron)
+            phy3d(i,k,3) = fqp(i,k)    ! effective radius for snow water   (micron)
+            phy3d(i,k,4) = fqp1(i,k)   ! effective radius for rain water   (micron)
+          enddo
+        enddo
+      endif
+
+      if ( nmmiph.eq.15 .or. nmmiph.eq.16) then
+! for MP Goddard (GCE) effective radius
+        nclds = 6
         do k = 1, lev
           do i = 1, nxj
             phy3d(i,k,1) = ftp(i,k)    ! effective radius for liquid water (micron)

@@ -1,4 +1,4 @@
-!!!!  ==========================================================  !!!!!
+!!!!!  ==========================================================  !!!!!
 !!!!!             'module_radiation_driver' descriptions           !!!!!
 !!!!!  ==========================================================  !!!!!
 !                                                                      !
@@ -188,7 +188,8 @@
      &                                     progcld1, progcld2, progcld3,&
      &					   progcld4, diagcld1,          &
                                            progcld5, progcld5o,         &
-                                           progclduni
+                                           progclduni, progcld6,        &
+                                           progcld_thompson, progcld_gce
 
       use module_radsw_parameters,  only : topfsw_type, sfcfsw_type,    &
      &                                     profsw_type,cmpfsw_type,nbdsw
@@ -958,8 +959,7 @@
              tracer(ix,lm,ntrac)
 
 !  ---  outputs: (horizontal dimensioned by ix)
-      real (kind=kind_phys), dimension(ix,lm),intent(out):: htrsw,htrlw!,&
-!             cldcov
+      real (kind=kind_phys), dimension(ix,lm),intent(out):: htrsw,htrlw
 
       real (kind=kind_phys), dimension(im),   intent(out):: tsflw,      &
              sfalb, semis, coszen, coszdg
@@ -984,7 +984,7 @@
 ! --- cmy
 
 !  ---  variables are for both input and output:
-      real (kind=kind_phys), intent(out) :: cldcov(ix,lm)
+      real (kind=kind_phys), intent(inout) :: cldcov(im,lm+ltp)
       real (kind=kind_phys), intent(out) :: fluxr(ix,nfxr)
 
 !! ---  optional outputs:
@@ -1009,8 +1009,8 @@
              olyr, rhly, qstl, vvel, clw, prslk1, tem2da, tem2db, tvly
       real (kind=kind_phys), dimension(im,lm+ltp)  :: qst2, rhly2
       real (kind=kind_phys), dimension(im,lm+ltp)  :: es2, qs2
-!      real (kind=kind_phys), dimension(im,lm+ltp)  :: effrl, effri,     &
-!             effrs, effrr
+      real (kind=kind_phys), dimension(im,lm+ltp)  :: qa
+      real (kind=kind_phys), dimension(im,lm+ltp)  :: cnvw1, cnvc1
 
       real (kind=kind_phys), dimension(im) :: tsfa, cvt1, cvb1, tem1d,  &
              sfcemis, tsfg, tskn
@@ -1046,7 +1046,7 @@
              mbota(im,3), mtopa(im,3), lp1, nb, lmk, lmp, kd, lla, llb, &
              lya, lyb, kt, kb
 !effective radius for liquid, ice, snow, rain
-      real (kind=kind_phys), dimension(ix,lm+ltp,5)   :: phy_f3d
+      real (kind=kind_phys), dimension(im,lm+ltp,5)   :: phy_f3d
       logical uni_cloud,lmfshal,lmfdeep2
 
 !  ---  for debug test use
@@ -1246,6 +1246,8 @@
 !         plyr(i,k1)   = 0.01 * prsl(i,k)   ! pa to mb (hpa)
           tlyr(i,k1)   = tgrs(i,k)
           prslk1(i,k1) = prslk(i,k)
+          cnvw1(i,k1)  = cnvw(i,k)
+          cnvc1(i,k1)  = cnvc(i,k)
 
 !  --- ...  compute relative humidity
 !         es  = min( prsl(i,k), 0.001 * fpvs( tgrs(i,k) ) )   ! fpvs in pa
@@ -1655,16 +1657,42 @@
             ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,          &
             im, lmk, lmp,                            &
             uni_cloud,lmfshal,lmfdeep2,              &
-            cldcov(:,1:lmk),phy_f3d(:,:,1),          &
+            cldcov,phy_f3d(:,:,1),                   &
             phy_f3d(:,:,2),phy_f3d(:,:,3),           &
 !   --- outputs:
             clouds,cldsa,mtopa,mbota                 &
            )
+       elseif ( icmphys == 18 ) then   ! 2M Thompson
+         if ( me == 0 .and. myrank == 0 )                               &
+           print *,'### call New Thompson cloud ###'
 
-       elseif ( icmphys == 11 ) then   ! GFDL MP
+         if (kdt == 1) then
+           phy_f3d(:,:,1) = 10.
+           phy_f3d(:,:,2) = 50.
+           phy_f3d(:,:,3) = 250.
+         endif
+
+!         lwp_ex=0.0  !total liquid water path from explicit microphysics
+!         iwp_ex=0.0  !total ice water path from explicit microphysics
+!         lwp_fc=0.0  !total liquid water path from cloud fraction scheme
+!         iwp_fc=0.0  !total ice water path from cloud fraction scheme
+         call progcld_thompson                                          &
+!  --- inputs
+          ( plyr, plvl, tlyr, qlyr, qstl, rhly, tracer1,                &
+            xlat, xlon, slmsk,                                          &
+            ntrac, ntcw, ntiw, ntrw, ntsw, ntgl,                        &
+            im, lmk, lmp,                                               &
+            uni_cloud, lmfshal, lmfdeep2, cldcov,                       &
+            phy_f3d(:,:,1), phy_f3d(:,:,2), phy_f3d(:,:,3),             &
+!            lwp_ex, iwp_ex, lwp_fc, iwp_fc, dzlay,                      &
+!            gridkm,                                                     &
+!   --- outputs:
+!            cld_frac, cld_lwp, cld_reliq, cld_iwp,                      &
+!            cld_reice, cld_rwp, cld_rerain, cld_swp, cld_resnow)
+            clouds, cldsa, mtopa, mbota )
+       elseif ( icmphys == 11 ) then   ! GFDL MP v1
          if ( me == 0 .and. myrank == 0 )                               &
            print *,'### call GFDL cloud ###'
-
          clw = 0.0
          if ( .not. lgfdlmprad ) then
          do k = 1, lmk
@@ -1684,33 +1712,21 @@
            phy_f3d(:,:,3) = 250.
            phy_f3d(:,:,4) = 1000.
          endif
-
          if ( .not. lgfdlmprad ) then  ! no consistency between GFDLMP and radiation
            call progcld5                                                &
 !    ---  inputs:
              ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,clw,cnvw,cnvc,        &
                xlat,xlon,slmsk,im,lmk,lmp,                              &
-               cldcov(:,1:lmk),                                         &
+               cldcov,                                                  &
 !    ---  outputs:
                clouds,cldsa,mtopa,mbota                                 &
               ) 
          else
-!           if ( uni_cloud ) then
-!           call progclduni                                              &
-!    ---  inputs:
-!            ( plyr,plvl,tlyr,tvly,tracer1,ntrac,                        &
-!              xlat,xlon,slmsk,ix,lmk,lmp,cldcov(:,1:lmk),               &
-!              phy_f3d(:,:,1),phy_f3d(:,:,2),phy_f3d(:,:,3),             &
-!              phy_f3d(:,:,4),effr_in,                                   &
-!    ---  outputs:
-!              clouds,cldsa,mtopa,mbota                                  &
-!             )
-!           else
            call progcld5o                                               &
 !    ---  inputs:
              ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,tracer1,              &
                xlat,xlon,slmsk,                                         &
-               ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,cldcov(:,1:lmk),          &
+               ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,cldcov,                   &
                phy_f3d(:,:,1),phy_f3d(:,:,2),phy_f3d(:,:,3),            &
                phy_f3d(:,:,4),effr_in,                                  &
                im,lmk,lmp,                                              &
@@ -1719,7 +1735,43 @@
               ) 
 !           endif
          endif
-
+       elseif ( icmphys == 12 .or. icmphys == 13 ) then   ! GFDL MP v2 / v3
+         if ( me == 0 .and. myrank == 0 .and. icmphys == 12 )           &
+           print *,'### call GFDL v2 cloud ###'
+         if ( me == 0 .and. myrank == 0 .and. icmphys == 13 )           &
+           print *,'### call GFDL v3 cloud ###'
+         qa = 0.  !aerosol mixing ratio (kg/kg)
+         call progcld6                                                  &
+!    ---  inputs:
+             ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,cnvw1,cnvc1,          &
+               tracer1(:,:,ntcw),tracer1(:,:,ntrw),tracer1(:,:,ntiw),   &
+               tracer1(:,:,ntsw),tracer1(:,:,ntgl),                     &
+               cldcov,slmsk,                                            &
+               phy_f3d(:,:,1),phy_f3d(:,:,2),phy_f3d(:,:,3),            &
+               phy_f3d(:,:,4),effr_in,                                  &
+               xlat,xlon,im,lmk,lmp,                                    &
+!    ---  outputs:
+               clouds,cldsa,mtopa,mbota                                 &
+              ) 
+       elseif ( icmphys == 15 .or. icmphys == 16 ) then   ! Goddard (GCE)
+         if (kdt == 1) then
+           phy_f3d(:,:,1) = 10.
+           phy_f3d(:,:,2) = 50.
+           phy_f3d(:,:,3) = 250.
+           phy_f3d(:,:,4) = 1000.
+         endif
+         if ( me == 0 .and. myrank == 0 )                               &
+           print *,'### call Goddard (GCE) cloud ###'
+           call progcld_gce                                             &
+!    ---  inputs:
+             ( plyr, plvl, tlyr, tvly, qlyr, qstl, rhly, tracer1,       &
+               xlat, xlon, slmsk, ntrac,                                &
+               phy_f3d(:,:,1), phy_f3d(:,:,2), phy_f3d(:,:,3),          &
+               phy_f3d(:,:,4), effr_in,                                 &
+               im, lmk, lmp, lmfshal, lmfdeep2,                         &
+!    ---  outputs:
+               clouds, cldsa, mtopa, mbota, cldcov                      &
+              )
         endif                            ! end if_icmphys
 
       else                                 ! diagnostic cloud scheme

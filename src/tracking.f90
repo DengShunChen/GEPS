@@ -47,7 +47,7 @@ subroutine tracking(tau,dt_trk,dt,nx,my,                                  &
   use rank
   use index
   use mod_typhoon,only:write_mem,write_tau,typtrk
-  use const,only:ifilout
+  use const,only:ifilout,RTYPE,KLEN
   use param,only:my_max
 !  use mod_outflds,only:ifilout
 !  use param
@@ -66,7 +66,7 @@ subroutine tracking(tau,dt_trk,dt,nx,my,                                  &
   integer :: ixtyp(nvar,ntyph),jytyp(nvar,ntyph),nrec(ntyph)
 !byl  real :: slp(nx,my),v850(nx,my),v700(nx,my),h850(nx,my),h500(nx,my)
 !byl  real :: field(nx,my,nvar)
-  real :: field(nx,my)
+  real(kind=RTYPE) :: field(nx,my)
   real :: tlon(nx),tlat(my)
 
   real :: tflon(0:ntau,nvar,ntyph),tflat(0:ntau,nvar,ntyph)
@@ -109,7 +109,7 @@ subroutine tracking(tau,dt_trk,dt,nx,my,                                  &
       character dmstail*10
       integer nstm ! the number of forecasted typhoon
       character domain1*16
-      character dmskeytrack*38
+      character(len=KLEN) dmskeytrack
 !    
       data tytrack /'TYPHTRACKGT'/
       data domain1 /'CWB GFS  T511L60'/
@@ -258,10 +258,10 @@ subroutine tracking(tau,dt_trk,dt,nx,my,                                  &
      cdtg=idtgc(1:10)
  if(WriteTrack)then
     if(myrank.eq.0)then
-     if(idtg.ge.200000000000)then
-     idtg8=(idtg-200000000000)/100
+     if(idtg.ge.200000000000_8)then
+     idtg8=(idtg-200000000000_8)/100
      else
-     idtg8=(idtg-190000000000)/100
+     idtg8=(idtg-190000000000_8)/100
      endif
     call dmsmsg('ERR',ist)
       print *,'dmsdb= ',dfile,'  ist= ',ist,'cdtg=',cdtg,'mem=',mem
@@ -475,6 +475,7 @@ subroutine findtrk(fld,nx,my,ix,iy,rx,ry,tlon,tlat,index,lfound,min_trk_pres,ran
 !-------------------------------------------------------------------------
 !
   use rank
+  use const, only: RTYPE
 !  use mod_typhoon, only : min_trk_pres
 
   implicit none
@@ -482,7 +483,8 @@ subroutine findtrk(fld,nx,my,ix,iy,rx,ry,tlon,tlat,index,lfound,min_trk_pres,ran
   integer :: i,j
   integer :: nx,my,ix,iy,index
   integer :: ib,ie,jb,je
-  real    :: fld(nx,my),fldavg
+  real(kind=RTYPE) :: fld(nx,my)
+  real    :: fldavg
   real    :: tlon(nx),tlat(my)
   logical :: lfound
 

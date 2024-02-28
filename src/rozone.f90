@@ -48,11 +48,14 @@
 !                                                                      c
 !######################################################################c
 !
+      use const, only: RTYPE
+!
       implicit  none
 
       integer   nxj,im,lm,julian
 
-      real      pp(im,lm),o3l(im,lm)
+      real      pp(im,lm)
+      real(kind=RTYPE) o3l(im,lm)
 !
 !  local work arrays
 !

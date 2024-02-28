@@ -6,13 +6,66 @@
 ! transpose (nx partial,lev full) to (nx full,lev partial), num variable packed
 
       use index, only : jlist1,nxjlen_all,nxjlen
+      use const, only : RTYPE,MPI_RTYPE
 
       implicit none
 
       include 'mpif.h'
       integer  nx,nxp,lev,levp,my,my_max,jlen,nsizex,comm
-      real*8   ain(nxp,lev,num,my_max),aout(nx,levp,num,my_max)
-      real*8   b1(nxp,jlen,num,lev),b2(nxp,jlen,num,levp,nsizex)
+      real(kind=RTYPE) ain(nxp,lev,num,my_max),aout(nx,levp,num,my_max)
+      real(kind=RTYPE) b1(nxp,jlen,num,lev),b2(nxp,jlen,num,levp,nsizex)
+      integer  nlen,j,i,k,ierr,jlistnum,num,n,i1,i2,j1
+
+      b1=0.
+      b2=0.
+
+      do k=1,lev
+      do n=1,num
+      do j=1,jlistnum
+         j1=jlist1(j)
+      do i=1,nxjlen(j1)
+         b1(i,j,n,k)=ain(i,k,n,j)
+      enddo
+      enddo
+      enddo
+      enddo
+
+      nlen=nxp*levp*jlen*num
+      call MPI_ALLTOALL( b1 ,nlen, MPI_RTYPE, &
+                         b2, nlen, MPI_RTYPE, &
+                         comm, IERR )
+
+      do n=1,num
+      do k=1,levp
+      do j=1,jlistnum
+         j1=jlist1(j)
+         i1=1
+      do i=1,nsizex
+         i2=nxjlen_all(i,j1)
+         aout(i1:i1+i2-1,k,n,j)=b2(1:i2,j,n,k,i)
+         i1=i1+i2
+      enddo
+      enddo
+      enddo
+      enddo
+
+      return
+      end
+!-------------------------------------------------------------------------------------------------
+!CWB2021 for single precision test
+
+      subroutine mpe2d_transpose_nxp_lev_sp(ain,aout,nxp,nx,lev,levp,num,my,my_max,jlistnum,jlen,nsizex,comm)
+
+! transpose (nx partial,lev full) to (nx full,lev partial), num variable packed
+
+      use index, only : jlist1,nxjlen_all,nxjlen
+
+      implicit none
+
+      include 'mpif.h'
+      integer  nx,nxp,lev,levp,my,my_max,jlen,nsizex,comm
+      real*4   ain(nxp,lev,num,my_max),aout(nx,levp,num,my_max)
+      real*4   b1(nxp,jlen,num,lev),b2(nxp,jlen,num,levp,nsizex)
       integer  nlen,j,i,k,ierr,jlistnum,num,n,i1,i2,j1
 
       do k=1,lev
@@ -27,8 +80,8 @@
       enddo
 
       nlen=nxp*levp*jlen*num
-      call MPI_ALLTOALL( b1 ,nlen, MPI_DOUBLE_PRECISION, &
-                         b2, nlen, MPI_DOUBLE_PRECISION, &
+      call MPI_ALLTOALL( b1 ,nlen, MPI_REAL4, &
+                         b2, nlen, MPI_REAL4, &
                          comm, IERR )
 
       do n=1,num
@@ -145,13 +198,66 @@
 ! transpose (nx full,lev partial) to (nx partial,lev full), num variables packed
 
       use index, only : jlist1,nxjlen_all
+      use const, only : RTYPE,MPI_RTYPE
 
       implicit none
 
       include 'mpif.h'
       integer  nxp,nx,lev,levp,my,my_max,jlen,nsizex,comm
-      real*8   ain(nx,levp,num,my_max),aout(nxp,lev,num,my_max)
-      real*8   b1(levp,num,jlen,nxp,nsizex),b2(levp,num,jlen,nxp,nsizex)
+      real(kind=RTYPE)   ain(nx,levp,num,my_max),aout(nxp,lev,num,my_max)
+      real(kind=RTYPE)   b1(levp,num,jlen,nxp,nsizex),b2(levp,num,jlen,nxp,nsizex)
+      integer  nlen,j,jj,i,k,KL,ierr,jlistnum,num,n,i1,i2,j1
+
+      b1=0.
+      b2=0.
+
+      do j=1,jlistnum
+         j1=jlist1(j)
+      do n=1,num
+      do k=1,levp
+         i1=1
+      do i=1,nsizex
+         i2=nxjlen_all(i,j1)
+         b1(k,n,j,1:i2,i)=ain(i1:i1+i2-1,k,n,j)
+         i1=i1+i2
+      enddo
+      enddo
+      enddo
+      enddo
+
+      nlen=nxp*levp*jlen*num
+
+      call MPI_ALLTOALL( b1 ,nlen, MPI_RTYPE, &
+                         b2, nlen, MPI_RTYPE, &
+                         comm, IERR )
+
+      do jj=1,jlistnum
+      do n=1,num
+      do i=1,nxp
+         k=1
+      do j=1,nsizex
+         aout(i,k:k+levp-1,n,jj)=b2(1:levp,n,jj,i,j)
+         k=k+levp
+      enddo
+      enddo
+      enddo
+      enddo
+
+      return
+      end
+!-------------------------------------------------------------------------------------------------
+      subroutine mpe2d_transpose_nx_levp_sp(ain,aout,nxp,nx,lev,levp,num,my,my_max,jlistnum,jlen,nsizex,comm)
+
+! transpose (nx full,lev partial) to (nx partial,lev full), num variables packed
+
+      use index, only : jlist1,nxjlen_all
+
+      implicit none
+
+      include 'mpif.h'
+      integer  nxp,nx,lev,levp,my,my_max,jlen,nsizex,comm
+      real*4   ain(nx,levp,num,my_max),aout(nxp,lev,num,my_max)
+      real*4   b1(levp,num,jlen,nxp,nsizex),b2(levp,num,jlen,nxp,nsizex)
       integer  nlen,j,jj,i,k,KL,ierr,jlistnum,num,n,i1,i2,j1
 
       do j=1,jlistnum
@@ -170,8 +276,8 @@
 
       nlen=nxp*levp*jlen*num
 
-      call MPI_ALLTOALL( b1 ,nlen, MPI_DOUBLE_PRECISION, &
-                         b2, nlen, MPI_DOUBLE_PRECISION, &
+      call MPI_ALLTOALL( b1 ,nlen, MPI_REAL4, &
+                         b2, nlen, MPI_REAL4, &
                          comm, IERR )
 
       do jj=1,jlistnum
@@ -196,14 +302,15 @@
       use mpi
       use param
       use index
+      use const, only: RTYPE
 
       implicit none
 
       integer i,j,m,mf,nl
 
-      real*8 eps4in(jtrun,jtmax)
-      real*8 eps4out(jtp)
-      real*8 b1(jtf)
+      real(kind=RTYPE) eps4in(jtrun,jtmax)
+      real(kind=RTYPE) eps4out(jtp)
+      real(kind=RTYPE) b1(jtf)
 
       i=1
 
@@ -262,13 +369,14 @@
       use rank
       use index
       use mpi
+      use const, only: RTYPE,MPI_RTYPE
 
-      real work(nx,my)
-      real a(nxp,my_max)
-      real b(nxp,my_max*nsize)
+      real(kind=RTYPE) work(nx,my)
+      real(kind=RTYPE) a(nxp,my_max)
+      real(kind=RTYPE) b(nxp,my_max*nsize)
 
-      call MPI_ALLGATHER( a,nxp*my_max, MPI_DOUBLE_PRECISION, &
-                          b,nxp*my_max, MPI_DOUBLE_PRECISION, &
+      call MPI_ALLGATHER( a,nxp*my_max, MPI_RTYPE, &
+                          b,nxp*my_max, MPI_RTYPE, &
                           MPI_COMM_gfs, IERR )
 
       do j=1,my
@@ -291,13 +399,14 @@
       use param
       use index
       use mpi
+      use const, only: RTYPE,MPI_RTYPE
 
-      real work(nx,my_max)
-      real a(nxp,my_max)
-      real b(nxp,my_max,nsizex)
+      real(kind=RTYPE) work(nx,my_max)
+      real(kind=RTYPE) a(nxp,my_max)
+      real(kind=RTYPE) b(nxp,my_max,nsizex)
 
-      call MPI_ALLGATHER( a,nxp*my_max, MPI_DOUBLE_PRECISION, &
-                          b,nxp*my_max, MPI_DOUBLE_PRECISION, &
+      call MPI_ALLGATHER( a,nxp*my_max, MPI_RTYPE, &
+                          b,nxp*my_max, MPI_RTYPE, &
                           row_comm, IERR )
 
       do jj=1,jlistnum
@@ -320,13 +429,14 @@
       use param
       use index
       use mpi
+      use const, only: RTYPE,MPI_RTYPE
 
-      real work(nx,my)
-      real a(nx,my_max)
-      real b(nx,my_max*nsizey)
+      real(kind=RTYPE) work(nx,my)
+      real(kind=RTYPE) a(nx,my_max)
+      real(kind=RTYPE) b(nx,my_max*nsizey)
 
-      call MPI_ALLGATHER( a,nx*my_max, MPI_DOUBLE_PRECISION, &
-                          b,nx*my_max, MPI_DOUBLE_PRECISION, &
+      call MPI_ALLGATHER( a,nx*my_max, MPI_RTYPE, &
+                          b,nx*my_max, MPI_RTYPE, &
                           col_comm, IERR )
 
 
@@ -343,18 +453,52 @@
 ! unify lev of spectrum
  
       use mpi
+      use const, only : RTYPE,MPI_RTYPE
  
       implicit none
 
       integer lev,levp,jtrun,jtmax,mlistnum,proc,comm,ii,j,jj,k,kk,ierr
 
-      real ain(levp,2,jtrun,jtmax)
-      real aout(lev,2,jtrun,jtmax)
-      real b1(levp,2,jtrun,jtmax)
-      real b2(levp,2,jtrun,jtmax,proc)
+      real(kind=RTYPE) ain(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) aout(lev,2,jtrun,jtmax)
+      real(kind=RTYPE) b1(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) b2(levp,2,jtrun,jtmax,proc)
 
-      call MPI_ALLGATHER( ain, levp*2*jtrun*jtmax, MPI_DOUBLE_PRECISION, &
-                           b2, levp*2*jtrun*jtmax, MPI_DOUBLE_PRECISION, &
+      call MPI_ALLGATHER( ain, levp*2*jtrun*jtmax, MPI_RTYPE, &
+                           b2, levp*2*jtrun*jtmax, MPI_RTYPE, &
+                          comm,IERR )
+
+      do jj=1,mlistnum
+      do j=1,jtrun
+         kk=1
+      do ii=1,proc
+         aout(kk:kk+levp-1,1,j,jj)=b2(1:levp,1,j,jj,ii)
+         aout(kk:kk+levp-1,2,j,jj)=b2(1:levp,2,j,jj,ii)
+         kk=kk+levp
+      enddo
+      enddo
+      enddo
+
+      return
+      end
+!-------------------------------------------------------------------------------------------------
+      subroutine mpe2d_unify_spec_lev_sp(ain,aout,lev,levp,jtrun,jtmax,mlistnum,proc,comm)
+
+! unify lev of spectrum
+ 
+      use mpi
+ 
+      implicit none
+
+      integer lev,levp,jtrun,jtmax,mlistnum,proc,comm,ii,j,jj,k,kk,ierr
+
+      real*4 ain(levp,2,jtrun,jtmax)
+      real*4 aout(lev,2,jtrun,jtmax)
+      real*4 b1(levp,2,jtrun,jtmax)
+      real*4 b2(levp,2,jtrun,jtmax,proc)
+
+      call MPI_ALLGATHER( ain, levp*2*jtrun*jtmax, MPI_REAL4, &
+                           b2, levp*2*jtrun*jtmax, MPI_REAL4, &
                           comm,IERR )
 
       do jj=1,mlistnum
@@ -376,23 +520,25 @@
 ! unify lev of spectrum for zx
  
       use mpi
+      use const,only : RTYPE,MPI_RTYPE
  
       implicit none
 
       integer lev,levp,jtrun,jtmax,mlistnum,proc,comm,ii,j,jj,k,kk,n,ierr
 
-      real a1(levp,2,jtrun,jtmax),a2(levp,2,jtrun,jtmax),a3(levp,2,jtrun,jtmax)
-      real ain(levp,2,3,jtrun,jtmax)
-      real aout(lev,2,3,jtrun,jtmax)
-      real b1(levp,2,jtrun,jtmax)
-      real b2(levp,2,3,jtrun,jtmax,proc)
+      real(kind=RTYPE) a1(levp,2,jtrun,jtmax),a2(levp,2,jtrun,jtmax),  &
+                       a3(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) ain(levp,2,3,jtrun,jtmax)
+      real(kind=RTYPE) aout(lev,2,3,jtrun,jtmax)
+      real(kind=RTYPE) b1(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) b2(levp,2,3,jtrun,jtmax,proc)
 
       ain(:,:,1,:,:)=a1(:,:,:,:)
       ain(:,:,2,:,:)=a2(:,:,:,:)
       ain(:,:,3,:,:)=a3(:,:,:,:)
 
-      call MPI_ALLGATHER( ain, levp*2*3*jtrun*jtmax, MPI_DOUBLE_PRECISION, &
-                           b2, levp*2*3*jtrun*jtmax, MPI_DOUBLE_PRECISION, &
+      call MPI_ALLGATHER( ain, levp*2*3*jtrun*jtmax, MPI_RTYPE, &
+                           b2, levp*2*3*jtrun*jtmax, MPI_RTYPE, &
                           comm,IERR )
 
       do jj=1,mlistnum
@@ -458,14 +604,15 @@
       use mpi
       use param
       use index
+      use const,only : RTYPE
 
       implicit none
 
       integer i,j,m,mf,nl
 
-      real*8 plin(jtrun,jtmax,2)
-      real*8 plout(jtp,2)
-      real*8 b1(jtf,2)
+      real(kind=RTYPE) plin(jtrun,jtmax,2)
+      real(kind=RTYPE) plout(jtp,2)
+      real(kind=RTYPE) b1(jtf,2)
 
       i=1
 
@@ -494,14 +641,15 @@
       use mpi
       use param
       use index
+      use const,only : RTYPE
 
       implicit none
 
       integer i,j,m,mf,nl
 
-      real*8 plin1(jtrun,jtmax,2),plin2(jtrun,jtmax,2),plin3(jtrun,jtmax,2)
-      real*8 plout1(jtp,2),plout2(jtp,2),plout3(jtp,2)
-      real*8 b1(jtf,6)
+      real(kind=RTYPE) plin1(jtrun,jtmax,2),plin2(jtrun,jtmax,2),plin3(jtrun,jtmax,2)
+      real(kind=RTYPE) plout1(jtp,2),plout2(jtp,2),plout3(jtp,2)
+      real(kind=RTYPE) b1(jtf,6)
 
       i=1
 
@@ -538,17 +686,18 @@
       use mpi
       use param
       use index
+      use const,only : RTYPE,MPI_RTYPE
 
       implicit none
 
       integer n,i,j,m,mf,ierr
 
-      real*8 plin(jtp,2)
-      real*8 plout(jtrun,jtmax,2)
-      real*8 b2(jtp,2,nsizex)
+      real(kind=RTYPE) plin(jtp,2)
+      real(kind=RTYPE) plout(jtrun,jtmax,2)
+      real(kind=RTYPE) b2(jtp,2,nsizex)
 
-      call MPI_ALLGATHER( plin, jtp*2, MPI_DOUBLE_PRECISION, &
-                          b2,   jtp*2, MPI_DOUBLE_PRECISION, &
+      call MPI_ALLGATHER( plin, jtp*2, MPI_RTYPE, &
+                          b2,   jtp*2, MPI_RTYPE, &
                           row_comm, IERR )
 
       i=1
@@ -609,6 +758,7 @@
  
       use index
       use mpi
+      use const, only: RTYPE
  
       implicit none
 
@@ -643,26 +793,27 @@
 ! transpose siimpl spec (6 arrays)
 
       use mpi
+      use const, only: RTYPE,MPI_RTYPE
 
       implicit none
 
       integer levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist(jtrun),nsizex,row_comm
       integer m,mf,nl,i,levp2,nlen,ierr,j,k
 
-      real*8 a1(levp,2,jtrun,jtmax)
-      real*8 a2(levp,2,jtrun,jtmax)
-      real*8 a3(levp,2,jtrun,jtmax)
-      real*8 a4(levp,2,jtrun,jtmax)
-      real*8 a5(levp,2,jtrun,jtmax)
-      real*8 a6(levp,2,jtrun,jtmax)
-      real*8 b1(lev,2,jtp)
-      real*8 b2(lev,2,jtp)
-      real*8 b3(lev,2,jtp)
-      real*8 b4(lev,2,jtp)
-      real*8 b5(lev,2,jtp)
-      real*8 b6(lev,2,jtp)
-      real*8 c1(levp,2,6,jtf)
-      real*8 c2(levp,2,6,jtp,nsizex)
+      real(kind=RTYPE) a1(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) a2(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) a3(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) a4(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) a5(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) a6(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) b1(lev,2,jtp)
+      real(kind=RTYPE) b2(lev,2,jtp)
+      real(kind=RTYPE) b3(lev,2,jtp)
+      real(kind=RTYPE) b4(lev,2,jtp)
+      real(kind=RTYPE) b5(lev,2,jtp)
+      real(kind=RTYPE) b6(lev,2,jtp)
+      real(kind=RTYPE) c1(levp,2,6,jtf)
+      real(kind=RTYPE) c2(levp,2,6,jtp,nsizex)
 
       levp2=levp*2
       i=1
@@ -686,8 +837,8 @@
       enddo
 
       nlen=levp2*6*jtp
-      call MPI_ALLTOALL( c1 ,nlen, MPI_DOUBLE_PRECISION, &
-                         c2, nlen, MPI_DOUBLE_PRECISION, &
+      call MPI_ALLTOALL( c1 ,nlen, MPI_RTYPE, &
+                         c2, nlen, MPI_RTYPE, &
                          row_comm, IERR )
 
       do j=1,jtp
@@ -718,16 +869,17 @@
 ! transpose siimpl spec
 
       use mpi
+      use const, only: RTYPE,MPI_RTYPE
 
       implicit none
 
       integer levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist(jtrun),nsizex,row_comm
       integer m,mf,nl,i,levp2,nlen,ierr,j,k
 
-      real*8 ain(levp,2,jtrun,jtmax)
-      real*8 aout(lev,2,jtp)
-      real*8 c1(levp,2,jtf)
-      real*8 c2(levp,2,jtp,nsizex)
+      real(kind=RTYPE) ain(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) aout(lev,2,jtp)
+      real(kind=RTYPE) c1(levp,2,jtf)
+      real(kind=RTYPE) c2(levp,2,jtp,nsizex)
 
       levp2=levp*2
       i=1
@@ -741,8 +893,8 @@
       enddo
 
       nlen=levp2*jtp
-      call MPI_ALLTOALL( c1 ,nlen, MPI_DOUBLE_PRECISION, &
-                         c2, nlen, MPI_DOUBLE_PRECISION, &
+      call MPI_ALLTOALL( c1 ,nlen, MPI_RTYPE, &
+                         c2, nlen, MPI_RTYPE, &
                          row_comm, IERR )
 
       do j=1,jtp
@@ -763,17 +915,18 @@
 
       use mpi
       use index,only : jtlen_all
+      use const,only : RTYPE,MPI_RTYPE
 
       implicit none
 
       integer levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist(jtrun),nsizex,row_comm
       integer m,n,mf,nl,i,nlen,ierr,j,k
 
-      real*8 ain(lev,2,jtp)
-      real*8 aout(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) ain(lev,2,jtp)
+      real(kind=RTYPE) aout(levp,2,jtrun,jtmax)
 
-      real*8 b1(jtp,2,lev)
-      real*8 b2(jtp,2,levp,nsizex)
+      real(kind=RTYPE) b1(jtp,2,lev)
+      real(kind=RTYPE) b2(jtp,2,levp,nsizex)
 
       do j=1,jtp
       do k=1,lev
@@ -783,8 +936,8 @@
       enddo
 
       nlen=jtp*2*levp
-      call MPI_ALLTOALL( b1 ,nlen, MPI_DOUBLE_PRECISION, &
-                         b2, nlen, MPI_DOUBLE_PRECISION, &
+      call MPI_ALLTOALL( b1 ,nlen, MPI_RTYPE, &
+                         b2, nlen, MPI_RTYPE, &
                          row_comm, IERR )
 
       i=1
@@ -814,17 +967,18 @@
 
       use mpi
       use index,only : jtlen_all
+      use const,only : RTYPE,MPI_RTYPE
 
       implicit none
 
       integer levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist(jtrun),nsizex,row_comm
       integer m,n,mf,nl,i,nlen,ierr,j,k
 
-      real*8 ain1(lev,2,jtp),ain2(lev,2,jtp)
-      real*8 aout1(levp,2,jtrun,jtmax),aout2(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) ain1(lev,2,jtp),ain2(lev,2,jtp)
+      real(kind=RTYPE) aout1(levp,2,jtrun,jtmax),aout2(levp,2,jtrun,jtmax)
 
-      real*8 b1(jtp,4,lev)
-      real*8 b2(jtp,4,levp,nsizex)
+      real(kind=RTYPE) b1(jtp,4,lev)
+      real(kind=RTYPE) b2(jtp,4,levp,nsizex)
 
       do j=1,jtp
       do k=1,lev
@@ -836,8 +990,8 @@
       enddo
 
       nlen=jtp*4*levp
-      call MPI_ALLTOALL( b1 ,nlen, MPI_DOUBLE_PRECISION, &
-                         b2, nlen, MPI_DOUBLE_PRECISION, &
+      call MPI_ALLTOALL( b1 ,nlen, MPI_RTYPE, &
+                         b2, nlen, MPI_RTYPE, &
                          row_comm, IERR )
 
       i=1
@@ -868,18 +1022,19 @@
 ! unify lev of spectrum var
 
       use mpi
+      use const,only : RTYPE,MPI_RTYPE
 
       implicit none
 
       integer lev,levp,jtrun,jtmax,mlistnum,proc,comm,ii,j,jj,k,kk,ierr
 
-      real ain(levp,2,jtrun,jtmax)
-      real aout(lev,2,jtrun,jtmax)
-      real b1(levp,2,jtrun,jtmax)
-      real b2(levp,2,jtrun,jtmax,proc)
+      real(kind=RTYPE) ain(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) aout(lev,2,jtrun,jtmax)
+      real(kind=RTYPE) b1(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) b2(levp,2,jtrun,jtmax,proc)
 
-      call MPI_ALLGATHER( ain, levp*2*jtrun*jtmax, MPI_DOUBLE_PRECISION, &
-                           b2, levp*2*jtrun*jtmax, MPI_DOUBLE_PRECISION, &
+      call MPI_ALLGATHER( ain, levp*2*jtrun*jtmax, MPI_RTYPE, &
+                           b2, levp*2*jtrun*jtmax, MPI_RTYPE, &
                           comm,IERR )
 
       do jj=1,mlistnum
@@ -1061,7 +1216,6 @@
 
       do jj=1,jlistnum
 
-!ch   do i=1,nxp
       ii=jlist1(jj)
       do i=1,nxjp(ii)
 
@@ -1089,13 +1243,16 @@
 ! transpose (nx partial,lev full) to (nx full,lev partial) for NDSL
 
       use index, only : lreduce,nxjlen_all,jlist1,nxjlen
+      use const, only : RTYPE,MPI_RTYPE
 
       implicit none
 
       include 'mpif.h'
 
-      real*8   ain(nxp,lev,ncld,my_max),aout(nx,levp,ncld,my_max)
-      real*8   c1(nxp,jlen,ncld,lev),c2(nxp,jlen,ncld,levp,nsizex)
+      real(kind=RTYPE) ain(nxp,lev,ncld,my_max),        &
+                       aout(nx,levp,ncld,my_max),       &
+                       c1(nxp,jlen,ncld,lev),           &
+                       c2(nxp,jlen,ncld,levp,nsizex)
 
       integer  nxp,nx,lev,levp,ncld,my,my_max,jlen,nsizex,comm
       integer  nlen,ii,j,i,k,kk,ierr,jlistnum,nn,jj,n
@@ -1114,8 +1271,8 @@
 
       nlen=nxp*levp*jlen*ncld
 
-      call MPI_ALLTOALL( c1 ,nlen, MPI_DOUBLE_PRECISION, &
-                         c2, nlen, MPI_DOUBLE_PRECISION, &
+      call MPI_ALLTOALL( c1 ,nlen, MPI_RTYPE, &
+                         c2, nlen, MPI_RTYPE, &
                          comm, IERR )
 
       do k=1,levp
@@ -1135,23 +1292,25 @@
 
       return
       end
-
 !---------------------------------------------------------------------------------------------------------
       subroutine mpe2d_transpose_ndsl_f2p(ain,aout,nxp,nx,lev,levp,ncld,my,my_max,jlistnum,jlen,proc,comm)
 
 ! transpose (nx full,lev partial) to (nx partial,lev full) for NDSL
 
       use index, only : jlist1,nsizex,lreduce,nxjstart_all,nxjend_all,nxjlen_all,nxjp
+      use const, only : RTYPE,MPI_RTYPE
 
       implicit none
 
       include 'mpif.h'
 
+      real(kind=RTYPE) ain(nx,levp,ncld,my_max),      &
+                       aout(nxp,lev,ncld,my_max),     &
+                       c1(levp,ncld,jlen,nxp,proc),   &
+                       c2(levp,ncld,jlen,nxp,proc)
+
       integer  nxp,nx,lev,levp,ncld,my,my_max,jlen,proc,comm
       integer  nlen,ii,j,jj,i,k,KL,ierr,jlistnum,n,i1,i2,i3,i4
-
-      real*8   ain(nx,levp,ncld,my_max),aout(nxp,lev,ncld,my_max)
-      real*8   c1(levp,ncld,jlen,nxp,proc),c2(levp,ncld,jlen,nxp,proc)
 
       do j=1,jlistnum
          jj=jlist1(j)
@@ -1169,13 +1328,12 @@
 
       nlen=nxp*levp*jlen*ncld
 
-      call MPI_ALLTOALL( c1 ,nlen, MPI_DOUBLE_PRECISION, &
-                         c2, nlen, MPI_DOUBLE_PRECISION, &
+      call MPI_ALLTOALL( c1 ,nlen, MPI_RTYPE, &
+                         c2, nlen, MPI_RTYPE, &
                          comm, IERR )
 
       do jj=1,jlistnum
 
-!ch   do i=1,nxp
       ii=jlist1(jj)
       do i=1,nxjp(ii)
 
@@ -1188,6 +1346,355 @@
          KL=KL-1
       enddo
       enddo
+      enddo
+      enddo
+
+      return
+      end
+!----------------------------------------------------------------------------------------
+!CWB2021
+      subroutine mpe2d_reshape_pl_sp(plin,plout)
+
+! reshape spec coef 
+
+      use mpi
+      use param
+      use index
+
+      implicit none
+
+      integer i,j,m,mf,nl
+
+      real*4 plin(jtrun,jtmax,2)
+      real*4 plout(jtp,2)
+      real*4 b1(jtf,2)
+
+      i=1
+
+      do m=1,mlistnum
+         mf=mlist(m)
+         NL=jtrun-mf+1
+         b1(i:i+nl-1,1)=plin(mf:jtrun,m,1)
+         b1(i:i+nl-1,2)=plin(mf:jtrun,m,2)
+         i=i+NL
+      enddo
+
+      i=0
+      do j=jtstart,jtend
+         i=i+1
+         plout(i,1)=b1(j,1)
+         plout(i,2)=b1(j,2)
+      enddo
+
+      return
+      end
+!----------------------------------------------------------------------------------------
+      subroutine mpe2d_reshape_pl_multi_sp(plin1,plin2,plin3,plout1,plout2,plout3)
+
+! reshape spec coef (3 arrays)
+
+      use mpi
+      use param
+      use index
+
+      implicit none
+
+      integer i,j,m,mf,nl
+
+      real*4 plin1(jtrun,jtmax,2),plin2(jtrun,jtmax,2),plin3(jtrun,jtmax,2)
+      real*4 plout1(jtp,2),plout2(jtp,2),plout3(jtp,2)
+      real*4 b1(jtf,6)
+
+      i=1
+
+      do m=1,mlistnum
+         mf=mlist(m)
+         NL=jtrun-mf+1
+         b1(i:i+nl-1,1)=plin1(mf:jtrun,m,1)
+         b1(i:i+nl-1,2)=plin1(mf:jtrun,m,2)
+         b1(i:i+nl-1,3)=plin2(mf:jtrun,m,1)
+         b1(i:i+nl-1,4)=plin2(mf:jtrun,m,2)
+         b1(i:i+nl-1,5)=plin3(mf:jtrun,m,1)
+         b1(i:i+nl-1,6)=plin3(mf:jtrun,m,2)
+         i=i+NL
+      enddo
+
+      i=0
+      do j=jtstart,jtend
+         i=i+1
+         plout1(i,1)=b1(j,1)
+         plout1(i,2)=b1(j,2)
+         plout2(i,1)=b1(j,3)
+         plout2(i,2)=b1(j,4)
+         plout3(i,1)=b1(j,5)
+         plout3(i,2)=b1(j,6)
+      enddo
+
+      return
+      end
+!----------------------------------------------------------------------------------------
+      subroutine mpe2d_reshape_pl_back_sp(plin,plout)
+
+! reshape spec coef back
+
+      use mpi
+      use param
+      use index
+
+      implicit none
+
+      integer n,i,j,m,mf,ierr
+
+      real*4 plin(jtp,2)
+      real*4 plout(jtrun,jtmax,2)
+      real*4 b2(jtp,2,nsizex)
+
+      call MPI_ALLGATHER( plin, jtp*2, MPI_REAL4, &
+                          b2,   jtp*2, MPI_REAL4, &
+                          row_comm, IERR )
+
+      i=1
+      j=1
+
+      do m=1,mlistnum
+         mf=mlist(m)
+      do n=mf,jtrun
+         plout(n,m,1)=b2(i,1,j)
+         plout(n,m,2)=b2(i,2,j)
+         i=i+1
+         if(i.gt.jtlen_all(j))then
+            i=1
+            j=j+1
+         endif
+      enddo
+      enddo
+
+      return
+      end
+!----------------------------------------------------------------------------------------
+      subroutine mpe2d_transpose_siimpl_multi_sp(a1,a2,a3,a4,a5,a6,b1,b2,b3,b4,b5,b6, &
+                 levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
+
+! transpose siimpl spec (6 arrays)
+
+      use mpi
+
+      implicit none
+
+      integer levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist(jtrun),nsizex,row_comm
+      integer m,mf,nl,i,levp2,nlen,ierr,j,k
+
+      real*4 a1(levp,2,jtrun,jtmax)
+      real*4 a2(levp,2,jtrun,jtmax)
+      real*4 a3(levp,2,jtrun,jtmax)
+      real*4 a4(levp,2,jtrun,jtmax)
+      real*4 a5(levp,2,jtrun,jtmax)
+      real*4 a6(levp,2,jtrun,jtmax)
+      real*4 b1(lev,2,jtp)
+      real*4 b2(lev,2,jtp)
+      real*4 b3(lev,2,jtp)
+      real*4 b4(lev,2,jtp)
+      real*4 b5(lev,2,jtp)
+      real*4 b6(lev,2,jtp)
+      real*4 c1(levp,2,6,jtf)
+      real*4 c2(levp,2,6,jtp,nsizex)
+
+      levp2=levp*2
+      i=1
+
+      do m=1,mlistnum
+         mf=mlist(m)
+         NL=jtrun-mf+1
+         c1(1:levp,1,1,i:i+nl-1)=a1(1:levp,1,mf:jtrun,m)
+         c1(1:levp,2,1,i:i+nl-1)=a1(1:levp,2,mf:jtrun,m)
+         c1(1:levp,1,2,i:i+nl-1)=a2(1:levp,1,mf:jtrun,m)
+         c1(1:levp,2,2,i:i+nl-1)=a2(1:levp,2,mf:jtrun,m)
+         c1(1:levp,1,3,i:i+nl-1)=a3(1:levp,1,mf:jtrun,m)
+         c1(1:levp,2,3,i:i+nl-1)=a3(1:levp,2,mf:jtrun,m)
+         c1(1:levp,1,4,i:i+nl-1)=a4(1:levp,1,mf:jtrun,m)
+         c1(1:levp,2,4,i:i+nl-1)=a4(1:levp,2,mf:jtrun,m)
+         c1(1:levp,1,5,i:i+nl-1)=a5(1:levp,1,mf:jtrun,m)
+         c1(1:levp,2,5,i:i+nl-1)=a5(1:levp,2,mf:jtrun,m)
+         c1(1:levp,1,6,i:i+nl-1)=a6(1:levp,1,mf:jtrun,m)
+         c1(1:levp,2,6,i:i+nl-1)=a6(1:levp,2,mf:jtrun,m)
+         i=i+NL
+      enddo
+
+      nlen=levp2*6*jtp
+
+      call MPI_ALLTOALL( c1 ,nlen, MPI_REAL4, &
+                         c2, nlen, MPI_REAL4, &
+                         row_comm, IERR )
+
+      do j=1,jtp
+         k=1
+      do i=1,nsizex
+         b1(k:k+levp-1,1,j)=c2(1:levp,1,1,j,i)
+         b1(k:k+levp-1,2,j)=c2(1:levp,2,1,j,i)
+         b2(k:k+levp-1,1,j)=c2(1:levp,1,2,j,i)
+         b2(k:k+levp-1,2,j)=c2(1:levp,2,2,j,i)
+         b3(k:k+levp-1,1,j)=c2(1:levp,1,3,j,i)
+         b3(k:k+levp-1,2,j)=c2(1:levp,2,3,j,i)
+         b4(k:k+levp-1,1,j)=c2(1:levp,1,4,j,i)
+         b4(k:k+levp-1,2,j)=c2(1:levp,2,4,j,i)
+         b5(k:k+levp-1,1,j)=c2(1:levp,1,5,j,i)
+         b5(k:k+levp-1,2,j)=c2(1:levp,2,5,j,i)
+         b6(k:k+levp-1,1,j)=c2(1:levp,1,6,j,i)
+         b6(k:k+levp-1,2,j)=c2(1:levp,2,6,j,i)
+         k=k+levp
+      enddo
+      enddo
+
+      return
+      end
+!----------------------------------------------------------------------------------------
+      subroutine mpe2d_transpose_siimpl_sp(ain,aout, &
+                 levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
+
+! transpose siimpl spec
+
+      use mpi
+
+      implicit none
+
+      integer levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist(jtrun),nsizex,row_comm
+      integer m,mf,nl,i,levp2,nlen,ierr,j,k
+
+      real*4 ain(levp,2,jtrun,jtmax)
+      real*4 aout(lev,2,jtp)
+      real*4 c1(levp,2,jtf)
+      real*4 c2(levp,2,jtp,nsizex)
+
+      levp2=levp*2
+      i=1
+
+      do m=1,mlistnum
+         mf=mlist(m)
+         NL=jtrun-mf+1
+         c1(1:levp,1,i:i+nl-1)=ain(1:levp,1,mf:jtrun,m)
+         c1(1:levp,2,i:i+nl-1)=ain(1:levp,2,mf:jtrun,m)
+         i=i+NL
+      enddo
+
+      nlen=levp2*jtp
+
+      call MPI_ALLTOALL( c1 ,nlen, MPI_REAL4, &
+                         c2, nlen, MPI_REAL4, &
+                         row_comm, IERR )
+
+      do j=1,jtp
+         k=1
+      do i=1,nsizex
+         aout(k:k+levp-1,1,j)=c2(1:levp,1,j,i)
+         aout(k:k+levp-1,2,j)=c2(1:levp,2,j,i)
+         k=k+levp
+      enddo
+      enddo
+
+      return
+      end
+!----------------------------------------------------------------------------------------
+      subroutine mpe2d_transpose_siimpl_back_sp(ain,aout,levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
+
+! transpose siimpl spec back
+
+      use mpi
+      use index,only : jtlen_all
+
+      implicit none
+
+      integer levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist(jtrun),nsizex,row_comm
+      integer m,n,mf,nl,i,nlen,ierr,j,k
+
+      real*4 ain(lev,2,jtp)
+      real*4 aout(levp,2,jtrun,jtmax)
+      real*4 b1(jtp,2,lev)
+      real*4 b2(jtp,2,levp,nsizex)
+
+      do j=1,jtp
+      do k=1,lev
+         b1(j,1,k)=ain(k,1,j)
+         b1(j,2,k)=ain(k,2,j)
+      enddo
+      enddo
+
+      nlen=jtp*2*levp
+
+      call MPI_ALLTOALL( b1 ,nlen, MPI_REAL4, &
+                         b2, nlen, MPI_REAL4, &
+                         row_comm, IERR )
+
+      i=1
+      j=1
+
+      do m=1,mlistnum
+         mf=mlist(m)
+      do n=mf,jtrun
+      do k=1,levp
+         aout(k,1,n,m)=b2(i,1,k,j)
+         aout(k,2,n,m)=b2(i,2,k,j)
+      enddo
+         i=i+1
+         if(i.gt.jtlen_all(j))then
+            i=1
+            j=j+1
+         endif
+      enddo
+      enddo
+
+      return
+      end
+!----------------------------------------------------------------------------------------
+      subroutine mpe2d_transpose_siimpl_back_multi_sp(ain1,ain2,aout1,aout2,levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
+
+! transpose siimpl spec back (2 arrays)
+
+      use mpi
+      use index,only : jtlen_all
+
+      implicit none
+
+      integer levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist(jtrun),nsizex,row_comm
+      integer m,n,mf,nl,i,nlen,ierr,j,k
+
+      real*4 ain1(lev,2,jtp),ain2(lev,2,jtp)
+      real*4 aout1(levp,2,jtrun,jtmax),aout2(levp,2,jtrun,jtmax)
+
+      real*4 b1(jtp,4,lev)
+      real*4 b2(jtp,4,levp,nsizex)
+
+      do j=1,jtp
+      do k=1,lev
+         b1(j,1,k)=ain1(k,1,j)
+         b1(j,2,k)=ain1(k,2,j)
+         b1(j,3,k)=ain2(k,1,j)
+         b1(j,4,k)=ain2(k,2,j)
+      enddo
+      enddo
+
+      nlen=jtp*4*levp
+
+      call MPI_ALLTOALL( b1 ,nlen, MPI_REAL4, &
+                         b2, nlen, MPI_REAL4, &
+                         row_comm, IERR )
+
+      i=1
+      j=1
+
+      do m=1,mlistnum
+         mf=mlist(m)
+      do n=mf,jtrun
+      do k=1,levp
+         aout1(k,1,n,m)=b2(i,1,k,j)
+         aout1(k,2,n,m)=b2(i,2,k,j)
+         aout2(k,1,n,m)=b2(i,3,k,j)
+         aout2(k,2,n,m)=b2(i,4,k,j)
+      enddo
+         i=i+1
+         if(i.gt.jtlen_all(j))then
+            i=1
+            j=j+1
+         endif
       enddo
       enddo
 

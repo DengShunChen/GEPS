@@ -1,4 +1,4 @@
-      subroutine dmsread(nx,my,lrec,lenc,kflag,ifile,z,istat)
+      subroutine dmsread(nx,my,lenc,kflag,ifile,z,istat)
 !
 !  subroutine to read data in pressure level fields
 !
@@ -16,6 +16,7 @@
       use mpe
       use rank
       use index
+      use const, only:key,ihdg
 
       implicit  none
       integer   nx,my,lenc,istat
@@ -24,12 +25,16 @@
 !
       logical t_flg
 !
-      character lrec*28,ifile*80,kflag*1
+      character ifile*255,kflag*1
 !
-      character key*38,crmk*88
+      character crmk*88
 !
-      write(key,1000)lrec,kflag,lenc
+      write(key,1000)ihdg,kflag,lenc
+#ifdef IO38K
  1000 format(a28,a1,i9.9)
+#else
+ 1000 format(a26,a1,i7.7)
+#endif
 !
       t_flg=.false.
 !
@@ -62,7 +67,6 @@
 #ifdef VERBOSE
       if(myrank .eq. 0) print *,'dms key=',key,' found'
 #endif
-      if(myrank .eq. 0) print *,'dms key=',key,'found',maxval(z),minval(z)
 !
       endif
 !
@@ -70,7 +74,7 @@
       end
 
 
-      subroutine dmsreadi(nx,my,lrec,lenc,kflag,ifile,z,istat)
+      subroutine dmsreadi(nx,my,lenc,kflag,ifile,z,istat)
 !
 !  subroutine to read data in pressure level fields
 !
@@ -88,6 +92,7 @@
       use mpe
       use rank
       use index
+      use const, only:key,ihdg
 
       implicit  none
       integer   nx,my,lenc,istat
@@ -96,12 +101,16 @@
 !
       logical t_flg
 !
-      character lrec*28,ifile*80,kflag*1
+      character ifile*255,kflag*1
 !
-      character key*38,crmk*88
+      character crmk*88
 !
-      write(key,1000)lrec,kflag,lenc
+      write(key,1000)ihdg,kflag,lenc
+#ifdef IO38K
  1000 format(a28,a1,i9.9)
+#else
+ 1000 format(a26,a1,i7.7)
+#endif
 !
       t_flg=.false.
 !
@@ -134,14 +143,13 @@
 #ifdef VERBOSE
       if(myrank .eq. 0) print *,'dms key=',key,' found'
 #endif
-      if(myrank .eq. 0) print *,'dms key=',key,'found',maxval(z),minval(z)
 !
       endif
 !
       return
       end
 !-------------------------------------------------
-      subroutine dmsread_split(nx,my,lrec,lenc,kflag,ifile,z,istat)
+      subroutine dmsread_split(nx,my,lenc,kflag,ifile,z,istat)
 !
 !  subroutine to read data in pressure level fields
 !
@@ -159,6 +167,7 @@
       use mpe
       use rank
       use index
+      use const, only:key,ihdg
 
       implicit  none
       integer   nx,my,lenc,istat
@@ -167,12 +176,16 @@
 !
       logical t_flg
 !
-      character lrec*28,ifile*80,kflag*1
+      character ifile*255,kflag*1
 !
-      character key*38,crmk*88
+      character crmk*88
 !
-      write(key,1000)lrec,kflag,lenc
+      write(key,1000)ihdg,kflag,lenc
+#ifdef IO38K
  1000 format(a28,a1,i9.9)
+#else
+ 1000 format(a26,a1,i7.7)
+#endif
 !
       t_flg=.false.
 !
@@ -205,7 +218,6 @@
 #ifdef VERBOSE
       if(col_rank .eq. 0) print *,'dms key=',key,' found'
 #endif
-      if(myrank .eq. 0) print *,'dms key=',key,'found',maxval(z),minval(z)
 !
       endif
 !

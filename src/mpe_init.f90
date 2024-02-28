@@ -46,6 +46,9 @@
     call MPI_COMM_RANK( MPI_COMM_WORLD, myrank_all, ierr )
     call MPI_COMM_SIZE( MPI_COMM_WORLD, nsize_all,  ierr )
 #endif
+#ifdef USE_CUDA
+    call device_init(myrank_all, nsize_all)
+#endif
 #ifdef W3TAG
       if (myrank_all==0) call w3tagb('TCoGFS',2021,1721,067,'GFS')
 #endif
@@ -200,7 +203,8 @@
         ! initial block data
         call init_block
       else
-        call ioserver(nx*my)
+!       call ioserver(nx*my)
+        call ioserver_grb2(nx,my)
       endif
     else ! non io_quilting
       nsize=nsize_all

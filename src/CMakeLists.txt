@@ -1,18 +1,8 @@
-# 
-# Copyright (c) 2021, NVIDIA CORPORATION.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-# 
-#      http://www.apache.org/licenses/LICENSE-2.0
-# 
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+################################################################################
+# Copyright (c) 2020-2024, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 #
-
+# See LICENSE for license information.
+################################################################################
 
 # do NOT compile unify_grid.f90 unify_gridr.f90 ozne_def.f90 physcons_v.f90
 
@@ -110,6 +100,7 @@ inicons.f90
 init_block.f90
 initial.f90
 intgrt.f90
+intgrt_3tl.f90
 invmtx.f90
 ioserver.f90
 iounitdef.f90
@@ -141,6 +132,7 @@ mod_const.f90
 mod_eos_ocean.f90
 mod_fftcom.f90
 mod_fj_pad.f90
+mod_grb2_param.f90
 mod_grid.f90
 mod_index.f90
 mod_mpe.f90
@@ -165,7 +157,16 @@ mod_typhoon.f90
 module_bfmicrophysics.f90
 module_mp_radar.f90
 module_mp_thompson_gfs.f90
+module_mp_thompson_gfs_new.f90
+module_mp_thompson_make_NC.f90
 module_mp_wsm6_fv3.f90
+module_mp_gfdl_fv3_v16.f90
+module_mp_gfdl_fv3_v2.f90
+module_mp_gfdl_fv3_v3.f90
+module_mp_gsfcgce.f90
+module_mp_gsfcgce_3ice_nuwrf.f90
+module_mp_gsfcgce_4ice_nuwrf.f90
+cld_eff_rad.f90
 moninedmf.f90
 mpe2d.f90
 mpe_barrier.f90
@@ -176,6 +177,7 @@ mpe_recv_data.f90
 mpe_recv_key.f90
 mpe_scatter_io.f90
 mpe_send_data.f90
+mpe_send_int.f90
 mpe_send_key.f90
 mpe_transpose_rs1.f90
 mpe_transpose_rs.f90
@@ -259,10 +261,13 @@ rozone.f90
 rozphys.f90
 rqkir.f90
 rrtmg.f90
+rsmout_sigp.f90
 rstrandz.f90
 rstrantq.f90
 samfdeepcnv.f90
+samfdeepcnv_kh.f90
 samfshalcnv.f90
+samfshalcnv_kh.f90
 sascnv.f90
 sascnv_n.f90
 sascnv_sa.f90
@@ -301,6 +306,7 @@ tranrs.f90
 transr1.f90
 transr.f90
 tranuv.f90
+tranuv1.f90
 trdih.f90
 trdiv2.f90
 trdivv.f90
@@ -340,6 +346,15 @@ wrte_idate.f90
 xyintpo.f90
 )
 
+if(${USE_CUDA})
+    list(APPEND TCO_SRC
+        nvidia/cuda_init.f90
+        nvidia/cublas_wrapper.f90
+        nvidia/cufft_plan_cache.cc
+        nvidia/cufft_wrapper.f90
+    )
+endif()
+
 if(NOT ${USE_RSM})
   set(EXEC "tcogfs.x")
 else()
@@ -359,19 +374,26 @@ set_target_properties(${EXEC}
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-# for spectial source files
-set_source_files_properties(fftx.f90 ndslfv_pack.f90  
-  PROPERTIES COMPILE_FLAGS "-Knoparallel" 
-)
-set_source_files_properties(pbl_noah.f90 rcloud.f90    
-  PROPERTIES COMPILE_FLAGS "-Knosimd" 
-)
+if(NOT ${USE_CUDA})
+	# For special source files
+	set_source_files_properties(fftx.f90 ndslfv_pack.f90
+		PROPERTIES COMPILE_FLAGS "-Knoparallel"
+	)
+	set_source_files_properties(pbl_noah.f90 rcloud.f90 gscond.f90 gscondp.f90
+		PROPERTIES COMPILE_FLAGS "-Knosimd"
+	)
+	target_link_options(${EXEC} PUBLIC "-Kopenmp,parallel")
+else()
+	set_source_files_properties(pbl_noah.f90 rcloud.f90 gscond.f90 gscondp.f90
+		PROPERTIES COMPILE_FLAGS "-Mvect=nosimd"
+	)
+	target_link_options(${EXEC} PUBLIC "-Mconcur")
+endif()
 
 install(TARGETS ${EXEC} DESTINATION ${CMAKE_INSTALL_PREFIX})
 target_include_directories( ${EXEC} PUBLIC "$<BUILD_INTERFACE:${TCOGFS_INCLUDE_DIRS}>")
 
 target_link_libraries( ${EXEC} ${NetCDF_Fortran_LIBRARIES}
                                ${DMS_LIBRARIES}
-                               ${FFTW_LIBRARIES}
                                ${W3_LIBRARIES}
 )

@@ -1,4 +1,4 @@
-      subroutine qmaxn3 (fld,t1,t2,i1,j1,k1,im,jm,lm)
+      subroutine qmaxn3 (fld,i1,j1,k1,im,jm,lm)
 !
 !  subroutine to print max and min in 2-d layer (or a subarray)
 !  within a 3-d field stored with n-s index slowest varying
@@ -6,7 +6,7 @@
 !  ***input***
 !
 !  fld: input array
-!  t1,t2: 2* 8 character caption
+!  ihdglen1,ihdglen2: 2* 8 character caption
 !  i1: starting index of first dimension (e-w)
 !  j1: starting index of third dimension (n-s)
 !  k1: starting index of second dimension (vertical)
@@ -18,16 +18,23 @@
 !
       use rank
       use index
+      use const, only: RTYPE,ihdg,ihdglen1,ihdglen2
 
       implicit   none
       integer    i1,j1,k1,im,jm,lm
-      real      fld(im,lm,jm)
+      real(kind=RTYPE) fld(im,lm,jm)
 !ch   character*14 t1, t2
-      character t1*16, t2*12
 
       real       xmin,xmax
       integer    imin,jmin,imax,jmax,j,i
 !
+#ifdef IO38K
+      ihdglen1=ihdg(1:16)
+      ihdglen2=ihdg(17:28)
+#else
+      ihdglen1=ihdg(1:14)
+      ihdglen2=ihdg(15:26)
+#endif
       xmin= 1.0e25
       xmax= -1.0e25
       imin=1
@@ -49,7 +56,7 @@
       endif
    10 continue
 !
-      if(myrank .eq. 0) print 9000, t1, t2
+      if(myrank .eq. 0) print 9000, ihdglen1,ihdglen2
       if(myrank .eq. 0) print 8995, imax,jmax,xmax,imin,jmin,xmin
 !
 !ch 9000 format (2a14)

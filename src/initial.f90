@@ -10,7 +10,7 @@
       use index
       use const, only : eigval,omega,rad,nnmiit,doincr,evecin,nnmivm,   &
                         cutfreq,evectr,pmcor,tmcor,poly,dpoly,cim,      &
-                        wdfac,wcfac,onocos
+                        wdfac,wcfac,onocos,RTYPE
       use spec,  only : temold,vorten,vorold,divten,divold,plnow,temnow,&
                         divnow,vornow,plold
 !byl                        divnow,vornow,qold,qnow,plold
@@ -28,15 +28,15 @@
       real      a(jtrun,jtrun,nnmivm),b(jtrun,jtrun,nnmivm)
       real      mx(no*no),h(jtrun,jtmax,nnmivm),c(jtrun,jtrun,nnmivm)
       integer   nw(jtrun,jtmax)
-      real      phiten(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) phiten(levp,2,jtrun,jtmax),dummy
       real      wk(no*no),wc(no*2),wd(no*2),ew(no*no)
-      real      cc(nx+2,levp,1,my_max)
+      real(kind=RTYPE) cc(nx+2,levp,1,my_max)
 !byl      real      cc(nx+2,levp,3,my_max),wss(levp,2,3,jtrun,jtmax)
       real      bal_tmp(jtrun)
       character lab*10,lrec*16
 
       integer   mlmax2,j,k,l,ic,m,mf,n,ns,na,nbig,kk,kL
-      real      bal,dummy
+      real      bal
       logical   nnmical
       integer   brank   !root rank of row_broadcast
 !

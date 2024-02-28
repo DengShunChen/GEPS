@@ -42,6 +42,7 @@
       ldiag=1
       idg=16
       jdg=16
+      qmin=1.0e-20
 
 !!      stbo=5.669e-8
 !!      s0=1368.3
@@ -51,6 +52,7 @@
 !!      hice=3.336e5
       evaprh=0.98
       hfilt=1.
+      factop=60.
 
       nnmiit=3
       nnmivm=3
@@ -84,11 +86,13 @@
       doincr=.true.
 !
       doo3l=.true.
-!
-      domfc=384.
-      otgreen=6.
-      out_green=.false.
-      out_hp=.false.
+! about of input and output set
+      domfc    =    384.
+      otgreen  =      6.
+      out_green= .false.
+      out_hp   = .false.
+      outgrb2  =      0  !output grib2 format
+      outdms   =      1  !output dmskey 1:real-8  ,2:real-4
 ! pdf cloud
       pdfcloud=.false.
 ! stochastic physics
@@ -99,6 +103,14 @@
       doclx=.false.
 ! Semi-Lagrangian Averaging of Physical Parametrizations
       doslavepp=.false.
+! dy-core two loop sequence
+      two_loop=.false.
+! dy-core two time level
+      ttl=.true.
+      itter=2
+! dry air mass correction
+      mass_dp=.false.
+      dpprt  =.false.
 ! output data for RSM (Also, RSM compiling flag is necessary)
       outrsm=.false.
       rsmoutinv=6
@@ -107,6 +119,7 @@
       rlat1=5.
       rlat2=40.
       rgrdsz=0.25
+      rsmsfcmgrhr=24
 !---------------------------------------------------------------------------
 !
 ! specify the default option for cup and pbl
@@ -189,7 +202,7 @@
 !  sponge layer 
       spl1=10.
       spl2=100.
-      vd=0.
+      vd=0.01
       else if ( lev .eq. 72 ) then
 !
 ! L72 hybrid coordinate
@@ -238,7 +251,7 @@
 !  sponge layer 
       spl1=5.
       spl2=50.
-      vd=0.1
+      vd=0.01
       else if ( lev .eq. 128 ) then
 !
 ! L128 hybrid coordinate
@@ -313,13 +326,13 @@
            .99251445,.99638192,1.0000000 /) 
       ptop=0.01
 !  sponge layer 
-      spl1=5.
+      spl1=1.
       spl2=50.
-      vd=0.5
+      vd=0.005
       endif
 !
-!      tmeans=300.
-      tmeans=350.
+      tmeans=300.
+!      tmeans=350.
 
 !-- for hybrid coordinates, ptmeans reset for numerical stability
 !      ptmeans=800.
@@ -327,17 +340,17 @@
 !
 ! for forward weighting Semi-Implicit
 !
-      alpha=0.75
+      alpha=0.7
+!
+! for Robert time filter in three time level
+!
+      tfilt=0.04
 !
 ! for two time level 
 !
-!    coefficient of merging PGF
-!
-      af=0.1
-!
 !    coefficient of horizontal difussion for mid-point wind
 !
-      mwhd=4.
+      mwhd=1.
 
 !
       ifilin ='ifilin'
@@ -352,9 +365,11 @@
 !-- for sit
       ifilin_ncep   = 'ifilin_ncep'
       ifilin_sst    = 'ifilin_sst'
-      ifilin_nc     = 'ifilin_nc'
+      ifilin_nc     = '.' ! 'ifilin_nc'  change to path
       ifilin_ClmANA = 'ifilin_ClmANA'
       ifilin_ClmFCT = 'ifilin_ClmFCT'
+!-- for grib2 output path
+      ifilout_grb  = '.'
 !
 !dms
 !t512l60
@@ -456,6 +471,7 @@
       ntiw=4
       ntsw=5
       ntgl=6
+      nthl=7  ! hail
       ntoz=3
       ioutsigr=0
 !---------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-      subroutine readalb(bckfile,nx,my,my_max,julian,ggdef,            &
+      subroutine readalb(nx,my,my_max,julian,            &
                          alvsf,alvwf,alnsf,alnwf,facsf,facwf)
 !----------------------------------------------------------------
 !
@@ -33,6 +33,7 @@
       use mpe
       use index
       use physpara  ,only : ialbflg
+      use const, only: ihdg,bckfile,ggdef
 
       implicit none
 
@@ -48,7 +49,7 @@
             alnsfcl(nxp,my_max,2),alnwfcl(nxp,my_max,2)
       real work(nx,my)
 !
-      character bckfile*80,lrec*28,blnk*1,ggdef*4
+      character blnk*1
       integer   mon(12),mmse(2),mmax,mmt,mon1(12),mon2(12)
       data mon1/ 74,166,258,349,  0,  0,  0,  0,  0,  0,  0,  0/
       data mon2/ 15, 46, 74,105,135,166,196,227,258,288,319,349/
@@ -100,28 +101,28 @@
       mm=mmse(nn)
 
 
-      if (ialbflg.eq.0) write(lrec,31)ggdef,mm
-      if (ialbflg.eq.1) write(lrec,37)ggdef,mm
-      call dmsread(nx,my,lrec,lncrec,'H',bckfile,work,istat)
+      if (ialbflg.eq.0) write(ihdg,31)ggdef,mm
+      if (ialbflg.eq.1) write(ihdg,37)ggdef,mm
+      call dmsread(nx,my,lncrec,'H',bckfile,work,istat)
       call unify_reducepick(nx,my,my_max,work,alvsfcl(1,1,nn))
 !     call qmax2d(work,1,1,nx,my)
 
 
-      if (ialbflg.eq.0) write(lrec,32)ggdef,mm
-      if (ialbflg.eq.1) write(lrec,38)ggdef,mm
-      call dmsread(nx,my,lrec,lncrec,'H',bckfile,work,istat)
+      if (ialbflg.eq.0) write(ihdg,32)ggdef,mm
+      if (ialbflg.eq.1) write(ihdg,38)ggdef,mm
+      call dmsread(nx,my,lncrec,'H',bckfile,work,istat)
       call unify_reducepick(nx,my,my_max,work,alvwfcl(1,1,nn))
 !     call qmax2d(work,1,1,nx,my)
 
-      if (ialbflg.eq.0) write(lrec,33)ggdef,mm
-      if (ialbflg.eq.1) write(lrec,39)ggdef,mm
-      call dmsread(nx,my,lrec,lncrec,'H',bckfile,work,istat)
+      if (ialbflg.eq.0) write(ihdg,33)ggdef,mm
+      if (ialbflg.eq.1) write(ihdg,39)ggdef,mm
+      call dmsread(nx,my,lncrec,'H',bckfile,work,istat)
       call unify_reducepick(nx,my,my_max,work,alnsfcl(1,1,nn))
 !     call qmax2d(work,1,1,nx,my)
 
-      if (ialbflg.eq.0) write(lrec,34)ggdef,mm
-      if (ialbflg.eq.1) write(lrec,40)ggdef,mm
-      call dmsread(nx,my,lrec,lncrec,'H',bckfile,work,istat)
+      if (ialbflg.eq.0) write(ihdg,34)ggdef,mm
+      if (ialbflg.eq.1) write(ihdg,40)ggdef,mm
+      call dmsread(nx,my,lncrec,'H',bckfile,work,istat)
       call unify_reducepick(nx,my,my_max,work,alnwfcl(1,1,nn))
 !     call qmax2d(work,1,1,nx,my)
 
@@ -129,17 +130,17 @@
 !
 !-- facsf (0-100)
 !
-      write(lrec,35)ggdef
+      write(ihdg,35)ggdef
 !     write(*,*)'35, lrec=',lrec
-      call dmsread(nx,my,lrec,lncrec,'H',bckfile,work,istat)
+      call dmsread(nx,my,lncrec,'H',bckfile,work,istat)
       call unify_reducepick(nx,my,my_max,work,facsf)
 !     call qmax2d(work,1,1,nx,my)
 !
 !-- facwf (0-100)
 !
-      write(lrec,36)ggdef
+      write(ihdg,36)ggdef
 !     write(*,*)'35, lrec=',lrec
-      call dmsread(nx,my,lrec,lncrec,'H',bckfile,work,istat)
+      call dmsread(nx,my,lncrec,'H',bckfile,work,istat)
       call unify_reducepick(nx,my,my_max,work,facwf)
 !     call qmax2d(work,1,1,nx,my)
 !

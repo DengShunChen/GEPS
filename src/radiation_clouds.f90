@@ -159,7 +159,9 @@
 !  ---  set constant parameters
       real (kind=kind_phys), parameter :: gfac=1.0e5/con_g              &
      &,                                   gord=con_g/con_rd
+!      integer, parameter, public :: nf_clds = 11  ! number of fields in cloud array
       integer, parameter, public :: nf_clds = 9   ! number of fields in cloud array
+!#endif
       integer, parameter, public :: nk_clds = 3   ! number of cloud vertical domains
 
 !  ---  pressure limits of cloud domain interfaces (low,mid,high) in mb (0.1kpa)
@@ -208,8 +210,28 @@
       integer  :: iovr   = 1           ! cloud over lapping method for diagnostic 3-domain
                                        ! output calc (see iovrsw/iovrlw description)
 
+      ! Default ice crystal sizes vs. temperature following Kristjansson and Mitchell
+      real (kind=kind_phys), dimension(95), parameter :: retab =(/      &
+     &                   5.92779, 6.26422, 6.61973, 6.99539, 7.39234,   &
+     &           7.81177, 8.25496, 8.72323, 9.21800, 9.74075, 10.2930,  &
+     &           10.8765, 11.4929, 12.1440, 12.8317, 13.5581, 14.2319,  &
+     &           15.0351, 15.8799, 16.7674, 17.6986, 18.6744, 19.6955,  &
+     &           20.7623, 21.8757, 23.0364, 24.2452, 25.5034, 26.8125,  &
+     &           27.7895, 28.6450, 29.4167, 30.1088, 30.7306, 31.2943,  &
+     &           31.8151, 32.3077, 32.7870, 33.2657, 33.7540, 34.2601,  &
+     &           34.7892, 35.3442, 35.9255, 36.5316, 37.1602, 37.8078,  &
+     &           38.4720, 39.1508, 39.8442, 40.5552, 41.2912, 42.0635,  &
+     &           42.8876, 43.7863, 44.7853, 45.9170, 47.2165, 48.7221,  &
+     &           50.4710, 52.4980, 54.8315, 57.4898, 60.4785, 63.7898,  &
+     &           65.5604, 71.2885, 75.4113, 79.7368, 84.2351, 88.8833,  &
+     &           93.6658, 98.5739, 103.603, 108.752, 114.025, 119.424,  &
+     &           124.954, 130.630, 136.457, 142.446, 148.608, 154.956,  &
+     &           161.503, 168.262, 175.248, 182.473, 189.952, 197.699,  &
+     &           205.728, 214.055, 222.694, 231.661, 240.971, 250.639/)
+
       public progcld1, progcld2, progcld3, progcld4, diagcld1, cld_init,&
-             progcld5, progcld5o, progclduni
+             progcld5, progcld5o, progclduni, progcld6,                 &
+             progcld_thompson, progcld_gce
 
 
 ! =================
@@ -307,8 +329,18 @@
             print *,'   --- WSM6 microphysics'
           elseif (icmphys == 8) then
             print *,'   --- Thompson microphysics'
+          elseif (icmphys == 18) then
+            print *,'   --- 2M Thompson microphysics'
           elseif (icmphys == 11) then
-            print *,'   --- GFDL microphysics'
+            print *,'   --- GFDL microphysics version 1'
+          elseif (icmphys == 12) then
+            print *,'   --- GFDL microphysics version 2'
+          elseif (icmphys == 13) then
+            print *,'   --- GFDL microphysics version 3'
+          elseif (icmphys == 15) then
+            print *,'   --- Goddard (GCE) 3ICE microphysics'
+          elseif (icmphys == 16) then
+            print *,'   --- Goddard (GCE) 4ICE microphysics'
           else
             print *,'  !!! error in cloud microphysc specification!!!', &
      &              '  icmphys (np3d) =',icmphys
@@ -1869,7 +1901,7 @@
           clouds(i,k,6) = crp(i,k)  ! added for Thompson 
           clouds(i,k,7) = rer(i,k)
           clouds(i,k,8) = csp(i,k)  ! added for Thompson 
-          clouds(i,k,9) = rei(i,k)
+          clouds(i,k,9) = res(i,k)
         enddo
       enddo
 
@@ -2510,6 +2542,947 @@
       end subroutine progcld5o
 !-----------------------------------
 
+!-----------------------------------
+      subroutine progcld6                                               &
+!...................................
+
+!  ---  inputs:
+     &     ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,cnvw,cnvc,              &
+     &       qw,qr,qi,qs,qg,                                            &
+     &       cldcov,slmsk,                                              &
+     &       effr_cw,effr_iw,effr_sw,effr_rw,effr_in,                   &
+     &       xlat,xlon,IX,NLAY,NLP1,                                    &
+!  ---  outputs:
+     &       clouds,clds,mtop,mbot                                      &
+     &      )
+
+! =================   subprogram documentation block   ================ !
+!                                                                       !
+! subprogram:    progcld1    computes cloud related quantities using    !
+!   zhao/moorthi's prognostic cloud microphysics scheme.                !
+!                                                                       !
+! abstract:  this program computes cloud fractions from cloud           !
+!   condensates, calculates liquid/ice cloud droplet effective radius,  !
+!   and computes the low, mid, high, total and boundary layer cloud     !
+!   fractions and the vertical indices of low, mid, and high cloud      !
+!   top and base.  the three vertical cloud domains are set up in the   !
+!   initial subroutine "cld_init".                                      !
+!                                                                       !
+! usage:         call progcld1                                          !
+!                                                                       !
+! subprograms called:   gethml                                          !
+!                                                                       !
+! attributes:                                                           !
+!   language:   fortran 90                                              !
+!   machine:    ibm-sp, sgi                                             !
+!                                                                       !
+!                                                                       !
+!  ====================  definition of variables  ====================  !
+!                                                                       !
+! input variables:                                                      !
+!   plyr  (IX,NLAY) : model layer mean pressure in mb (100Pa)           !
+!   plvl  (IX,NLP1) : model level pressure in mb (100Pa)                !
+!   tlyr  (IX,NLAY) : model layer mean temperature in k                 !
+!   tvly  (IX,NLAY) : model layer virtual temperature in k              !
+!   qlyr  (IX,NLAY) : layer specific humidity in gm/gm                  !
+!   qstl  (IX,NLAY) : layer saturate humidity in gm/gm                  !
+!   rhly  (IX,NLAY) : layer relative humidity (=qlyr/qstl)              !
+!   cnvw  (ix,nlay) : layer convective cloud condensate                 !
+!   cnvc  (ix,nlay) : layer convective cloud cover                      !
+!   qw    (ix,nlay) : cloud water mixing ratio (kg/kg)                  !
+!   qr    (ix,nlay) : rain water mixing ratio (kg/kg)                   !
+!   qi    (ix,nlay) : cloud ice mixing ratio (kg/kg)                    !
+!   qs    (ix,nlay) : snow water mixing ratio (kg/kg)                   !
+!   qg    (ix,nlay) : graupel mixing ratio (kg/kg)                      !
+!   qa    (ix,nlay) : aerosol mixing ratio (kg/kg)                      !
+!   cldtot(ix,nlay) : layer cloud fraction                              !
+!   slmsk (IX)      : sea/land mask array (sea:0,land:1,sea-ice:2)      !
+!   snowd (ix)      : snow depth                                        !
+!   xlat  (IX)      : grid latitude in radians, default to pi/2 -> -pi/2!
+!                     range, otherwise see in-line comment              !
+!   xlon  (IX)      : grid longitude in radians  (not used)             !
+!   IX              : horizontal dimention                              !
+!   NLAY,NLP1       : vertical layer/level dimensions                   !
+!                                                                       !
+! output variables:                                                     !
+!   clouds(IX,NLAY,NF_CLDS) : cloud profiles                            !
+!      clouds(:,:,1) - layer total cloud fraction                       !
+!      clouds(:,:,2) - layer cloud liq water path         (g/m**2)      !
+!      clouds(:,:,3) - mean eff radius for liq cloud      (micron)      !
+!      clouds(:,:,4) - layer cloud ice water path         (g/m**2)      !
+!      clouds(:,:,5) - mean eff radius for ice cloud      (micron)      !
+!      clouds(:,:,6) - layer rain drop water path         not assigned  !
+!      clouds(:,:,7) - mean eff radius for rain drop      (micron)      !
+!  *** clouds(:,:,8) - layer snow flake water path        not assigned  !
+!      clouds(:,:,9) - mean eff radius for snow flake     (micron)      !
+!  *** fu's scheme need to be normalized by snow density (g/m**3/1.0e6) !
+!   clds  (IX,5)    : fraction of clouds for low, mid, hi, tot, bl      !
+!   mtop  (IX,3)    : vertical indices for low, mid, hi cloud tops      !
+!   mbot  (IX,3)    : vertical indices for low, mid, hi cloud bases     !
+!                                                                       !
+! module variables:                                                     !
+!   ivflip          : control flag of vertical index direction          !
+!                     =0: index from toa to surface                     !
+!                     =1: index from surface to toa                     !
+!   lsashal         : control flag for shallow convection               !
+!   lcrick          : control flag for eliminating CRICK                !
+!                     =t: apply layer smoothing to eliminate CRICK      !
+!                     =f: do not apply layer smoothing                  !
+!   lcnorm          : control flag for in-cld condensate                !
+!                     =t: normalize cloud condensate                    !
+!                     =f: not normalize cloud condensate                !
+!                                                                       !
+!  ====================    end of description    =====================  !
+
+      use physpara,           only : icmphys
+!      use cld_eff_rad_v2,     only : cld_eff_rad
+!      use module_mp_gfdl_v3,  only : cld_eff_rad_v3
+!
+      implicit none
+
+!  ---  inputs
+      integer,  intent(in) :: IX, NLAY, NLP1
+
+      real (kind=kind_phys), dimension(:,:), intent(in) :: plvl, plyr,  &
+     &       tlyr, tvly, qlyr, qstl, rhly,  cnvw, cnvc
+
+      real (kind=kind_phys), dimension(:,:), intent(inout) ::           &
+     &       qw, qr, qi, qs, qg
+      real (kind=kind_phys), dimension(:,:), intent(inout) :: cldcov
+
+      real (kind=kind_phys), dimension(:),   intent(in) :: xlat, xlon,  &
+     &       slmsk
+
+      real (kind=kind_phys), dimension(:,:), intent(in) :: effr_cw,     &
+     &       effr_iw, effr_rw, effr_sw
+
+      logical, intent(in) :: effr_in
+
+!  ---  outputs
+      real (kind=kind_phys), dimension(:,:,:), intent(out) :: clouds
+
+      real (kind=kind_phys), dimension(:,:),   intent(out) :: clds
+
+      integer,               dimension(:,:),   intent(out) :: mtop,mbot
+
+!  ---  local variables:
+      real (kind=kind_phys), dimension(IX,NLAY) :: cldcnv, cldtot,      &
+     &       cwp, cip, crp, csp, cgp, rew, rei, res, rer, reg, delp,    &
+     &       tem2d, clwf
+
+      real (kind=kind_phys) :: ptop1(IX,NK_CLDS+1)
+
+      real (kind=kind_phys) :: clwmin, clwm, clwt, onemrh, value,       &
+     &       tem1, tem2, tem3
+
+      real, parameter :: qmin = 1.0e-12  !minimum mass mixing ratio (kg / kg)
+
+      integer :: i, k, id, nf
+
+!
+!===> ... begin here
+!
+      do nf=1,nf_clds
+        do k=1,nlay
+          do i=1,ix
+            clouds(i,k,nf) = 0.0
+          enddo
+        enddo
+      enddo
+
+      do k = 1, NLAY
+        do i = 1, IX
+          cldcnv(i,k) = 0.0
+          cwp   (i,k) = 0.0
+          cip   (i,k) = 0.0
+          crp   (i,k) = 0.0
+          csp   (i,k) = 0.0
+          if ( effr_in ) then
+            rew (i,k) = effr_cw (i,k)
+            rei (i,k) = effr_iw (i,k)
+            rer (i,k) = effr_rw (i,k)
+            res (i,k) = effr_sw (i,k)
+          else
+            rew (i,k) = reliq_def            ! default liq radius to 10 micron
+            rei (i,k) = reice_def            ! default ice radius to 50 micron
+            rer (i,k) = rrain_def            ! default rain radius to 1000 micron
+            res (i,k) = rsnow_def            ! default snow radius to 250 micron
+          endif
+          tem2d (i,k) = min( 1.0, max( 0.0, (con_ttp-tlyr(i,k))*0.05 ) )
+          cldtot(i,k) = cldcov(i,k)
+        enddo
+      enddo
+
+!  ---  compute liquid/ice condensate path in g/m**2
+
+      do k = 1, NLAY
+        do i = 1, IX
+          if ( ivflip == 0 ) then          ! input data from toa to sfc
+            delp(i,k) = plvl(i,k+1) - plvl(i,k)
+          else                             ! input data from sfc to toa
+            delp(i,k) = plvl(i,k) - plvl(i,k+1)
+          endif
+
+          if ( qw(i,k) .gt. qmin ) cwp(i,k) = qw(i,k) * gfac * delp(i,k)
+          if ( qi(i,k) .gt. qmin ) cip(i,k) = qi(i,k) * gfac * delp(i,k)
+          if ( qr(i,k) .gt. qmin ) crp(i,k) = qr(i,k) * gfac * delp(i,k)
+          if ( qs(i,k)+qg(i,k) .gt. qmin ) &
+                         csp(i,k) = (qs(i,k)+qg(i,k)) * gfac * delp(i,k)
+        enddo
+      enddo
+
+!      if ( icmphys .eq. 12 ) then
+!      call cld_eff_rad (1, IX, 1, NLAY, slmsk, plyr*100,                &
+!     &                  abs(plvl(:,1:NLAY)-plvl(:,2:NLAY+1))*100,       &
+!     &                  tlyr, qw, qi, qr, qs, qg, qa, cwp, cip, crp,    &
+!     &                  csp, cgp, rew, rei, rer, res, reg, cldtot,      &
+!     &                  snowd, cnvw=cnvw, cnvc=cnvc)
+!      cldcnv = 0.0
+!      elseif ( icmphys .eq. 13 ) then
+!      call cld_eff_rad_v3 (1, IX, 1, NLAY, slmsk, plyr*100,             &
+!     &                  abs(plvl(:,1:NLAY)-plvl(:,2:NLAY+1))*100,       &
+!     &                  tlyr, qw, qi, qr, qs, qg, qa, cwp, cip, crp,    &
+!     &                  csp, cgp, rew, rei, rer, res, reg, cldtot,      &
+!     &                  snowd, cnvw=cnvw, cnvc=cnvc)
+!      cldcnv = 0.0
+!      endif
+
+
+!  ---  find top pressure for each cloud domain for given latitude
+!       ptopc(k,i): top presure of each cld domain (k=1-4 are sfc,L,m,h;
+!  ---  i=1,2 are low-lat (<45 degree) and pole regions)
+
+      do id = 1, 4
+        tem1 = ptopc(id,2) - ptopc(id,1)
+
+        do i =1, IX
+          tem2 = xlat(i) / con_pi        ! if xlat in pi/2 -> -pi/2 range
+!         tem2 = 0.5 - xlat(i)/con_pi    ! if xlat in 0 -> pi range
+
+          ptop1(i,id) = ptopc(id,1) + tem1*max( 0.0, 4.0*abs(tem2)-1.0 )
+        enddo
+      enddo
+
+      do k = 1, NLAY
+        do i = 1, IX
+          clouds(i,k,1) = cldtot(i,k)
+          clouds(i,k,2) = cwp(i,k)
+          clouds(i,k,3) = rew(i,k)
+          clouds(i,k,4) = cip(i,k)
+          clouds(i,k,5) = rei(i,k)
+          clouds(i,k,6) = crp(i,k)
+          clouds(i,k,7) = rer(i,k)
+          clouds(i,k,8) = csp(i,k)
+          clouds(i,k,9) = res(i,k)
+!          clouds(i,k,10) = cgp(i,k)
+!          clouds(i,k,11) = reg(i,k)
+        enddo
+      enddo
+
+
+!  ---  compute low, mid, high, total, and boundary layer cloud fractions
+!       and clouds top/bottom layer indices for low, mid, and high clouds.
+!       The three cloud domain boundaries are defined by ptopc.  The cloud
+!       overlapping method is defined by control flag 'iovr', which may
+!       be different for lw and sw radiation programs.
+
+      call gethml                                                       &
+!  ---  inputs:
+     &     ( plyr, ptop1, cldtot, cldcnv,                               &
+     &       IX,NLAY,                                                   &
+!  ---  outputs:
+     &       clds, mtop, mbot                                           &
+     &     )
+
+
+!
+      return
+!...................................
+      end subroutine progcld6
+!-----------------------------------
+
+!............................................
+!> This subroutine added by G. Thompson specifically to account for
+!! explicit (microphysics-produced) cloud liquid water, cloud ice, and
+!! snow with 100% cloud fraction.  Also, a parameterization for cloud
+!! fraction less than 1.0 but greater than 0.0 follows Mocko and Cotton
+!! (1996) from Sundqvist et al. (1989) with cloud fraction increasing
+!! as RH increases above a critical value.  In locations with non-zero
+!! (but less than 1.0) cloud fraction, there MUST be a value assigned
+!! to cloud liquid water and ice or else there is zero impact in the
+!! RRTMG radiation scheme.
+      subroutine progcld_thompson                                       &
+!  --- inputs
+           ( plyr,plvl,tlyr,qlyr,qstl,rhly,clw,                         &
+             xlat,xlon,slmsk,                                           &
+             ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,                            &
+             IX, NLAY, NLP1,                                            &
+             uni_cld, lmfshal, lmfdeep2, cldcov,                        &
+             re_cloud,re_ice,re_snow,                                   &
+!             lwp_ex, iwp_ex, lwp_fc, iwp_fc, dzlay,                    &
+!             gridkm,                                                    &
+!             cldtot, cldcnv,                                            &
+!   --- outputs:
+!            cld_frac, cld_lwp, cld_reliq, cld_iwp,                     &
+!            cld_reice,cld_rwp, cld_rerain,cld_swp, cld_resnow          &
+             clouds,clds,mtop,mbot                                      &
+           )
+! =================   subprogram documentation block   ================ !
+!                                                                       !
+! subprogram:    progcld_thompson    computes cloud related quantities  !
+!   using Thompson cloud microphysics scheme.                           !
+!                                                                       !
+! abstract:  this program computes cloud fractions from cloud           !
+!   condensates,                                                        !
+!   and computes the low, mid, high, total and boundary layer cloud     !
+!   fractions and the vertical indices of low, mid, and high cloud      !
+!   top and base.  the three vertical cloud domains are set up in the   !
+!   initial subroutine "cld_init".                                      !
+!                                                                       !
+! usage:         call progcld_thompson                                  !
+!                                                                       !
+! subprograms called:   gethml                                          !
+!                                                                       !
+! attributes:                                                           !
+!   language:   fortran 90                                              !
+!   machine:    ibm-sp, sgi                                             !
+!                                                                       !
+!                                                                       !
+!  ====================  definition of variables  ====================  !
+!                                                                       !
+!                                                                       !
+! input variables:                                                      !
+!   plyr  (IX,NLAY) : model layer mean pressure in mb (100Pa)           !
+!   plvl  (IX,NLP1) : model level pressure in mb (100Pa)                !
+!   tlyr  (IX,NLAY) : model layer mean temperature in k                 !
+!   tvly  (IX,NLAY) : model layer virtual temperature in k              !
+!   qlyr  (IX,NLAY) : layer specific humidity in gm/gm                  !
+!   qstl  (IX,NLAY) : layer saturate humidity in gm/gm                  !
+!   rhly  (IX,NLAY) : layer relative humidity (=qlyr/qstl)              !
+!   clw   (IX,NLAY,ntrac) : layer cloud condensate amount               !
+!   xlat  (IX)      : grid latitude in radians, default to pi/2 -> -pi/2!
+!                     range, otherwise see in-line comment              !
+!   xlon  (IX)      : grid longitude in radians  (not used)             !
+!   slmsk (IX)      : sea/land mask array (sea:0,land:1,sea-ice:2)      !
+!   dz    (ix,nlay) : layer thickness (km)                              !
+!   delp  (ix,nlay) : model layer pressure thickness in mb (100Pa)      !
+!   gridkm (IX)     : grid length in km                                 !
+!   IX              : horizontal dimention                              !
+!   NLAY,NLP1       : vertical layer/level dimensions                   !
+!   uni_cld         : logical - true for cloud fraction from shoc       !
+!   lmfshal         : logical - true for mass flux shallow convection   !
+!   lmfdeep2        : logical - true for mass flux deep convection      !
+!   cldcov          : layer cloud fraction (used when uni_cld=.true.    !
+!                                                                       !
+! output variables:                                                     !
+!   cloud profiles:                                                     !
+!      cld_frac  (:,:) - layer total cloud fraction                     !
+!      cld_lwp   (:,:) - layer cloud liq water path       (g/m**2)      !
+!      cld_reliq (:,:) - mean eff radius for liq cloud    (micron)      !
+!      cld_iwp   (:,:) - layer cloud ice water path       (g/m**2)      !
+!      cld_reice (:,:) - mean eff radius for ice cloud    (micron)      !
+!      cld_rwp   (:,:) - layer rain drop water path       not assigned  !
+!      cld_rerain(:,:) - mean eff radius for rain drop    (micron)      !
+!  *** cld_swp   (:,:) - layer snow flake water path      not assigned  !
+!      cld_resnow(:,:) - mean eff radius for snow flake   (micron)      !
+!                                                                       !
+! module variables:                                                     !
+!   ivflip          : control flag of vertical index direction          !
+!                     =0: index from toa to surface                     !
+!                     =1: index from surface to toa                     !
+!   lmfshal         : mass-flux shallow conv scheme flag                !
+!   lmfdeep2        : scale-aware mass-flux deep conv scheme flag       !
+!   lcrick          : control flag for eliminating CRICK                !
+!                     =t: apply layer smoothing to eliminate CRICK      !
+!                     =f: do not apply layer smoothing                  !
+!   lcnorm          : control flag for in-cld condensate                !
+!                     =t: normalize cloud condensate                    !
+!                     =f: not normalize cloud condensate                !
+!                                                                       !
+!  ====================    end of description    =====================  !
+!
+      use module_mp_thompson_new, only : cfflag_thom
+
+      implicit none
+!  ---  inputs
+      integer,  intent(in) :: IX, NLAY, NLP1
+      integer,  intent(in) :: ntrac, ntcw, ntiw, ntrw, ntsw, ntgl
+      logical, intent(in)  :: uni_cld, lmfshal, lmfdeep2
+      real (kind=kind_phys), dimension(:,:), intent(in) :: plvl, plyr,  &
+     &       tlyr, qlyr, qstl, rhly, cldcov, re_cloud, re_ice, re_snow
+!      real (kind=kind_phys), dimension(:,:), intent(in) :: delp, dz
+!      real (kind=kind_phys), dimension(:,:), intent(in) :: dzlay
+!      real (kind=kind_phys), dimension(:), intent(inout) ::             &
+!     &       lwp_ex, iwp_ex, lwp_fc, iwp_fc
+      real (kind=kind_phys), dimension(:,:,:), intent(in) :: clw
+      real (kind=kind_phys), dimension(:),   intent(in) :: xlat, xlon,  &
+     &       slmsk
+!      real(kind=kind_phys), dimension(:), intent(in) :: gridkm
+!  --- inputs/outputs
+!      real (kind=kind_phys), dimension(:,:), intent(inout) ::            &
+!     &   cld_frac, cld_lwp, cld_reliq, cld_iwp, cld_reice,               &
+!     &   cld_rwp, cld_rerain, cld_swp, cld_resnow
+      real (kind=kind_phys), dimension(:,:,:), intent(out) :: clouds
+      real (kind=kind_phys), dimension(:,:),   intent(out) :: clds
+      integer,               dimension(:,:),   intent(out) :: mtop,mbot
+!  ---  local variables:
+      real (kind=kind_phys), dimension(IX,NLAY) :: cldtot, cldcnv,      &
+     &       cwp, cip, crp, csp, rew, rei, res, rer, qsum
+      real (kind=kind_phys), dimension(IX,NLAY) :: dz, delp
+      real (kind=kind_phys), dimension(NLAY) :: cldfra1d, qv1d,         &
+     &                                 qc1d, qi1d, qs1d, dz1d, p1d, t1d,&
+     &                                 rh1d, qst1d
+      real(kind=kind_phys) :: gridkm
+      real (kind=kind_phys), dimension(IX,NK_CLDS+1) :: ptop1
+      real (kind=kind_phys) :: clwmin, tem1, tem2
+      real (kind=kind_phys) :: corr, xland, snow_mass_factor
+      real (kind=kind_phys), parameter :: max_relh = 1.5
+      real (kind=kind_phys), parameter :: snow_max_radius = 130.0
+      integer :: i, k, k2, id, nf, idx_rei
+!
+!===> ... begin here
+!
+      clwmin = 1.0E-9
+      do k = 1, NLAY
+        do i = 1, IX
+          cldtot(i,k) = 0.0
+          cldcnv(i,k) = 0.0
+          cwp   (i,k) = 0.0
+          cip   (i,k) = 0.0
+          crp   (i,k) = 0.0
+          csp   (i,k) = 0.0
+          rew   (i,k) = re_cloud(i,k)
+          rei   (i,k) = re_ice(i,k)
+          rer   (i,k) = rrain_def            ! default rain radius to 1000 micron
+          res   (i,k) = re_snow(i,K)
+          qsum  (i,k) = clw(i,k,ntcw) + clw(i,k,ntiw) + clw(i,k,ntsw)
+        enddo
+      enddo
+!> - Compute cloud liquid/ice condensate path in \f$ g/m^2 \f$ .
+!> - Since using Thompson MP, assume 1 percent of snow is actually in
+!!   ice sizes.
+      if ( ivflip == 0 ) then          ! input data from toa to sfc
+          do k = 1, NLAY
+            do i = 1, IX
+              delp(i,k) = plvl(i,k+1) - plvl(i,k)
+            enddo
+          enddo
+      else                             ! input data from sfc to toa
+          do k = 1, NLAY
+            do i = 1, IX
+              delp(i,k) = plvl(i,k) - plvl(i,k+1)
+            enddo
+          enddo
+      endif
+
+      do k = 1, NLAY-1
+        do i = 1, IX
+          cwp(i,k) = max(0.0, clw(i,k,ntcw) * gfac * delp(i,k))
+          crp(i,k) = 0.0
+          snow_mass_factor = 0.90
+          cip(i,k) = max(0.0, (clw(i,k,ntiw)                            &
+     &            +(1.0-snow_mass_factor)*clw(i,k,ntsw))*gfac*delp(i,k))
+          if (re_snow(i,k) .gt. snow_max_radius)then
+             snow_mass_factor = min(snow_mass_factor,                   &
+     &                              (snow_max_radius/re_snow(i,k))      &
+     &                             *(snow_max_radius/re_snow(i,k)))
+             res(i,k) = snow_max_radius
+          endif
+          csp(i,k) = max(0.,snow_mass_factor*clw(i,k,ntsw)*gfac*delp(i,k))
+        enddo
+      enddo
+
+!> - Sum the liquid water and ice paths that come from explicit micro
+!      do i = 1, IX
+!         lwp_ex(i) = 0.0
+!         iwp_ex(i) = 0.0
+!         do k = 1, NLAY-1
+!            lwp_ex(i) = lwp_ex(i) + cwp(i,k)
+!            iwp_ex(i) = iwp_ex(i) + cip(i,k) + csp(i,k)
+!         enddo
+!      enddo
+
+!> - Now determine the cloud fraction.  Here, we will use the scheme of
+!!   G. Thompson that implements a variannt of Mocko and Cotton (1995)
+!!   based on work within HWRF and WRF.  Where the bulk microphysics
+!!   scheme already has explicit clouds, assume cloud fraction of one,
+!!   but, otherwise, use a Sundqvist et al (1989) scheme and RH-critical
+!!   to account for sub-grid-scale clouds, include those in the water
+!!   and ice paths _seen_ by the radiation scheme, but do not actually
+!!   include these fake clouds into anything other than radiation.
+      if ( cfflag_thom .eq. 1 ) then
+        call cloud_fraction_XuRandall                                   &
+               ( IX, NLAY, plyr, qsum, rhly, qstl,                      &
+                 lmfshal, lmfdeep2, cldtot )
+      elseif ( cfflag_thom .eq. 2 ) then
+!        do i = 1, IX
+!          if (slmsk(i)-0.5 .gt. 0.5 .and. slmsk(i)+0.5 .lt. 1.5) then
+!             xland = 1.0
+!          else
+!             xland = 2.0
+!          endif
+!          if (ivflip .eq. 1) then
+!            do k = 1, NLAY
+!               qv1d(k) = qlyr(i,k)
+!               qc1d(k) = max(0.0, clw(i,k,ntcw))
+!               qi1d(k) = max(0.0, clw(i,k,ntiw))
+!               qs1d(k) = max(0.0, clw(i,k,ntsw))
+!               rh1d(k) = rhly(i,k)
+!               qst1d(k)= qstl(i,k)
+!               p1d(k) = plyr(i,k)*100.0
+!               t1d(k) = tlyr(i,k)
+!            enddo
+!          else
+!            do k = NLAY, 1, -1
+!               k2 = NLAY - k + 1
+!               qv1d(k2) = qlyr(i,k)
+!               qc1d(k2) = max(0.0, clw(i,k,ntcw))
+!               qi1d(k2) = max(0.0, clw(i,k,ntiw))
+!               qs1d(k2) = max(0.0, clw(i,k,ntsw))
+!               rh1d(k2) = rhly(i,k)
+!               qst1d(k2)= qstl(i,k)
+!               p1d(k2) = plyr(i,k)*100.0
+!               t1d(k2) = tlyr(i,k)
+!            enddo
+!          endif
+!          call cal_cldfra3(cldfra1d, qv1d, qc1d, qi1d, qs1d, dz1d,      &
+!     &                     p1d, t1d, xland, gridkm(i),                  &
+!     &                     .false., max_relh, 1, nlay, .false.)
+!          do k = 1, NLAY
+!            cldtot(i,k) = cldfra1d(k)
+!            if (qc1d(k).gt.clwmin .and. cldfra1d(k).lt.ovcst) then
+!               cwp(i,k) = qc1d(k) * gfac * delp(i,k)
+!               if ((xland-1.5).GT.0.) then
+!                  rew(i,k) = 9.5   ! over ocean
+!               else
+!                  rew(i,k) = 5.5   ! over land
+!               endif
+!            endif
+!            if (qi1d(k).gt.clwmin .and. cldfra1d(k).lt.ovcst) then
+!               cip(i,k) = qi1d(k) * gfac * delp(i,k)
+!               idx_rei = int(t1d(k)-179.)
+!               idx_rei = min(max(idx_rei,1),75)
+!               corr = t1d(k) - int(t1d(k))
+!               rei(i,K) = max(5.0, retab(idx_rei)*(1.-corr) +           &
+!     &                                 retab(idx_rei+1)*corr)
+!            endif
+!          enddo
+!        enddo
+        do i = 1, IX
+          do k = 1, NLAY
+            cldtot(i,k) = cldcov(i,k)
+          enddo
+        enddo
+      endif
+
+!  ---  find top pressure for each cloud domain for given latitude
+!       ptopc(k,i): top presure of each cld domain (k=1-4 are sfc,L,m,h;
+!  ---  i=1,2 are low-lat (<45 degree) and pole regions)
+
+      do id = 1, 4
+        tem1 = ptopc(id,2) - ptopc(id,1)
+
+        do i =1, IX
+          tem2 = xlat(i) / con_pi        ! if xlat in pi/2 -> -pi/2 range
+!         tem2 = 0.5 - xlat(i)/con_pi    ! if xlat in 0 -> pi range
+
+          ptop1(i,id) = ptopc(id,1) + tem1*max( 0.0, 4.0*abs(tem2)-1.0 )
+        enddo
+      enddo
+
+      do k = 1, NLAY
+        do i = 1, IX
+!          cld_frac(i,k)   = cldtot(i,k)
+!          cld_lwp(i,k)    = cwp(i,k)
+!          cld_reliq(i,k)  = rew(i,k)
+!          cld_iwp(i,k)    = cip(i,k)
+!          cld_reice(i,k)  = rei(i,k)
+!          cld_rwp(i,k)    = crp(i,k)  ! added for Thompson
+!          cld_rerain(i,k) = rer(i,k)
+!          cld_swp(i,k)    = csp(i,k)  ! added for Thompson
+!          cld_resnow(i,k) = res(i,k)
+          clouds(i,k,1) = cldtot(i,k)
+          clouds(i,k,2) = cwp(i,k)
+          clouds(i,k,3) = rew(i,k)
+          clouds(i,k,4) = cip(i,k)
+          clouds(i,k,5) = rei(i,k)
+          clouds(i,k,6) = crp(i,k)
+          clouds(i,k,7) = rer(i,k)
+          clouds(i,k,8) = csp(i,k)
+          clouds(i,k,9) = res(i,k)
+        enddo
+      enddo
+
+!  ---  compute low, mid, high, total, and boundary layer cloud fractions
+!       and clouds top/bottom layer indices for low, mid, and high clouds.
+!       The three cloud domain boundaries are defined by ptopc.  The cloud
+!       overlapping method is defined by control flag 'iovr', which may
+!       be different for lw and sw radiation programs.
+
+      call gethml                                                       &
+!  ---  inputs:
+     &     ( plyr, ptop1, cldtot, cldcnv,                               &
+     &       IX,NLAY,                                                   &
+!  ---  outputs:
+     &       clds, mtop, mbot                                           &
+     &     )
+
+!> - Sum the liquid water and ice paths that come from fractional clouds
+!      do i = 1, IX
+!         lwp_fc(i) = 0.0
+!         iwp_fc(i) = 0.0
+!         do k = 1, NLAY
+!            lwp_fc(i) = lwp_fc(i) + cwp(i,k)
+!            iwp_fc(i) = iwp_fc(i) + cip(i,k) + csp(i,k)
+!         enddo
+!         lwp_fc(i) = MAX(0.0, lwp_fc(i) - lwp_ex(i))
+!         iwp_fc(i) = MAX(0.0, iwp_fc(i) - iwp_ex(i))
+!         lwp_fc(i) = lwp_fc(i)*1.E-3
+!         iwp_fc(i) = iwp_fc(i)*1.E-3
+!         lwp_ex(i) = lwp_ex(i)*1.E-3
+!         iwp_ex(i) = iwp_ex(i)*1.E-3
+!      enddo
+!
+      return
+!............................................
+      end subroutine progcld_thompson
+!............................................
+
+!-----------------------------------
+      subroutine progcld_gce                                            &
+!...................................
+!
+!  ---  inputs:
+     &     ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,clw,                    &
+     &       xlat,xlon,slmsk,ntrac,                                     &
+     &       effr_cw,effr_iw,effr_sw,effr_rw,effr_in,                   &
+     &       IX, NLAY, NLP1, lmfshal, lmfdeep2,                         &
+!  ---  outputs:
+     &       clouds,clds,mtop,mbot,cldcov                               &
+     &      )
+
+! =================   subprogram documentation block   ================ !
+!                                                                       !
+! subprogram:    progcld_gce   computes cloud related quantities using  !
+!   Goddard (GCE) 4ICE MP prognostic cloud microphysics scheme. Moist   !
+!   species from MP are fed into the corresponding arrays for           !
+!   calcuation of     !
+!                                                                       !
+! abstract:  this program computes cloud fractions from cloud           !
+!   condensates, calculates liquid/ice cloud droplet effective radius,  !
+!   and computes the low, mid, high, total and boundary layer cloud     !
+!   fractions and the vertical indices of low, mid, and high cloud      !
+!   top and base.  the three vertical cloud domains are set up in the   !
+!   initial subroutine "cld_init".                                      !
+!                                                                       !
+! usage:         call progcld_gce                                       !
+!                                                                       !
+! subprograms called:   gethml                                          !
+!                                                                       !
+! attributes:                                                           !
+!   language:   fortran 90                                              !
+!   machine:    ibm-sp, sgi                                             !
+!                                                                       !
+!                                                                       !
+!  ====================  definition of variables  ====================  !
+!                                                                       !
+! input variables:                                                      !
+!   plyr  (IX,NLAY) : model layer mean pressure in mb (100Pa)           !
+!   plvl  (IX,NLP1) : model level pressure in mb (100Pa)                !
+!   tlyr  (IX,NLAY) : model layer mean temperature in k                 !
+!   tvly  (IX,NLAY) : model layer virtual temperature in k              !
+!   qlyr  (IX,NLAY) : layer specific humidity in gm/gm                  !
+!   qstl  (IX,NLAY) : layer saturate humidity in gm/gm                  !
+!   rhly  (IX,NLAY) : layer relative humidity (=qlyr/qstl)              !
+!   clw   (IX,NLAY,NTRAC) : layer cloud condensate amount               !
+!   xlat  (IX)      : grid latitude in radians, default to pi/2 -> -pi/2!
+!                     range, otherwise see in-line comment              !
+!   xlon  (IX)      : grid longitude in radians  (not used)             !
+!   slmsk (IX)      : sea/land mask array (sea:0,land:1,sea-ice:2)      !
+!   ntrac           : number of tracers
+!   ntcw            : index for liquid water
+!   ntiw            : index for ice water
+!   ntrw            : index for rain water
+!   ntsw            : index for snow water
+!   ntgl            : index for graupel
+!   nthl            : index for hail
+!   cldcov(IX,NLAY) : total cloud fraction
+!   effr_cw(IX,NLAY): effective radius of liquid water (mm)             !
+!   effr_iw(IX,NLAY): effective radius of ice water (mm)                !
+!   effr_rw(IX,NLAY): effective radius of rain water (mm)               !
+!   effr_sw(IX,NLAY): effective radius of snow water (mm)               !
+!   IX              : horizontal dimention                              !
+!   NLAY,NLP1       : vertical layer/level dimensions                   !
+!                                                                       !
+! output variables:                                                     !
+!   clouds(IX,NLAY,NF_CLDS) : cloud profiles                            !
+!      clouds(:,:,1) - layer total cloud fraction                       !
+!      clouds(:,:,2) - layer cloud liq water path         (g/m**2)      !
+!      clouds(:,:,3) - mean eff radius for liq cloud      (micron)      !
+!      clouds(:,:,4) - layer cloud ice water path         (g/m**2)      !
+!      clouds(:,:,5) - mean eff radius for ice cloud      (micron)      !
+!      clouds(:,:,6) - layer rain drop water path         not assigned  !
+!      clouds(:,:,7) - mean eff radius for rain drop      (micron)      !
+!  *** clouds(:,:,8) - layer snow flake water path        not assigned  !
+!      clouds(:,:,9) - mean eff radius for snow flake     (micron)      !
+!  *** fu's scheme need to be normalized by snow density (g/m**3/1.0e6) !
+!   clds  (IX,5)    : fraction of clouds for low, mid, hi, tot, bl      !
+!   mtop  (IX,3)    : vertical indices for low, mid, hi cloud tops      !
+!   mbot  (IX,3)    : vertical indices for low, mid, hi cloud bases     !
+!                                                                       !
+! module variables:                                                     !
+!   ivflip          : control flag of vertical index direction          !
+!                     =0: index from toa to surface                     !
+!                     =1: index from surface to toa                     !
+!   lsashal         : control flag for shallow convection               !
+!   lcrick          : control flag for eliminating CRICK                !
+!                     =t: apply layer smoothing to eliminate CRICK      !
+!                     =f: do not apply layer smoothing                  !
+!   lcnorm          : control flag for in-cld condensate                !
+!                     =t: normalize cloud condensate                    !
+!                     =f: not normalize cloud condensate                !
+!                                                                       !
+!  ====================    end of description    =====================  !
+!
+      use radn, only : ntcw, ntiw, ntrw, ntsw, ntgl, nthl
+      implicit none
+
+!  ---  inputs
+      integer,  intent(in) :: IX, NLAY, NLP1
+      integer,  intent(in) :: ntrac
+
+      real (kind=kind_phys), dimension(:,:), intent(in) :: plvl, plyr,  &
+     &       tlyr, tvly, qlyr, qstl, rhly
+
+
+      real (kind=kind_phys), dimension(:,:,:), intent(in) :: clw
+      real (kind=kind_phys), dimension(:),   intent(in) :: xlat, xlon,  &
+     &       slmsk
+
+      real (kind=kind_phys), dimension(:,:), intent(in) :: effr_cw,     &
+     &       effr_iw, effr_rw, effr_sw
+
+      logical, intent(in) :: effr_in, lmfshal, lmfdeep2
+
+!  ---  outputs
+      real (kind=kind_phys), dimension(:,:,:), intent(out) :: clouds
+
+      real (kind=kind_phys), dimension(:,:),   intent(out) :: clds
+      real (kind=kind_phys), dimension(:,:),   intent(out) :: cldcov
+
+      integer,               dimension(:,:),   intent(out) :: mtop,mbot
+
+!  ---  local variables:
+      real (kind=kind_phys), dimension(IX,NLAY) :: cldcnv,              &
+     &       cwp, cip, crp, csp, rew, rei, res, rer, delp, tem2d, qsum
+
+      real (kind=kind_phys) :: ptop1(IX,NK_CLDS+1)
+
+      real (kind=kind_phys) :: clwmin, clwm, clwt, onemrh, value,       &
+     &       tem1, tem2, tem3
+
+      integer :: i, k, id, nf
+
+!
+!===> ... begin here
+!
+      do nf=1,nf_clds
+        do k=1,nlay
+          do i=1,ix
+            clouds(i,k,nf) = 0.0
+          enddo
+        enddo
+      enddo
+!     clouds(:,:,:) = 0.0
+
+      do k = 1, NLAY
+        do i = 1, IX
+          cldcnv(i,k) = 0.0
+          cwp   (i,k) = 0.0
+          cip   (i,k) = 0.0
+          crp   (i,k) = 0.0
+          csp   (i,k) = 0.0
+          if ( effr_in ) then
+            rew (i,k) = effr_cw (i,k)
+            rei (i,k) = effr_iw (i,k)
+            rer (i,k) = effr_rw (i,k)
+            res (i,k) = effr_sw (i,k)
+          else
+            rew (i,k) = reliq_def            ! default liq radius to 10 micron
+            rei (i,k) = reice_def            ! default ice radius to 50 micron
+            rer (i,k) = rrain_def            ! default rain radius to 1000 micron
+            res (i,k) = rsnow_def            ! default snow radius to 250 micron
+          endif
+          tem2d (i,k) = min( 1.0, max( 0.0, (con_ttp-tlyr(i,k))*0.05 ) )
+          cldcov(i,k) = 0.0
+          qsum  (i,k) = clw(i,k,ntcw)+clw(i,k,ntiw)+clw(i,k,ntrw)+      &
+                        clw(i,k,ntsw)+clw(i,k,ntgl)+clw(i,k,nthl)
+        enddo
+      enddo
+
+!  ---  find top pressure for each cloud domain for given latitude
+!       ptopc(k,i): top presure of each cld domain (k=1-4 are sfc,L,m,h;
+!  ---  i=1,2 are low-lat (<45 degree) and pole regions)
+
+      do id = 1, 4
+        tem1 = ptopc(id,2) - ptopc(id,1)
+
+        do i =1, IX
+          tem2 = xlat(i) / con_pi        ! if xlat in pi/2 -> -pi/2 range
+!         tem2 = 0.5 - xlat(i)/con_pi    ! if xlat in 0 -> pi range
+
+          ptop1(i,id) = ptopc(id,1) + tem1*max( 0.0, 4.0*abs(tem2)-1.0 )
+        enddo
+      enddo
+
+!  ---  compute liquid/ice condensate path in g/m**2
+
+      if ( ivflip == 0 ) then          ! input data from toa to sfc
+        do k = 1, NLAY
+          do i = 1, IX
+            delp(i,k) = plvl(i,k+1) - plvl(i,k)
+            cwp(i,k) = max(0.0, clw(i,k,ntcw) * gfac * delp(i,k))
+            cip(i,k) = max(0.0, clw(i,k,ntiw) * gfac * delp(i,k))
+            crp(i,k) = max(0.0, clw(i,k,ntrw) * gfac * delp(i,k))
+            csp(i,k) = max(0.0, ( clw(i,k,ntsw)+clw(i,k,ntgl)+          &
+     &                 clw(i,k,nthl) ) * gfac * delp(i,k))
+          enddo
+        enddo
+      else                             ! input data from sfc to toa
+        do k = 1, NLAY
+          do i = 1, IX
+            delp(i,k) = plvl(i,k) - plvl(i,k+1)
+            cwp(i,k) = max(0.0, clw(i,k,ntcw) * gfac * delp(i,k))
+            cip(i,k) = max(0.0, clw(i,k,ntiw) * gfac * delp(i,k))
+            crp(i,k) = max(0.0, clw(i,k,ntrw) * gfac * delp(i,k))
+            csp(i,k) = max(0.0, ( clw(i,k,ntsw)+clw(i,k,ntgl)+          &
+     &                 clw(i,k,nthl) ) * gfac * delp(i,k))
+          enddo
+        enddo
+      endif                            ! end_if_ivflip
+
+!  --- calculate cloud fraction :
+      call cloud_fraction_XuRandall                                     &
+               ( IX, NLAY, plyr, qsum, rhly, qstl,                      &
+                 lmfshal, lmfdeep2, cldcov )
+
+!  ---  find top pressure for each cloud domain for given latitude
+!       ptopc(k,i): top presure of each cld domain (k=1-4 are sfc,L,m,h;
+!  ---  i=1,2 are low-lat (<45 degree) and pole regions)
+
+      do id = 1, 4
+        tem1 = ptopc(id,2) - ptopc(id,1)
+
+        do i =1, IX
+          tem2 = xlat(i) / con_pi        ! if xlat in pi/2 -> -pi/2 range
+!         tem2 = 0.5 - xlat(i)/con_pi    ! if xlat in 0 -> pi range
+
+          ptop1(i,id) = ptopc(id,1) + tem1*max( 0.0, 4.0*abs(tem2)-1.0 )
+        enddo
+      enddo
+
+!  ---  effective liquid cloud droplet radius over land
+
+      if ( .not. effr_in ) then
+      do i = 1, IX
+        if (nint(slmsk(i)) == 1) then
+          do k = 1, NLAY
+            rew(i,k) = 5.0 + 5.0 * tem2d(i,k)
+          enddo
+        endif
+      enddo
+      endif
+
+      do k = 1, NLAY
+        do i = 1, IX
+          if (cldcov(i,k) < climit) then
+            cldcov(i,k) = 0.0 
+            cwp(i,k)    = 0.0
+            cip(i,k)    = 0.0
+            crp(i,k)    = 0.0
+            csp(i,k)    = 0.0
+          endif
+        enddo
+      enddo
+
+      if ( lcnorm ) then
+        do k = 1, NLAY
+          do i = 1, IX
+            if (cldcov(i,k) >= climit) then
+              tem1 = 1.0 / max(climit2, cldcov(i,k))
+              cwp(i,k) = cwp(i,k) * tem1
+              cip(i,k) = cip(i,k) * tem1
+              crp(i,k) = crp(i,k) * tem1
+              csp(i,k) = csp(i,k) * tem1
+            endif
+          enddo
+        enddo
+      endif
+
+!  ---  effective ice cloud droplet radius
+
+      if ( .not. effr_in ) then
+      do k = 1, NLAY
+        do i = 1, IX
+          tem2 = tlyr(i,k) - con_ttp
+
+          if (cip(i,k) > 0.0) then
+            tem3 = gord * cip(i,k) * plyr(i,k) / (delp(i,k)*tvly(i,k))
+
+            if (tem2 < -50.0) then
+              rei(i,k) = (1250.0/9.917) * tem3 ** 0.109
+            elseif (tem2 < -40.0) then
+              rei(i,k) = (1250.0/9.337) * tem3 ** 0.08
+            elseif (tem2 < -30.0) then
+              rei(i,k) = (1250.0/9.208) * tem3 ** 0.055
+            else
+              rei(i,k) = (1250.0/9.387) * tem3 ** 0.031
+            endif
+!           rei(i,k)   = max(20.0, min(rei(i,k), 300.0))
+!           rei(i,k)   = max(10.0, min(rei(i,k), 100.0))
+            rei(i,k)   = max(10.0, min(rei(i,k), 150.0))
+!           rei(i,k)   = max(5.0,  min(rei(i,k), 130.0))
+          endif
+        enddo
+      enddo
+      endif
+
+!
+      do k = 1, NLAY
+        do i = 1, IX
+          clouds(i,k,1) = cldcov(i,k)
+          clouds(i,k,2) = cwp(i,k)
+          clouds(i,k,3) = rew(i,k)
+          clouds(i,k,4) = cip(i,k)
+          clouds(i,k,5) = rei(i,k)
+          clouds(i,k,6) = crp(i,k) 
+          clouds(i,k,7) = rer(i,k)
+          clouds(i,k,8) = csp(i,k)
+          clouds(i,k,9) = res(i,k)
+        enddo
+      enddo
+
+
+!  ---  compute low, mid, high, total, and boundary layer cloud fractions
+!       and clouds top/bottom layer indices for low, mid, and high clouds.
+!       The three cloud domain boundaries are defined by ptopc.  The cloud
+!       overlapping method is defined by control flag 'iovr', which may
+!       be different for lw and sw radiation programs.
+
+      call gethml                                                       &
+!  ---  inputs:
+     &     ( plyr, ptop1, cldcov, cldcnv,                               &
+     &       IX,NLAY,                                                   &
+!  ---  outputs:
+     &       clds, mtop, mbot                                           &
+     &     )
+
+
+!
+      return
+!...................................
+      end subroutine progcld_gce
+!-----------------------------------
 
 !-----------------------------------
       subroutine progclduni                                             &
@@ -3786,6 +4759,644 @@
 !...................................
       end subroutine gethml
 !-----------------------------------
+
+
+!-----------------------------------
+!> Cloud fraction scheme by G. Thompson (NCAR-RAL), not intended for
+!! combining with any cumulus or shallow cumulus parameterization
+!! scheme cloud fractions.  This is intended as a stand-alone for
+!! cloud fraction and is relatively good at getting widespread stratus
+!! and stratoCu without caring whether any deep/shallow Cu param schemes
+!! is making sub-grid-spacing clouds/precip.  Under the hood, this
+!! scheme follows Mocko and Cotton (1995) in application of the
+!! Sundqvist et al (1989) scheme but using a grid-scale dependent
+!! RH threshold, one each for land v. ocean points based on
+!! experiences with HWRF testing.
+      SUBROUTINE cal_cldfra3(CLDFRA, qv, qc, qi, qs, dz,                &
+     &                 p, t, XLAND, gridkm,                             &
+     &                 modify_qvapor, max_relh,                         &
+     &                 kts,kte, debug_flag)
+!
+      USE module_mp_thompson_new   , ONLY : rsif, rslf
+      IMPLICIT NONE
+!
+      INTEGER, INTENT(IN):: kts, kte
+      LOGICAL, INTENT(IN):: modify_qvapor
+      REAL, DIMENSION(kts:kte), INTENT(INOUT):: qv, qc, qi, cldfra
+      REAL, DIMENSION(kts:kte), INTENT(IN):: p, t, dz, qs
+      REAL, INTENT(IN):: gridkm, XLAND, max_relh
+      LOGICAL, INTENT(IN):: debug_flag
+
+!..Local vars.
+      REAL:: RH_00L, RH_00O, RH_00
+      REAL:: entrmnt=0.5
+      INTEGER:: k
+      REAL:: TC, qvsi, qvsw, RHUM, delz, var_temp
+      REAL, DIMENSION(kts:kte):: qvs, rh, rhoa
+      integer:: ndebug = 0
+
+      character*512 dbg_msg
+
+!+---+
+
+!..Initialize cloud fraction, compute RH, and rho-air.
+
+         DO k = kts,kte
+            CLDFRA(K) = 0.0
+
+            qvsw = rslf(P(k), t(k))
+            qvsi = rsif(P(k), t(k))
+
+            tc = t(k) - 273.15
+            if (tc .ge. -12.0) then
+               qvs(k) = qvsw
+            elseif (tc .lt. -35.0) then
+               qvs(k) = qvsi
+            else
+               qvs(k) = qvsw - (qvsw-qvsi)*(-12.0-tc)/(-12.0+35.)
+            endif
+
+            if (modify_qvapor) then
+               if (qc(k).gt.1.E-8) then
+                  qv(k) = MAX(qv(k), qvsw)
+                  qvs(k) = qvsw
+               endif
+               if (qc(k).le.1.E-8 .and. qi(k).ge.1.E-9) then
+                  qv(k) = MAX(qv(k), qvsi*1.005)    !..To ensure a tiny bit ice supersaturated
+                  qvs(k) = qvsi
+               endif
+            endif
+
+            rh(k) = MAX(0.01, qv(k)/qvs(k))
+            rhoa(k) = p(k)/(287.0*t(k))
+
+         ENDDO
+
+
+!..First cut scale-aware. Higher resolution should require closer to
+!.. saturated grid box for higher cloud fraction.  Simple functions
+!.. chosen based on Mocko and Cotton (1995) starting point and desire
+!.. to get near 100% RH as grid spacing moves toward 1.0km, but higher
+!.. RH over ocean required as compared to over land.
+
+      DO k = kts,kte
+
+         delz = MAX(100., dz(k))
+         RH_00L = 0.77+MIN(0.22,SQRT(1./(50.0+gridkm*gridkm*delz*0.01)))
+         RH_00O = 0.85+MIN(0.14,SQRT(1./(50.0+gridkm*gridkm*delz*0.01)))
+         RHUM = rh(k)
+
+         if (qc(k).ge.1.E-6 .or. qi(k).ge.1.E-7                         &
+     &                    .or. (qs(k).gt.1.E-6 .and. t(k).lt.273.)) then
+            CLDFRA(K) = 1.0
+         elseif (((qc(k)+qi(k)).gt.1.E-10) .and.                        &
+     &                                    ((qc(k)+qi(k)).lt.1.E-6)) then
+            var_temp = MIN(0.99, 0.1*(11.0 + log10(qc(k)+qi(k))))
+            CLDFRA(K) = var_temp*var_temp
+         else
+
+            IF ((XLAND-1.5).GT.0.) THEN                                  !--- Ocean
+               RH_00 = RH_00O
+            ELSE                                                         !--- Land
+               RH_00 = RH_00L
+            ENDIF
+
+            tc = MAX(-80.0, t(k) - 273.15)
+            if (tc .lt. -24.0) RH_00 = RH_00L
+
+            if (tc .gt. 20.0) then
+               CLDFRA(K) = 0.0
+            elseif (tc .ge. -24.0) then
+               RHUM = MIN(rh(k), 1.0)
+               var_temp = SQRT(SQRT((1.001-RHUM)/(1.001-RH_00)))
+               CLDFRA(K) = MAX(0., 1.0-var_temp)
+            else
+               if (max_relh.gt.1.12 .or. (.NOT.(modify_qvapor)) ) then
+!..For HRRR model, the following look OK.
+                  RHUM = MIN(rh(k), 1.45)
+                  RH_00 = RH_00 + (1.45-RH_00)*(-24.0-tc)/(-24.0+85.)
+                  var_temp = SQRT(SQRT((1.46-RHUM)/(1.46-RH_00)))
+                  CLDFRA(K) = MAX(0., 1.0-var_temp)
+               else
+!..but for the GFS model, RH is way lower.
+                  RHUM = MIN(rh(k), 1.05)
+                  RH_00 = RH_00 + (1.05-RH_00)*(-24.0-tc)/(-24.0+85.)
+                  var_temp = SQRT(SQRT((1.06-RHUM)/(1.06-RH_00)))
+                  CLDFRA(K) = MAX(0., 1.0-var_temp)
+               endif
+            endif
+            if (CLDFRA(K).gt.0.) CLDFRA(K)=MAX(0.01,MIN(CLDFRA(K),0.99))
+
+         endif
+         if (cldfra(k).gt.0.0 .and. p(k).lt.7000.0) CLDFRA(K) = 0.0
+      ENDDO
+
+      call find_cloudLayers(qvs, cldfra, T, P, Dz, entrmnt,             &
+     &                      debug_flag, qc, qi, qs, kts,kte)
+
+!..Do a final total column adjustment since we may have added more than 1 mm
+!.. LWP/IWP for multiple cloud decks.
+
+      call adjust_cloudFinal(cldfra, qc, qi, rhoa, dz, kts,kte)
+
+!..Intended for cold start model runs, we use modify_qvapor to ensure that cloudy
+!.. areas are actually saturated such that the inserted clouds do not evaporate a
+!.. timestep later.
+
+      if (modify_qvapor) then
+         DO k = kts,kte
+            if (cldfra(k).gt.0.2 .and. cldfra(k).lt.1.0) then
+               qv(k) = MAX(qv(k),qvs(k))
+            endif
+         ENDDO
+      endif
+
+!...................................                                    !
+      END SUBROUTINE cal_cldfra3
+!-----------------------------------                                    !
+
+
+!-----------------------------------                                    !
+!>From cloud fraction array, find clouds of multi-level depth and compute
+!! a reasonable value of LWP or IWP that might be contained in that depth,
+!! unless existing LWC/IWC is already there.
+      SUBROUTINE find_cloudLayers(qvs1d, cfr1d, T1d, P1d, Dz1d, entrmnt,&
+     &                            debugfl, qc1d, qi1d, qs1d, kts,kte)
+!
+      IMPLICIT NONE
+!
+      INTEGER, INTENT(IN):: kts, kte
+      LOGICAL, INTENT(IN):: debugfl
+      REAL, INTENT(IN):: entrmnt
+      REAL, DIMENSION(kts:kte), INTENT(IN):: qs1d,qvs1d,T1d,P1d,Dz1d
+      REAL, DIMENSION(kts:kte), INTENT(INOUT):: cfr1d, qc1d, qi1d
+
+!..Local vars.
+      REAL, DIMENSION(kts:kte):: theta
+      REAL:: theta1, theta2, delz
+      INTEGER:: k, k2, k_tropo, k_m12C, k_cldb, k_cldt, kbot, k_p200
+      LOGICAL:: in_cloud
+      character*512 dbg_msg
+
+!+---+
+
+      k_m12C = 0
+      k_p200 = 0
+      DO k = kte, kts, -1
+         theta(k) = T1d(k)*((100000.0/P1d(k))**(287.05/1004.))
+         if (T1d(k)-273.16 .gt. -12.0 .and. P1d(k).gt.10100.0)          &
+     &                   k_m12C = MAX(k_m12C, k)
+         if (P1d(k).gt.19999.0 .and. k_p200.eq.0) k_p200 = k
+      ENDDO
+      if (k_m12C .le. kts) k_m12C = kts
+
+!..Find tropopause height, best surrogate, because we would not really
+!.. wish to put fake clouds into the stratosphere.  The 10/1500 ratio
+!.. d(Theta)/d(Z) approximates a vertical line on typical SkewT chart
+!.. near typical (mid-latitude) tropopause height.  Since messy data
+!.. could give us a false signal of such a transition, do the check over 
+!.. three K-level change, not just a level-to-level check.  This method
+!.. has potential failure in arctic-like conditions with extremely low
+!.. tropopause height, as would any other diagnostic, so ensure resulting
+!.. k_tropo level is above 700hPa.
+
+      if ( (kte-k_p200) .lt. 3) k_p200 = kte-3
+      DO k = k_p200-2, kts, -1
+         theta1 = theta(k)
+         theta2 = theta(k+2)
+         delz = 0.5*dz1d(k) + dz1d(k+1) + 0.5*dz1d(k+2)
+         if ( (((theta2-theta1)/delz).lt.10./1500.) .OR.                &
+     &                       P1d(k).gt.70000.) EXIT
+      ENDDO
+      k_tropo = MAX(kts+2, MIN(k+2, kte-1))
+
+      if (k_tropo .gt. k_p200) then
+         DO k = kte-3, k_p200-2, -1
+            theta1 = theta(k)
+            theta2 = theta(k+2)
+            delz = 0.5*dz1d(k) + dz1d(k+1) + 0.5*dz1d(k+2)
+            if ( (((theta2-theta1)/delz).lt.10./1500.) .AND.            &
+     &                                    P1d(k).gt.9000.) EXIT
+         ENDDO
+         k_tropo = MAX(k_p200-1, MIN(k+2, kte-1))
+      endif
+
+!..Eliminate possible fractional clouds above supposed tropopause.
+      DO k = k_tropo+1, kte
+         if (cfr1d(k).gt.0.0 .and. cfr1d(k).lt.1.0) then
+            cfr1d(k) = 0.
+         endif
+      ENDDO
+
+!..Be a bit more conservative with lower cloud fraction in scenario with
+!.. well-mixed convective boundary layer below LCL.
+
+      kbot = kts+1
+      DO k = kbot, k_m12C
+         if ( (theta(k)-theta(k-1)) .gt. 0.010E-3*Dz1d(k)) EXIT
+      ENDDO
+      kbot = MAX(kts+1, k-2)
+      DO k = kts, kbot
+         if (cfr1d(k).gt.0.0 .and. cfr1d(k).lt.1.0)                     &
+     &              cfr1d(k) = MAX(0.01,0.33*cfr1d(k))
+      ENDDO
+      DO k = kts,k_tropo
+         if (cfr1d(k).gt.0.0) kbot = MIN(k,kbot)
+      ENDDO
+
+!..Starting below tropo height, if cloud fraction greater than 1 percent,
+!.. compute an approximate total layer depth of cloud, determine a total 
+!.. liquid water/ice path (LWP/IWP), then reduce that amount with tuning 
+!.. parameter to represent entrainment factor, then divide up LWP/IWP
+!.. into delta-Z weighted amounts for individual levels per cloud layer. 
+
+      k_cldb = k_tropo
+      in_cloud = .false.
+      k = k_tropo
+      DO WHILE (.not. in_cloud .AND. k.gt.k_m12C+1)
+         k_cldt = 0
+         if (cfr1d(k).ge.0.01) then
+            in_cloud = .true.
+            k_cldt = MAX(k_cldt, k)
+         endif
+         if (in_cloud) then
+            DO k2 = k_cldt-1, k_m12C, -1
+               if (cfr1d(k2).lt.0.01 .or. k2.eq.k_m12C) then
+                  k_cldb = k2+1
+                  goto 87
+               endif
+            ENDDO
+ 87         continue
+            in_cloud = .false.
+         endif
+         if ((k_cldt - k_cldb + 1) .ge. 2) then
+            call adjust_cloudIce(cfr1d, qi1d, qs1d, qvs1d, T1d, Dz1d,   &
+     &                           entrmnt, k_cldb,k_cldt,kts,kte)
+            k = k_cldb
+         elseif ((k_cldt - k_cldb + 1) .eq. 1) then
+            if (cfr1d(k_cldb).gt.0.and.cfr1d(k_cldb).lt.1.)             &
+     &        qi1d(k_cldb)=qi1d(k_cldb)+0.05*qvs1d(k_cldb)*cfr1d(k_cldb)
+            k = k_cldb
+         endif
+         k = k - 1
+      ENDDO
+
+      k_cldb = k_m12C + 3
+      in_cloud = .false.
+      k = k_m12C + 2
+      DO WHILE (.not. in_cloud .AND. k.gt.kbot)
+         k_cldt = 0
+         if (cfr1d(k).ge.0.01) then
+            in_cloud = .true.
+            k_cldt = MAX(k_cldt, k)
+         endif
+         if (in_cloud) then
+            DO k2 = k_cldt-1, kbot, -1
+               if (cfr1d(k2).lt.0.01 .or. k2.eq.kbot) then
+                  k_cldb = k2+1
+                  goto 88
+               endif
+            ENDDO
+ 88         continue
+            in_cloud = .false.
+         endif
+         if ((k_cldt - k_cldb + 1) .ge. 2) then
+            call adjust_cloudH2O(cfr1d, qc1d, qvs1d, T1d, Dz1d,         &
+     &                           entrmnt, k_cldb,k_cldt,kts,kte)
+            k = k_cldb
+         elseif ((k_cldt - k_cldb + 1) .eq. 1) then
+            if (cfr1d(k_cldb).gt.0.and.cfr1d(k_cldb).lt.1.)             &
+     &        qc1d(k_cldb)=qc1d(k_cldb)+0.05*qvs1d(k_cldb)*cfr1d(k_cldb)
+            k = k_cldb
+         endif
+         k = k - 1
+      ENDDO
+
+
+      END SUBROUTINE find_cloudLayers
+
+
+!+---+-----------------------------------------------------------------+
+
+!>
+      SUBROUTINE adjust_cloudIce(cfr,qi,qs,qvs,T,dz,entr, k1,k2,kts,kte)
+!
+      IMPLICIT NONE
+!
+      INTEGER, INTENT(IN):: k1,k2, kts,kte
+      REAL, INTENT(IN):: entr
+      REAL, DIMENSION(kts:kte), INTENT(IN):: cfr, qs, qvs, T, dz
+      REAL, DIMENSION(kts:kte), INTENT(INOUT):: qi
+      REAL:: iwc, max_iwc, tdz, this_iwc, this_dz
+      INTEGER:: k
+
+      tdz = 0.
+      do k = k1, k2
+         tdz = tdz + dz(k)
+      enddo
+!     max_iwc = ABS(qvs(k2)-qvs(k1))
+      max_iwc = MAX(0.0, qvs(k1)-qvs(k2))
+
+      do k = k1, k2
+         max_iwc = MAX(1.E-6, max_iwc - (qi(k)+qs(k)))
+      enddo
+      max_iwc = MIN(1.E-4, max_iwc)
+
+      this_dz = 0.0
+      do k = k1, k2
+         if (k.eq.k1) then
+            this_dz = this_dz + 0.5*dz(k)
+         else
+            this_dz = this_dz + dz(k)
+         endif
+         this_iwc = max_iwc*this_dz/tdz
+         iwc = MAX(1.E-6, this_iwc*(1.-entr))
+         if (cfr(k).gt.0.0.and.cfr(k).lt.1.0.and.T(k).ge.203.16) then
+            qi(k) = qi(k) + cfr(k)*cfr(k)*iwc
+         endif
+      enddo
+
+      END SUBROUTINE adjust_cloudIce
+
+!+---+-----------------------------------------------------------------+
+
+!>
+      SUBROUTINE adjust_cloudH2O(cfr, qc, qvs,T,dz,entr, k1,k2,kts,kte)
+!
+      IMPLICIT NONE
+!
+      INTEGER, INTENT(IN):: k1,k2, kts,kte
+      REAL, INTENT(IN):: entr
+      REAL, DIMENSION(kts:kte), INTENT(IN):: cfr, qvs, T, dz
+      REAL, DIMENSION(kts:kte), INTENT(INOUT):: qc
+      REAL:: lwc, max_lwc, tdz, this_lwc, this_dz
+      INTEGER:: k
+
+      tdz = 0.
+      do k = k1, k2
+         tdz = tdz + dz(k)
+      enddo
+!     max_lwc = ABS(qvs(k2)-qvs(k1))
+      max_lwc = MAX(0.0, qvs(k1)-qvs(k2))
+!     print*, ' max_lwc = ', max_lwc, ' over DZ=',tdz
+
+      do k = k1, k2
+         max_lwc = MAX(1.E-6, max_lwc - qc(k))
+      enddo
+      max_lwc = MIN(1.E-4, max_lwc)
+
+      this_dz = 0.0
+      do k = k1, k2
+         if (k.eq.k1) then
+            this_dz = this_dz + 0.5*dz(k)
+         else
+            this_dz = this_dz + dz(k)
+         endif
+         this_lwc = max_lwc*this_dz/tdz
+         lwc = MAX(1.E-6, this_lwc*(1.-entr))
+         if (cfr(k).gt.0.0.and.cfr(k).lt.1.0.and.T(k).ge.258.16) then
+            qc(k) = qc(k) + cfr(k)*cfr(k)*lwc
+         endif
+      enddo
+
+      END SUBROUTINE adjust_cloudH2O
+
+!+---+-----------------------------------------------------------------+
+
+!> Do not alter any grid-explicitly resolved hydrometeors, rather only
+!! the supposed amounts due to the cloud fraction scheme.
+      SUBROUTINE adjust_cloudFinal(cfr, qc, qi, Rho,dz, kts,kte)
+!
+      IMPLICIT NONE
+!
+      INTEGER, INTENT(IN):: kts,kte
+      REAL, DIMENSION(kts:kte), INTENT(IN):: cfr, Rho, dz
+      REAL, DIMENSION(kts:kte), INTENT(INOUT):: qc, qi
+      REAL:: lwp, iwp, xfac
+      INTEGER:: k
+
+      lwp = 0.
+      iwp = 0.
+      do k = kts, kte
+         if (cfr(k).gt.0.0 .and. cfr(k).lt.1.0) then
+            lwp = lwp + qc(k)*Rho(k)*dz(k)
+            iwp = iwp + qi(k)*Rho(k)*dz(k)
+         endif
+      enddo
+
+      if (lwp .gt. 1.0) then
+         xfac = 1.0/lwp
+         do k = kts, kte
+            if (cfr(k).gt.0.0 .and. cfr(k).lt.1.0) then
+               qc(k) = qc(k)*xfac
+            endif
+         enddo
+      endif
+
+      if (iwp .gt. 1.0) then
+         xfac = 1.0/iwp
+         do k = kts, kte
+            if (cfr(k).gt.0.0 .and. cfr(k).lt.1.0) then
+               qi(k) = qi(k)*xfac
+            endif
+         enddo
+      endif
+
+      END SUBROUTINE adjust_cloudFinal
+
+!+---+-----------------------------------------------------------------+
+
+!> This subroutine computes the Xu-Randall cloud fraction scheme.
+      subroutine cloud_fraction_XuRandall                               &
+!  ---  inputs:
+     &     ( IX, NLAY, plyr, clwf, rhly, qstl, lmfshal, lmfdeep2,       &
+!  ---  outputs:
+     &       cldtot ) 
+
+!  ---  inputs:
+      integer, intent(in) :: IX, NLAY
+      real (kind=kind_phys), dimension(:,:), intent(in) :: plyr, clwf,  &
+     &                                                     rhly, qstl
+      logical, intent(in) :: lmfshal, lmfdeep2
+
+!  ---  outputs
+      real (kind=kind_phys), dimension(:,:), intent(inout) :: cldtot
+
+!  ---  local variables:
+
+       real (kind=kind_phys) :: clwmin, clwm, clwt, onemrh, value,      &
+     &       tem1, tem2
+       real (kind=kind_phys), parameter :: xrc3 = 100.
+       integer :: i, k
+
+!> - Compute layer cloud fraction.
+
+       if ( ivflip == 0 ) then              ! input data from toa to sfc
+
+         clwmin = 0.0
+         if (.not. lmfshal) then
+           do k = NLAY, 1, -1
+           do i = 1, IX
+             clwt = 1.0e-6 * (plyr(i,k)*0.001)
+
+             if (clwf(i,k) > clwt) then
+
+               onemrh= max( 1.e-10, 1.0-rhly(i,k) )
+               clwm  = clwmin / max( 0.01, plyr(i,k)*0.001 )
+
+               tem1  = min(max(sqrt(sqrt(onemrh*qstl(i,k))),0.0001),1.0)
+               tem1  = 2000.0 / tem1
+
+               value = max( min( tem1*(clwf(i,k)-clwm), 50.0 ), 0.0 )
+               tem2  = sqrt( sqrt(rhly(i,k)) )
+
+               cldtot(i,k) = max( tem2*(1.0-exp(-value)), 0.0 )
+             endif
+          enddo
+          enddo
+        else
+          do k = NLAY, 1, -1
+          do i = 1, IX
+            clwt = 1.0e-6 * (plyr(i,k)*0.001)
+
+            if (clwf(i,k) > clwt) then
+              onemrh= max( 1.e-10, 1.0-rhly(i,k) )
+              clwm  = clwmin / max( 0.01, plyr(i,k)*0.001 )
+
+              tem1  = min(max((onemrh*qstl(i,k))**0.49,0.0001),1.0)  !jhan
+              if (lmfdeep2) then
+                tem1  = xrc3 / tem1
+              else
+                tem1  = 100.0 / tem1
+              endif
+
+              value = max( min( tem1*(clwf(i,k)-clwm), 50.0 ), 0.0 )
+              tem2  = sqrt( sqrt(rhly(i,k)) )
+              cldtot(i,k) = max( tem2*(1.0-exp(-value)), 0.0 )
+            endif
+          enddo
+          enddo
+        endif
+
+      else                                 ! input data from sfc to toa
+
+        clwmin = 0.0
+        if (.not. lmfshal) then
+          do k = 1, NLAY
+          do i = 1, IX
+            clwt = 1.0e-6 * (plyr(i,k)*0.001)
+
+            if (clwf(i,k) > clwt) then
+
+              onemrh= max( 1.e-10, 1.0-rhly(i,k) )
+              clwm  = clwmin / max( 0.01, plyr(i,k)*0.001 )
+
+              tem1  = min(max(sqrt(sqrt(onemrh*qstl(i,k))),0.0001),1.0)
+              tem1  = 2000.0 / tem1
+
+              value = max( min( tem1*(clwf(i,k)-clwm), 50.0 ), 0.0 )
+              tem2  = sqrt( sqrt(rhly(i,k)) )
+
+              cldtot(i,k) = max( tem2*(1.0-exp(-value)), 0.0 )
+            endif
+          enddo
+          enddo
+        else
+          do k = 1, NLAY
+          do i = 1, IX
+            clwt = 1.0e-6 * (plyr(i,k)*0.001)
+
+            if (clwf(i,k) > clwt) then
+              onemrh= max( 1.e-10, 1.0-rhly(i,k) )
+              clwm  = clwmin / max( 0.01, plyr(i,k)*0.001 )
+!
+              tem1  = min(max((onemrh*qstl(i,k))**0.49,0.0001),1.0)  !jhan
+              if (lmfdeep2) then
+                tem1  = xrc3 / tem1
+              else
+                tem1  = 100.0 / tem1
+              endif
+
+              value = max( min( tem1*(clwf(i,k)-clwm), 50.0 ), 0.0 )
+              tem2  = sqrt( sqrt(rhly(i,k)) )
+
+              cldtot(i,k) = max( tem2*(1.0-exp(-value)), 0.0 )
+            endif
+          enddo
+          enddo
+        endif
+      endif
+
+      end subroutine cloud_fraction_XuRandall
+
+      subroutine cloud_fraction1d_XuRandall                             &
+!  ---  inputs:
+     &     ( NLAY, plyr, clwf, rhly, qstl, lmfshal, lmfdeep2,           &
+!  ---  outputs:
+     &       cldtot ) 
+
+!  ---  inputs:
+      integer, intent(in) :: NLAY
+      real (kind=kind_phys), dimension(:), intent(in)   :: plyr, clwf,  &
+     &                                                     rhly, qstl
+      logical, intent(in) :: lmfshal, lmfdeep2
+
+!  ---  outputs
+      real (kind=kind_phys), dimension(:), intent(inout) :: cldtot
+
+!  ---  local variables:
+
+       real (kind=kind_phys) :: clwmin, clwm, clwt, onemrh, value,      &
+     &       tem1, tem2
+       real (kind=kind_phys), parameter :: xrc3 = 100.
+       integer :: k
+
+!> - Compute layer cloud fraction.
+
+      clwmin = 0.0
+      if (.not. lmfshal) then
+        do k = 1, NLAY
+          clwt = 1.0e-6 * (plyr(k)*0.001)
+
+          if (clwf(k) > clwt) then
+
+            onemrh= max( 1.e-10, 1.0-rhly(k) )
+            clwm  = clwmin / max( 0.01, plyr(k)*0.001 )
+
+            tem1  = min(max(sqrt(sqrt(onemrh*qstl(k))),0.0001),1.0)
+            tem1  = 2000.0 / tem1
+
+            value = max( min( tem1*(clwf(k)-clwm), 50.0 ), 0.0 )
+            tem2  = sqrt( sqrt(rhly(k)) )
+
+            cldtot(k) = max( tem2*(1.0-exp(-value)), 0.0 )
+          endif
+        enddo
+      else
+        do k = 1, NLAY
+          clwt = 1.0e-6 * (plyr(k)*0.001)
+
+          if (clwf(k) > clwt) then
+            onemrh= max( 1.e-10, 1.0-rhly(k) )
+            clwm  = clwmin / max( 0.01, plyr(k)*0.001 )
+
+            tem1  = min(max((onemrh*qstl(k))**0.49,0.0001),1.0)  !jhan
+            if (lmfdeep2) then
+              tem1  = xrc3 / tem1
+            else
+              tem1  = 100.0 / tem1
+            endif
+
+            value = max( min( tem1*(clwf(k)-clwm), 50.0 ), 0.0 )
+            tem2  = sqrt( sqrt(rhly(k)) )
+
+            cldtot(k) = max( tem2*(1.0-exp(-value)), 0.0 )
+          endif
+        enddo
+      endif
+
+      end subroutine cloud_fraction1d_XuRandall
+!+---+-----------------------------------------------------------------+
 
 
 !-----------------------------------                                    !

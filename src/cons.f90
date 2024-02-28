@@ -40,7 +40,12 @@
                    sppt_sfclimit, sppt_logit, &
                    shum, shum_seed, shum_decort, shum_lscale, &
                    shum_sigefold, &
-                   ssst, ssst_seed, ssst_decort, ssst_lscale
+                   skeb, skeb_seed, skeb_decort, skeb_lscale, &
+                   skeb_sigtop1, skeb_sigtop2, skeb_sigbot1, skeb_sigbot2, &
+                   skeb_vdof,skebnorm, skebfilt, &
+                   ssst, ssst_seed, ssst_decort, ssst_lscale, &
+                   init_stochastic_physics
+      use mod_grb2_param, only:grbmem,grbnumm
 
       implicit  none
 
@@ -54,7 +59,7 @@
 
       integer*8 idtg8
 
-      real      pnm(jtrun+1,jtrun+1)
+      real(kind=RTYPE) pnm(jtrun+1,jtrun+1)
 
 !
       namelist /modlst/ ksgeo,ptmean,dt,taui,taue                       &
@@ -69,20 +74,22 @@
                       , ntoz,iovr_sw,iovr_lw,isubc_sw,isubc_lw          &
                       , sashal,crick_proof,ccnorm,norad_precip,me,doo3l &
                       , ioutsigr,domfc,out_green,isot,ivegsrc           &
-                      , otgreen,out_hp,dosppt,dospptout, doshum, dossst  &
-                      , ndsladvh2,hord                                  &
+                      , otgreen,out_hp,dosppt,dospptout, doshum, dossst &
+                      , doskeb, doskebout,  ndsladvh2,hord              &
                       , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
-                      , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud,updatetg    &
+                      , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud,updatetg       &
 ! output data for RSM (Also, RSM compiling flag is necessary)
-                      , outrsm,rsmoutinv,rlon1,rlon2,rlat1,rlat2,rgrdsz &
+                      , outrsm,rsmoutinv,rlon1,rlon2,rlat1,rlat2,rgrdsz,rsmsfcmgrhr &
 !
-                      , cmbk,cgwd,nmmiph,spl1,spl2            &
-                      , weightSIT,dSITdt_intv,af,mwhd,doclx,doslavepp
-!
+                      , cmbk,cgwd,nmmiph,spl1,spl2                      &
+                      , weightSIT,dSITdt_intv,mwhd,doclx,doslavepp      &
+                      , outdms,outgrb2,alpha,two_loop,ttl,tfilt,factop  &
+                      , mass_dp,dpprt,itter,vd
+!                       
       real    si(lev+1)
       logical flag
       character*10 fulldtg,Wfulldtg
-      character*80 filist
+      character*255 filist
       character cdtg*12
       character*80 pathname,logicname,truefile
       character*64 type_r,type_w,argument
@@ -95,7 +102,7 @@
       namelist /filst/ ifilin,cwbout,bckfile,namlsts &
                      , ifilout,crdate,ocards,phyout,cntrl &
                      , ifilin_ncep, ifilin_sst, ifilin_nc &
-                     , ifilin_ClmANA,ifilin_ClmFCT
+                     , ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb
 
       namelist /typ/ write_tau, write_mem, trk_intv, min_trk_pres
 
@@ -106,18 +113,16 @@
                    sppt_sfclimit, sppt_logit, &
                    shum, shum_seed, shum_decort, shum_lscale, &
                    shum_sigefold, &
+                   skeb, skeb_seed, skeb_decort, skeb_lscale, &
+                   skeb_sigtop1, skeb_sigtop2, skeb_sigbot1, skeb_sigbot2, &
+                   skeb_vdof, skebnorm, skebfilt, &
                    ssst, ssst_seed, ssst_decort, ssst_lscale
+      namelist /grb_conf/ grbmem,grbnumm
 
 ! for ECHAM4 Tiedtke cumulus scheme
       call cuparam
       call inicon
       call set_lookup_tables
-
-      do k = 2, lev
-        dsig(k-1)= sig(k) - sig(k-1)
-      enddo
-
-      dsig(lev)= 1.0 - sig(lev)
 
       capa= 1.0/3.5
       rgas= capa*cp
@@ -159,9 +164,10 @@
       ! read stochastic_physics
       read (1,stochy_physics,end=122)
   122 continue
+      read (1,grb_conf,end=123)
+  123 continue
       close(1)
 !
-      close(1)
       open (unit=1,file=trim(namlsts),form='formatted')
 
       if(do_sit) then
@@ -179,6 +185,7 @@
         endif
   130 continue
       endif
+      close(1)
 
 !
       open (unit=2,file=trim(crdate),form='formatted')
@@ -188,9 +195,9 @@
       close(2)
 ! transfer idtg8 to idtg*12
       if(idtg8.gt.60000000)then
-        idtg = 190000000000 + idtg8*100
+        idtg = 190000000000_8 + idtg8*100
       else
-        idtg = 200000000000 + idtg8*100
+        idtg = 200000000000_8 + idtg8*100
       endif
 !
       write(cdtg,900)idtg
@@ -333,8 +340,8 @@
         prslp=sigma(k,2)+sigma(k,1)*1000.+ptop
         if ( prslp .le. spl1  ) hdk1=k
         if ( prslp .le. spl2  ) hdk2(1)=k
-        if ( prslp .le. 200.  ) hdk2(2)=k
-        if ( prslp .le. 400.  ) hdk2(3)=k
+        if ( prslp .le.  50.  ) hdk2(2)=k
+        if ( prslp .le. 200.  ) hdk2(3)=k
       enddo
 !
 !
@@ -436,7 +443,11 @@
       if( myrank .eq. 0 ) then
        type_r="RORDER"//char(0)
        type_w="WORDER"//char(0)
+#ifdef IO38K
        argument="38"//char(0)
+#else
+       argument="34"//char(0)
+#endif
        call dmscfg(type_r,argument,istat_r)
        call dmscfg(type_w,argument,istat_w)
        istat = abs(istat_r) + abs(istat_w)
@@ -455,16 +466,13 @@
       call dmsmsg("ALL",istat)
       call dmsopn(bckfile,"r",istat1)
       endif
-      print*,'TYW in cons, bckfile, istat1 = ',bckfile,istat1
 !
 !  open the input file.  this too will be replaced by the appropriate
 !  dbms operation when available
 !
       if(col_rank .eq. 0) call dmsopn(ifilin,"w",istat2)
-      print*,'TYW in cons, ifilin ,istat2 = ',ifilin,istat2
 !
       if(myrank .lt. lev) call dmsopn(ifilout,"w",istat3)
-      print*,'TYW in cons, ifilout, istat3 = ',ifilout,istat3
 !
       if(myrank.eq.0) then
       istat = abs(istat1) + abs(istat2) + abs(istat3)
@@ -473,20 +481,17 @@
 ! data
 ! open ncep data dms
 !
+       istat4=0; istat5=0; istat6=0; istat7=0
        if(ldailyFCTsst) then
-          istat4=0
           call dmsopn(ifilin_sst,"r",istat4)
           istat = istat + abs(istat4)
         endif
         if(ldailyFCTicesndpt) then
-          istat5=0
           call dmsopn(ifilin_ncep,"r",istat5)
           istat = istat + abs(istat5)
         endif
         if(do_sit) then
         if(dailyClm_option .ge. 1) then
-          istat6=0
-          istat7=0
           call dmsopn(ifilin_ClmANA,"r",istat6)
           if(dailyClm_option .eq. 2) then
             call dmsopn(ifilin_ClmFCT,"r",istat7)
@@ -531,8 +536,16 @@
 !-----------------------------------------------------------------------
 !  for cloud microphysics initialization
 !-----------------------------------------------------------------------
-      if ( nmmiph .eq. 11 ) then
+      if ( nmmiph .eq. 11 .or. nmmiph .eq. 12 .or. nmmiph .eq. 13 ) then
         ntrac_req = 6   ! only six species of hydrometeors for GFDL MP
+      elseif ( nmmiph .eq. 18 ) then
+        ntrac_req = 6   ! only six species of hydrometeors for 2M Thompson MP
+      elseif ( nmmiph .eq. 8 ) then
+        ntrac_req = 6   ! only six species of hydrometeors for Thompson MP
+      elseif ( nmmiph .eq. 15 ) then
+        ntrac_req = 6   ! only six species of hydrometeors for Goddard 3ICE MP
+      elseif ( nmmiph .eq. 16 ) then
+        ntrac_req = 6   ! only six species of hydrometeors for Goddard 4ICE MP
       else
         ntrac_req = nmmiph
       endif
@@ -542,12 +555,15 @@
       endif
       if ( dolsp ) then
         if ( ncld .lt. ntrac_req ) then
-           if ( myrank .ge. 0 ) print *,'not enogh number of tracers'
+           if ( myrank .ge. 0 ) print *,'not enough number of tracers'
            call mpe_finalize
            call dmsexit(-1)
         endif
 !
-        if ( nmmiph.eq.6 .or. nmmiph.eq.8 .or. nmmiph.eq.11 )           &
+        if ( nmmiph.eq.6 .or.                                           &
+             nmmiph.eq.8 .or. nmmiph.eq.18 .or.                         &
+             nmmiph.eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 .or.      &
+             nmmiph.eq.15 .or. nmmiph.eq.16 )                           &
           call mp_init(nmmiph,myrank)
 !
       endif
@@ -571,6 +587,10 @@
          ' icliq_sw=',icliq_sw,' icice_sw=', icice_sw,                  &
          ' icliq_lw=',icliq_lw,' icice_lw=', icice_lw
       endif
+!-----------------------------------------------------------------------
+!  for stochastic_physics initialization
+!-----------------------------------------------------------------------
+      call init_stochastic_physics(dt)   
 !-----------------------------------------------------------------------
 !
 ! check if typhoon exit

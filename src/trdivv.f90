@@ -2,10 +2,12 @@
 !
 !  tri-diagonal gaussian elimination subroutine call by bicubv
 !
+      use const, only: RTYPE
+!
       implicit   none
       integer    m,n,nm,i,j,k
-      real       a(m,n), y(m,n)
-      real       c(m,n-1)
+      real(kind=RTYPE) a(m,n), y(m,n)
+      real(kind=RTYPE) c(m,n-1)
 !
       nm = n-1
       do 201 i=1,m

@@ -94,6 +94,7 @@ SRCS_f90  = \
   init_block.f90 \
   initial.f90 \
   intgrt.f90 \
+  intgrt_3tl.f90 \
   invmtx.f90 \
   ioserver.f90 \
   iounitdef.f90 \
@@ -126,6 +127,7 @@ SRCS_f90  = \
   mod_fftcom.f90 \
   mod_fj_pad.f90 \
   mod_grid.f90 \
+  mod_grb2_param.f90 \
   mod_index.f90 \
   mod_mpe.f90 \
   mod_netcdf.f90 \
@@ -149,8 +151,16 @@ SRCS_f90  = \
   module_bfmicrophysics.f90 \
   module_mp_radar.f90 \
   module_mp_thompson_gfs.f90 \
+  module_mp_thompson_gfs_new.f90 \
+  module_mp_thompson_make_NC.f90 \
   module_mp_wsm6_fv3.f90 \
   module_mp_gfdl_fv3_v16.f90 \
+  module_mp_gfdl_fv3_v2.f90 \
+  module_mp_gfdl_fv3_v3.f90 \
+  module_mp_gsfcgce.f90 \
+  module_mp_gsfcgce_3ice_nuwrf.f90 \
+  module_mp_gsfcgce_4ice_nuwrf.f90 \
+  cld_eff_rad.f90 \
   moninedmf.f90 \
   mpe2d.f90 \
   mpe_barrier.f90 \
@@ -161,6 +171,7 @@ SRCS_f90  = \
   mpe_recv_key.f90 \
   mpe_scatter_io.f90 \
   mpe_send_data.f90 \
+  mpe_send_int.f90 \
   mpe_send_key.f90 \
   mpe_transpose_rs1.f90 \
   mpe_transpose_rs.f90 \
@@ -245,10 +256,13 @@ SRCS_f90  = \
   rqkir.f90 \
   rrtmg.f90 \
   rsmout.f90 \
+  rsmout_sigp.f90 \
   rstrandz.f90 \
   rstrantq.f90 \
   samfdeepcnv.f90 \
   samfshalcnv.f90 \
+  samfdeepcnv_kh.f90 \
+  samfshalcnv_kh.f90 \
   sascnv.f90 \
   sascnv_n.f90 \
   sascnv_sa.f90 \
@@ -289,6 +303,7 @@ SRCS_f90  = \
   transr1.f90 \
   transr.f90 \
   tranuv.f90 \
+  tranuv1.f90 \
   trdih.f90 \
   trdiv2.f90 \
   trdivv.f90 \
@@ -337,7 +352,7 @@ MACHINE=fx1000
 CC   =	${C_COMP}
 FC90 =  ${COMP_MPI}
 
-INCLUDE = -I. -I${FFTW_INC} -I${NETCDF_INC}
+INCLUDE = -I. -I${FFTW_INC} -I${NETCDF_INC} -I$(G2_INC)
 
 CMD  =  MTCo639L72_${MACHINE}
 
@@ -384,7 +399,9 @@ INSTALL = /usr/bin/install
 # If it's using fx-100 compiler(new version), you probably can get -Kparallel flag back.
 #--------------------------------------------------------------------------------------------
 LDFLAGS = ${OMP_COM} ${LDFLAGS_COM}
-LIBS	= ${NETCDF_LIB} ${W3LIB_LIB} ${DMS_LIB} ${OPERLIB_LIB} ${FFTW_LIB} ${LIBS_COM} ${MPMD_LIB}
+
+G2LIB_COM= $(G2_LIB) $(PNG_LIB) $(JASPER_LIB) $(W3LIB_LIB) $(Z_LIB)
+LIBS	= ${NETCDF_LIB} ${HDF5_LIB} ${DMS_LIB} ${OPERLIB_LIB} ${FFTW_LIB} ${LIBS_COM} ${MPMD_LIB} $(G2LIB_COM)
 
 .SUFFIXES: .o .mod .f90 .c
 all defalut:	depend $(CMD)

@@ -1,12 +1,13 @@
       subroutine ndslfv_monoadvh(ddtemp,qvadv,pten,vdzonl,vdmerd     &
                 , lonsperlat,deltim,xy,levs)
       use param
+      use const, only : RTYPE
       implicit none
-      real pten(nx,levs,my_max)
-      real ddtemp(nx,levs,my_max),qvadv(nx,levs*ncld,my_max)
-      real vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
+      real(kind=RTYPE) pten(nx,levs,my_max)
+      real(kind=RTYPE) ddtemp(nx,levs,my_max),qvadv(nx,levs*ncld,my_max)
+      real(kind=RTYPE) vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
       integer,intent(in):: lonsperlat(my)
-      real,   intent(in):: deltim
+      real(kind=RTYPE),   intent(in):: deltim
       integer xy,levs
       
       if(xy .eq.   0) call ndslfv_monoadvh2(ddtemp,qvadv,pten,vdzonl    &
@@ -20,21 +21,23 @@
       end
 !
       subroutine ndslfv_monoadvh_fgnl(vdzonl,vdmerd,ddtemp            &
-                , lonsperlat,deltim,xy,levs,nvars)
+                , lonsperlat,deltim,xy,levs,nvars,forward)
       use param
+      use const, only : RTYPE
       implicit none
-      real vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
-      real ddtemp(nx,levs,my_max)
+      real(kind=RTYPE) vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
+      real(kind=RTYPE) ddtemp(nx,levs,my_max)
       integer,intent(in):: lonsperlat(my)
-      real,   intent(in):: deltim
+      real(kind=RTYPE),   intent(in):: deltim
       integer xy,levs,nvars
-      
+      logical forward
+
       if(xy .eq.   0) call ndslfv_monoadvh2_fgnl(vdzonl,vdmerd,ddtemp    &
-                             ,lonsperlat,deltim,levs,nvars)
+                             ,lonsperlat,deltim,levs,nvars,forward)
       if(xy .gt. 0.5) call ndslfv_monoadvh2_fgnl_xy(vdzonl,vdmerd,ddtemp &
-                             ,lonsperlat,deltim,levs,nvars)
+                             ,lonsperlat,deltim,levs,nvars,forward)
       if(xy .lt.-0.5) call ndslfv_monoadvh2_fgnl_yx(vdzonl,vdmerd,ddtemp &
-                             ,lonsperlat,deltim,levs,nvars)
+                             ,lonsperlat,deltim,levs,nvars,forward)
 !      xy = -1 * xy
       return
       end
@@ -57,28 +60,27 @@
 
       implicit none
 
-      real pten(nx,levs,my_max)
-!ch   real ddtemp(nx,levs,my_max),qvadv(nx,levs*ncld,my_max)
-      real ddtemp(nx,levs,my_max),qvadv(nx,levs,ncld,my_max)
-      real vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
-!      real plev(lonfull,lev+1)
+      real(kind=RTYPE) pten(nx,levs,my_max)
+      real(kind=RTYPE) ddtemp(nx,levs,my_max),qvadv(nx,levs,ncld,my_max)
+      real(kind=RTYPE) vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
+!      real(kind=RTYPE) plev(lonfull,lev+1)
 !      integer,intent(in):: global_lats_a(my)
       integer,intent(in):: lonsperlat(my)
-      real,   intent(in):: deltim
+      real(kind=RTYPE),   intent(in):: deltim
 
-      real      uulon(lonfull,levs,latpart)
-      real      vvlon(lonfull,levs,latpart)
-      real      qqlon(lonfull,levs*ndslhvar,latpart)
-      real      rrlon(lonfull,levs*ndslhvar,latpart)
+      real(kind=RTYPE)      uulon(lonfull,levs,latpart)
+      real(kind=RTYPE)      vvlon(lonfull,levs,latpart)
+      real(kind=RTYPE)      qqlon(lonfull,levs*ndslhvar,latpart)
+      real(kind=RTYPE)      rrlon(lonfull,levs*ndslhvar,latpart)
 
-      real      vvlat(latfull,levs,lonpart)
-      real      qqlat(latfull,levs*ndslhvar,lonpart)
-      real      rrlat(latfull,levs*ndslhvar,lonpart)
-      real      xr    (lonfull,levs)
-      real      xcp   (lonfull,levs)
-      real      sumrq (lonfull,levs)
-      real      xkappa(lonfull,levs)
-      real      rdt2, rkt, pi, cons0, cons1, rma, rm2a
+      real(kind=RTYPE)      vvlat(latfull,levs,lonpart)
+      real(kind=RTYPE)      qqlat(latfull,levs*ndslhvar,lonpart)
+      real(kind=RTYPE)      rrlat(latfull,levs*ndslhvar,lonpart)
+      real(kind=RTYPE)      xr    (lonfull,levs)
+      real(kind=RTYPE)      xcp   (lonfull,levs)
+      real(kind=RTYPE)      sumrq (lonfull,levs)
+      real(kind=RTYPE)      xkappa(lonfull,levs)
+      real(kind=RTYPE)      rdt2, rkt, pi, cons0, cons1, rma, rm2a
 
 !      logical   lprint
 
@@ -96,6 +98,10 @@
       mass  = 0
       cons0 = 0.0
       cons1 = 1.0
+      qqlon = 0.
+      rrlon = 0.
+      uulon = 0.
+      vvlon = 0.
 !
 !      levh = ncld * lev
 !
@@ -138,7 +144,7 @@
           do i=1,lons_lat
 !ch         uulon(i,k,lan) = ut(i,kk,lan) * rm2a
             uulon(i,k,lan) = ut_sl(i,k ,lan) * rm2a
-!hmhj use real wind
+!hmhj use real(kind=RTYPE) wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) * rma
 !hmhj use virtual wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) / con_rerth
@@ -593,28 +599,27 @@
 
       implicit none
 
-      real pten(nx,levs,my_max)
-!ch   real ddtemp(nx,levs,my_max),qvadv(nx,levs*ncld,my_max)
-      real ddtemp(nx,levs,my_max),qvadv(nx,levs,ncld,my_max)
-      real vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
-!      real plev(lonfull,lev+1)
+      real(kind=RTYPE) pten(nx,levs,my_max)
+      real(kind=RTYPE) ddtemp(nx,levs,my_max),qvadv(nx,levs,ncld,my_max)
+      real(kind=RTYPE) vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
+!      real(kind=RTYPE) plev(lonfull,lev+1)
 !      integer,intent(in):: global_lats_a(my)
       integer,intent(in):: lonsperlat(my)
-      real,   intent(in):: deltim
+      real(kind=RTYPE),   intent(in):: deltim
 
-      real      uulon(lonfull,levs,latpart)
-      real      vvlon(lonfull,levs,latpart)
-      real      qqlon(lonfull,levs*ndslhvar,latpart)
-!      real      rrlon(lonfull,lev*ndslhvar,latpart)
+      real(kind=RTYPE)      uulon(lonfull,levs,latpart)
+      real(kind=RTYPE)      vvlon(lonfull,levs,latpart)
+      real(kind=RTYPE)      qqlon(lonfull,levs*ndslhvar,latpart)
+!      real(kind=RTYPE)      rrlon(lonfull,lev*ndslhvar,latpart)
 
-      real      vvlat(latfull,levs,lonpart)
-      real      qqlat(latfull,levs*ndslhvar,lonpart)
-!      real      rrlat(latfull,levs*ndslhvar,lonpart)
-      real      xr    (lonfull,levs)
-      real      xcp   (lonfull,levs)
-      real      sumrq (lonfull,levs)
-      real      xkappa(lonfull,levs)
-      real      rdt2, rkt, pi, cons0, cons1, rma, rm2a
+      real(kind=RTYPE)      vvlat(latfull,levs,lonpart)
+      real(kind=RTYPE)      qqlat(latfull,levs*ndslhvar,lonpart)
+!      real(kind=RTYPE)      rrlat(latfull,levs*ndslhvar,lonpart)
+      real(kind=RTYPE)      xr    (lonfull,levs)
+      real(kind=RTYPE)      xcp   (lonfull,levs)
+      real(kind=RTYPE)      sumrq (lonfull,levs)
+      real(kind=RTYPE)      xkappa(lonfull,levs)
+      real(kind=RTYPE)      rdt2, rkt, pi, cons0, cons1, rma, rm2a
 
 !      logical   lprint
 
@@ -632,6 +637,9 @@
       mass  = 0
       cons0 = 0.0
       cons1 = 1.0
+      qqlon = 0.
+      uulon = 0.
+      vvlon = 0.
 !
 !      levh = ncld * lev
 !
@@ -674,7 +682,7 @@
           do i=1,lons_lat
 !ch         uulon(i,k,lan) = ut(i,kk,lan) * rm2a
             uulon(i,k,lan) = ut_sl(i,k ,lan) * rm2a
-!hmhj use real wind
+!hmhj use real(kind=RTYPE) wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) * rma
 !hmhj use virtual wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) / con_rerth
@@ -1125,28 +1133,27 @@
 
       implicit none
 
-      real pten(nx,levs,my_max)
-!ch   real ddtemp(nx,levs,my_max),qvadv(nx,levs*ncld,my_max)
-      real ddtemp(nx,levs,my_max),qvadv(nx,levs,ncld,my_max)
-      real vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
-!      real plev(lonfull,levs+1)
+      real(kind=RTYPE) pten(nx,levs,my_max)
+      real(kind=RTYPE) ddtemp(nx,levs,my_max),qvadv(nx,levs,ncld,my_max)
+      real(kind=RTYPE) vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
+!      real(kind=RTYPE) plev(lonfull,levs+1)
 !      integer,intent(in):: global_lats_a(my)
       integer,intent(in):: lonsperlat(my)
-      real,   intent(in):: deltim
+      real(kind=RTYPE),   intent(in):: deltim
 
-      real      uulon(lonfull,levs,latpart)
-      real      vvlon(lonfull,levs,latpart)
-      real      qqlon(lonfull,levs*ndslhvar,latpart)
-!      real      rrlon(lonfull,levs*ndslhvar,latpart)
+      real(kind=RTYPE)      uulon(lonfull,levs,latpart)
+      real(kind=RTYPE)      vvlon(lonfull,levs,latpart)
+      real(kind=RTYPE)      qqlon(lonfull,levs*ndslhvar,latpart)
+!      real(kind=RTYPE)      rrlon(lonfull,levs*ndslhvar,latpart)
 
-      real      vvlat(latfull,levs,lonpart)
-      real      qqlat(latfull,levs*ndslhvar,lonpart)
-!      real      rrlat(latfull,levs*ndslhvar,lonpart)
-      real      xr    (lonfull,levs)
-      real      xcp   (lonfull,levs)
-      real      sumrq (lonfull,levs)
-      real      xkappa(lonfull,levs)
-      real      rdt2, rkt, pi, cons0, cons1, rma, rm2a
+      real(kind=RTYPE)      vvlat(latfull,levs,lonpart)
+      real(kind=RTYPE)      qqlat(latfull,levs*ndslhvar,lonpart)
+!      real(kind=RTYPE)      rrlat(latfull,levs*ndslhvar,lonpart)
+      real(kind=RTYPE)      xr    (lonfull,levs)
+      real(kind=RTYPE)      xcp   (lonfull,levs)
+      real(kind=RTYPE)      sumrq (lonfull,levs)
+      real(kind=RTYPE)      xkappa(lonfull,levs)
+      real(kind=RTYPE)      rdt2, rkt, pi, cons0, cons1, rma, rm2a
 
 !      logical   lprint
 
@@ -1164,6 +1171,9 @@
       mass  = 0
       cons0 = 0.0
       cons1 = 1.0
+      qqlon = 0.
+      uulon = 0.
+      vvlon = 0.
 !
 !      levh = ncld * levs
 !
@@ -1206,7 +1216,7 @@
           do i=1,lons_lat
 !ch         uulon(i,k,lan) = ut(i,kk,lan) * rm2a
             uulon(i,k,lan) = ut_sl(i,k ,lan) * rm2a
-!hmhj use real wind
+!hmhj use real(kind=RTYPE) wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) * rma
 !hmhj use virtual wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) / con_rerth
@@ -1639,7 +1649,7 @@
       end
 ! ------------------------------
       subroutine ndslfv_monoadvh2_fgnl(vdzonl,vdmerd,ddtemp    &
-                , lonsperlat,deltim,levs,nvars)
+                , lonsperlat,deltim,levs,nvars,forward)
 !
 ! a routine to do non-iteration semi-Lagrangain advection
 ! considering advection  with monotonicity in interpolation
@@ -1656,26 +1666,25 @@
 
       implicit none
 
-!ch   real ddtemp(nx,levs,my_max),qvadv(nx,levs*ncld,my_max)
       integer nvars
-      real ddtemp(nx,levs,my_max)
-      real vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
+      real(kind=RTYPE) ddtemp(nx,levs,my_max)
+      real(kind=RTYPE) vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
       integer,intent(in):: lonsperlat(my)
-      real,   intent(in):: deltim
+      real(kind=RTYPE),   intent(in):: deltim
 
-      real      uulon(lonfull,levs,latpart)
-      real      vvlon(lonfull,levs,latpart)
-      real      qqlon(lonfull,levs*nvars,latpart)
-      real      rrlon(lonfull,levs*nvars,latpart)
+      real(kind=RTYPE)      uulon(lonfull,levs,latpart)
+      real(kind=RTYPE)      vvlon(lonfull,levs,latpart)
+      real(kind=RTYPE)      qqlon(lonfull,levs*nvars,latpart)
+      real(kind=RTYPE)      rrlon(lonfull,levs*nvars,latpart)
 
-      real      vvlat(latfull,levs,lonpart)
-      real      qqlat(latfull,levs*nvars,lonpart)
-      real      rrlat(latfull,levs*nvars,lonpart)
-      real      xr    (lonfull,levs)
-      real      xcp   (lonfull,levs)
-      real      sumrq (lonfull,levs)
-      real      xkappa(lonfull,levs)
-      real      rdt2, rkt, pi, cons0, cons1, rma, rm2a
+      real(kind=RTYPE)      vvlat(latfull,levs,lonpart)
+      real(kind=RTYPE)      qqlat(latfull,levs*nvars,lonpart)
+      real(kind=RTYPE)      rrlat(latfull,levs*nvars,lonpart)
+      real(kind=RTYPE)      xr    (lonfull,levs)
+      real(kind=RTYPE)      xcp   (lonfull,levs)
+      real(kind=RTYPE)      sumrq (lonfull,levs)
+      real(kind=RTYPE)      xkappa(lonfull,levs)
+      real(kind=RTYPE)      rdt2, rkt, pi, cons0, cons1, rma, rm2a
 
 !      logical   lprint
 
@@ -1684,6 +1693,7 @@
       integer i,j,n,k,lon,lan,lat,lons_lat,irc,kk,KL
       integer kuu, kvv, ktt, kup, nqq
       integer ku , kv , kt,  kp
+      logical forward
 !
 !      lprint = .false.
 
@@ -1733,7 +1743,7 @@
           do i=1,lons_lat
 !ch         uulon(i,k,lan) = ut(i,kk,lan) * rm2a
             uulon(i,k,lan) = ut_sl(i,k ,lan) * rm2a
-!hmhj use real wind
+!hmhj use real(kind=RTYPE) wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) * rma
 !hmhj use virtual wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) / con_rerth
@@ -1863,13 +1873,13 @@
 ! first set positive advection in east-west direction
 !
         call cyclic_cell_massadvxl(lons_lat,lonfull,levs,nvars,deltim, &
-                         uulon(1,1,lan),rrlon(1,1,lan),mass)
+                         uulon(1,1,lan),rrlon(1,1,lan),mass,forward)
 !       call cyclic_mono_advectx (lonfull,levs,nvars,deltim,               &
 !    &                   uulon(1,1,lan),rrlon(1,1,lan),mono)
 
-        call cyclic_cell_intpxl(nlevs,lons_lat,lonfull,rrlon(1,1,lan))
-        call cyclic_cell_intpxl(nlevs,lons_lat,lonfull,qqlon(1,1,lan))
-        call cyclic_cell_intpxl(levs,lons_lat,lonfull,vvlon(1,1,lan))
+        call cyclic_cell_intpx(nlevs,lons_lat,lonfull,rrlon(1,1,lan))
+        call cyclic_cell_intpx(nlevs,lons_lat,lonfull,qqlon(1,1,lan))
+        call cyclic_cell_intpx(levs,lons_lat,lonfull,vvlon(1,1,lan))
 
 !        if( lprint ) then
 !        print *,' done cyclic_massadvx with mass= ',mass
@@ -1939,7 +1949,7 @@
 !        call fixend_cell_massadvy(latfull,lathalf,levs,nvars,deltim, &
 !                         vvlat(1,1,lon),rrlat(1,1,lon),mass)
         call cyclic_cell_massadvyl(latfull,levs,nvars,deltim,         &
-                         vvlat(1,1,lon),rrlat(1,1,lon),mass)
+                         vvlat(1,1,lon),rrlat(1,1,lon),mass,forward)
 !       call cyclic_mono_advecty (latfull,levs,nvars,deltim,
 !    &                   vvlat(1,1,lon),rrlat(1,1,lon),mono)
 
@@ -1958,7 +1968,7 @@
 !        call fixend_cell_massadvy(latfull,lathalf,levs,nvars,deltim, &
 !                         vvlat(1,1,lon),qqlat(1,1,lon),mass)
         call cyclic_cell_massadvyl(latfull,levs,nvars,deltim,         &
-                         vvlat(1,1,lon),qqlat(1,1,lon),mass)
+                         vvlat(1,1,lon),qqlat(1,1,lon),mass,forward)
 !       call cyclic_mono_advecty (my,levs,nvars,deltim,
 !    &                   vvlat(1,1,lon),qqlat(1,1,lon),mono)
 
@@ -2023,14 +2033,14 @@
 !
 ! mass conserving interpolation from full grid to reduced grid
 !
-        call cyclic_cell_intpxl(nlevs,lonfull,lons_lat,qqlon(1,1,lan))
-        call cyclic_cell_intpxl(nlevs,lonfull,lons_lat,rrlon(1,1,lan))
+        call cyclic_cell_intpx(nlevs,lonfull,lons_lat,qqlon(1,1,lan))
+        call cyclic_cell_intpx(nlevs,lonfull,lons_lat,rrlon(1,1,lan))
 
 !
 ! second set advection in x for the second of the pair
 !
         call cyclic_cell_massadvxl(lons_lat,lonfull,levs,nvars,deltim, &
-                         uulon(1,1,lan),qqlon(1,1,lan),mass)
+                         uulon(1,1,lan),qqlon(1,1,lan),mass,forward)
 !       call cyclic_mono_advectx (lonfull,levs,nvars,deltim,               &
 !    &                   uulon(1,1,lan),qqlon(1,1,lan),mono)
 !        if( lprint ) then
@@ -2145,7 +2155,7 @@
       end
 ! ------------------------------
       subroutine ndslfv_monoadvh2_fgnl_xy(vdzonl,vdmerd,ddtemp    &
-                , lonsperlat,deltim,levs,nvars)
+                , lonsperlat,deltim,levs,nvars,forward)
 !
 ! a routine to do non-iteration semi-Lagrangain advection
 ! considering advection  with monotonicity in interpolation
@@ -2162,26 +2172,25 @@
 
       implicit none
 
-!ch   real ddtemp(nx,levs,my_max),qvadv(nx,levs*ncld,my_max)
       integer nvars
-      real ddtemp(nx,levs,my_max)
-      real vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
+      real(kind=RTYPE) ddtemp(nx,levs,my_max)
+      real(kind=RTYPE) vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
       integer,intent(in):: lonsperlat(my)
-      real,   intent(in):: deltim
+      real(kind=RTYPE),   intent(in):: deltim
 
-      real      uulon(lonfull,levs,latpart)
-      real      vvlon(lonfull,levs,latpart)
-      real      qqlon(lonfull,levs*nvars,latpart)
-!      real      rrlon(lonfull,levs*nvars,latpart)
+      real(kind=RTYPE)      uulon(lonfull,levs,latpart)
+      real(kind=RTYPE)      vvlon(lonfull,levs,latpart)
+      real(kind=RTYPE)      qqlon(lonfull,levs*nvars,latpart)
+!      real(kind=RTYPE)      rrlon(lonfull,levs*nvars,latpart)
 
-      real      vvlat(latfull,levs,lonpart)
-      real      qqlat(latfull,levs*nvars,lonpart)
-!      real      rrlat(latfull,levs*nvars,lonpart)
-      real      xr    (lonfull,levs)
-      real      xcp   (lonfull,levs)
-      real      sumrq (lonfull,levs)
-      real      xkappa(lonfull,levs)
-      real      rdt2, rkt, pi, cons0, cons1, rma, rm2a
+      real(kind=RTYPE)      vvlat(latfull,levs,lonpart)
+      real(kind=RTYPE)      qqlat(latfull,levs*nvars,lonpart)
+!      real(kind=RTYPE)      rrlat(latfull,levs*nvars,lonpart)
+      real(kind=RTYPE)      xr    (lonfull,levs)
+      real(kind=RTYPE)      xcp   (lonfull,levs)
+      real(kind=RTYPE)      sumrq (lonfull,levs)
+      real(kind=RTYPE)      xkappa(lonfull,levs)
+      real(kind=RTYPE)      rdt2, rkt, pi, cons0, cons1, rma, rm2a
 
 !      logical   lprint
 
@@ -2190,6 +2199,7 @@
       integer i,j,n,k,lon,lan,lat,lons_lat,irc,kk,KL
       integer kuu, kvv, ktt, kup, nqq
       integer ku , kv , kt,  kp
+      logical forward
 !
 !      lprint = .false.
 
@@ -2239,7 +2249,7 @@
           do i=1,lons_lat
 !ch         uulon(i,k,lan) = ut(i,kk,lan) * rm2a
             uulon(i,k,lan) = ut_sl(i,k ,lan) * rm2a
-!hmhj use real wind
+!hmhj use real(kind=RTYPE) wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) * rma
 !hmhj use virtual wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) / con_rerth
@@ -2369,13 +2379,13 @@
 ! first set positive advection in east-west direction
 !
         call cyclic_cell_massadvxl(lons_lat,lonfull,levs,nvars,deltim, &
-                         uulon(1,1,lan),qqlon(1,1,lan),mass)
+                         uulon(1,1,lan),qqlon(1,1,lan),mass,forward)
 !       call cyclic_mono_advectx (lonfull,levs,nvars,deltim,               &
 !    &                   uulon(1,1,lan),rrlon(1,1,lan),mono)
 
-!        call cyclic_cell_intpxl(nlevs,lons_lat,lonfull,rrlon(1,1,lan))
-        call cyclic_cell_intpxl(nlevs,lons_lat,lonfull,qqlon(1,1,lan))
-        call cyclic_cell_intpxl(levs,lons_lat,lonfull,vvlon(1,1,lan))
+!        call cyclic_cell_intpx(nlevs,lons_lat,lonfull,rrlon(1,1,lan))
+        call cyclic_cell_intpx(nlevs,lons_lat,lonfull,qqlon(1,1,lan))
+        call cyclic_cell_intpx(levs,lons_lat,lonfull,vvlon(1,1,lan))
 
 !        if( lprint ) then
 !        print *,' done cyclic_massadvx with mass= ',mass
@@ -2445,7 +2455,7 @@
 !        call fixend_cell_massadvy(latfull,lathalf,levs,nvars,deltim, &
 !                         vvlat(1,1,lon),rrlat(1,1,lon),mass)
 !!        call cyclic_cell_massadvyl(latfull,levs,nvars,deltim,         &
-!!                         vvlat(1,1,lon),rrlat(1,1,lon),mass)
+!!                         vvlat(1,1,lon),rrlat(1,1,lon),mass,forward)
 !       call cyclic_mono_advecty (latfull,levs,nvars,deltim,
 !    &                   vvlat(1,1,lon),rrlat(1,1,lon),mono)
 
@@ -2464,7 +2474,7 @@
 !        call fixend_cell_massadvy(latfull,lathalf,levs,nvars,deltim, &
 !                         vvlat(1,1,lon),qqlat(1,1,lon),mass)
         call cyclic_cell_massadvyl(latfull,levs,nvars,deltim,         &
-                         vvlat(1,1,lon),qqlat(1,1,lon),mass)
+                         vvlat(1,1,lon),qqlat(1,1,lon),mass,forward)
 !       call cyclic_mono_advecty (my,levs,nvars,deltim,
 !    &                   vvlat(1,1,lon),qqlat(1,1,lon),mono)
 
@@ -2529,14 +2539,14 @@
 !
 ! mass conserving interpolation from full grid to reduced grid
 !
-        call cyclic_cell_intpxl(nlevs,lonfull,lons_lat,qqlon(1,1,lan))
-!!        call cyclic_cell_intpxl(nlevs,lonfull,lons_lat,rrlon(1,1,lan))
+        call cyclic_cell_intpx(nlevs,lonfull,lons_lat,qqlon(1,1,lan))
+!!        call cyclic_cell_intpx(nlevs,lonfull,lons_lat,rrlon(1,1,lan))
 
 !
 ! second set advection in x for the second of the pair
 !
 !!        call cyclic_cell_massadvxl(lons_lat,lonfull,levs,nvars,deltim, &
-!!                         uulon(1,1,lan),qqlon(1,1,lan),mass)
+!!                         uulon(1,1,lan),qqlon(1,1,lan),mass,forward)
 !       call cyclic_mono_advectx (lonfull,levs,nvars,deltim,               &
 !    &                   uulon(1,1,lan),qqlon(1,1,lan),mono)
 !        if( lprint ) then
@@ -2651,7 +2661,7 @@
       end
 ! ------------------------------
       subroutine ndslfv_monoadvh2_fgnl_yx(vdzonl,vdmerd,ddtemp    &
-                , lonsperlat,deltim,levs,nvars)
+                , lonsperlat,deltim,levs,nvars,forward)
 !
 ! a routine to do non-iteration semi-Lagrangain advection
 ! considering advection  with monotonicity in interpolation
@@ -2668,26 +2678,25 @@
 
       implicit none
 
-!ch   real ddtemp(nx,levs,my_max),qvadv(nx,levs*ncld,my_max)
       integer nvars
-      real ddtemp(nx,levs,my_max)
-      real vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
+      real(kind=RTYPE) ddtemp(nx,levs,my_max)
+      real(kind=RTYPE) vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
       integer,intent(in):: lonsperlat(my)
-      real,   intent(in):: deltim
+      real(kind=RTYPE),   intent(in):: deltim
 
-      real      uulon(lonfull,levs,latpart)
-      real      vvlon(lonfull,levs,latpart)
-      real      qqlon(lonfull,levs*nvars,latpart)
-!      real      rrlon(lonfull,levs*nvars,latpart)
+      real(kind=RTYPE)      uulon(lonfull,levs,latpart)
+      real(kind=RTYPE)      vvlon(lonfull,levs,latpart)
+      real(kind=RTYPE)      qqlon(lonfull,levs*nvars,latpart)
+!      real(kind=RTYPE)      rrlon(lonfull,levs*nvars,latpart)
 
-      real      vvlat(latfull,levs,lonpart)
-      real      qqlat(latfull,levs*nvars,lonpart)
-!      real      rrlat(latfull,levs*nvars,lonpart)
-      real      xr    (lonfull,levs)
-      real      xcp   (lonfull,levs)
-      real      sumrq (lonfull,levs)
-      real      xkappa(lonfull,levs)
-      real      rdt2, rkt, pi, cons0, cons1, rma, rm2a
+      real(kind=RTYPE)      vvlat(latfull,levs,lonpart)
+      real(kind=RTYPE)      qqlat(latfull,levs*nvars,lonpart)
+!      real(kind=RTYPE)      rrlat(latfull,levs*nvars,lonpart)
+      real(kind=RTYPE)      xr    (lonfull,levs)
+      real(kind=RTYPE)      xcp   (lonfull,levs)
+      real(kind=RTYPE)      sumrq (lonfull,levs)
+      real(kind=RTYPE)      xkappa(lonfull,levs)
+      real(kind=RTYPE)      rdt2, rkt, pi, cons0, cons1, rma, rm2a
 
 !      logical   lprint
 
@@ -2696,6 +2705,7 @@
       integer i,j,n,k,lon,lan,lat,lons_lat,irc,kk,KL
       integer kuu, kvv, ktt, kup, nqq
       integer ku , kv , kt,  kp
+      logical forward
 !
 !      lprint = .false.
 
@@ -2745,7 +2755,7 @@
           do i=1,lons_lat
 !ch         uulon(i,k,lan) = ut(i,kk,lan) * rm2a
             uulon(i,k,lan) = ut_sl(i,k ,lan) * rm2a
-!hmhj use real wind
+!hmhj use real(kind=RTYPE) wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) * rma
 !hmhj use virtual wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) / con_rerth
@@ -2875,13 +2885,13 @@
 ! first set positive advection in east-west direction
 !
 !!        call cyclic_cell_massadvxl(lons_lat,lonfull,levs,nvars,deltim, &
-!!                         uulon(1,1,lan),rrlon(1,1,lan),mass)
+!!                         uulon(1,1,lan),rrlon(1,1,lan),mass,forward)
 !       call cyclic_mono_advectx (lonfull,levs,nvars,deltim,               &
 !    &                   uulon(1,1,lan),rrlon(1,1,lan),mono)
 
-!!        call cyclic_cell_intpxl(nlevs,lons_lat,lonfull,rrlon(1,1,lan))
-        call cyclic_cell_intpxl(nlevs,lons_lat,lonfull,qqlon(1,1,lan))
-        call cyclic_cell_intpxl(levs,lons_lat,lonfull,vvlon(1,1,lan))
+!!        call cyclic_cell_intpx(nlevs,lons_lat,lonfull,rrlon(1,1,lan))
+        call cyclic_cell_intpx(nlevs,lons_lat,lonfull,qqlon(1,1,lan))
+        call cyclic_cell_intpx(levs,lons_lat,lonfull,vvlon(1,1,lan))
 
 !        if( lprint ) then
 !        print *,' done cyclic_massadvx with mass= ',mass
@@ -2951,7 +2961,7 @@
 !        call fixend_cell_massadvy(latfull,lathalf,levs,nvars,deltim, &
 !                         vvlat(1,1,lon),rrlat(1,1,lon),mass)
 !!        call cyclic_cell_massadvyl(latfull,levs,nvars,deltim,         &
-!!                         vvlat(1,1,lon),rrlat(1,1,lon),mass)
+!!                         vvlat(1,1,lon),rrlat(1,1,lon),mass,forward)
 !       call cyclic_mono_advecty (latfull,levs,nvars,deltim,
 !    &                   vvlat(1,1,lon),rrlat(1,1,lon),mono)
 
@@ -2970,7 +2980,7 @@
 !        call fixend_cell_massadvy(latfull,lathalf,levs,nvars,deltim, &
 !                         vvlat(1,1,lon),qqlat(1,1,lon),mass)
         call cyclic_cell_massadvyl(latfull,levs,nvars,deltim,         &
-                         vvlat(1,1,lon),qqlat(1,1,lon),mass)
+                         vvlat(1,1,lon),qqlat(1,1,lon),mass,forward)
 !       call cyclic_mono_advecty (my,levs,nvars,deltim,
 !    &                   vvlat(1,1,lon),qqlat(1,1,lon),mono)
 
@@ -3035,14 +3045,14 @@
 !
 ! mass conserving interpolation from full grid to reduced grid
 !
-        call cyclic_cell_intpxl(nlevs,lonfull,lons_lat,qqlon(1,1,lan))
-!!        call cyclic_cell_intpxl(nlevs,lonfull,lons_lat,rrlon(1,1,lan))
+        call cyclic_cell_intpx(nlevs,lonfull,lons_lat,qqlon(1,1,lan))
+!!        call cyclic_cell_intpx(nlevs,lonfull,lons_lat,rrlon(1,1,lan))
 
 !
 ! second set advection in x for the second of the pair
 !
         call cyclic_cell_massadvxl(lons_lat,lonfull,levs,nvars,deltim, &
-                         uulon(1,1,lan),qqlon(1,1,lan),mass)
+                         uulon(1,1,lan),qqlon(1,1,lan),mass,forward)
 !       call cyclic_mono_advectx (lonfull,levs,nvars,deltim,               &
 !    &                   uulon(1,1,lan),qqlon(1,1,lan),mono)
 !        if( lprint ) then

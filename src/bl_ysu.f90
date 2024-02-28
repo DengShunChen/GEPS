@@ -20,6 +20,7 @@
                   swh,hlw,xmu,jj)
 !-------------------------------------------------------------------------------
     use rank
+    use const, only: RTYPE
 
    implicit none
 !-------------------------------------------------------------------------------
@@ -129,7 +130,7 @@
    real,     dimension( im, km )       ::                        pi2d
    real,     dimension( im )           ::                      rcl,br
    real,     dimension( im )           ::                   psim,psih
-   real,     dimension( im )           ::                         psk
+   real(kind=RTYPE), dimension( im )   ::                         psk
    real,     dimension( im )           ::     xland,hfx,qfx,heat,evap
    integer,  dimension( im )           ::  ls
    real,     dimension( im )           ::                      psfcpa

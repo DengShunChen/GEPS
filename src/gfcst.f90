@@ -47,7 +47,12 @@
 !
 !  time integration
 !
-      call intgrt
+      if ( ttl ) then
+        call intgrt
+      else
+        call intgrt_3tl
+      endif
+
 !
       call mpe_finalize
       call dmsexit(0)

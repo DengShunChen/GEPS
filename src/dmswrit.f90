@@ -1,4 +1,7 @@
-      subroutine dmswrit(nx,my,lrec,lenc,kflag,ifile,z,istat)
+      subroutine dmswrit(nx,my,lenc,kflag,z,istat)
+
+!CWB2021 single precision test, writing dms output in 32 bits float format
+
 !
 !  subroutine to read data in pressure level fields
 !
@@ -16,48 +19,63 @@
       use param, only : io_quilting
       use mpe
       use rank
+      use const, only : RTYPE,ifilout,key,ihdg
 !     use index
 
       implicit  none
 
       integer   nx,my,lenc,istat
       logical   t_flg
-      real      z(nx,my)
-      character lrec*28,ifile*80,kflag*1
+!CWB2021
+      real(kind=RTYPE) z(nx,my)
+      character kflag*1
 !
 ! working array
 !
-      character key*38
 !
-      write(key,1000)lrec,kflag,lenc
+      write(key,1000)ihdg,kflag,lenc
+#ifdef IO38K
  1000 format(a28,a1,i9.9)
+#else
+ 1000 format(a26,a1,i7.7)
+#endif
 !
       t_flg=.false.
 
-      if(io_quilting)then
-
-        if(myrank .eq. 0) then
-          ntag=ntag+1
-          call mpe_send_key(key,ntag,istat)
-          ntag=ntag+1
-          call mpe_send_data(z,nx*my,ntag,istat)
-#ifdef VERBOSE
-          print *,'dmsput key=',key,' ok'
-#endif
-        endif
-
-      else
+!< remove io_quilting
+!
+!      if(io_quilting)then
+!
+!        if(myrank .eq. 0) then
+!          ntag=ntag+1
+!          call mpe_send_key(key,ntag,istat)
+!          ntag=ntag+1
+!          call mpe_send_data(z,nx*my,ntag,istat)
+!#ifdef VERBOSE
+!          print *,'dmsput key=',key,' ok'
+!#endif
+!        endif
+!
+!      else
+!>
 
        if(myrank .eq. 0) then
-       call dmsput(ifile,key//char(0),z,istat)
+!CWB2021
+!       if(key(27:27).eq.'R')then
+!          z4=z
+!          call dmsput(ifile,key//char(0),z4,istat)
+!       endif
+!       if(key(27:27).eq.'H')then
+          call dmsput(ifilout,key//char(0),z,istat)
+!       endif
        t_flg=.true.
        endif
  
-!ch    call mpe_broadcast(istat,1,t_flg,mpe_integer)
        call mpe_bcast(istat,1,0,mpe_integer)
 !
        if(istat.ne.0)then
          if(myrank .eq. 0)print *,'dmsput key=',key,' error'
+         if(myrank .eq. 0)print *,'TYW in dmswrit, ifilout = ',ifilout
          call mpe_finalize
          call dmsexit(-1)
        else
@@ -66,7 +84,7 @@
 #endif
        endif
 
-       endif
+!       endif  !remove io_quilting
 !
       return
       end
@@ -75,7 +93,7 @@
 !CWB2016
 ! write dmsdata by rank 0, bypassing io_quilting server
 
-      subroutine dmswrit_mfc(nx,my,lrec,lenc,kflag,ifile,z,istat)
+      subroutine dmswrit_mfc(nx,my,lenc,kflag,z,istat)
 !
 !  subroutine to read data in pressure level fields
 !
@@ -93,30 +111,41 @@
       use param, only : io_quilting
       use mpe
       use rank
+      use const, only : RTYPE,ifilout,key,ihdg
 !     use index
 
       implicit  none
 
       integer   nx,my,lenc,istat
       logical   t_flg
-      real      z(nx,my)
-      character lrec*28,ifile*80,kflag*1
+      real(kind=RTYPE) z(nx,my)
+!CWB2021
+      character kflag*1
 !
 ! working array
 !
-      character key*38
 !
-      write(key,1000)lrec,kflag,lenc
+      write(key,1000)ihdg,kflag,lenc
+#ifdef IO38K
  1000 format(a28,a1,i9.9)
+#else
+ 1000 format(a26,a1,i7.7)
+#endif
 !
       t_flg=.false.
 
        if(myrank .eq. 0) then
-       call dmsput(ifile,key//char(0),z,istat)
+!CWB2021
+!       if(key(27:27).eq.'R')then
+!          z4=z
+!          call dmsput(ifile,key//char(0),z4,istat)
+!       endif
+!       if(key(27:27).eq.'H')then
+          call dmsput(ifilout,key//char(0),z,istat)
+!       endif
        t_flg=.true.
        endif
  
-!ch    call mpe_broadcast(istat,1,t_flg,mpe_integer)
        call mpe_bcast(istat,1,0,mpe_integer)
 !
        if(istat.ne.0)then
@@ -137,7 +166,7 @@
 !CWB2016
 ! write dmsdata by rank 0, bypassing io_quilting server
 
-      subroutine dmswrit_split(nx,my,lrec,lenc,kflag,ifile,z,istat)
+      subroutine dmswrit_split(nx,my,lenc,kflag,z,istat)
 !
 !  subroutine to read data in pressure level fields
 !
@@ -156,29 +185,40 @@
       use mpe
       use rank
       use index, only : col_rank
+      use const, only : RTYPE,ifilout,key,ihdg2
 
       implicit  none
 
       integer   nx,my,lenc,istat
       logical   t_flg
-      real      z(nx,my)
-      character lrec*28,ifile*80,kflag*1
+      real(kind=RTYPE) z(nx,my)
+!CWB2021
+      character kflag*1
 !
 ! working array
 !
-      character key*38
 !
-      write(key,1000)lrec,kflag,lenc
+      write(key,1000)ihdg2,kflag,lenc
+#ifdef IO38K
  1000 format(a28,a1,i9.9)
+#else
+ 1000 format(a26,a1,i7.7)
+#endif
 !
       t_flg=.false.
 
 !       if(myrank .eq. iroot) then
-       call dmsput(ifile,key//char(0),z,istat)
+!CWB2021
+!       if(key(27:27).eq.'R')then
+!          z4=z
+!          call dmsput(ifile,key//char(0),z4,istat)
+!       endif
+!       if(key(27:27).eq.'H')then
+          call dmsput(ifilout,key//char(0),z,istat)
+!       endif
        t_flg=.true.
 !       endif
  
-!ch    call mpe_broadcast(istat,1,t_flg,mpe_integer)
 !       call mpe_bcast_col(istat,1,0,mpe_integer)
 !
        if(istat.ne.0)then

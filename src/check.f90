@@ -15,6 +15,7 @@
       use rank
       use index
       use fftcom
+      use const, only: RTYPE
 
       implicit  none
 
@@ -23,8 +24,8 @@
 !     real      holdit(2000),workx(2000), chold(2,1000)
 !CWB20170801 fix for T853
       real      holdit(4000),workx(4000), chold(2,2000)
-      real      pt(nx,my_max)
-      real      pt_2d(nxp,my_max)
+      real(kind=RTYPE) pt(nx,my_max)
+      real(kind=RTYPE) pt_2d(nxp,my_max)
 
       equivalence (holdit,chold)
       character lab*10

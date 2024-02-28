@@ -1,16 +1,16 @@
       subroutine pbl_noah (nxj,nx,lev,ktpbl,dt,g,r,cp,xkapa,hltm,ptop   &
-                        , tice,hice,tg,z0,land,topo,phi,pss,u,v,t,q,ut  &
-                        , vt,tt,qt,pk,pk2,ustar,tstar,qstar,e,eps,hflux &
-                        , qflux,itstp,gwclim,tgclim,ocean,ice,sheleg    &
-                        , totalp,ss,rs,alb,imx,xkmx,idg,xkmd,itype      &
-                        , t2,q2,rh2,rh10,u10,v10,fm,fh,fm10,fh2,srflag  &
-                        , rld,stbo                                      &
+                        , tice,hice,tg,z0,land,topo,phi,phii,pss,u,v,t  &
+                        , q,ut,vt,tt,qt,pk,pk2,ustar,tstar,qstar,e,eps  &
+                        , hflux,qflux,itstp,gwclim,tgclim,ocean,ice     &
+                        , sheleg,totalp,ss,rs,alb,imx,xkmx,idg,xkmd     &
+                        , itype,t2,q2,rh2,rh10,u10,v10,fm,fh,fm10,fh2   &
+                        , srflag,rld,stbo                               &
                         , km,smc,stc,canopy,runoff,sigmaf,istyp,ivegtyp &
-                        , ncld,dsigma,islopetyp,slc,sncover,snwdph       &
+                        , ncld,dsigma,islopetyp,slc,sncover,snwdph      &
                         , shdmax,shdmin,snoalb,albedo2                  &
                         , sld,zice,cice,xtice,hpbl,asl,atl,xmu,gfx      &
                         , kpbl,nmpbl,nmmiph,jj,isot,ivegsrc,sfemis_g    &
-                        , dudt,dvdt,dtdt )
+                        , dudt,dvdt,dtdt,dqdt )
 !
 !#######################################################################
 !                     subroutine description
@@ -155,7 +155,8 @@
       use mpe
       use rank
       use index
-      use radn,   only:ntcw,ntiw,ntinc,ntoz,ntrw,ntsw,ntgl
+      use radn,   only:ntcw,ntiw,ntinc,ntrnc,ntoz,ntrw,ntsw,ntgl
+      use const,  only:RTYPE 
 !ch   use paramt
 
 !
@@ -168,14 +169,17 @@
 
       integer  imx(2),itstp
 
-      real     tg(nx),z0(nx),topo(nx),pss(nx),                             &
-               phi(nx,lev),u(nx,lev),v(nx,lev),t(nx,lev),q(nx,lev*ncld),   &
-               ut(nx,lev),vt(nx,lev),tt(nx,lev),qt(nx,lev*ncld),ustar(nx), &
+      real     tg(nx),z0(nx),                                              &
+               u(nx,lev),v(nx,lev),t(nx,lev),                              &
+               ustar(nx),                                                  &
                tstar(nx),qstar(nx),e(nx,lev),eps(nx,lev),hflux(nx),        &
-               qflux(nx),pk(nx,lev),pk2(nx,lev),gwclim(nx),                &
+               qflux(nx),pkd(nx),pk2d(nx),gwclim(nx),                      &
                tgclim(nx),snr(nx),totalp(nx),                              &
                ss(nx),rs(nx),alb(nx),xkmx(2),xkmd(lev),                    &
                t2(nx),u10(nx),v10(nx)
+      real(kind=RTYPE) qt(nx,lev*ncld),q(nx,lev*ncld),phi(nx,lev),         &
+                       topo(nx),pss(nx),ut(nx,lev),vt(nx,lev),tt(nx,lev),  &
+                       pk(nx,lev),pk2(nx,lev)
 !soil
       real     smc(nx,km),stc(nx,km),canopy(nx),sigmaf(nx),                &
                rld(nx),runoff(nx)
@@ -189,7 +193,7 @@
 !ch   real     hgt(im,lm),xkm(im,lm),xkh(im,lm),ts(im),                    &
 !ch            qsfc(im),zl(im),czh(im),ps(im),sfcw(im),                    &
 !ch            dhgt(im,lm),ro2(im,lm),dhgtz(im,lm)
-      real     hgt(nx),xkm(nx,lev),xkh(nx,lev),ts(nx),                     &
+      real     hgt(nx),xkm(nx,lev),xkh(nx,lev),                            &
                qsfc(nx),zl(nx),czh(nx),ps(nx),sfcw(nx),                    &
                dhgt,ro2(nx),dhgtz(nx,lev)
 !soil
@@ -213,8 +217,9 @@
                 prsl(nx,lev),prslk(nx,lev),phil(nx,lev),del(nx,lev),        &
 !byl                prsi(nx,lev+1),phi2(nx,lev+1),phii(nx,lev+1),              &
                 prsi(nx,lev+1),phii(nx,lev+1),                          &
-                dsigma(lev,2),rcl(nx),                                  &
+                rcl(nx),                                                &
                 u1(nx,lev),v1(nx,lev),t1(nx,lev)
+      real(kind=RTYPE) dsigma(lev,2)
       real, dimension(:,:,:), allocatable :: q1
 !
       real      pk2x(nx,lev),pkx(nx,lev)
@@ -251,7 +256,7 @@
 
 !----------------------------------------------------
 ! for fractional step:
-      real      dudt(nx,lev),dvdt(nx,lev),dtdt(nx,lev) 
+      real      dudt(nx,lev),dvdt(nx,lev),dtdt(nx,lev),dqdt(nx,lev) 
 
       integer  lsm,i,k,iter,kc,ntrac
       real     ppd,ppp,ttt,ppu,dth,p850,ddd,cc,qqq
@@ -273,7 +278,12 @@
       ntrac=ncld
       if ( nmmiph .eq. 6 ) ntrac=ncld-3
       if ( nmmiph .eq. 8 ) ntrac=ncld-4
-      if ( nmmiph .eq.11 ) ntrac=7
+      if ( nmmiph .eq.18 ) ntrac=5
+      if ( nmmiph .eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 ) ntrac=7
+      if ( nmmiph .eq.15 ) ntrac=5
+      if ( nmmiph .eq.16 ) ntrac=5
+!      if ( nmmiph .eq.16 ) ntrac=8
+
       allocate(q1(nx,lev,ntrac))
 !
 ! --- ensure ktpbl selection is greater than 2
@@ -282,15 +292,11 @@
 !
 ! --- compute surface pres and surface air temp at current time level
 !
-      do 50 i = 1, nxj
-      ps(i) = pss(i) + ptop
-      ttt = tt(i,lev)*(1.+0.608*qt(i,lev))
-      ts(i) = ttt/pk(i,lev)*pk2(i,lev)
-  50  continue
-!
       do k=1,lev
-      call vlog(pk2x(1,k),pk2(1,k),nxj)
-      call vlog(pkx(1,k), pk(1,k), nxj)
+      pkd(:) =pk(:,k)
+      pk2d(:)=pk2(:,k)
+      call vlog(pk2x(1,k),pk2d,nxj)
+      call vlog(pkx(1,k), pkd, nxj)
       do i=1,nxj
         pk2x(i,k)=pk2x(i,k)*(cp/r)
         pkx(i,k) = pkx(i,k)*(cp/r)
@@ -299,34 +305,11 @@
       call vexp(pkx(1,k), pkx(1,k), nxj)
       enddo
 !
-!      do 100 k = 1, lev
-      do 100 i = 1, nxj
-!      hgt(i,k) = (phi(i,k) - topo(i) ) / g
-       hgt(i) = (phi(i,lev) - topo(i) ) / g
-  100 continue
-
+      do 50 i = 1, nxj
+      ps(i)  = pss(i) + ptop
+      hgt(i) = (phi(i,lev) - topo(i) ) / g
+  50  continue
 !
-      do 105 i = 1, nxj
-      ppd = pk2x(i,1) * 1000.
-      dhgt= ( ppd - ptop ) * 100. / g
-!byl      ppp = pkx(i,1) * 1000.+ptop
-      ppp = pkx(i,1) * 1000.
-      ttt = tt(i,1)*(1.+0.608*qt(i,1))
-      dhgtz(i,1)= dhgt * r * ttt / (100.*ppp)
-  105 continue
-!
-      do 110 k=2, lev
-      do 110 i=1, nxj
-      ppu = pk2x(i,k-1) * 1000.
-      ppd = pk2x(i,k) * 1000.
-!byl      dhgt(i,k) = ( ppd - ppu ) * 100. / g
-      dhgt= ( ppd - ppu ) * 100. / g
-!byl      ppp = pkx(i,k) * 1000.+ptop
-      ppp = pkx(i,k) * 1000.
-      ttt = tt(i,k)*(1.+0.608*qt(i,k))
-      dhgtz(i,k)= dhgt * r * ttt / (100.*ppp)
-  110 continue
-
       do 120 i = 1, nxj
       qqq = max(qt(i,lev), 1.0e-8)
       ttt = tt(i,lev)*(1.+0.608*qqq)
@@ -453,7 +436,7 @@
          srflag(i)=1.
        endif
        enddo
-
+    
 !.............................................
 ! loop needed to remove unstable in calm situation (sfcw < 2m/s)
 !............................................
@@ -510,7 +493,7 @@
 !     enddo
 !     endif
 !
-!      call sfc_drv(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev), &
+!      call sfc_drv(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev),&
 !                     sheleg,sncover,snwdph,tg,qsurf,tprcp,SRFLAG,       &
 !                     smc,stc,slc,evapc,istyp,sigmaf,                    &
 !                     ivegtyp,canopy,rld,sld,                            &
@@ -530,7 +513,7 @@
                      drain,qflux,hflux,ep1d,runof,                          &
                      albedo2,jj,io,jo)
 !
-!       call sfc_sice(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev),    &
+!       call sfc_sice(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev),   &
 !                      zice,cice,xtice,sld,        &    ! FOR SEA-ICE - XW Nov04
 !                      sheleg,snwdph,tg,qsurf,tprcp,SRFLAG,stc,evapc,    &
 !                      rld,radsl,SNOMT,dth,gfx,cd,cdq,                   &
@@ -588,17 +571,6 @@
 !                                                                      c
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !
-      do i=1,nxj
-!byl         phi2(i,lev+1)=0.
-         phii(i,1)=0.
-      enddo
-       do k=lev,1,-1
-          kc=lev-k+2
-       do i = 1, nxj
-!byl          phi2(i,k)=phi2(i,k+1)+dhgtz(i,k)*g
-          phii(i,kc)=phii(i,kc-1)+dhgtz(i,k)*g
-      enddo
-      enddo
 !
       if ( nmmiph .eq. 6 ) then  !WSM6
         do k=1,lev
@@ -621,7 +593,18 @@
             q1(i,kc,5) = qt(i,lev*(ntoz-1)+k)
           enddo
         enddo
-      else if ( nmmiph .eq. 11 ) then ! GFDL MP
+      else if ( nmmiph .eq. 18 ) then ! 2M Thompson
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
+            q1(i,kc,1) = qt(i,             k)
+            q1(i,kc,2) = qt(i,lev*(ntcw-1)+k)
+            q1(i,kc,3) = qt(i,lev*(ntiw-1)+k)
+            q1(i,kc,4) = qt(i,lev*(ntinc-1)+k)
+            q1(i,kc,5) = qt(i,lev*(ntoz-1)+k)
+          enddo
+        enddo
+      else if ( nmmiph.eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 ) then ! GFDL MP
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
@@ -632,6 +615,17 @@
             q1(i,kc,5) = qt(i,lev*(ntsw-1)+k)
             q1(i,kc,6) = qt(i,lev*(ntgl-1)+k)
             q1(i,kc,7) = qt(i,lev*(ntoz-1)+k)
+          enddo
+        enddo
+      else if ( nmmiph.eq.15 .or. nmmiph.eq.16 ) then ! Goddard MP
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
+            q1(i,kc,1) = qt(i,             k)
+            q1(i,kc,2) = qt(i,lev*(ntcw-1)+k)
+            q1(i,kc,3) = qt(i,lev*(ntiw-1)+k)
+            q1(i,kc,4) = qt(i,lev*(ntrw-1)+k)
+            q1(i,kc,5) = qt(i,lev*(ntoz-1)+k)
           enddo
         enddo
       else
@@ -760,7 +754,6 @@
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
-            qt(i,             k) = q1(i,kc,1)
             qt(i,lev*(ntcw-1)+k) = q1(i,kc,2)
             qt(i,lev*(ntiw-1)+k) = q1(i,kc,3)
             qt(i,lev*(ntoz-1)+k) = q1(i,kc,4)
@@ -770,18 +763,26 @@
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
-            qt(i,             k) = q1(i,kc,1)
             qt(i,lev*(ntcw-1)+k) = q1(i,kc,2)
             qt(i,lev*(ntiw-1)+k) = q1(i,kc,3)
             qt(i,lev*(ntinc-1)+k)= q1(i,kc,4)
             qt(i,lev*(ntoz-1)+k) = q1(i,kc,5)
           enddo
         enddo
-      else if ( nmmiph .eq. 11 ) then ! GFDL MP
+      else if ( nmmiph .eq. 18 ) then ! 2M Thompson
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
-            qt(i,             k) = q1(i,kc,1)
+            qt(i,lev*(ntcw-1)+k) = q1(i,kc,2)
+            qt(i,lev*(ntiw-1)+k) = q1(i,kc,3)
+            qt(i,lev*(ntinc-1)+k)= q1(i,kc,4)
+            qt(i,lev*(ntoz-1)+k) = q1(i,kc,5)
+          enddo
+        enddo
+      else if ( nmmiph.eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 ) then ! GFDL MP
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
             qt(i,lev*(ntcw-1)+k) = q1(i,kc,2)
             qt(i,lev*(ntiw-1)+k) = q1(i,kc,3)
             qt(i,lev*(ntrw-1)+k) = q1(i,kc,4)
@@ -790,8 +791,18 @@
             qt(i,lev*(ntoz-1)+k) = q1(i,kc,7)
           enddo
         enddo
+      else if ( nmmiph.eq.15 .or. nmmiph.eq.16 ) then ! Goddard MP
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
+            qt(i,lev*(ntcw-1)+k) = q1(i,kc,2)
+            qt(i,lev*(ntiw-1)+k) = q1(i,kc,3)
+            qt(i,lev*(ntrw-1)+k) = q1(i,kc,4)
+            qt(i,lev*(ntoz-1)+k) = q1(i,kc,5)
+          enddo
+        enddo
       else
-        do nc=1,ntrac
+        do nc=2,ntrac
           do k=1,lev
             kc=lev-k+1
             do i=1,nxj
@@ -813,6 +824,7 @@
             dtdt(i,kc) = (t1(i,kc)-tt(i,k))/dt
             dudt(i,kc) = (u1(i,kc)-ut(i,k))/dt
             dvdt(i,kc) = (v1(i,kc)-vt(i,k))/dt
+            dqdt(i,kc) = (q1(i,kc,1)-qt(i,k))/dt
           enddo
        enddo
 !

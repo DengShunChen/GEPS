@@ -1,4 +1,4 @@
-      module rank
+  module rank
 
       implicit none
 
@@ -27,4 +27,4 @@
 #endif
               MPI_COMM_gfs,MPI_COMM_io,ntag,Ngfs,Nio
 
-      end module rank
+  end module rank

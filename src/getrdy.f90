@@ -44,20 +44,27 @@
                                 ,ifilin_ocaf,read_ocaf,read_ocaf0      &
                                 ,wtfn12,wsfn12,time_weights,mask1st
       USE mo_netcdf,         ONLY:lkvl,set_ocndepth
+! for Thompson MP
+      use physcons,          only: con_rd,con_eps
+      use module_mp_thompson_make_number_concentrations,                &
+                             only: make_IceNumber, make_RainNumber
 !-----------------------------------------------------------------------
-
+      use mod_grb2_param , only : grbid ,grbfile ,opn_grb2 ,cls_grb2,grbnxmy
 
       implicit   none
 
 !  local working array
 !
       real      sst(nxp,my_max),ww1(nx,my),ww2(nxp,my_max),     &
-                rh2100(nxp,my_max),rh10100(nxp,my_max),         &
-                wk1(nxp,lev,my_max),pklev(nxp,my_max),          &
-                cc(nx+2,levp,1,my_max),ww3(nx,my_max)
+                wk1(nxp,lev,my_max),pklev(nxp,my_max)
+      real(kind=RTYPE) cc(nx+2,levp,1,my_max),dummy,ww3(nx,my_max),    &
+                       ww4(nx,my)
 !byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
 
-      character lrec*28,rfile*55,ctau*6,topostd*4,topohgt*4,key*38
+      character rfile*255,ctau*6,topostd*4,topohgt*4
+!helio>
+      character f71*50
+!helio<
 #ifdef RSM
       character*12 dtgrsm
       integer idtgrsm
@@ -94,7 +101,7 @@
       integer lmax,nxmy,mlmax2,i,j,jj,k,m,mf,n,nxj,ios,lcwb,lphy,itaui, &
               lncrec,istat,itaup,isnow,njump1,njump2,njump3,lvlw,lvlw1, &
               lvlw2,lvlw3,ii,icwarn
-      real    fact,xxaa,taux,dummy,q1,dsigp,pi,xx,wet
+      real    fact,xxaa,taux,q1,dsigp,pi,xx,wet
 !xb110>
 !      real    flash(nxp,my_max)
 !xb110<
@@ -105,8 +112,13 @@
       real, parameter:: specified_ice_thickness  = 2.0
       real lontest(nxp,my_max)
       integer nxjpart      
+! for io quilting
+      character:: keydoit*34
+! for Thompson MP
+      real  tem,rho,ttr,ttv
 
       lmax=26
+      cc=0.
 !
       nxmy   = nx*my
       mlmax2 = mlmax * 2
@@ -130,6 +142,34 @@
       endif
       endif
       endif
+!------------------------------------------------------------
+!helio>
+       if ( nco .gt. 999 ) then
+        write(f71,105) nco,nx,my
+       else
+        if ( nx .gt. 999 .and. my .gt. 999 ) write(f71,106) nco,nx,my
+        if ( nx .gt. 999 .and. my .le. 999 ) write(f71,107) nco,nx,my
+        if ( nx .le. 999 .and. my .le. 999 ) write(f71,108) nco,nx,my
+       endif
+ 105  format('global_idw.t',i4.4,'.',i4.4,'.',i4.4,'.dat')
+ 106  format('global_idw.t',i3.3,'.',i4.4,'.',i4.4,'.dat')
+ 107  format('global_idw.t',i3.3,'.',i4.4,'.',i3.3,'.dat')
+ 108  format('global_idw.t',i3.3,'.',i3.3,'.',i3.3,'.dat')
+
+      open(71,file=f71,form='unformatted',access='direct',    &
+           recl=8*nx*my,convert="big_endian")
+
+      do k=1,8
+        read(71,rec=k) ww1
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          outp(:,jj,k) = ww1(:,j)
+        enddo
+      enddo
+
+      close(71)
+
+!helio<
 !------------------------------------------------------------
 
       if (restrt) then
@@ -166,7 +206,7 @@
 !
 !!      call scatter_spec(work_io,vornow,divnow,temnow,qnow,plnow,   &
 !!         vorold,divold,temold,qold,plold,dsqgeo,spgeo,trefs,       &
-!!         uzm,lev,ncld,jtrun,jtmax,my,nsize)
+!!         lev,ncld,jtrun,jtmax,my,nsize)
 !
       rfile = phyout(1:lphy)//ctau
 !
@@ -241,16 +281,16 @@
       deallocate (temp2)
 
       lncrec=nx*my
-      call syslbl('x00dif',idtg,0,ggdef,lrec)
-      call dmsread(nx,my,lrec,lncrec,'H',ifilout,ww1,istat)
+      call syslbl('x00dif',idtg,0,ggdef)
+      call dmsread(nx,my,lncrec,'H',ifilout,ww1,istat)
       call unify_reducepick(nx,my,my_max,ww1,pdiff)
 
-      call syslbl('h00100',idtg,0,ggdef,lrec)
-      call dmsread(nx,my,lrec,lncrec,'H',ifilin,ww1,istat)
+      call syslbl('h00100',idtg,0,ggdef)
+      call dmsread(nx,my,lncrec,'H',ifilin,ww1,istat)
       call unify_reducepick(nx,my,my_max,ww1,t1000)
 
-      call syslbl('x00tsv',idtg,0,ggdef,lrec)
-      call dmsread(nx,my,lrec,lncrec,'H',ifilout,ww1,istat)
+      call syslbl('x00tsv',idtg,0,ggdef)
+      call dmsread(nx,my,lncrec,'H',ifilout,ww1,istat)
       call unify_reducepick(nx,my,my_max,ww1,tsave)
 !
 !  read dmsdata for standard deviation of terrain field
@@ -259,8 +299,12 @@
 !dms    istdno=0
 !c      topostd='gbkf'   ! responding to istdno=99
         topostd='gbk0'   ! responding to istdno=0
-        write(lrec,'("s00062",2x,a4,a4,12x)')topostd,ggdef
-        call dmsread(nx,my,lrec,nxmy,'H',bckfile,ww1,istat)
+#ifdef IO38K
+        write(ihdg,'("s00062",2x,a4,a4,12x)')topostd,ggdef
+#else
+        write(ihdg,'("s00062",a4,a4,12x)')topostd,ggdef
+#endif
+        call dmsread(nx,my,nxmy,'H',bckfile,ww1,istat)
 !
         do jj=1,jlistnum
           j=jlist1(jj)
@@ -301,6 +345,11 @@
         fqp=0.
         ftp1=0.
         fqp1=0.
+        itaui=0
+! give the initial forward weighting for Semi-implicit
+        alphax = alpha
+! give the initial coefficient for horizontal diffusion
+        hfiltx = hfilt
 !
 ! new start gfcst: read climate data, initialize parameters
 !
@@ -310,14 +359,14 @@
 !
 !  read sst analysis data
 !
-        call syslbl('w00100',idtg,0,ggdef,lrec)
-        call dmsread(nx,my,lrec,nxmy,'H',ifilin,ww1,istat)
+        call syslbl('w00100',idtg,0,ggdef)
+        call dmsread(nx,my,nxmy,'H',ifilin,ww1,istat)
         call unify_reducepick(nx,my,my_max,ww1,sst)
 ! ------------------------------------------------------------
 !   read new albedo
 !-------------------------------------------------------------
       if (irad .eq. 2) then
-        call readalb(bckfile,nx,my,my_max,julian,ggdef,         &
+        call readalb(nx,my,my_max,julian,         &
                    alvsf,alvwf,alnsf,alnwf,facsf,facwf)
         if (myrank.eq.0) print *, 'irad=2, readalb ok!!'
         do jj=1,jlistnum
@@ -362,8 +411,8 @@
         isnow = idtg - (idtg/10000)*10000
 !                           
         if( ncepsnow  .and. isnow.eq.0 )then
-          call syslbl('b00650',idtg,0,ggdef,lrec)
-          call dmsread(nx,my,lrec,nxmy,'H',ifilin,ww1,istat)
+          call syslbl('b00650',idtg,0,ggdef)
+          call dmsread(nx,my,nxmy,'H',ifilin,ww1,istat)
           call unify_reducepick(nx,my,my_max,ww1,snr)
           if( myrank .eq. 0 ) print*, &
             "update snow depth with ncep's snow analysis, at dtg=",idtg
@@ -398,20 +447,20 @@
 !          call dmsreadi(nx,my,lrec,nxmy,'I',ifilin,icex,istat)
 !          if( lreduce.eq.1 ) call reducepicki (icex,nxdef,nx,my)
 !
-          call syslbl('w00091',idtg,0,ggdef,lrec)
-          call dmsread(nx,my,lrec,nxmy,'H',ifilin,ww1,istat)
+          call syslbl('w00091',idtg,0,ggdef)
+          call dmsread(nx,my,nxmy,'H',ifilin,ww1,istat)
           call unify_reducepick(nx,my,my_max,ww1,cice)
 !
           if( myrank .eq. 0 ) then
              print*,"get ncep's sea ice analysis, at dtg=",idtg
-             call syslbl('w00092',idtg,0,ggdef,lrec)
-             write(key,'(a28,a1,i9.9)') lrec,'H',nxmy
+             call syslbl('w00092',idtg,0,ggdef)
+             write(key,'(a28,a1,i9.9)') ihdg,'H',nxmy
              call dmschkr (ifilin,key//char(0),istat)
           endif
           call mpe_bcast(istat,1,0,mpe_integer)
 !
           if ( istat .eq. 0 ) then
-            call dmsread(nx,my,lrec,nxmy,'H',ifilin,ww1,istat)
+            call dmsread(nx,my,nxmy,'H',ifilin,ww1,istat)
             call unify_reducepick(nx,my,my_max,ww1,zice)
             if( myrank .eq. 0 ) &
                print*,"get sea ice thickness from ncep analysis,",     &
@@ -452,7 +501,14 @@
                   zice(i,jj) = max(zice(i,jj),1.*cice(i,jj))
                   icwarn = icwarn + 1 
                 endif
+                shdmax(i,jj) = cice(i,jj)
               endif            
+! set snow depth to zero on ocean point
+              if ( ocean(i,jj) ) then
+                snr(i,jj)    = 0.
+                sndepth(i,jj)= 0.
+                sncover(i,jj)= 0.
+              endif
             enddo             
           enddo
 !
@@ -506,7 +562,7 @@
           do i = 1,nxj
             totalp(i,jj)=0.
 !            flash(i,jj)=0.   !xb110, flash density
-!byl            ustar(i,jj)=0.1
+!            ustar(i,jj)=0.1
             ustar(i,jj)=sqrt(0.14) !make sure z0 will be 0.0002 over ocean
             tstar(i,jj)=0.025
             qstar(i,jj)=0.0
@@ -617,8 +673,12 @@
         else
          write(topohgt,'(a3,i1.1)')'gbk',ksgeo
         end if
-        write(lrec,'("s00060",2x,a4,a4,12x)')topohgt,ggdef
-        call dmsread(nx,my,lrec,nxmy,'H',bckfile,ww1,istat)
+#ifdef IO38K
+        write(ihdg,'("s00060",2x,a4,a4,12x)')topohgt,ggdef
+#else
+        write(ihdg,'("s00060",a4,a4,12x)')topohgt,ggdef
+#endif
+        call dmsread(nx,my,nxmy,'H',bckfile,ww1,istat)
         if(istat.ne.0)then
           call mpe_finalize
           call dmsexit(-1)
@@ -644,17 +704,18 @@
         call mpe2d_unify_nx(ww3,sgeo)
         call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww3,spgeo,nsizey)
         call transr1(jtrun,jtmax,nx,my,my_max,poly,spgeo,sgeo,nsizey)
-        call mpe2d_unify(ww1,sgeo)
-
-        call qmaxn3 (ww1,'  sgeo',' ',1,1,1,nx,my,1)
-          if(myrank == 0) &
-          write(*,*) 'sgeo=',maxval(sgeo),maxloc(sgeo),minval(sgeo),minloc(sgeo)
+        call unify_reduceintp(nx,my,my_max,sgeo,ww4)
+!        call qmaxn3 (ww4,'sgeo',' ',1,1,1,nx,my,1)
 !dms    istdno=99
 !dms    istdno=0
 !c      topostd='gbkf'   ! responding to istdno=99
         topostd='gbk0'   ! responding to istdno=0
-        write(lrec,'("s00062",2x,a4,a4,12x)')topostd,ggdef
-        call dmsread(nx,my,lrec,nxmy,'H',bckfile,ww1,istat)
+#ifdef IO38K
+        write(ihdg,'("s00062",2x,a4,a4,12x)')topostd,ggdef
+#else
+        write(ihdg,'("s00062",a4,a4,12x)')topostd,ggdef
+#endif
+        call dmsread(nx,my,nxmy,'H',bckfile,ww1,istat)
         if(istat.ne.0)then
           call mpe_finalize
           call dmsexit(-1)
@@ -688,10 +749,10 @@
 !
       if(myrank .eq. 0) print *,'idtg=',idtg
       taux=0.
-      call  sigful( nx,my,my_max,lev,ncld,lmax,jtrun,jtmax,ifilin    &
-             , ifilout,cstar,ktrop,idtg,ptop,taux,capa,grav,rgas,rad &
+      call  sigful( nx,my,my_max,lev,ncld,lmax,jtrun,jtmax           &
+             , cstar,ktrop,idtg,ptop,taux,capa,grav,rgas,rad         &
              , cp,weight,poly,sigma,cosl,phi,tt,ut,vt,qt,o3l,pt,sgeo &
-             , pdiff,tsave,t1000,plt,pk,pk2,trefs,taup               &
+             , pdiff,tsave,t1000,plt,pk,pk2,taup                     &
              , ggdef,gmdef)
 !
 ! reset update cycle tau,if it is abnormal
@@ -782,7 +843,6 @@
 !!      call tranuv ( jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac &
 !!                   ,poly,dpoly,vornow,divnow,wk1,wk2,nsizey)
 !
-!!      call uzmean ( nx,my,my_max,lev,wk1,uzm )
 !
 !  write initial spectral coefficients to history file
 !
@@ -793,7 +853,7 @@
 !!        allocate (work_io((( (7+2*ncld)*2*lev+8)*jtrun*jtmax+my*lev)*nsize))
 !!        call gather_spec(work_io,vornow,divnow,temnow,qnow,plnow,   &
 !!           vorold,divold,temold,qold,plold,dsqgeo,spgeo,trefs,      &
-!!           uzm,lev,ncld,jtrun,jtmax,my,nsize)
+!!           lev,ncld,jtrun,jtmax,my,nsize)
 !         if(myrank .eq. 0) then
 !           open (unit=7,file=rfile,form='unformatted')
 !cc         write (7) work_io
@@ -881,6 +941,13 @@
         call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pt(1,jj) &
                           ,pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
  160  continue
+!                  
+!  computing global mean surface pressure at initial time
+!
+      if ( .not. restrt ) then
+        pdryi = 0.
+        call ptot(pdryi,dpprt)
+      endif
 !
 !  compute globel moisture budget and p-coordinate variables
 !
@@ -1206,6 +1273,36 @@
 !        call mpe_unify(hflux,nx,my,2,mpe_double)
 !        call mpe_unify(qflux,nx,my,2,mpe_double)
       endif    ! end of ( .not. restrt ) for u10 v10 t2 being output at tau=0
+
+! for Thompson : 1st guess number concentration where mass non-zero
+      if ( .not.restrt .and. nmmiph.eq.18 ) then
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          do k = 1, lev
+            do i = 1, nxj
+              ! virtual temperature :
+              ttv = tt(i,k,jj)*pk(i,k,jj)
+              ! real temperature :
+              ttr = ttv/(1.0+0.608*qt(i,k,jj))
+              ! air density :
+              rho = plt(i,k,jj)*100./(con_rd*ttv)
+
+              tem = qt(i,(ntiw-1)*lev+k,jj)
+              if ( tem .gt. 0. ) then
+                 qt(i,(ntinc-1)*lev+k,jj) =                             &
+                      make_IceNumber(tem*rho,ttr)/rho
+              endif
+
+              tem = qt(i,(ntrw-1)*lev+k,jj)
+              if ( tem .gt. 0. ) then
+                 qt(i,(ntrnc-1)*lev+k,jj) =                             &
+                      make_RainNumber(tem*rho,ttr)/rho
+              endif
+            enddo
+          enddo
+        enddo
+      endif
 !
 !  output initial fileds
 !
@@ -1221,37 +1318,60 @@
         gfx=0.
         sld=0.
         rld=0.
-       rh2100=rh2*100.
-       rh10100=rh10*100.
 !        flash=0.   !xb110, flash density
-        call outflds ( 0,nx,my,my_max,lev,ncld,lmax,numout,idtg,ifilout &
+
+!!       open grib2 file
+        if( outgrb2 == 1 .and. myrank == 0 )then
+          if(io_quilting)then 
+              grbnxmy=nx*my
+              write( keydoit,'(A14,I12.12,A8)') &
+              "OPEN..0000....",idtg,"H...DOIT"
+              ntag=ntag+1
+              call mpe_send_key(keydoit,ntag,istat)
+          else
+            grbid=233  ! 231 outflds  232 out24  233 mfc
+ 133                    format( A  ,A ,I10.10 ,A       )
+            write(grbfile,133 )trim(ifilout_grb),'/GFS_',idtg/100 ,'_0000.grb2'
+            if(myrank==0) print*,'OutFileName= ',trim(grbfile)
+            call opn_grb2(nx,my,idtg, 0 ,istat)
+          endif
+        endif
+
+        call outflds ( itaui,nx,my,my_max,lev,ncld,lmax,numout,idtg     &
              , outdir,ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo           &
-             , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                         &
+             , ptend,pt,plt,pk,pk2,phi,ut,vt,vvel                       &
              , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                &
              , raintot,raincu,rainlp,plcl,cumtop,ss,rs,alb,gwclim       &
-             , acld,cosl,wk1,ww2,ww2,t2,q2,rh2100,rh10100,u10,v10,gfx,rld,sld &
+             , acld,cosl,wk1,ww2,ww2,t2,q2,rh2,rh10,u10,v10,gfx,rld,sld &
 !byl             , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500 &
              , km_soil,smc,slc,stc,canopy,ggdef,typtrk                  &
 !             , ctot,chig,cmid,clow,hpbl,.true.,flash,do_sit)
              , ctot,chig,cmid,clow,hpbl,.true.,do_sit)
 
 ! add 40m 100m output for green energy plan
+
       if(out_green)then
-          do jj = 1, jlistnum
-            j=jlist1(jj)
-            nxj=nxdef_2d(j)
-            do i = 1,nxj
-              pklev(i,jj) = pk(i,lev,jj)
-            enddo
-          enddo
+
+        
         call  outflds_green(0,nx,my,my_max,lev,ncld                     &
-              , idtg,ifilout,cp,rgas,grav,t2,u10,v10,ss,pklev           &
+              , idtg,ifilout,cp,rgas,grav,t2,u10,v10,ss,pk           &
               , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6       &
               , ggdef)
       endif
 !
+!#ifdef RSM_sigp
+        if(outgrb2==1.and.myrank==0)then
+            if(io_quilting)then 
+              keydoit(1:4)='CLSE'
+              ntag=ntag+1
+              call mpe_send_key(keydoit,ntag,istat)
+            else
+              call cls_grb2(istat)
+            endif
+        endif
+
 #ifdef RSM
-      if (outrsm) then
+       if(outrsm) then
         if(myrank.eq.0)print*,' output: rsm date',idtg
         write(dtgrsm,'(I12)') idtg
         read(dtgrsm,'(I10,I2)')idtgrsm,ii   ! ii is dummy integer
@@ -1260,14 +1380,31 @@
 #else
         call wrte_idate(idtgrsm)
 #endif
-        call rsmout(idtg,0,nx,my,my_max,lev,ncld      &
-                , ptop,cp,rgas,grav,sgeo,pdiff        &
-                , t1000,pt,plt,pk,pk2,phi,ut,vt       &
-                , tt,qt,tg,snr,cosl                   &
-                , km_soil,smc,stc                     &
-                , ice,land,ocean)
-      endif
+        call rsmout_sigp( itaui,nx,my,my_max,lev,ncld        &
+                     , idtg,ptop,rad,grav,cosl           &
+                     , pt,sgeo,snr,gwr,tg,pk             &
+                     , ut,vt,tt,qt,km_soil,smc,stc       &
+                     , ice,land,ocean,xlon,xlat)
+       endif
 #endif
+!#ifdef RSM
+!      if (outrsm) then
+!        if(myrank.eq.0)print*,' output: rsm date',idtg
+!        write(dtgrsm,'(I12)') idtg
+!        read(dtgrsm,'(I10,I2)')idtgrsm,ii   ! ii is dummy integer
+!#ifdef CWB_MPMD
+!        call send_idate(idtgrsm)
+!#else
+!        call wrte_idate(idtgrsm)
+!#endif
+!        call rsmout(idtg,0,nx,my,my_max,lev,ncld      &
+!                , ptop,cp,rgas,grav,sgeo,pdiff        &
+!                , t1000,pt,plt,pk,pk2,phi,ut,vt       &
+!                , tt,qt,tg,snr,cosl                   &
+!                , km_soil,smc,stc                     &
+!                , ice,land,ocean)
+!      endif
+!#endif
 !
 !
         if(typhoon)then
@@ -1275,9 +1412,9 @@
             i=ixtyp(1,n)
             j=jytyp(1,n)
           do m=1,5 !(1:slp 2:v850 3:v700 4:h850 5:h500)
-            call unify_reduceintp(nx,my,my_max,typtrk(1,1,m),ww1)
-            tensity(0,m,n)=( ww1(i,j+1)+ww1(i+1,j+1)    &
-                           + ww1(i,j  )+ww1(i+1,j  ) )/4.
+            call unify_reduceintp(nx,my,my_max,typtrk(1,1,m),ww4)
+            tensity(0,m,n)=( ww4(i,j+1)+ww4(i+1,j+1)    &
+                           + ww4(i,j  )+ww4(i+1,j  ) )/4.
           enddo
 !byl            tensity(0,2,n)=( v850(i,j+1)+v850(i+1,j+1)  &
 !byl                           + v850(i,j  )+v850(i+1,j  ) )/4.

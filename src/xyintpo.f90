@@ -7,15 +7,17 @@
 !c   gx : the equal distant grid system, but the first point at half
 !c        a grid's distance
 !c
-      dimension ain(im,jm),aout(nx,my),xr(nx),yr(my)
+      use const, only: RTYPE
+      real(kind=RTYPE) ain(im,jm)
+      real(kind=RTYPE) weight0(jm),sinl0(jm),weight(my),sinl(my)
+      dimension aout(nx,my),xr(nx),yr(my)
       character*2 flag0, flag
       integer iwnd
       logical first
 !c
 !c  working arrays
 !c
-      dimension weight0(jm),sinl0(jm),weight(my),sinl(my)   &
-              ,alat0(jm+2),alon0(im+1),alat(my),alon(nx)   
+      dimension alat0(jm+2),alon0(im+1),alat(my),alon(nx)   
       dimension aaa(im+1,jm+2),bbb(nx*my),wkx(nx*my),wky(nx*my)
       integer jend
 !c
@@ -575,12 +577,15 @@
 
       subroutine phi2pt(nx,my,lmax,zz,anlslp,t1000,puvphi,sgeo,pt)
 !c
+      use const, only: RTYPE
+!c
       dimension sgeo(nx,my),pt(nx,my),zz(nx,my,lmax)
       dimension fld1(nx,lmax+2,my),fld2(nx,lmax+2,my),t1000(nx,my) &
-             , anlslp(nx,my),presp(nx,lmax+2,my)                   & 
-             , pdiff(nx,my),hld1(nx,my),hld2(nx,my)                &
+             , anlslp(nx,my)                                       & 
+             , hld1(nx,my),hld2(nx,my)                             &
              , tens(lmax+2)
-      dimension phistd(lmax),puvphi(lmax)
+      dimension phistd(lmax),puvphi(lmax),pdiff(nx,my)
+      real(kind=RTYPE) presp(nx,lmax+2,my)
 !c
       data cp/1004.24/, grav/9.80616/
 !c

@@ -1,12 +1,37 @@
   module const
 ! modify to f90 by C-H Lee and sort by River Chen in 2015
     use param
+    use mpi,   only : MPI_REAL4, MPI_REAL8
+
     implicit none
  
     public
+
+!CWB2021 for single precison test
+#ifdef SP
+      integer, parameter ::     RTYPE=4
+      integer, parameter :: MPI_RTYPE=MPI_REAL4
+      character(len=1), parameter  :: kflag='R'
+#else
+      integer, parameter ::     RTYPE=8
+      integer, parameter :: MPI_RTYPE=MPI_REAL8
+      character(len=1), parameter  :: kflag='H'
+#endif
+!CWA2024 for DMS38key
+#ifdef IO38K
+    integer, parameter :: KLEN=38,KLEN2=28,clen=17
+    character(len=16):: ihdglen1
+#else
+    integer, parameter :: KLEN=34,KLEN2=26,clen=15
+    character(len=26):: ihdg,ihdg2  
+    character(len=14):: ihdglen1
+#endif
+    character(len=KLEN):: key
+    character(len=KLEN2):: ihdg,ihdg2
+    character(len=12):: ihdglen2
  
-    real, dimension(:)  , allocatable, save  :: aki,bki
-    real, dimension(:,:), allocatable, save  :: sigma,dsigma
+    real(kind=RTYPE), dimension(:)  , allocatable, save  :: aki,bki
+    real(kind=RTYPE), dimension(:,:), allocatable, save  :: sigma,dsigma
  
     integer, allocatable, save ::  mlsort(:,:)
     integer, allocatable, save ::  msort(:),lsort(:)
@@ -16,7 +41,7 @@
             nnmiit,nnmivm,itypbl,                          &
             nmgwor,nmgwcv,mtnvar,                          &
             ktrop,ncpu,nmcup,nmpbl,nmland,numreduce,nmshl, &
-            nmmiph
+            nmmiph,itter
  
     common/constI/                                         &
             numout,ipadding,jm2,ksgeo,                     &
@@ -24,21 +49,29 @@
             nnmiit,nnmivm,itypbl,                          &
             nmgwor,nmgwcv,mtnvar,                          &
             ktrop,ncpu,nmcup,nmpbl,nmland,numreduce,nmshl, &
-            nmmiph
+            nmmiph,itter
  
-    real, dimension(:), allocatable, save  ::              &
-         weight,sinl,cosl,cor,onocos,sig,dsig,             &
+!    real, dimension(:), allocatable, save  ::              &
+!         weight,sinl,cosl,cor,onocos
+!         tmean,spalm,eigval,pmcor,tmeans
+ 
+!    real, dimension(:,:), allocatable, save  :: evecin,    &
+!         evectr,arrhyd,arsddt,tmcor
+
+    real(kind=RTYPE), dimension(:), allocatable, save ::   &
+         weight,sinl,cosl,cor,onocos,                      &
          tmean,spalm,eigval,pmcor,tmeans
- 
-    real, dimension(:,:), allocatable, save  :: evecin,    &
-         evectr,arrhyd,arsddt,tmcor
- 
+    real(kind=RTYPE), dimension(:,:), allocatable, save :: &
+         evecin,evectr,arrhyd,arsddt,tmcor
+!
     real ::                                                &
          capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &
-         ptop,ptmean,dt,tau,taui,taue,tauo,                &
+         ptop,dt,tau,taui,taue,tauo,                       &
          hours,frad,evaprh,qgini,                          &
-         tice,hice,cutfreq,taup,hfilt,ptmeans,             &
-         taureg,cgw,domfc,otgreen,cgwd,cmbk,spl1,spl2
+         tice,hice,cutfreq,taup,hfilt,hfiltx,tfilt,        &
+         taureg,cgw,domfc,otgreen,cgwd,cmbk,spl1,spl2,     &
+         factop
+    real(kind=RTYPE) :: ptmean,ptmeans,qmin
     !sit
     real :: fsit         !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
                          !default fsit<=0., turn on sit_vdiff every tau
@@ -50,19 +83,22 @@
     common/constR/                                         &
          capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &
          ptop,ptmean,dt,tau,taui,taue,tauo,                &
-         hours,frad,evaprh,qgini,                          &
-         tice,hice,cutfreq,taup,hfilt,ptmeans,             &
-         taureg,cgw,fsit,domfc,otgreen,spl1,spl2,           &
+         hours,frad,evaprh,qgini,hfilt,hfiltx,             &
+         tice,hice,cutfreq,taup,ptmeans,                   &
+         taureg,cgw,fsit,domfc,otgreen,spl1,spl2,          &
          dSITdt_intv,weightSIT,updatetg
-    logical :: lsimpl,lzadv, yesdia,dopbl, docup, dorad,      &
+    logical :: lsimpl,lzadv, yesdia,dopbl, docup, dorad,   &
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &
             restrt,hdiff, cstar, update,doincr,hybrid,     &
-            doo3l, docgrav, doclx, tofd, doslavepp
+            doo3l, docgrav, doclx, tofd, doslavepp,        &
+            two_loop,ttl,mass_dp,dpprt
 
     ! for stochastic physics
     logical :: dosppt       =.false.
     logical :: dospptout    =.false.
+    logical :: doskebout    =.false.
     logical :: doshum       =.false.
+    logical :: doskeb       =.false.
     logical :: dossst       =.false.
     logical :: use_zmtnblck =.false.
          
@@ -71,10 +107,16 @@
     !for Semi-Lagrangain
     logical :: ndsladvh2
 
+    !for Semi-implicit
+    real    :: alphax
+
+    !for mass conservation
+    real    :: pdryi,pdry,pcorr
+
 ! output data for RSM (Also, RSM compiling flag is necessary)
     !for RSM output
     logical :: outrsm
-    integer :: rsmoutinv
+    integer :: rsmoutinv, rsmsfcmgrhr
     real    :: rlon1, rlon2, rlat1, rlat2, rgrdsz
 
     !for horizontal diffusion
@@ -96,6 +138,13 @@
     ! sit
     logical :: do_sit
 
+    ! SKEB
+    logical :: first_call
+
+    !for output 
+    integer :: outgrb2    !output grib2 format
+    integer :: outdms     !output dmskey
+
     common/constL/lsimpl,lzadv,yesdia,dopbl,docup,dorad,   &
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &
             restrt,hdiff, cstar, update,doincr,hybrid,     &
@@ -104,10 +153,10 @@
             dailyClm_option,lopgsst,do_sit,tofd
 
 
-    character(len=80) ifilin,cwbout,bckfile,namlsts, &
+    character(len=255) ifilin,cwbout,bckfile,namlsts, &
             ifilout,crdate,ocards,phyout,cntrl, &
             ifilin_ncep,ifilin_sst,ifilin_nc,   &
-            ifilin_ClmANA,ifilin_ClmFCT
+            ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb
 
     common/files/ifilin,cwbout,bckfile,namlsts, &
             ifilout,crdate,ocards,phyout,cntrl, &
@@ -125,10 +174,9 @@
     character(len=4)  ::  ggdef,gmdef,gsdef
     common/dmskey34/ggdef,gmdef,gsdef
 
-    real, dimension(:,:,:), allocatable, save  :: poly,dpoly
-    real, dimension(:,:)  , allocatable, save  :: eps4,wdfac,wcfac
-    real, dimension(:)    , allocatable, save  :: cim
-    real, dimension(:)    , allocatable, save  :: eps4L   ! for 2dMPI
+    real(kind=RTYPE), dimension(:,:,:), allocatable, save  :: poly,dpoly
+    real(kind=RTYPE), dimension(:,:)  , allocatable, save  :: eps4,wdfac,wcfac
+    real(kind=RTYPE), dimension(:)    , allocatable, save  :: cim,eps4L   ! for 2dMPI
 
     contains 
 
@@ -159,7 +207,7 @@
         end if
 
         allocate (weight(my),sinl(my),cosl(my),           &
-        cor(my),onocos(my),sig(lev+1),dsig(lev),          &
+        cor(my),onocos(my),                               &
         tmean(lev),spalm(lev),eigval(lev),evecin(lev,lev),&
         evectr(lev,lev),arrhyd(lev,lev),arsddt(lev,lev),  &
         pmcor(lev),tmcor(lev,lev),tmeans(lev),            &
@@ -169,7 +217,6 @@
             stop
         end if
 
-        sig=0.
 
         allocate (outdir(nout),stat= ierr)
         if (ierr/= 0) then
@@ -184,7 +231,7 @@
         deallocate(poly,dpoly,eps4,wdfac,wcfac,cim)
         deallocate(aki,bki,sigma,dsigma)
         deallocate(mlsort,msort,lsort)
-        deallocate(weight,sinl,cosl,cor,onocos,sig,dsig,  &
+        deallocate(weight,sinl,cosl,cor,onocos,          &
                    tmean,spalm,eigval,pmcor,tmeans)
         deallocate(outdir)
       end subroutine

@@ -3,9 +3,12 @@
 !  setup routine for bicubv parameters.  see bicubv prolog for
 !  parameter descriptions
 !
+      use const, only: RTYPE
+!
       implicit  none
       integer   mn,nx,lmaxp,ipt(mn)
-      real      yin(mn),yr(nx,lmaxp),pjy(mn,4),tp1(mn,4)
+      real(kind=RTYPE) pjy(mn,4)
+      real      tp1(mn,4),yin(mn),yr(nx,lmaxp)
 
       integer   n,i,j,k,ii,ix
       real      eps
