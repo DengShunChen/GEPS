@@ -1,7 +1,7 @@
 stages:
   - build
-  - deploy
   - test
+  - deploy
 
 arm-build:
   stage: build
@@ -17,7 +17,7 @@ arm-build:
       - build/bin/tcogfs.x
     expire_in: 1 day
   tags:
-    - h6ln19-2
+    - h6ln23
 
 arm-deploy:
   stage: deploy
@@ -27,7 +27,7 @@ arm-deploy:
   script:
     - echo "dev deploy"
   tags:
-    - h6ln19-2
+    - h6ln23
 
 arm-test:
   stage: test
@@ -40,7 +40,7 @@ arm-test:
     - JID=$(pjsub -z jid TCo383L72_IC_sample_fx1000 -x CMAKE_BUILD=1,GITLAB_CICD=1)
     - /usr/bin/pjwait ${JID}
   tags:
-    - h6ln19-2
+    - h6ln23
 
 gpu-build:
   stage: build
