@@ -14,6 +14,7 @@
       use rank
       use index
       use const, only: rlon1, rlon2, rlat1, rlat2, rgrdsz, RTYPE
+      use noah,  only: cice
       implicit  none
 
       integer(kind=8)  :: idtg
@@ -908,17 +909,9 @@
        endif
 !! ***ice***(simk in RSM-csfcfld(:,13))
       glob=0.
-      slmsk=0.
-      do jj=1,jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-      do i=1,nxj
-        if(ice(i,jj))slmsk(i,jj)=2.0
-      enddo
-      enddo
 !byl      call mpe2d_unify(glob,slmsk)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
-      hld1=slmsk
+      hld1=cice
       call unify_reduceintp(nx,my,my_max,hld1,glob)
       if(myrank.eq.0) then
       call xyintpo('gg',nx,my,'ga',nx2,my2,glob &

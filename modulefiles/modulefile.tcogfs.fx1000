@@ -65,6 +65,7 @@ setenv CFLAGS_COM "-c -Xg"
 # Known conflicts
 module use /data/common/gfs/modulefiles/x86_64
 module load tcsds
+module load cmake/3.21.4
 module unuse /data/common/gfs/modulefiles/x86_64
 
 # Loading gfs modules
