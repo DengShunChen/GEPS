@@ -116,6 +116,9 @@ ln -fs $EMMISSIVITY_FILE sfc_emissivity_idx.txt
 
 ln -fs $FIXDIR/* .
 cp $NWPETC/gfsctl $GFSWRK/gfsctl
+if [ $GITLAB_CICD = 1 ] ; then
+  echo -e "00\n06" > $GFSWRK/gfsctl
+fi
 cp $NWPETC/ocards $GFSWRK/ocards
 cp $NWPETC/namlsts $GFSWRK/namlsts
 
@@ -212,6 +215,6 @@ EOF
  /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} -Wl,-T
 
  if [ $? != 0 ] ; then
-  echo "error occured: fct model fail !!"
+  echo "error occured: fct model fail !!" ; exit 9
  fi
 
