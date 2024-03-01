@@ -37,6 +37,7 @@ arm-test:
   script:
     - echo "dev testing"
     - cd job
+    - chmod 755 ./run_rt.sh
     - ./run_rt.sh
   tags:
     - h6ln19
