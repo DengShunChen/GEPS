@@ -37,8 +37,7 @@ arm-test:
   script:
     - echo "dev testing"
     - cd job
-    - JID=$(pjsub -z jid TCo383L72_IC_sample_fx1000 -x CMAKE_BUILD=1,GITLAB_CICD=1 -g sum)
-    - /usr/bin/pjwait ${JID}
+    - ./run_rt.sh
   tags:
     - h6ln19
 
