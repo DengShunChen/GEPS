@@ -196,7 +196,7 @@
       implicit  none
 !-----------------------------------------------------------------------
       integer nfxr, ntrac, kk, nk, n
-      real    dtlw,dtsw,solhr,rsolhr
+      real    dtlw,dtsw
 !
 ! for land_noah_new
        real      sfalb(nxp,my_max),sfemis(nxp,my_max)
@@ -506,6 +506,7 @@
       real tauhr
       real dtx_tau,dtaup
       INTEGER, PARAMETER :: nerr = 6
+      real dtxb
 !xb110>
       ztenh = 0.
       zqenh = 0.
@@ -606,7 +607,8 @@
       rsolhr = hours
       dtx_tau=dt/3600.
       hours = hours + dtx_tau
-      if ( hours .gt. 24. .and. mod(hours,24.) .le. dtx_tau+0.0001 )  then
+      dtxb  = dtx_tau/100.
+      if ( hours .gt. 24.+dtxb .and. mod(hours,24.) .le. dtx_tau+0.0001 )  then
          hours = mod ( hours,24.0 )
          julian= julian + 1
          if ( julian .gt. yrd ) julian = julian - yrd
@@ -1099,7 +1101,7 @@
              sinl(j),cosl(j),xlat(j),xlonr(1,jj),jdat,d2r,xkapa,           &
              ptrad,dtlw,dtsw,lsswr,lslwr,lssav,                            &
              nfxr,j,                                                       &
-             nxp,nxjp(j),lev,ncld,lprnt,ipt,kdt,rsolhr,                    &
+             nxp,nxjp(j),lev,ncld,lprnt,ipt,kdt,                           &
              uni_cloud,lmfshal,lmfdeep2,                                   &
              deltaq(1,1,jj),sup,cnvwr(1,1,jj),cnvcr(1,1,jj),               &
              ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),fqp1(1,1,jj),nmmiph,     &

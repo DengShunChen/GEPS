@@ -215,6 +215,7 @@
       if(myrank .eq. 0)then
         call recmsg('gfs',ifromtau,itotau,istat)
         flag =.true.
+        print*,'TYW in cons, ifromtau, itotau = ',ifromtau,itotau
       endif
 !ch   call mpe_broadcast(istat,1,flag,mpe_integer)
       call mpe_bcast(istat,1,0,mpe_integer)
@@ -246,9 +247,10 @@
         taui= float(itau)
         restrt=.true.
         if(myrank .eq. 0) print*,' restarting at tau=',itau
-        hours = hours+taui
+        hours = hours+taui-(dt/3600.)  ! for restart
         julian= julian+hours/24.0+0.001
         hours = mod(hours,24.)
+        if(myrank .eq. 0) print*,'TYW in cons, julian = ',julian
       endif
 !
       if(myrank .eq. 0) print modlst

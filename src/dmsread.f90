@@ -67,6 +67,7 @@
 #ifdef VERBOSE
       if(myrank .eq. 0) print *,'dms key=',key,' found'
 #endif
+      if(myrank .eq. 0) print *,'dms key=',key,'found',maxval(z),minval(z)
 !
       endif
 !
@@ -143,6 +144,7 @@
 #ifdef VERBOSE
       if(myrank .eq. 0) print *,'dms key=',key,' found'
 #endif
+      if(myrank .eq. 0) print *,'dms key=',key,'found',maxval(z),minval(z)
 !
       endif
 !
@@ -218,6 +220,7 @@
 #ifdef VERBOSE
       if(col_rank .eq. 0) print *,'dms key=',key,' found'
 #endif
+      if(myrank .eq. 0) print *,'dms key=',key,'found',maxval(z),minval(z)
 !
       endif
 !

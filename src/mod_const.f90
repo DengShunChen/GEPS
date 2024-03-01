@@ -129,6 +129,7 @@
     !for 2dMPI
     logical :: idg_jdg_owner
     integer :: idg_listnum,jdg_listnum
+    integer :: itimestep
 
     ! daily forecast sst, sea ice fraction, water equivlent snow depth, time weighting
     logical :: ldailyFCTsst,ldailyFCTicesndpt,lFCTweight

@@ -152,7 +152,7 @@
 !      real rold500(mlmax_c,2),rold1000(mlmax_c,2),rold2000(mlmax_c,2)
 !      real rold500(jtrun_c,jtmax_c,2),rold1000(jtrun_c,jtmax_c,2),  &
 !           rold2000(jtrun_c,jtmax_c,2)
-      integer itimestep,recn
+      integer recn
 
 ! for io quilting
       character*34 keydoit,keydone
