@@ -208,7 +208,7 @@ cat > ${GFSWRK}/namlsts << EOF
 EOF
 
  if [ $CMAKE_BUILD = 1 ] ; then
-	FCT_MODEL=$MDIR/build/bin/tcogfs.x
+	FCT_MODEL=$MDIR/build_${MACHINE}/bin/tcogfs.x
  else
 	FCT_MODEL=$MDIR/src/$EXEC
  fi

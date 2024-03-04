@@ -14,7 +14,7 @@ arm-build:
     - ./compile fx1000
   artifacts:
     paths:
-      - build/bin/tcogfs.x
+      - build_fx1000/bin/tcogfs.x
     expire_in: 1 day
   tags:
     - h6ln19
@@ -50,10 +50,10 @@ gpu-build:
   script:
     - echo "gpu build"
     - hostname ; pwd
-    - ./compile fx1000
+    - ./compile a100
   artifacts:
     paths:
-      - build/bin/tcogfs.x
+      - build_a100/bin/tcogfs.x
     expire_in: 1 day
   tags:
     - h6ln19
