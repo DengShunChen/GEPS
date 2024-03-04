@@ -1,5 +1,5 @@
 
- Fujitsu Fortran Version 4.6.1  Wed Jan 24 09:26:12 2024
+ Fujitsu Fortran Version 4.6.1  Fri Mar  1 11:15:24 2024
 
  Compilation information
    Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_4cpl
@@ -815,7 +815,7 @@
              473                         real :: dt
              474                         real(kind=RTYPE), allocatable :: noise(:,:)
              475                         integer(8) count, count_rate, count_max, count_trunc
-             476                         integer(8) :: iscale = 10000000000
+             476                         integer(8) :: iscale = 10000000000_8
              477                         integer :: count4
              478                         logical :: skebrun
              479                     

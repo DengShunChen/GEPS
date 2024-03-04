@@ -419,7 +419,7 @@ subroutine gfdl_cld_mp_driver                                              &
               prefluxr, prefluxi, prefluxs, prefluxg,                      &
               condensation, deposition, evaporation, sublimation,          &
 #endif
-              rhc, last_step, do_inline_mp, me )
+              rhc, last_step, do_inline_mp )
     
     implicit none
     
@@ -460,7 +460,7 @@ subroutine gfdl_cld_mp_driver                                              &
     real, dimension (is:ie) :: condensation, deposition
     real, dimension (is:ie) :: evaporation, sublimation
 #endif
-    integer me
+    
     if (last_step) then
         p_min = p0_min ! final clean - up
     else
@@ -519,7 +519,7 @@ subroutine gfdl_cld_mp_driver                                              &
 !        w_var, vt_r, vt_s, vt_g, vt_i, 
         q_con, cappa, consv_te, te, &
         prefluxr, prefluxi, prefluxs, prefluxg, condensation, deposition, &
-        evaporation, sublimation, rhc, last_step, do_inline_mp, me)
+        evaporation, sublimation, rhc, last_step, do_inline_mp)
     
 end subroutine gfdl_cld_mp_driver
 
@@ -547,7 +547,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
 !        w_var, vt_r, vt_s, vt_g, vt_i, 
         q_con, cappa, consv_te, te, &
         prefluxr, prefluxi, prefluxs, prefluxg, condensation, deposition, &
-        evaporation, sublimation, rhc, last_step, do_inline_mp, me )
+        evaporation, sublimation, rhc, last_step, do_inline_mp )
     
     implicit none
     
@@ -606,7 +606,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
     real :: nl, ni
     real :: cond, dep, reevap, sub
     
-    integer :: i, k, n, me
+    integer :: i, k, n
 
     logical  :: last_step_cld=.false.
     

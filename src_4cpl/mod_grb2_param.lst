@@ -1,5 +1,5 @@
 
- Fujitsu Fortran Version 4.6.1  Wed Jan 24 09:25:24 2024
+ Fujitsu Fortran Version 4.6.1  Fri Mar  1 11:14:36 2024
 
  Compilation information
    Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_4cpl
@@ -237,7 +237,7 @@
              175                           ! Contains the data values for the specified Product Definition Template
              176                           ! ( N=ipdsnum ).  Each element of this integer array  contains an entry
              177                           ! (in the order specified) of Product Defintion Template 4.N
-             178                            data ipdstmpl/ -1, -1, -1,  0, 53,  0,  0,  1, -1, -1, -1, -1,255,  0,  0/
+             178                            data ipdstmpl/ -1, -1, -1,  0, 53,  0,  0,  1, -1, -1, -1, -1,255,  0,  0, 0, 0, 0/
              179                           ! ipdstmpl(1)=    !Parameter category ( See Code Table 4.1 )
              180                           ! ipdstmpl(2)=    !Parameter number ( See Code Table 4.2 )
              181                           ! ipdstmpl(3)=    !Type of generating process ( See Code Table 4.3 )
@@ -818,9 +818,6 @@
              704                     
              705                           end module mod_grb2_param
              706                     
-
- Diagnostic messages: program name(mod_grb2_param)
-   jwd8654i-w  "mod_grb2_param.f90", line 178: Number of initial elements must be equal to number of initial constants.
 
  Procedure information
    Lines      : 706

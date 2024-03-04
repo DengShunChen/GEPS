@@ -1,5 +1,5 @@
 
- Fujitsu Fortran Version 4.6.1  Wed Jan 24 09:26:59 2024
+ Fujitsu Fortran Version 4.6.1  Fri Mar  1 11:16:12 2024
 
  Compilation information
    Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_4cpl
@@ -257,9 +257,9 @@
              195                           close(2)
              196                     ! transfer idtg8 to idtg*12
              197     1                     if(idtg8.gt.60000000)then
-             198     1                       idtg = 190000000000 + idtg8*100
+             198     1                       idtg = 190000000000_8 + idtg8*100
              199     1                     else
-             200     1                       idtg = 200000000000 + idtg8*100
+             200     1                       idtg = 200000000000_8 + idtg8*100
              201     1                     endif
              202                     !
              203                           write(cdtg,900)idtg

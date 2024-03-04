@@ -54,6 +54,9 @@
     call MPI_COMM_SIZE( MPI_COMM_atm, nsize_all,  ierr )
     root_rsm = nsize_all
 #endif
+#ifdef USE_CUDA
+    call device_init(myrank_all, nsize_all)
+#endif
 #ifdef W3TAG
       if (myrank_all==0) call w3tagb('TCoGFS',2021,1721,067,'GFS')
 #endif

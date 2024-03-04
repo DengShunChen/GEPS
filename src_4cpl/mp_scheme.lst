@@ -1,5 +1,5 @@
 
- Fujitsu Fortran Version 4.6.1  Thu Jan 25 09:52:00 2024
+ Fujitsu Fortran Version 4.6.1  Fri Mar  1 11:15:48 2024
 
  Compilation information
    Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_4cpl
@@ -1834,7 +1834,7 @@
              839     1                                 prefluxr, prefluxi, prefluxs, prefluxg,               &
              840     1                                 cond0, dep0, evap0, sub0,                             &
              841     1               #endif
-             842     1                                 rhc2d, last_step, do_inline_mp, me )
+             842     1                                 rhc2d, last_step, do_inline_mp )
              843     1               
              844     1                       ! GFDL MP v3
              845     1                       if ( nmmiph .eq. 13 )                                           &
@@ -1900,7 +1900,7 @@
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      pst, plt, snr, dp2d_ef, snr1d, p2d
+                                   <<<      pst, plt, snr, dp2d_ef, p2d, snr1d
                                    <<< Loop-information  End >>>
              883     3                         do k = 1, lev
                                    <<< Loop-information Start >>>
@@ -3098,7 +3098,7 @@
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 89  141
       |(Definition)     : 
-      |(Reference)      : 301  830
+      |(Reference)      : 301
      module_mp_gce4ice
       |(Class and Type) : module name
       |(Attributes)     : 

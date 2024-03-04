@@ -1,5 +1,5 @@
 
- Fujitsu Fortran Version 4.6.1  Wed Jan 24 09:26:07 2024
+ Fujitsu Fortran Version 4.6.1  Fri Mar  1 11:15:20 2024
 
  Compilation information
    Current directory : /IFS/nwpr/gfs/xb169/code_update/tco639l72_sp/src_4cpl
@@ -338,10 +338,10 @@
              258                          cdtg=idtgc(1:10)
              259     1                if(WriteTrack)then
              260     2                   if(myrank.eq.0)then
-             261     3                    if(idtg.ge.200000000000)then
-             262     3                    idtg8=(idtg-200000000000)/100
+             261     3                    if(idtg.ge.200000000000_8)then
+             262     3                    idtg8=(idtg-200000000000_8)/100
              263     3                    else
-             264     3                    idtg8=(idtg-190000000000)/100
+             264     3                    idtg8=(idtg-190000000000_8)/100
              265     3                    endif
              266     2                   call dmsmsg('ERR',ist)
              267     2                     print *,'dmsdb= ',dfile,'  ist= ',ist,'cdtg=',cdtg,'mem=',mem
