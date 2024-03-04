@@ -504,7 +504,7 @@
       character*12 cdtg
       integer yr, mo, dy, hr, mn, leap, yrd, year
       real tauhr
-      real dtx_tau,dtaup
+      real dtx_tau,dtaup,dtxb
       INTEGER, PARAMETER :: nerr = 6
       real dtxb
 !xb110>
@@ -606,9 +606,9 @@
 
       rsolhr = hours
       dtx_tau=dt/3600.
-      hours = hours + dtx_tau
       dtxb  = dtx_tau/100.
-      if ( hours .gt. 24.+dtxb .and. mod(hours,24.) .le. dtx_tau+0.0001 )  then
+      hours = hours + dtx_tau
+      if ( hours .gt. 24.+dtxb .and. mod(hours,24.) .le. dtx_tau+dtxb )  then
          hours = mod ( hours,24.0 )
          julian= julian + 1
          if ( julian .gt. yrd ) julian = julian - yrd

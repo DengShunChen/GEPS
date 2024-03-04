@@ -55,7 +55,7 @@
       real    sinlj,coslj,xlatj,ptop,dtlw,dtsw,d2r,xkapa      
       logical lsswr,lslwr,lssav,lprnt
       logical uni_cloud,lmfshal,lmfdeep2
-      real    www,fac_o3,cmax,cmin,imax,imin,tem1,tem2
+      real    www,cmax,cmin,imax,imin,tem1,tem2
 
 
 ! --- for grrad input/output (local) :
@@ -181,16 +181,19 @@
 !         tracer(i,kc,ntoz) = o3l(i,k)
 !      enddo
 !      enddo
-
-      do k=1,8
-         fac_o3=k*0.1
-         if(fac_o3 .le. 0.3) fac_o3=0.3
-         kc=lev-k+1
-      do i = 1, nxj
-!       tracer(i,kc,ntoz) = o3l(i,k)*fac_o3
-       tracer(i,kc,ntoz) = tracer(i,kc,ntoz)*fac_o3
-      end do
-      end do
+!
+!      no need the reduction of O3 concentration over model top.
+!      02/23/2024 proposed by Jen-Her Chen
+!      
+!      do k=1,8
+!         fac_o3=k*0.1
+!         if(fac_o3 .le. 0.3) fac_o3=0.3
+!         kc=lev-k+1
+!      do i = 1, nxj
+!!       tracer(i,kc,ntoz) = o3l(i,k)*fac_o3
+!       tracer(i,kc,ntoz) = tracer(i,kc,ntoz)*fac_o3
+!      end do
+!      end do
       if ( nmmiph.eq.6 .or. nmmiph.eq.8 .or. nmmiph.eq.18 ) then
         nclds=3
 ! for MP WSM6 & Thompson effective radius

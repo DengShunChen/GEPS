@@ -1,3 +1,6 @@
+
+[![pipeline status](http://git.rdc.cwb/tco/tco639l72/badges/development/pipeline.svg)](http://git.rdc.cwb/tco/tco639l72/-/commits/development)
+
 # GFS TCO #
 
 ## Requirement ##
