@@ -1,7 +1,19 @@
 #!/bin/bash -x
 
-JID=$(pjsub -z jid TCo383L72_IC_sample_fx1000 -x CMAKE_BUILD=1,GITLAB_CICD=1 -g sum)
+disp(){
+ echo "$0 [fx1000|a100]" ; exit 1
+}
+
+if [[ "$1" =~ \-h|help ]] ; then
+  disp 
+fi
+
+machine=${1:-fx1000}
+
+JID=$(pjsub -z jid TCo383L72_IC_sample_${machine} -x CMAKE_BUILD=1,GITLAB_CICD=1 -g sum)
+echo "Job ID :  $JID"
 OUT=$(/usr/bin/pjwait ${JID})
+echo "pjwait : ${OUT}"
 
 PJM_CODE=$(echo $OUT | cut -d' ' -f2 )
 EXIT_CODE=$(echo $OUT | cut -d' ' -f3 )
