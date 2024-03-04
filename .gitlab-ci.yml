@@ -76,8 +76,8 @@ gpu-test:
   script:
     - echo "gpu testing"
     - cd job
-    - chmod 755 ./run_rt.sh a100
-    - ./run_rt.sh
+    - chmod 755 ./run_rt.sh 
+    - ./run_rt.sh a100
   tags:
     - h6ln19
 
