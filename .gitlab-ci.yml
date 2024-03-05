@@ -3,7 +3,7 @@ stages:
   - deploy
   - test
 
-dev-build:
+arm-build:
   stage: build
   only:
     - development
@@ -13,23 +13,61 @@ dev-build:
     - echo "dev build"
     - hostname ; pwd
     - ./compile fx1000
-    - ./compile a100
+  artifacts:
+    paths:
+      - build/bin/tcogfs.x
+    expire_in: 1 day
+  tags:
+    - h6ln19
 
-dev-deploy:
+arm-deploy:
   stage: deploy
   only:
     - development
     - cicd
   script:
     - echo "dev deploy"
+  tags:
+    - h6ln19
 
-dev-test:
+arm-test:
   stage: test
   only:
     - development
     - cicd
   script:
     - echo "dev testing"
+    - cd job
+    - chmod 755 ./run_rt.sh
+    - ./run_rt.sh
+  tags:
+    - h6ln19
+
+gpu-build:
+  stage: build
+  only:
+    - master
+  script:
+    - echo "dev build"
+    - hostname ; pwd
+    - ./compile a100
+
+gpu-deploy:
+  stage: deploy
+  only:
+    - master
+  script:
+    - echo "dev deploy"
+
+gpu-test:
+  stage: test
+  only:
+    - master
+  script:
+    - echo "dev testing"
+    - cd job
+    - JID=$(pjsub -z jid TCo383L72_IC_sample_a100)
+    - /usr/bin/pjwait ${JID}
 
 stg-build:
   stage: build
