@@ -16,7 +16,7 @@
       use mpe
       use rank
       use index
-      use const, only:key,ihdg
+      use const, only:keyi,ihdgi
 
       implicit  none
       integer   nx,my,lenc,istat
@@ -29,8 +29,8 @@
 !
       character crmk*88
 !
-      write(key,1000)ihdg,kflag,lenc
-#ifdef IO38K
+      write(keyi,1000)ihdgi,kflag,lenc
+#ifdef I38K
  1000 format(a28,a1,i9.9)
 #else
  1000 format(a26,a1,i7.7)
@@ -39,7 +39,7 @@
       t_flg=.false.
 !
       if(myrank .eq. 0) then
-      call dmsget(ifile,key//char(0),z,istat)
+      call dmsget(ifile,keyi//char(0),z,istat)
       t_flg=.true.
       endif
 !
@@ -50,7 +50,7 @@
 !
       if(istat.ne.0) then
 !
-      write(crmk,100) key
+      write(crmk,100) keyi
   100 format('#######  record ',a38,' missing  ######')
 !
       if(myrank .eq. 0) then
@@ -65,7 +65,7 @@
       else
 !
 #ifdef VERBOSE
-      if(myrank .eq. 0) print *,'dms key=',key,' found'
+      if(myrank .eq. 0) print *,'dms key=',keyi,' found'
 #endif
 !
       endif
@@ -92,7 +92,7 @@
       use mpe
       use rank
       use index
-      use const, only:key,ihdg
+      use const, only:keyi,ihdgi
 
       implicit  none
       integer   nx,my,lenc,istat
@@ -105,8 +105,8 @@
 !
       character crmk*88
 !
-      write(key,1000)ihdg,kflag,lenc
-#ifdef IO38K
+      write(keyi,1000)ihdgi,kflag,lenc
+#ifdef I38K
  1000 format(a28,a1,i9.9)
 #else
  1000 format(a26,a1,i7.7)
@@ -115,7 +115,7 @@
       t_flg=.false.
 !
       if(myrank .eq. 0) then
-      call dmsget(ifile,key//char(0),z,istat)
+      call dmsget(ifile,keyi//char(0),z,istat)
       t_flg=.true.
       endif
 !
@@ -126,7 +126,7 @@
 !
       if(istat.ne.0) then
 !
-      write(crmk,100) key
+      write(crmk,100) keyi
   100 format('#######  record ',a38,' missing  ######')
 !
       if(myrank .eq. 0) then
@@ -141,7 +141,7 @@
       else
 !
 #ifdef VERBOSE
-      if(myrank .eq. 0) print *,'dms key=',key,' found'
+      if(myrank .eq. 0) print *,'dms key=',keyi,' found'
 #endif
 !
       endif
@@ -167,7 +167,7 @@
       use mpe
       use rank
       use index
-      use const, only:key,ihdg
+      use const, only:keyi,ihdgi
 
       implicit  none
       integer   nx,my,lenc,istat
@@ -180,8 +180,8 @@
 !
       character crmk*88
 !
-      write(key,1000)ihdg,kflag,lenc
-#ifdef IO38K
+      write(keyi,1000)ihdgi,kflag,lenc
+#ifdef I38K
  1000 format(a28,a1,i9.9)
 #else
  1000 format(a26,a1,i7.7)
@@ -190,7 +190,7 @@
       t_flg=.false.
 !
       if(col_rank .eq. 0) then
-      call dmsget(ifile,key//char(0),z,istat)
+      call dmsget(ifile,keyi//char(0),z,istat)
       t_flg=.true.
       endif
 !
@@ -201,7 +201,7 @@
 !
       if(istat.ne.0) then
 !
-      write(crmk,100) key
+      write(crmk,100) keyi
   100 format('#######  record ',a38,' missing  ######')
 !
       if(col_rank .eq. 0) then
@@ -216,7 +216,7 @@
       else
 !
 #ifdef VERBOSE
-      if(col_rank .eq. 0) print *,'dms key=',key,' found'
+      if(col_rank .eq. 0) print *,'dms key=',keyi,' found'
 #endif
 !
       endif

@@ -53,12 +53,12 @@ contains
       do 10 k=1,lpout
       if(plev(k).eq.whtlev(n)) then
       call unify_reduceintp(nx,my,my_max,div(1,1,k),wk1)
-      call syslbl(lrec(k),idtg,itau,ggdef)
+      call syslbl_w(lrec(k),idtg,itau,ggdef)
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,wk1,istat)
       if(outgrb2==1.and.myrank==0)then
         call wrt_grb2(itau,0,2,11,6,100,-2,plev(k),wk1)
       endif
-      call qmaxn3(wk1,1,1,1,nx,my,1)
+      call qmaxn3_w(wk1,1,1,1,nx,my,1)
       call split(nx,my,lenc,ncnt,wk1,pout)
       go to 20
       endif
@@ -145,12 +145,12 @@ contains
    45 continue
 !
       call unify_reduceintp(nx,my,my_max,drag(1,1,k),wk1)
-      call syslbl(lrec(k),idtg,itau,ggdef)
+      call syslbl_w(lrec(k),idtg,itau,ggdef)
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,wk1,istat)
       if(outgrb2==1.and.myrank==0)then
         call wrt_grb2(itau,0,2,196,6,100,-2,plev(k),wk1)
       endif
-      call qmaxn3(wk1,1,1,1,nx,my,1)
+      call qmaxn3_w(wk1,1,1,1,nx,my,1)
       call split(nx,my,lenc,ncnt,wk1,pout)
       go to 20
       endif
@@ -266,7 +266,7 @@ contains
    11 continue
       call unify_reduceintp(nx,my,my_max,tmp,glob)
 !
-      call syslbl(lrec(k),idtg,itau,ggdef)
+      call syslbl_w(lrec(k),idtg,itau,ggdef)
 !
 !      if(lreduce.eq.1 .and. itau.le.72)then
         call smth9(nx,my,glob,slp,1)
@@ -279,7 +279,7 @@ contains
       if(outgrb2==1.and.myrank==0)then
         call wrt_grb2(itau,0,3,5,0,100,-2,plev(k),slp)
       endif
-      call qmaxn3(slp,1,1,1,nx,my,1)
+      call qmaxn3_w(slp,1,1,1,nx,my,1)
       call split(nx,my,lenc,ncnt,slp,pout)
 !
       go to 20
@@ -370,12 +370,12 @@ contains
       if(outgrb2==1.and.myrank==0)then
         call wrt_grb2(itau,0,1,1,2,100,-2,plev(k),glob)
       endif
-      call syslbl(lrec(k),idtg,itau,ggdef)
+      call syslbl_w(lrec(k),idtg,itau,ggdef)
 !
 !  reduceintp has been done in voterp (2011/5)
 !
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
-      call qmaxn3(glob,1,1,1,nx,my,1)
+      call qmaxn3_w(glob,1,1,1,nx,my,1)
       call split(nx,my,lenc,ncnt,glob,pout)
       go to 30
       endif
@@ -529,9 +529,9 @@ contains
 !        glob(i,1)= max(glob(i,1),0.0)
 !   20 continue
 !
-      call syslbl(lrec(k),idtg,itau,ggdef)
+      call syslbl_w(lrec(k),idtg,itau,ggdef)
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
-      call qmaxn3(glob,1,1,1,nx,my,1)
+      call qmaxn3_w(glob,1,1,1,nx,my,1)
       call split(nx,my,lenc,ncnt,glob,pout)
       go to 30
       endif
@@ -609,8 +609,8 @@ contains
           call wrt_grb2(itau,0,6,32,3,100,-2,plev(k),glob)   !cloud fraction
       endif
 !
-      call syslbl(lrec(k),idtg,itau,ggdef)
-      call qmaxn3(glob,1,1,1,nx,my,1)
+      call syslbl_w(lrec(k),idtg,itau,ggdef)
+      call qmaxn3_w(glob,1,1,1,nx,my,1)
       call split(nx,my,lenc,ncnt,glob,pout)
       go to 30
       endif
@@ -690,7 +690,7 @@ contains
 
       if(label(kk).eq.'SSL010' .or. label(kk).eq.'ssl010') then
         call unify_reduceintp(nx,my,my_max,slp,glob)
-        call syslbl('ssl010',idtg,itau,ggdef)
+        call syslbl_w('ssl010',idtg,itau,ggdef)
         if( itau==0 .or. itau .gt. nint(domfc) )then
         if(outdms.gt.0)then
           if(lwrite) call dmswrit(nx,my,lenc,kflag,glob,istat)
@@ -698,7 +698,7 @@ contains
         if(outgrb2==1.and.myrank==0)then
           call wrt_grb2(itau,0,3,1,2,101,0,0.,glob)
         endif
-        call qmaxn3(glob,1,1,1,nx,my,1)
+        call qmaxn3_w(glob,1,1,1,nx,my,1)
         endif !itau .gt. domfc
 !
 !  terrain pressure
@@ -720,13 +720,13 @@ contains
 !       close(30)
 !     endif
 !byl        call mpe_unify(glob,nx,my,2,mpe_double)
-        call syslbl('b00010',idtg,itau,ggdef)
+        call syslbl_w('b00010',idtg,itau,ggdef)
 !byl        if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
         if(lwrite) call dmswrit(nx,my,lenc,kflag,glob,istat)
         if(outgrb2==1.and.myrank==0)then
           call wrt_grb2(itau,0,3,0,2,103,0,0.,glob)
         endif
-        call qmaxn3(glob,1,1,1,nx,my,1)
+        call qmaxn3_w(glob,1,1,1,nx,my,1)
 
 !
 !  terrain pressure tendency
@@ -803,7 +803,7 @@ contains
 !!      glob(i,1)= temp(i,k)
 !!   11 continue
 !
-      call syslbl(lrec(k),idtg,itau,ggdef)
+      call syslbl_w(lrec(k),idtg,itau,ggdef)
 !
 !  reduceintp has been done in voterp (2011/5)
 !
@@ -817,7 +817,7 @@ contains
         call wrt_grb2(itau,0,0,0,2,100,-2,plev(k),slp)
       endif
 
-      call qmaxn3(slp,1,1,1,nx,my,1)
+      call qmaxn3_w(slp,1,1,1,nx,my,1)
       call split(nx,my,lenc,ncnt,slp,pout)
       go to 30
       endif
@@ -916,7 +916,7 @@ contains
       do 10 k=1,lpout
       if(plev(k).eq.whtlev(n)) then
       call unify_reduceintp(nx,my,my_max,vor(1,1,k),wk1)
-      call syslbl(lrec(k),idtg,itau,ggdef)
+      call syslbl_w(lrec(k),idtg,itau,ggdef)
 !
 !  reduceintp has been done in voterp (2011/5)
 !
@@ -924,7 +924,7 @@ contains
       if(outgrb2==1.and.myrank==0)then
         call wrt_grb2(itau,0,2,12,6,100,-2,plev(k),wk1)
       endif
-      call qmaxn3(wk1,1,1,1,nx,my,1)
+      call qmaxn3_w(wk1,1,1,1,nx,my,1)
       call split(nx,my,lenc,ncnt,wk1,pout)
       go to 20
       endif
@@ -1048,12 +1048,12 @@ contains
         call wrt_grb2(itau,0,2,2,2,100,-2,plev(k),glob)
       endif
 
-      call syslbl(lrec(k),idtg,itau,ggdef)
+      call syslbl_w(lrec(k),idtg,itau,ggdef)
 !
 !  reduceintp has been done in voterp (2011/5)
 !
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
-      call qmaxn3(glob,1,1,1,nx,my,1)
+      call qmaxn3_w(glob,1,1,1,nx,my,1)
       call split(nx,my,lenc,ncnt,glob,pout)
       go to 30
       endif
@@ -1121,12 +1121,12 @@ contains
         call wrt_grb2(itau,0,2,3,2,100,-2,plev(k),glob)
       endif
 
-      call syslbl(krec(k),idtg,itau,ggdef)
+      call syslbl_w(krec(k),idtg,itau,ggdef)
 !
 !  reduceintp has been done in voterp (2011/5)
 !
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
-      call qmaxn3(glob,1,1,1,nx,my,1)
+      call qmaxn3_w(glob,1,1,1,nx,my,1)
       call split(nx,my,lenc,ncnt,glob,pout)
       go to 40
       endif
@@ -1160,10 +1160,10 @@ contains
         call wrt_grb2(itau,0,2,8,6,100,-2,plev(k),glob)
       endif
 
-      call syslbl(mrec(k),idtg,itau,ggdef)
+      call syslbl_w(mrec(k),idtg,itau,ggdef)
 !
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
-      call qmaxn3(glob,1,1,1,nx,my,1)
+      call qmaxn3_w(glob,1,1,1,nx,my,1)
       glob=glob*100.
       call split(nx,my,lenc,ncnt,glob,pout)
       go to 42

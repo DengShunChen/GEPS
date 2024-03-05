@@ -6,7 +6,7 @@
       use mpe
       use index
       use const ,only : grav,ptop,rgas,cp ,outdms ,outgrb2 ,ifilout_grb, &
-                        RTYPE,kflag,ihdg,ihdg2
+                        RTYPE,kflag,ihdgo,ihdgo2
       use grid  ,only : tt,qt,plt,pk,pk2,sgeo
       use mod_grb2_param  !for write grib2 data
 !
@@ -197,11 +197,11 @@
 
     if(outdms.gt.0)then
       do n=1,num
-        call syslbl (dmskey(n),idtg,ntau,ggdef)
+        call syslbl_w (dmskey(n),idtg,ntau,ggdef)
         call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),glob)
         if ( myrank .eq. n-1 ) then
           mout=glob
-          ihdg2=ihdg
+          ihdgo2=ihdgo
         endif
       enddo
 !

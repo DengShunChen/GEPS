@@ -26,21 +26,21 @@
 !=======================================================================
 !      call mpe_unify_1(glob,raincu3,nx,my,2,mpe_double)
 !      call mpe_unify_1(glob1,rainlp3,nx,my,2,mpe_double)
-      call syslbl ('b00632',idtg,itau,ggdef)
+      call syslbl_w ('b00632',idtg,itau,ggdef)
       wrk=raincu3
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       if(outdms.gt.0)call dmswrit(nx,my,lenc,kflag,glob,istat)
       if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,10,2,103,0,0.,1,3,glob)
-      call qmaxn3 (glob,1,1,1,nx,my,1)
+      call qmaxn3_w (glob,1,1,1,nx,my,1)
 !
-      call syslbl ('b00642',idtg,itau,ggdef)
+      call syslbl_w ('b00642',idtg,itau,ggdef)
       wrk=rainlp3
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       if(outdms.gt.0)call dmswrit(nx,my,lenc,kflag,glob,istat)
       if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,1,9,2,103,0,0.,1,3,glob)
-      call qmaxn3 (glob,1,1,1,nx,my,1)
+      call qmaxn3_w (glob,1,1,1,nx,my,1)
 !
-      call syslbl ('b00622',idtg,itau,ggdef)
+      call syslbl_w ('b00622',idtg,itau,ggdef)
       do 98 jj = 1, jlistnum
       j=jlist1(jj)
       nxj=nxdef_2d(j)
@@ -50,7 +50,7 @@
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       if(outdms.gt.0)call dmswrit(nx,my,lenc,kflag,glob,istat)
       if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,1,7,2,103,0,0.,1,3,glob)
-      call qmaxn3 (glob,1,1,1,nx,my,1)
+      call qmaxn3_w (glob,1,1,1,nx,my,1)
 
 !=======================================================================
       return

@@ -33,7 +33,7 @@
       use mpe
       use index
       use physpara  ,only : ialbflg
-      use const, only: ihdg,bckfile,ggdef
+      use const, only: ihdgi,bckfile,ggdef
 
       implicit none
 
@@ -101,27 +101,27 @@
       mm=mmse(nn)
 
 
-      if (ialbflg.eq.0) write(ihdg,31)ggdef,mm
-      if (ialbflg.eq.1) write(ihdg,37)ggdef,mm
+      if (ialbflg.eq.0) write(ihdgi,31)ggdef,mm
+      if (ialbflg.eq.1) write(ihdgi,37)ggdef,mm
       call dmsread(nx,my,lncrec,'H',bckfile,work,istat)
       call unify_reducepick(nx,my,my_max,work,alvsfcl(1,1,nn))
 !     call qmax2d(work,1,1,nx,my)
 
 
-      if (ialbflg.eq.0) write(ihdg,32)ggdef,mm
-      if (ialbflg.eq.1) write(ihdg,38)ggdef,mm
+      if (ialbflg.eq.0) write(ihdgi,32)ggdef,mm
+      if (ialbflg.eq.1) write(ihdgi,38)ggdef,mm
       call dmsread(nx,my,lncrec,'H',bckfile,work,istat)
       call unify_reducepick(nx,my,my_max,work,alvwfcl(1,1,nn))
 !     call qmax2d(work,1,1,nx,my)
 
-      if (ialbflg.eq.0) write(ihdg,33)ggdef,mm
-      if (ialbflg.eq.1) write(ihdg,39)ggdef,mm
+      if (ialbflg.eq.0) write(ihdgi,33)ggdef,mm
+      if (ialbflg.eq.1) write(ihdgi,39)ggdef,mm
       call dmsread(nx,my,lncrec,'H',bckfile,work,istat)
       call unify_reducepick(nx,my,my_max,work,alnsfcl(1,1,nn))
 !     call qmax2d(work,1,1,nx,my)
 
-      if (ialbflg.eq.0) write(ihdg,34)ggdef,mm
-      if (ialbflg.eq.1) write(ihdg,40)ggdef,mm
+      if (ialbflg.eq.0) write(ihdgi,34)ggdef,mm
+      if (ialbflg.eq.1) write(ihdgi,40)ggdef,mm
       call dmsread(nx,my,lncrec,'H',bckfile,work,istat)
       call unify_reducepick(nx,my,my_max,work,alnwfcl(1,1,nn))
 !     call qmax2d(work,1,1,nx,my)
@@ -130,7 +130,7 @@
 !
 !-- facsf (0-100)
 !
-      write(ihdg,35)ggdef
+      write(ihdgi,35)ggdef
 !     write(*,*)'35, lrec=',lrec
       call dmsread(nx,my,lncrec,'H',bckfile,work,istat)
       call unify_reducepick(nx,my,my_max,work,facsf)
@@ -138,13 +138,14 @@
 !
 !-- facwf (0-100)
 !
-      write(ihdg,36)ggdef
+      write(ihdgi,36)ggdef
 !     write(*,*)'35, lrec=',lrec
       call dmsread(nx,my,lncrec,'H',bckfile,work,istat)
       call unify_reducepick(nx,my,my_max,work,facwf)
 !     call qmax2d(work,1,1,nx,my)
 !
 !----------------------------------------------------------------
+#ifdef I38K
   31  format('S0003A','  GBCK',a4,4x,i2.2,6x)  ! alvsfcl
   32  format('S0003B','  GBCK',a4,4x,i2.2,6x)  ! alvwfcl
   33  format('S0003C','  GBCK',a4,4x,i2.2,6x)  ! alnsfcl
@@ -155,6 +156,18 @@
   38  format('S00X3B','  GBCK',a4,4x,i2.2,6x)  ! alvwfcl
   39  format('S00X3C','  GBCK',a4,4x,i2.2,6x)  ! alnsfcl
   40  format('S00X3D','  GBCK',a4,4x,i2.2,6x)  ! alnwfcl
+#else
+  31  format('S0003A','GBCK',a4,4x,i2.2,6x)  ! alvsfcl
+  32  format('S0003B','GBCK',a4,4x,i2.2,6x)  ! alvwfcl
+  33  format('S0003C','GBCK',a4,4x,i2.2,6x)  ! alnsfcl
+  34  format('S0003D','GBCK',a4,4x,i2.2,6x)  ! alnwfcl
+  35  format('S0003E','GBCK',a4,12x)         ! facsf
+  36  format('S0003F','GBCK',a4,12x)         ! facwf
+  37  format('S00X3A','GBCK',a4,4x,i2.2,6x)  ! alvsfcl
+  38  format('S00X3B','GBCK',a4,4x,i2.2,6x)  ! alvwfcl
+  39  format('S00X3C','GBCK',a4,4x,i2.2,6x)  ! alnsfcl
+  40  format('S00X3D','GBCK',a4,4x,i2.2,6x)  ! alnwfcl
+#endif
 !----------------------------------------------------------------
 
 ! 
