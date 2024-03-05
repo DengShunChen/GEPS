@@ -445,12 +445,17 @@
       if( myrank .eq. 0 ) then
        type_r="RORDER"//char(0)
        type_w="WORDER"//char(0)
-#ifdef IO38K
+#ifdef I38K 
        argument="38"//char(0)
 #else
        argument="34"//char(0)
 #endif
        call dmscfg(type_r,argument,istat_r)
+#ifdef O38K 
+       argument="38"//char(0)
+#else
+       argument="34"//char(0)
+#endif
        call dmscfg(type_w,argument,istat_w)
        istat = abs(istat_r) + abs(istat_w)
       endif
@@ -472,7 +477,8 @@
 !  open the input file.  this too will be replaced by the appropriate
 !  dbms operation when available
 !
-      if(col_rank .eq. 0) call dmsopn(ifilin,"w",istat2)
+!      if(col_rank .eq. 0) call dmsopn(ifilin,"w",istat2)
+      if(col_rank .eq. 0) call dmsopn(ifilin,"r",istat2)
 !
       if(myrank .lt. lev) call dmsopn(ifilout,"w",istat3)
 !

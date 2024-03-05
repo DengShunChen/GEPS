@@ -55,7 +55,7 @@
         else
           write(typ,'("n",i2.2,"100")')mod(k,100)
         endif
-        call syslbl (typ,idtg,itau,gmdef)
+        call syslbl_w (typ,idtg,itau,gmdef)
 !
         do 20 jj = 1, jlistnum
           j=jlist1(jj)
@@ -79,7 +79,7 @@
         else
           write(typ,'("n",i2.2,"200")')mod(k,100)
         endif
-        call syslbl (typ,idtg,itau,gmdef)
+        call syslbl_w (typ,idtg,itau,gmdef)
 !        
         do 21 jj = 1, jlistnum
           j=jlist1(jj)
@@ -102,7 +102,7 @@
           write(typ,'("n",i2.2,"210")')mod(k,100)
         endif
 !
-        call syslbl (typ,idtg,itau,gmdef)
+        call syslbl_w (typ,idtg,itau,gmdef)
         do 22 jj = 1, jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
@@ -124,7 +124,7 @@
           write(typ,'("n",i2.2,"500")')mod(k,100)
         endif
 !
-        call syslbl (typ,idtg,itau,gmdef)
+        call syslbl_w (typ,idtg,itau,gmdef)
         do 23 jj = 1, jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
@@ -147,7 +147,7 @@
         else
           write(typ,'("n",i2.2,"550")')mod(k,100)
         endif
-        call syslbl (typ,idtg,itau,gmdef)
+        call syslbl_w (typ,idtg,itau,gmdef)
 !
         wrk1=0.
         do ntrac=2,nclds
@@ -199,7 +199,7 @@
             else
               goto 27
             endif
-            call syslbl (typ,idtg,itau,gmdef)
+            call syslbl_w (typ,idtg,itau,gmdef)
 !
             kk = (ntrac-1)*lev+k
             do 26 jj = 1, jlistnum
@@ -227,7 +227,7 @@
           else
             write(typ,'("n",i2.2,"560")')mod(k,100)
           endif
-          call syslbl (typ,idtg,itau,gmdef)
+          call syslbl_w (typ,idtg,itau,gmdef)
           do jj = 1, jlistnum
             j=jlist1(jj)
             nxj=nxdef_2d(j)
@@ -296,7 +296,7 @@
        else
          write(typ,'("n",i2.2,"000")')mod(k,100)
        endif
-       call syslbl (typ,idtg,itau,gmdef)
+       call syslbl_w (typ,idtg,itau,gmdef)
       do 28 jj = 1, jlistnum
        j=jlist1(jj)
        nxj=nxdef_2d(j)
@@ -320,7 +320,7 @@
       do 31 i = 1,nxj
        wrk1(i,jj)=pt(i,jj)+ptop
  31   continue
-      call syslbl ('b00010',idtg,itau,ggdef)
+      call syslbl_w ('b00010',idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lenc,nc,work,mout)
 !
@@ -335,7 +335,7 @@
       do 40 i = 1,nxj
        wrk1(i,jj) = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
    40 continue
-      call syslbl ('b00100',idtg,itau,ggdef)
+      call syslbl_w ('b00100',idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lenc,nc,work,mout)
 !
@@ -346,7 +346,7 @@
       do 41 i = 1,nxj
        wrk1(i,jj)=ut(i,lev,jj)*xx
    41 continue
-      call syslbl ('b00200',idtg,itau,ggdef)
+      call syslbl_w ('b00200',idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lenc,nc,work,mout)
 !
@@ -357,7 +357,7 @@
       do 42 i = 1,nxj
        wrk1(i,jj)=vt(i,lev,jj)*xx
    42 continue
-      call syslbl ('b00210',idtg,itau,ggdef)
+      call syslbl_w ('b00210',idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lenc,nc,work,mout)
 !
@@ -365,30 +365,30 @@
 !--------------
 !
       wrk1 = snr
-      call syslbl ('b00650',idtg,itau,ggdef)
+      call syslbl_w ('b00650',idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lenc,nc,work,mout)
 
       wrk1 = gwr
-      call syslbl ('s005a1',idtg,itau,ggdef)
+      call syslbl_w ('s005a1',idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lenc,nc,work,mout)
 
 
       wrk1 = tg
-      call syslbl ('s00100',idtg,itau,ggdef)
+      call syslbl_w ('s00100',idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lenc,nc,work,mout)
 !
 ! output canopy
 !
       wrk1 = canopy
-      call syslbl ('s005c0',idtg,itau,ggdef)
+      call syslbl_w ('s005c0',idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lenc,nc,work,mout)
 !
       wrk1 = zice
-      call syslbl ('w00092',idtg,itau,ggdef)
+      call syslbl_w ('w00092',idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lenc,nc,work,mout)
 !
@@ -404,7 +404,7 @@
       enddo
       enddo
       write(typ,'("s0",i1.1,"5b0")')k
-      call syslbl (typ,idtg,itau,ggdef)
+      call syslbl_w (typ,idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lenc,nc,work,mout)
 !
@@ -416,7 +416,7 @@
       enddo
       enddo
       write(typ,'("s0",i1.1,"100")')k
-      call syslbl (typ,idtg,itau,ggdef)
+      call syslbl_w (typ,idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lenc,nc,work,mout)
 !
@@ -440,7 +440,7 @@
       enddo
       enddo
       write(typ,'("s0",i1.1,"5b0")')k
-      call syslbl (typ,idtg,itau,ggdef)
+      call syslbl_w (typ,idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lenc,nc,work,mout)
 !
@@ -454,7 +454,7 @@
       enddo
       enddo
       write(typ,'("s0",i1.1,"100")')k
-      call syslbl (typ,idtg,itau,ggdef)
+      call syslbl_w (typ,idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lenc,nc,work,mout)
 !
@@ -470,7 +470,7 @@
       enddo
       enddo
       write(typ,'("l0",i1.1,"5b0")')k
-      call syslbl (typ,idtg,itau,gmdef)
+      call syslbl_w (typ,idtg,itau,gmdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lenc,nc,work,mout)
 !
@@ -482,7 +482,7 @@
       enddo
       enddo
       write(typ,'("l0",i1.1,"5b1")')k
-      call syslbl (typ,idtg,itau,gmdef)
+      call syslbl_w (typ,idtg,itau,gmdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lenc,nc,work,mout)
 !
@@ -494,7 +494,7 @@
       enddo
       enddo
       write(typ,'("l0",i1.1,"100")')k
-      call syslbl (typ,idtg,itau,gmdef)
+      call syslbl_w (typ,idtg,itau,gmdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lenc,nc,work,mout)
 !
@@ -524,7 +524,7 @@
 
       lenc=nx*my
 !
-      call syslbl ('b00650',idtg,itau,ggdef)
+      call syslbl_r ('b00650',idtg,itau,ggdef)
       call dmsread(nx,my,lenc,'H',ifilout,work,istat)
       call unify_reducepick(nx,my,my_max,work,snr)
 
@@ -543,11 +543,11 @@
 !!      enddo
 !!      enddo
 !
-      call syslbl ('s00100',idtg,itau,ggdef)
+      call syslbl_r ('s00100',idtg,itau,ggdef)
       call dmsread(nx,my,lenc,'H',ifilout,work,istat)
       call unify_reducepick(nx,my,my_max,work,tg)
 !
-      call syslbl ('w00092',idtg,itau,ggdef)
+      call syslbl_r ('w00092',idtg,itau,ggdef)
       call dmsread(nx,my,lenc,'H',ifilout,work,istat)
       call unify_reducepick(nx,my,my_max,work,zice)
 !
@@ -581,7 +581,7 @@
 
       lenc=nx*my
 !
-      call syslbl ('s005c0',idtg,itau,ggdef)
+      call syslbl_r ('s005c0',idtg,itau,ggdef)
       call dmsread(nx,my,lenc,'H',ifilout,work,istat)
       call unify_reducepick(nx,my,my_max,work,canopy)
 
@@ -597,7 +597,7 @@
 ! read smc  l015b0
 !
       write(typ,'("l0",i1.1,"5b0")')k
-      call syslbl (typ,idtg,itau,gmdef)
+      call syslbl_r (typ,idtg,itau,gmdef)
       call dmsread(nx,my,lenc,'H',ifilout,work,istat)
       call unify_reducepick(nx,my,my_max,work,tmp)
       smc(:,k,:) = tmp(:,:)
@@ -605,7 +605,7 @@
 ! read slc  l015b1
 !
       write(typ,'("l0",i1.1,"5b1")')k
-      call syslbl (typ,idtg,itau,gmdef)
+      call syslbl_r (typ,idtg,itau,gmdef)
       call dmsread(nx,my,lenc,'H',ifilout,work,istat)
       call unify_reducepick(nx,my,my_max,work,tmp)
       slc(:,k,:) = tmp(:,:)
@@ -613,7 +613,7 @@
 ! read stc  l01100
 !
       write(typ,'("l0",i1.1,"100")')k
-      call syslbl (typ,idtg,itau,gmdef)
+      call syslbl_r (typ,idtg,itau,gmdef)
       call dmsread(nx,my,lenc,'H',ifilout,work,istat)
       call unify_reducepick(nx,my,my_max,work,tmp)
       stc(:,k,:) = tmp(:,:)

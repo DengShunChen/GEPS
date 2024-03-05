@@ -37,49 +37,49 @@
 
 !output q2
       write(wtemp,'(a6)')'B02500'
-      call syslbl(wtemp,idtg,itau,ggdef)
+      call syslbl_w(wtemp,idtg,itau,ggdef)
       globp=q2
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call dmswrit(nx,my,lenc,kflag,glob,istat)
 
 !output fm
       write(wtemp,'(a6)'),"S004F1"
-      call syslbl(wtemp,idtg,itau,ggdef)
+      call syslbl_w(wtemp,idtg,itau,ggdef)
       globp=fm
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call dmswrit(nx,my,lenc,kflag,glob,istat)
 
 !output fm10
       write(wtemp,'(a6)'),"S004F2"
-      call syslbl(wtemp,idtg,itau,ggdef)
+      call syslbl_w(wtemp,idtg,itau,ggdef)
       globp=fm10
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call dmswrit(nx,my,lenc,kflag,glob,istat)
 
 !output fh
       write(wtemp,'(a6)'),"S004F3"
-      call syslbl(wtemp,idtg,itau,ggdef)
+      call syslbl_w(wtemp,idtg,itau,ggdef)
       globp=fh
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call dmswrit(nx,my,lenc,kflag,glob,istat)
 
 !output fh2
       write(wtemp,'(a6)'),"S004F4"
-      call syslbl(wtemp,idtg,itau,ggdef)
+      call syslbl_w(wtemp,idtg,itau,ggdef)
       globp=fh2
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call dmswrit(nx,my,lenc,kflag,glob,istat)
 
 !output ustar
       write(wtemp,'(a6)'),"S004F5"
-      call syslbl(wtemp,idtg,itau,ggdef)
+      call syslbl_w(wtemp,idtg,itau,ggdef)
       globp=ustar
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call dmswrit(nx,my,lenc,kflag,glob,istat)
 
 !output srflag
       write(wtemp,'(a6)'),"S001A0"
-      call syslbl(wtemp,idtg,itau,ggdef)
+      call syslbl_w(wtemp,idtg,itau,ggdef)
       globp=srflag
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call dmswrit(nx,my,lenc,kflag,glob,istat)

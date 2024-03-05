@@ -18,17 +18,27 @@
       character(len=1), parameter  :: kflag='H'
 #endif
 !CWA2024 for DMS38key
-#ifdef IO38K
-    integer, parameter :: KLEN=38,KLEN2=28,clen=17
-    character(len=16):: ihdglen1
+#ifdef I38K
+    integer, parameter :: KLENI=38,KLENI2=28,cleni=17
+    character(len=16):: ihdgleni1
 #else
-    integer, parameter :: KLEN=34,KLEN2=26,clen=15
-    character(len=26):: ihdg,ihdg2  
-    character(len=14):: ihdglen1
+    integer, parameter :: KLENI=34,KLENI2=26,cleni=15
+    character(len=14):: ihdgleni1
 #endif
-    character(len=KLEN):: key
-    character(len=KLEN2):: ihdg,ihdg2
-    character(len=12):: ihdglen2
+    character(len=KLENI):: keyi
+    character(len=KLENI2):: ihdgi,ihdgi2
+    character(len=12):: ihdgleni2
+ 
+#ifdef O38K
+    integer, parameter :: KLENO=38,KLENO2=28,cleno=17
+    character(len=16):: ihdgleno1
+#else
+    integer, parameter :: KLENO=34,KLENO2=26,cleno=15
+    character(len=14):: ihdgleno1
+#endif
+    character(len=KLENO):: keyo
+    character(len=KLENO2):: ihdgo,ihdgo2
+    character(len=12):: ihdgleno2
  
     real(kind=RTYPE), dimension(:)  , allocatable, save  :: aki,bki
     real(kind=RTYPE), dimension(:,:), allocatable, save  :: sigma,dsigma

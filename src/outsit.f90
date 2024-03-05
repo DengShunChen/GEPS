@@ -26,7 +26,7 @@
       ncnt=0
       do 10 k = 0, outsitlev+1
         write( lrec, '(i3.3,a3)' ) k,'SWT'         !!sit wt
-        call syslbl (lrec,idtg,itau,ggdef)
+        call syslbl_w (lrec,idtg,itau,ggdef)
         globp=sitwt(:,:,k)
         call unify_reduceintp(nx,my,my_max,globp,wk1)
         call split(nx,my,lenc,ncnt,wk1,pout)
@@ -36,7 +36,7 @@
       ncnt=0
       do 20 k = 0, outsitlev+1
         write( lrec, '(i3.3,a3)' ) k,'OWT'        !!sit obswt
-        call syslbl (lrec,idtg,itau,ggdef)
+        call syslbl_w (lrec,idtg,itau,ggdef)
         globp=obswt(:,:,k)
         call unify_reduceintp(nx,my,my_max,globp,wk1)
         call split(nx,my,lenc,ncnt,wk1,pout)
@@ -186,7 +186,7 @@
       ncnt=0
       do 10 k = 0, outsitlev+1
         write( lrec, '(i3.3,a3)' ) k,'WTT'
-        call syslbl (lrec,idtg,itau,ggdef)
+        call syslbl_w (lrec,idtg,itau,ggdef)
         if(dtsittau .ne. 0.) then
           glob2d(:,:)= sitwttau(:,:,k)/dtsittau
         else
@@ -254,7 +254,7 @@
         enddo
 
         write( lrec, '(i3.3,a3)' ) k,'WTF'
-        call syslbl (lrec,idtg,itau,ggdef)
+        call syslbl_w (lrec,idtg,itau,ggdef)
         call unify_reduceintp(nx,my,my_max,tm1,wk1)
         call split(nx,my,lenc,ncnt,wk1,pout)
 
@@ -299,7 +299,7 @@
       ncnt=0
       do 10 k = 0, outsitlev+1
         write( lrec, '(i3.3,a3)' ) k,'TFM'
-        call syslbl (lrec,idtg,itau,ggdef)
+        call syslbl_w (lrec,idtg,itau,ggdef)
         glob2d(:,:)=wtfn(:,:,k)/dtsitmon
         call unify_reduceintp(nx,my,my_max,glob2d,wk1) 
         call split(nx,my,lenc,ncnt,wk1,pout)
@@ -307,7 +307,7 @@
       if(myrank .lt. ncnt) call dmswrit_split(nx,my,lenc,kflag,pout,istat) 
 
         write( lrec, '(i3.3,a3)' ) k,'TFS'
-        call syslbl (lrec,idtg,itau,ggdef)
+        call syslbl_w (lrec,idtg,itau,ggdef)
         glob2d(:,:)=wtfns(:,:)/dtsitmon
         call unify_reduceintp(nx,my,my_max,glob2d,wk1)
         call dmswrit(nx,my,lenc,kflag,wk1,istat)
@@ -885,27 +885,27 @@
       do k= 0, lkvl+1 
   
         write( typ, '(i3.3,a3)' ) k,'SWT'           !!sit wt
-        call syslbl (typ,idtg2,itaup,ggdef)
+        call syslbl_r (typ,idtg2,itaup,ggdef)
         call dmsread(nx,my,nxmy,'H',ifilin,tm1,istat)
 
         write( typ, '(i3.3,a3)' ) k,'SWU'           !!sit wu
-        call syslbl (typ,idtg2,itaup,ggdef)
+        call syslbl_r (typ,idtg2,itaup,ggdef)
         call dmsread(nx,my,nxmy,'H',ifilin,tm2,istat)
 
         write( typ, '(i3.3,a3)' ) k,'SWV'           !!sit wv
-        call syslbl (typ,idtg2,itaup,ggdef)
+        call syslbl_r (typ,idtg2,itaup,ggdef)
         call dmsread(nx,my,nxmy,'H',ifilin,tm3,istat)
 
         write( typ, '(i3.3,a3)' ) k,'SWW'           !!sit ww
-        call syslbl (typ,idtg2,itaup,ggdef)
+        call syslbl_r (typ,idtg2,itaup,ggdef)
         call dmsread(nx,my,nxmy,'H',ifilin,tm4,istat)
 
         write( typ, '(i3.3,a3)' ) k,'SWS'           !!sit ws
-        call syslbl (typ,idtg2,itaup,ggdef)
+        call syslbl_r (typ,idtg2,itaup,ggdef)
         call dmsread(nx,my,nxmy,'H',ifilin,tm5,istat)
 
         write( typ, '(i3.3,a3)' ) k,'TKE'           !!sit wtke
-        call syslbl (typ,idtg2,itaup,ggdef)
+        call syslbl_r (typ,idtg2,itaup,ggdef)
         call dmsread(nx,my,nxmy,'H',ifilin,tm6,istat)
 
 
@@ -974,12 +974,12 @@
         enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call syslbl ('w0002f',idtg,itau,ggdef)
+      call syslbl_w ('w0002f',idtg,itau,ggdef)
       call dmswrit(imax,jmax,lenc,kflag,glob,istat)
       tseadiffSIT24=0.
 
       call unify_reduceintp(nx,my,my_max,wrk2,glob)
-      call syslbl ('w00002',idtg,itau,ggdef)
+      call syslbl_w ('w00002',idtg,itau,ggdef)
       call dmswrit(imax,jmax,lenc,kflag,glob,istat)
 
       END SUBROUTINE outtseadiffSIT24

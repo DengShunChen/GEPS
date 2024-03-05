@@ -19,7 +19,7 @@
       use param, only : io_quilting
       use mpe
       use rank
-      use const, only : RTYPE,ifilout,key,ihdg
+      use const, only : RTYPE,ifilout,keyo,ihdgo
 !     use index
 
       implicit  none
@@ -33,8 +33,8 @@
 ! working array
 !
 !
-      write(key,1000)ihdg,kflag,lenc
-#ifdef IO38K
+      write(keyo,1000)ihdgo,kflag,lenc
+#ifdef O38K
  1000 format(a28,a1,i9.9)
 #else
  1000 format(a26,a1,i7.7)
@@ -66,7 +66,7 @@
 !          call dmsput(ifile,key//char(0),z4,istat)
 !       endif
 !       if(key(27:27).eq.'H')then
-          call dmsput(ifilout,key//char(0),z,istat)
+          call dmsput(ifilout,keyo//char(0),z,istat)
 !       endif
        t_flg=.true.
        endif
@@ -74,13 +74,13 @@
        call mpe_bcast(istat,1,0,mpe_integer)
 !
        if(istat.ne.0)then
-         if(myrank .eq. 0)print *,'dmsput key=',key,' error'
+         if(myrank .eq. 0)print *,'dmsput key=',keyo,' error'
          if(myrank .eq. 0)print *,'TYW in dmswrit, ifilout = ',ifilout
          call mpe_finalize
          call dmsexit(-1)
        else
 #ifdef VERBOSE
-         if(myrank .eq. 0) print *,'dmsput key=',key,' ok'
+         if(myrank .eq. 0) print *,'dmsput key=',keyo,' ok'
 #endif
        endif
 
@@ -111,7 +111,7 @@
       use param, only : io_quilting
       use mpe
       use rank
-      use const, only : RTYPE,ifilout,key,ihdg
+      use const, only : RTYPE,ifilout,keyo,ihdgo
 !     use index
 
       implicit  none
@@ -125,8 +125,8 @@
 ! working array
 !
 !
-      write(key,1000)ihdg,kflag,lenc
-#ifdef IO38K
+      write(keyo,1000)ihdgo,kflag,lenc
+#ifdef O38K
  1000 format(a28,a1,i9.9)
 #else
  1000 format(a26,a1,i7.7)
@@ -141,7 +141,7 @@
 !          call dmsput(ifile,key//char(0),z4,istat)
 !       endif
 !       if(key(27:27).eq.'H')then
-          call dmsput(ifilout,key//char(0),z,istat)
+          call dmsput(ifilout,keyo//char(0),z,istat)
 !       endif
        t_flg=.true.
        endif
@@ -149,13 +149,13 @@
        call mpe_bcast(istat,1,0,mpe_integer)
 !
        if(istat.ne.0)then
-         if(myrank .eq. 0)print *,'dmsput key=',key,' error'
+         if(myrank .eq. 0)print *,'dmsput key=',keyo,' error'
          call mpe_finalize
          call dmsexit(-1)
        else
 
 #ifdef VERBOSE
-         if(myrank .eq. 0) print *,'dmsput key=',key,' ok'
+         if(myrank .eq. 0) print *,'dmsput key=',keyo,' ok'
 #endif
        endif
 
@@ -185,7 +185,7 @@
       use mpe
       use rank
       use index, only : col_rank
-      use const, only : RTYPE,ifilout,key,ihdg2
+      use const, only : RTYPE,ifilout,keyo,ihdgo2
 
       implicit  none
 
@@ -198,8 +198,8 @@
 ! working array
 !
 !
-      write(key,1000)ihdg2,kflag,lenc
-#ifdef IO38K
+      write(keyo,1000)ihdgo2,kflag,lenc
+#ifdef O38K
  1000 format(a28,a1,i9.9)
 #else
  1000 format(a26,a1,i7.7)
@@ -214,7 +214,7 @@
 !          call dmsput(ifile,key//char(0),z4,istat)
 !       endif
 !       if(key(27:27).eq.'H')then
-          call dmsput(ifilout,key//char(0),z,istat)
+          call dmsput(ifilout,keyo//char(0),z,istat)
 !       endif
        t_flg=.true.
 !       endif
@@ -223,13 +223,13 @@
 !
        if(istat.ne.0)then
 !!         if(col_rank .eq. 0)print *,'dmsput key=',key,' error'
-         print *,'dmsput key=',key,' error'
+         print *,'dmsput key=',keyo,' error'
 !!         call mpe_finalize
          call dmsexit(-1)
        else
 !!         if(col_rank .eq. 0) print *,'dmsput key=',key,' ok'
 #ifdef VERBOSE
-         print *,'dmsput key=',key,' ok'
+         print *,'dmsput key=',keyo,' ok'
 #endif
        endif
 

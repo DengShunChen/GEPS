@@ -31,7 +31,7 @@
       do k = 1, levp
         KL=lev-Llist(k)+1
         write (typ, '("m",i2.2,"200")' ) KL
-        call syslbl (typ,idtg2,itaup,gmdef)
+        call syslbl_r (typ,idtg2,itaup,gmdef)
         call dmsread_split(nx,my,lncrec,'H',ifilin,hld1,istat)
         do jj = 1, jlistnum
           j=jlist1(jj)
@@ -49,7 +49,7 @@
       do k = 1, levp
         KL=lev-Llist(k)+1
         write (typ, '("m",i2.2,"210")' ) KL
-        call syslbl (typ,idtg2,itaup,gmdef)
+        call syslbl_r (typ,idtg2,itaup,gmdef)
         call dmsread_split(nx,my,lncrec,'H',ifilin,hld1,istat)
         do jj = 1, jlistnum
           j=jlist1(jj)
@@ -64,7 +64,7 @@
       call mpe2d_transpose_ndsl_f2p(hld3,vt, &
             nxp,nx,levf,levp,1,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
-      call syslbl ('B00010',idtg2,itaup,ggdef)
+      call syslbl_r ('B00010',idtg2,itaup,ggdef)
       call dmsread (nx,my,lncrec,'H',ifilin,hld1,istat)
       do jj = 1, jlistnum
         j=jlist1(jj)
@@ -82,7 +82,7 @@
       do k = 1, levp
         KL=lev-Llist(k)+1
         write (typ, '("m",i2.2,"100")' ) KL
-        call syslbl (typ,idtg2,itaup,gmdef)
+        call syslbl_r (typ,idtg2,itaup,gmdef)
         call dmsread_split(nx,my,lncrec,'H',ifilin,hld1,istat)
         do jj = 1, jlistnum
           j=jlist1(jj)
@@ -99,7 +99,7 @@
       do k = 1, levp
         KL=lev-Llist(k)+1
         write (typ, '("m",i2.2,"500")' ) KL
-        call syslbl (typ,idtg2,itaup,gmdef)
+        call syslbl_r (typ,idtg2,itaup,gmdef)
         call dmsread_split(nx,my,lncrec,'H',ifilin,hld1,istat)
         do jj = 1, jlistnum
           j=jlist1(jj)
@@ -116,7 +116,7 @@
         do k = 1, levp
           KL=lev-Llist(k)+1
           write (typ, '("m",i2.2,"550")' ) KL     ! cloud liquid water content
-          call syslbl (typ,idtg2,itaup,gmdef)
+          call syslbl_r (typ,idtg2,itaup,gmdef)
           call dmsread_split(nx,my,lncrec,'H',ifilin,hld1,istat)
           do jj = 1, jlistnum
             j=jlist1(jj)
@@ -132,7 +132,7 @@
         do k = 1, levp
           KL=lev-Llist(k)+1
           write (typ, '("m",i2.2,"560")' ) KL
-          call syslbl (typ,idtg2,itaup,gmdef)
+          call syslbl_r (typ,idtg2,itaup,gmdef)
           call dmsread_split(nx,my,lncrec,'H',ifilin,hld1,istat)
           do jj = 1, jlistnum
             j=jlist1(jj)
@@ -151,7 +151,7 @@
       do k = 1, levp
         KL=lev-Llist(k)+1
         write (typ, '("m",i2.2,"000")' ) KL
-        call syslbl (typ,idtg2,itaup,gmdef)
+        call syslbl_r (typ,idtg2,itaup,gmdef)
         call dmsread_split(nx,my,lncrec,'H',ifilin,hld1,istat)
         do jj = 1, jlistnum
           j=jlist1(jj)

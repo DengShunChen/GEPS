@@ -36,7 +36,7 @@
         enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call syslbl ('s0043f',idtg,itau,ggdef)
+      call syslbl_w ('s0043f',idtg,itau,ggdef)
       if(outdms.gt.0) call dmswrit(imax,jmax,lenc,kflag,glob,istat)
       if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,0,10,2,1,0,0.,0,24,glob)
 ! Sensible heat flux at the surface (W/m**2)
@@ -48,7 +48,7 @@
          enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call syslbl ('s0042f',idtg,itau,ggdef)
+      call syslbl_w ('s0042f',idtg,itau,ggdef)
       if(outdms.gt.0) call dmswrit(imax,jmax,lenc,kflag,glob,istat)
       if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,0,11,2,1,0,0.,0,24,glob)
 ! Net shortwave (solar) flux at the surface (W/m**2) (positive : downward flux)
@@ -60,7 +60,7 @@
          enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call syslbl ('s0031f',idtg,itau,ggdef)
+      call syslbl_w ('s0031f',idtg,itau,ggdef)
       if(outdms.gt.0) call dmswrit(imax,jmax,lenc,kflag,glob,istat)
       if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,4,9,2,1,0,0.,0,24,glob)
 ! net surface longwave radiation
@@ -72,7 +72,7 @@
          enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call syslbl ('s0032f',idtg,itau,ggdef)
+      call syslbl_w ('s0032f',idtg,itau,ggdef)
       if(outdms.gt.0) call dmswrit(imax,jmax,lenc,kflag,glob,istat)
       if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,5,5,2,1,0,0.,0,24,glob)
 !
@@ -85,7 +85,7 @@
          enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call syslbl ('b00626',idtg,itau,ggdef)
+      call syslbl_w ('b00626',idtg,itau,ggdef)
       if(outdms.gt.0) call dmswrit(imax,jmax,lenc,kflag,glob,istat)
       if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,1,8,2,103,0,0.,1,24,glob)
 !
@@ -98,7 +98,7 @@
          enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call syslbl ('b00646',idtg,itau,ggdef)
+      call syslbl_w ('b00646',idtg,itau,ggdef)
       if(outdms.gt.0) call dmswrit(imax,jmax,lenc,kflag,glob,istat)
 
 !  The average of latent heat flux release for total precipitation within 24-hours
@@ -110,7 +110,7 @@
          enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call syslbl ('b0062f',idtg,itau,ggdef)
+      call syslbl_w ('b0062f',idtg,itau,ggdef)
       if(outdms.gt.0) call dmswrit(imax,jmax,lenc,kflag,glob,istat)
 
 ! model top of net solor shortwave radiation
@@ -122,7 +122,7 @@
          enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call syslbl ('x0033f',idtg,itau,ggdef)
+      call syslbl_w ('x0033f',idtg,itau,ggdef)
       if(outdms.gt.0) call dmswrit(imax,jmax,lenc,kflag,glob,istat)
       if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,4,1,2,8,0,0.,0,24,glob)
 
@@ -135,7 +135,7 @@
          enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call syslbl ('x0034f',idtg,itau,ggdef)
+      call syslbl_w ('x0034f',idtg,itau,ggdef)
       if(outdms.gt.0)  call dmswrit(imax,jmax,lenc,kflag,glob,istat)
       if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,5,5,2,8,0,0.,0,24,glob)
 !
@@ -148,7 +148,7 @@
         enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call syslbl ('x00999',idtg,itau,ggdef)
+      call syslbl_w ('x00999',idtg,itau,ggdef)
       if(outdms.gt.0) call dmswrit(imax,jmax,lenc,kflag,glob,istat)
       if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,17,4,6,7,0,0.,0,24,glob)
 !xb110<<

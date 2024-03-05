@@ -200,7 +200,7 @@
 
           use index
           use rank
-          use const, only: ihdg
+          use const, only: ihdgi
 
           character*4 ggdef
           integer*8 idtg1
@@ -214,7 +214,7 @@
 
           allocate(temp1(nx,my))
 !
-#ifdef IO38K
+#ifdef I38K
   11     format('W00100','000000',a4,i4.4,i2.2,'010000')  ! W10
 #else
   11     format('W00100','0000',a4,i4.4,i2.2,'010000')  ! W10
@@ -248,7 +248,7 @@
                iyy=iyyyy
              endif
 
-             write(ihdg,11) ggdef,iyy,imm
+             write(ihdgi,11) ggdef,iyy,imm
              call dmsread(nx,my,lncrec,'H',ifilin_sst,temp1(:,:),istat)
 !             if( lreduce.eq.1 ) call reducepickr(temp1(1,imm,1),nxdef,nx,my)
              do jj = 1, jlistnum
@@ -432,7 +432,7 @@
      !-----------------------------------
         SUBROUTINE read_dailyFCT_dayp1(idtg1,locean)
 
-          use const, only: ihdg
+          use const, only: ihdgi
           INTEGER*8 idtg1
           INTEGER iyyyy,imm,idd,ihh,imn
           INTEGER lncrec
@@ -453,7 +453,7 @@
           cicetemp=0.
           sndpttemp=0.
 
-#ifdef IO38K
+#ifdef I38K
    11     format('W00100','000000',a4,i4.4,i2.2,i2.2,i2.2,'00')  ! sea surface temperature
    12     format('W00091','000000',a4,i4.4,i2.2,i2.2,i2.2,'00')  ! sea ice fration
    13     format('B00650','000000',a4,i4.4,i2.2,i2.2,i2.2,'00')  ! water equivlent snow depth
@@ -462,12 +462,12 @@
    12     format('W00091','0000',a4,i4.4,i2.2,i2.2,i2.2,'00')  ! sea ice fration
    13     format('B00650','0000',a4,i4.4,i2.2,i2.2,i2.2,'00')  ! water equivlent snow depth
 #endif
-          write(ihdg,11) ggdef,iyyyy,imm,idd,ihh
+          write(ihdgi,11) ggdef,iyyyy,imm,idd,ihh
           call dmsread(nx,my,lncrec,'H',ifilin_sst,ssttemp(:,:),istat)
           if(ldailyFCTicesndpt)then
-            write(ihdg,12) ggdef,iyyyy,imm,idd,ihh
+            write(ihdgi,12) ggdef,iyyyy,imm,idd,ihh
             call dmsread(nx,my,lncrec,'H',ifilin_ncep,cicetemp(:,:),istat)
-            write(ihdg,13) ggdef,iyyyy,imm,idd,ihh
+            write(ihdgi,13) ggdef,iyyyy,imm,idd,ihh
             call dmsread(nx,my,lncrec,'H',ifilin_ncep,sndpttemp(:,:),istat)
           endif
 
@@ -586,7 +586,7 @@
 
         SUBROUTINE read_dailyClm_2days(idtg1,idtg_2,itau,plon,plat,locean)
 
-          use const, only: ihdg
+          use const, only: ihdgi
           INTEGER*8 idtg1,idtg_2
           INTEGER itau
           INTEGER iyyyy,imm,idd,ihh,imn
@@ -610,7 +610,7 @@
           sstFCT0=0.
           sstFCT1=0.
 
-#ifdef IO38K
+#ifdef I38K
    11     format('W00100',6x,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
    13     format('W00100',i6.6,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
 #else
@@ -618,10 +618,10 @@
    13     format('W00100',i4.4,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
 #endif
           !dailyClm_option>=1, read climatology ana. sst
-          write(ihdg,11) ggdef,imm,idd
+          write(ihdgi,11) ggdef,imm,idd
           call dmsread(nx,my,lncrec,'H',ifilin_ClmANA,sstANA0(:,:),istat)
 
-          write(ihdg,11) ggdef,imm2,idd2
+          write(ihdgi,11) ggdef,imm2,idd2
           call dmsread(nx,my,lncrec,'H',ifilin_ClmANA,sstANA1(:,:),istat)
 
 !          if( lreduce.eq.1 ) then
@@ -638,10 +638,10 @@
 
 
           if(dailyClm_option .eq. 2) then     !dailyClm_option=2, read forcast climatology sst
-            write(ihdg,13) itau,ggdef,imm,idd
+            write(ihdgi,13) itau,ggdef,imm,idd
             call dmsread(nx,my,lncrec,'H',ifilin_ClmFCT,sstFCT0(:,:),istat)
 
-            write(ihdg,13) itau+24,ggdef,imm,idd
+            write(ihdgi,13) itau+24,ggdef,imm,idd
             call dmsread(nx,my,lncrec,'H',ifilin_ClmFCT,sstFCT1(:,:),istat)
 
 
@@ -718,7 +718,7 @@
                
         SUBROUTINE read_dailyClm_dayp1(idtg1,idtg_2,itau,plon,plat,locean)
 
-          use const, only: ihdg
+          use const, only: ihdgi
           INTEGER*8 idtg1,idtg_2
           INTEGER itau
           INTEGER iyyyy,imm,idd,ihh,imn
@@ -739,14 +739,14 @@
           sstANA=0.          
           sstFCT=0.          
 
-#ifdef IO38K
+#ifdef I38K
    11     format('W00100',6x,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
    13     format('W00100',i6.6,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
 #else
    11     format('W00100',4x,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
    13     format('W00100',i4.4,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
 #endif
-          write(ihdg,11) ggdef,imm2,idd2
+          write(ihdgi,11) ggdef,imm2,idd2
           call dmsread(nx,my,lncrec,'H',ifilin_ClmANA,sstANA(:,:),istat)
 
 !          if( lreduce.eq.1 ) then
@@ -759,7 +759,7 @@
 
 
           if(dailyClm_option .eq. 2) then
-            write(ihdg,13) itau,ggdef,imm,idd
+            write(ihdgi,13) itau,ggdef,imm,idd
             call dmsread(nx,my,lncrec,'H',ifilin_ClmFCT,sstFCT(:,:),istat)
 
 !            if( lreduce.eq.1 ) then
@@ -853,7 +853,7 @@
         enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call syslbl ('w0001f',idtg,itau,ggdef)
+      call syslbl_w ('w0001f',idtg,itau,ggdef)
       call dmswrit(imax,jmax,lenc,kflag,glob,istat)
       tseadiffFCT24=0.
 
@@ -892,7 +892,7 @@
         
           use index
           use rank
-          use const, only: ihdg 
+          use const, only: ihdgi 
         
           integer nx,my,lkvl
           character*4 ggdef
@@ -916,7 +916,7 @@
           wtfn12=0.
           wsfn12=0.
 
-#ifdef IO38K         
+#ifdef I38K         
   11     format(i3.3,'TFM','  gbck',a4,4x,i2.2,6x)  ! ???TFM
   12     format(i3.3,'SFM','  gbck',a4,4x,i2.2,6x)  ! ???SFM
 #else
@@ -944,11 +944,11 @@
           lncrec=nx*my
           do k=1,lkvl+2
             do mm=1,12
-              write(ihdg,11) k-1,ggdef,mm
-              if(myrank .eq. 0) print *, 'ihdg11=',ihdg
+              write(ihdgi,11) k-1,ggdef,mm
+              if(myrank .eq. 0) print *, 'ihdg11=',ihdgi
               call dmsread(nx,my,lncrec,'H',ifilin_ocaf,temp1(:,:),istat)
-              write(ihdg,12) k-1,ggdef,mm
-              if(myrank .eq. 0) print *, 'ihdg12=',ihdg
+              write(ihdgi,12) k-1,ggdef,mm
+              if(myrank .eq. 0) print *, 'ihdg12=',ihdgi
               call dmsread(nx,my,lncrec,'H',ifilin_ocaf,temp2(:,:),istat)
               if( myrank .eq. 72) then
                 print *,"ocaf: mm=",mm,",wtfn(914,265)=",temp1(914,265)
@@ -990,7 +990,7 @@
 
           use index
           use rank
-          use const, only: ihdg 
+          use const, only: ihdgi 
 
           integer nx,my,lkvl
           character*4 ggdef
@@ -1017,7 +1017,7 @@
           write(cdtg,'(i12)') idtg1
 !          read(cdtg,'(i4,i2,i8)')iyyyy,mm,ddhhmn
 
-#ifdef IO38K
+#ifdef I38K
   11     format(i3.3,'TFN','000000',a4,a12)  ! ???TFM
   12     format(i3.3,'MSK','000000',a4,a12)  ! ???SFM
 #else
@@ -1029,11 +1029,11 @@
           do k=1,1
 
            lncrec=nx*my
-           write(ihdg,11) k-1,ggdef,cdtg
-           if(myrank .eq. 0) print *, 'ihdg11=',ihdg
+           write(ihdgi,11) k-1,ggdef,cdtg
+           if(myrank .eq. 0) print *, 'ihdg11=',ihdgi
            call dmsread(nx,my,lncrec,'H',ifilin,temp1(:,:),istat)
-           write(ihdg,12) k-1,ggdef,cdtg
-           if(myrank .eq. 0) print *, 'ihdg12=',ihdg
+           write(ihdgi,12) k-1,ggdef,cdtg
+           if(myrank .eq. 0) print *, 'ihdg12=',ihdgi
            call dmsread(nx,my,lncrec,'H',ifilin,temp2(:,:),istat)
 
 !           if( lreduce.eq.1 ) call reducepickr(temp1(1,1),nxdef,nx,my)

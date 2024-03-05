@@ -402,12 +402,12 @@
 ! new start gfcst: read climate data, initialize parameters
 !
         call readclx( nx,my,my_max,julian,land,ocean,ice,tgclim,gwclim  &
-                   ,z0,alb,sst,bckfile,sigmaf,istyp,ivegtyp,ls   &
+                   ,z0,alb,sst,sigmaf,istyp,ivegtyp,ls                  &
                    ,shdmax,shdmin,slopetyp,snoalb,ggdef,isot,ivegsrc )
 !
 !  read sst analysis data
 !
-        call syslbl('w00100',idtg,0,ggdef)
+        call syslbl_r('w00100',idtg,0,ggdef)
         call dmsread(nx,my,nxmy,'H',ifilin,ww1,istat)
         call unify_reducepick(nx,my,my_max,ww1,sst)
 ! ------------------------------------------------------------
@@ -459,7 +459,7 @@
         isnow = idtg - (idtg/10000)*10000
 !                           
         if( ncepsnow  .and. isnow.eq.0 )then
-          call syslbl('b00650',idtg,0,ggdef)
+          call syslbl_r('b00650',idtg,0,ggdef)
           call dmsread(nx,my,nxmy,'H',ifilin,ww1,istat)
           call unify_reducepick(nx,my,my_max,ww1,snr)
           if( myrank .eq. 0 ) print*, &
@@ -495,15 +495,19 @@
 !          call dmsreadi(nx,my,lrec,nxmy,'I',ifilin,icex,istat)
 !          if( lreduce.eq.1 ) call reducepicki (icex,nxdef,nx,my)
 !
-          call syslbl('w00091',idtg,0,ggdef)
+          call syslbl_r('w00091',idtg,0,ggdef)
           call dmsread(nx,my,nxmy,'H',ifilin,ww1,istat)
           call unify_reducepick(nx,my,my_max,ww1,cice)
 !
           if( myrank .eq. 0 ) then
              print*,"get ncep's sea ice analysis, at dtg=",idtg
-             call syslbl('w00092',idtg,0,ggdef)
-             write(key,'(a28,a1,i9.9)') ihdg,'H',nxmy
-             call dmschkr (ifilin,key//char(0),istat)
+             call syslbl_r('w00092',idtg,0,ggdef)
+#ifdef I38K
+             write(keyi,'(a28,a1,i9.9)') ihdgi,'H',nxmy
+#else
+             write(keyi,'(a26,a1,i7.7)') ihdgi,'H',nxmy
+#endif
+             call dmschkr (ifilin,keyi//char(0),istat)
           endif
           call mpe_bcast(istat,1,0,mpe_integer)
 !
@@ -721,10 +725,10 @@
         else
          write(topohgt,'(a3,i1.1)')'gbk',ksgeo
         end if
-#ifdef IO38K
-        write(ihdg,'("s00060",2x,a4,a4,12x)')topohgt,ggdef
+#ifdef I38K
+        write(ihdgi,'("s00060",2x,a4,a4,12x)')topohgt,ggdef
 #else
-        write(ihdg,'("s00060",a4,a4,12x)')topohgt,ggdef
+        write(ihdgi,'("s00060",a4,a4,12x)')topohgt,ggdef
 #endif
         call dmsread(nx,my,nxmy,'H',bckfile,ww1,istat)
         if(istat.ne.0)then
@@ -758,10 +762,10 @@
 !dms    istdno=0
 !c      topostd='gbkf'   ! responding to istdno=99
         topostd='gbk0'   ! responding to istdno=0
-#ifdef IO38K
-        write(ihdg,'("s00062",2x,a4,a4,12x)')topostd,ggdef
+#ifdef I38K
+        write(ihdgi,'("s00062",2x,a4,a4,12x)')topostd,ggdef
 #else
-        write(ihdg,'("s00062",a4,a4,12x)')topostd,ggdef
+        write(ihdgi,'("s00062",a4,a4,12x)')topostd,ggdef
 #endif
         call dmsread(nx,my,nxmy,'H',bckfile,ww1,istat)
         if(istat.ne.0)then

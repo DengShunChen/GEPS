@@ -635,7 +635,7 @@
         z0ocn=z0
 !     read climate data
         call readclx( nx,my,my_max,julian,land,ocean,ice,tgclim,gwclim  &
-                   ,z0,alb,sstc,bckfile,sigmaf,istyp,ivegtyp,ls         &
+                   ,z0,alb,sstc,sigmaf,istyp,ivegtyp,ls                 &
                    ,shdmax,shdmin,slopetyp,snoalb,ggdef,isot,ivegsrc )
 !
 !     read new albedo
