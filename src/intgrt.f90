@@ -1611,16 +1611,6 @@
           write(i) stc
           write(i) slc
           close(i)
-          print*,'TYW in intgrt, tg = ',maxval(tg),minval(tg)
-          print*,'TYW in intgrt, hflux = ', maxval(hflux),minval(hflux)
-          print*,'TYW in intgrt, qflux = ', maxval(qflux),minval(qflux)
-          print*,'TYW in intgrt, ss = ', maxval(ss),minval(ss)
-          print*,'TYW in intgrt, rs = ', maxval(rs),minval(rs)
-          print*,'TYW in intgrt, asol = ', maxval(asol),minval(asol)
-          print*,'TYW in intgrt, olr = ', maxval(olr),minval(olr)
-          print*,'TYW in intgrt, sld = ', maxval(sld),minval(sld)
-          print*,'TYW in intgrt, rld = ', maxval(rld),minval(rld)
-          print*,'TYW in intgrt, asold = ', maxval(asold),minval(asold)
           endif ! end of ( mod(float(itau),float(itauezz)) .lt. 0.01 )
           if(do_sit) then
             if(myrank .eq. 0) print *, 'ready rerun_sitgrid1'
@@ -1817,7 +1807,7 @@
             call  outflds_green(nint(tau),nx,my,my_max,lev,ncld                &
                           , idtg,cp,rgas,grav,t2,u10,v10,ss,pk                 &
                           , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6  &
-                          , ggdef)
+                          )
 #endif
 !           if (mod(tau+0.00001, 6. ) .lt. 0.01) then
             if ( mod( itau , 6 ) == 0 ) then

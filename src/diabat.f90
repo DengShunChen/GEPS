@@ -506,7 +506,6 @@
       real tauhr
       real dtx_tau,dtaup,dtxb
       INTEGER, PARAMETER :: nerr = 6
-      real dtxb
 !xb110>
       ztenh = 0.
       zqenh = 0.
