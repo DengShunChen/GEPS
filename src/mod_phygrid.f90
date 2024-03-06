@@ -99,16 +99,22 @@
            ss=0.
            rs=0.
 
-!CWB2015
-           ctot=0.
-           chig=0.
-           cmid=0.
-           clow=0.
-           hpbl=0.
-
 !CWB2016
            curate=0.
            tsflw=0.
+           cumtop=0.
+           plcl  =0.
+             snr=0.;        gwr=0.;          tg=0.
+           ustar=0.;      tstar=0.;       qstar=0.
+           hflux=0.;      qflux=0.;     raintot=0.
+          raincu=0.;     rainlp=0.;      totalp=0.
+          tgclim=0.;       gwet=0.;          z0=0.
+             alb=0.;     gwclim=0.;        acld=0.
+            ctot=0.;       chig=0.;        cmid=0.
+            clow=0.;       hpbl=0.;        cosz=0.
+         rainlp6=0.;    raincu6=0.
+         rainlp3=0.;    raincu3=0.
+         rainlp1=0.;    raincu1=0.
 
            allocate (land(nxp,my_max),ice(nxp,my_max), &
                      ocean(nxp,my_max), stat=ierr)
@@ -147,8 +153,9 @@
                stop
            end if
 !
-           rh2=0.
-           rh10=0.
+           u10=0.;     v10=0.;     t2=0.;     rh2=0.
+          rh10=0.;      q2=0.;     fm=0.;   fm10=0.
+            fh=0.;     fh2=0.; srflag=0.
            gwr=0.
 !
            allocate (fpsp(nxp,my_max),fpsp1(nxp,my_max),stat=ierr)

@@ -1,4 +1,4 @@
-      subroutine out2d_mfc (nx,lev,my,my_max,ifilout,itau,idtg    &
+      subroutine out2d_mfc (nx,lev,my,my_max,itau,idtg    &
                             ,raincu1,rainlp1,raintot,glob,t2,q2,rh2,rh10 &
                             ,u10,v10,tmax,tmin,rld,sld,ctot,pt,ggdef )
 !
@@ -6,7 +6,7 @@
       use mpe
       use index
       use const ,only : grav,ptop,rgas,cp ,outdms ,outgrb2 ,ifilout_grb, &
-                        RTYPE,kflag
+                        RTYPE,kflag,ihdgo,ihdgo2
       use grid  ,only : tt,qt,plt,pk,pk2,sgeo
       use mod_grb2_param  !for write grib2 data
 !
@@ -33,9 +33,6 @@
       integer,dimension(num):: ptp0 ,ptp1 ,ptp2 ,ptp3 ,ptp4 ,ptp5
 !
       real(kind=RTYPE) glob(nx,my),mout(nx,my)
-!
-      character*80 ifilout
-      character*26 ihdg,ihdg2
 !
       integer   n,levz,lenc,lenc2,i,ia,kk,j,nxj,istat,jj,llts,k
       real      tnshun,alaps,rdg,ttb,ttp,ttt,ttt1,ttt2,anlslp,apha
@@ -200,15 +197,15 @@
 
     if(outdms.gt.0)then
       do n=1,num
-        call syslbl (dmskey(n),idtg,ntau,ggdef,ihdg)
+        call syslbl_w (dmskey(n),idtg,ntau,ggdef)
         call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),glob)
         if ( myrank .eq. n-1 ) then
           mout=glob
-          ihdg2=ihdg
+          ihdgo2=ihdgo
         endif
       enddo
 !
-      if (myrank .lt. num ) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
+      if (myrank .lt. num ) call dmswrit_split(nx,my,lenc,kflag,mout,istat)
     endif ! outdms .gt. 0
 !
 !! rh10

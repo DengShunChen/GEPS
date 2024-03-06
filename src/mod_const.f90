@@ -17,6 +17,28 @@
       integer, parameter :: MPI_RTYPE=MPI_REAL8
       character(len=1), parameter  :: kflag='H'
 #endif
+!CWA2024 for DMS38key
+#ifdef I38K
+    integer, parameter :: KLENI=38,KLENI2=28,cleni=17
+    character(len=16):: ihdgleni1
+#else
+    integer, parameter :: KLENI=34,KLENI2=26,cleni=15
+    character(len=14):: ihdgleni1
+#endif
+    character(len=KLENI):: keyi
+    character(len=KLENI2):: ihdgi,ihdgi2
+    character(len=12):: ihdgleni2
+ 
+#ifdef O38K
+    integer, parameter :: KLENO=38,KLENO2=28,cleno=17
+    character(len=16):: ihdgleno1
+#else
+    integer, parameter :: KLENO=34,KLENO2=26,cleno=15
+    character(len=14):: ihdgleno1
+#endif
+    character(len=KLENO):: keyo
+    character(len=KLENO2):: ihdgo,ihdgo2
+    character(len=12):: ihdgleno2
  
     real(kind=RTYPE), dimension(:)  , allocatable, save  :: aki,bki
     real(kind=RTYPE), dimension(:,:), allocatable, save  :: sigma,dsigma
@@ -117,6 +139,7 @@
     !for 2dMPI
     logical :: idg_jdg_owner
     integer :: idg_listnum,jdg_listnum
+    integer :: itimestep
 
     ! daily forecast sst, sea ice fraction, water equivlent snow depth, time weighting
     logical :: ldailyFCTsst,ldailyFCTicesndpt,lFCTweight
@@ -141,7 +164,7 @@
             dailyClm_option,lopgsst,do_sit,tofd
 
 
-    character(len=80) ifilin,cwbout,bckfile,namlsts, &
+    character(len=255) ifilin,cwbout,bckfile,namlsts, &
             ifilout,crdate,ocards,phyout,cntrl, &
             ifilin_ncep,ifilin_sst,ifilin_nc,   &
             ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb

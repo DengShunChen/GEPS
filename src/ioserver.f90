@@ -2,7 +2,7 @@
 
 !CWB2016 for gfs io_quilting
 
-      use const, only : ifilout
+      use const, only : ifilout,KLENO,keyo
 
       implicit none
 
@@ -10,7 +10,7 @@
 
       integer  nxmy,i,j,ist,ist1,ist2,iL,Len,ncnt,ntag
       real*8   z(nxmy,NMAX)
-      character*34 key,keys(NMAX)
+      character(len=KLENO) keys(NMAX)
 
 !CWB2016
       integer  ifromtau,itotau,istat
@@ -29,9 +29,9 @@
 
       do while (.true.)
         ntag=ntag+1
-        call mpe_recv_key(key,ntag,ist1)
-        if(key(1:4).eq."DONE")goto 100
-        if(key(1:4).eq."DOIT")then
+        call mpe_recv_key(keyo,ntag,ist1)
+        if(keyo(1:4).eq."DONE")goto 100
+        if(keyo(1:4).eq."DOIT")then
 
 !CWB2018 bug fixed
         if(ncnt.gt.0)then
@@ -47,7 +47,7 @@
           enddo
 
 !CWB2016
-          read(keys(ncnt)(7:10),'(i4)')itotau
+          read(keys(ncnt)(7:12),'(i6)')itotau
 
 !CWB20160927 for NWP control
           if(itotau == 9) call sleep(20)
@@ -82,7 +82,7 @@
             ncnt=1
           endif
 
-          keys(ncnt)=key
+          keys(ncnt)=keyo
           ntag=ntag+1
           call mpe_recv_data(z(1,ncnt),nxmy,ntag,ist2)
         endif
@@ -101,7 +101,7 @@
 !-----------------------------
 
 subroutine ioserver_grb2(nx,my)
-use const, only : ifilout_grb,RTYPE
+use const, only : ifilout_grb,RTYPE,keyo,KLENO2,cleno
 use mod_grb2_param
 implicit none
 integer :: NMAX=500
@@ -112,7 +112,6 @@ integer*8::idtg
 real(kind=RTYPE)::fld(nx*my)
 integer,allocatable::ptp0(:,:)
 real*4,allocatable ::z(:,:)
-character:: key*34
 real::t12
 integer  ifromtau,itotau,istat
 ifromtau=0
@@ -128,21 +127,21 @@ ntag=0
  133                      format( A  ,A ,I10.10 ,A , i4.4 ,A      )
 do while (.true.)
   ntag=ntag+1
-  call mpe_recv_key(key,ntag,ist)
-  if(key(1:4).eq."DONE")exit !goto 100
-  if(key(1:4).eq."OPEN")then
-    read(key(15:26),'(I12)')idtg
-    read(key(7:10),'(I4)')itau
+  call mpe_recv_key(keyo,ntag,ist)
+  if(keyo(1:4).eq."DONE")exit !goto 100
+  if(keyo(1:4).eq."OPEN")then
+    read(keyo(cleno:KLENO2),'(I12)')idtg
+    read(keyo(7:10),'(I4)')itau
     write(grbfile,133 )trim(ifilout_grb),'/GFS_',idtg/100 ,'_',itau,'.grb2'
     print*,'OutFileName= ',trim(grbfile)
     call opn_grb2(nx,my,idtg,itau,istat)
 
     ncnt=0
     ntag=ntag+1
-    call mpe_recv_key(key,ntag,ist)
-    do while ( key(1:4)=='DOIT' ) 
+    call mpe_recv_key(keyo,ntag,ist)
+    do while ( keyo(1:4)=='DOIT' ) 
 
-      do while ( ncnt < NMAX .and. key(1:4)=='DOIT' )
+      do while ( ncnt < NMAX .and. keyo(1:4)=='DOIT' )
         ncnt=ncnt+1
         ntag=ntag+1
         call mpe_recv_int( ptp0(:,ncnt) , 9 ,ntag,ist)
@@ -151,7 +150,7 @@ do while (.true.)
         z(:,ncnt)=fld(:)
 
         ntag=ntag+1
-        call mpe_recv_key(key,ntag,ist)
+        call mpe_recv_key(keyo,ntag,ist)
         !if(key(1:4)=="CLSE")goto 101
       enddo
       101   continue
@@ -171,7 +170,7 @@ do while (.true.)
     call cls_grb2(istat)
 
     !CWB20160927 for NWP control
-    read(key(7:10),'(i4)')itotau
+    read(keyo(7:10),'(i4)')itotau
     !if(itotau == 9) call sleep(20)
     if((itotau /= 0).and.(itotau /= ifromtau))then
     call sendmsg ('gfs',ifromtau,itotau,istat)

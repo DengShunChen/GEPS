@@ -216,7 +216,8 @@ SRCS_f90  = \
   prerrtmg.f90 \
   prexp_hybrid_cwb.f90 \
   qmax2d.f90 \
-  qmaxn3.f90 \
+  qmaxn3_r.f90 \
+  qmaxn3_w.f90 \
   qmaxn3p.f90 \
   qprint.f90 \
   qprnt3.f90 \
@@ -294,7 +295,8 @@ SRCS_f90  = \
   structrn.f90 \
   stupij.f90 \
   stupiy.f90 \
-  syslbl.f90 \
+  syslbl_r.f90 \
+  syslbl_w.f90 \
   tendget.f90 \
   tracking.f90 \
   trandv.f90 \
@@ -347,6 +349,8 @@ OBJS_c   = $(SRCS_c:.c=.o)
 
 OBJS = $(OBJS_f) $(OBJS_f90) $(OBJS_F) $(OBJS_F90) $(OBJS_c)
 
+MACHINE=fx1000
+
 CC   =	${C_COMP}
 FC90 =  ${COMP_MPI}
 
@@ -384,7 +388,8 @@ INSTALL = /usr/bin/install
 # use FFTW fft
 # FFLAGS  = -c -X9 -Free -CcdRR8 -Cpp -DTIMING -DMULTIPLE -DUSE_FFTW -DW3TAG \
            -Kfast,parallel,openmp,ocl,autoobjstack \
-	   -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE) 
+	   -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE)
+
  FFLAGS       = ${FFLAGS_COM}       ${LIBS_COM} ${OMP_COM} ${DEFINE_FLAGS} ${MSG_COM} $(INCLUDE) 
  FFLAGS_NOPAR = ${FFLAGS_COM}       ${LIBS_COM} ${DEFINE_FLAGS} ${MSG_COM} $(INCLUDE) 
  FFLAGS_GWDPS = ${FFLAGS_COM_GWDPS} ${LIBS_COM} ${OMP_COM} ${DEFINE_FLAGS} ${MSG_COM} $(INCLUDE)

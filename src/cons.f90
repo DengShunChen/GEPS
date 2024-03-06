@@ -75,7 +75,7 @@
                       , sashal,crick_proof,ccnorm,norad_precip,me,doo3l &
                       , ioutsigr,domfc,out_green,isot,ivegsrc           &
                       , otgreen,out_hp,dosppt,dospptout, doshum, dossst &
-                      , doskeb, doskebout, ndsladvh2,hord               &
+                      , doskeb, doskebout,  ndsladvh2,hord              &
                       , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
                       , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud,updatetg       &
 ! output data for RSM (Also, RSM compiling flag is necessary)
@@ -89,7 +89,7 @@
       real    si(lev+1)
       logical flag
       character*10 fulldtg,Wfulldtg
-      character*80 filist
+      character*255 filist
       character cdtg*12
       character*80 pathname,logicname,truefile
       character*64 type_r,type_w,argument
@@ -215,6 +215,7 @@
       if(myrank .eq. 0)then
         call recmsg('gfs',ifromtau,itotau,istat)
         flag =.true.
+        print*,'TYW in cons, ifromtau, itotau = ',ifromtau,itotau
       endif
 !ch   call mpe_broadcast(istat,1,flag,mpe_integer)
       call mpe_bcast(istat,1,0,mpe_integer)
@@ -246,9 +247,10 @@
         taui= float(itau)
         restrt=.true.
         if(myrank .eq. 0) print*,' restarting at tau=',itau
-        hours = hours+taui
+        hours = hours+taui-(dt/3600.)  ! for restart
         julian= julian+hours/24.0+0.001
         hours = mod(hours,24.)
+        if(myrank .eq. 0) print*,'TYW in cons, julian = ',julian
       endif
 !
       if(myrank .eq. 0) print modlst
@@ -443,8 +445,17 @@
       if( myrank .eq. 0 ) then
        type_r="RORDER"//char(0)
        type_w="WORDER"//char(0)
+#ifdef I38K 
+       argument="38"//char(0)
+#else
        argument="34"//char(0)
+#endif
        call dmscfg(type_r,argument,istat_r)
+#ifdef O38K 
+       argument="38"//char(0)
+#else
+       argument="34"//char(0)
+#endif
        call dmscfg(type_w,argument,istat_w)
        istat = abs(istat_r) + abs(istat_w)
       endif
@@ -466,7 +477,8 @@
 !  open the input file.  this too will be replaced by the appropriate
 !  dbms operation when available
 !
-      if(col_rank .eq. 0) call dmsopn(ifilin,"w",istat2)
+!      if(col_rank .eq. 0) call dmsopn(ifilin,"w",istat2)
+      if(col_rank .eq. 0) call dmsopn(ifilin,"r",istat2)
 !
       if(myrank .lt. lev) call dmsopn(ifilout,"w",istat3)
 !
@@ -486,12 +498,14 @@
           call dmsopn(ifilin_ncep,"r",istat5)
           istat = istat + abs(istat5)
         endif
+        if(do_sit) then
         if(dailyClm_option .ge. 1) then
           call dmsopn(ifilin_ClmANA,"r",istat6)
           if(dailyClm_option .eq. 2) then
             call dmsopn(ifilin_ClmFCT,"r",istat7)
           endif
           istat = istat + abs(istat6)+abs(istat7)
+        endif
         endif
 
       end if
