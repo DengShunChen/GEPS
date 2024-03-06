@@ -1402,7 +1402,7 @@
 
       dtaup= mod(tau+0.001, tauo)
       histim=(dtaup .lt. dtx_tau)
-       if(myrank.eq.0)print *,'chkhis dtaup,tauo,dtx_tau=',dtaup,tauo,dtx_tau
+!       if(myrank.eq.0)print *,'chkhis dtaup,tauo,dtx_tau=',dtaup,tauo,dtx_tau
 
 !  for tracker
       dt_trk=real(trk_intv)
@@ -1806,8 +1806,7 @@
 #ifndef NO_OUT
             call  outflds_green(nint(tau),nx,my,my_max,lev,ncld                &
                           , idtg,cp,rgas,grav,t2,u10,v10,ss,pk                 &
-                          , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6  &
-                          )
+                          , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6)
 #endif
 !           if (mod(tau+0.00001, 6. ) .lt. 0.01) then
             if ( mod( itau , 6 ) == 0 ) then

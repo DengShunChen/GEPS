@@ -1,7 +1,6 @@
       subroutine outflds_green( itau,nx,my,my_max,lev,ncld       &
              , idtg,cp,rgas,grav,t2,u10,v10,ss,pk                &
-             , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6 &
-             )
+             , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6)
 !
 !  output driver subroutine to process sigma level data to 40m & 100m
 !

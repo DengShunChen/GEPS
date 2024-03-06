@@ -1002,8 +1002,6 @@
         enddo
       enddo
 
-
-      if(do_sit) then
 !---------------------------------
 ! read forecast sst
 !---------------------------------
@@ -1014,6 +1012,7 @@
 !---------------------------------
 !0.0 initial_sit
 !---------------------------------
+      if(do_sit) then
         CALL set_ocndepth()
         if(myrank .eq. 0) print *,'end set_ocndepth'
         CALL allocate_sitgrid_array(nxp,my_max)

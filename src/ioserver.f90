@@ -47,7 +47,11 @@
           enddo
 
 !CWB2016
+#ifdef O38K
           read(keys(ncnt)(7:12),'(i6)')itotau
+#else
+          read(keys(ncnt)(7:10),'(i4)')itotau
+#endif
 
 !CWB20160927 for NWP control
           if(itotau == 9) call sleep(20)
@@ -170,7 +174,11 @@ do while (.true.)
     call cls_grb2(istat)
 
     !CWB20160927 for NWP control
+#ifdef O38K
+    read(keyo(7:12),'(i6)')itotau
+#else
     read(keyo(7:10),'(i4)')itotau
+#endif
     !if(itotau == 9) call sleep(20)
     if((itotau /= 0).and.(itotau /= ifromtau))then
     call sendmsg ('gfs',ifromtau,itotau,istat)

@@ -2,10 +2,10 @@
 !
 #if defined(RSM) && defined(CWB_MPMD)
       use rank, only : root_gfs,MPI_COMM_gfs_all
-      use const, only : keyo,KLENO
 #else
       use rank, only : root_gfs
 #endif
+      use const, only : keyo,KLENO
       use mpi
       integer tag,isrc,ierr,ISTATUS(MPI_STATUS_SIZE)
 

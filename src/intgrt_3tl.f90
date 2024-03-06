@@ -163,7 +163,6 @@
       integer*8 idtg_sst,idtg1_sst,idtg_temp
       integer icurrenttau,yyyymmdd,hhii
       logical lsstrestore,iceold(nxp,my),oceanold(nxp,my)
-      character lrec*26
       character*12 cdtg
       real    ssttemp,cicetemp,snrtemp
       real    sst(nx,my),ssttau,tautemp
