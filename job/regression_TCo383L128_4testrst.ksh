@@ -377,8 +377,8 @@ EOF
  cp $NWPETC/ocards_rst${rstau} $GFSWRK/ocards
 
  FCT_MODEL=$MDIR/src/$EXEC
- /usr/bin/time -p mpiexec --of-proc TCo383gfs_rst.out -n $MPI ${FCT_MODEL} 
-
+# /usr/bin/time -p mpiexec --of-proc TCo383gfs_rst.out -n $MPI ${FCT_MODEL} 
+ /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} -Wl,-T
  if [ $? != 0 ] ; then
   echo "error occured: fct model fail !!"
  fi

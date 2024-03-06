@@ -361,7 +361,8 @@ EOF
 
  FCT_MODEL=$MDIR/src/$EXEC
 # /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} 
- /usr/bin/time -p mpiexec --of-proc TCo383gfs.out -n $MPI ${FCT_MODEL} 
+  /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} -Wl,-T
+# /usr/bin/time -p mpiexec --of-proc TCo383gfs.out -n $MPI ${FCT_MODEL} 
 
  if [ $? != 0 ] ; then
   echo "error occured: fct model fail !!"
