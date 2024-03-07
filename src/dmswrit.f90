@@ -75,7 +75,6 @@
 !
        if(istat.ne.0)then
          if(myrank .eq. 0)print *,'dmsput key=',keyo,' error'
-         if(myrank .eq. 0)print *,'TYW in dmswrit, ifilout = ',ifilout
          call mpe_finalize
          call dmsexit(-1)
        else

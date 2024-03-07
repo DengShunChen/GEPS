@@ -370,16 +370,6 @@
           read(i) stc
           read(i) slc
           close(i)
-          print*,'TYW in getrdy, tg = ',maxval(tg),minval(tg)
-          print*,'TYW in getrdy, hflux = ', maxval(hflux),minval(hflux)
-          print*,'TYW in getrdy, qflux = ', maxval(qflux),minval(qflux)
-          print*,'TYW in getrdy, ss = ', maxval(ss),minval(ss)
-          print*,'TYW in getrdy, rs = ', maxval(rs),minval(rs)
-          print*,'TYW in getrdy, asol = ', maxval(asol),minval(asol)
-          print*,'TYW in getrdy, olr = ', maxval(olr),minval(olr)
-          print*,'TYW in getrdy, sld = ', maxval(sld),minval(sld)
-          print*,'TYW in getrdy, rld = ', maxval(rld),minval(rld)
-          print*,'TYW in getrdy, asold = ', maxval(asold),minval(asold)
 !
       endif     ! end of (restrt=true)
 
@@ -1012,8 +1002,6 @@
         enddo
       enddo
 
-
-      if(do_sit) then
 !---------------------------------
 ! read forecast sst
 !---------------------------------
@@ -1024,6 +1012,7 @@
 !---------------------------------
 !0.0 initial_sit
 !---------------------------------
+      if(do_sit) then
         CALL set_ocndepth()
         if(myrank .eq. 0) print *,'end set_ocndepth'
         CALL allocate_sitgrid_array(nxp,my_max)

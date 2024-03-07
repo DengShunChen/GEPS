@@ -206,7 +206,7 @@
 #ifdef I38K
               write(keyi,'(a28,a1,i9.9)') ihdgi,'H',lncrec
 #else
-              write(keyi,'(a26,a1,i9.9)') ihdgi,'H',lncrec
+              write(keyi,'(a26,a1,i7.7)') ihdgi,'H',lncrec
 #endif
               call dmschkr (ifilin,keyi//char(0),istat)
               inistat=inistat+istat

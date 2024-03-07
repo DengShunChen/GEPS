@@ -47,7 +47,11 @@
           enddo
 
 !CWB2016
+#ifdef O38K
           read(keys(ncnt)(7:12),'(i6)')itotau
+#else
+          read(keys(ncnt)(7:10),'(i4)')itotau
+#endif
 
 !CWB20160927 for NWP control
           if(itotau == 9) call sleep(20)
@@ -131,7 +135,11 @@ do while (.true.)
   if(keyo(1:4).eq."DONE")exit !goto 100
   if(keyo(1:4).eq."OPEN")then
     read(keyo(cleno:KLENO2),'(I12)')idtg
+#ifdef O38K
+    read(keyo(7:12),'(I6)')itau
+#else
     read(keyo(7:10),'(I4)')itau
+#endif
     write(grbfile,133 )trim(ifilout_grb),'/GFS_',idtg/100 ,'_',itau,'.grb2'
     print*,'OutFileName= ',trim(grbfile)
     call opn_grb2(nx,my,idtg,itau,istat)
@@ -170,7 +178,11 @@ do while (.true.)
     call cls_grb2(istat)
 
     !CWB20160927 for NWP control
+#ifdef O38K
+    read(keyo(7:12),'(i6)')itotau
+#else
     read(keyo(7:10),'(i4)')itotau
+#endif
     !if(itotau == 9) call sleep(20)
     if((itotau /= 0).and.(itotau /= ifromtau))then
     call sendmsg ('gfs',ifromtau,itotau,istat)

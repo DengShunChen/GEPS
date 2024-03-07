@@ -2,11 +2,10 @@
 !
 #if defined(RSM) && defined(CWB_MPMD)
       use rank, only : root_io,MPI_COMM_gfs_all
-      use const,only : keyo,KLENO
 #else
       use rank, only : root_io
-      use const,only : keyo,KLENO
 #endif
+      use const,only : keyo,KLENO
       use mpi
 
 #if defined(RSM) && defined(CWB_MPMD)

@@ -105,8 +105,6 @@
       logical   histim, tchange, flag, forward, fwd
 !
       logical   wrestrt
-!      data      wrestrt/.false./ 
-      data      wrestrt/.true./
 !
 ! for topographic gravity wave drag
 !
@@ -193,6 +191,12 @@
       nc_sit=1               !if fsit>0., when mod(tau/fsit)<0.001, turn on sit_vdiff for "nc_sit" timesteps
       turn_sit=.false.       !turn_sit=.true., will run sit_vdiff in some tau
       lrun_sitvdiff=.false.  !lrun_sitvdiff=.true., run sit_vdiff in this tau
+      
+      if ( dorst ) then
+        wrestrt=.true.
+      else
+        wrestrt=.false.
+      endif
 !
       ttm_sl=0.
       pten_sl=0.
@@ -274,12 +278,14 @@
       dtahi= dtah/float(itter)
 !
 !jwhwu 201407 add time control
-      open(7,file='./timectl',status='old')
-      read(7,'(i8)') itauezz
-      tautv=24.           !! history output directory control
-      close(7)
-      if(myrank.eq.0) then
-       print*,'the integration will be extended up to ',itauezz,' hours'
+      if ( dorst ) then
+        open(7,file='./timectl',status='old')
+        read(7,'(i8)') itauezz
+        tautv=24.           !! history output directory control
+        close(7)
+        if(myrank.eq.0) then
+         print*,'the integration will be extended up to ',itauezz,' hours'
+        endif
       endif
 !#endif
 !
@@ -1402,7 +1408,7 @@
 
       dtaup= mod(tau+0.001, tauo)
       histim=(dtaup .lt. dtx_tau)
-       if(myrank.eq.0)print *,'chkhis dtaup,tauo,dtx_tau=',dtaup,tauo,dtx_tau
+!       if(myrank.eq.0)print *,'chkhis dtaup,tauo,dtx_tau=',dtaup,tauo,dtx_tau
 
 !  for tracker
       dt_trk=real(trk_intv)
@@ -1611,16 +1617,6 @@
           write(i) stc
           write(i) slc
           close(i)
-          print*,'TYW in intgrt, tg = ',maxval(tg),minval(tg)
-          print*,'TYW in intgrt, hflux = ', maxval(hflux),minval(hflux)
-          print*,'TYW in intgrt, qflux = ', maxval(qflux),minval(qflux)
-          print*,'TYW in intgrt, ss = ', maxval(ss),minval(ss)
-          print*,'TYW in intgrt, rs = ', maxval(rs),minval(rs)
-          print*,'TYW in intgrt, asol = ', maxval(asol),minval(asol)
-          print*,'TYW in intgrt, olr = ', maxval(olr),minval(olr)
-          print*,'TYW in intgrt, sld = ', maxval(sld),minval(sld)
-          print*,'TYW in intgrt, rld = ', maxval(rld),minval(rld)
-          print*,'TYW in intgrt, asold = ', maxval(asold),minval(asold)
           endif ! end of ( mod(float(itau),float(itauezz)) .lt. 0.01 )
           if(do_sit) then
             if(myrank .eq. 0) print *, 'ready rerun_sitgrid1'
@@ -1816,8 +1812,7 @@
 #ifndef NO_OUT
             call  outflds_green(nint(tau),nx,my,my_max,lev,ncld                &
                           , idtg,cp,rgas,grav,t2,u10,v10,ss,pk                 &
-                          , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6  &
-                          , ggdef)
+                          , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6)
 #endif
 !           if (mod(tau+0.00001, 6. ) .lt. 0.01) then
             if ( mod( itau , 6 ) == 0 ) then

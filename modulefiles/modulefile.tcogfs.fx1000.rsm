@@ -72,7 +72,7 @@ module unuse /data/common/gfs/modulefiles/x86_64
 module use /data/common/gfs/modulefiles/$machine
 module load netcdf/3.6.3
 module load fftw/3.3.10.new_sp
-module load dms/v4
+module load dms/v4_38key
 module load operlib
 module load w3lib/2.0.2
 module unuse /data/common/gfs/modulefiles/$machine
