@@ -349,8 +349,6 @@ OBJS_c   = $(SRCS_c:.c=.o)
 
 OBJS = $(OBJS_f) $(OBJS_f90) $(OBJS_F) $(OBJS_F90) $(OBJS_c)
 
-MACHINE=fx1000
-
 CC   =	${C_COMP}
 FC90 =  ${COMP_MPI}
 

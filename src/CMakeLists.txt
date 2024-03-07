@@ -222,7 +222,8 @@ precpdp.f90
 prerrtmg.f90
 prexp_hybrid_cwb.f90
 qmax2d.f90
-qmaxn3.f90
+qmaxn3_r.f90
+qmaxn3_w.f90
 qmaxn3p.f90
 qprint.f90
 qprnt3.f90
@@ -297,7 +298,8 @@ stemp.f90
 structrn.f90
 stupij.f90
 stupiy.f90
-syslbl.f90
+syslbl_r.f90
+syslbl_w.f90
 tendget.f90
 tracking.f90
 trandv.f90

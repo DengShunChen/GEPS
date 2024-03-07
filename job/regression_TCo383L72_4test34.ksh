@@ -4,15 +4,15 @@
  user=`whoami`
 # datamv='login15'
  dmsdb_home=$(cat ~/.dmsrc |xargs | cut -d' ' -f 2)
- DMSPATH=/users/xa09/pkg/fx1000/dms38key/bin
+ DMSPATH=/package/${machine}/dms/dms.v4/bin
  GFSDIR=$MDIR
  GFSFIX=$MDIR/fix
- GFSWRK=${GFSDIR}/work_${machine}
- GFSWRKR=${GFSDIR}/work_${machine}/GFSRST
- levs=128    # for model layer
- tau=48      # end of integal hours
+ levs=72     # for model layer
+ tau=24      # end of integal hours
  rstauo=24   # interval(hours) for output restart file 
  intvh=3     # for gfsctl, set 3 or 6 inteval hours
+ GFSWRK=${GFSDIR}/work_${machine}_${levs}
+ GFSWRKR=${GFSDIR}/work_${machine}_${levs}/GFSRST
  
 # Caldtg="/nwpr/gfs/xb80/bin/Caldtg.ksh"
 
@@ -40,7 +40,7 @@
    DMSFLAG=GK
  fi
 
- dtg='23080100'
+ dtg='22082800'
  dtg10="20${dtg}"
 
 # fgdtg=$(${Caldtg} ${dtg} -6)
@@ -52,7 +52,7 @@
 
  odmshead=O${dtg10}
  odmsbody='test'
- odmstail='2d'
+ odmstail='34out'
  odmsdb=$idmshead
 
 #-- executable
@@ -84,7 +84,7 @@
 #       ${LNCP} ${source}/*${fgdtg}* ${target}/${idmshead}${idmsbody}${idmstail}
 
  # Bundary conditio
- BCKOPSFN="BCK_TCo${JCAP}_${DMSFLAG}30S_xnew_38"
+ BCKOPSFN="BCK_TCo${JCAP}_${DMSFLAG}30S_xnew"
  export BCKOPS=${BCKOPSFN}@${dmsdb_home}/bckdms
  source="/data/common/gfs/dms_data/bckdms.ufs"
  target="${dmsdb_home}/bckdms.ufs"
@@ -207,9 +207,9 @@
  echo $dtg > ${GFSWRK}/crdate
 
 #create timectl
-cat> ${GFSWRK}/timectl <<eofa
-$rstauo
-eofa
+#cat> ${GFSWRK}/timectl <<eofa
+#$rstauo
+#eofa
 
 #-- write out file list
 cat > ${GFSWRK}/filist << EOF
@@ -361,9 +361,8 @@ EOF
 
  FCT_MODEL=$MDIR/src/$EXEC
 # /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} 
-  /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} -Wl,-T
 # /usr/bin/time -p mpiexec --of-proc TCo383gfs.out -n $MPI ${FCT_MODEL} 
-
+ /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} -Wl,-T
  if [ $? != 0 ] ; then
   echo "error occured: fct model fail !!"
  fi

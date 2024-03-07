@@ -109,6 +109,20 @@
       call syslbl_w ('s00040',idtg,itau,ggdef)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,nc,glob,mout)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,1,2,1,0,0.,glob)
+      go to 30
+      endif
+
+!   ---------- Precipitation ----------
+!
+      if(label(kk).eq.'b00620')then
+!
+!cumulus parameterization precipitation
+      globp=raincu
+      call unify_reduceintp(nx,my,my_max,globp,glob)
+      call syslbl_w ('b00630',idtg,itau,ggdef)
+      call qmaxn3_w (glob,1,1,1,nx,my,1)
+      if(outdms.gt.0)call split(nx,my,lenc,nc,glob,mout)
       if(outgrb2==1.and.myrank==0)then
         praint=mod(itau,12)
         if(praint==0)praint=12

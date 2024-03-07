@@ -84,7 +84,7 @@
                       , cmbk,cgwd,nmmiph,spl1,spl2                      &
                       , weightSIT,dSITdt_intv,mwhd,doclx,doslavepp      &
                       , outdms,outgrb2,alpha,two_loop,ttl,tfilt,factop  &
-                      , mass_dp,dpprt,itter,vd
+                      , mass_dp,dpprt,itter,vd,dorst
 !                       
       real    si(lev+1)
       logical flag
@@ -215,7 +215,6 @@
       if(myrank .eq. 0)then
         call recmsg('gfs',ifromtau,itotau,istat)
         flag =.true.
-        print*,'TYW in cons, ifromtau, itotau = ',ifromtau,itotau
       endif
 !ch   call mpe_broadcast(istat,1,flag,mpe_integer)
       call mpe_bcast(istat,1,0,mpe_integer)
@@ -250,7 +249,6 @@
         hours = hours+taui-(dt/3600.)  ! for restart
         julian= julian+hours/24.0+0.001
         hours = mod(hours,24.)
-        if(myrank .eq. 0) print*,'TYW in cons, julian = ',julian
       endif
 !
       if(myrank .eq. 0) print modlst
@@ -490,7 +488,7 @@
 ! open ncep data dms
 !
        istat4=0; istat5=0; istat6=0; istat7=0
-       if(ldailyFCTsst) then
+        if(ldailyFCTsst) then
           call dmsopn(ifilin_sst,"r",istat4)
           istat = istat + abs(istat4)
         endif
@@ -498,14 +496,12 @@
           call dmsopn(ifilin_ncep,"r",istat5)
           istat = istat + abs(istat5)
         endif
-        if(do_sit) then
         if(dailyClm_option .ge. 1) then
           call dmsopn(ifilin_ClmANA,"r",istat6)
           if(dailyClm_option .eq. 2) then
             call dmsopn(ifilin_ClmFCT,"r",istat7)
           endif
           istat = istat + abs(istat6)+abs(istat7)
-        endif
         endif
 
       end if
