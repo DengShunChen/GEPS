@@ -135,7 +135,11 @@ do while (.true.)
   if(keyo(1:4).eq."DONE")exit !goto 100
   if(keyo(1:4).eq."OPEN")then
     read(keyo(cleno:KLENO2),'(I12)')idtg
+#ifdef O38K
+    read(keyo(7:12),'(I6)')itau
+#else
     read(keyo(7:10),'(I4)')itau
+#endif
     write(grbfile,133 )trim(ifilout_grb),'/GFS_',idtg/100 ,'_',itau,'.grb2'
     print*,'OutFileName= ',trim(grbfile)
     call opn_grb2(nx,my,idtg,itau,istat)

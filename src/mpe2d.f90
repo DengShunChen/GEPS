@@ -426,69 +426,6 @@
 
       return
       end
-!---------------------------------------------------------------------------------------
-      subroutine mpe2d_unify_l(work,a)
-
-! unify a(nx_partial,my_partial) into work(nx_full,my_full)
-
-      use param
-      use rank
-      use index
-      use mpi
-
-      logical work(nx,my)
-      logical a(nxp,my_max)
-      logical b(nxp,my_max*nsize)
-
-      call MPI_ALLGATHER( a,nxp*my_max, MPI_LOGICAL, &
-                          b,nxp*my_max, MPI_LOGICAL, &
-                          MPI_COMM_gfs, IERR )
-
-      do j=1,my
-         ii=1
-      do i=1,nsizex
-         jf=jlist2_2d(i,j)
-         nn=nxjlen_all(i,j)
-         work(ii:ii+nn-1,j)=b(1:nn,jf)
-         ii=ii+nn
-      enddo
-      enddo
-
-      return
-      end
-!---------------------------------------------------------------------------------------
-      subroutine mpe2d_unify_i(work,a)
-
-! unify a(nx_partial,my_partial) into work(nx_full,my_full)
-
-      use param
-      use rank
-      use index
-      use mpi
-
-      integer work(nx,my)
-      integer a(nxp,my_max)
-      integer b(nxp,my_max*nsize)
-
-      b=0.
-      work=0.
-
-      call MPI_ALLGATHER( a,nxp*my_max, MPI_INTEGER, &
-                          b,nxp*my_max, MPI_INTEGER, &
-                          MPI_COMM_gfs, IERR )
-
-      do j=1,my
-         ii=1
-      do i=1,nsizex
-         jf=jlist2_2d(i,j)
-         nn=nxjlen_all(i,j)
-         work(ii:ii+nn-1,j)=b(1:nn,jf)
-         ii=ii+nn
-      enddo
-      enddo
-
-      return
-      end
 !-------------------------------------------------------------------------
       subroutine mpe2d_unify_nx(work,a)
 
@@ -518,64 +455,6 @@
          work(ii:ii+nn-1,jj)=b(1:nn,jj,i)
          ii=ii+nn
       enddo
-      enddo
-
-      return
-      end
-!-------------------------------------------------------------------------
-      subroutine mpe2d_unify_nx_1(work,a)
-
-! unify a(nx_partial,my_partial) to work(nx_full,my_partial)
-
-      use param
-      use index
-      use mpi
-      use const, only: RTYPE,MPI_RTYPE
-
-      real(kind=RTYPE) work(nx,jlistnum)
-      real(kind=RTYPE) a(nxp,my_max)
-      real(kind=RTYPE) b(nxp,my_max,nsizex)
-
-      work=0.
-      b=0.
-
-      call MPI_ALLGATHER( a,nxp*my_max, MPI_RTYPE, &
-                          b,nxp*my_max, MPI_RTYPE, &
-                          row_comm, IERR )
-
-      do jj=1,jlistnum
-         j=jlist1(jj)
-         ii=1
-      do i=1,nsizex
-         nn=nxjlen_all(i,j)
-         work(ii:ii+nn-1,jj)=b(1:nn,jj,i)
-         ii=ii+nn
-      enddo
-      enddo
-
-      return
-      end
-!-------------------------------------------------------------------------
-      subroutine mpe2d_unify_my_l(work,a)
-
-! unify a(nx_full,my_partial) to work(nx_full,my_full)
-
-      use param
-      use index
-      use mpi
-
-      logical work(nx,my)
-      logical a(nx,my_max)
-      logical b(nx,my_max*nsizey)
-
-      call MPI_ALLGATHER( a,nx*my_max, MPI_LOGICAL, &
-                          b,nx*my_max, MPI_LOGICAL, &
-                          col_comm, IERR )
-
-
-      do j=1,my
-        jj=jlist2(j)
-        work(1:nx,j)=b(1:nx,jj)
       enddo
 
       return
