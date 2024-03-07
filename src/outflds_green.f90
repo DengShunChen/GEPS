@@ -1,7 +1,6 @@
       subroutine outflds_green( itau,nx,my,my_max,lev,ncld       &
              , idtg,cp,rgas,grav,t2,u10,v10,ss,pk                &
-             , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6 &
-             , ggdef)
+             , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6)
 !
 !  output driver subroutine to process sigma level data to 40m & 100m
 !
@@ -9,7 +8,7 @@
       use rank
       use index
       use const ,only:aki,bki ,outdms ,outgrb2 ,ifilout_grb , &
-                      RTYPE,kflag
+                      RTYPE,kflag,ggdef
       use mod_grb2_param  !for write grib2 data
 
       implicit  none
@@ -27,7 +26,6 @@
                        sgeo(nxp,my_max),pt(nxp,my_max),cosl(my),       &
                        pk(nxp,lev,my_max)
 
-      character ggdef*4
       integer*8 idtg
 !
 ! local work arrays
@@ -55,6 +53,7 @@
       data layer/'H10','B40'/
       data var/'010','500','200','210','100','550'/
 !
+      rcp=rgas/cp
       lenc = nx*my
       nc=0
       do k=1,l

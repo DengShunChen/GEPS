@@ -7,12 +7,13 @@
  DMSPATH=/users/xa09/pkg/fx1000/dms38key/bin
  GFSDIR=$MDIR
  GFSFIX=$MDIR/fix
- levs=72     # for model layer
- tau=24      # end of integal hours
- rstauo=24   # interval(hours) for output restart file 
- intvh=3     # for gfsctl, set 3 or 6 inteval hours
- GFSWRK=${GFSDIR}/work_${machine}_${levs}
- GFSWRKR=${GFSDIR}/work_${machine}_${levs}/GFSRST
+ GFSWRK=${GFSDIR}/work_${machine}_rst
+ GFSWRKR=${GFSDIR}/work_${machine}_rst/GFSRST
+ levs=128    # for model layer
+ tau=48      # end of integal hours
+ rstau=24    # restart hours
+ rstauo=24   # interval(hours) for output restart file
+ intvh=3     # for restart gfsctl, set 3 or 6 inteval hours 
  
 # Caldtg="/nwpr/gfs/xb80/bin/Caldtg.ksh"
 
@@ -40,7 +41,7 @@
    DMSFLAG=GK
  fi
 
- dtg='22082800'
+ dtg='23080100'
  dtg10="20${dtg}"
 
 # fgdtg=$(${Caldtg} ${dtg} -6)
@@ -52,7 +53,7 @@
 
  odmshead=O${dtg10}
  odmsbody='test'
- odmstail='34out'
+ odmstail='rst'
  odmsdb=$idmshead
 
 #-- executable
@@ -60,9 +61,8 @@
 
 #---------------------------------------------------------#
  idmsfile=${idmshead}_${dtg}@${idmsdb}
- odmsfile=${odmshead}_${odmsbody}_${odmstail}@${odmsdb}
+ odmsfile=${odmshead}_${odmsbody}_${odmstail}${rstau}@${odmsdb}
 
-# mkdir -p ${odmsdb}/${idmshead}.ufs/${odmshead}${odmsbody}${odmstail}
  ${DMSPATH}/rdmsdbcrt -p ufs $idmsdb
  ${DMSPATH}/rdmscrt $idmsfile
  ${DMSPATH}/rdmsdbcrt -p ufs $odmsdb
@@ -84,12 +84,12 @@
 #       ${LNCP} ${source}/*${fgdtg}* ${target}/${idmshead}${idmsbody}${idmstail}
 
  # Bundary conditio
- BCKOPSFN="BCK_TCo${JCAP}_${DMSFLAG}30S_xnew"
+ BCKOPSFN="BCK_TCo${JCAP}_${DMSFLAG}30S_xnew_38"
  export BCKOPS=${BCKOPSFN}@${dmsdb_home}/bckdms
  source="/data/common/gfs/dms_data/bckdms.ufs"
  target="${dmsdb_home}/bckdms.ufs"
  if [ ! -e ${target}/${BCKOPSFN} ] ; then
-   ${DMSPATH}/rdmscrt  ${BCKOPS}
+   ${DMSPATH}/rdmscrt ${BCKOPS}
    ${LNCP} ${source}/${BCKOPSFN}/* ${target}/${BCKOPSFN}/.
  fi
 
@@ -257,11 +257,23 @@ ln -fs $AEROSOL_FILE  aerosol.dat
 ln -fs $EMMISSIVITY_FILE sfc_emissivity_idx.txt
 
 ln -fs $FIXDIR/* .
- $NWPETC/mkgfs.sh $tau $NWPETC $intvh
- $NWPETC/mkocards.sh $tau $NWPETC
-cp $NWPETC/gfsctl_${tau} $GFSWRK/gfsctl
-cp $NWPETC/ocards_${tau} $GFSWRK/ocards
-cp $NWPETC/namlsts $GFSWRK/namlsts
+# copy restrt file to GFSWRK
+if [ $rstau -lt 100 ]; then
+   rstt=00000${rstau}
+elif [ $rstau -lt 1000 ]; then
+   rstt=0000${rstau}
+elif [ $rstau -lt 10000 ]; then
+   rstt=000${rstau}
+elif [ $rstau -lt 100000 ]; then
+   rstt=00${rstau}
+elif [ $rstau -lt 1000000 ]; then
+   rstt=0${rstau}
+elif [ $rstau -lt 10000000 ]; then
+   rstt=${rstau}
+fi
+mkdir -p $GFSWRKR/phyout_${rstt}
+cp ${GFSDIR}/work_${machine}/GFSRST/cwbout_${rstt} $GFSWRKR/
+cp ${GFSDIR}/work_${machine}/GFSRST/phyout_${rstt}/* $GFSWRKR/phyout_${rstt}/
 
 if [ $JCAP = 639  ] ; then
   MODLST_RES='dt=450., hfilt=1., cgw=4.2e-5,'
@@ -301,7 +313,7 @@ cat > ${GFSWRK}/namlsts << EOF
   donnmi=t, 
   dosppt=f, dospptout=f,
   doshum=f,
-  dossst=f, doclx=t,
+  dossst=f, doclx=t, dorst=t,
   cutfreq=3, nnmivm=3, doincr=f,
   hdiff=t, frad=1.0, ldiag=0,
   idg=40, jdg=108,
@@ -358,10 +370,14 @@ cat > ${GFSWRK}/namlsts << EOF
 
 EOF
 
+# cp $NWPETC/namlsts $GFSWRK/namlsts
+ $NWPETC/mkgfs_rst.sh $rstau $tau $NWPETC $intvh
+ cp $NWPETC/gfsctl_rst${rstau} $GFSWRK/gfsctl
+ $NWPETC/mkocards_rst.sh $rstau $tau $NWPETC
+ cp $NWPETC/ocards_rst${rstau} $GFSWRK/ocards
 
  FCT_MODEL=$MDIR/src/$EXEC
-# /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} 
-# /usr/bin/time -p mpiexec --of-proc TCo383gfs.out -n $MPI ${FCT_MODEL} 
+# /usr/bin/time -p mpiexec --of-proc TCo383gfs_rst.out -n $MPI ${FCT_MODEL} 
  /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} -Wl,-T
  if [ $? != 0 ] ; then
   echo "error occured: fct model fail !!"

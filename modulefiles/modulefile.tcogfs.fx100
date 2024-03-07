@@ -68,8 +68,8 @@ module unuse  /nwpr/gfs/xb80/modulefiles/nceplibs/$machine
 module use  /nwpr/gfs/xb80/modulefiles/$machine
 module load netcdf/3.6.3
 module load fftw/3.3.7
+module load dms/v4
 module load operlib
-#module load dms/v4
 module unuse  /nwpr/gfs/xb80/modulefiles/$machine
 
 ####for write grb2 #add by hcwei
