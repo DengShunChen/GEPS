@@ -3,8 +3,13 @@
 #-- enviornment
  user=`whoami`
 # datamv='login11'
+ if [ ${machine} = a100 ]; then
+         mach='x86_64'
+ elif [ ${machine} = fx1000 ]; then
+         mach=${machine}
+ fi
  dmsdb_home=$(cat ~/.dmsrc |xargs | cut -d' ' -f 2)
- DMSPATH=/package/${machine}/dms/dms.v4/bin
+ DMSPATH=/package/${mach}/dms/dms.v4/bin
  GFSDIR=$MDIR
  GFSFIX=$MDIR/fix
  GFSWRK=${GFSDIR}/work_${machine}
