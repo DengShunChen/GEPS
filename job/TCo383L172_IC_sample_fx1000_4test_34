@@ -33,10 +33,10 @@ elif [ $JCAP = 383 ] ; then
   NPEX=4
   NPEY=192 
 fi
-source ${MDIR}/job/setup_mpi+omp_38k.${machine} $OMP
-#source /users/xb80/setup_mpi+omp.${machine} $OMP
+#source ${MDIR}/job/setup_mpi+omp_38k.${machine} $OMP
+source /users/xa09/sample/setup_mpi+omp.${machine} $OMP
 
 #==============================================================================================================#
 
 #. ${MDIR}/job/regression.ksh
-. ${MDIR}/job/regression_TCo383L128_4test.ksh
+. ${MDIR}/job/regression_TCo383L72_4test34.ksh

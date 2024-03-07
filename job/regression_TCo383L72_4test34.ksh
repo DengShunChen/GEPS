@@ -4,7 +4,7 @@
  user=`whoami`
 # datamv='login15'
  dmsdb_home=$(cat ~/.dmsrc |xargs | cut -d' ' -f 2)
- DMSPATH=/users/xa09/pkg/fx1000/dms38key/bin
+ DMSPATH=/package/${machine}/dms/dms.v4/bin
  GFSDIR=$MDIR
  GFSFIX=$MDIR/fix
  levs=72     # for model layer
