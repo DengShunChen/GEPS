@@ -278,12 +278,14 @@
       dtahi= dtah/float(itter)
 !
 !jwhwu 201407 add time control
-      open(7,file='./timectl',status='old')
-      read(7,'(i8)') itauezz
-      tautv=24.           !! history output directory control
-      close(7)
-      if(myrank.eq.0) then
-       print*,'the integration will be extended up to ',itauezz,' hours'
+      if ( dorst ) then
+        open(7,file='./timectl',status='old')
+        read(7,'(i8)') itauezz
+        tautv=24.           !! history output directory control
+        close(7)
+        if(myrank.eq.0) then
+         print*,'the integration will be extended up to ',itauezz,' hours'
+        endif
       endif
 !#endif
 !

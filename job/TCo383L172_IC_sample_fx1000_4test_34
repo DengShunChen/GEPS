@@ -9,7 +9,7 @@
 #PJM -L node-mem=unlimited
 #PJM --no-stging
 #PJM -j
-#PJM -N "JTCo383L128"
+#PJM -N "JTCo383L72"
 
 set -x
 

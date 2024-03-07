@@ -207,9 +207,9 @@
  echo $dtg > ${GFSWRK}/crdate
 
 #create timectl
-cat> ${GFSWRK}/timectl <<eofa
-$rstauo
-eofa
+#cat> ${GFSWRK}/timectl <<eofa
+#$rstauo
+#eofa
 
 #-- write out file list
 cat > ${GFSWRK}/filist << EOF
