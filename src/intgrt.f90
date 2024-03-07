@@ -105,8 +105,6 @@
       logical   histim, tchange, flag, forward, fwd
 !
       logical   wrestrt
-!      data      wrestrt/.false./ 
-      data      wrestrt/.true./
 !
 ! for topographic gravity wave drag
 !
@@ -193,6 +191,12 @@
       nc_sit=1               !if fsit>0., when mod(tau/fsit)<0.001, turn on sit_vdiff for "nc_sit" timesteps
       turn_sit=.false.       !turn_sit=.true., will run sit_vdiff in some tau
       lrun_sitvdiff=.false.  !lrun_sitvdiff=.true., run sit_vdiff in this tau
+      
+      if ( dorst ) then
+        wrestrt=.true.
+      else
+        wrestrt=.false.
+      endif
 !
       ttm_sl=0.
       pten_sl=0.

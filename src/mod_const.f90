@@ -111,6 +111,9 @@
     logical :: doskeb       =.false.
     logical :: dossst       =.false.
     logical :: use_zmtnblck =.false.
+
+    ! for wrestrt
+    logical :: dorst =.false.
          
     logical :: out_green,out_hp
 

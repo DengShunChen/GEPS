@@ -313,7 +313,7 @@ cat > ${GFSWRK}/namlsts << EOF
   donnmi=t, 
   dosppt=f, dospptout=f,
   doshum=f,
-  dossst=f, doclx=t,
+  dossst=f, doclx=t, dorst=t,
   cutfreq=3, nnmivm=3, doincr=f,
   hdiff=t, frad=1.0, ldiag=0,
   idg=40, jdg=108,
