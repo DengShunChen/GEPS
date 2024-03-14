@@ -1,4 +1,4 @@
-subroutine ujoinsr(cc, r1, r2, r3, r4, nx, my_max, lev, jlistnum, num, ncld)
+subroutine ujoinsr_gpu(cc, r1, r2, r3, r4, nx, my_max, lev, jlistnum, num, ncld)
 
    use const, only: RTYPE
 
@@ -6,19 +6,19 @@ subroutine ujoinsr(cc, r1, r2, r3, r4, nx, my_max, lev, jlistnum, num, ncld)
    real(kind=RTYPE) cc(*), r1(*), r2(*), r3(*), r4(*)
    integer nx, my_max, lev, jlistnum, num, ncld
 
-   if (num .eq. 1) call ujoin1sr(cc, r1, nx, my_max, lev &
+   if (num .eq. 1) call ujoin1sr_gpu(cc, r1, nx, my_max, lev &
                                  , jlistnum, ncld)
-   if (num .eq. 2) call ujoin2sr(cc, r1, r2, nx, my_max, lev &
+   if (num .eq. 2) call ujoin2sr_gpu(cc, r1, r2, nx, my_max, lev &
                                  , jlistnum, ncld)
-   if (num .eq. 3) call ujoin3sr(cc, r1, r2, r3, nx, my_max, lev &
+   if (num .eq. 3) call ujoin3sr_gpu(cc, r1, r2, r3, nx, my_max, lev &
                                  , jlistnum, ncld)
-   if (num .eq. 4) call ujoin4sr(cc, r1, r2, r3, r4, nx, my_max, lev &
+   if (num .eq. 4) call ujoin4sr_gpu(cc, r1, r2, r3, r4, nx, my_max, lev &
                                  , jlistnum, ncld)
 
    return
 end
 
-subroutine ujoin1sr(cc, r1, nx, my_max, lev, jnum, ncld)
+subroutine ujoin1sr_gpu(cc, r1, nx, my_max, lev, jnum, ncld)
 
    use index
    use const, only: RTYPE
@@ -31,9 +31,13 @@ subroutine ujoin1sr(cc, r1, nx, my_max, lev, jnum, ncld)
    integer nx, my_max, lev, jnum, ncld
    integer jj, j, nxj, k, i, nk, kk, n
 
+   !$acc data create(bufA, bufB) copyout(r1) copyin(cc)
+   !$acc kernels present(bufA, bufB, r1)
    bufA = 0.
    bufB = 0.
    r1 = 0.
+   !$acc end kernels
+   !$acc parallel loop collapse(2) present(bufA, cc)
    do jj = 1, jlistnum
    do n = 1, ncld
    do k = 1, levp
@@ -44,8 +48,9 @@ subroutine ujoin1sr(cc, r1, nx, my_max, lev, jnum, ncld)
    end do
    end do
 
-   call mpe2d_transpose_nx_levp(bufA, bufB, nxp, nx, lev, levp, ncld, myf, my_max, jlistnum, jlen, nsizex, row_comm)
+   call mpe2d_transpose_nx_levp_gpu(bufA, bufB, nxp, nx, lev, levp, ncld, myf, my_max, jlistnum, jlen, nsizex, row_comm)
 
+   !$acc parallel loop collapse(2) present(r1, bufB)
    do jj = 1, jlistnum
    do n = 1, ncld
       nk = (n - 1)*lev
@@ -57,11 +62,12 @@ subroutine ujoin1sr(cc, r1, nx, my_max, lev, jnum, ncld)
       end do
    end do
    end do
+   !$acc end data
 
    return
 end
 
-subroutine ujoin2sr(cc, r1, r2, nx, my_max, lev, jnum, ncld)
+subroutine ujoin2sr_gpu(cc, r1, r2, nx, my_max, lev, jnum, ncld)
 
    use index
    use const, only: RTYPE
@@ -75,9 +81,14 @@ subroutine ujoin2sr(cc, r1, r2, nx, my_max, lev, jnum, ncld)
    integer nx, my_max, lev, jnum, ncld
    integer jj, j, nxj, k, i, nk, kk, n
 
+   !$acc data create(bufA, bufB) copyout(r1, r2) copyin(cc)
+   !$acc kernels present(bufA, bufB, r1)
    bufA = 0.
    bufB = 0.
    r1 = 0.
+   r2 = 0.
+   !$acc end kernels
+   !$acc parallel loop collapse(2) present(bufA, cc)
    do jj = 1, jlistnum
    do n = 1, 1 + ncld
    do k = 1, levp
@@ -88,8 +99,9 @@ subroutine ujoin2sr(cc, r1, r2, nx, my_max, lev, jnum, ncld)
    end do
    end do
 
-   call mpe2d_transpose_nx_levp(bufA, bufB, nxp, nx, lev, levp, 1 + ncld, myf, my_max, jlistnum, jlen, nsizex, row_comm)
+   call mpe2d_transpose_nx_levp_gpu(bufA, bufB, nxp, nx, lev, levp, 1 + ncld, myf, my_max, jlistnum, jlen, nsizex, row_comm)
 
+   !$acc parallel loop collapse(2) present(r1, bufB)
    do jj = 1, jlistnum
    do k = 1, lev
    do i = 1, nxp
@@ -98,6 +110,7 @@ subroutine ujoin2sr(cc, r1, r2, nx, my_max, lev, jnum, ncld)
    end do
    end do
 
+   !$acc parallel loop collapse(2) present(r2, bufB)
    do jj = 1, jlistnum
    do n = 1, ncld
       nk = (n - 1)*lev
@@ -109,11 +122,12 @@ subroutine ujoin2sr(cc, r1, r2, nx, my_max, lev, jnum, ncld)
       end do
    end do
    end do
+   !$acc end data
 
    return
 end
 
-subroutine ujoin3sr(cc, r1, r2, r3, nx, my_max, lev, jnum, ncld)
+subroutine ujoin3sr_gpu(cc, r1, r2, r3, nx, my_max, lev, jnum, ncld)
 
    use index
    use const, only: RTYPE
@@ -128,10 +142,14 @@ subroutine ujoin3sr(cc, r1, r2, r3, nx, my_max, lev, jnum, ncld)
    integer nx, my_max, lev, jnum, ncld
    integer jj, j, nxj, k, i, nk, kk, n
 
+   !$acc data create(bufA, bufB) copyout(r1, r2, r3) copyin(cc)
+   !$acc kernels present(bufA, bufB, r1)
    bufA = 0.
    bufB = 0.
    r1 = 0.
+   !$acc end kernels
 
+   !$acc parallel loop collapse(2) present(bufA, cc)
    do jj = 1, jlistnum
    do n = 1, 2 + ncld
    do k = 1, levp
@@ -142,8 +160,9 @@ subroutine ujoin3sr(cc, r1, r2, r3, nx, my_max, lev, jnum, ncld)
    end do
    end do
 
-   call mpe2d_transpose_nx_levp(bufA, bufB, nxp, nx, lev, levp, 2 + ncld, myf, my_max, jlistnum, jlen, nsizex, row_comm)
+   call mpe2d_transpose_nx_levp_gpu(bufA, bufB, nxp, nx, lev, levp, 2 + ncld, myf, my_max, jlistnum, jlen, nsizex, row_comm)
 
+   !$acc parallel loop collapse(2) present(r1, r2, bufB)
    do jj = 1, jlistnum
    do k = 1, lev
    do i = 1, nxp
@@ -153,6 +172,7 @@ subroutine ujoin3sr(cc, r1, r2, r3, nx, my_max, lev, jnum, ncld)
    end do
    end do
 
+   !$acc parallel loop collapse(2) present(r3, bufB)
    do jj = 1, jlistnum
    do n = 1, ncld
       nk = (n - 1)*lev
@@ -164,11 +184,12 @@ subroutine ujoin3sr(cc, r1, r2, r3, nx, my_max, lev, jnum, ncld)
       end do
    end do
    end do
+   !$acc end data
 
    return
 end
 
-subroutine ujoin4sr(cc, r1, r2, r3, r4, nx, my_max, lev, jnum, ncld)
+subroutine ujoin4sr_gpu(cc, r1, r2, r3, r4, nx, my_max, lev, jnum, ncld)
 
    use index
    use const, only: RTYPE
@@ -184,6 +205,8 @@ subroutine ujoin4sr(cc, r1, r2, r3, r4, nx, my_max, lev, jnum, ncld)
    integer nx, my_max, lev, jnum, ncld
    integer jj, j, nxj, k, i, nk, kk, n
 
+   !$acc data copyin(cc) create(bufA, bufB) copyout(r1, r2, r3)
+   !$acc parallel loop collapse(2)
    do jj = 1, jlistnum
    do n = 1, 3 + ncld
    do k = 1, levp
@@ -194,8 +217,9 @@ subroutine ujoin4sr(cc, r1, r2, r3, r4, nx, my_max, lev, jnum, ncld)
    end do
    end do
 
-   call mpe2d_transpose_nx_levp(bufA, bufB, nxp, nx, lev, levp, 3 + ncld, myf, my_max, jlistnum, jlen, nsizex, row_comm)
+   call mpe2d_transpose_nx_levp_gpu(bufA, bufB, nxp, nx, lev, levp, 3 + ncld, myf, my_max, jlistnum, jlen, nsizex, row_comm)
 
+   !$acc parallel loop collapse(2) present(r1, r2, r3, bufB)
    do jj = 1, jlistnum
    do k = 1, lev
    do i = 1, nxp
@@ -206,6 +230,7 @@ subroutine ujoin4sr(cc, r1, r2, r3, r4, nx, my_max, lev, jnum, ncld)
    end do
    end do
 
+   !$acc parallel loop collapse(2) present(r4, bufB)
    do jj = 1, jlistnum
    do n = 1, ncld
       nk = (n - 1)*lev
@@ -217,6 +242,7 @@ subroutine ujoin4sr(cc, r1, r2, r3, r4, nx, my_max, lev, jnum, ncld)
       end do
    end do
    end do
+   !$acc end data
 
    return
 end

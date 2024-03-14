@@ -30,6 +30,7 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "${default_build_type}" 
                   CACHE STRING "Choose the type of build." FORCE)
 endif()
+set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/modules)
 
 option(USE_ACC   "enable OpenACC"         OFF)
 option(USE_CUDA  "enable CUDA"            OFF)
