@@ -121,8 +121,8 @@ subroutine trngra3_gpu(jtrun, jtmax, nx, lev, my, my_max, cim, poly, dpoly, s, d
 #endif
    !$acc end data
 
-   call mpe_transpose_rs1_sp(wcu_fk, twcc_fk, my_max, jtmax, lev * 2, nsize, col_comm)
-   call mpe_transpose_rs1_sp(wcv_fk, twdd_fk, my_max, jtmax, lev * 2, nsize, col_comm)
+   call mpe_transpose_rs1_sp_gpu(wcu_fk, twcc_fk, my_max, jtmax, lev * 2, nsize, col_comm)
+   call mpe_transpose_rs1_sp_gpu(wcv_fk, twdd_fk, my_max, jtmax, lev * 2, nsize, col_comm)
 
    !$acc data copy(cc) copyin(jlist1, mtrundef, twcc_fk, twdd_fk)
    !$acc parallel loop gang present(cc)
@@ -174,11 +174,13 @@ subroutine trngra3_gpu(jtrun, jtmax, nx, lev, my, my_max, cim, poly, dpoly, s, d
       end do
 !$omp end parallel do
 #else
+      !$acc data copy(cc) create(gwk1)
       call rfftmlt_loop(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, lev * 2, 1)
+      !$acc end data
 #endif
    end if
 
-   call ujoinsr(cc, dlpl, dtpl, dummy, dummy, nx, my_max, levF, jlistnum, 2, 1)
+   call ujoinsr_gpu(cc, dlpl, dtpl, dummy, dummy, nx, my_max, levF, jlistnum, 2, 1)
    !$acc data copy(dlpl, dtpl)
    !$acc kernels present(dlpl, dtpl)
    dlpl = -dlpl
