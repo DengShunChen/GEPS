@@ -79,6 +79,9 @@ else()
     include(NoCUDA)
 endif()
 
+if(NOT ${USE_CUDA})
+  SET(CMAKE_Fortran_MODDIR_FLAG "-M")
+endif()
 ###########################################################################
 # Compiler Options (-c -D<macro> -flag)
 ###########################################################################
