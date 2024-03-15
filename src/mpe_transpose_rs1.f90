@@ -69,8 +69,6 @@ subroutine mpe_transpose_rs1_sp(sbuf, rbuf, n, m, lev, nsize, comm)
 
    len_tr = n * m
 
-   !$acc data copyin(sbuf) copyout(rbuf) create(swork, rwork)
-   !$acc parallel loop collapse(2) present(swork, sbuf)
    do j = 1, m
    do ii = 1, nsize
    do i = 1, n
@@ -80,12 +78,9 @@ subroutine mpe_transpose_rs1_sp(sbuf, rbuf, n, m, lev, nsize, comm)
    end do
    end do
    end do
-   !$acc host_data use_device(swork, rwork)
    call MPI_ALLTOALL(SWORK, LEN_TR * LEV, MPI_RTYPE, &
                      RWORK, LEN_TR * LEV, MPI_RTYPE, &
                      comm, IERR)
-   !$acc end host_data
-   !$acc parallel loop collapse(2) present(rbuf, rwork)
    do k = 1, lev
    do j = 1, m * nsize
    do i = 1, n
@@ -93,7 +88,6 @@ subroutine mpe_transpose_rs1_sp(sbuf, rbuf, n, m, lev, nsize, comm)
    end do
    end do
    end do
-   !$acc end data
 
    return
 end subroutine mpe_transpose_rs1_sp

@@ -1,4 +1,4 @@
-      SUBROUTINE sitout(nx,my,my_max,itau,ifilout,idtg,num  &
+      SUBROUTINE sitout(nx,my,my_max,itau,idtg,num  &
                        ,whtlev,ggdef)
       
       use rank
@@ -13,11 +13,9 @@
       real whtlev(num)
    
 
-      character*60 ifilout
       integer*8 idtg
       character*4 ggdef
       integer lenc,n,k,jj,j,nxj,ii,istat
-      character*26 ihdg,ihdg2
       character*6 lrec
       real(kind=RTYPE) wk1(nx,my),pout(nx,my),globp(nxp,my_max)
       integer ncnt
@@ -28,22 +26,22 @@
       ncnt=0
       do 10 k = 0, outsitlev+1
         write( lrec, '(i3.3,a3)' ) k,'SWT'         !!sit wt
-        call syslbl (lrec,idtg,itau,ggdef,ihdg)
+        call syslbl_w (lrec,idtg,itau,ggdef)
         globp=sitwt(:,:,k)
         call unify_reduceintp(nx,my,my_max,globp,wk1)
-        call split(nx,my,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
+        call split(nx,my,lenc,ncnt,wk1,pout)
    10 continue
-      if(myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      if(myrank .lt. ncnt) call dmswrit_split(nx,my,lenc,kflag,pout,istat)
 
       ncnt=0
       do 20 k = 0, outsitlev+1
         write( lrec, '(i3.3,a3)' ) k,'OWT'        !!sit obswt
-        call syslbl (lrec,idtg,itau,ggdef,ihdg)
+        call syslbl_w (lrec,idtg,itau,ggdef)
         globp=obswt(:,:,k)
         call unify_reduceintp(nx,my,my_max,globp,wk1)
-        call split(nx,my,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
+        call split(nx,my,lenc,ncnt,wk1,pout)
    20 continue
-      if(myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      if(myrank .lt. ncnt) call dmswrit_split(nx,my,lenc,kflag,pout,istat)
 
   
       end subroutine sitout
@@ -160,7 +158,7 @@
 
 
 !--------------------------------------------------------------------------
-      SUBROUTINE writesitmean(nx,my,my_max,lkvl,ifilout,itau,idtg,ggdef)
+      SUBROUTINE writesitmean(nx,my,my_max,lkvl,itau,idtg,ggdef)
 
       use rank
       use mpe
@@ -175,11 +173,9 @@
       integer nx,my,my_max,lkvl,itau
 
 
-      character*60 ifilout
       integer*8 idtg
       character*4 ggdef
       integer lenc,k,jj,j,nxj,ii,istat
-      character*26 ihdg,ihdg2
       character*6 lrec
       real(kind=RTYPE) wk1(nx,my),pout(nx,my),glob2d(nxp,my_max)
       integer ncnt
@@ -190,17 +186,17 @@
       ncnt=0
       do 10 k = 0, outsitlev+1
         write( lrec, '(i3.3,a3)' ) k,'WTT'
-        call syslbl (lrec,idtg,itau,ggdef,ihdg)
+        call syslbl_w (lrec,idtg,itau,ggdef)
         if(dtsittau .ne. 0.) then
           glob2d(:,:)= sitwttau(:,:,k)/dtsittau
         else
           glob2d=xmissing
         endif
         call unify_reduceintp(nx,my,my_max,glob2d,wk1)
-        call split(nx,my,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
+        call split(nx,my,lenc,ncnt,wk1,pout)
    10 continue
 
-      if(myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      if(myrank .lt. ncnt) call dmswrit_split(nx,my,lenc,kflag,pout,istat)
 
       sitwttau=0.
       dtsittau=0.
@@ -210,7 +206,7 @@
 
 
 !--------------------------------------------------------------------------
-      SUBROUTINE outsit24(nx,my,my_max,lkvl,ifilout,itau,idtg,ggdef)
+      SUBROUTINE outsit24(nx,my,my_max,lkvl,itau,idtg,ggdef)
       
       use rank
       use mpe
@@ -224,11 +220,9 @@
 
       integer nx,my,my_max,lkvl,itau
    
-      character*60 ifilout
       integer*8 idtg
       character*4 ggdef
       integer lenc,k,jj,j,nxj,ii,istat
-      character*26 ihdg,ihdg2
       character*6 lrec
       real(kind=RTYPE) tm1(nxp,my_max),tm2(nxp,my_max),tm3(nxp,my_max)
       real(kind=RTYPE) wk1(nx,my),pout(nx,my)
@@ -260,13 +254,13 @@
         enddo
 
         write( lrec, '(i3.3,a3)' ) k,'WTF'
-        call syslbl (lrec,idtg,itau,ggdef,ihdg)
+        call syslbl_w (lrec,idtg,itau,ggdef)
         call unify_reduceintp(nx,my,my_max,tm1,wk1)
-        call split(nx,my,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
+        call split(nx,my,lenc,ncnt,wk1,pout)
 
 !        call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
    10 continue
-      if(myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat) 
+      if(myrank .lt. ncnt) call dmswrit_split(nx,my,lenc,kflag,pout,istat) 
      
       sitwt24=0.
       wtfn0=0.
@@ -277,7 +271,7 @@
 
 
 !--------------------------------------------------------------------------
-      SUBROUTINE outsitmon(nx,my,my_max,lkvl,ifilout,itau,idtg,ggdef)
+      SUBROUTINE outsitmon(nx,my,my_max,lkvl,itau,idtg,ggdef)
       
       use rank
       use mpe
@@ -293,11 +287,9 @@
 
 
       real dtmon
-      character*60 ifilout
       integer*8 idtg
       character*4 ggdef
       integer lenc,i,j,k,ii,jj,nxj,istat
-      character*26 ihdg,ihdg2
       character*6 lrec
       real(kind=RTYPE) wk1(nx,my),pout(nx,my),glob2d(nxp,my_max)
       integer ncnt
@@ -307,18 +299,18 @@
       ncnt=0
       do 10 k = 0, outsitlev+1
         write( lrec, '(i3.3,a3)' ) k,'TFM'
-        call syslbl (lrec,idtg,itau,ggdef,ihdg)
+        call syslbl_w (lrec,idtg,itau,ggdef)
         glob2d(:,:)=wtfn(:,:,k)/dtsitmon
         call unify_reduceintp(nx,my,my_max,glob2d,wk1) 
-        call split(nx,my,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
+        call split(nx,my,lenc,ncnt,wk1,pout)
    10 continue
-      if(myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat) 
+      if(myrank .lt. ncnt) call dmswrit_split(nx,my,lenc,kflag,pout,istat) 
 
         write( lrec, '(i3.3,a3)' ) k,'TFS'
-        call syslbl (lrec,idtg,itau,ggdef,ihdg)
+        call syslbl_w (lrec,idtg,itau,ggdef)
         glob2d(:,:)=wtfns(:,:)/dtsitmon
         call unify_reduceintp(nx,my,my_max,glob2d,wk1)
-        call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,wk1,istat)
+        call dmswrit(nx,my,lenc,kflag,wk1,istat)
 
 
 
@@ -872,7 +864,6 @@
       character*60 ifilin
       character*4 ggdef
       integer*8 idtg,idtg2
-      character*26 lrec
       character*6 typ
   
   
@@ -894,28 +885,28 @@
       do k= 0, lkvl+1 
   
         write( typ, '(i3.3,a3)' ) k,'SWT'           !!sit wt
-        call syslbl (typ,idtg2,itaup,ggdef,lrec)
-        call dmsread(nx,my,lrec,nxmy,'H',ifilin,tm1,istat)
+        call syslbl_r (typ,idtg2,itaup,ggdef)
+        call dmsread(nx,my,nxmy,'H',ifilin,tm1,istat)
 
         write( typ, '(i3.3,a3)' ) k,'SWU'           !!sit wu
-        call syslbl (typ,idtg2,itaup,ggdef,lrec)
-        call dmsread(nx,my,lrec,nxmy,'H',ifilin,tm2,istat)
+        call syslbl_r (typ,idtg2,itaup,ggdef)
+        call dmsread(nx,my,nxmy,'H',ifilin,tm2,istat)
 
         write( typ, '(i3.3,a3)' ) k,'SWV'           !!sit wv
-        call syslbl (typ,idtg2,itaup,ggdef,lrec)
-        call dmsread(nx,my,lrec,nxmy,'H',ifilin,tm3,istat)
+        call syslbl_r (typ,idtg2,itaup,ggdef)
+        call dmsread(nx,my,nxmy,'H',ifilin,tm3,istat)
 
         write( typ, '(i3.3,a3)' ) k,'SWW'           !!sit ww
-        call syslbl (typ,idtg2,itaup,ggdef,lrec)
-        call dmsread(nx,my,lrec,nxmy,'H',ifilin,tm4,istat)
+        call syslbl_r (typ,idtg2,itaup,ggdef)
+        call dmsread(nx,my,nxmy,'H',ifilin,tm4,istat)
 
         write( typ, '(i3.3,a3)' ) k,'SWS'           !!sit ws
-        call syslbl (typ,idtg2,itaup,ggdef,lrec)
-        call dmsread(nx,my,lrec,nxmy,'H',ifilin,tm5,istat)
+        call syslbl_r (typ,idtg2,itaup,ggdef)
+        call dmsread(nx,my,nxmy,'H',ifilin,tm5,istat)
 
         write( typ, '(i3.3,a3)' ) k,'TKE'           !!sit wtke
-        call syslbl (typ,idtg2,itaup,ggdef,lrec)
-        call dmsread(nx,my,lrec,nxmy,'H',ifilin,tm6,istat)
+        call syslbl_r (typ,idtg2,itaup,ggdef)
+        call dmsread(nx,my,nxmy,'H',ifilin,tm6,istat)
 
 
         do jj =1, jlistnum
@@ -953,7 +944,7 @@
       end subroutine readpre6hr_sit
 
 
-      SUBROUTINE outtseadiffSIT24(nx,my,my_max,ratioSIT,dt24,ifilout,itau,idtg,ggdef)
+      SUBROUTINE outtseadiffSIT24(nx,my,my_max,ratioSIT,dt24,itau,idtg,ggdef)
 
       use mpe
       use index
@@ -967,8 +958,6 @@
       real(kind=RTYPE) wrk(nxp,my_max),glob(nx,my),wrk2(nxp,my_max)
       real      ratioSIT(nxp,my_max)
       integer*8 idtg
-      character*80 ifilout
-      character*26 ihdg
       character*4  ggdef
       integer   imax,jmax,lenc,j,nxj,i,istat,jj
 
@@ -985,12 +974,12 @@
         enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call syslbl ('w0002f',idtg,itau,ggdef,ihdg)
-      call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
+      call syslbl_w ('w0002f',idtg,itau,ggdef)
+      call dmswrit(imax,jmax,lenc,kflag,glob,istat)
       tseadiffSIT24=0.
 
       call unify_reduceintp(nx,my,my_max,wrk2,glob)
-      call syslbl ('w00002',idtg,itau,ggdef,ihdg)
-      call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
+      call syslbl_w ('w00002',idtg,itau,ggdef)
+      call dmswrit(imax,jmax,lenc,kflag,glob,istat)
 
       END SUBROUTINE outtseadiffSIT24

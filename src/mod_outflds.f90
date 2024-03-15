@@ -3,7 +3,7 @@ module mod_outflds
  
  
 contains
-  subroutine divgout(nx,my,my_max,lpout,lev,itau,ifilout,idtg, &
+  subroutine divgout(nx,my,my_max,lpout,lev,itau,idtg, &
         plev,num,whtlev,pkout,pk,pklp,rdiv,rdivb,div,ggdef,lwrite)
 !
       use index
@@ -24,15 +24,12 @@ contains
 
 !
       integer*8 idtg
-      character*80 ifilout
-      character*26 ihdg,ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
 !
       integer    k,lpl,lenc,n,num,istat
   
       logical :: lwrite
-
 
       do k = 1, lev+1
        tens(k) = 1.0
@@ -56,13 +53,13 @@ contains
       do 10 k=1,lpout
       if(plev(k).eq.whtlev(n)) then
       call unify_reduceintp(nx,my,my_max,div(1,1,k),wk1)
-      call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
+      call syslbl_w(lrec(k),idtg,itau,ggdef)
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,wk1,istat)
       if(outgrb2==1.and.myrank==0)then
         call wrt_grb2(itau,0,2,11,6,100,-2,plev(k),wk1)
       endif
-      call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
+      call qmaxn3_w(wk1,1,1,1,nx,my,1)
+      call split(nx,my,lenc,ncnt,wk1,pout)
       go to 20
       endif
    10 continue
@@ -70,13 +67,13 @@ contains
 
       if(outdms.gt.0)then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+        call dmswrit_split(nx,my,lenc,kflag,pout,istat)
       endif
 !
       return
   end subroutine divgout
 
-  subroutine dragout(nx,my,my_max,lpout,lev,itau,ifilout,idtg, &
+  subroutine dragout(nx,my,my_max,lpout,lev,itau,idtg, &
         plev,num,whtlev,pkout,pk,pklp,rdrag,rdragb,drag,ggdef,lwrite)
 !
       use index
@@ -96,8 +93,6 @@ contains
       real(kind=RTYPE) wk1(nx,my),pout(nx,my),drag(nxp,my_max,lpout)
 !
       integer*8 idtg
-      character*80 ifilout
-      character*26 ihdg,ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
 !
@@ -150,13 +145,13 @@ contains
    45 continue
 !
       call unify_reduceintp(nx,my,my_max,drag(1,1,k),wk1)
-      call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
+      call syslbl_w(lrec(k),idtg,itau,ggdef)
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,wk1,istat)
       if(outgrb2==1.and.myrank==0)then
         call wrt_grb2(itau,0,2,196,6,100,-2,plev(k),wk1)
       endif
-      call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
+      call qmaxn3_w(wk1,1,1,1,nx,my,1)
+      call split(nx,my,lenc,ncnt,wk1,pout)
       go to 20
       endif
    10 continue
@@ -164,13 +159,13 @@ contains
 
       if(outdms.gt.0)then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+        call dmswrit_split(nx,my,lenc,kflag,pout,istat)
       endif
 !
       return
   end subroutine dragout
 
-  subroutine geopout(nx,my,my_max,lpout,lev,itau,ifilout,idtg,plev, &
+  subroutine geopout(nx,my,my_max,lpout,lev,itau,idtg,plev, &
         num,whtlev,pkout,pk,pklp,phi,phib,phips,glob,ggdef,phistd,      &
         h850,h500,lwrite)
 
@@ -193,8 +188,6 @@ contains
 
       integer*8    idtg
 
-      character*80 ifilout
-      character*26 ihdg,ihdg2
       character*6  lrec(lpout)
       character*4  ggdef
 !
@@ -273,7 +266,7 @@ contains
    11 continue
       call unify_reduceintp(nx,my,my_max,tmp,glob)
 !
-      call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
+      call syslbl_w(lrec(k),idtg,itau,ggdef)
 !
 !      if(lreduce.eq.1 .and. itau.le.72)then
         call smth9(nx,my,glob,slp,1)
@@ -286,8 +279,8 @@ contains
       if(outgrb2==1.and.myrank==0)then
         call wrt_grb2(itau,0,3,5,0,100,-2,plev(k),slp)
       endif
-      call qmaxn3(slp,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lenc,ifilout,ncnt,slp,pout,ihdg,ihdg2)
+      call qmaxn3_w(slp,1,1,1,nx,my,1)
+      call split(nx,my,lenc,ncnt,slp,pout)
 !
       go to 20
       endif
@@ -296,13 +289,13 @@ contains
 
       if(outdms.gt.0)then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+        call dmswrit_split(nx,my,lenc,kflag,pout,istat)
       endif
 !
       return
   end subroutine geopout
 
-  subroutine shumout(nx,my,my_max,lpout,lev,itau,ifilout,idtg   &
+  subroutine shumout(nx,my,my_max,lpout,lev,itau,idtg   &
       , plev,num,whtlev,pkout,pk,pklp,dpd,dpdb,dew,glob,ggdef,lwrite)
 !
       use index
@@ -323,8 +316,6 @@ contains
       integer   i,k,lpl,n,lenc,istat,jj,j,nxj
 !
       integer*8 idtg
-      character*80 ifilout
-      character*26 ihdg,ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
 !
@@ -379,26 +370,26 @@ contains
       if(outgrb2==1.and.myrank==0)then
         call wrt_grb2(itau,0,1,1,2,100,-2,plev(k),glob)
       endif
-      call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
+      call syslbl_w(lrec(k),idtg,itau,ggdef)
 !
 !  reduceintp has been done in voterp (2011/5)
 !
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
-      call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lenc,ifilout,ncnt,glob,pout,ihdg,ihdg2)
+      call qmaxn3_w(glob,1,1,1,nx,my,1)
+      call split(nx,my,lenc,ncnt,glob,pout)
       go to 30
       endif
    10 continue
    30 continue
       if(outdms.gt.0)then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+        call dmswrit_split(nx,my,lenc,kflag,pout,istat)
       endif
 !
       return
   end subroutine shumout
 
-  subroutine shumout2(nx,my,my_max,lpout,lev,itau,ifilout,idtg   &
+  subroutine shumout2(nx,my,my_max,lpout,lev,itau,idtg   &
       , plev,num,whtlev,pkout,pk,pklp,dpd,dpdb,dew,glob,ggdef,ntrac,lwrite)
 !
       use index
@@ -422,8 +413,6 @@ contains
       integer   i,k,lpl,n,lenc,istat,jj,j,nxj
 
       integer*8 idtg
-      character*80 ifilout
-      character*26 ihdg,ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
 !      character*3 cspec(8)
@@ -432,7 +421,7 @@ contains
       integer::Ptp0,Ptp1,Ptp2,Ptp3
 !      integer,dimension(6)::cspe0,cspe1,cspe2,cspe3
       integer,dimension(:),allocatable ::cspe0,cspe1,cspe2,cspe3
-!
+
 !key=556 for mixing ratio of hail
 !key=571~575 for number concentration of cloud droplet, ice, rain, snow, and graupel
 !key=572 : inc (ntinc=7)
@@ -540,17 +529,17 @@ contains
 !        glob(i,1)= max(glob(i,1),0.0)
 !   20 continue
 !
-      call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
+      call syslbl_w(lrec(k),idtg,itau,ggdef)
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
-      call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lenc,ifilout,ncnt,glob,pout,ihdg,ihdg2)
+      call qmaxn3_w(glob,1,1,1,nx,my,1)
+      call split(nx,my,lenc,ncnt,glob,pout)
       go to 30
       endif
    10 continue
    30 continue
       if(outdms.gt.0)then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+        call dmswrit_split(nx,my,lenc,kflag,pout,istat)
       endif
 !
    40 continue
@@ -558,7 +547,7 @@ contains
       return
   end subroutine shumout2
 
-  subroutine cloudout(nx,my,my_max,lpout,lev,itau,ifilout,idtg   &
+  subroutine cloudout(nx,my,my_max,lpout,lev,itau,idtg   &
       , plev,num,whtlev,pkout,pk,pklp,clds,cldb,cldfc,glob,ggdef,lwrite)
 !
       use index
@@ -580,8 +569,6 @@ contains
       integer   i,k,lpl,n,lenc,istat,jj,j,nxj
 
       integer*8 idtg
-      character*80 ifilout
-      character*26 ihdg,ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
       logical :: lwrite
@@ -622,16 +609,16 @@ contains
           call wrt_grb2(itau,0,6,32,3,100,-2,plev(k),glob)   !cloud fraction
       endif
 !
-      call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
-      call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lenc,ifilout,ncnt,glob,pout,ihdg,ihdg2)
+      call syslbl_w(lrec(k),idtg,itau,ggdef)
+      call qmaxn3_w(glob,1,1,1,nx,my,1)
+      call split(nx,my,lenc,ncnt,glob,pout)
       go to 30
       endif
    10 continue
    30 continue
       if(outdms.gt.0)then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+        call dmswrit_split(nx,my,lenc,kflag,pout,istat)
       endif
 !
    40 continue
@@ -640,7 +627,7 @@ contains
   end subroutine cloudout
 
 
-  subroutine surfout(nx,my,my_max,ifilout,itau,idtg,taudir,ntau,pdiff  &
+  subroutine surfout(nx,my,my_max,itau,idtg,taudir,ntau,pdiff  &
        ,pt,ptop,slp,ptend,glob,ggdef,lwrite)
 !
       use index
@@ -661,8 +648,6 @@ contains
       real      ptop,tnshun
 !
       integer*8 idtg
-      character*80 ifilout
-      character*26 lrec
       character*6 label(ntau),labx
    
       logical :: lwrite
@@ -705,15 +690,15 @@ contains
 
       if(label(kk).eq.'SSL010' .or. label(kk).eq.'ssl010') then
         call unify_reduceintp(nx,my,my_max,slp,glob)
-        call syslbl('ssl010',idtg,itau,ggdef,lrec)
+        call syslbl_w('ssl010',idtg,itau,ggdef)
         if( itau==0 .or. itau .gt. nint(domfc) )then
         if(outdms.gt.0)then
-          if(lwrite) call dmswrit(nx,my,lrec,lenc,kflag,ifilout,glob,istat)
+          if(lwrite) call dmswrit(nx,my,lenc,kflag,glob,istat)
         endif
         if(outgrb2==1.and.myrank==0)then
           call wrt_grb2(itau,0,3,1,2,101,0,0.,glob)
         endif
-        call qmaxn3(glob,lrec(1:14),lrec(15:26),1,1,1,nx,my,1)
+        call qmaxn3_w(glob,1,1,1,nx,my,1)
         endif !itau .gt. domfc
 !
 !  terrain pressure
@@ -735,13 +720,13 @@ contains
 !       close(30)
 !     endif
 !byl        call mpe_unify(glob,nx,my,2,mpe_double)
-        call syslbl('b00010',idtg,itau,ggdef,lrec)
+        call syslbl_w('b00010',idtg,itau,ggdef)
 !byl        if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-        if(lwrite) call dmswrit(nx,my,lrec,lenc,kflag,ifilout,glob,istat)
+        if(lwrite) call dmswrit(nx,my,lenc,kflag,glob,istat)
         if(outgrb2==1.and.myrank==0)then
           call wrt_grb2(itau,0,3,0,2,103,0,0.,glob)
         endif
-        call qmaxn3(glob,lrec(1:14),lrec(15:26),1,1,1,nx,my,1)
+        call qmaxn3_w(glob,1,1,1,nx,my,1)
 
 !
 !  terrain pressure tendency
@@ -761,7 +746,7 @@ contains
       return
   end subroutine surfout
 
-  subroutine tempout(nx,my,my_max,lpout,lev,itau,ifilout,idtg  &
+  subroutine tempout(nx,my,my_max,lpout,lev,itau,idtg  &
       , plev,num,whtlev,pkout,pk,pklp,tt,ttbot,temp,ggdef,lwrite)
 !
       use index
@@ -782,9 +767,6 @@ contains
 
 !
       integer*8 idtg
-      character*80 ifilout
-      character*26 ihdg
-      character*26 ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
 !
@@ -821,7 +803,7 @@ contains
 !!      glob(i,1)= temp(i,k)
 !!   11 continue
 !
-      call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
+      call syslbl_w(lrec(k),idtg,itau,ggdef)
 !
 !  reduceintp has been done in voterp (2011/5)
 !
@@ -835,21 +817,21 @@ contains
         call wrt_grb2(itau,0,0,0,2,100,-2,plev(k),slp)
       endif
 
-      call qmaxn3(slp,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lenc,ifilout,ncnt,slp,pout,ihdg,ihdg2)
+      call qmaxn3_w(slp,1,1,1,nx,my,1)
+      call split(nx,my,lenc,ncnt,slp,pout)
       go to 30
       endif
    10 continue
    30 continue
       if(outdms.gt.0)then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+        call dmswrit_split(nx,my,lenc,kflag,pout,istat)
       endif
 !
       return
   end subroutine tempout
 
-  subroutine vortout(nx,my,my_max,lpout,lev,itau,ifilout,idtg     &
+  subroutine vortout(nx,my,my_max,lpout,lev,itau,idtg     &
       , plev,num,whtlev,pkout,pk,pklp,rvor,rvorb,vor,ggdef,v850,v700,lwrite)
 !
       use index
@@ -871,8 +853,6 @@ contains
 
 !
       integer*8 idtg
-      character*80 ifilout
-      character*26 ihdg,ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
 
@@ -936,7 +916,7 @@ contains
       do 10 k=1,lpout
       if(plev(k).eq.whtlev(n)) then
       call unify_reduceintp(nx,my,my_max,vor(1,1,k),wk1)
-      call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
+      call syslbl_w(lrec(k),idtg,itau,ggdef)
 !
 !  reduceintp has been done in voterp (2011/5)
 !
@@ -944,21 +924,21 @@ contains
       if(outgrb2==1.and.myrank==0)then
         call wrt_grb2(itau,0,2,12,6,100,-2,plev(k),wk1)
       endif
-      call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
+      call qmaxn3_w(wk1,1,1,1,nx,my,1)
+      call split(nx,my,lenc,ncnt,wk1,pout)
       go to 20
       endif
    10 continue
    20 continue
       if(outdms.gt.0)then
       if(lwrite .and. myrank .lt. ncnt ) & 
-        call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+        call dmswrit_split(nx,my,lenc,kflag,pout,istat)
       endif
 !
       return
   end subroutine vortout
 
-  subroutine windout(nx,my,my_max,lpout,lev,itau,ifilout,idtg      &
+  subroutine windout(nx,my,my_max,lpout,lev,itau,idtg      &
       , plev,num,whtlev,cosl,pkout,pk,pklp,ut,vt,sdhat,utb,vtb     &
       , wind,glob,ggdef,lwrite)
 !
@@ -987,8 +967,6 @@ contains
 !lzl -end
 
       integer*8 idtg
-      character*80 ifilout
-      character*26 ihdg,ihdg2
       character*6 lrec(lpout),krec(lpout),mrec(lpout)
       character*4 ggdef
 !
@@ -1070,20 +1048,20 @@ contains
         call wrt_grb2(itau,0,2,2,2,100,-2,plev(k),glob)
       endif
 
-      call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
+      call syslbl_w(lrec(k),idtg,itau,ggdef)
 !
 !  reduceintp has been done in voterp (2011/5)
 !
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
-      call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lenc,ifilout,ncnt,glob,pout,ihdg,ihdg2)
+      call qmaxn3_w(glob,1,1,1,nx,my,1)
+      call split(nx,my,lenc,ncnt,glob,pout)
       go to 30
       endif
    10 continue
    30 continue
       if(outdms.gt.0)then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+        call dmswrit_split(nx,my,lenc,kflag,pout,istat)
       endif
 !
 !  now the v components
@@ -1143,20 +1121,20 @@ contains
         call wrt_grb2(itau,0,2,3,2,100,-2,plev(k),glob)
       endif
 
-      call syslbl(krec(k),idtg,itau,ggdef,ihdg)
+      call syslbl_w(krec(k),idtg,itau,ggdef)
 !
 !  reduceintp has been done in voterp (2011/5)
 !
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
-      call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lenc,ifilout,ncnt,glob,pout,ihdg,ihdg2)
+      call qmaxn3_w(glob,1,1,1,nx,my,1)
+      call split(nx,my,lenc,ncnt,glob,pout)
       go to 40
       endif
    20 continue
    40 continue
       if(outdms.gt.0)then
       if(lwrite .and. myrank .lt. ncnt ) & 
-        call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+        call dmswrit_split(nx,my,lenc,kflag,pout,istat)
       endif
 !
 !  now the w components
@@ -1182,19 +1160,19 @@ contains
         call wrt_grb2(itau,0,2,8,6,100,-2,plev(k),glob)
       endif
 
-      call syslbl(mrec(k),idtg,itau,ggdef,ihdg)
+      call syslbl_w(mrec(k),idtg,itau,ggdef)
 !
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
-      call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call qmaxn3_w(glob,1,1,1,nx,my,1)
       glob=glob*100.
-      call split(nx,my,lenc,ifilout,ncnt,glob,pout,ihdg,ihdg2)
+      call split(nx,my,lenc,ncnt,glob,pout)
       go to 42
       endif
    22 continue
    42 continue
       if(outdms.gt.0)then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+        call dmswrit_split(nx,my,lenc,kflag,pout,istat)
       endif
 !
       return

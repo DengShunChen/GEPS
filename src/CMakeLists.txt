@@ -80,7 +80,6 @@ get_model_param.f90
 get_phi.f90
 getphi.f90
 getrdy.f90
-gfcst.f90
 glbmean.f90
 gpvs.f90
 grdcon.f90
@@ -222,7 +221,8 @@ precpdp.f90
 prerrtmg.f90
 prexp_hybrid_cwb.f90
 qmax2d.f90
-qmaxn3.f90
+qmaxn3_r.f90
+qmaxn3_w.f90
 qmaxn3p.f90
 qprint.f90
 qprnt3.f90
@@ -297,7 +297,8 @@ stemp.f90
 structrn.f90
 stupij.f90
 stupiy.f90
-syslbl.f90
+syslbl_r.f90
+syslbl_w.f90
 tendget.f90
 tracking.f90
 trandv.f90
@@ -353,20 +354,32 @@ if(${USE_CUDA})
         nvidia/cufft_plan_cache.cc
         nvidia/cufft_wrapper.f90
         nvidia/trngra3_gpu.f90
+        nvidia/tranuv_gpu.f90
+        nvidia/ujoinsr_gpu.f90
+        nvidia/mpe2d_gpu.f90
+        nvidia/mpe_transpose_rs1_gpu.f90
+        nvidia/mpe_transpose_sr_gpu.f90
+        nvidia/transr_gpu.f90
     )
 endif()
 
 if(NOT ${USE_RSM})
   set(EXEC "tcogfs.x")
+  set(LIB "tcogfs")
 else()
   set(EXEC "tcogfs_rsm.x")
+  set(LIB "tcogfs_rsm")
 endif()
 
 if(NOT ${USE_RSM})
-  add_executable(${EXEC} ${TCO_SRC})
+  #add_executable(${EXEC} gfcst.f90 ${TCO_SRC})
+  add_library(${LIB} STATIC ${TCO_SRC})
 else()
-  add_executable(${EXEC} ${TCO_SRC} ${RSM_SRC})
+  #add_executable(${EXEC} gfcst.f90 ${TCO_SRC} ${RSM_SRC})
+  add_library(${LIB} STATIC ${TCO_SRC} ${RSM_SRC})
 endif()
+add_executable(${EXEC} gfcst.f90)
+target_link_libraries(${EXEC} ${LIB})
 set_target_properties(${EXEC} 
     PROPERTIES 
     LINKER_LANGUAGE Fortran
@@ -383,18 +396,18 @@ if(NOT ${USE_CUDA})
 	set_source_files_properties(pbl_noah.f90 rcloud.f90 gscond.f90 gscondp.f90
 		PROPERTIES COMPILE_FLAGS "-Knosimd"
 	)
-	target_link_options(${EXEC} PUBLIC "-Kopenmp,parallel")
+	target_link_options(${LIB} PUBLIC "-Kopenmp,parallel")
 else()
 	set_source_files_properties(pbl_noah.f90 rcloud.f90 gscond.f90 gscondp.f90
 		PROPERTIES COMPILE_FLAGS "-Mvect=nosimd"
 	)
-	target_link_options(${EXEC} PUBLIC "-Mconcur")
+	target_link_options(${LIB} PUBLIC "-Mconcur")
 endif()
 
 install(TARGETS ${EXEC} DESTINATION ${CMAKE_INSTALL_PREFIX})
-target_include_directories( ${EXEC} PUBLIC "$<BUILD_INTERFACE:${TCOGFS_INCLUDE_DIRS}>")
+target_include_directories( ${LIB} PUBLIC "$<BUILD_INTERFACE:${TCOGFS_INCLUDE_DIRS}>")
 
-target_link_libraries( ${EXEC} ${NetCDF_Fortran_LIBRARIES}
+target_link_libraries( ${LIB} PUBLIC ${NetCDF_Fortran_LIBRARIES}
                                ${DMS_LIBRARIES}
                                ${W3_LIBRARIES}
 )

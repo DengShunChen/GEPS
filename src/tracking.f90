@@ -47,7 +47,7 @@ subroutine tracking(tau,dt_trk,dt,nx,my,                                  &
   use rank
   use index
   use mod_typhoon,only:write_mem,write_tau,typtrk
-  use const,only:ifilout,RTYPE
+  use const,only:ifilout,RTYPE,KLENO
   use param,only:my_max
 !  use mod_outflds,only:ifilout
 !  use param
@@ -81,7 +81,7 @@ subroutine tracking(tau,dt_trk,dt,nx,my,                                  &
   logical :: typhoon
   character(15)  :: typname(ntyph)
   integer(8) idtg,idtg8
-  character*80 trkpath
+  character*255 trkpath
   character*150 trkfilename
 !---
   logical :: lfound(nvar,ntyph)
@@ -104,16 +104,26 @@ subroutine tracking(tau,dt_trk,dt,nx,my,                                  &
       character cdtg*10,idtgc*12
       character epsno*4
       character epstype*1
-      character work(datalength)*16,tytrack*9
-      character dmshead*3
+#ifdef O38K
+      character work(datalength)*16,tytrack*11
+      character dmstail*10
+#else
+      character work(datalength)*16,tytrack*9 
       character dmstail*8
+#endif
+      character dmshead*3
       integer nstm ! the number of forecasted typhoon
       character domain1*16
-      character dmskeytrack*34
-!    
+      character(len=KLENO) dmskeytrack
+!   
+#ifdef O38K 
+      data tytrack /'TYPHTRACKGT'/
+      data dmstail/'X002500000'/
+#else
       data tytrack /'TYTRACKGT'/
-      data domain1 /'CWB GFS  T511L60'/
       data dmstail/'X0025000'/
+#endif
+      data domain1 /'CWB GFS  T511L60'/
       data dmsdb/'test'/
       data epsno/'00'/
 

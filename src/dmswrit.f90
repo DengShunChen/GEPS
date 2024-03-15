@@ -1,4 +1,4 @@
-      subroutine dmswrit(nx,my,lrec,lenc,kflag,ifile,z,istat)
+      subroutine dmswrit(nx,my,lenc,kflag,z,istat)
 
 !CWB2021 single precision test, writing dms output in 32 bits float format
 
@@ -19,7 +19,7 @@
       use param, only : io_quilting
       use mpe
       use rank
-      use const, only : RTYPE
+      use const, only : RTYPE,ifilout,keyo,ihdgo
 !     use index
 
       implicit  none
@@ -28,14 +28,17 @@
       logical   t_flg
 !CWB2021
       real(kind=RTYPE) z(nx,my)
-      character lrec*26,ifile*80,kflag*1
+      character kflag*1
 !
 ! working array
 !
-      character key*34
 !
-      write(key,1000)lrec,kflag,lenc
+      write(keyo,1000)ihdgo,kflag,lenc
+#ifdef O38K
+ 1000 format(a28,a1,i9.9)
+#else
  1000 format(a26,a1,i7.7)
+#endif
 !
       t_flg=.false.
 
@@ -63,7 +66,7 @@
 !          call dmsput(ifile,key//char(0),z4,istat)
 !       endif
 !       if(key(27:27).eq.'H')then
-          call dmsput(ifile,key//char(0),z,istat)
+          call dmsput(ifilout,keyo//char(0),z,istat)
 !       endif
        t_flg=.true.
        endif
@@ -71,12 +74,12 @@
        call mpe_bcast(istat,1,0,mpe_integer)
 !
        if(istat.ne.0)then
-         if(myrank .eq. 0)print *,'dmsput key=',key,' error'
+         if(myrank .eq. 0)print *,'dmsput key=',keyo,' error'
          call mpe_finalize
          call dmsexit(-1)
        else
 #ifdef VERBOSE
-         if(myrank .eq. 0) print *,'dmsput key=',key,' ok'
+         if(myrank .eq. 0) print *,'dmsput key=',keyo,' ok'
 #endif
        endif
 
@@ -89,7 +92,7 @@
 !CWB2016
 ! write dmsdata by rank 0, bypassing io_quilting server
 
-      subroutine dmswrit_mfc(nx,my,lrec,lenc,kflag,ifile,z,istat)
+      subroutine dmswrit_mfc(nx,my,lenc,kflag,z,istat)
 !
 !  subroutine to read data in pressure level fields
 !
@@ -107,7 +110,7 @@
       use param, only : io_quilting
       use mpe
       use rank
-      use const, only : RTYPE
+      use const, only : RTYPE,ifilout,keyo,ihdgo
 !     use index
 
       implicit  none
@@ -116,14 +119,17 @@
       logical   t_flg
       real(kind=RTYPE) z(nx,my)
 !CWB2021
-      character lrec*26,ifile*80,kflag*1
+      character kflag*1
 !
 ! working array
 !
-      character key*34
 !
-      write(key,1000)lrec,kflag,lenc
+      write(keyo,1000)ihdgo,kflag,lenc
+#ifdef O38K
+ 1000 format(a28,a1,i9.9)
+#else
  1000 format(a26,a1,i7.7)
+#endif
 !
       t_flg=.false.
 
@@ -134,7 +140,7 @@
 !          call dmsput(ifile,key//char(0),z4,istat)
 !       endif
 !       if(key(27:27).eq.'H')then
-          call dmsput(ifile,key//char(0),z,istat)
+          call dmsput(ifilout,keyo//char(0),z,istat)
 !       endif
        t_flg=.true.
        endif
@@ -142,13 +148,13 @@
        call mpe_bcast(istat,1,0,mpe_integer)
 !
        if(istat.ne.0)then
-         if(myrank .eq. 0)print *,'dmsput key=',key,' error'
+         if(myrank .eq. 0)print *,'dmsput key=',keyo,' error'
          call mpe_finalize
          call dmsexit(-1)
        else
 
 #ifdef VERBOSE
-         if(myrank .eq. 0) print *,'dmsput key=',key,' ok'
+         if(myrank .eq. 0) print *,'dmsput key=',keyo,' ok'
 #endif
        endif
 
@@ -159,7 +165,7 @@
 !CWB2016
 ! write dmsdata by rank 0, bypassing io_quilting server
 
-      subroutine dmswrit_split(nx,my,lrec,lenc,kflag,ifile,z,istat)
+      subroutine dmswrit_split(nx,my,lenc,kflag,z,istat)
 !
 !  subroutine to read data in pressure level fields
 !
@@ -178,7 +184,7 @@
       use mpe
       use rank
       use index, only : col_rank
-      use const, only : RTYPE
+      use const, only : RTYPE,ifilout,keyo,ihdgo2
 
       implicit  none
 
@@ -186,14 +192,17 @@
       logical   t_flg
       real(kind=RTYPE) z(nx,my)
 !CWB2021
-      character lrec*26,ifile*80,kflag*1
+      character kflag*1
 !
 ! working array
 !
-      character key*34
 !
-      write(key,1000)lrec,kflag,lenc
+      write(keyo,1000)ihdgo2,kflag,lenc
+#ifdef O38K
+ 1000 format(a28,a1,i9.9)
+#else
  1000 format(a26,a1,i7.7)
+#endif
 !
       t_flg=.false.
 
@@ -204,7 +213,7 @@
 !          call dmsput(ifile,key//char(0),z4,istat)
 !       endif
 !       if(key(27:27).eq.'H')then
-          call dmsput(ifile,key//char(0),z,istat)
+          call dmsput(ifilout,keyo//char(0),z,istat)
 !       endif
        t_flg=.true.
 !       endif
@@ -213,13 +222,13 @@
 !
        if(istat.ne.0)then
 !!         if(col_rank .eq. 0)print *,'dmsput key=',key,' error'
-         print *,'dmsput key=',key,' error'
+         print *,'dmsput key=',keyo,' error'
 !!         call mpe_finalize
          call dmsexit(-1)
        else
 !!         if(col_rank .eq. 0) print *,'dmsput key=',key,' ok'
 #ifdef VERBOSE
-         print *,'dmsput key=',key,' ok'
+         print *,'dmsput key=',keyo,' ok'
 #endif
        endif
 

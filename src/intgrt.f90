@@ -1,3 +1,9 @@
+#ifdef USE_CUDA
+#define trngra3 trngra3_gpu
+#define ujoinsr ujoinsr_gpu
+#define tranuv tranuv_gpu
+#endif
+
        subroutine intgrt
 !
 !***********************************************************************
@@ -76,7 +82,7 @@
                 vdmerdrp(nxp,lev,my_max),vdzonlrp(nxp,lev,my_max), &
                 ddtemp(nxp,lev,my_max),                            &
                 pten(nxp,lev,my_max),dummy,                        &
-                rdivm(nxp,lev,my_max),ptm(nxp,my_max),             &
+                ptm(nxp,my_max),                                   &
                 deldm(nxp,my_max),sdpbl(nxp,my_max)
 
       integer   ierr,ittw,itt,year,yrd
@@ -88,7 +94,6 @@
                 drag(nxp,lev,my_max),ugws(nxp,my_max),vgws(nxp,my_max)
 
        integer  kn
-      character*26 ihdg
 
       real      tmin(nxp,my_max),tmax(nxp,my_max)!,td(nxp,my_max),temp
 !
@@ -97,7 +102,7 @@
 !byl      real      dlgeo(nxp,my_max),dtgeo(nxp,my_max)
 !byl      real      cc3(nx+2,levp,3,my_max),wss3(levp,2,3,jtrun,jtmax)
 !
-      character rfile*55, ctau*6
+      character rfile*255, ctau*7,ccore*4
 !!      real      tbar(lev),qbar(lev*ncld),qbrrow(ncld,my)
       integer,  parameter :: ktop=4
       real      fac(ktop), wkj(my,4), wkmf(jtrun), windmax3
@@ -106,7 +111,6 @@
       logical   histim, tchange, flag, forward, fwd
 !
       logical   wrestrt
-      data      wrestrt/.false./
 !
 ! for topographic gravity wave drag
 !
@@ -119,24 +123,12 @@
 !
 !   restart  : write(7) work array
 !
-!!      real, dimension(:), allocatable :: work_io
-!
-!  restart  : write(10) work array
-!
-      real, dimension(:,:,:), allocatable :: tm1,tm2,tm3,tm4
-!
-      real, dimension(:,:,:), allocatable :: tmc1,tmc2
-      real, dimension(:,:,:), allocatable :: tmc3,tmc4
-      real, dimension(:,:,:), allocatable :: tmc5,tmc6
-      real, dimension(:,:,:), allocatable :: temp1,temp2,temp3
+      real, dimension(:), allocatable :: work_io
+      integer itauezz
+      real    dtauzz,tautv
+      character cmdxx*256
+      integer len1,len2
 !-------------------------------------------------------------------
-      real, dimension(:,:,:), allocatable :: tmr1,tmr2
-      real, dimension(:,:,:), allocatable :: tmr3,tmr4
-      real, dimension(:,:,:), allocatable :: tmr5,tmr6
-      real, dimension(:,:,:), allocatable :: tmr7,tmr8
-      real, dimension(:,:,:), allocatable :: tms1,tms2,tms3,tms4
-!-------------------------------------------------------------------
-!
       integer i,j,k,m,n,jj,kk,mf,kw,nxj,nml,lmax,leng,nxmy, &
               jlim,mlst,mlmax2,itaui,itaue,itauo,itaup,     &
               ntau,itau,lcwb,lphy,ifromtau,itotau,istat,    &
@@ -146,7 +138,7 @@
               cosw,tengi,dt24,tg2,dtx_tau,sqhaf,            &
               dt1,sptend,wmax,xx,dtaup,hfiltm,              &
               sptendmax2,sptendmax1,dt_chg
-      integer itimestep,recn
+      integer recn
 
 ! for io quilting
       character*34 keydoit,keydone
@@ -157,7 +149,6 @@
       integer*8 idtg_sst,idtg1_sst,idtg_temp
       integer icurrenttau,yyyymmdd,hhii
       logical lsstrestore,iceold(nxp,my_max),oceanold(nxp,my_max)
-      character lrec*26
       character*12 cdtg
       real    ssttemp,cicetemp,snrtemp
       real    sst(nxp,my_max),ssttau,tautemp
@@ -179,7 +170,6 @@
 !pscheckdata
       integer lenc,itautest
       real mout(nx,my)
-      character*26 ihdg2
       integer nc
       integer*8 :: toutsrt, toutend, toutrate      !For CPU Timings
       logical:: lopngrb2 !open grib2 file
@@ -207,6 +197,12 @@
       nc_sit=1               !if fsit>0., when mod(tau/fsit)<0.001, turn on sit_vdiff for "nc_sit" timesteps
       turn_sit=.false.       !turn_sit=.true., will run sit_vdiff in some tau
       lrun_sitvdiff=.false.  !lrun_sitvdiff=.true., run sit_vdiff in this tau
+      
+      if ( dorst ) then
+        wrestrt=.true.
+      else
+        wrestrt=.false.
+      endif
 !
       ttm_sl=0.
       pten_sl=0.
@@ -219,127 +215,12 @@
       cc    = 0.
       istat = 0
 !
+! TYW added 20240112
+      hprime_b = 0.
 !
       year = idate(1)
       yrd  = 365
       if ( mod(year,4) .eq. 0 ) yrd = 366
-!
-! output initialization field
-!
-      if(wrestrt)then
-!
-        allocate (tm1(nx,lev,my))
-        allocate (tm2(nx,lev,my))
-        allocate (tm3(nx,lev,my))
-        allocate (tm4(nx,lev,my))
-        allocate (tmc1(nx,lev,my))
-        allocate (tmc2(nx,lev,my))
-        allocate (tmc3(nx,lev,my))
-        allocate (tmc4(nx,lev,my))
-        allocate (tmc5(nx,lev,my))
-        allocate (tmc6(nx,lev,my))
-        allocate (temp1(nx,lev,my))
-        allocate (temp2(nx,lev,my))
-        allocate (temp3(nx,lev,my))
-!-------------------------------------------------------------------
-        allocate (tmr1(nx,lev+1,my))
-        allocate (tmr2(nx,lev+1,my))
-        allocate (tmr3(nx,lev+1,my))
-        allocate (tmr4(nx,lev+1,my))
-        allocate (tmr5(nx,lev+1,my))
-        allocate (tmr6(nx,lev+1,my))
-        allocate (tmr7(nx,lev+1,my))
-        allocate (tmr8(nx,lev+1,my))
-        allocate (tms1(nx,lev,my))
-        allocate (tms2(nx,lev,my))
-        allocate (tms3(nx,lev,my))
-        allocate (tms4(nx,lev,my))
-!-------------------------------------------------------------------
-!        call unify_gridr                                                  &
-!          ( tmr1,tmr2,tmr3,tmr4,tmr5,tmr6,tmr7,tmr8,tms1,tms2,tms3,tms4,  &
-!            fusl,fdsl,fuir,fdir,fuslr,fdslr,fuirr,fdirr,clds,sd,          &
-!            asl_clr,atl_clr,asol,olr,sld,                                 &
-!            asol_clr,olr_clr,rld_clr,sld_clr,ss_clr,rs_clr,               &
-!            nx,my,my_max,lev)
-!-------------------------------------------------------------------
-!        call unify_grid                                                   &
-!            ( snr,gwr,tg,tm1,tm2,ss,rs,tm3,tm4,ustar,tstar,qstar          &
-!            , hflux,qflux,raincu,rainlp,totalp,curate,plcl,cumtop         &
-!            , tgclim,gwet,z0,alb,land,ice,ocean,gwclim,acld               &
-!            , tmc1,tmc2,tmc3,tmc4,tmc5,tmc6,fpsp,ftp,fqp,fpsp1,ftp1,fqp1  &
-!            , e,eps,o3l,dtrad,pt,ptend,ugws,vgws,nx,my,my_max,lev         &
-!            , smc,slc,stc,canopy,sigmaf,istyp,ivegtyp,km_soil,temp1       &
-!            , temp2,temp3,rld,zice,asl,atl)
-!
-        deallocate (tm1)
-        deallocate (tm2)
-        deallocate (tm3)
-        deallocate (tm4)
-        deallocate (tmc1)
-        deallocate (tmc2)
-        deallocate (tmc3)
-        deallocate (tmc4)
-        deallocate (tmc5)
-        deallocate (tmc6)
-        deallocate (temp1)
-        deallocate (temp2)
-        deallocate (temp3)
-!-------------------------------------------------------------------
-        deallocate (tmr1)
-        deallocate (tmr2)
-        deallocate (tmr3)
-        deallocate (tmr4)
-        deallocate (tmr5)
-        deallocate (tmr6)
-        deallocate (tmr7)
-        deallocate (tmr8)
-        deallocate (tms1)
-        deallocate (tms2)
-        deallocate (tms3)
-        deallocate (tms4)
-!-------------------------------------------------------------------
-! output gwr or gwet
-! in new soil model, gwr did not exist
-! but for output required,
-! define gwet as near surfce 0.5m soil layer wetness
-! define gwr as near surfce 0.5m soil layer moist contain
-! gwr=gwet*gwrcc
-! gwet(ground wetness) get from smc1*0.2+smc2*0.8
-! saturate gwrcc set to be 20mm as original land mode setting
-!
-!        do jj = 1, jlistnum
-!          j=jlist1(jj)
-!          nxj=nxdef(j)
-!          do i = 1, nxj
-!            if( istyp(i,jj).ne.0 )then
-!              www = smc(i,1,jj)*0.2+smc(i,2,jj)*0.8
-!              gwet(i,jj) = ( www-wlt(istyp(i,jj))) /  &
-!                          ( ref(istyp(i,jj))-wlt(istyp(i,jj)) )
-!            else
-!              gwet(i,jj) = 1.
-!            endif
-!            gwr(i,jj) = max(0.,min(1.,gwet(i,jj)))*20.
-!          enddo
-!        enddo
-!!        call mpe_unify(gwet,nx,my,2,mpe_double)
-!!        call mpe_unify(gwr,nx,my,2,mpe_double)
-!
-!        call  outflds( 1,nx,my,my_max,lev,ncld                                     &
-!                     , lmax,numout,idtg,ifilout,outdir                             &
-!                     , ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo                     &
-!                     , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                            &
-!                     , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                   &
-!                     , raintot,raincu,rainlp,asol,olr,ss,rs,alb,gwclim             &
-!                     , acld,cosl,drag,ugws,vgws,t2,rh2,rh10,u10,v10,gfx,rld,sld &
-!                     , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500    &
-!                     , ctot,chig,cmid,clow,hpbl,.true.,flash,do_sit)
-!        call  outsigs ( 1,nx,my,my_max,lev,ncld                                    &
-!                    , idtg,ifilout,ptop,rad,grav                                   &
-!                    , cp,cosl,pt,sgeo,snr,gwr,tg,pk,pk2                            &
-!                    , ut,vt,tt,qt,phi,rdiv                                         &
-!                    , km_soil,smc,slc,stc,canopy,zice,ggdef,gmdef )
-!
-      endif     ! end of (wrestrt)
 !
       do jj = 1, jlistnum
         j=jlist1(jj)
@@ -363,8 +244,10 @@
       raincu1=0.
       rainlp1=0.
       gfx=0.
-      rld=0.
-      sld=0.
+      if ( .not. restrt ) then
+        rld=0.
+        sld=0.
+      endif
       recn=1
       rdivm=0.
       flash=0.
@@ -380,44 +263,6 @@
            print*,'read mtnvar=14 hprime_b=',(hprime_b(1,i,1),i=1,mtnvar)
       endif
 !
-!#ifndef NO_OUT
-!      call  outflds( 0,nx,my,my_max,lev,ncld                                       &
-!                     , lmax,numout,idtg,ifilout,outdir                             &
-!                     , ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo                     &
-!                     , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                            &
-!                     , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                   &
-!                     , raintot,raincu,rainlp,asol,olr,ss,rs,alb,gwclim             &
-!                     , acld,cosl,drag,ugws,vgws,t2,rh2,rh10,u10,v10,gfx,rld,sld &
-!                     , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500    &
-!                     , ctot,chig,cmid,clow,hpbl,.true.,flash,do_sit)
-!#endif
-!      if(typhoon)then
-!        do n=1,ntyph
-!            i=ixtyp(1,n)
-!            j=jytyp(1,n)
-!            tensity(0,1,n)=( slp(i,j+1)+slp(i+1,j+1)    &
-!                           + slp(i,j  )+slp(i+1,j  ) )/4.
-!            tensity(0,2,n)=( v850(i,j+1)+v850(i+1,j+1)  &
-!                           + v850(i,j  )+v850(i+1,j  ) )/4.
-!            tensity(0,3,n)=( v700(i,j+1)+v700(i+1,j+1)  &
-!                           + v700(i,j  )+v700(i+1,j  ) )/4.
-!            tensity(0,4,n)=( h850(i,j+1)+h850(i+1,j+1)  &
-!                           + h850(i,j  )+h850(i+1,j  ) )/4.
-!            tensity(0,5,n)=( h500(i,j+1)+h500(i+1,j+1)  &
-!                           + h500(i,j  )+h500(i+1,j  ) )/4.
-!        enddo
-!      endif
-!
-! add 40m 100m output for green energy plan
-!      if(out_green)then
-!#ifndef NO_OUT
-!        call  outflds_green(0,nx,my,my_max,lev,ncld                &
-!              , idtg,ifilout,cp,rgas,grav,t2,u10,v10,ss,pk      &
-!              , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6  &
-!              , ggdef,.true.)
-!#endif
-!      endif
-!
       tchange=.false.
       nxmy  = nx*my
       nml   = nx*my*lev
@@ -428,13 +273,27 @@
       itaue=taue+0.1
       itauo=tauo+0.1
       itaup=taup+0.1
-      tau=taui
+      if ( .not. restrt ) then
+        tau=taui
+      endif
       dtx=dt
 !
       dta = dtx
       dtah = 0.5*dta
       ndsldtah= dtah/float(itter)
       dtahi= dtah/float(itter)
+!
+!jwhwu 201407 add time control
+      if ( dorst ) then
+        open(7,file='./timectl',status='old')
+        read(7,'(i8)') itauezz
+        tautv=24.           !! history output directory control
+        close(7)
+        if(myrank.eq.0) then
+         print*,'the integration will be extended up to ',itauezz,' hours'
+        endif
+      endif
+!#endif
 !
 !  compute initial moisture and potential temperature
 !
@@ -544,7 +403,9 @@
 !***********************************************************************
 !
 ! sppt
-      itimestep=1
+      if( .not. restrt )then
+        itimestep=1
+      endif
 !
       n_stable=0
       n_unstable=0
@@ -567,8 +428,6 @@
         sptendmax2=0.4305
         sptendmax1=0.3305
       endif
-
-
 
 !
 !      if(typhoon)then
@@ -1627,80 +1486,144 @@
 !
 !
         if(wrestrt)then
-          call chlen (cwbout,48,lcwb)
-          call chlen (phyout,48,lphy)
-          write (ctau,800) itau
-  800     format('tau',i3.3)
-          rfile = cwbout(1:lcwb)//ctau
+! set write out restart at the end of integration
+          if( mod(float(itau),float(itauezz)) .lt. 0.01 ) then
+            write (ctau,800) itau
+  800       format(i7.7)
+            write (ccore,'(i4.4)') myrank
+!
+            rfile = trim(cwbout)//'cwbout_'//ctau
+!
+            if(myrank .eq. 0) open (unit=7,file=rfile,form='unformatted')
+            len1=2*levp*jtrun*jtmax*nsize
+            len2=2*jtrun*jtmax*nsize
+            allocate(work_io(len1))
+            call mpe_gather_io(work_io,vornow,len1/nsize,nsize)
+            if(myrank==0) write(7) work_io
+            call mpe_gather_io(work_io,divnow,len1/nsize,nsize)
+            if(myrank==0) write(7) work_io
+            call mpe_gather_io(work_io,temnow,len1/nsize,nsize)
+            if(myrank==0) write(7) work_io
+            call mpe_gather_io(work_io,vorold,len1/nsize,nsize)
+            if(myrank==0) write(7) work_io
+            call mpe_gather_io(work_io,divold,len1/nsize,nsize)
+            if(myrank==0) write(7) work_io
+            call mpe_gather_io(work_io,temold,len1/nsize,nsize)
+            if(myrank==0) write(7) work_io
+            call mpe_gather_io(work_io,trefs,len1/nsize,nsize)
+            if(myrank==0) then
+              write(7) work_io
+              call flush(7)
+            endif
+            deallocate(work_io)
+            allocate(work_io(len2))
+            call mpe_gather_io(work_io,plnow,len2/nsize,nsize)
+            if(myrank==0) write(7) work_io
+            call mpe_gather_io(work_io,plold,len2/nsize,nsize)
+            if(myrank==0) write(7) work_io
+!           call mpe_gather_io(work_io,dsqgeo,len2/nsize,nsize)
+!           call mpe_gather_io(work_io,spgeo,len2/nsize,nsize)
+            deallocate(work_io)
+            if(myrank==0) then
+              call flush(7)
+              close(7)
+            endif
+          cmdxx='mkdir -p '//trim(phyout)//'phyout_'//ctau
+          call system(trim(cmdxx))
+          rfile = trim(phyout)//'phyout_'//ctau//'/'//ccore
+!         if (myrank .eq. 0) &
+!           open (unit=10,file=rfile,form='unformatted')
+          i=200+myrank
+          open(i,file=rfile,form='unformatted')
+!jwhwu 202004 avoid undefined values.
+          write(i) land
+          write(i) ocean
+          write(i) ice
+          write(i) alb
+          write(i) z0
+          write(i) tgclim
+          write(i) gwclim
+          write(i) sgeo
+          write(i) canopy
+          write(i) ustar
+          write(i) tstar
+          write(i) qstar
+          write(i) raincu
+          write(i) rainlp
+          write(i) totalp
+          write(i) curate
+          write(i) plcl
+          write(i) cumtop
+          write(i) snr
+          write(i) sncover
+          write(i) sndepth
+          write(i) tg
+          write(i) gwr
+          write(i) gwet
+          write(i) cice
+          write(i) xtice
+          write(i) zice
+          write(i) fpsp
+          write(i) fpsp1
+!
+          write(i) hflux
+          write(i) qflux
+          write(i) ss
+          write(i) rs
+          write(i) asol
+          write(i) olr
+          write(i) sld
+          write(i) rld
+          write(i) asold
+!jwhwu 202003
+          write(i) sfemis
+          write(i) sfalb
+          write(i) std
+!jwhwu
+          write(i) ctot
+          write(i) clds
+          write(i) pdiff
+          write(i) tsave
+!jwhwu 201702 | add
+          write(i) tsflw
+!jwhwu 201702 | add
+          write(i) cosz
+          write(i) slag,sdec,cdec,solcon,solhr,rsolhr, &
+! overcome round off problem in restart
+               tau,hours,itimestep,xy
 
-!!          allocate (work_io((( (7+2*ncld)*2*lev+8)*jtrun*jtmax+my*lev)*nsize))
- 
-!!          call gather_spec(work_io,vornow,divnow,temnow,qnow,plnow,    &
-!!             vorold,divold,temold,qold,plold,dsqgeo,spgeo,trefs,       &
-!!             lev,ncld,jtrun,jtmax,my,nsize)
+          write(i) o3l
+          write(i) ftp
+          write(i) fqp
+          write(i) ftp1
+          write(i) fqp1
+!jwhwu 201702 ! add
+          write(i) asl
+          write(i) atl
+          write(i) dtrad
+!jwhwu 201910 ! add
+          write(i) deltaq
+          write(i) cnvwr
+          write(i) cnvcr
+!jwhwu 202208 ! add
+          write(i) dtcup
+          write(i) ducup
+          write(i) dvcup
+          write(i) dtshl
+          write(i) dushl
+          write(i) dvshl
+          write(i) dtlsp
+          write(i) hfiltx
+          write(i) alphax
+          write(i) pdryi
 !
-!  add if check to let restart output performed every 24h
-!
-!          if( mod(float(itau),24.) .lt. 0.01 ) then
-!            if(myrank .eq. 0) then
-!              open (unit=7,file=rfile,form='unformatted')
-!cc            write (7) work_io
-!cc            call flush(7)
-!              close (7)
-!            endif
-!          endif
-!
-!!          deallocate (work_io)
-          rfile = phyout(1:lphy)//ctau
-          allocate (tm1(nx,lev,my) ,tm2(nx,lev,my) ,tm3(nx,lev,my) ,tm4(nx,lev,my))
-          allocate (tmc1(nx,lev,my) ,tmc2(nx,lev,my) ,tmc3(nx,lev,my) ,tmc4(nx,lev,my))
-          allocate (tmc5(nx,lev,my) ,tmc6(nx,lev,my))
-          allocate (temp1(nx,lev,my) ,temp2(nx,lev,my) ,temp3(nx,lev,my))
-!
-!          call unify_grid                                                  &
-!              ( snr,gwr,tg,tm1,tm2,ss,rs,tm3,tm4,ustar,tstar,qstar         &
-!              , hflux,qflux,raincu,rainlp,totalp,curate,plcl,cumtop        &
-!              , tgclim,gwet,z0,alb,land,ice,ocean,gwclim,acld              &
-!              , tmc1,tmc2,tmc3,tmc4,tmc5,tmc6,fpsp,ftp,fqp,fpsp1,ftp1,fqp1 &
-!              , e,eps,o3l,dtrad,pt,ptend,ugws,vgws,nx,my,my_max,lev        &
-!              , smc,slc,stc,canopy,sigmaf,istyp,ivegtyp,km_soil,temp1      &
-!              , temp2,temp3,rld,zice,asl,atl)
-!
-!-------------------------------------------------------------------
-         allocate (tmr1(nx,lev+1,my) ,tmr2(nx,lev+1,my) ,tmr3(nx,lev+1,my))
-         allocate (tmr4(nx,lev+1,my) ,tmr5(nx,lev+1,my) ,tmr6(nx,lev+1,my))
-         allocate (tmr7(nx,lev+1,my) ,tmr8(nx,lev+1,my))
-         allocate (tms1(nx,lev,my) ,tms2(nx,lev,my) ,tms3(nx,lev,my) ,tms4(nx,lev,my))
-!-------------------------------------------------------------------
-!         call unify_gridr                                                 &
-!          ( tmr1,tmr2,tmr3,tmr4,tmr5,tmr6,tmr7,tmr8,tms1,tms2,tms3,tms4   &
-!          , fusl,fdsl,fuir,fdir,fuslr,fdslr,fuirr,fdirr,clds,sd           &
-!          , asl_clr,atl_clr,asol,olr,sld                                  &
-!          , asol_clr,olr_clr,rld_clr,sld_clr,ss_clr,rs_clr                &
-!          , nx,my,my_max,lev)
-!-------------------------------------------------------------------
-!
-!          if( mod(float(itau),24.) .lt. 0.01 ) then
-!            if(myrank .eq. 0) then
-!              open (unit=10,file=rfile,form='unformatted')
-!cc           write(10) snr,gwr,tg,tm1,tm2,ss,rs,tm3,tm4,ustar,tstar,qstar
-!cc  1                , hflux,qflux,raincu,rainlp,totalp,curate,plcl,cumtop
-!cc  2                , tgclim,gwet,z0,alb,land,ice,ocean,gwclim,acld
-!cc  3                , temp1,temp2,canopy,sigmaf,istyp,ivegtyp,rld
-!hmhj3                , tmc1,tmc2,fpsp
-!cc           call flush(10)
-!              close (10)
-!            endif
-!          endif
-!
-          deallocate (tm1  ,tm2  ,tm3  ,tm4 )
-          deallocate (tmc1 ,tmc2 ,tmc3 ,tmc4,tmc5,tmc6)
-          deallocate (temp1,temp2,temp3 )
-!---------------------------------------------------------------------
-          deallocate (tmr1 ,tmr2 ,tmr3 ,tmr4, tmr5 ,tmr6,tmr7 ,tmr8)
-          deallocate (tms1 ,tms2 ,tms3 ,tms4)
-!---------------------------------------------------------------------
-!
+          write(i) qt
+!         write(i) qp  !  not need
+          write(i) smc
+          write(i) stc
+          write(i) slc
+          close(i)
+          endif ! end of ( mod(float(itau),float(itauezz)) .lt. 0.01 )
           if(do_sit) then
             if(myrank .eq. 0) print *, 'ready rerun_sitgrid1'
               call rerun_sitgrid1(itau)
@@ -1718,7 +1641,7 @@
 !jh        if( histim ) then 
 #ifndef NO_OUT
         call outsigs ( itau,nx,my,my_max,lev,ncld        &
-                     , idtg,ifilout,ptop,rad,grav        &
+                     , idtg,ptop,rad,grav                &
                      , cp,cosl,pt,sgeo,snr,gwr,tg,pk,pk2 &
                      , ut,vt,tt,qt,phi,km_soil,smc       &
                      , slc,stc,canopy,zice,ggdef,gmdef )
@@ -1731,7 +1654,7 @@
       if (myrank .eq. 0) print *,'outsigr start !!!'
 #ifndef NO_OUT
       call outsigr ( itau,nx,my,my_max,lev                                     &
-                   , idtg,ifilout                                              &
+                   , idtg                                                      &
                    , fusl,fdsl,fuir,fdir                                       &
                    , fuslr,fdslr,fuirr,fdirr                                   &
                    , asl,atl,asl_clr,atl_clr                                   &
@@ -1775,10 +1698,10 @@
        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,vornow,cc,1,nsizey)
        call ujoinsr(cc,rvor,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
         call  outflds( itau,nx,my,my_max,lev,ncld                              &
-                    , lmax,numout,idtg,ifilout,outdir                          &
+                    , lmax,numout,idtg,outdir                                  &
                     , ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo                  &
                     , ptend,pt,plt,pk,pk2,phi,ut,vt,vvel                       &
-                    , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr              &
+                    , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                &
                     , raintot,raincu,rainlp,asol,olr,ss,rs,alb,gwclim          &
                     , acld,cosl,drag,ugws,vgws,t2,q2,rh2,rh10,u10,v10,gfx,rld,sld &
 !byl                    , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500 &
@@ -1847,7 +1770,7 @@
         if ( itau ==  6  ) then
 #ifndef NO_OUT
           if (myrank .eq. 0) print *,'output FV3 data !!!'
-          call outflds_fv3(nint(tau),nx,my,my_max,idtg,ggdef,ifilout             &
+          call outflds_fv3(nint(tau),nx,my,my_max,idtg,ggdef                     &
                             ,q2,fm,fh,fm10,fh2,srflag,ustar)
 #endif
         endif !(abs(tau+0.00001-6.) .lt. 0.01)
@@ -1862,7 +1785,7 @@
         if( itau .le. nint(domfc) .and. mod( itau , 1 ) == 0  )then
           if(myrank .eq. 0) print *,'out1 at tau=',itau
 #ifndef NO_OUT
-          call out2d_mfc(nx,lev,my,my_max,ifilout,itau,idtg         &
+          call out2d_mfc(nx,lev,my,my_max,itau,idtg                 &
                       ,raincu1,rainlp1,raintot,glob,t2,q2,rh2,rh10  &
                       ,u10,v10,tmax,tmin,rld,sld,ctot,pt,ggdef)
 #endif
@@ -1879,7 +1802,7 @@
 !        if(out_hp)then
 !           if (mod(tau+0.00001, 3.) .lt. 0.01) then
 #ifndef NO_OUT
-          call  outflds_hp(nint(tau),nx,my,my_max,idtg,ifilout                   &
+          call  outflds_hp(nint(tau),nx,my,my_max,idtg                           &
                           ,raincu3,rainlp3,ggdef)
 #endif
           raincu3=0.
@@ -1894,9 +1817,8 @@
 !          if (mod(tau+0.00001, otgreen) .lt. 0.01) then
 #ifndef NO_OUT
             call  outflds_green(nint(tau),nx,my,my_max,lev,ncld                &
-                          , idtg,ifilout,cp,rgas,grav,t2,u10,v10,ss,pk         &
-                          , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6  &
-                          , ggdef)
+                          , idtg,cp,rgas,grav,t2,u10,v10,ss,pk                 &
+                          , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6)
 #endif
 !           if (mod(tau+0.00001, 6. ) .lt. 0.01) then
             if ( mod( itau , 6 ) == 0 ) then
@@ -1920,10 +1842,10 @@
 !         call mpe_unify(rain24,nx,my,2,mpe_double)
 #ifndef NO_OUT
           call out24(nx,my,my_max,hf24,qf24,ss24,rs24,asol24,olr24,rain24,rainlp24,dt24 &
-                  ,ifilout,glob,itau,idtg,ggdef,flash24)
+                  ,glob,itau,idtg,ggdef,flash24)
 #endif
           if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
-            call outtseadiffFCT24(nx,my,my_max,dt24,ifilout,itau,idtg,ggdef)
+            call outtseadiffFCT24(nx,my,my_max,dt24,itau,idtg,ggdef)
           endif
 
           if(do_sit)then
@@ -1933,14 +1855,14 @@
 !              if( dtaup .lt. dtx_tau ) then
                if(  mod( itau , NINT(outsitmean) ) == 0  )then 
                  if(myrank .eq. 0) print *,'outsitmean at tau=',itau
-                 call writesitmean(nx,my,my_max,lkvl,ifilout,itau,idtg,ggdef)
+                 call writesitmean(nx,my,my_max,lkvl,itau,idtg,ggdef)
                endif
             endif
             if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
-              call outtseadiffSIT24(nx,my,my_max,ratioSIT,dtsit24,ifilout,itau,idtg,ggdef)
+              call outtseadiffSIT24(nx,my,my_max,ratioSIT,dtsit24,itau,idtg,ggdef)
             endif
             if(loutsit24)then
-              call outsit24(nx,my,my_max,lkvl,ifilout,itau,idtg,ggdef)
+              call outsit24(nx,my,my_max,lkvl,itau,idtg,ggdef)
             endif
             call dtgfix12(idtg,idtg_temp,itau-1)
             ibeforeyymm=idtg_temp/1000000
@@ -1952,7 +1874,7 @@
                      ,'lnewyymm=',lnewyymm
             endif
             if( lnewyymm ) then
-              call outsitmon(nx,my,my_max,lkvl,ifilout,itau,idtg,ggdef)
+              call outsitmon(nx,my,my_max,lkvl,itau,idtg,ggdef)
             endif
           endif ! (do_sit)
 !

@@ -1,5 +1,5 @@
-      subroutine sigful(nx,my,my_max,lev,ncld,lmax,jtrun,jtmax,ifilin     &
-              , ifilout,cstar,ktrop,idtg,ptop,taux,capa,grav,rgas,rad,cp  &
+      subroutine sigful(nx,my,my_max,lev,ncld,lmax,jtrun,jtmax            &
+              , cstar,ktrop,idtg,ptop,taux,capa,grav,rgas,rad,cp          &
               , weight,poly,sigma,cosl,phi,tt,ut,vt,sht,o3l,pt,sgeo,pdiff &
 !             , weight,poly,sigma,cosl,phi,tt,ut,vt,sht,pt,sgeo,pdiff
               , tsave,t1000,plt,pk,pk2,taup,ggdef,gmdef)
@@ -25,7 +25,7 @@
 !  pk: 3-d full level exner func on gaussian grid and sigma coord.
 !  pk2: 3-d half level exner func on gaussian grid and sigma coord.
 !
-      use const, only : RTYPE,kflag,qmin
+      use const, only : RTYPE,kflag,qmin,ifilin,keyi,ihdgi
       use mpe
       use rank
       use index
@@ -69,11 +69,8 @@
 !
       real(kind=RTYPE) plnow(jtrun,jtmax,2),dummy,ww1(nx,my_max)
 !
-      character*26 lrec
       character*6 typ
-      character*80 ifilin,ifilout
       character*3 cspec(6)
-      character*34 key
       integer      inistat
 !dms34
       integer*8 idtg,idtg2
@@ -129,8 +126,8 @@
 !
 !  read in pt
 !
-      call syslbl ('b00010',idtg,itaux,ggdef,lrec)
-      call dmsread (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+      call syslbl_r ('b00010',idtg,itaux,ggdef)
+      call dmsread (nx,my,lncrec,'H',ifilin,hld1,istat)
 !byl      if( lreduce.eq.1 )call reducepick (hld1,nxdef,nx,my)
       do jj = 1, jlistnum
         j=jlist1(jj)
@@ -158,8 +155,8 @@
       else
         write (typ, '("n",i2.2,"100")' ) mod(KL,100)
       endif
-      call syslbl (typ,idtg,itaux,gmdef,lrec)
-      call dmsread_split(nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+      call syslbl_r (typ,idtg,itaux,gmdef)
+      call dmsread_split(nx,my,lncrec,'H',ifilin,hld1,istat)
       do 71 jj = 1, jlistnum
        j=jlist1(jj)
        nxj=nxdef(j)
@@ -180,8 +177,8 @@
       else
         write (typ, '("n",i2.2,"500")' ) mod(KL,100)
       endif
-      call syslbl (typ,idtg,itaux,gmdef,lrec)
-      call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+      call syslbl_r (typ,idtg,itaux,gmdef)
+      call dmsread_split (nx,my,lncrec,'H',ifilin,hld1,istat)
       do 73 jj = 1, jlistnum
        j=jlist1(jj)
        nxj=nxdef(j)
@@ -205,9 +202,13 @@
               else
                 write (typ, '("n",i2.2,a3)' ) mod(KL,100),cspec(ntrac)
               endif
-              call syslbl (typ,idtg2,itaup,gmdef,lrec)
-              write(key,'(a26,a1,i7.7)') lrec,'H',lncrec
-              call dmschkr (ifilin,key//char(0),istat)
+              call syslbl_r (typ,idtg2,itaup,gmdef)
+#ifdef I38K
+              write(keyi,'(a28,a1,i9.9)') ihdgi,'H',lncrec
+#else
+              write(keyi,'(a26,a1,i7.7)') ihdgi,'H',lncrec
+#endif
+              call dmschkr (ifilin,keyi//char(0),istat)
               inistat=inistat+istat
             enddo
           endif
@@ -232,8 +233,8 @@
             else
               write (typ, '("n",i2.2,"550")' ) mod(KL,100)
             endif
-            call syslbl (typ,idtg2,itaup,gmdef,lrec)
-            call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+            call syslbl_r (typ,idtg2,itaup,gmdef)
+            call dmsread_split (nx,my,lncrec,'H',ifilin,hld1,istat)
 !
             do jj = 1, jlistnum
               j=jlist1(jj)
@@ -261,8 +262,8 @@
             else
               write (typ, '("n",i2.2,a3)' ) mod(KL,100),cspec(ntrac)    ! cloud liquid water content
             endif
-              call syslbl (typ,idtg2,itaup,gmdef,lrec)
-              call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+              call syslbl_r (typ,idtg2,itaup,gmdef)
+              call dmsread_split (nx,my,lncrec,'H',ifilin,hld1,istat)
 !
               do jj = 1, jlistnum
                 j=jlist1(jj)
@@ -288,8 +289,8 @@
         else
           write (typ, '("n",i2.2,"560")' ) mod(KL,100)
         endif
-        call syslbl (typ,idtg,itaux,gmdef,lrec)
-        call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+        call syslbl_r (typ,idtg,itaux,gmdef)
+        call dmsread_split (nx,my,lncrec,'H',ifilin,hld1,istat)
         do jj = 1, jlistnum
           j=jlist1(jj)
           nxj=nxdef(j)
@@ -611,8 +612,8 @@
         else
           write (typ, '("n",i2.2,"200")' ) mod(KL,100)
         endif
-      call syslbl (typ,idtg,itaux,gmdef,lrec)
-      call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+      call syslbl_r (typ,idtg,itaux,gmdef)
+      call dmsread_split (nx,my,lncrec,'H',ifilin,hld1,istat)
       do 320 jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef(j)
@@ -631,8 +632,8 @@
         else
           write (typ, '("n",i2.2,"210")' ) mod(KL,100)
         endif
-      call syslbl (typ,idtg,itaux,gmdef,lrec)
-      call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+      call syslbl_r (typ,idtg,itaux,gmdef)
+      call dmsread_split (nx,my,lncrec,'H',ifilin,hld1,istat)
 !byl      if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
       do 321 jj = 1, jlistnum
         j=jlist1(jj)

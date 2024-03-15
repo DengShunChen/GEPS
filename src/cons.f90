@@ -75,7 +75,7 @@
                       , sashal,crick_proof,ccnorm,norad_precip,me,doo3l &
                       , ioutsigr,domfc,out_green,isot,ivegsrc           &
                       , otgreen,out_hp,dosppt,dospptout, doshum, dossst &
-                      , doskeb, doskebout, ndsladvh2,hord               &
+                      , doskeb, doskebout,  ndsladvh2,hord              &
                       , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
                       , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud,updatetg       &
 ! output data for RSM (Also, RSM compiling flag is necessary)
@@ -84,12 +84,12 @@
                       , cmbk,cgwd,nmmiph,spl1,spl2                      &
                       , weightSIT,dSITdt_intv,mwhd,doclx,doslavepp      &
                       , outdms,outgrb2,alpha,two_loop,ttl,tfilt,factop  &
-                      , mass_dp,dpprt,itter,vd
+                      , mass_dp,dpprt,itter,vd,dorst
 !                       
       real    si(lev+1)
       logical flag
       character*10 fulldtg,Wfulldtg
-      character*80 filist
+      character*255 filist
       character cdtg*12
       character*80 pathname,logicname,truefile
       character*64 type_r,type_w,argument
@@ -246,7 +246,7 @@
         taui= float(itau)
         restrt=.true.
         if(myrank .eq. 0) print*,' restarting at tau=',itau
-        hours = hours+taui
+        hours = hours+taui-(dt/3600.)  ! for restart
         julian= julian+hours/24.0+0.001
         hours = mod(hours,24.)
       endif
@@ -443,8 +443,17 @@
       if( myrank .eq. 0 ) then
        type_r="RORDER"//char(0)
        type_w="WORDER"//char(0)
+#ifdef I38K 
+       argument="38"//char(0)
+#else
        argument="34"//char(0)
+#endif
        call dmscfg(type_r,argument,istat_r)
+#ifdef O38K 
+       argument="38"//char(0)
+#else
+       argument="34"//char(0)
+#endif
        call dmscfg(type_w,argument,istat_w)
        istat = abs(istat_r) + abs(istat_w)
       endif
@@ -466,7 +475,8 @@
 !  open the input file.  this too will be replaced by the appropriate
 !  dbms operation when available
 !
-      if(col_rank .eq. 0) call dmsopn(ifilin,"w",istat2)
+!      if(col_rank .eq. 0) call dmsopn(ifilin,"w",istat2)
+      if(col_rank .eq. 0) call dmsopn(ifilin,"r",istat2)
 !
       if(myrank .lt. lev) call dmsopn(ifilout,"w",istat3)
 !
@@ -478,7 +488,7 @@
 ! open ncep data dms
 !
        istat4=0; istat5=0; istat6=0; istat7=0
-       if(ldailyFCTsst) then
+        if(ldailyFCTsst) then
           call dmsopn(ifilin_sst,"r",istat4)
           istat = istat + abs(istat4)
         endif
