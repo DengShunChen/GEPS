@@ -103,3 +103,10 @@ stg-test:
     - master
   script:
     - echo "stg testing"
+
+merge_request:
+  only:
+    - merge_requests
+  script:
+    - ./compile fx1000
+    - ./compile a100
