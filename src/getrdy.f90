@@ -1353,11 +1353,22 @@
 #else
         call wrte_idate(idtgrsm)
 #endif
+#ifdef RSM_sig
+! for sigma coordinate
+        call rsmout(idtg,0,nx,my,my_max,lev,ncld      &
+                , ptop,cp,rgas,grav,sgeo,pdiff        &
+                , t1000,pt,plt,pk,pk2,phi,ut,vt       &
+                , tt,qt,tg,snr,cosl                   &
+                , km_soil,smc,stc                     &
+                , ice,land,ocean)
+#else
+! for sigma-P coordinate
         call rsmout_sigp( itaui,nx,my,my_max,lev,ncld        &
                      , idtg,ptop,rad,grav,cosl           &
                      , pt,sgeo,snr,gwr,tg,pk             &
                      , ut,vt,tt,qt,km_soil,smc,stc       &
                      , ice,land,ocean,xlon,xlat)
+#endif
        endif
 #endif
 !#ifdef RSM

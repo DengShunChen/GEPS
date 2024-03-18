@@ -923,7 +923,7 @@
 #ifdef CWB_MPMD
       if(myrank.eq.0) then
       print*,'before into send_data in rsmout.f90'
-      call send_data(float(itau),nxs,mys,km,lpout,temp_gfs,spfh_gfs &
+      call send_data(float(itau),nxs,mys,km,lpout,ncld,temp_gfs,spfh_gfs &
      &              ,clwr_gfs,rain_gfs,qice_gfs,snow_gfs,grpl_gfs   &
      &              ,ozon_gfs,geop_gfs,u_gfs,v_gfs      &   
      &              ,tg_gfs,smc_gfs,snr_gfs,stc_gfs,ice_gfs     &
@@ -933,7 +933,7 @@
 #else
       if(myrank.eq.0) then
       print*,'before into wrte_data in rsmout.f90'
-      call wrte_data(idtg,float(itau),nxs,mys,km,lpout,temp_gfs,spfh_gfs &
+      call wrte_data(idtg,float(itau),nxs,mys,km,lpout,ncld,temp_gfs,spfh_gfs &
      &              ,clwr_gfs,rain_gfs,qice_gfs,snow_gfs,grpl_gfs   &
      &              ,ozon_gfs,geop_gfs,u_gfs,v_gfs      &   
      &              ,tg_gfs,smc_gfs,snr_gfs,stc_gfs,ice_gfs     &

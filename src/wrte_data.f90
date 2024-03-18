@@ -1,5 +1,5 @@
 #ifdef RSM
-      subroutine wrte_data(idtg,fhour,nx,my,lsoil,lev,temp_gfs,spfh_gfs   &
+      subroutine wrte_data(idtg,fhour,nx,my,lsoil,lev,ncld,temp_gfs,spfh_gfs   &
      &              ,clwr_gfs,rain_gfs,qice_gfs,snow_gfs,grpl_gfs    &
      &              ,ozon_gfs,geop_gfs,u_gfs,v_gfs    &
      &              ,tg_gfs,smc_gfs,snr_gfs,stc_gfs,cice_gfs   &
@@ -12,6 +12,7 @@
       integer(kind=8)  :: idtg
       integer nsig, kh, ndig
       integer lsoil
+      integer ncld
       real fhour
       character cfhour*16,cform*40,cidtg*12
 
@@ -35,7 +36,7 @@
         write(cidtg,'(I12.12)') idtg
 
         open(nsig,file='rsm_data_'//cidtg//'.f'//cfhour,status='unknown', &
-            form='unformatted',iostat=ios)
+            form='unformatted',convert='little_endian',iostat=ios)
 
         write(nsig) fhour
 
@@ -44,10 +45,12 @@
         write(nsig) spfh_gfs
 
         write(nsig) clwr_gfs
-!       write(nsig) rain_gfs
-!       write(nsig) qice_gfs
-!       write(nsig) snow_gfs
-!       write(nsig) grpl_gfs
+        if ( ncld .ge. 7 ) then
+          write(nsig) rain_gfs
+          write(nsig) qice_gfs
+          write(nsig) snow_gfs
+          write(nsig) grpl_gfs
+        endif
 
         write(nsig) ozon_gfs
 
