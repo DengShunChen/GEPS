@@ -2351,12 +2351,13 @@ CONTAINS
       LOGICAL, OPTIONAL, INTENT(IN) :: diagflag
       INTEGER, OPTIONAL, INTENT(IN) :: do_radar_ref
 !+---+-----------------------------------------------------------------+
-      integer, parameter :: reiflag = 1
+      integer, parameter :: reiflag = 2
       ! 1 : default
       ! 2 : Wyser 1998
       ! 3 : Fu 2007 (not yet)
       ! 4 : Heymsfild et al. 2014
       ! 5 : Dolinar et al. 2022 (not yet)
+      ! 6 : Mitchell et al. 2011
       real :: reimin, reimax
       real :: iwc_0, bw98
       real :: md22, bd22, sigma, cd22, xd22
@@ -4986,6 +4987,19 @@ CONTAINS
          refi(i,k,j) = 0.0
       endif
    endif
+
+   if ( reiflag .eq. 6 ) then
+      reimin = 0.0
+      ! Mitchell et al. 2011, equation 9
+      ! IWC in mg/m^3, T in oC, rei in micron
+      if ( qci(i,j,k) .ge. cimin ) then
+         refi(i,k,j) = 132.23 + 1.2433 * tairc(i,j) + &
+                       8.6629 * (6. + log10(rho(i,j,k) * qci(i,j,k)))
+         refi(i,k,j) = max (reimin, refi(i,k,j))
+      else
+         refi(i,k,j) = 0.0
+      endif
+    endif
 !JJS 20140305 ^^^^^  Calculate effective radius for all cloud species
 
  2000 continue
@@ -5539,11 +5553,12 @@ CONTAINS
       real, intent(in) :: tz    !air temperature (K)
       real, intent(out):: vti   !terminal velocity (m/s)
 
-      integer, parameter :: vtiflag = 3
+      integer, parameter :: vtiflag = 4
       ! 1 : Starr and Cox (1985)        , igce = 1
       ! 2 : Heymsfield and Donner (1990), igce!= 1
       ! 3 : Hong et al. (2004)          , igce = 1 , improve = 3
       ! 4 : Deng and Mace (2008)
+      ! 5 : Mitchell et al. (2011)
 
       real, parameter :: vimax = 0.5     ! max fall speed for cloud ice (m/s)
       real, parameter :: vimin = 0.      ! min fall speed for cloud ice (m/s)
@@ -5610,14 +5625,16 @@ CONTAINS
             ! Deng and Mace 2008 :
             ! IWC in g/m^3 , tc in oC , and vti in cm/s
             tc = tz - t0
-            ! old code from GFDL MP :
-!            vti = (3. + log10(qiz * rhoz)) * &
-!                  (tc * (aa * tc + bb) + cc) + dd * tc + ee
-!            vti = exp(log(10.) * vti)
-            ! new code from paper :
             vti = (3. + log10(qiz * rhoz)) * &
-                  (tc * (aa * tc + bb) + cc) * log(10.) + dd * tc + ee
-            vti = exp( vti )
+                  (tc * (aa * tc + bb) + cc) + dd * tc + ee
+            vti = exp(log(10.) * vti)
+            vti = vti * 0.01    ! convert back to MKS
+
+         elseif ( vtiflag .eq. 5 ) then
+            ! Mitchell et al. 2011 , equation 10 :
+            ! IWC in mg/m^3 , T in oC , and vti in cm/s
+            vti = 82.082 + 1.0121 * tc + &
+                  6.6303 * (6. + log10(qiz * rhoz))
             vti = vti * 0.01    ! convert back to MKS
 
          endif
