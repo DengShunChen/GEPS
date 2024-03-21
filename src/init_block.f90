@@ -153,7 +153,7 @@
       cmbk = 1.0
       cgwd = 1.2
 !-for Cloud Micro Physics
-      nmmiph=2
+      nmmiph=12
       ntinc=7   ! tracer index for ice number concentration
       ntrnc=8   ! tracer index for rain number concentration
 !     ntlnc=9   ! tracer index for liquid number concentration
