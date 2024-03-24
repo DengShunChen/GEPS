@@ -103,7 +103,7 @@ subroutine transr_gpu(jtrun, jtmax, nx, my, my_max, lev, poly, wss &
          l = jtrun
          !$acc parallel loop async(async_id)
          do k = 1, lev2*num
-            ws2(k, 1, 1, l) = -wss(k, 1, 1, l, m)
+            ws2(k, 1, 1, l) = wss(k, 1, 1, l, m)
          end do
       end if
       !$acc kernels async(async_id)
