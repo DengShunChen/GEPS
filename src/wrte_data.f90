@@ -36,7 +36,7 @@
         write(cidtg,'(I12.12)') idtg
 
         open(nsig,file='rsm_data_'//cidtg//'.f'//cfhour,status='unknown', &
-            form='unformatted',convert='little_endian',iostat=ios)
+            form='unformatted',iostat=ios)
 
         write(nsig) fhour
 

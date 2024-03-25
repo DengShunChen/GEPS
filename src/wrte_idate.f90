@@ -10,7 +10,7 @@
         nsig=51
         write(cidtg,'(I10.10)') idate
       open(nsig,file='rsm_idate_'//cidtg,status='unknown', &
-          form='unformatted',convert='little_endian',iostat=ios)
+          form='unformatted',iostat=ios)
       write(nsig) idate
         print*,'idate in wrte_idate =',idate
       close(nsig)
