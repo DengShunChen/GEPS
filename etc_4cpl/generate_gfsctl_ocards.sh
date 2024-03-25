@@ -45,7 +45,7 @@ levs2='  10
 
 ft_ini=0
 #ft_end=8784
-ft_end=${FCSTHR}
+ft_end=288 #${FCSTHR}
 #ft_end=1095
 ft_gap=6
 

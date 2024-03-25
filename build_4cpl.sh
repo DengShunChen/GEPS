@@ -60,7 +60,7 @@ module unuse ${MDIR}/modulefiles
 
 # compile
 cd src_4cpl/
-#make clean
+make clean
 make -j24
 
 if [[ $? -ne 0 ]];then exit ;fi

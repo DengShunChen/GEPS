@@ -1,0 +1,22 @@
+[![pipeline status](http://git.rdc.cwb/tco/tco639l72/badges/development/pipeline.svg)](http://git.rdc.cwb/tco/tco639l72/-/commits/development)
+
+# GFS TCO #
+
+build.sh        AMIP
+build_4cpl.sh   GFS-TIMCOM-RSM
+
+src             AMIP
+src_4cpl        GFS-TIMCOM-RSM
+### Build ###
+
+./build.sh fx1000       , get exe
+./build_4cpl.sh fx1000  , get lib
+
+### Run ###
+AMIP:
+cd job
+pjsub submit_job_fx1000.sh
+
+GFS-TIMCOM-RSM:
+Not in here
+
