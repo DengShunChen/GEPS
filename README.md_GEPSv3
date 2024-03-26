@@ -2,15 +2,17 @@
 
 # GFS TCO #
 
-build.sh        AMIP
-build_4cpl.sh   GFS-TIMCOM-RSM
+build.sh        
+	*module load modulefile.tcogfs.${MACHINE}_AMIP  ->AMIP
+	*module load modulefile.tcogfs.${MACHINE}_4cpl  ->4CPL
 
-src             AMIP
-src_4cpl        GFS-TIMCOM-RSM
+src/Makefile             
+	*TIMCOMCPL = FALSE ->AMIP
+	*TIMCOMCPL = TRUE  ->4CPL
+	
 ### Build ###
 
-./build.sh fx1000       , get exe
-./build_4cpl.sh fx1000  , get lib
+./build.sh fx1000       , get AMIP exe or 4CPL lib
 
 ### Run ###
 AMIP:

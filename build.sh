@@ -53,8 +53,7 @@ export MDIR=$(pwd)
 module purge
 module use  ${MDIR}/modulefiles
 module av
-module show modulefile.tcogfs.${MACHINE}_2cpl
-module load modulefile.tcogfs.${MACHINE}_2cpl
+module load modulefile.tcogfs.${MACHINE}_4cpl
 module list
 module unuse ${MDIR}/modulefiles
 
