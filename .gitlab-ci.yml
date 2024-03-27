@@ -8,14 +8,13 @@ arm-build:
   only:
     - development
     - cicd
-    - hotfix
   script:
-    - echo "dev build"
+    - echo "arm build"
     - hostname ; pwd
     - ./compile fx1000
   artifacts:
     paths:
-      - build/bin/tcogfs.x
+      - build_fx1000/bin/tcogfs.x
     expire_in: 1 day
   tags:
     - h6ln19
@@ -26,7 +25,7 @@ arm-deploy:
     - development
     - cicd
   script:
-    - echo "dev deploy"
+    - echo "arm deploy"
   tags:
     - h6ln19
 
@@ -36,7 +35,7 @@ arm-test:
     - development
     - cicd
   script:
-    - echo "dev testing"
+    - echo "arm testing"
     - cd job
     - chmod 755 ./run_rt.sh
     - ./run_rt.sh
@@ -46,28 +45,41 @@ arm-test:
 gpu-build:
   stage: build
   only:
-    - master
+    - development
+    - cicd
   script:
-    - echo "dev build"
+    - echo "gpu build"
     - hostname ; pwd
     - ./compile a100
+  artifacts:
+    paths:
+      - build_a100/bin/tcogfs.x
+    expire_in: 1 day
+  tags:
+    - h6ln19
 
 gpu-deploy:
   stage: deploy
   only:
-    - master
+    - development
+    - cicd
   script:
-    - echo "dev deploy"
+    - echo "gpu deploy"
+  tags:
+    - h6ln19
 
 gpu-test:
   stage: test
   only:
-    - master
+    - development
+    - cicd
   script:
-    - echo "dev testing"
+    - echo "gpu testing"
     - cd job
-    - JID=$(pjsub -z jid TCo383L72_IC_sample_a100)
-    - /usr/bin/pjwait ${JID}
+    - chmod 755 ./run_rt.sh 
+    - ./run_rt.sh a100
+  tags:
+    - h6ln19
 
 stg-build:
   stage: build
@@ -91,3 +103,10 @@ stg-test:
     - master
   script:
     - echo "stg testing"
+
+merge_request:
+  only:
+    - merge_requests
+  script:
+    - ./compile fx1000
+    - ./compile a100

@@ -1,20 +1,30 @@
-#!/bin/ksh
+MDIR=$PWD
+
+machine=a100
+TERR=GMTED30
+JCAP=383
+
+NPEX=1
+NPEY=8
+
+MPI=8
+OMP=1
+
+. /usr/share/Modules/init/bash
+
+module purge
+module use ${MDIR}/modulefiles
+module load modulefile.tcogfs.a100
+module unuse ${MDIR}/modulefiles
 
 #-- enviornment
  user=`whoami`
 # datamv='login11'
- if [ ${machine} = a100 ]; then
-         mach='x86_64'
- elif [ ${machine} = fx1000 ]; then
-         mach=${machine}
- fi
  dmsdb_home=$(cat ~/.dmsrc |xargs | cut -d' ' -f 2)
- DMSPATH=/package/${mach}/dms/dms.v4/bin
+ DMSPATH=/package/${machine}/dms/dms.v4/bin
  GFSDIR=$MDIR
  GFSFIX=$MDIR/fix
- GFSWRK=${GFSDIR}/work_${machine}
- rm -rf $GFSWRK
- mkdir -p $GFSWRK
+ GFSWRK=$MDIR/build/test
 
 #-- dms data
  JCAP=${JCAP:-639}
@@ -45,9 +55,6 @@
  idmsfile=${idmshead}${idmsbody}${idmstail}@${idmsdb}
  odmsfile=${odmshead}${odmsbody}${odmstail}@${odmsdb}
 
- ${DMSPATH}/rdmsdbcrt -p ufs $idmsdb
- ${DMSPATH}/rdmscrt $idmsfile
-
   export LNCP='ln -fs'
 
   # TCo IC data path
@@ -61,8 +68,6 @@
        ${LNCP} ${source}/*${dtg}* ${target}/${idmshead}${idmsbody}${idmstail}
   echo ${LNCP} ${source}/*${fgdtg}* ${target}/${idmshead}${idmsbody}${idmstail}
        ${LNCP} ${source}/*${fgdtg}* ${target}/${idmshead}${idmsbody}${idmstail}
-
- ${DMSPATH}/rdmsdbcrt -p ufs bckdms
 
  export source="/data/common/gfs/dms_data/bckdms.ufs"
  export target="${dmsdb_home}/bckdms.ufs"
@@ -102,9 +107,6 @@ export ANADMS=${idmsfile}
 export FCSTDMS=${odmsfile}
 export BCKOPS=BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
 
-${DMSPATH}/rdmspurge -f FCSTDMS
-${DMSPATH}/rdmscrt -l34 FCSTDMS
-
 export FLIB_CNTL_BARRIER_ERR=FALSE
 export O3FORC=${O3FORC:-${FIXDIR}/global_o3prdlos.f77}
 export O3CLIM=${O3CLIM:-${FIXDIR}/global_o3clim.txt}
@@ -121,9 +123,6 @@ ln -fs $EMMISSIVITY_FILE sfc_emissivity_idx.txt
 
 ln -fs $FIXDIR/* .
 cp $NWPETC/gfsctl $GFSWRK/gfsctl
-if [ $GITLAB_CICD = 1 ] ; then
-  echo -e "00\n06" > $GFSWRK/gfsctl
-fi
 cp $NWPETC/ocards $GFSWRK/ocards
 cp $NWPETC/namlsts $GFSWRK/namlsts
 
@@ -153,7 +152,7 @@ cat > ${GFSWRK}/namlsts << EOF
   dt=450.0,
   cstar=f, update=t, lsimpl=t,
   hfilt=1.,
-  ksgeo=2, yesdia=t,
+  ksgeo=2, yesdia=f,
   dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f, 
   dograv=true, docgrav=true,
   donnmi=true, 
@@ -211,15 +210,3 @@ cat > ${GFSWRK}/namlsts << EOF
  /
 
 EOF
-
- if [ $CMAKE_BUILD = 1 ] ; then
-	FCT_MODEL=$MDIR/build_${MACHINE}/bin/tcogfs.x
- else
-	FCT_MODEL=$MDIR/src/$EXEC
- fi
- /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} -Wl,-T
-
- if [ $? != 0 ] ; then
-  echo "error occured: fct model fail !!" ; exit 9
- fi
-
