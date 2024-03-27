@@ -1,4 +1,6 @@
 !#define SL_sedi
+!#define vti_xland
+!#define rei_xland
 !WRF:MODEL_LAYER:PHYSICS
 !
 
@@ -440,6 +442,7 @@ CONTAINS
                       snownc, snowncv, sr,                    &
                       graupelnc, graupelncv,                  &
                       preci3d, precs3d, precg3d, precr3d,     &
+                      xland,                                  &
                       ihail, ice2, improve,                   &
                       ims,ime, jms,jme, kms,kme,              & ! memory dims
                       its,ite, jts,jte, kts,kte               ) ! tile   dims
@@ -558,6 +561,7 @@ CONTAINS
                       snownc, snowncv, sr,                    &
                       graupelnc, graupelncv,                  &
                       preci3d, precs3d, precg3d, precr3d,     &
+                      xland,                                  &
                       ihail, ice2, improve,                   &
                       ims,ime, jms,jme, kms,kme,              & ! memory dims
                       its,ite, jts,jte, kts,kte               ) ! tile   dims
@@ -589,7 +593,7 @@ CONTAINS
 
 
   REAL,    DIMENSION( ims:ime , jms:jme ),                            &
-           INTENT(IN   )               :: topo   
+           INTENT(IN   )               :: topo, xland
 
   REAL,    DIMENSION( ims:ime , kms:kme , jms:jme ),                  &
            INTENT(OUT)                 :: preci3d, precs3d, precg3d, precr3d
@@ -749,7 +753,7 @@ CONTAINS
     do n = 1 , ntimes
        vtr(:) = 0.
        precip = 0.
-       call semi_sedi('qr',ihail,improve,1,kte,dzw,rhoz,qrz,tz,vtr,precip,dtcfl)
+       call semi_sedi('qr',ihail,improve,1,kte,dzw,rhoz,qrz,tz,xland(i,j),vtr,precip,dtcfl)
        pptrain = pptrain + precip
     enddo
 
@@ -838,7 +842,7 @@ CONTAINS
     do n = 1 , ntimes
        vts(:) = 0.
        precip = 0.
-       call semi_sedi('qs',ihail,improve,1,kte,dzw,rhoz,qsz,tz,vts,precip,dtcfl)
+       call semi_sedi('qs',ihail,improve,1,kte,dzw,rhoz,qsz,tz,xland(i,j),vts,precip,dtcfl)
        pptsnow = pptsnow + precip
     enddo
 
@@ -937,7 +941,7 @@ CONTAINS
     do n = 1 , ntimes
        vtg(:) = 0.
        precip = 0.
-       call semi_sedi('qg',ihail,improve,1,kte,dzw,rhoz,qgz,tz,vtg,precip,dtcfl)
+       call semi_sedi('qg',ihail,improve,1,kte,dzw,rhoz,qgz,tz,xland(i,j),vtg,precip,dtcfl)
        pptgraul = pptgraul + precip
     enddo
 
@@ -1026,7 +1030,7 @@ CONTAINS
     do n = 1 , ntimes
        vti(:) = 0.
        precip = 0.
-       call semi_sedi('qi',ihail,improve,0,kte,dzw,rhoz,qiz,tz,vti,precip,dtcfl)
+       call semi_sedi('qi',ihail,improve,0,kte,dzw,rhoz,qiz,tz,xland(i,j),vti,precip,dtcfl)
        pptice = pptice + precip
     enddo
 
@@ -1052,7 +1056,7 @@ CONTAINS
             min_q=min0(min_q,k)
             max_q=max0(max_q,k)
 
-            call vti_mks(improve,rhoz(k),tz(k),qiz(k),vti(k))
+            call vti_mks(improve,rhoz(k),tz(k),qiz(k),xland(i,j),vti(k))
 
             ! EMK:  Avoid division by zero
             if ((vti(k) .gt. 1.0e-20)) then
@@ -2961,7 +2965,7 @@ CONTAINS
             endif
 
 !            call vqrqi(2,improve,r00,fv0,qi(i,j),vi(i,j))
-            call vti_mks(improve,rho_mks(i,k,j),tair(i,j),qi(i,j),vi(i,j))  !in MKS
+            call vti_mks(improve,rho_mks(i,k,j),tair(i,j),qi(i,j),xland(i,j),vi(i,j))  !in MKS
             vi(i,j) = vi(i,j) * 100.  !in CGS
 
             if (qr(i,j) .le. crmin) vr(i,j)=0.0
@@ -4919,6 +4923,11 @@ CONTAINS
                          ! IWC_0 (50 g/m^-3) must be converted to g/cm^3
          bw98 = - 2. + 1.e-3 * log10(rho(i,j,k)*qci(i,j,k)/iwc_0)*max(0.0,-tairc(i,j))**1.5
          refi(i,k,j) = 377.4 + bw98 * (203.3 + bw98 * (37.91 + 2.3696 * bw98))
+#ifdef rei_xland
+         if ( xland(i,j) .eq. 1.0 ) then
+           refi(i,k,j) = 0.8 * refi(i,k,j)
+         endif
+#endif
          refi(i,k,j) = max (reimin, refi(i,k,j))
       else
          refi(i,k,j) = 0.0
@@ -5545,12 +5554,13 @@ CONTAINS
    end function eff_rad
 
 !-------------------------------------------------------------------
-      subroutine vti_mks(improve,rhoz,tz,qiz,vti)
+      subroutine vti_mks(improve,rhoz,tz,qiz,xland,vti)
       implicit none
       integer, intent(in) :: improve
       real, intent(in) :: rhoz  !air density (kg/m^3)
       real, intent(in) :: qiz   !mixing ratio (kg/kg)
       real, intent(in) :: tz    !air temperature (K)
+      real, intent(in) :: xland !land-sea mask
       real, intent(out):: vti   !terminal velocity (m/s)
 
       integer, parameter :: vtiflag = 4
@@ -5639,6 +5649,11 @@ CONTAINS
 
          endif
 
+#ifdef vti_xland
+         if ( xland .eq. 1.0 ) then
+            vti = 0.7 * vti
+         endif
+#endif
          vti = min ( vimax , max ( vimin , vti ) )
       else
          vti = vimin
@@ -5827,7 +5842,7 @@ CONTAINS
 !-------------------------------------------------------------------
 
 !-------------------------------------------------------------------
-      SUBROUTINE semi_sedi(qvar,ihail,improve,iter,km,dzl,rho,qc,tz,ww,precip,dt)
+      SUBROUTINE semi_sedi(qvar,ihail,improve,iter,km,dzl,rho,qc,tz,xland,ww,precip,dt)
 !-------------------------------------------------------------------
 !
 ! This routine is a semi-Lagrangain forward advection for hydrometeors
@@ -5859,6 +5874,7 @@ CONTAINS
       integer, intent(in) :: ihail, improve, km, iter
       real, intent(in) ::  dt
       real, intent(in) :: dzl(km), rho(km), tz(km)
+      real, intent(in) :: xland
       real, intent(out) :: ww(km)
       real, intent(out) :: precip
       real, intent(inout) :: qc(km)
@@ -5884,7 +5900,7 @@ CONTAINS
         if ( qvar .eq. 'qr' ) call vtr_mks(rho(k),qc(k),ww(k))
         if ( qvar .eq. 'qs' ) call vts_mks(improve,rho(k),qc(k),tz(k),ww(k))
         if ( qvar .eq. 'qg' ) call vtg_mks(ihail,improve,rho(k),qc(k),tz(k),ww(k))
-        if ( qvar .eq. 'qi' ) call vti_mks(improve,rho(k),tz(k),qc(k),ww(k))
+        if ( qvar .eq. 'qi' ) call vti_mks(improve,rho(k),tz(k),qc(k),xland,ww(k))
       enddo
       do k = 1,km
         qq(k) = qc(k)*rho(k)
@@ -5964,7 +5980,7 @@ CONTAINS
           if ( qvar .eq. 'qr' ) call vtr_mks(rho(k),qc(k),wa(k))
           if ( qvar .eq. 'qs' ) call vts_mks(improve,rho(k),qc(k),tz(k),wa(k))
           if ( qvar .eq. 'qg' ) call vtg_mks(ihail,improve,rho(k),qc(k),tz(k),wa(k))
-          if ( qvar .eq. 'qi' ) call vti_mks(improve,rho(k),tz(k),qc(k),wa(k))
+          if ( qvar .eq. 'qi' ) call vti_mks(improve,rho(k),tz(k),qc(k),xland,wa(k))
         enddo
 
         do k = 1,km
