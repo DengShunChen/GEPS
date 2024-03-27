@@ -1327,9 +1327,9 @@
 
         
         call  outflds_green(0,nx,my,my_max,lev,ncld                     &
-              , idtg,ifilout,cp,rgas,grav,t2,u10,v10,ss,pk           &
+              , idtg,cp,rgas,grav,t2,u10,v10,ss,pk                      &
               , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6       &
-              , ggdef)
+              )
       endif
 !
 !#ifdef RSM_sigp
