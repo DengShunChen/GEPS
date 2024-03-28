@@ -10,7 +10,7 @@ fi
 
 machine=${1:-fx1000}
 
-JID=$(pjsub -z jid TCo383L72_IC_sample_${machine} -x CMAKE_BUILD=1,GITLAB_CICD=1,MACHINE=$machine -g sum)
+JID=$(pjsub -z jid TCo383L72_IC_sample_${machine} -x CMAKE_BUILD=1,GITLAB_CICD=1,machine=$machine -g sum)
 echo "Job ID :  $JID"
 OUT=$(/usr/bin/pjwait ${JID})
 echo "pjwait : ${OUT}"
