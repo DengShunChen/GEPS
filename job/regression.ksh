@@ -135,6 +135,11 @@ elif [ $JCAP = 383  ] ; then
   MODEL_BASIC='nco=384,'
 fi
 
+if [ $machine = a100 ] ; then
+  MODEL_BASIC=${MODEL_BASIC}' ncld=3,'
+  MODLST_PHY='nmmiph=2,'
+fi
+
 cat > ${GFSWRK}/namlsts << EOF
  &model_param
   nco=640,
@@ -178,6 +183,7 @@ cat > ${GFSWRK}/namlsts << EOF
   two_loop=t,
   itter=2, vd=0.002, factop=60.,
   ${MODLST_RES}
+  ${MODLST_PHY}
  &end
 
  &typ
