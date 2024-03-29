@@ -59,7 +59,7 @@ setenv LIBS_COM "-SSL2BLAMP"
 setenv OMP_COM "-Kopenmp,parallel"
 setenv CFLAGS_COM "-c -Xg"
 setenv NETCDF_LIB "-L/package/fx1000/netcdf-4.7.4/lib -lnetcdff"
-setenv MPMD_LIB "-L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd"
+setenv MPMD_LIB "-L/data/common/gfs/GEPSv3_lib/fx1000/cwb_mpmd -lmpmd"
 
 # Known conflicts
 module use /data/common/gfs/modulefiles/x86_64

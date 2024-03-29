@@ -52,14 +52,14 @@ setenv C_COMP_MP $LANG_HOME/bin/mpifccpx
 #============================================================
 #setenv FFLAGS_COM "-c -X9 -Free -CcdRR8 -Cpp -Kfast,ocl,autoobjstack,preex,simd=2 -SSL2 -x- -xswflux,200 -fw"
 setenv FFLAGS_COM "-c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed"
-setenv DEFINE_FLAGS "-DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -DSP"
+setenv DEFINE_FLAGS "-DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2 -DCWB_MPMD -DSP"
 setenv MSG_COM "-Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2"
 #setenv MSG_COM "-Ec -Koptmsg=2"
 setenv LIBS_COM "-SSL2BLAMP"
 setenv OMP_COM "-Kopenmp,parallel"
 setenv CFLAGS_COM "-c -Xg"
 setenv NETCDF_LIB "-L/package/fx1000/netcdf-4.7.4/lib -lnetcdff"
-setenv MPMD_LIB "-L/nwpr/gfs/xb124/CWBSUMc2/components/rsm/lib/cwb_mpmd -lmpmd"
+setenv MPMD_LIB "-L/data/common/gfs/GEPSv3_lib/fx1000/cwb_mpmd -lmpmd"
 
 # Known conflicts
 module use /data/common/gfs/modulefiles/x86_64

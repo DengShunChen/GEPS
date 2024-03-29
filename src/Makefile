@@ -340,7 +340,7 @@ SRCS_f90  = \
   zimadv.f90 \
   zx.f90 
 
-CPL = /nwpr/gfs/xb157/CWBSUMc2/4cpl/components/coupler
+CPL = /data/common/gfs/GEPSv3_lib/coupler
 ifeq ($(strip $(TIMCOMCPL)),TRUE)
   SRCS_f90 := $(SRCS_f90) mod_gfscpl.f90
 endif
@@ -366,7 +366,7 @@ INCLUDE = -I. -I${FFTW_INC} -I${NETCDF_INC} -I$(G2_INC)
 CMD  =  MTCo639L72_${MACHINE}
 
 ifeq ($(strip $(TIMCOMCPL)), TRUE)
-  INCLUDE := $(INCLUDE) -I$(CPL) -I/nwpr/gfs/xb124/package/$(MACHINE)/MCT/include
+  INCLUDE := $(INCLUDE) -I$(CPL) -I/data/common/gfs/GEPSv3_lib/$(MACHINE)/MCT/include
   CMD = libtco.a
 endif
 
@@ -417,7 +417,7 @@ LIBS	= ${NETCDF_LIB} ${HDF5_LIB} ${W3NCO_LIBd} ${DMS_LIB} ${OPERLIB_LIB} ${FFTW_
 
 ifeq ($(strip $(TIMCOMCPL)),TRUE)
   FFLAGS := $(FFLAGS) -DTIMCOMCPL
-  LIBS   := $(LIBS) -L$(CPL) -lcpl -L/nwpr/gfs/xb124/package/$(MACHINE)/MCT/lib -lmct -lmpeu
+  LIBS   := $(LIBS) -L$(CPL) -lcpl -L/data/common/gfs/GEPSv3_lib/$(MACHINE)/MCT/lib -lmct -lmpeu
 endif
 
 .SUFFIXES: .o .mod .f90 .c
