@@ -275,7 +275,7 @@ cat > ${GFSWRK}/namlsts << EOF
  &model_param
   nco=640,
   lev=72,
-  ncld=3,
+  ncld=7,
   octahedral=true,
   nout=9000,
   io_quilting=false,
@@ -301,7 +301,7 @@ cat > ${GFSWRK}/namlsts << EOF
   idg=40, jdg=108,
   itypbl=0, numreduce=5, ptmeans=800.,
   irad=2, nmland=2,
-  nmcup=6, nmshl=3, nmpbl=4, nmmiph=2,  
+  nmcup=6, nmshl=3, nmpbl=4, nmmiph=12,  
   nmgwor=2, nmgwcv=2,
   ktcup=20, cgw=4.2e-5,
   mtnvar=14, doo3l=t,

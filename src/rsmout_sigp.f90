@@ -272,6 +272,7 @@
 #ifdef write_RSM
       if(myrank.eq.0) then
         workr8=work
+        krec=ksgeo
         write(nsig,rec=krec) ((workr8(i,j),i=x1,x2),j=y1,y2)
       endif
 #endif

@@ -30,6 +30,10 @@
       use mod_typhoon
       use noah
       use namelist_soilveg
+#ifdef USE_CUDA
+      use mod_ndslfv_monoadv_gpu, only: ndslfv_monoadvh_fgnl_gpu, &
+                                        ndslfv_monoadvh_gpu
+#endif
 !-----------------------------------------------------------------------
       USE mod_sitgrid
       USE mod_sit_vdiff,       ONLY:sit_vdiff_end,cal_ratioBlending
@@ -195,7 +199,7 @@
       nc_sit=1               !if fsit>0., when mod(tau/fsit)<0.001, turn on sit_vdiff for "nc_sit" timesteps
       turn_sit=.false.       !turn_sit=.true., will run sit_vdiff in some tau
       lrun_sitvdiff=.false.  !lrun_sitvdiff=.true., run sit_vdiff in this tau
-      
+
       if ( dorst ) then
         wrestrt=.true.
       else
@@ -389,7 +393,7 @@
             tg2 = tg(i,jj)*tg(i,jj)     !soil
             rld(i,jj)= stbo*(tg2*tg2)   !soil
           enddo
-        enddo 
+        enddo
       endif
 !xb110>
 !byl      rmr = 0.
@@ -450,7 +454,7 @@
 
       dtx_tau=dtx/3600.
 
-      if(myrank .eq. 0) then 
+      if(myrank .eq. 0) then
          print *,'forcast begin tau=',itaui,' to tau=',itaue
 
 !     ! for io quilting
@@ -526,7 +530,7 @@
       vorten=0.
       temten=0.
       hldten=0.
- 
+
 !     estimate all field at t+dt/2
         itt=min(itimestep,2)
 !
@@ -590,6 +594,10 @@
 !
 !     advet grid non-linear forcing from t-dt/2 to t+dt/2 via NDSL advection
 !
+#ifdef USE_CUDA
+      call ndslfv_monoadvh_fgnl_gpu(vdzonl, vdmerd, ddtemp, &
+                                    ut, vt, tt, um, vm, dtahi,xy, 3, forward)
+#else
       call mpe2d_transpose_ndsl_p2f(um,ut_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(vm,vt_sl,    &
@@ -613,6 +621,7 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_f2p(ttm_sl,ddtemp, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
+#endif
 !
 !     calculate vertical velocity at mid-point
 !
@@ -671,7 +680,7 @@
 !
       call mpe2d_unify_nx(ww1,deldm)
       call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1         &
-                  ,plten,nsizey)            
+                  ,plten,nsizey)
       if ( forward ) then
         do jj = 1, jlistnum
           j=jlist1(jj)
@@ -705,12 +714,12 @@
       call rstrandz (jtrun,jtmax,nx,my,my_max,levp,vdmerd,vdzonl   &
                ,weight,cim,onocos,poly,dpoly,divten,vorten,nsizey)
       if ( forward ) then
-        if (lsimpl) & 
+        if (lsimpl) &
         call siimpl ( jtrun,jtmax,lev,dtahi,ptmeans,dsigma,spalm,eps4,eigval &
                     , evecin,evectr,arrhyd,arsddt,temmid,divmid,plmid      &
                     , temmid,divmid,plmid,temten,divten,plten,alphax)
       else
-        if (lsimpl) & 
+        if (lsimpl) &
         call siimpl ( jtrun,jtmax,lev,dtah,ptmeans,dsigma,spalm,eps4,eigval &
                     , evecin,evectr,arrhyd,arsddt,temnow,divnow,plnow      &
                     , temmid,divmid,plmid,temten,divten,plten,alphax)
@@ -740,7 +749,7 @@
          enddo
          endif
       enddo
-!          
+!
       if ( forward ) then
         do m = 1, mlistnum
           mf=mlist(m)
@@ -778,7 +787,7 @@
                      ,hfiltm,rad,cosl,um,vm,vormid,divmid,temmid     &
                      ,eps4,trefs)
       endif
-!        
+!
 !      call hdiffu ( dth,my,my_max,nx,jtrun,jtmax,lev,ncld     &
 !                   ,hfiltm,rad,cosl,ut,vt,vormid,divmid,temmid  &
 !                   ,eps4,trefs)
@@ -813,7 +822,7 @@
 !   new p**capa quantities were computed in previous diabat call
 !
         call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,ptm(1,jj), &
-                                pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )        
+                                pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
 !
 !       Calculate Vertical velocity & Stream Functions
 !
@@ -839,12 +848,16 @@
         do k=1,lev
           do i=1,nxj
             vdmerdg(i,k,jj) = vdmerdg(i,k,jj)-dtphi(i,k,jj)/radsq/onocos(j)
-            vdzonlg(i,k,jj) = vdzonlg(i,k,jj)-dlphi(i,k,jj)/radsq 
+            vdzonlg(i,k,jj) = vdzonlg(i,k,jj)-dlphi(i,k,jj)/radsq
           enddo
         enddo
       enddo !jj = 1,jlistnum
 !
 
+#ifdef USE_CUDA
+      call ndslfv_monoadvh_gpu(tt, pten, ut, vt, qt,  &
+                               um, vm, dtah, xy, forward)
+#else
 ! transpose partial to full: ut -> ut_sl, vt -> vt_sl, ut -> uum_sl, vt -> vvm_sl, tt -> ttm_sl, qm -> qm_sl
 
 !#ifdef MULTIPLE
@@ -901,6 +914,7 @@
       call mpe2d_transpose_ndsl_f2p(qm_sl,qt,      &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !#endif
+#endif
 !
 !       update all horizontal informations
 !
@@ -918,7 +932,7 @@
 
 !CWB2021 ndsl single precision test
 
-      call mpe2d_unify_nx(ww1,deldm) 
+      call mpe2d_unify_nx(ww1,deldm)
       call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1    &
                   ,plten,nsizey)
 
@@ -1016,7 +1030,7 @@
             endif
           enddo
         enddo
-        call mpe_unify(wkmf,1,jtrun,3,mpe_double) 
+        call mpe_unify(wkmf,1,jtrun,3,mpe_double)
         do mf = 1, jtrun
           sptend= sptend + wkmf(mf)
         enddo
@@ -1120,7 +1134,7 @@
 
         if ( two_loop ) then
           ! adjustmen of surface pressure, virtual potential
-          ! temperature and all tracers 
+          ! temperature and all tracers
           if ( mass_dp ) call adjptq(dta,plnow,pltemp)
           call joinrs(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
           call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc   &
@@ -1132,7 +1146,7 @@
                        ,onocos,poly,dpoly,vornow,divnow,nsizey)
         else
           ! adjustmen of surface pressure, virtual potential
-          ! temperature and all tracers for one loop 
+          ! temperature and all tracers for one loop
           if ( mass_dp ) call adjptq(dta,pltemp,plten)
 
         endif ! two_loop
@@ -1140,7 +1154,7 @@
       endif    ! end of (yesdia)
 
 !CWB2021
-      itimestep=itimestep+1 
+      itimestep=itimestep+1
 !        if ( mod(itimestep,2) .eq. 0 ) xy = -1 * xy
       xy = -1 * xy
       if ( .not. two_loop ) then
@@ -1222,7 +1236,7 @@
             endif
           enddo
         enddo
-        call mpe_unify(wkmf,1,jtrun,3,mpe_double) 
+        call mpe_unify(wkmf,1,jtrun,3,mpe_double)
         do mf = 1, jtrun
           sptend= sptend + wkmf(mf)
         enddo
@@ -1267,7 +1281,7 @@
         if ( doskeb ) then
           call tranuv (jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac    &
                       , poly,dpoly,vornow,divnow,ut,vt,nsizey)
-    
+
           call skebest(um,vm)
 
           ! compute vorticity and divergence from u and v
@@ -1289,9 +1303,9 @@
                   tseanew(ii,jj)=dta*dtseadt(ii,jj)+tseaold(ii,jj)
 !                  tseaold(ii,jj)=tseanow(ii,jj) + tfilt*(tseaold(ii,jj)     &
 !                                 -2.0*tseanow(ii,jj)+tseanew(ii,jj) )
-                  tseaold(ii,jj)=tseanew(ii,jj) 
+                  tseaold(ii,jj)=tseanew(ii,jj)
                   tseanow(ii,jj)=tseanew(ii,jj)
- 
+
                   dtaup=mod(tau+0.001,updatetg)
                   if(dtaup .lt. dtx_tau)then
                     tg(ii,jj)=tseanow(ii,jj)
@@ -1408,7 +1422,7 @@
 !    ---------------------------------------------------------------
 !     check tau in hourly for output
       dtaup = mod(tau+0.001, 1.)
-      if ( dtaup.lt.0.01 )then 
+      if ( dtaup.lt.0.01 )then
         itau=NINT( tau )
 
       dtaup= mod(tau+0.001, tauo)
@@ -1422,6 +1436,12 @@
 !       if(myrank.eq.0)print *,'chkltr dtaup,dt_trk,dtx_tau=',dtaup,dt_trk,dtx_tau
 
         if(myrank==0) call system_clock(toutsrt)
+            if(io_quilting)then
+              write( keydoit,'(A6,I4.4,A4,I12.12,A8)') &
+              "OPEN..",itau,"....",idtg,"H...DOIT"
+              ntag=ntag+1
+              call mpe_send_key(keydoit,ntag,istat)
+            endif
 !
 !--- histim (start)
       if ( histim .or. ltrack )  then
@@ -1611,7 +1631,7 @@
 !ds        dtaup = mod( tau+0.001, taup )
 !ds       if(tau.le.(taureg+0.001) .and. dtaup.lt.0.01)then
        if(tau.le.(taureg+0.001) .and. histim )then
-!jh        if( histim ) then 
+!jh        if( histim ) then
 #ifndef NO_OUT
         call outsigs ( itau,nx,my,my_max,lev,ncld        &
                      , idtg,ptop,rad,grav                &
@@ -1685,6 +1705,19 @@
 !
 !#ifdef RSM_sigp
 #ifdef RSM
+#ifdef RSM_sig
+! for sigma coordinate
+      if(outrsm .and. mod(float(itau)+0.00001, float(rsmoutinv) ) .lt. 0.01)then
+        if(myrank.eq.0)print*,' call rsmout for rsm output at tau=',itau
+        call rsmout(idtg,itau,nx,my,my_max,lev,ncld   &
+                , ptop,cp,rgas,grav,sgeo,pdiff        &
+                , t1000,pt,plt,pk,pk2,phi,ut,vt       &
+                , tt,qt,tg,snr,cosl                   &
+                , km_soil,smc,stc                     &
+                , ice,land,ocean)
+      endif
+#else
+! for sigma-P coordinate
        if(outrsm .and. mod(float(itau)+0.00001, float(rsmoutinv) ) .lt. 0.01)then
         if(myrank.eq.0)print*,' call rsmout for rsm output at tau=',itau
         call rsmout_sigp( itau,nx,my,my_max,lev,ncld     &
@@ -1693,6 +1726,7 @@
                      , ut,vt,tt,qt,km_soil,smc,stc       &
                      , ice,land,ocean,xlon,xlat)
        endif
+#endif
 #endif
 !
 !#ifdef RSM
@@ -1718,7 +1752,7 @@
         endif
 !
 !  zero out precip arrays
-!  
+!
 !  add 12-hour check to let prep. amount be of 12-hour accumulation for
 !  every 12-hour output, but prep. amount still 24-hour accumulation for
 !  every 24-hour output without 12-hour output points
@@ -1750,7 +1784,7 @@
         endif
 
 !
-!kc             output t2,raintot,u10,v10,ctot at 1 hour interval within 192hr. 
+!kc             output t2,raintot,u10,v10,ctot at 1 hour interval within 192hr.
 !               if(domfc)then
 !==xb118        change domfc type from logical to real
 !               if(myrank .eq. 0) print*,'domfc at tau,dtaup=',tau,dtaup
@@ -1809,7 +1843,7 @@
             j=jlist1(jj)
             nxj=nxdef_2d(j)
             do  i = 1,nxj
-              hf24   (i,jj) = 0.0 
+              hf24   (i,jj) = 0.0
               qf24   (i,jj) = 0.0
               ss24   (i,jj) = 0.0
               rs24   (i,jj) = 0.0
@@ -1849,7 +1883,7 @@
           flag =.false.
           if(myrank .eq. 0)then
             flag =.true.
-!CWB2016   
+!CWB2016
             if(.not. io_quilting)then
 !CWB2017             call sendmsg ('gfs',ifromtau,itotau,istat)
               if(itau.eq.itotau) call sendmsg ('gfs',ifromtau,itotau,istat)
@@ -1863,9 +1897,9 @@
           endif
 !ch       call mpe_broadcast(istat,1,flag,mpe_integer)
 !         call mpe_bcast(istat,1,0,mpe_integer)
-        endif !histim 
+        endif !histim
 
-      endif !  (mod(tau+0.001, 1.) .lt. 0.01)  hourly for output 
+      endif !  (mod(tau+0.001, 1.) .lt. 0.01)  hourly for output
 !    ---------------------------------------------------------------
 !
 ! new year, read obs sst

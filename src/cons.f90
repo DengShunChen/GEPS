@@ -25,6 +25,9 @@
       use fftcom
       use mod_typhoon
       use mod_sit_control,       ONLY:sit_nml
+#ifdef USE_CUDA
+      use mod_ndslfv_monoadv_gpu, only: allocate_ndslfv_array_gpu
+#endif
 !-----------------------------------------------------------------------
       use radn
       use noah
@@ -106,8 +109,8 @@
 
       namelist /typ/ write_tau, write_mem, trk_intv, min_trk_pres
 
-      namelist /stochy_physics/ ncep_seeds, & 
-                   use_zmtnblck, & 
+      namelist /stochy_physics/ ncep_seeds, &
+                   use_zmtnblck, &
                    sppt, sppt_seed, sppt_decort, sppt_lscale, &
                    sppt_sigtop1, sppt_sigtop2, sppt_sigbot1, sppt_sigbot2, &
                    sppt_sfclimit, sppt_logit, &
@@ -269,7 +272,7 @@
 !
       call sortml (jtrun,mlmax,msort,lsort,mlsort)
 !
-!  new allocation system in parallization for both spectral 
+!  new allocation system in parallization for both spectral
 !  and grid spaces
 !
 
@@ -390,7 +393,9 @@
 
 !for 2dMPI
       call make_list_nx  ! making nx index for reduce/non_reduce
-
+#ifdef USE_CUDA
+      call allocate_ndslfv_array_gpu
+#endif
 !
       sumreduce=0.0
       do j=1,my
@@ -443,13 +448,13 @@
       if( myrank .eq. 0 ) then
        type_r="RORDER"//char(0)
        type_w="WORDER"//char(0)
-#ifdef I38K 
+#ifdef I38K
        argument="38"//char(0)
 #else
        argument="34"//char(0)
 #endif
        call dmscfg(type_r,argument,istat_r)
-#ifdef O38K 
+#ifdef O38K
        argument="38"//char(0)
 #else
        argument="34"//char(0)
@@ -594,7 +599,7 @@
 !-----------------------------------------------------------------------
 !  for stochastic_physics initialization
 !-----------------------------------------------------------------------
-      call init_stochastic_physics(dt)   
+      call init_stochastic_physics(dt)
 !-----------------------------------------------------------------------
 !
 ! check if typhoon exit
@@ -801,7 +806,7 @@
       allocate (eps4L(jtp),                 &
                 plnowL(jtp,2),              &
                 ploldL(jtp,2),              &
-                pltenL(jtp,2), stat=ierror) 
+                pltenL(jtp,2), stat=ierror)
 
       if (ierror/= 0) then
           write(6,*) 'cons : allocate fail 1 '
