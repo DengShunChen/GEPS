@@ -1,5 +1,5 @@
 #if defined(RSM) && defined(CWB_MPMD)
-      subroutine send_data(fhour,nx,my,lsoil,lev,temp_gfs,spfh_gfs   &
+      subroutine send_data(fhour,nx,my,lsoil,lev,ncld,temp_gfs,spfh_gfs &
      &              ,clwr_gfs,rain_gfs,qice_gfs,snow_gfs,grpl_gfs    &
      &              ,ozon_gfs,geop_gfs,u_gfs,v_gfs    &
      &              ,tg_gfs,smc_gfs,snr_gfs,stc_gfs,cice_gfs   &
@@ -10,6 +10,7 @@
 !      
 
       integer lsoil
+      integer ncld
       real fhour
       dimension temp_gfs(nx*my,lev),spfh_gfs(nx*my,lev)      &
      & ,clwr_gfs(nx*my,lev),rain_gfs(nx*my,lev),qice_gfs(nx*my,lev) &
@@ -37,17 +38,19 @@
         itag=itag+1
         call mpmd_send(clwr_gfs,nxmyl,root_rsm,itag,'R')
 
-!       itag=itag+1
-!       call mpmd_send(rain_gfs,nxmyl,root_rsm,itag,'R')
+        if ( ncld .ge. 7 ) then
+        itag=itag+1
+        call mpmd_send(rain_gfs,nxmyl,root_rsm,itag,'R')
 
-!       itag=itag+1
-!       call mpmd_send(qice_gfs,nxmyl,root_rsm,itag,'R')
+        itag=itag+1
+        call mpmd_send(qice_gfs,nxmyl,root_rsm,itag,'R')
 
-!       itag=itag+1
-!       call mpmd_send(snow_gfs,nxmyl,root_rsm,itag,'R')
+        itag=itag+1
+        call mpmd_send(snow_gfs,nxmyl,root_rsm,itag,'R')
 
-!       itag=itag+1
-!       call mpmd_send(grpl_gfs,nxmyl,root_rsm,itag,'R')
+        itag=itag+1
+        call mpmd_send(grpl_gfs,nxmyl,root_rsm,itag,'R')
+        endif
 
         itag=itag+1
         call mpmd_send(ozon_gfs,nxmyl,root_rsm,itag,'R')

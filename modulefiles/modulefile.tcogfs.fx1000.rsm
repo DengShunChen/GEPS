@@ -52,7 +52,9 @@ setenv C_COMP_MP $LANG_HOME/bin/mpifccpx
 #============================================================
 #setenv FFLAGS_COM "-c -X9 -Free -CcdRR8 -Cpp -Kfast,ocl,autoobjstack,preex,simd=2 -SSL2 -x- -xswflux,200 -fw"
 setenv FFLAGS_COM "-c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed"
-setenv DEFINE_FLAGS "-DTIMING -DUSE_FFTW -DW3TAG -DRSM"
+setenv DEFINE_FLAGS "-DRSM -DCWB_MPMD -DTIMING -DUSE_FFTW -DW3TAG"
+#setenv DEFINE_FLAGS "-DRSM -DCWB_MPMD -DTIMING -DUSE_FFTW -DW3TAG -DRSM_sig"
+#setenv DEFINE_FLAGS "-DRSM -DCWB_MPMD -DTIMING -DUSE_FFTW -DW3TAG -DSP"
 setenv MSG_COM "-Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2"
 #setenv MSG_COM "-Ec -Koptmsg=2"
 setenv LIBS_COM "-SSL2BLAMP"
@@ -72,7 +74,7 @@ module use /data/common/gfs/modulefiles/$machine
 module load netcdf/4.1.3
 setenv HDF5_LIB " -L/package/fx1000/hdf5-1.8.22/lib -lhdf5_hl -lhdf5"
 module load fftw/3.3.10.new_sp
-module load dms/v4
+module load dms/v4_38key
 module load operlib
 module load w3lib/2.0.2
 module unuse /data/common/gfs/modulefiles/$machine

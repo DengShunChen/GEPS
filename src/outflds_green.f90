@@ -1,7 +1,6 @@
       subroutine outflds_green( itau,nx,my,my_max,lev,ncld       &
-             , idtg,ifilout,cp,rgas,grav,t2,u10,v10,ss,pk        &
-             , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6 &
-             , ggdef)
+             , idtg,cp,rgas,grav,t2,u10,v10,ss,pk                &
+             , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6)
 !
 !  output driver subroutine to process sigma level data to 40m & 100m
 !
@@ -9,8 +8,9 @@
       use rank
       use index
       use const ,only:aki,bki ,outdms ,outgrb2 ,ifilout_grb , &
-                      RTYPE,kflag
+                      RTYPE,kflag,ggdef
       use mod_grb2_param , only :ofdir,wrt_grb2_v2,wrt_grb2_accu_v2
+
       use noah,only:runoff, cice ,zice 
       use phygrid,only:ice,ocean,land
 
@@ -29,7 +29,6 @@
                        sgeo(nxp,my_max),pt(nxp,my_max),cosl(my),       &
                        pk(nxp,lev,my_max)
 
-      character ifilout*80, ggdef*4, ihdg*26, ihdg2*26
       integer*8 idtg
       integer:: ptp0(9),ptp1(9)
 !
@@ -173,59 +172,59 @@
 
 !output P
       write(wtemp,'(a3,a3)')layer(mm),var(1)
-      call syslbl(wtemp,idtg,itau,ggdef,ihdg)
+      call syslbl_w(wtemp,idtg,itau,ggdef)
       wrk=pla
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       ptp0=(/0,3,0,2,103,0,nint(hm(mm)),-999,-999/)
-      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
+      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 
 !output Q
       write(wtemp,'(a3,a3)')layer(mm),var(2)
-      call syslbl(wtemp,idtg,itau,ggdef,ihdg)
+      call syslbl_w(wtemp,idtg,itau,ggdef)
       wrk=oqt
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       ptp0=(/0,1,0,6,103,0,nint(hm(mm)),-999,-999/)
-      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
+      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 
       write(wtemp,'(a3,a3)')layer(mm),var(6)
-      call syslbl(wtemp,idtg,itau,ggdef,ihdg)
+      call syslbl_w(wtemp,idtg,itau,ggdef)
       wrk=oqc
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       ptp0=(/0,1,235,8,103,0,nint(hm(mm)),-999,-999/)
-      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
+      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 
 !output U,V
       write(wtemp,'(a3,a3)')layer(mm),var(3)
-      call syslbl(wtemp,idtg,itau,ggdef,ihdg)
+      call syslbl_w(wtemp,idtg,itau,ggdef)
       wrk=ou
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       ptp0=(/0,2,2,2,103,0,nint(hm(mm)),-999,-999/)
-      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
+      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 
       write(wtemp,'(a3,a3)')layer(mm),var(4)
-      call syslbl(wtemp,idtg,itau,ggdef,ihdg)
+      call syslbl_w(wtemp,idtg,itau,ggdef)
       wrk=ov
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       ptp0=(/0,2,3,2,103,0,nint(hm(mm)),-999,-999/)
-      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
+      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 
 !output T
       write(wtemp,'(a3,a3)')layer(mm),var(5)
-      call syslbl(wtemp,idtg,itau,ggdef,ihdg)
+      call syslbl_w(wtemp,idtg,itau,ggdef)
       wrk=ot
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       ptp0=(/0,0,0,2,103,0,nint(hm(mm)),-999,-999/)
-      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
+      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 !-----------------------------------------------------------------------
       enddo  ! end (mm)
 !=======================================================================
 !output S00310(net SW flux at the surface)
       write(wtemp,'(a6)')'S00310'
-      call syslbl(wtemp,idtg,itau,ggdef,ihdg)
+      call syslbl_w(wtemp,idtg,itau,ggdef)
       wrk=ss
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       ptp0=(/0,4,9,2,1,0,0,-999,-999/)
-      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
+      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 
 !output RH at bottom level
       do jj = 1, jlistnum
@@ -242,10 +241,10 @@
           enddo
       enddo
       write(wtemp,'(a6)')'B00510'
-      call syslbl(wtemp,idtg,itau,ggdef,ihdg)
+      call syslbl_w(wtemp,idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,rh0,glob)
       ptp0=(/0,1,1,2,103,0,0,-999,-999/)
-      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
+      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 
 !output b00010
       do jj = 1, jlistnum
@@ -256,30 +255,30 @@
           enddo
       enddo
       write(wtemp,'(a6)')'B00010'
-      call syslbl(wtemp,idtg,itau,ggdef,ihdg)
+      call syslbl_w(wtemp,idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       ptp0=(/0,3,0,2,103,0,0,-999,-999/)
-      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
+      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 !=======================================================================
 !output 6hr prec.
       if (mod(float(itau)+0.00001, 6. ) .lt. 0.01) then
-      call syslbl ('b00633',idtg,itau,ggdef,ihdg)
+      call syslbl_w ('b00633',idtg,itau,ggdef)
       wrk=raincu6
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/0,1,10,2,103,0,0,1,6/)
-      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
+      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 
 !
-      call syslbl ('b00643',idtg,itau,ggdef,ihdg)
+      call syslbl_w ('b00643',idtg,itau,ggdef)
       wrk=rainlp6
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/0,1,47,2,103,0,0,1,6/)
-      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
+      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 
 !
-      call syslbl ('b00623',idtg,itau,ggdef,ihdg)
+      call syslbl_w ('b00623',idtg,itau,ggdef)
       do 98 jj = 1, jlistnum
       j=jlist1(jj)
       nxj=nxdef_2d(j)
@@ -287,55 +286,51 @@
        wrk(i,jj)=raincu6(i,jj)+rainlp6(i,jj)
  98   continue
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/0,1,8,2,103,0,0,1,6/)
-      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
+      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 
       !runoff
       wrk=runoff
-      call syslbl ('runoff',idtg,itau,ggdef,ihdg)
+      call syslbl_w ('runoff',idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-!     if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/2,0,5,2,103,0,0,1,6/)
-      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
+      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
       runoff(:,:)=0.0 !6 hr zero out
 
       endif !mod(float(itau)+0.00001, 6. ) .lt. 0.01
 
 !
-
       if (mod(float(itau)+0.00001, 24. ) .lt. 0.01) then
-      !!!sea ice fraction
-      wrk=cice
-      call syslbl ('w00091',idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      ptp0=(/10,2,0,2,103,0,0,-999,-999/)
-      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
+!      !!!sea ice fraction
+!      wrk=cice
+!      call syslbl_w ('w00091',idtg,itau,ggdef)
+!      call unify_reduceintp(nx,my,my_max,wrk,glob)
+!      ptp0=(/10,2,0,2,103,0,0,-999,-999/)
+!      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
       !!!sea ice thickness
       wrk=zice
-      call syslbl ('w00092',idtg,itau,ggdef,ihdg)
+      call syslbl_w ('w00092',idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       ptp0=(/10,2,1,2,103,0,0,-999,-999/)
-      call split2(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2,ptp0,ptp1)
+      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
       endif
 
 !
       if(outdms.gt.0)then
       if ( myrank .lt. nc )             &
-         call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
+         call dmswrit_split(nx,my,lenc,kflag,mout,istat)
       endif
 
       if(outgrb2 == 1 )then
        if ( myrank .lt. nc ) then
         if(ptp1(8)==-999)then
         call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
-            ,ptp1(6),ptp1(7),mout,ihdg2)
+            ,ptp1(6),ptp1(7),mout)
         else
         call wrt_grb2_accu_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
-            ,ptp1(6),ptp1(7),ptp1(8),ptp1(9),mout,ihdg2)
+            ,ptp1(6),ptp1(7),ptp1(8),ptp1(9),mout)
         endif
        endif
       endif

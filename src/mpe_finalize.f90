@@ -16,6 +16,9 @@
       use radn
       use ozne_def
       use raddiag
+#ifdef USE_CUDA
+      use mod_ndslfv_monoadv_gpu, only: deallocate_ndslfv_array_gpu
+#endif
 
       implicit none
       integer  ierr
@@ -30,6 +33,9 @@
 !     if(myrank_all .ne. 1)then
 
 ! deallocate dynamic arrays
+#ifdef USE_CUDA
+      call deallocate_ndslfv_array_gpu
+#endif
       call deallocate_grid_array
       call deallocate_phygrid_array
       call deallocate_noah_array
@@ -47,6 +53,9 @@
       else ! normal mode, i.e. no io_quilting
 
 ! deallocate dynamic arrays
+#ifdef USE_CUDA
+      call deallocate_ndslfv_array_gpu
+#endif
       call deallocate_grid_array
       call deallocate_phygrid_array
       call deallocate_noah_array

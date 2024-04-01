@@ -1,5 +1,5 @@
       subroutine out24 (nx,my,my_max,hf24,qf24,ss24,rs24,asol24,olr24  &
-                      ,rain24,rainlp24,dt24,ifilout,glob,itau,idtg,ggdef,flash24)
+                      ,rain24,rainlp24,dt24,glob,itau,idtg,ggdef,flash24)
 !
       use index
       use rank
@@ -24,8 +24,6 @@
       real(kind=RTYPE) glob(nx,my),wrk(nxp,my_max)
 !
       integer*8 idtg
-      character*80 ifilout
-      character*26 ihdg
       character*4  ggdef
 
       integer   imax,jmax,lenc,j,nxj,i,istat,jj
@@ -49,9 +47,9 @@
         enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call syslbl ('s0043f',idtg,itau,ggdef,ihdg)
-      if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,0,10,2,1,0,0,0,24,glob,ihdg)
+      call syslbl_w ('s0043f',idtg,itau,ggdef)
+      if(outdms.gt.0) call dmswrit(imax,jmax,lenc,kflag,glob,istat)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,0,10,2,1,0,0,0,24,glob)
 ! Sensible heat flux at the surface (W/m**2)
       do jj=1,jlistnum
          j=jlist1(jj)
@@ -61,9 +59,9 @@
          enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call syslbl ('s0042f',idtg,itau,ggdef,ihdg)
-      if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,0,11,2,1,0,0,0,24,glob,ihdg)
+      call syslbl_w ('s0042f',idtg,itau,ggdef)
+      if(outdms.gt.0) call dmswrit(imax,jmax,lenc,kflag,glob,istat)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,0,11,2,1,0,0,0,24,glob)
 ! Net shortwave (solar) flux at the surface (W/m**2) (positive : downward flux)
       do jj=1,jlistnum
          j=jlist1(jj)
@@ -73,9 +71,9 @@
          enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call syslbl ('s0031f',idtg,itau,ggdef,ihdg)
-      if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,4,9,2,1,0,0,0,24,glob,ihdg)
+      call syslbl_w ('s0031f',idtg,itau,ggdef)
+      if(outdms.gt.0) call dmswrit(imax,jmax,lenc,kflag,glob,istat)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,4,9,2,1,0,0,0,24,glob)
 ! net surface longwave radiation
       do jj=1,jlistnum
          j=jlist1(jj)
@@ -85,9 +83,9 @@
          enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call syslbl ('s0032f',idtg,itau,ggdef,ihdg)
-      if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,5,5,2,1,0,0,0,24,glob,ihdg)
+      call syslbl_w ('s0032f',idtg,itau,ggdef)
+      if(outdms.gt.0) call dmswrit(imax,jmax,lenc,kflag,glob,istat)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,5,5,2,1,0,0,0,24,glob)
 !
 !  Total precipitation  24-hours
       do jj=1,jlistnum
@@ -98,9 +96,9 @@
          enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call syslbl ('b00626',idtg,itau,ggdef,ihdg)
-      if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,1,8,2,103,0,0,1,24,glob,ihdg)
+      call syslbl_w ('b00626',idtg,itau,ggdef)
+      if(outdms.gt.0) call dmswrit(imax,jmax,lenc,kflag,glob,istat)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,1,8,2,103,0,0,1,24,glob)
 !
 !  Total precipitation  24-hours
       do jj=1,jlistnum
@@ -111,8 +109,8 @@
          enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call syslbl ('b00646',idtg,itau,ggdef,ihdg)
-      if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
+      call syslbl_w ('b00646',idtg,itau,ggdef)
+      if(outdms.gt.0) call dmswrit(imax,jmax,lenc,kflag,glob,istat)
 
 !  The average of latent heat flux release for total precipitation within 24-hours
       do jj=1,jlistnum
@@ -123,8 +121,8 @@
          enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call syslbl ('b0062f',idtg,itau,ggdef,ihdg)
-      if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
+      call syslbl_w ('b0062f',idtg,itau,ggdef)
+      if(outdms.gt.0) call dmswrit(imax,jmax,lenc,kflag,glob,istat)
 
 ! model top of net solor shortwave radiation
       do jj=1,jlistnum
@@ -135,9 +133,9 @@
          enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call syslbl ('x0033f',idtg,itau,ggdef,ihdg)
-      if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,4,1,2,8,0,0,0,24,glob,ihdg)
+      call syslbl_w ('x0033f',idtg,itau,ggdef)
+      if(outdms.gt.0) call dmswrit(imax,jmax,lenc,kflag,glob,istat)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,4,1,2,8,0,0,0,24,glob)
 
 ! model top of Outgoing longwave radiation (OLR)
       do jj=1,jlistnum
@@ -148,9 +146,9 @@
          enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call syslbl ('x0034f',idtg,itau,ggdef,ihdg)
-      if(outdms.gt.0)  call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2_accu_v2(itau,0,5,5,2,8,0,0,0,24,glob,ihdg)
+      call syslbl_w ('x0034f',idtg,itau,ggdef)
+      if(outdms.gt.0)  call dmswrit(imax,jmax,lenc,kflag,glob,istat)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2_accu_v2(itau,0,5,5,2,8,0,0,0,24,glob)
 !
 !xb110>>
 ! 24hr average flash density (km-2day-1)
@@ -162,22 +160,22 @@
         enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call syslbl ('x00999',idtg,itau,ggdef,ihdg)
-      if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,17,4,6,10,0,0,0,24,glob,ihdg)
+      call syslbl_w ('x00999',idtg,itau,ggdef)
+      if(outdms.gt.0) call dmswrit(imax,jmax,lenc,kflag,glob,istat)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu_v2(itau,0,17,4,6,10,0,0,0,24,glob)
 !xb110<<
 
 !Ocean SIT daily mean output
       if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
-        call outtseadiffFCT24(nx,my,my_max,dt24,ifilout,itau,idtg,ggdef)
+        call outtseadiffFCT24(nx,my,my_max,dt24,itau,idtg,ggdef)
       endif
 
       if(do_sit)then
         if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
-          call outtseadiffSIT24(nx,my,my_max,ratioSIT,dtsit24,ifilout,itau,idtg,ggdef)
+          call outtseadiffSIT24(nx,my,my_max,ratioSIT,dtsit24,itau,idtg,ggdef)
         endif
         if(loutsit24)then
-          call outsit24(nx,my,my_max,lkvl,ifilout,itau,idtg,ggdef)
+          call outsit24(nx,my,my_max,lkvl,itau,idtg,ggdef)
         endif
       endif !do_sit
 

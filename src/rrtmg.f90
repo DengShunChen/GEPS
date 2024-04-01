@@ -8,7 +8,7 @@
              sinlj,coslj,xlatj,xlonr,jdat,d2r,xkapa,                &
              ptop,dtlw,dtsw,lsswr,lslwr,lssav,                      &
              nfxr,j,                                                &
-             nx,nxj,lev,ncld,lprnt,ipt,kdt,solhr,                   &
+             nx,nxj,lev,ncld,lprnt,ipt,kdt,                         &
              uni_cloud,lmfshal,lmfdeep2,                            &
              deltaq,sup,cnvw,cnvc,                                  &
              ftp,ftp1,fqp,fqp1,nmmiph,                              &
@@ -52,7 +52,7 @@
       real    alvsg(nx),alvwg(nx),alnsg(nx),alnwg(nx),facsg(nx),  &
               facwg(nx),curate(nx),xlonr(nx),tsflwr(nx),cosz(nx)
       integer icsdlwg(nx),icsdswg(nx),jdat(8),j
-      real    sinlj,coslj,xlatj,ptop,dtlw,dtsw,d2r,xkapa,solhr
+      real    sinlj,coslj,xlatj,ptop,dtlw,dtsw,d2r,xkapa      
       logical lsswr,lslwr,lssav,lprnt
       logical uni_cloud,lmfshal,lmfdeep2
       real    www,cmax,cmin,imax,imin,tem1,tem2

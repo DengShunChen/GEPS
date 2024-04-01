@@ -18,6 +18,8 @@
 
       b1=0.
       b2=0.
+      aout=0.
+      i2=0
 
       do k=1,lev
       do n=1,num
@@ -68,6 +70,11 @@
       real*4   b1(nxp,jlen,num,lev),b2(nxp,jlen,num,levp,nsizex)
       integer  nlen,j,i,k,ierr,jlistnum,num,n,i1,i2,j1
 
+      b1=0.
+      b2=0.
+      aout=0.
+      i2=0
+
       do k=1,lev
       do n=1,num
       do j=1,jlistnum
@@ -114,6 +121,10 @@
       real*8   ain(nxp,lev,ncld,num,my_max),aout(nx,levp,ncld,num,my_max)
       real*8   b1(nxp,jlen,num,ncld,lev),b2(nxp,jlen,num,ncld,levp,nsizex)
       integer  nlen,j,i,k,ierr,jlistnum,num,n,nn,ncld,i1,i2,j1
+
+      b1=0.
+      b2=0.
+      aout=0.
 
       do j=1,jlistnum
          j1=jlist1(j)
@@ -164,6 +175,10 @@
       real*8   b1(nxp,jlen,lev),b2(nxp,jlen,levp,nsizex)
       integer  nlen,j,i,k,ierr,jlistnum,nn,jj,i1,i2,j1
 
+      b1=0.
+      b2=0.
+      aout=0.
+
       do k=1,lev
       do j=1,jlistnum
          j1=jlist1(j)
@@ -210,6 +225,7 @@
 
       b1=0.
       b2=0.
+      aout=0.
 
       do j=1,jlistnum
          j1=jlist1(j)
@@ -226,11 +242,9 @@
       enddo
 
       nlen=nxp*levp*jlen*num
-
       call MPI_ALLTOALL( b1 ,nlen, MPI_RTYPE, &
                          b2, nlen, MPI_RTYPE, &
                          comm, IERR )
-
       do jj=1,jlistnum
       do n=1,num
       do i=1,nxp
@@ -259,6 +273,10 @@
       real*4   ain(nx,levp,num,my_max),aout(nxp,lev,num,my_max)
       real*4   b1(levp,num,jlen,nxp,nsizex),b2(levp,num,jlen,nxp,nsizex)
       integer  nlen,j,jj,i,k,KL,ierr,jlistnum,num,n,i1,i2,j1
+
+      b1=0.
+      b2=0.
+      aout=0.
 
       do j=1,jlistnum
          j1=jlist1(j)
@@ -311,6 +329,9 @@
       real(kind=RTYPE) eps4in(jtrun,jtmax)
       real(kind=RTYPE) eps4out(jtp)
       real(kind=RTYPE) b1(jtf)
+
+      b1=0.
+      eps4out=0.
 
       i=1
 
@@ -376,6 +397,9 @@
       real(kind=RTYPE) b(nxp,my_max*nsize)
       logical, optional :: opt
 
+      b=0.
+      work=0.
+
       call MPI_ALLGATHER( a,nxp*my_max, MPI_RTYPE, &
                           b,nxp*my_max, MPI_RTYPE, &
                           MPI_COMM_gfs, IERR )
@@ -407,6 +431,9 @@
       real(kind=RTYPE) a(nxp,my_max)
       real(kind=RTYPE) b(nxp,my_max,nsizex)
 
+      work=0.
+      b=0.
+
       call MPI_ALLGATHER( a,nxp*my_max, MPI_RTYPE, &
                           b,nxp*my_max, MPI_RTYPE, &
                           row_comm, IERR )
@@ -437,6 +464,9 @@
       real(kind=RTYPE) a(nx,my_max)
       real(kind=RTYPE) b(nx,my_max*nsizey)
 
+      work=0.
+      b=0.
+
       call MPI_ALLGATHER( a,nx*my_max, MPI_RTYPE, &
                           b,nx*my_max, MPI_RTYPE, &
                           col_comm, IERR )
@@ -449,7 +479,7 @@
 
       return
       end
-!-------------------------------------------------------------------------------------------------
+!----------------------------------------------------------------------------------------------
       subroutine mpe2d_unify_spec_lev(ain,aout,lev,levp,jtrun,jtmax,mlistnum,proc,comm)
 
 ! unify lev of spectrum
@@ -465,6 +495,9 @@
       real(kind=RTYPE) aout(lev,2,jtrun,jtmax)
       real(kind=RTYPE) b1(levp,2,jtrun,jtmax)
       real(kind=RTYPE) b2(levp,2,jtrun,jtmax,proc)
+
+      aout = 0.
+      b2   = 0.
 
       call MPI_ALLGATHER( ain, levp*2*jtrun*jtmax, MPI_RTYPE, &
                            b2, levp*2*jtrun*jtmax, MPI_RTYPE, &
@@ -498,6 +531,9 @@
       real*4 aout(lev,2,jtrun,jtmax)
       real*4 b1(levp,2,jtrun,jtmax)
       real*4 b2(levp,2,jtrun,jtmax,proc)
+
+      aout = 0.
+      b2   = 0.
 
       call MPI_ALLGATHER( ain, levp*2*jtrun*jtmax, MPI_REAL4, &
                            b2, levp*2*jtrun*jtmax, MPI_REAL4, &
@@ -534,6 +570,10 @@
       real(kind=RTYPE) aout(lev,2,3,jtrun,jtmax)
       real(kind=RTYPE) b1(levp,2,jtrun,jtmax)
       real(kind=RTYPE) b2(levp,2,3,jtrun,jtmax,proc)
+
+      ain  = 0.
+      aout = 0.
+      b2   = 0.
 
       ain(:,:,1,:,:)=a1(:,:,:,:)
       ain(:,:,2,:,:)=a2(:,:,:,:)
@@ -574,6 +614,8 @@
       real b1(levp,my_max)
       real b2(levp,my_max*nsize)
       integer i,j,ii,jj,j1,jf,kk,my,lev,ierr
+ 
+      a=0.
 
       do jj=1,jlistnum
       do i=1,levp
@@ -616,6 +658,8 @@
       real(kind=RTYPE) plout(jtp,2)
       real(kind=RTYPE) b1(jtf,2)
 
+      plout=0.
+      b1=0.
       i=1
 
       do m=1,mlistnum
@@ -652,6 +696,11 @@
       real(kind=RTYPE) plin1(jtrun,jtmax,2),plin2(jtrun,jtmax,2),plin3(jtrun,jtmax,2)
       real(kind=RTYPE) plout1(jtp,2),plout2(jtp,2),plout3(jtp,2)
       real(kind=RTYPE) b1(jtf,6)
+
+      b1=0.
+      plout1=0.
+      plout2=0.
+      plout3=0.
 
       i=1
 
@@ -698,6 +747,9 @@
       real(kind=RTYPE) plout(jtrun,jtmax,2)
       real(kind=RTYPE) b2(jtp,2,nsizex)
 
+      plout=0.
+      b2=0.
+
       call MPI_ALLGATHER( plin, jtp*2, MPI_RTYPE, &
                           b2,   jtp*2, MPI_RTYPE, &
                           row_comm, IERR )
@@ -735,6 +787,9 @@
       real b2(nxp,lev,nsizex)
       integer nx,lev,i,ii,k,IERR
 
+      b1=0.
+      b2=0.
+
       do k=1,lev
          b1(1:nxp,k)=a(1:nxp,k)
       enddo
@@ -768,6 +823,9 @@
       real b1(nxp,lev)
       real b2(nxp,lev,nsizex)
       integer j,nx,lev,i,i2,ii,k,IERR
+
+      b1=0.
+      b2=0.
 
       do k=1,lev
          b1(1:nxp,k)=a(1:nxp,k)
@@ -816,6 +874,15 @@
       real(kind=RTYPE) b6(lev,2,jtp)
       real(kind=RTYPE) c1(levp,2,6,jtf)
       real(kind=RTYPE) c2(levp,2,6,jtp,nsizex)
+
+      b1=0.
+      b2=0.
+      b3=0.
+      b4=0.
+      b5=0.
+      b6=0.
+      c1=0.
+      c2=0.
 
       levp2=levp*2
       i=1
@@ -883,6 +950,10 @@
       real(kind=RTYPE) c1(levp,2,jtf)
       real(kind=RTYPE) c2(levp,2,jtp,nsizex)
 
+      aout=0.
+      c1=0.
+      c2=0.
+
       levp2=levp*2
       i=1
 
@@ -929,6 +1000,10 @@
 
       real(kind=RTYPE) b1(jtp,2,lev)
       real(kind=RTYPE) b2(jtp,2,levp,nsizex)
+
+      b1=0.
+      b2=0.
+      aout=0.
 
       do j=1,jtp
       do k=1,lev
@@ -981,6 +1056,11 @@
 
       real(kind=RTYPE) b1(jtp,4,lev)
       real(kind=RTYPE) b2(jtp,4,levp,nsizex)
+   
+      b1=0.
+      b2=0.
+      aout1=0.
+      aout2=0. 
 
       do j=1,jtp
       do k=1,lev
@@ -1035,6 +1115,9 @@
       real(kind=RTYPE) b1(levp,2,jtrun,jtmax)
       real(kind=RTYPE) b2(levp,2,jtrun,jtmax,proc)
 
+      b2=0.
+      aout=0.
+
       call MPI_ALLGATHER( ain, levp*2*jtrun*jtmax, MPI_RTYPE, &
                            b2, levp*2*jtrun*jtmax, MPI_RTYPE, &
                           comm,IERR )
@@ -1077,6 +1160,17 @@
 
       integer  nxp,nx,lev,levp,ncld,my,my_max,jlen,nsizex,comm,num
       integer  nlen,ii,j,i,k,kk,ierr,jlistnum,nn,jj,n
+
+      b1=0.
+      b2=0.
+      b3=0.
+      b4=0.
+      b5=0.
+      b6=0.
+      c1=0.
+      c2=0.
+      d1=0.
+      d2=0.
 
       if(num.eq.6)then  ! 6 vars in intgrt
 
@@ -1191,6 +1285,14 @@
       real*8   c1(levp,4+ncld,jlen,nxp,proc)
       real*8   c2(levp,4+ncld,jlen,nxp,proc)
 
+      b1=0.
+      b2=0.
+      b3=0.
+      b4=0.
+      b5=0.
+      c1=0.
+      c2=0.
+
       do j=1,jlistnum
          jj=jlist1(j)
       do k=1,levp
@@ -1259,6 +1361,10 @@
       integer  nxp,nx,lev,levp,ncld,my,my_max,jlen,nsizex,comm
       integer  nlen,ii,j,i,k,kk,ierr,jlistnum,nn,jj,n
 
+      c1=0.
+      c2=0.
+      aout=0.
+
       do k=1,lev
          kk=lev-k+1
       do j=1,jlistnum
@@ -1313,6 +1419,10 @@
                        c2(levp,ncld,jlen,nxp,proc)
 
       integer  nlen,ii,j,jj,i,k,KL,ierr,jlistnum,n,i1,i2,i3,i4
+
+      c1=0.
+      c2=0.
+      aout=0.
 
       do j=1,jlistnum
          jj=jlist1(j)
@@ -1371,6 +1481,9 @@
       real*4 plout(jtp,2)
       real*4 b1(jtf,2)
 
+      b1=0.
+      plout=0.
+
       i=1
 
       do m=1,mlistnum
@@ -1406,6 +1519,11 @@
       real*4 plin1(jtrun,jtmax,2),plin2(jtrun,jtmax,2),plin3(jtrun,jtmax,2)
       real*4 plout1(jtp,2),plout2(jtp,2),plout3(jtp,2)
       real*4 b1(jtf,6)
+
+      b1=0.
+      plout1=0.
+      plout2=0.
+      plout3=0.
 
       i=1
 
@@ -1450,6 +1568,9 @@
       real*4 plin(jtp,2)
       real*4 plout(jtrun,jtmax,2)
       real*4 b2(jtp,2,nsizex)
+
+      b2=0.
+      plout=0.
 
       call MPI_ALLGATHER( plin, jtp*2, MPI_REAL4, &
                           b2,   jtp*2, MPI_REAL4, &
@@ -1500,6 +1621,15 @@
       real*4 b6(lev,2,jtp)
       real*4 c1(levp,2,6,jtf)
       real*4 c2(levp,2,6,jtp,nsizex)
+
+      b1=0.
+      b2=0.
+      b3=0.
+      b4=0.
+      b5=0.
+      b6=0.
+      c1=0.
+      c2=0.
 
       levp2=levp*2
       i=1
@@ -1567,6 +1697,10 @@
       real*4 c1(levp,2,jtf)
       real*4 c2(levp,2,jtp,nsizex)
 
+      c1=0.
+      c2=0.
+      aout=0.
+
       levp2=levp*2
       i=1
 
@@ -1612,6 +1746,10 @@
       real*4 aout(levp,2,jtrun,jtmax)
       real*4 b1(jtp,2,lev)
       real*4 b2(jtp,2,levp,nsizex)
+
+      b1=0.
+      b2=0.
+      aout=0.
 
       do j=1,jtp
       do k=1,lev
@@ -1664,6 +1802,12 @@
 
       real*4 b1(jtp,4,lev)
       real*4 b2(jtp,4,levp,nsizex)
+
+      b1=0.
+      b2=0.
+      aout1=0.
+      aout2=0.
+      nlen=0
 
       do j=1,jtp
       do k=1,lev

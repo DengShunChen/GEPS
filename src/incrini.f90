@@ -15,7 +15,7 @@
 
       real hld1(nx,my)
       real(kind=RTYPE) pt1(nx,my_max)
-      character typ*6,lrec*26
+      character typ*6
       real(kind=RTYPE) cc(nx+2,levp,1,my_max),dummy,                  &
                        hld3(nx,levp,my_max),hld4(nx,levp,ncld,my_max)
 !!      real      cc(nx+2,levp,3+ncld,my_max),wss(levp,2,3+ncld,jtrun,jtmax)
@@ -31,8 +31,8 @@
       do k = 1, levp
         KL=lev-Llist(k)+1
         write (typ, '("m",i2.2,"200")' ) KL
-        call syslbl (typ,idtg2,itaup,gmdef,lrec)
-        call dmsread_split(nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+        call syslbl_r (typ,idtg2,itaup,gmdef)
+        call dmsread_split(nx,my,lncrec,'H',ifilin,hld1,istat)
         do jj = 1, jlistnum
           j=jlist1(jj)
           nxj=nxdef(j)
@@ -49,8 +49,8 @@
       do k = 1, levp
         KL=lev-Llist(k)+1
         write (typ, '("m",i2.2,"210")' ) KL
-        call syslbl (typ,idtg2,itaup,gmdef,lrec)
-        call dmsread_split(nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+        call syslbl_r (typ,idtg2,itaup,gmdef)
+        call dmsread_split(nx,my,lncrec,'H',ifilin,hld1,istat)
         do jj = 1, jlistnum
           j=jlist1(jj)
           nxj=nxdef(j)
@@ -64,8 +64,8 @@
       call mpe2d_transpose_ndsl_f2p(hld3,vt, &
             nxp,nx,levf,levp,1,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
-      call syslbl ('B00010',idtg2,itaup,ggdef,lrec)
-      call dmsread (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+      call syslbl_r ('B00010',idtg2,itaup,ggdef)
+      call dmsread (nx,my,lncrec,'H',ifilin,hld1,istat)
       do jj = 1, jlistnum
         j=jlist1(jj)
         ii=nxjstart(j)
@@ -82,8 +82,8 @@
       do k = 1, levp
         KL=lev-Llist(k)+1
         write (typ, '("m",i2.2,"100")' ) KL
-        call syslbl (typ,idtg2,itaup,gmdef,lrec)
-        call dmsread_split(nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+        call syslbl_r (typ,idtg2,itaup,gmdef)
+        call dmsread_split(nx,my,lncrec,'H',ifilin,hld1,istat)
         do jj = 1, jlistnum
           j=jlist1(jj)
           nxj=nxdef(j)
@@ -99,8 +99,8 @@
       do k = 1, levp
         KL=lev-Llist(k)+1
         write (typ, '("m",i2.2,"500")' ) KL
-        call syslbl (typ,idtg2,itaup,gmdef,lrec)
-        call dmsread_split(nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+        call syslbl_r (typ,idtg2,itaup,gmdef)
+        call dmsread_split(nx,my,lncrec,'H',ifilin,hld1,istat)
         do jj = 1, jlistnum
           j=jlist1(jj)
           nxj=nxdef(j)
@@ -116,8 +116,8 @@
         do k = 1, levp
           KL=lev-Llist(k)+1
           write (typ, '("m",i2.2,"550")' ) KL     ! cloud liquid water content
-          call syslbl (typ,idtg2,itaup,gmdef,lrec)
-          call dmsread_split(nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+          call syslbl_r (typ,idtg2,itaup,gmdef)
+          call dmsread_split(nx,my,lncrec,'H',ifilin,hld1,istat)
           do jj = 1, jlistnum
             j=jlist1(jj)
             nxj=nxdef(j)
@@ -132,8 +132,8 @@
         do k = 1, levp
           KL=lev-Llist(k)+1
           write (typ, '("m",i2.2,"560")' ) KL
-          call syslbl (typ,idtg2,itaup,gmdef,lrec)
-          call dmsread_split(nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+          call syslbl_r (typ,idtg2,itaup,gmdef)
+          call dmsread_split(nx,my,lncrec,'H',ifilin,hld1,istat)
           do jj = 1, jlistnum
             j=jlist1(jj)
             nxj=nxdef(j)
@@ -151,8 +151,8 @@
       do k = 1, levp
         KL=lev-Llist(k)+1
         write (typ, '("m",i2.2,"000")' ) KL
-        call syslbl (typ,idtg2,itaup,gmdef,lrec)
-        call dmsread_split(nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+        call syslbl_r (typ,idtg2,itaup,gmdef)
+        call dmsread_split(nx,my,lncrec,'H',ifilin,hld1,istat)
         do jj = 1, jlistnum
           j=jlist1(jj)
           nxj=nxdef(j)

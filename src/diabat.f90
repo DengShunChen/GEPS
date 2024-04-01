@@ -196,7 +196,7 @@
       implicit  none
 !-----------------------------------------------------------------------
       integer nfxr, ntrac, kk, nk, n
-      real    dtlw,dtsw,solhr,rsolhr
+      real    dtlw,dtsw
 !
 ! for land_noah_new
        real      sfalb(nxp,my_max),sfemis(nxp,my_max)
@@ -637,13 +637,13 @@
         z0ocn=z0
 !     read climate data
         call readclx( nx,my,my_max,julian,land,ocean,ice,tgclim,gwclim  &
-                   ,z0,alb,sstc,bckfile,sigmaf,istyp,ivegtyp,ls         &
+                   ,z0,alb,sstc,sigmaf,istyp,ivegtyp,ls                 &
                    ,shdmax,shdmin,slopetyp,snoalb,ggdef,isot,ivegsrc )
 !
 !     read new albedo
 !
         if (irad .eq. 2) then
-          call readalb(bckfile,nx,my,my_max,julian,ggdef,         &
+          call readalb(nx,my,my_max,julian,         &
                      alvsf,alvwf,alnsf,alnwf,facsf,facwf)
         endif
 !
@@ -1135,7 +1135,7 @@
              sinl(j),cosl(j),xlat(j),xlonr(1,jj),jdat,d2r,xkapa,           &
              ptrad,dtlw,dtsw,lsswr,lslwr,lssav,                            &
              nfxr,j,                                                       &
-             nxp,nxjp(j),lev,ncld,lprnt,ipt,kdt,rsolhr,                    &
+             nxp,nxjp(j),lev,ncld,lprnt,ipt,kdt,                           &
              uni_cloud,lmfshal,lmfdeep2,                                   &
              deltaq(1,1,jj),sup,cnvwr(1,1,jj),cnvcr(1,1,jj),               &
              ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),fqp1(1,1,jj),nmmiph,     &

@@ -3,8 +3,13 @@
 #-- enviornment
  user=`whoami`
 # datamv='login11'
+ if [ ${machine} = a100 ]; then
+         mach='x86_64'
+ elif [ ${machine} = fx1000 ]; then
+         mach=${machine}
+ fi
  dmsdb_home=$(cat ~/.dmsrc |xargs | cut -d' ' -f 2)
- DMSPATH=/package/${machine}/dms/dms.v4/bin
+ DMSPATH=/package/${mach}/dms/dms.v4/bin
  GFSDIR=$MDIR
  GFSFIX=$MDIR/fix
  GFSWRK=${GFSDIR}/work_${machine}
@@ -116,6 +121,9 @@ ln -fs $EMMISSIVITY_FILE sfc_emissivity_idx.txt
 
 ln -fs $FIXDIR/* .
 cp $NWPETC/gfsctl $GFSWRK/gfsctl
+if [ $GITLAB_CICD = 1 ] ; then
+  echo -e "00\n06" > $GFSWRK/gfsctl
+fi
 cp $NWPETC/ocards $GFSWRK/ocards
 cp $NWPETC/namlsts $GFSWRK/namlsts
 
@@ -127,11 +135,16 @@ elif [ $JCAP = 383  ] ; then
   MODEL_BASIC='nco=384,'
 fi
 
+if [ $machine = a100 ] ; then
+  MODEL_BASIC=${MODEL_BASIC}' ncld=3,'
+  MODLST_PHY='nmmiph=2,'
+fi
+
 cat > ${GFSWRK}/namlsts << EOF
  &model_param
   nco=640,
   lev=72,
-  ncld=3,
+  ncld=7,
   octahedral=true,
   nout=9000,
   io_quilting=false,
@@ -157,7 +170,7 @@ cat > ${GFSWRK}/namlsts << EOF
   idg=40, jdg=108,
   itypbl=0, numreduce=5, ptmeans=800.,
   irad=2, nmland=2,
-  nmcup=6, nmshl=3, nmpbl=4, nmmiph=2,  
+  nmcup=6, nmshl=3, nmpbl=4, nmmiph=12,
   nmgwor=2, nmgwcv=2,
   ktcup=20, cgw=4.2e-5,
   mtnvar=14, doo3l=t,
@@ -170,6 +183,7 @@ cat > ${GFSWRK}/namlsts << EOF
   two_loop=t,
   itter=2, vd=0.002, factop=60.,
   ${MODLST_RES}
+  ${MODLST_PHY}
  &end
 
  &typ
@@ -205,13 +219,13 @@ cat > ${GFSWRK}/namlsts << EOF
 EOF
 
  if [ $CMAKE_BUILD = 1 ] ; then
-	FCT_MODEL=$MDIR/build/bin/tcogfs.x
+	FCT_MODEL=$MDIR/build_${machine}/bin/tcogfs.x
  else
 	FCT_MODEL=$MDIR/src/$EXEC
  fi
  /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} -Wl,-T
 
  if [ $? != 0 ] ; then
-  echo "error occured: fct model fail !!"
+  echo "error occured: fct model fail !!" ; exit 9
  fi
 

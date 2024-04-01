@@ -1,5 +1,5 @@
       subroutine outflds( itau,nx,my,my_max,lev,ncld                 &
-             , lmax,numout,idtg,ifilout                              &
+             , lmax,numout,idtg                                      &
              , outdir,ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo        &
              , ptend,pt,plt,pk,pk2,phi,ut,vt,vvel                    &
              , tt,qt_org,rdiv,rvor,tg,gwet,z0,hflux,qflux,snr        &
@@ -62,7 +62,7 @@
                      , pk(nxp,lev,my_max),pk2(nxp,lev,my_max)       &
                      , cosl(my),typtrk(nxp,my_max,5)
 !
-      character ifilout*80, ggdef*4
+      character ggdef*4
       integer*8 idtg
 !
 ! local work arrays
@@ -303,7 +303,7 @@
 !  add terrain pressure output in surfout ( add "ptop" )
 !
       if(myrank.eq.0)print*,' outfld : start surfout, lwrite = ',lwrite
-      call surfout (nx,my,my_max,ifilout,itau,idtg,taudir,ntau,pdiff,pt  &
+      call surfout (nx,my,my_max,itau,idtg,taudir,ntau,pdiff,pt  &
                    ,ptop,typtrk(1,1,1),ptend,glob,ggdef,lwrite)
 !
 !  obtain the the bottom pressure for the following interpolations
@@ -396,7 +396,7 @@
 !
       if(numt.gt.0) then
       if(myrank.eq.0)print*,' outfld : start tempout, lwrite = ',lwrite
-        call tempout( nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numt &
+        call tempout( nx,my,my_max,lpout,lev,itau,idtg,pout,numt &
                ,whtlev,pkout,plog,pllp,tmp,bt1,pres3d,ggdef,lwrite)
       endif
 !
@@ -423,7 +423,7 @@
 !!      call mpe_unify(bt1,nx,my,2,mpe_double)
 !
       if(myrank.eq.0)print*,' outfld : start shumfout, lwrite = ',lwrite
-      call shumout( nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numq &
+      call shumout( nx,my,my_max,lpout,lev,itau,idtg,pout,numq &
            ,whtlevq,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,lwrite)
 !
 !  output clout water content if necessnary
@@ -448,7 +448,7 @@
             enddo
 !!        call mpe_unify(bt1,nx,my,2,mpe_double)
             if(myrank.eq.0)print*,' outfld : start shumout2, lwrite = ',lwrite
-            call shumout2( nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numq &
+            call shumout2( nx,my,my_max,lpout,lev,itau,idtg,pout,numq &
                ,whtlevq,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,ntrac,lwrite )
           endif
         enddo
@@ -469,7 +469,7 @@
           enddo
 !!        call mpe_unify(bt1,nx,my,2,mpe_double)
           if(myrank.eq.0)print*,' outfld : start shumout2, lwrite =',lwrite
-            call shumout2(nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numq &
+            call shumout2(nx,my,my_max,lpout,lev,itau,idtg,pout,numq &
             ,whtlevq,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,ntoz,lwrite)
         endif
 !        
@@ -492,7 +492,7 @@
         enddo
 !!        call mpe_unify(bt1,nx,my,2,mpe_double)
         if(myrank.eq.0)print*,' outfld : start shumout2, lwrite =',lwrite
-          call shumout2(nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numq &
+          call shumout2(nx,my,my_max,lpout,lev,itau,idtg,pout,numq &
           ,whtlevq,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,ncld+1,lwrite)
 
       endif
@@ -535,7 +535,7 @@
 !!        call mpe_unify(bt1,nx,my,2,mpe_double)
 !
         if(myrank.eq.0)print*,' outfld : start geopout, lwrite = ',lwrite
-        call geopout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numz &
+        call geopout (nx,my,my_max,lpout,lev,itau,idtg,pout,numz &
               ,whtlevz,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,phistd  &
               ,typtrk(1,1,4),typtrk(1,1,5),lwrite)
 !
@@ -555,7 +555,7 @@
         enddo
 !!        call mpe_unify(bt1,nx,my,2,mpe_double)
         if(myrank.eq.0)print*,' outfld : start vorout, lwrite = ',lwrite
-        call vortout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num  &
+        call vortout (nx,my,my_max,lpout,lev,itau,idtg,pout,num  &
                  ,whtlev,pkout,plog,pllp,rvor,bt1,pres3d,ggdef           &
                  ,typtrk(1,1,2),typtrk(1,1,3),lwrite)
       endif
@@ -572,7 +572,7 @@
         enddo
 !!        call mpe_unify(bt1,nx,my,2,mpe_double)
         if(myrank.eq.0)print*,' outfld : start divgout, lwrite = ',lwrite
-        call divgout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num &
+        call divgout (nx,my,my_max,lpout,lev,itau,idtg,pout,num &
                   ,whtlev,pkout,plog,pllp,rdiv,bt1,pres3d,ggdef,lwrite)
       endif
 !
@@ -590,7 +590,7 @@
 !!        call mpe_unify(bt1,nx,my,2,mpe_double)
 !!        call mpe_unify(bt2,nx,my,2,mpe_double)
         if(myrank.eq.0)print*,' outfld : start windout, lwrite = ',lwrite
-        call windout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num &
+        call windout (nx,my,my_max,lpout,lev,itau,idtg,pout,num &
            ,whtlev,cosl,pkout,plog,pllp,ut,vt,vvel,bt1,bt2,pres3d,glob,ggdef,lwrite)
       endif
 !
@@ -606,7 +606,7 @@
         enddo
 !!        call mpe_unify(bt1,nx,my,2,mpe_double)
       if(myrank.eq.0)print*,' outfld : start dragout, lwrite = ',lwrite
-        call dragout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num &
+        call dragout (nx,my,my_max,lpout,lev,itau,idtg,pout,num &
                   ,whtlev,pkout,plog,pllp,drag,bt1,pres3d,ggdef,lwrite)
       endif
 !
@@ -628,7 +628,7 @@
             bt1(i,jj)=clds(i,lev,jj)
           enddo
         enddo
-          call cloudout(nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num &
+          call cloudout(nx,my,my_max,lpout,lev,itau,idtg,pout,num &
           ,whtlev,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,lwrite)
       endif
 !
@@ -636,7 +636,7 @@
         labx='sit   '
         call whtrec (labx,ntau,taudir,whtlev,num)
         if(num.gt.0) then
-          call sitout(nx,my,my_max,itau,ifilout,idtg,num,whtlev,ggdef)
+          call sitout(nx,my,my_max,itau,idtg,num,whtlev,ggdef)
         endif
       endif
 !
@@ -719,7 +719,7 @@
 !
       if(myrank .eq. 0) print *,'call out2d'
       if ( lwrite )                                                 &
-      call out2d (nx,lev,my,my_max,ifilout,itau,idtg,taudir,ntau    &
+      call out2d (nx,lev,my,my_max,itau,idtg,taudir,ntau            &
                  ,hflux,qflux,tg,gwet,snr,z0,raintot,raincu,rainlp  &
                  ,plcl,cumtop,ss,rs,alb,gwclim,glob                 &
                  ,acld,ugws,vgws,t2,q2,rh2,rh10,u10,v10,gfx,rld     &

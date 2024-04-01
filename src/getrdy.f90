@@ -29,6 +29,7 @@
       use ozne_def
       use radn
       use albn
+      use raddiag
 !-----------------------------------------------------------------------
       use mod_sitgrid
       use mod_sit_vdiff,     only:sit_vdiff_init,sit_vdiff,SICEDFN &
@@ -61,7 +62,8 @@
                        ww4(nx,my)
 !byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
 
-      character lrec*26,rfile*55,ctau*6,topostd*4,topohgt*4,key*34
+      character rfile*255,ctau*7,topostd*4,topohgt*4,ccore*4
+      integer len1,len2
 !helio>
       character f71*50
 !helio<
@@ -72,17 +74,8 @@
 !
 ! restart  : read(7) work array
 !
-!!      real, dimension(:), allocatable :: work_io
+      real, dimension(:), allocatable :: work_io
 !
-!
-! restart  : read(10) work array
-!
-      real, dimension(:,:,:), allocatable :: tm1,tm2,tm3,tm4
-!
-! for ncld>=2
-      real, dimension(:,:,:), allocatable :: tmc1,tmc2
-      real, dimension(:,:,:), allocatable :: tmc3,tmc4
-      real, dimension(:,:,:), allocatable :: tmc5,tmc6
 ! add for sfcuvt
       real    tx(nxp), qx(nxp),ux(nxp),vx(nxp),  &
               qs(nxp),tsx(nxp),hs(nxp),ps(nxp),  &
@@ -95,9 +88,6 @@
       integer   ls(nxp,my_max)
       logical   ncepsnow,ncepice
 !soil
-      logical wrestrt
-      data wrestrt/.false./
-!
       integer lmax,nxmy,mlmax2,i,j,jj,k,m,mf,n,nxj,ios,lcwb,lphy,itaui, &
               lncrec,istat,itaup,isnow,njump1,njump2,njump3,lvlw,lvlw1, &
               lvlw2,lvlw3,ii,icwarn
@@ -176,158 +166,210 @@
 !
 ! restart gfcst: read restart file and pdiff file
 !
-      call chlen (cwbout,48,lcwb)
-      call chlen (phyout,48,lphy)
       itaui = taui + 0.001
-      write (ctau,800) itaui
-  800 format('tau',i4.4)
-!
-      rfile = cwbout(1:lcwb)//ctau
-!
-      if(myrank .eq. 0) then
-      print*, ' restart at tau, lcwb, rfile = ', taui, lcwb, rfile
-      endif
 
-      flg=.false.
-      if(myrank .eq. 0) then
-       flg=.true.
-       open (unit=7,file=rfile,form='unformatted',status='old' &
-            ,iostat=ios)
-      endif
-!
-!ch   call mpe_broadcast(ios,1,flg,mpe_integer)
-      call mpe_bcast(ios,1,0,mpe_integer)
-      if(ios .ne. 0) goto 820
-!
-!!      if(myrank .eq. 0) then
-!!      read (7)  work_io
-!!      close (7)
-!!      endif
-!
-!!      call scatter_spec(work_io,vornow,divnow,temnow,qnow,plnow,   &
-!!         vorold,divold,temold,qold,plold,dsqgeo,spgeo,trefs,       &
-!!         lev,ncld,jtrun,jtmax,my,nsize)
-!
-      rfile = phyout(1:lphy)//ctau
-!
-      if(myrank .eq. 0) then
-      print*, ' restart at tau, lphy, rfile = ', taui, lphy, rfile
-      endif
-!
-      open (unit=10,file=rfile,form='unformatted',status='old',err=820)
+      call dtgfix12(idtg,idtg2,itaui)
+        if(mod(taui,24.) /= 0.) then
+          if(myrank.eq.0) print*,'update climatology data, for restart in julian day= ',julian,' tau=',taui
 
-      allocate (tm1(nx,lev,my))
-      allocate (tm2(nx,lev,my))
-      allocate (tm3(nx,lev,my))
-      allocate (tm4(nx,lev,my))
-      allocate (tmc1(nx,lev,my))
-      allocate (tmc2(nx,lev,my))
-      allocate (tmc3(nx,lev,my))
-      allocate (tmc4(nx,lev,my))
-      allocate (tmc5(nx,lev,my))
-      allocate (tmc6(nx,lev,my))
-      allocate (temp1(nx,lev,my))
-      allocate (temp2(nx,lev,my))
-!
-!      read(10) snr,gwr,tg,tm1,tm2,ss,rs,tm3,tm4,ustar,tstar,qstar   &
-!              , hflux,qflux,raincu,rainlp,totalp,curate,plcl,cumtop &
-!--
-!reduceg : base on sgeo to induce spgeo, different from normal version
-!--
-!              , tgclim,gwet,z0,alb,land,ice,ocean,gwclim,acld,sgeo  &
-!              , temp1,temp2,canopy,sigmaf,istyp,ivegtyp,rld         &
-!              , tmc1,tmc2,tmc3,tmc4,fpsp,fpsp1
-!      close (10)
-!
-      do jj = 1, jlistnum
-       j=jlist1(jj)
-       nxj=nxdef_2d(j)
-       do k = 1, lev
-        do i = 1, nxj
-!        e(i,k,jj)     = tm1(i,k,j)
-!        eps(i,k,jj)   = tm2(i,k,j)
-!        o3l(i,k,jj)   = tm3(i,k,j)
-!        dtrad(i,k,jj) = tm4(i,k,j)
-!        ftp(i,k,jj)   = tmc1(i,k,j)
-!        fqp(i,k,jj)   = tmc2(i,k,j)
-!        ftp1(i,k,jj)   = tmc3(i,k,j)
-!        fqp1(i,k,jj)   = tmc4(i,k,j)
-        enddo
-       enddo
-      enddo
-!soil
-      do jj=1,jlistnum
-       j=jlist1(jj)
-       nxj=nxdef_2d(j)
-       do k = 1, km_soil
-        do i = 1, nxj
-!        smc(i,k,jj)=temp1(i,k,j)
-!        stc(i,k,jj)=temp2(i,k,j)
-        enddo
-       enddo
-      enddo
-!
-      deallocate (tm1)
-      deallocate (tm2)
-      deallocate (tm3)
-      deallocate (tm4)
-      deallocate (tmc1)
-      deallocate (tmc2)
-      deallocate (tmc3)
-      deallocate (tmc4)
-      deallocate (tmc5)
-      deallocate (tmc6)
-      deallocate (temp1)
-      deallocate (temp2)
+          call readclx( nx,my,my_max,julian,land,ocean,ice,tgclim,gwclim      &
+                       ,z0,alb,sst,bckfile,sigmaf,istyp,ivegtyp,ls            &
+                       ,shdmax,shdmin,slopetyp,snoalb,ggdef,isot,ivegsrc )
+!---------------------------------------------------------------------
+!   read new albedo:
+!---------------------------------------------------------------------
+          if (irad .eq. 2) then
+! changed to correct julian in restart
+             call readalb(bckfile,nx,my,my_max,julian,ggdef,       &
+                          alvsf,alvwf,alnsf,alnwf,facsf,facwf)
+             do jj=1,jlistnum
+               j=jlist1(jj)
+               nxj=nxdef_2d(j)
+               do i=1,nxj
+                 alvsf(i,jj)=alvsf(i,jj)*0.01
+                 alvwf(i,jj)=alvwf(i,jj)*0.01
+                 alnsf(i,jj)=alnsf(i,jj)*0.01
+                 alnwf(i,jj)=alnwf(i,jj)*0.01
+                 facsf(i,jj)=facsf(i,jj)*0.01
+                 facwf(i,jj)=facwf(i,jj)*0.01
+               enddo
+             enddo
 
-      lncrec=nx*my
-      call syslbl('x00dif',idtg,0,ggdef,lrec)
-      call dmsread(nx,my,lrec,lncrec,'H',ifilout,ww1,istat)
-      call unify_reducepick(nx,my,my_max,ww1,pdiff)
+          endif ! irad=2
+        endif ! if(mod(taui,24.) /= 0.) then
 
-      call syslbl('h00100',idtg,0,ggdef,lrec)
-      call dmsread(nx,my,lrec,lncrec,'H',ifilin,ww1,istat)
-      call unify_reducepick(nx,my,my_max,ww1,t1000)
 
-      call syslbl('x00tsv',idtg,0,ggdef,lrec)
-      call dmsread(nx,my,lrec,lncrec,'H',ifilout,ww1,istat)
-      call unify_reducepick(nx,my,my_max,ww1,tsave)
+
+        write (ctau,800) itaui
+  800   format(i7.7)
 !
-!  read dmsdata for standard deviation of terrain field
+        write(ccore,'(i4.4)') myrank
+        rfile = trim(cwbout)//'cwbout_'//ctau
 !
-!dms    istdno=99
-!dms    istdno=0
-!c      topostd='gbkf'   ! responding to istdno=99
-        topostd='gbk0'   ! responding to istdno=0
-        write(lrec,'("s00062",a4,a4,12x)')topostd,ggdef
-        call dmsread(nx,my,lrec,nxmy,'H',bckfile,ww1,istat)
+        if(myrank .eq. 0) then
+          print*, ' restart at tau, rfile = ', taui, trim(rfile)
+        endif
+        flg=.false.
+        if(myrank .eq. 0) then
+          open (unit=7,file=trim(rfile),form='unformatted',status='old' &
+               ,iostat=ios)
+        endif
 !
-        do jj=1,jlistnum
-          j=jlist1(jj)
-          ii=nxjstart(j)
-          nxj=nxdef_2d(j)
-        if( lreduce.eq.1 ) call reducepickr (ww1(1,j),nxdef(j),nx,1)
-          do i=1,nxj
-            std(i,jj)=ww1(ii,j)*ww1(ii,j)
-            if(ww1(ii,j).le.0. .or. ocean(i,jj)) std(i,jj)=0.
-            ii=ii+1
-          enddo
-        enddo
+        call mpe_bcast(ios,1,0,mpe_integer)
 !
-      go to 900
-  820 continue
-      if ( rfile(1:lcwb) .eq. cwbout(1:lcwb) )  close (7)
-      if ( rfile(1:lphy) .eq. phyout(1:lphy) )  close (10)
-!
-      if(myrank .eq. 0) then
-        print*, ' restart failed at tau, rfile = ', taui, rfile
-        print*, ' the gfcst run will start from tau = 0 again'
-      endif
-!
-      taui = 0.0
-      restrt = .false.
-      donnmi = .true.
-  900 continue
+          if (ios .eq. 0) then
+              if(myrank .eq. 0) &
+              print *,'getrdy : open rfile ok!! , rfile=',trim(rfile)
+          else
+              if(myrank .eq. 0) &
+                print *,'getrdy : open rfile error !! , rfile=',trim(rfile)
+              call mpe_finalize
+          endif
+  !
+          call mpe_broadcast(ios,1,flg,mpe_integer)
+          if(ios .ne.0) then
+            if(myrank .eq. 0) &
+              print *,'getrdt : mpe_broadcast error !! , rfile=',trim(rfile)
+            call mpe_finalize
+            stop
+          endif
+          len1=2*levp*jtrun*jtmax*nsize
+          len2=2*jtrun*jtmax*nsize
+          allocate(work_io(len1))
+          if(myrank==0) read(7) work_io
+          call mpe_scatter_io(work_io,vornow,len1/nsize,nsize)
+          if(myrank==0) read(7) work_io
+          call mpe_scatter_io(work_io,divnow,len1/nsize,nsize)
+          if(myrank==0) read(7) work_io
+          call mpe_scatter_io(work_io,temnow,len1/nsize,nsize)
+          if(myrank==0) read(7) work_io
+          call mpe_scatter_io(work_io,vorold,len1/nsize,nsize)
+          if(myrank==0) read(7) work_io
+          call mpe_scatter_io(work_io,divold,len1/nsize,nsize)
+          if(myrank==0) read(7) work_io
+          call mpe_scatter_io(work_io,temold,len1/nsize,nsize)
+          if(myrank==0) read(7) work_io
+          call mpe_scatter_io(work_io,trefs,len1/nsize,nsize)
+          deallocate(work_io)
+  !
+  ! Transfer Spectral to Gridpoint for u,v,t,q,ps at n-1
+  !
+         call tranuv(jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac    &
+                    ,poly,dpoly,vorold,divold,up,vp,nsizey)
+         call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divold,cc,1,nsizey)
+         call ujoinsr(cc,rdivm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+         call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temold,cc,1,nsizey)
+         call ujoinsr(cc,ttp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+  !
+          allocate(work_io(len2))
+          if(myrank==0) read(7) work_io
+          call mpe_scatter_io(work_io,plnow,len2/nsize,nsize)
+          if(myrank==0) read(7) work_io
+          call mpe_scatter_io(work_io,plold,len2/nsize,nsize)
+          deallocate(work_io)
+          if(myrank==0) close(7)
+
+          rfile = trim(phyout)//'phyout_'//ctau//'/'//ccore
+
+          i=200+myrank
+          open (i,file=trim(rfile),form='unformatted',status='old',iostat=ios)
+          if (ios .eq. 0) then
+            if(myrank==0) &
+              print *,'getrdy : open rfile ok!! , rfile=',trim(rfile)
+          else
+            if(myrank .eq. 0) &
+                print *,'getrdy : open rfile error !! , rfile=',trim(rfile)
+            call mpe_finalize
+            stop
+          endif
+  !
+          read(i) land
+          read(i) ocean
+          read(i) ice
+          read(i) alb
+          read(i) z0
+          read(i) tgclim
+          read(i) gwclim
+          read(i) sgeo
+          read(i) canopy
+          read(i) ustar
+          read(i) tstar
+          read(i) qstar
+          read(i) raincu
+          read(i) rainlp
+          read(i) totalp
+          read(i) curate
+          read(i) plcl
+          read(i) cumtop
+          read(i) snr
+          read(i) sncover
+          read(i) sndepth
+          read(i) tg
+          read(i) gwr
+          read(i) gwet
+          read(i) cice
+          read(i) xtice
+          read(i) zice
+          read(i) fpsp
+          read(i) fpsp1
+  !
+          read(i) hflux
+          read(i) qflux
+          read(i) ss
+          read(i) rs
+          read(i) asol
+          read(i) olr
+          read(i) sld
+          read(i) rld
+          read(i) asold
+  !jwhwu 202003
+          read(i) sfemis
+          read(i) sfalb
+          read(i) std
+  !jwhwu
+          read(i) ctot
+          read(i) clds
+          read(i) pdiff
+          read(i) tsave
+  !jwhwu 201702 | add
+          read(i) tsflw
+  !jwhwu 201702 | add
+          read(i) cosz
+          read(i) slag,sdec,cdec,solcon,solhr,rsolhr, &
+  ! overcome round off problem in restart
+               tau,hours,itimestep,xy
+
+          read(i) o3l
+          read(i) ftp
+          read(i) fqp
+          read(i) ftp1
+          read(i) fqp1
+  !jwhwu 201702 ! add
+          read(i) asl
+          read(i) atl
+          read(i) dtrad
+  !jwhwu 201910 ! add
+          read(i) deltaq
+          read(i) cnvwr
+          read(i) cnvcr
+  !jwhwu 202208 ! add
+          read(i) dtcup
+          read(i) ducup
+          read(i) dvcup
+          read(i) dtshl
+          read(i) dushl
+          read(i) dvshl
+          read(i) dtlsp
+          read(i) hfiltx
+          read(i) alphax
+          read(i) pdryi
+  !
+          read(i) qt
+  !       read(i) qp   ! not need
+          read(i) smc
+          read(i) stc
+          read(i) slc
+          close(i)
 !
       endif     ! end of (restrt=true)
 
@@ -350,19 +392,19 @@
 ! new start gfcst: read climate data, initialize parameters
 !
         call readclx( nx,my,my_max,julian,land,ocean,ice,tgclim,gwclim  &
-                   ,z0,alb,sst,bckfile,sigmaf,istyp,ivegtyp,ls   &
+                   ,z0,alb,sst,sigmaf,istyp,ivegtyp,ls                  &
                    ,shdmax,shdmin,slopetyp,snoalb,ggdef,isot,ivegsrc )
 !
 !  read sst analysis data
 !
-        call syslbl('w00100',idtg,0,ggdef,lrec)
-        call dmsread(nx,my,lrec,nxmy,'H',ifilin,ww1,istat)
+        call syslbl_r('w00100',idtg,0,ggdef)
+        call dmsread(nx,my,nxmy,'H',ifilin,ww1,istat)
         call unify_reducepick(nx,my,my_max,ww1,sst)
 ! ------------------------------------------------------------
 !   read new albedo
 !-------------------------------------------------------------
       if (irad .eq. 2) then
-        call readalb(bckfile,nx,my,my_max,julian,ggdef,         &
+        call readalb(nx,my,my_max,julian,         &
                    alvsf,alvwf,alnsf,alnwf,facsf,facwf)
         if (myrank.eq.0) print *, 'irad=2, readalb ok!!'
       endif
@@ -379,7 +421,7 @@
 !
         itaup=int(taup+0.0001)
 !
-!  dtgfix12 needs idtg of long integer for dms 34 keys
+!  dtgfix12 needs idtg of long integer for dms 38 keys
 !
         call dtgfix12(idtg,idtg2,-itaup)
         call rdpbl(nx,my,my_max,snr,gwr,tg,zice,ifilin,idtg2,itaup,ggdef)
@@ -395,8 +437,8 @@
         isnow = idtg - (idtg/10000)*10000
 !                           
         if( ncepsnow  .and. isnow.eq.0 )then
-          call syslbl('b00650',idtg,0,ggdef,lrec)
-          call dmsread(nx,my,lrec,nxmy,'H',ifilin,ww1,istat)
+          call syslbl_r('b00650',idtg,0,ggdef)
+          call dmsread(nx,my,nxmy,'H',ifilin,ww1,istat)
           call unify_reducepick(nx,my,my_max,ww1,snr)
           if( myrank .eq. 0 ) print*, &
             "update snow depth with ncep's snow analysis, at dtg=",idtg
@@ -431,20 +473,24 @@
 !          call dmsreadi(nx,my,lrec,nxmy,'I',ifilin,icex,istat)
 !          if( lreduce.eq.1 ) call reducepicki (icex,nxdef,nx,my)
 !
-          call syslbl('w00091',idtg,0,ggdef,lrec)
-          call dmsread(nx,my,lrec,nxmy,'H',ifilin,ww1,istat)
+          call syslbl_r('w00091',idtg,0,ggdef)
+          call dmsread(nx,my,nxmy,'H',ifilin,ww1,istat)
           call unify_reducepick(nx,my,my_max,ww1,cice)
 !
           if( myrank .eq. 0 ) then
              print*,"get ncep's sea ice analysis, at dtg=",idtg
-             call syslbl('w00092',idtg,0,ggdef,lrec)
-             write(key,'(a26,a1,i7.7)') lrec,'H',nxmy
-             call dmschkr (ifilin,key//char(0),istat)
+             call syslbl_r('w00092',idtg,0,ggdef)
+#ifdef I38K
+             write(keyi,'(a28,a1,i9.9)') ihdgi,'H',nxmy
+#else
+             write(keyi,'(a26,a1,i7.7)') ihdgi,'H',nxmy
+#endif
+             call dmschkr (ifilin,keyi//char(0),istat)
           endif
           call mpe_bcast(istat,1,0,mpe_integer)
 !
           if ( istat .eq. 0 ) then
-            call dmsread(nx,my,lrec,nxmy,'H',ifilin,ww1,istat)
+            call dmsread(nx,my,nxmy,'H',ifilin,ww1,istat)
             call unify_reducepick(nx,my,my_max,ww1,zice)
             if( myrank .eq. 0 ) &
                print*,"get sea ice thickness from ncep analysis,",     &
@@ -657,8 +703,12 @@
         else
          write(topohgt,'(a3,i1.1)')'gbk',ksgeo
         end if
-        write(lrec,'("s00060",a4,a4,12x)')topohgt,ggdef
-        call dmsread(nx,my,lrec,nxmy,'H',bckfile,ww1,istat)
+#ifdef I38K
+        write(ihdgi,'("s00060",2x,a4,a4,12x)')topohgt,ggdef
+#else
+        write(ihdgi,'("s00060",a4,a4,12x)')topohgt,ggdef
+#endif
+        call dmsread(nx,my,nxmy,'H',bckfile,ww1,istat)
         if(istat.ne.0)then
           call mpe_finalize
           call dmsexit(-1)
@@ -685,13 +735,17 @@
         call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww3,spgeo,nsizey)
         call transr1(jtrun,jtmax,nx,my,my_max,poly,spgeo,sgeo,nsizey)
         call unify_reduceintp(nx,my,my_max,sgeo,ww4)
-        call qmaxn3 (ww4,'sgeo',' ',1,1,1,nx,my,1)
+!        call qmaxn3 (ww4,'sgeo',' ',1,1,1,nx,my,1)
 !dms    istdno=99
 !dms    istdno=0
 !c      topostd='gbkf'   ! responding to istdno=99
         topostd='gbk0'   ! responding to istdno=0
-        write(lrec,'("s00062",a4,a4,12x)')topostd,ggdef
-        call dmsread(nx,my,lrec,nxmy,'H',bckfile,ww1,istat)
+#ifdef I38K
+        write(ihdgi,'("s00062",2x,a4,a4,12x)')topostd,ggdef
+#else
+        write(ihdgi,'("s00062",a4,a4,12x)')topostd,ggdef
+#endif
+        call dmsread(nx,my,nxmy,'H',bckfile,ww1,istat)
         if(istat.ne.0)then
           call mpe_finalize
           call dmsexit(-1)
@@ -725,8 +779,8 @@
 !
       if(myrank .eq. 0) print *,'idtg=',idtg
       taux=0.
-      call  sigful( nx,my,my_max,lev,ncld,lmax,jtrun,jtmax,ifilin    &
-             , ifilout,cstar,ktrop,idtg,ptop,taux,capa,grav,rgas,rad &
+      call  sigful( nx,my,my_max,lev,ncld,lmax,jtrun,jtmax           &
+             , cstar,ktrop,idtg,ptop,taux,capa,grav,rgas,rad         &
              , cp,weight,poly,sigma,cosl,phi,tt,ut,vt,qt,o3l,pt,sgeo &
              , pdiff,tsave,t1000,plt,pk,pk2,taup                     &
              , ggdef,gmdef)
@@ -818,74 +872,6 @@
 !
 !!      call tranuv ( jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac &
 !!                   ,poly,dpoly,vornow,divnow,wk1,wk2,nsizey)
-!
-!
-!  write initial spectral coefficients to history file
-!
-      if(wrestrt)then
-        call chlen (cwbout,48,lcwb)
-        call chlen (phyout,48,lphy)
-        rfile = cwbout(1:lcwb)//'tau000'
-!!        allocate (work_io((( (7+2*ncld)*2*lev+8)*jtrun*jtmax+my*lev)*nsize))
-!!        call gather_spec(work_io,vornow,divnow,temnow,qnow,plnow,   &
-!!           vorold,divold,temold,qold,plold,dsqgeo,spgeo,trefs,      &
-!!           lev,ncld,jtrun,jtmax,my,nsize)
-!         if(myrank .eq. 0) then
-!           open (unit=7,file=rfile,form='unformatted')
-!cc         write (7) work_io
-!cc         call flush (7)
-!           close (7)
-!         endif
-!!        deallocate (work_io)
-!
-        rfile = phyout(1:lphy)//'tau000'
-        allocate (tm1(nx,lev,my))
-        allocate (tm2(nx,lev,my))
-        allocate (tm3(nx,lev,my))
-        allocate (tm4(nx,lev,my))
-        allocate (tmc1(nx,lev,my))
-        allocate (tmc2(nx,lev,my))
-        allocate (tmc3(nx,lev,my))
-        allocate (tmc4(nx,lev,my))
-        allocate (tmc5(nx,lev,my))
-        allocate (tmc6(nx,lev,my))
-        allocate (temp1(nx,lev,my))
-        allocate (temp2(nx,lev,my))
-        allocate (temp3(nx,lev,my))
-!        call unify_grid                                                   &
-!            ( snr,gwr,tg,tm1,tm2,ss,rs,tm3,tm4,ustar,tstar,qstar          &
-!            , hflux,qflux,raincu,rainlp,totalp,curate,plcl,cumtop         &
-!            , tgclim,gwet,z0,alb,land,ice,ocean,gwclim,acld               &
-!            , tmc1,tmc2,tmc3,tmc4,tmc5,tmc6,fpsp,ftp,fqp,fpsp1,ftp1,fqp1  &
-!            , e,eps,o3l,dtrad,pt,ptend,ww1,ww2,nx,my,my_max,lev           &
-!            , smc,slc,stc,canopy,sigmaf,istyp,ivegtyp,km_soil             &
-!            , temp1,temp2,temp3,rld,zice,asl,atl)
-!        if(myrank .eq. 0) then
-!          open (unit=10,file=rfile,form='unformatted')
-!cc        write(10) snr,gwr,tg,tm1,tm2,ss,rs,tm3,tm4,ustar,tstar,qstar
-!cc  1          , hflux,qflux,raincu,rainlp,totalp,curate,plcl,cumtop
-!cc  2          , tgclim,gwet,z0,alb,land,ice,ocean,gwclim,acld,sgeo
-!cc  3          , temp1,temp2,canopy,sigmaf,istyp,ivegtyp,rld
-!hmhj3          , tmc1,tmc2,fpsp
-!cc        call flush (10)
-!          close (10)
-!        endif
-        deallocate (tm1)
-        deallocate (tm2)
-        deallocate (tm3)
-        deallocate (tm4)
-        deallocate (tmc1)
-        deallocate (tmc2)
-        deallocate (tmc3)
-        deallocate (tmc4)
-        deallocate (tmc5)
-        deallocate (tmc6)
-        deallocate (temp1)
-        deallocate (temp2)
-        deallocate (temp3)
-      endif    ! end of (wrestrt) for write initial spectral coefficients
-!
-      if(myrank .eq. 0) print*,' history file written at tau= 0'
 !
       endif   ! end of ( .not. restrt )
 !
@@ -1003,7 +989,6 @@
           endif
         enddo
       enddo
-
 
 !---------------------------------
 ! read forecast sst
@@ -1299,7 +1284,7 @@
 !!       open grib2 file
         if( outgrb2 == 1) grbnxmy=nx*my
 
-        call outflds ( 0,nx,my,my_max,lev,ncld,lmax,numout,idtg,ifilout &
+        call outflds ( itaui,nx,my,my_max,lev,ncld,lmax,numout,idtg     &
              , outdir,ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo           &
              , ptend,pt,plt,pk,pk2,phi,ut,vt,vvel                       &
              , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                &
@@ -1314,9 +1299,9 @@
 
       if(out_green)then
         call  outflds_green(0,nx,my,my_max,lev,ncld                     &
-              , idtg,ifilout,cp,rgas,grav,t2,u10,v10,ss,pk           &
+              , idtg,cp,rgas,grav,t2,u10,v10,ss,pk                      &
               , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6       &
-              , ggdef)
+              )
       endif
 
 !#ifdef RSM_sigp
@@ -1330,11 +1315,22 @@
 #else
         call wrte_idate(idtgrsm)
 #endif
+#ifdef RSM_sig
+! for sigma coordinate
+        call rsmout(idtg,0,nx,my,my_max,lev,ncld      &
+                , ptop,cp,rgas,grav,sgeo,pdiff        &
+                , t1000,pt,plt,pk,pk2,phi,ut,vt       &
+                , tt,qt,tg,snr,cosl                   &
+                , km_soil,smc,stc                     &
+                , ice,land,ocean)
+#else
+! for sigma-P coordinate
         call rsmout_sigp( itaui,nx,my,my_max,lev,ncld        &
                      , idtg,ptop,rad,grav,cosl           &
                      , pt,sgeo,snr,gwr,tg,pk             &
                      , ut,vt,tt,qt,km_soil,smc,stc       &
                      , ice,land,ocean,xlon,xlat)
+#endif
        endif
 #endif
 !#ifdef RSM
