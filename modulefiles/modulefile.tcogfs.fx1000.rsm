@@ -75,7 +75,7 @@ module use /data/common/gfs/modulefiles/$machine
 module load netcdf/4.1.3
 setenv HDF5_LIB " -L/package/fx1000/hdf5-1.8.22/lib -lhdf5_hl -lhdf5"
 module load fftw/3.3.10.new_sp
-module load dms/v4
+module load dms/v4_38key
 module load operlib
 module load w3lib/2.0.2
 module unuse /data/common/gfs/modulefiles/$machine

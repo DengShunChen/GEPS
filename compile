@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash 
 set -e
 
 #MACHINE="a100"
@@ -14,21 +14,22 @@ module use modulefiles
 module load modulefile.tcogfs.${MACHINE}
 module unuse modulefiles
 
-[[ -e build ]] && rm -rf build
+BLD_DIR=build_${MACHINE}
+[[ -e ${BLD_DIR} ]] && rm -rf ${BLD_DIR}
 if [[ ${MACHINE} == 'fx1000' ]] ; then
 # Compilation
-cmake -Bbuild -S. \
+cmake -B${BLD_DIR} -S. \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DUSE_RSM=OFF
-\time --verbose cmake --build build --verbose -j $((`nproc`/2))
+\time --verbose cmake --build ${BLD_DIR} --verbose -j $((`nproc`/2))
 elif [[ ${MACHINE} == 'a100' ]] ; then
 # Compilation
-cmake -Bbuild -S. \
+cmake -B${BLD_DIR} -S. \
   -DCMAKE_BUILD_TYPE=Release \
   -DUSE_RSM=OFF \
   -DUSE_CUDA=ON \
   -DUSE_ACC=ON
-\time --verbose cmake --build build --verbose -j $((`nproc`/2))
+\time --verbose cmake --build ${BLD_DIR} --verbose -j $((`nproc`/2))
 else
   echo "[ERROR] Fatal error unknow MACHINE !" ; exit -1
 fi

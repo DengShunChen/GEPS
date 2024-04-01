@@ -1,4 +1,4 @@
-      subroutine dmsread(nx,my,lrec,lenc,kflag,ifile,z,istat)
+      subroutine dmsread(nx,my,lenc,kflag,ifile,z,istat)
 !
 !  subroutine to read data in pressure level fields
 !
@@ -16,6 +16,7 @@
       use mpe
       use rank
       use index
+      use const, only:keyi,ihdgi
 
       implicit  none
       integer   nx,my,lenc,istat
@@ -24,17 +25,21 @@
 !
       logical t_flg
 !
-      character lrec*26,ifile*80,kflag*1
+      character ifile*255,kflag*1
 !
-      character key*34,crmk*88
+      character crmk*88
 !
-      write(key,1000)lrec,kflag,lenc
+      write(keyi,1000)ihdgi,kflag,lenc
+#ifdef I38K
+ 1000 format(a28,a1,i9.9)
+#else
  1000 format(a26,a1,i7.7)
+#endif
 !
       t_flg=.false.
 !
       if(myrank .eq. 0) then
-      call dmsget(ifile,key//char(0),z,istat)
+      call dmsget(ifile,keyi//char(0),z,istat)
       t_flg=.true.
       endif
 !
@@ -45,8 +50,8 @@
 !
       if(istat.ne.0) then
 !
-      write(crmk,100) key
-  100 format('#######  record ',a34,' missing  ######')
+      write(crmk,100) keyi
+  100 format('#######  record ',a38,' missing  ######')
 !
       if(myrank .eq. 0) then
       print*, crmk
@@ -60,7 +65,7 @@
       else
 !
 #ifdef VERBOSE
-      if(myrank .eq. 0) print *,'dms key=',key,' found'
+      if(myrank .eq. 0) print *,'dms key=',keyi,' found'
 #endif
 !
       endif
@@ -69,7 +74,7 @@
       end
 
 
-      subroutine dmsreadi(nx,my,lrec,lenc,kflag,ifile,z,istat)
+      subroutine dmsreadi(nx,my,lenc,kflag,ifile,z,istat)
 !
 !  subroutine to read data in pressure level fields
 !
@@ -87,6 +92,7 @@
       use mpe
       use rank
       use index
+      use const, only:keyi,ihdgi
 
       implicit  none
       integer   nx,my,lenc,istat
@@ -95,17 +101,21 @@
 !
       logical t_flg
 !
-      character lrec*26,ifile*80,kflag*1
+      character ifile*255,kflag*1
 !
-      character key*34,crmk*88
+      character crmk*88
 !
-      write(key,1000)lrec,kflag,lenc
+      write(keyi,1000)ihdgi,kflag,lenc
+#ifdef I38K
+ 1000 format(a28,a1,i9.9)
+#else
  1000 format(a26,a1,i7.7)
+#endif
 !
       t_flg=.false.
 !
       if(myrank .eq. 0) then
-      call dmsget(ifile,key//char(0),z,istat)
+      call dmsget(ifile,keyi//char(0),z,istat)
       t_flg=.true.
       endif
 !
@@ -116,8 +126,8 @@
 !
       if(istat.ne.0) then
 !
-      write(crmk,100) key
-  100 format('#######  record ',a34,' missing  ######')
+      write(crmk,100) keyi
+  100 format('#######  record ',a38,' missing  ######')
 !
       if(myrank .eq. 0) then
       print*, crmk
@@ -131,7 +141,7 @@
       else
 !
 #ifdef VERBOSE
-      if(myrank .eq. 0) print *,'dms key=',key,' found'
+      if(myrank .eq. 0) print *,'dms key=',keyi,' found'
 #endif
 !
       endif
@@ -139,7 +149,7 @@
       return
       end
 !-------------------------------------------------
-      subroutine dmsread_split(nx,my,lrec,lenc,kflag,ifile,z,istat)
+      subroutine dmsread_split(nx,my,lenc,kflag,ifile,z,istat)
 !
 !  subroutine to read data in pressure level fields
 !
@@ -157,6 +167,7 @@
       use mpe
       use rank
       use index
+      use const, only:keyi,ihdgi
 
       implicit  none
       integer   nx,my,lenc,istat
@@ -165,17 +176,21 @@
 !
       logical t_flg
 !
-      character lrec*26,ifile*80,kflag*1
+      character ifile*255,kflag*1
 !
-      character key*34,crmk*88
+      character crmk*88
 !
-      write(key,1000)lrec,kflag,lenc
+      write(keyi,1000)ihdgi,kflag,lenc
+#ifdef I38K
+ 1000 format(a28,a1,i9.9)
+#else
  1000 format(a26,a1,i7.7)
+#endif
 !
       t_flg=.false.
 !
       if(col_rank .eq. 0) then
-      call dmsget(ifile,key//char(0),z,istat)
+      call dmsget(ifile,keyi//char(0),z,istat)
       t_flg=.true.
       endif
 !
@@ -186,8 +201,8 @@
 !
       if(istat.ne.0) then
 !
-      write(crmk,100) key
-  100 format('#######  record ',a34,' missing  ######')
+      write(crmk,100) keyi
+  100 format('#######  record ',a38,' missing  ######')
 !
       if(col_rank .eq. 0) then
       print*, crmk
@@ -201,7 +216,7 @@
       else
 !
 #ifdef VERBOSE
-      if(col_rank .eq. 0) print *,'dms key=',key,' found'
+      if(col_rank .eq. 0) print *,'dms key=',keyi,' found'
 #endif
 !
       endif

@@ -1,4 +1,4 @@
-      subroutine out2d_mfc (nx,lev,my,my_max,ifilout,itau,idtg    &
+      subroutine out2d_mfc (nx,lev,my,my_max,itau,idtg    &
                             ,raincu1,rainlp1,raintot,glob,t2,q2,rh2,rh10 &
                             ,u10,v10,tmax,tmin,rld,sld,ctot,pt,ggdef )
 !
@@ -6,7 +6,7 @@
       use mpe
       use index
       use const ,only : grav,ptop,rgas,cp ,outdms ,outgrb2 ,ifilout_grb, &
-                        RTYPE,kflag ,out_hp
+                        RTYPE,kflag,out_hp,ihdgo,ihdgo2
       use grid  ,only : tt,qt,plt,pk,pk2,sgeo
       use mod_grb2_param , only :ofdir,wrt_grb2_v2,wrt_grb2_accu_v2
       use phygrid ,only: raincu3, rainlp3
@@ -33,9 +33,6 @@
       integer,dimension(num):: ptp0 ,ptp1 ,ptp2 ,ptp3 ,ptp4 ,ptp5
 !
       real(kind=RTYPE) glob(nx,my),mout(nx,my)
-!
-      character*80 ifilout
-      character*26 ihdg,ihdg2
 !
       integer   n,levz,lenc,lenc2,i,ia,kk,j,nxj,istat,jj,llts,k
       real      tnshun,alaps,rdg,ttb,ttp,ttt,ttt1,ttt2,anlslp,apha
@@ -175,11 +172,11 @@
 !byl      call mpe2d_unify(glob,raintot)
 
       do n=1,num
-        call syslbl (dmskey(n),idtg,ntau,ggdef,ihdg)
+        call syslbl_w (dmskey(n),idtg,ntau,ggdef)
         call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),glob)
         if ( myrank .eq. n-1 ) then
           mout=glob
-          ihdg2=ihdg
+          ihdgo2=ihdgo
           gtp1=(/ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,ptp5(n),-999,-999/)
           if(n==1)then
              gtp1(8:9)=(/1,1/) !1hr precip
@@ -194,16 +191,16 @@
       if (myrank .lt. num ) then
 
         if(outdms.gt.0)then
-             call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
+             call dmswrit_split(nx,my,lenc,kflag,mout,istat)
         endif ! outdms .gt. 0
 
         if(outgrb2 == 1 )then
           if(gtp1(8)==-999)then
           call wrt_grb2_v2(itau,gtp1(1),gtp1(2),gtp1(3),gtp1(4),gtp1(5) &
-              ,gtp1(6),gtp1(7),mout,ihdg2)
+              ,gtp1(6),gtp1(7),mout)
           else
           call wrt_grb2_accu_v2(itau,gtp1(1),gtp1(2),gtp1(3),gtp1(4),gtp1(5) &
-              ,gtp1(6),gtp1(7),gtp1(8),gtp1(9),mout,ihdg2)
+              ,gtp1(6),gtp1(7),gtp1(8),gtp1(9),mout)
           endif
         endif !outgrb2
 
@@ -218,7 +215,7 @@
 !!     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 !      call dmswrit_mfc(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
-! accum.  precipitation
+! 3hr accum. precipitation for HomePageWifi
       if (out_hp)then
        do jj = 1, jlistnum
          j=jlist1(jj)
@@ -232,20 +229,20 @@
        if(outgrb2 == 1 )then
         if(myrank==0)then
         !convective precipitation
-        call syslbl ('B00632',idtg,ntau,ggdef,ihdg)
+        call syslbl_w ('B00632',idtg,ntau,ggdef)
         glob=raincu3
         call unify_reduceintp(nx,my,my_max,glob,mout)
-        call wrt_grb2_accu_v2(itau,0,1,10,2,103,0,0,1,3,mout,ihdg)
+        call wrt_grb2_accu_v2(itau,0,1,10,2,103,0,0,1,3,mout)
         !
-        call syslbl ('B00642',idtg,ntau,ggdef,ihdg)
+        call syslbl_w ('B00642',idtg,ntau,ggdef)
         glob=rainlp3
         call unify_reduceintp(nx,my,my_max,glob,mout)
-        call wrt_grb2_accu_v2(itau,0,1,9,2,103,0,0,1,3,mout,ihdg)
+        call wrt_grb2_accu_v2(itau,0,1,9,2,103,0,0,1,3,mout)
 
-        call syslbl ('B00622',idtg,ntau,ggdef,ihdg)
+        call syslbl_w ('B00622',idtg,ntau,ggdef)
         glob=raincu3 + rainlp3
         call unify_reduceintp(nx,my,my_max,glob,mout)
-        call wrt_grb2_accu_v2(itau,0,1,9,2,103,0,0,1,3,mout,ihdg)
+        call wrt_grb2_accu_v2(itau,0,1,9,2,103,0,0,1,3,mout)
 
         endif
        endif

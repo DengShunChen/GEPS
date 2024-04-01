@@ -86,7 +86,6 @@
                 pklev(nxp,my_max),totallp(nxp,my_max),rainlp24(nxp,my_max)
 
        integer  kn
-      character*26 ihdg
 
       real      tmin(nxp,my_max),tmax(nxp,my_max),td(nxp,my_max),temp
 !
@@ -153,7 +152,7 @@
 !      real rold500(mlmax_c,2),rold1000(mlmax_c,2),rold2000(mlmax_c,2)
 !      real rold500(jtrun_c,jtmax_c,2),rold1000(jtrun_c,jtmax_c,2),  &
 !           rold2000(jtrun_c,jtmax_c,2)
-      integer itimestep,recn
+      integer recn
 
 ! for io quilting
       character*34 keydoit,keydone
@@ -164,7 +163,6 @@
       integer*8 idtg_sst,idtg1_sst,idtg_temp
       integer icurrenttau,yyyymmdd,hhii
       logical lsstrestore,iceold(nxp,my),oceanold(nxp,my)
-      character lrec*26
       character*12 cdtg
       real    ssttemp,cicetemp,snrtemp
       real    sst(nx,my),ssttau,tautemp
@@ -1268,7 +1266,7 @@
         if( dtaup .lt. dtx_tau ) then
           ntau=tau+0.001
           if(myrank .eq. 0) print *,'outsitmean at tau=',tau
-          call writesitmean(nx,my,lkvl,ifilout,ntau,idtg,ggdef)
+          call writesitmean(nx,my,lkvl,ntau,idtg,ggdef)
         endif
       endif
 !
@@ -1289,11 +1287,11 @@
 !        call mpe_unify(rain24,nx,my,2,mpe_double)
 #ifndef NO_OUT
         call out24(nx,my,my_max,hf24,qf24,ss24,rs24,asol24,olr24,rain24,rainlp24,dt24 &
-                  ,ifilout,glob,itau,idtg,ggdef,flash24)
+                  ,glob,itau,idtg,ggdef,flash24)
 #endif
         if(do_sit)then
           if(loutsit24)then
-            call outsit24(nx,my,lkvl,ifilout,ntau,idtg,ggdef)
+            call outsit24(nx,my,lkvl,ntau,idtg,ggdef)
           endif
           call dtgfix12(idtg,idtg_temp,ntau-1)
           ibeforeyymm=idtg_temp/1000000
@@ -1305,7 +1303,7 @@
                    ,'lnewyymm=',lnewyymm
           endif
           if( lnewyymm ) then
-            call outsitmon(nx,my,lkvl,ifilout,ntau,idtg,ggdef)
+            call outsitmon(nx,my,lkvl,ntau,idtg,ggdef)
           endif
        endif
 !
@@ -1501,7 +1499,7 @@
 !jh        if( histim ) then 
 #ifndef NO_OUT
         call outsigs ( itau,nx,my,my_max,lev,ncld        &
-                     , idtg,ifilout,ptop,rad,grav        &
+                     , idtg,ptop,rad,grav                &
                      , cp,cosl,pt,sgeo,snr,gwr,tg,pk,pk2 &
                      , ut,vt,tt,qt,phi,rdiv,km_soil,smc  &
                      , slc,stc,canopy,zice,ggdef,gmdef )
@@ -1514,7 +1512,7 @@
       if (myrank .eq. 0) print *,'outsigr start !!!'
 #ifndef NO_OUT
       call outsigr ( itau,nx,my,my_max,lev                                     &
-                   , idtg,ifilout                                              &
+                   , idtg                                                      &
                    , fusl,fdsl,fuir,fdir                                       &
                    , fuslr,fdslr,fuirr,fdirr                                   &
                    , asl,atl,asl_clr,atl_clr                                   &
@@ -1536,7 +1534,7 @@
        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,vornow,cc,1,nsizey)
        call ujoinsr(cc,rvor,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
        call  outflds( itau,nx,my,my_max,lev,ncld                               &
-                    , lmax,numout,idtg,ifilout,outdir                          &
+                    , lmax,numout,idtg,outdir                                  &
                     , ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo                  &
                     , ptend,pt,plt,pk,pk2,phi,ut,vt,vvel                       &
                     , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                &
@@ -1605,7 +1603,7 @@
       if( out_green .and. mod( itau , nint(otgreen) ) == 0 )then
 #ifndef NO_OUT
         call  outflds_green(nint(tau),nx,my,my_max,lev,ncld                &
-                          , idtg,ifilout,cp,rgas,grav,t2,u10,v10,ss,pk         &
+                          , idtg,cp,rgas,grav,t2,u10,v10,ss,pk             &
                           , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6  &
                           , ggdef)
 #endif
@@ -1620,7 +1618,7 @@
       if (abs(tau+0.00001-6.) .lt. 0.01) then
 #ifndef NO_OUT
         if (myrank .eq. 0) print *,'output FV3 data !!!'
-        call outflds_fv3(nint(tau),nx,my,my_max,idtg,ggdef,ifilout             &
+        call outflds_fv3(nint(tau),nx,my,my_max,idtg,ggdef                     &
                           ,q2,fm,fh,fm10,fh2,srflag,ustar)
 #endif
       endif
@@ -1628,7 +1626,7 @@
       if(out_hp)then
         if (mod(tau+0.00001, 3.) .lt. 0.01) then
 #ifndef NO_OUT
-        call  outflds_hp(nint(tau),nx,my,my_max,idtg,ifilout                   &
+        call  outflds_hp(nint(tau),nx,my,my_max,idtg                           &
                         ,raincu3,rainlp3,ggdef)
 #endif
           raincu3=0.
@@ -1677,7 +1675,7 @@
             enddo
           enddo
 #ifndef NO_OUT
-          call out2d_mfc(nx,lev,my,my_max,ifilout,itau,idtg         &
+          call out2d_mfc(nx,lev,my,my_max,itau,idtg                 &
                       ,raincu1,rainlp1,raintot,glob,t2,q2,rh2,rh10  &
                       ,u10,v10,tmax,tmin,rld,sld,ctot,pt,ggdef)
 #endif

@@ -1,0 +1,42 @@
+#!/bin/bash
+#PJM -L "node=16:noncont"
+#PJM -L rscgrp=large 
+#PJM -x PJM_CACHE_MODE=4
+#PJM -L elapse=5:00:00
+##PJM --mpi proc=2560,max-proc-per-node=32
+#PJM --mpi "proc=768"
+#PJM --mpi rank-map-bynode
+#PJM -L node-mem=unlimited
+#PJM --no-stging
+#PJM -j
+#PJM -N "JTCo383L128"
+
+set -x
+
+MDIR=$(cd ..; pwd)
+echo "MDIR=${MDIR}"
+
+machine=fx1000
+# TERR=GTOPO30
+TERR=GMTED30
+JCAP=383
+
+#MPI=3840
+MPI=768
+OMP=1
+
+if [ $JCAP = 639 ] ; then
+  NPEX=8
+  #NPEY=480
+  NPEY=320
+elif [ $JCAP = 383 ] ; then
+  NPEX=4
+  NPEY=192 
+fi
+source ${MDIR}/job/setup_mpi+omp_38k.${machine} $OMP
+#source /users/xb80/setup_mpi+omp.${machine} $OMP
+
+#==============================================================================================================#
+
+#. ${MDIR}/job/regression.ksh
+. ${MDIR}/job/regression_TCo383L128_4testrst38.ksh

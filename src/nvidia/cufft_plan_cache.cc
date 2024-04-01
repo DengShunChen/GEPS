@@ -13,14 +13,22 @@ See the License for the specific language governing permissions and
 limitations under the License. */
 
 #include <iostream>
-#include <map>
-
+#include <unordered_map>
 typedef std::tuple<int, int, int, int, int> fft_param;
-std::map<fft_param, int> plan_table;
+
+class PlanHashFunction {
+public:
+	size_t operator() (const fft_param& p) const {
+		return std::get<0>(p) * std::get<4>(p) * (std::get<1>(p) + std::get<2>(p) + std::get<3>(p));
+	}
+};
+
+
+std::unordered_map<fft_param, int, PlanHashFunction> plan_table;
 
 extern "C" {
 void find_fft_plan(int inc, int jump, int n, int m, int isign, int *plan) {
-  fft_param param{inc, jump, n, m, isign};
+  fft_param param(inc, jump, n, m, isign);
   auto it = plan_table.find(param);
   if (it == plan_table.end()) {
     *plan = -1;
@@ -30,7 +38,7 @@ void find_fft_plan(int inc, int jump, int n, int m, int isign, int *plan) {
 }
 
 void cache_fft_plan(int inc, int jump, int n, int m, int isign, int plan) {
-  fft_param param{inc, jump, n, m, isign};
+  fft_param param(inc, jump, n, m, isign);
   plan_table[param] = plan;
 }
 

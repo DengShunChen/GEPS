@@ -1,5 +1,5 @@
       subroutine outsigs ( itau,nx,my,my_max,lev,ncld                &
-                         , idtg,ifilout,ptop,rad,grav                &
+                         , idtg,ptop,rad,grav                        &
                          , cp,cosl,pt,sgeo,snr,gwr,tg,pk,pk2         &
                          , ut,vt,tt,qt,phi,km,smc                    &
                          , slc,stc,canopy,zice,ggdef,gmdef)
@@ -27,8 +27,7 @@
                        mout(nx,my),work(nx,my),cosl(my),        &
                        wrk1(nxp,my_max)
       integer*8 idtg
-      character*80 ifilout
-      character typ*6,ihdg*26,ihdg2*26,mlayer*1
+      character typ*6,mlayer*1
       character*4 ggdef,gmdef
 !
       integer   i,lenc,k,jj,j,nxj,istat,kk,iout_b10,ntrac,nclds
@@ -56,7 +55,7 @@
         else
           write(typ,'("n",i2.2,"100")')mod(k,100)
         endif
-        call syslbl (typ,idtg,itau,gmdef,ihdg)
+        call syslbl_w (typ,idtg,itau,gmdef)
 !
         do 20 jj = 1, jlistnum
           j=jlist1(jj)
@@ -65,10 +64,10 @@
           wrk1(i,jj)=tt(i,k,jj)*pk(i,k,jj)/(1.0+0.608*qt(i,k,jj))
  20     continue
         call unify_reduceintp(nx,my,my_max,wrk1,work)
-        call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+        call split(nx,my,lenc,nc,work,mout)
       enddo
 !
-      if ( myrank .lt. nc ) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
+      if ( myrank .lt. nc ) call dmswrit_split(nx,my,lenc,kflag,mout,istat)
 
 !
 !  convert gaussain u,v component to normal u,v component
@@ -80,7 +79,7 @@
         else
           write(typ,'("n",i2.2,"200")')mod(k,100)
         endif
-        call syslbl (typ,idtg,itau,gmdef,ihdg)
+        call syslbl_w (typ,idtg,itau,gmdef)
 !        
         do 21 jj = 1, jlistnum
           j=jlist1(jj)
@@ -90,10 +89,10 @@
           wrk1(i,jj)=ut(i,k,jj)*xx
  21     continue
         call unify_reduceintp(nx,my,my_max,wrk1,work)
-        call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+        call split(nx,my,lenc,nc,work,mout)
       enddo
 !
-      if ( myrank .lt. nc ) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
+      if ( myrank .lt. nc ) call dmswrit_split(nx,my,lenc,kflag,mout,istat)
 !
       nc= 0
       do k=1,lev
@@ -103,7 +102,7 @@
           write(typ,'("n",i2.2,"210")')mod(k,100)
         endif
 !
-        call syslbl (typ,idtg,itau,gmdef,ihdg)
+        call syslbl_w (typ,idtg,itau,gmdef)
         do 22 jj = 1, jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
@@ -112,10 +111,10 @@
           wrk1(i,jj)=vt(i,k,jj)*xx
  22     continue
         call unify_reduceintp(nx,my,my_max,wrk1,work)
-        call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+        call split(nx,my,lenc,nc,work,mout)
       enddo
 !
-      if ( myrank .lt. nc ) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
+      if ( myrank .lt. nc ) call dmswrit_split(nx,my,lenc,kflag,mout,istat)
 !
       nc= 0
       do k=1,lev
@@ -125,7 +124,7 @@
           write(typ,'("n",i2.2,"500")')mod(k,100)
         endif
 !
-        call syslbl (typ,idtg,itau,gmdef,ihdg)
+        call syslbl_w (typ,idtg,itau,gmdef)
         do 23 jj = 1, jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
@@ -133,10 +132,10 @@
           wrk1(i,jj)=qt(i,k,jj)
  23     continue
         call unify_reduceintp(nx,my,my_max,wrk1,work)
-        call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+        call split(nx,my,lenc,nc,work,mout)
       enddo
 !
-      if ( myrank .lt. nc ) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
+      if ( myrank .lt. nc ) call dmswrit_split(nx,my,lenc,kflag,mout,istat)
 !
 ! combine cloud water and cloud ice together once there is consideration of 
 ! more hydrometeors in microphysic scheme.
@@ -148,7 +147,7 @@
         else
           write(typ,'("n",i2.2,"550")')mod(k,100)
         endif
-        call syslbl (typ,idtg,itau,gmdef,ihdg)
+        call syslbl_w (typ,idtg,itau,gmdef)
 !
         wrk1=0.
         do ntrac=2,nclds
@@ -163,10 +162,10 @@
           endif
         enddo
         call unify_reduceintp(nx,my,my_max,wrk1,work)
-        call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+        call split(nx,my,lenc,nc,work,mout)
       enddo
 !
-      if ( myrank .lt. nc ) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
+      if ( myrank .lt. nc ) call dmswrit_split(nx,my,lenc,kflag,mout,istat)
 !
 ! output all hydrometeors and ozone one by one
 !
@@ -200,7 +199,7 @@
             else
               goto 27
             endif
-            call syslbl (typ,idtg,itau,gmdef,ihdg)
+            call syslbl_w (typ,idtg,itau,gmdef)
 !
             kk = (ntrac-1)*lev+k
             do 26 jj = 1, jlistnum
@@ -210,10 +209,10 @@
               wrk1(i,jj)=qt(i,kk,jj)
  26         continue
             call unify_reduceintp(nx,my,my_max,wrk1,work)
-            call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+            call split(nx,my,lenc,nc,work,mout)
           enddo
 !
-          if ( myrank .lt. nc ) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
+          if ( myrank .lt. nc ) call dmswrit_split(nx,my,lenc,kflag,mout,istat)
  27       continue
         enddo
       end if
@@ -228,7 +227,7 @@
           else
             write(typ,'("n",i2.2,"560")')mod(k,100)
           endif
-          call syslbl (typ,idtg,itau,gmdef,ihdg)
+          call syslbl_w (typ,idtg,itau,gmdef)
           do jj = 1, jlistnum
             j=jlist1(jj)
             nxj=nxdef_2d(j)
@@ -237,10 +236,10 @@
             enddo
           enddo
           call unify_reduceintp(nx,my,my_max,wrk1,work)
-          call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+          call split(nx,my,lenc,nc,work,mout)
         enddo
 !
-        if ( myrank .lt. nc ) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
+        if ( myrank .lt. nc ) call dmswrit_split(nx,my,lenc,kflag,mout,istat)
       endif
 
 
@@ -260,7 +259,7 @@
 !     call syslbl (typ,idtg,itau,gmdef,ihdg)
 !      call unify_reduceintp(nx,my,my_max,wrk1,work)
 !!byl     if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-!     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+!     call dmswrit(nx,my,ihdg,lenc,kflag,work,istat)
 !ccc
 !
 !
@@ -297,7 +296,7 @@
        else
          write(typ,'("n",i2.2,"000")')mod(k,100)
        endif
-       call syslbl (typ,idtg,itau,gmdef,ihdg)
+       call syslbl_w (typ,idtg,itau,gmdef)
       do 28 jj = 1, jlistnum
        j=jlist1(jj)
        nxj=nxdef_2d(j)
@@ -307,10 +306,10 @@
 !      write(typ,'("m",i2.2,"000")')k
 !      call syslbl (typ,idtg,itau,gmdef,ihdg)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
-      call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+      call split(nx,my,lenc,nc,work,mout)
  32   continue
 !
-      if ( myrank .lt. nc ) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
+      if ( myrank .lt. nc ) call dmswrit_split(nx,my,lenc,kflag,mout,istat)
 !
 !----- start to output surface data ------
       nc=0
@@ -321,9 +320,9 @@
       do 31 i = 1,nxj
        wrk1(i,jj)=pt(i,jj)+ptop
  31   continue
-      call syslbl ('b00010',idtg,itau,ggdef,ihdg)
+      call syslbl_w ('b00010',idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
-      call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+      call split(nx,my,lenc,nc,work,mout)
 !
 !  move the output of "b10, "b20" and "b21" to out2d.f (2002/4/29)
 !
@@ -336,9 +335,9 @@
       do 40 i = 1,nxj
        wrk1(i,jj) = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
    40 continue
-      call syslbl ('b00100',idtg,itau,ggdef,ihdg)
+      call syslbl_w ('b00100',idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
-      call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+      call split(nx,my,lenc,nc,work,mout)
 !
       do 41 jj = 1, jlistnum
        j=jlist1(jj)
@@ -347,9 +346,9 @@
       do 41 i = 1,nxj
        wrk1(i,jj)=ut(i,lev,jj)*xx
    41 continue
-      call syslbl ('b00200',idtg,itau,ggdef,ihdg)
+      call syslbl_w ('b00200',idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
-      call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+      call split(nx,my,lenc,nc,work,mout)
 !
       do 42 jj = 1, jlistnum
        j=jlist1(jj)
@@ -358,40 +357,40 @@
       do 42 i = 1,nxj
        wrk1(i,jj)=vt(i,lev,jj)*xx
    42 continue
-      call syslbl ('b00210',idtg,itau,ggdef,ihdg)
+      call syslbl_w ('b00210',idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
-      call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+      call split(nx,my,lenc,nc,work,mout)
 !
    90 continue
 !--------------
 !
       wrk1 = snr
-      call syslbl ('b00650',idtg,itau,ggdef,ihdg)
+      call syslbl_w ('b00650',idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
-      call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+      call split(nx,my,lenc,nc,work,mout)
 
       wrk1 = gwr
-      call syslbl ('s005a1',idtg,itau,ggdef,ihdg)
+      call syslbl_w ('s005a1',idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
-      call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+      call split(nx,my,lenc,nc,work,mout)
 
 
       wrk1 = tg
-      call syslbl ('s00100',idtg,itau,ggdef,ihdg)
+      call syslbl_w ('s00100',idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
-      call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+      call split(nx,my,lenc,nc,work,mout)
 !
 ! output canopy
 !
       wrk1 = canopy
-      call syslbl ('s005c0',idtg,itau,ggdef,ihdg)
+      call syslbl_w ('s005c0',idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
-      call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+      call split(nx,my,lenc,nc,work,mout)
 !
       wrk1 = zice
-      call syslbl ('w00092',idtg,itau,ggdef,ihdg)
+      call syslbl_w ('w00092',idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
-      call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+      call split(nx,my,lenc,nc,work,mout)
 !
 ! s01100 & s015b0
 ! additional output for gsi (will be remove after gsi modify)
@@ -405,9 +404,9 @@
       enddo
       enddo
       write(typ,'("s0",i1.1,"5b0")')k
-      call syslbl (typ,idtg,itau,ggdef,ihdg)
+      call syslbl_w (typ,idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
-      call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+      call split(nx,my,lenc,nc,work,mout)
 !
       do jj = 1, jlistnum
        j=jlist1(jj)
@@ -417,9 +416,9 @@
       enddo
       enddo
       write(typ,'("s0",i1.1,"100")')k
-      call syslbl (typ,idtg,itau,ggdef,ihdg)
+      call syslbl_w (typ,idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
-      call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+      call split(nx,my,lenc,nc,work,mout)
 !
       enddo
 !
@@ -441,9 +440,9 @@
       enddo
       enddo
       write(typ,'("s0",i1.1,"5b0")')k
-      call syslbl (typ,idtg,itau,ggdef,ihdg)
+      call syslbl_w (typ,idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
-      call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+      call split(nx,my,lenc,nc,work,mout)
 !
 ! output stc(2,10-200cm)
       do jj = 1, jlistnum
@@ -455,9 +454,9 @@
       enddo
       enddo
       write(typ,'("s0",i1.1,"100")')k
-      call syslbl (typ,idtg,itau,ggdef,ihdg)
+      call syslbl_w (typ,idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
-      call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+      call split(nx,my,lenc,nc,work,mout)
 !
       enddo
 
@@ -471,9 +470,9 @@
       enddo
       enddo
       write(typ,'("l0",i1.1,"5b0")')k
-      call syslbl (typ,idtg,itau,gmdef,ihdg)
+      call syslbl_w (typ,idtg,itau,gmdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
-      call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+      call split(nx,my,lenc,nc,work,mout)
 !
       do jj = 1, jlistnum
        j=jlist1(jj)
@@ -483,9 +482,9 @@
       enddo
       enddo
       write(typ,'("l0",i1.1,"5b1")')k
-      call syslbl (typ,idtg,itau,gmdef,ihdg)
+      call syslbl_w (typ,idtg,itau,gmdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
-      call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+      call split(nx,my,lenc,nc,work,mout)
 !
       do jj = 1, jlistnum
        j=jlist1(jj)
@@ -495,14 +494,14 @@
       enddo
       enddo
       write(typ,'("l0",i1.1,"100")')k
-      call syslbl (typ,idtg,itau,gmdef,ihdg)
+      call syslbl_w (typ,idtg,itau,gmdef)
       call unify_reduceintp(nx,my,my_max,wrk1,work)
-      call split(nx,my,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
+      call split(nx,my,lenc,nc,work,mout)
 !
  200  continue
 !
       if ( myrank .lt. nc )             &
-         call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
+         call dmswrit_split(nx,my,lenc,kflag,mout,istat)
 !
       return
       end
@@ -516,17 +515,17 @@
       integer   nx,my,itau,my_max
 
       real      snr(nxp,my_max),gwr(nxp,my_max),tg(nxp,my_max),zice(nxp,my_max)
-      character ifilout*80
+      character ifilout*255
       real      work(nx,my)
       integer*8 idtg
-      character typ*6,ihdg*26,ggdef*4
+      character typ*6,ggdef*4
 !
       integer   lenc,istat,jj,j,ii,nxj,i
 
       lenc=nx*my
 !
-      call syslbl ('b00650',idtg,itau,ggdef,ihdg)
-      call dmsread(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call syslbl_r ('b00650',idtg,itau,ggdef)
+      call dmsread(nx,my,lenc,'H',ifilout,work,istat)
       call unify_reducepick(nx,my,my_max,work,snr)
 
 !
@@ -544,12 +543,12 @@
 !!      enddo
 !!      enddo
 !
-      call syslbl ('s00100',idtg,itau,ggdef,ihdg)
-      call dmsread(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call syslbl_r ('s00100',idtg,itau,ggdef)
+      call dmsread(nx,my,lenc,'H',ifilout,work,istat)
       call unify_reducepick(nx,my,my_max,work,tg)
 !
-      call syslbl ('w00092',idtg,itau,ggdef,ihdg)
-      call dmsread(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call syslbl_r ('w00092',idtg,itau,ggdef)
+      call dmsread(nx,my,lenc,'H',ifilout,work,istat)
       call unify_reducepick(nx,my,my_max,work,zice)
 !
       return
@@ -573,17 +572,17 @@
 
       character*4 ggdef,gmdef
 
-      character ifilout*80
+      character ifilout*255
       real      work(nx,my),tmp(nxp,my_max)
       integer*8 idtg
-      character typ*6,ihdg*26
+      character typ*6
 !
       integer   lenc,i,j,k,ii,jj,nxj,istat
 
       lenc=nx*my
 !
-      call syslbl ('s005c0',idtg,itau,ggdef,ihdg)
-      call dmsread(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call syslbl_r ('s005c0',idtg,itau,ggdef)
+      call dmsread(nx,my,lenc,'H',ifilout,work,istat)
       call unify_reducepick(nx,my,my_max,work,canopy)
 
 !
@@ -598,24 +597,24 @@
 ! read smc  l015b0
 !
       write(typ,'("l0",i1.1,"5b0")')k
-      call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmsread(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call syslbl_r (typ,idtg,itau,gmdef)
+      call dmsread(nx,my,lenc,'H',ifilout,work,istat)
       call unify_reducepick(nx,my,my_max,work,tmp)
       smc(:,k,:) = tmp(:,:)
 !
 ! read slc  l015b1
 !
       write(typ,'("l0",i1.1,"5b1")')k
-      call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmsread(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call syslbl_r (typ,idtg,itau,gmdef)
+      call dmsread(nx,my,lenc,'H',ifilout,work,istat)
       call unify_reducepick(nx,my,my_max,work,tmp)
       slc(:,k,:) = tmp(:,:)
 !
 ! read stc  l01100
 !
       write(typ,'("l0",i1.1,"100")')k
-      call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmsread(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call syslbl_r (typ,idtg,itau,gmdef)
+      call dmsread(nx,my,lenc,'H',ifilout,work,istat)
       call unify_reducepick(nx,my,my_max,work,tmp)
       stc(:,k,:) = tmp(:,:)
 !

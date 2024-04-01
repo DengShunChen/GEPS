@@ -378,27 +378,31 @@ integer*4,parameter :: numcoord=1 !number of values in array
             endif
             end
       !=======================================================================
-            subroutine wrt_grb2_v2(itau,t0,t1,t2,p3,t10,t11,t12,fld,ihdg2)
+            subroutine wrt_grb2_v2(itau,t0,t1,t2,p3,t10,t11,t12,fld)
             use param, only : nx,my
-            use const, only: idtg,RTYPE
+            use const, only: idtg,RTYPE,ihdgo2
             integer::  t0,t1,t2,t10,t11,p3
             integer::  t12
             integer::ptp0(9)
             integer::itau,ist,istat,i,ia
             real(kind=RTYPE)::fld(nx*my)
             real*4::r4out(nx*my)
-            character:: ihdg2*26,clen*7
+!            character:: ihdg2*26,clen*7
 
              do i = 1, 26
-              ia=ichar(ihdg2(i:i))
+              ia=ichar(ihdgo2(i:i))
               if((ia.ge.97).and.(ia.le.122))then
                 ia=ia-32
-                ihdg2(i:i)=char(ia)
+                ihdgo2(i:i)=char(ia)
               endif
              enddo
 
  133                      format( A  ,A1 ,A6,A4 )
-              write(grbfile,133 )trim(ofdir),'/',ihdg2(1:6),ihdg2(11:14)
+#ifdef O38K
+              write(grbfile,133 )trim(ofdir),'/',ihdgo2(1:6),ihdgo2(13:16)
+#else
+              write(grbfile,133 )trim(ofdir),'/',ihdgo2(1:6),ihdgo2(11:14)
+#endif
               r4out(:)=fld(:)
               call opn_grb2(grbparid,nx,my,idtg,itau,istat)              
               call wrt_grb2_io(itau,t0,t1,t2,p3,t10,t11,t12, r4out )
@@ -431,25 +435,29 @@ integer*4,parameter :: numcoord=1 !number of values in array
             endif
             end
       !=======================================================================
-            subroutine wrt_grb2_accu_v2(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,fld,ihdg2)
+            subroutine wrt_grb2_accu_v2(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,fld)
             use param, only : nx,my
-            use const, only: idtg,RTYPE
+            use const, only: idtg,RTYPE,ihdgo2
             integer::  t0,t1,t2,t10,t11,p3,t24,t27
             integer::  t12
             integer::ptp0(9)
             integer::itau,ist,istat,i,ia
             real(kind=RTYPE)::fld(nx*my)
             real*4::r4out(nx*my)
-            character:: ihdg2*26,clen*7
+!            character:: ihdg2*26,clen*7
              do i = 1, 26
-              ia=ichar(ihdg2(i:i))
+              ia=ichar(ihdgo2(i:i))
               if((ia.ge.97).and.(ia.le.122))then
                 ia=ia-32
-                ihdg2(i:i)=char(ia)
+                ihdgo2(i:i)=char(ia)
               endif
              enddo
  133                      format( A  ,A1 ,A6,A4 )
-              write(grbfile,133 )trim(ofdir),'/',ihdg2(1:6),ihdg2(11:14)
+#ifdef O38K
+              write(grbfile,133 )trim(ofdir),'/',ihdgo2(1:6),ihdgo2(13:16)
+#else
+              write(grbfile,133 )trim(ofdir),'/',ihdgo2(1:6),ihdgo2(11:14)
+#endif
               r4out(:)=fld(:)
               call opn_grb2(grbparid,nx,my,idtg,itau,istat)              
               call wrt_grb2_accu_io(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,r4out)

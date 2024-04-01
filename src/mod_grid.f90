@@ -17,6 +17,7 @@
 
       real, dimension(:,:,:),allocatable,save :: plt
 !! for Semi-Lagrangian
+      real(kind=RTYPE), dimension(:,:,:),allocatable,save :: rdivm
       real(kind=RTYPE), dimension(:,:),allocatable,save :: dlpl,dtpl
       real(kind=RTYPE), dimension(:,:,:),allocatable,save ::        &
                            ut,vt,tt,qt,up,vp,ttp,qp,qm,sd,vvel,     &
@@ -56,6 +57,7 @@
                      up(nxp,lev,my_max),  &
                      vp(nxp,lev,my_max),  &
                     ttp(nxp,lev,my_max),  &
+                  rdivm(nxp,lev,my_max),  &
                   qp(nxp,lev*ncld,my_max),&
                   qm(nxp,lev*ncld,my_max),&
 !! for Semi-Lagrangian
@@ -120,6 +122,10 @@
            ttp=0.
            qt=0.
            qp=0.
+!! for Semi-Lagrangiain
+           rdivm=0.
+           ut_sl=0.
+           vt_sl=0.
            qm=0.
            sd=0.
            vvel=0.
@@ -135,6 +141,7 @@
          subroutine deallocate_grid_array
 
            deallocate (ut,vt,sd,vvel,rvor,rdiv,tt,qt,phi,plt,pk,pk2,up,vp,ttp,qp,qm)
+           deallocate (rdivm)
            deallocate ( pt,dlpl,dtpl,sgeo,pdiff, &
                ptend,t1000,tsave,std,ptp)
 ! for Semi-Lagrangian

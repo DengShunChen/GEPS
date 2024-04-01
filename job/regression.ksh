@@ -3,8 +3,13 @@
 #-- enviornment
  user=`whoami`
 # datamv='login11'
+ if [ ${machine} = a100 ]; then
+         mach='x86_64'
+ elif [ ${machine} = fx1000 ]; then
+         mach=${machine}
+ fi
  dmsdb_home=$(cat ~/.dmsrc |xargs | cut -d' ' -f 2)
- DMSPATH=/package/${machine}/dms/dms.v4/bin
+ DMSPATH=/package/${mach}/dms/dms.v4/bin
  GFSDIR=$MDIR
  GFSFIX=$MDIR/fix
  GFSWRK=${GFSDIR}/work_${machine}
@@ -116,6 +121,9 @@ ln -fs $EMMISSIVITY_FILE sfc_emissivity_idx.txt
 
 ln -fs $FIXDIR/* .
 cp $NWPETC/gfsctl $GFSWRK/gfsctl
+if [ $GITLAB_CICD = 1 ] ; then
+  echo -e "00\n06" > $GFSWRK/gfsctl
+fi
 cp $NWPETC/ocards $GFSWRK/ocards
 cp $NWPETC/namlsts $GFSWRK/namlsts
 
@@ -205,13 +213,13 @@ cat > ${GFSWRK}/namlsts << EOF
 EOF
 
  if [ $CMAKE_BUILD = 1 ] ; then
-	FCT_MODEL=$MDIR/build/bin/tcogfs.x
+	FCT_MODEL=$MDIR/build_${MACHINE}/bin/tcogfs.x
  else
 	FCT_MODEL=$MDIR/src/$EXEC
  fi
  /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} -Wl,-T
 
  if [ $? != 0 ] ; then
-  echo "error occured: fct model fail !!"
+  echo "error occured: fct model fail !!" ; exit 9
  fi
 

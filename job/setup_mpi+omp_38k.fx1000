@@ -1,0 +1,27 @@
+
+#usage   : source setup_mpi+omp.fx1000  nthreads
+#      : for running mpi+omp job in fx1000
+#
+#example : source setup_mpi+omp.fx1000  4
+#        : run mpi+omp job with 4 OMP threads
+
+LANG_HOME=${LANG_HOME-"/opt/FJSVxtclanga/tcsds-1.2.33"}
+TOFU_HOME=${TOFU_HOME-"/opt/FJSVxos/devkit/aarch64/rfs"}
+CWB_LD_PATH=/users/xa09/x86_64/dms38key/lib:/package/fx1000/operlib/lib
+
+export PATH=/bin:/usr/bin:${LANG_HOME}/bin:/users/xa09/x86_64/dms38key/bin:$PATH
+export LD_LIBRARY_PATH=$CWB_LD_PATH:$LANG_HOME/lib64:$TOFU_HOME/lib64:/opt/FJSVXosSclib/lib64
+export LANG=C
+export XOS_MMM_L_ARENA_FREE=2
+
+export PARALLEL=$1
+export OMP_NUM_THREADS=$1
+
+export OMP_STACKSIZE=32M
+export FLIB_FASTOMP=TRUE
+export XOS_MMM_L_ARENA_FREE=2
+export XOS_MMM_L_HPAGE_TYPE=none
+export OMPI_NOT_USE_PLE_TMPDIR=1
+
+export FLIB_CNTL_BARRIER_ERR=FALSE
+
