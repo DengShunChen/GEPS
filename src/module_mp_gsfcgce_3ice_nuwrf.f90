@@ -1,6 +1,4 @@
 !#define SL_sedi
-!#define vti_xland
-!#define rei_xland
 !WRF:MODEL_LAYER:PHYSICS
 !
 
@@ -436,7 +434,7 @@ CONTAINS
 
 ! calculte fallflux and precipiation in MKS system
 
-   call fall_flux(    dt_in, qr, qi, qs, qg, p,               &
+   call fall_flux(    dt_in, qv, qr, qi, qs, qg, p,           &
                       rho, th, pii, z, dz8w, ht, rainnc,      &
                       rainncv, grav,itimestep,                &
                       snownc, snowncv, sr,                    &
@@ -555,7 +553,7 @@ CONTAINS
 
   END SUBROUTINE gsfcgce_3ice_nuwrf
 
-  SUBROUTINE fall_flux ( dt, qr, qi, qs, qg, p,               &
+  SUBROUTINE fall_flux ( dt, qv, qr, qi, qs, qg, p,           &
                       rho, th, pi_mks, z, dz8w, topo, rainnc, &
                       rainncv, grav, itimestep,               &
                       snownc, snowncv, sr,                    &
@@ -578,7 +576,7 @@ CONTAINS
                                           its,ite, jts,jte, kts,kte 
   INTEGER, INTENT(IN   )               :: itimestep
   REAL,    DIMENSION( ims:ime , kms:kme , jms:jme ),                  &
-           INTENT(INOUT)               :: qr, qi, qs, qg      
+           INTENT(INOUT)               :: qv, qr, qi, qs, qg      
   REAL,    DIMENSION( ims:ime , kms:kme , jms:jme ),                  &
            INTENT(IN)                  :: th, pi_mks      
 
@@ -604,7 +602,7 @@ CONTAINS
   REAL                                    :: tmp1, term0
   REAL                                :: pptrain, pptsnow,        &
                                          pptgraul, pptice
-  REAL,    DIMENSION( kts:kte )       :: qrz, qiz, qsz, qgz,      &
+  REAL,    DIMENSION( kts:kte )       :: qvz, qrz, qiz, qsz, qgz, &
                                          zz, dzw, prez, rhoz,     &
                                          orhoz
   REAL,    DIMENSION( kts:kte )       :: rsed, ised, ssed, gsed
@@ -717,6 +715,7 @@ CONTAINS
 
    ! in MKS system
    do k = kts, kte
+      qvz(k)=qv(i,k,j)
       qrz(k)=qr(i,k,j)
       qiz(k)=qi(i,k,j)
       qsz(k)=qs(i,k,j)
@@ -753,7 +752,7 @@ CONTAINS
     do n = 1 , ntimes
        vtr(:) = 0.
        precip = 0.
-       call semi_sedi('qr',ihail,improve,1,kte,dzw,rhoz,qrz,tz,xland(i,j),vtr,precip,dtcfl)
+       call semi_sedi('qr',ihail,improve,1,kte,dzw,rhoz,qrz,qvz,prez,tz,xland(i,j),vtr,precip,dtcfl)
        pptrain = pptrain + precip
     enddo
 
@@ -842,7 +841,7 @@ CONTAINS
     do n = 1 , ntimes
        vts(:) = 0.
        precip = 0.
-       call semi_sedi('qs',ihail,improve,1,kte,dzw,rhoz,qsz,tz,xland(i,j),vts,precip,dtcfl)
+       call semi_sedi('qs',ihail,improve,1,kte,dzw,rhoz,qsz,qvz,prez,tz,xland(i,j),vts,precip,dtcfl)
        pptsnow = pptsnow + precip
     enddo
 
@@ -941,7 +940,7 @@ CONTAINS
     do n = 1 , ntimes
        vtg(:) = 0.
        precip = 0.
-       call semi_sedi('qg',ihail,improve,1,kte,dzw,rhoz,qgz,tz,xland(i,j),vtg,precip,dtcfl)
+       call semi_sedi('qg',ihail,improve,1,kte,dzw,rhoz,qgz,qvz,prez,tz,xland(i,j),vtg,precip,dtcfl)
        pptgraul = pptgraul + precip
     enddo
 
@@ -1030,7 +1029,7 @@ CONTAINS
     do n = 1 , ntimes
        vti(:) = 0.
        precip = 0.
-       call semi_sedi('qi',ihail,improve,0,kte,dzw,rhoz,qiz,tz,xland(i,j),vti,precip,dtcfl)
+       call semi_sedi('qi',ihail,improve,0,kte,dzw,rhoz,qiz,qvz,prez,tz,xland(i,j),vti,precip,dtcfl)
        pptice = pptice + precip
     enddo
 
@@ -1056,7 +1055,7 @@ CONTAINS
             min_q=min0(min_q,k)
             max_q=max0(max_q,k)
 
-            call vti_mks(improve,rhoz(k),tz(k),qiz(k),xland(i,j),vti(k))
+            call vti_mks(improve,rhoz(k),tz(k),qiz(k),qvz(k),prez(k),xland(i,j),vti(k))
 
             ! EMK:  Avoid division by zero
             if ((vti(k) .gt. 1.0e-20)) then
@@ -2965,7 +2964,7 @@ CONTAINS
             endif
 
 !            call vqrqi(2,improve,r00,fv0,qi(i,j),vi(i,j))
-            call vti_mks(improve,rho_mks(i,k,j),tair(i,j),qi(i,j),xland(i,j),vi(i,j))  !in MKS
+            call vti_mks(improve,rho_mks(i,k,j),tair(i,j),qi(i,j),qv(i,j),p0_mks(i,j,k),xland(i,j),vi(i,j))  !in MKS
             vi(i,j) = vi(i,j) * 100.  !in CGS
 
             if (qr(i,j) .le. crmin) vr(i,j)=0.0
@@ -4923,11 +4922,6 @@ CONTAINS
                          ! IWC_0 (50 g/m^-3) must be converted to g/cm^3
          bw98 = - 2. + 1.e-3 * log10(rho(i,j,k)*qci(i,j,k)/iwc_0)*max(0.0,-tairc(i,j))**1.5
          refi(i,k,j) = 377.4 + bw98 * (203.3 + bw98 * (37.91 + 2.3696 * bw98))
-#ifdef rei_xland
-         if ( xland(i,j) .eq. 1.0 ) then
-           refi(i,k,j) = 0.8 * refi(i,k,j)
-         endif
-#endif
          refi(i,k,j) = max (reimin, refi(i,k,j))
       else
          refi(i,k,j) = 0.0
@@ -5554,11 +5548,13 @@ CONTAINS
    end function eff_rad
 
 !-------------------------------------------------------------------
-      subroutine vti_mks(improve,rhoz,tz,qiz,xland,vti)
+      subroutine vti_mks(improve,rhoz,tz,qiz,qvz,p,xland,vti)
       implicit none
       integer, intent(in) :: improve
       real, intent(in) :: rhoz  !air density (kg/m^3)
-      real, intent(in) :: qiz   !mixing ratio (kg/kg)
+      real, intent(in) :: qiz   !mixing ratio of cloud ice (kg/kg)
+      real, intent(in) :: qvz   !specific humidity (kg/kg)
+      real, intent(in) :: p     !pressure (Pa)
       real, intent(in) :: tz    !air temperature (K)
       real, intent(in) :: xland !land-sea mask
       real, intent(out):: vti   !terminal velocity (m/s)
@@ -5569,6 +5565,8 @@ CONTAINS
       ! 3 : Hong et al. (2004)          , igce = 1 , improve = 3
       ! 4 : Deng and Mace (2008)
       ! 5 : Mitchell et al. (2011)
+      ! 6 : assume rhoi=300 kg/m^3
+      ! 7 : TCWA1 semi-theoretical approach, different over land and ocean
 
       real, parameter :: vimax = 0.5     ! max fall speed for cloud ice (m/s)
       real, parameter :: vimin = 0.      ! min fall speed for cloud ice (m/s)
@@ -5589,6 +5587,36 @@ CONTAINS
       real, parameter :: ee = 1.9714
       real    :: tc
       real    :: h1, h2
+      ! for TCWA1 semi-theoretical approach
+      integer :: hid
+      real    :: qsi,sqrhoz,rhoi,adagr,inhgr,ltk,lqi,ltk2,lqi2,zeta,vishp,viroi,ssi,lroi
+      real, parameter :: thrd = 1./3.
+      real, parameter :: di0 = 6.e-6
+      real, dimension(0:120) :: itble       ! deposition growth coefficients
+      data itble /1.000000,0.979490,0.959401,0.939723,0.920450,        &
+                  0.899498,0.879023,0.857038,0.833681,0.810961,        &
+                  0.783430,0.755092,0.703072,0.537032,0.467735,        &
+                  0.524807,0.630957,0.812831,1.096478,1.479108,        &
+                  1.905461,2.089296,2.290868,2.398833,2.454709,        &
+                  2.426610,2.371374,2.290868,2.137962,1.995262,        &
+                  1.862087,1.737801,1.621810,1.513561,1.396368,        &
+                  1.288250,1.188502,1.096478,1.000000,0.922571,        &
+                  0.851138,0.785236,0.724436,0.668344,0.616595,        &
+                  0.575440,0.537032,0.501187,0.467735,0.436516,        &
+                  0.407380,0.380189,0.354813,0.331131,0.316228,        &
+                  0.301995,0.291743,0.285102,0.281838,0.278612,        &
+                  0.275423,0.278612,0.281838,0.285102,0.291743,        &
+                  0.298538,0.309030,0.319890,0.331131,0.346737,        &
+                  0.367282,0.393550,0.426580,0.457088,0.489779,        &
+                  0.524807,0.562341,0.609537,0.660693,0.716143,        &
+                  0.785236,0.860994,0.954993,1.047129,1.148154,        &
+                  1.258925,1.380384,1.496236,1.603245,1.698244,        &
+                  1.778279,1.840772,1.883649,1.905461,1.905461,        &
+                  1.883649,1.862087,1.840772,1.798871,1.737801,        &
+                  1.698244,1.640590,1.584893,1.548817,1.513561,        &
+                  1.475707,1.452112,1.428894,1.412538,1.393157,        &
+                  1.377209,1.361445,1.348963,1.336596,1.327394,        &
+                  1.318257,1.309182,1.303167,1.294196,1.288250,1.279381/
 
       if ( qiz .ge. cimin ) then
          if ( vtiflag .eq. 1 ) then
@@ -5647,13 +5675,89 @@ CONTAINS
                   6.6303 * (6. + log10(qiz * rhoz))
             vti = vti * 0.01    ! convert back to MKS
 
+         elseif ( vtiflag .eq. 6 ) then
+            ! assume constant density (rhoi=300 kg/m^3) :
+            tc = tz - t0
+            sqrhoz = sqrt(rhoe_s/rhoz)
+
+            ! shape parameter :
+            hid   = max(min(nint(abs(tc)/0.25),120),0)
+            adagr = itble(hid)
+            zeta  = (adagr-1.)/(adagr+2.)
+            if ( zeta .gt. 0. ) then
+               vishp = di0**(zeta/2.)
+            elseif ( zeta .lt. 0. ) then
+               vishp = di0**(-zeta)
+            else
+               vishp = 1.
+            endif
+
+            ltk   = log(tz)
+            ltk2  = ltk*ltk
+            lqi   = -1.*log(rhoz*qiz)
+            lqi2  = lqi*lqi
+            vti = exp(-1.1100279E-2 + 0.47727519*lqi              &
+                  - 8.8757389E-2*lqi2 + 3.6732918E-3*lqi*lqi2     &
+                  - 4.5748034E-5*lqi2*lqi2 + 1.3864255*ltk)       &
+                  /1.e+3*vishp*sqrhoz
+
+         elseif ( vtiflag .eq. 7 ) then
+            ! TCWA1 adopted semi-theoretical approach from NTU 4ICE-3M scheme
+            ! with prescribed ice properties(shape and density) :
+            tc = tz - t0
+            qsi = f_qsi(tz,p)
+
+            ! deposition density :
+            if ( tc .ge. -40. ) then
+               ! Chen and Lamb 1994a ; Chen and Tsai 2016
+               hid = max(min(nint(abs(tc)/0.25),120),0)
+               inhgr = itble(hid)  !inherent growth ratio
+               rhoi = 900.*exp(-3.*max(qvz-qsi-5.e-5,0.)/inhgr)
+            else
+               ! Pokrifka et al. 2023, equation 18
+               inhgr = 3.          !inherent growth ratio (FIG. 16)
+               ssi = qvz/qsi-1.
+               if ( ssi .gt. 0.267 ) then
+                  rhoi = -1027.456*ssi+1185.834
+               else
+                  rhoi = -32.332*ssi+900.
+               endif
+            endif
+
+            ! shape parameter (ice aspect ratio) :
+            adagr = inhgr**thrd
+            ltk   = log(tz)
+            ltk2  = ltk*ltk
+            lqi   = -1.*log(rhoz*qiz)
+            lqi2  = lqi*lqi
+            lroi  = log(min(max(rhoi,50.),900.))
+            zeta  = (adagr-1.)/(adagr+2.)
+            if ( zeta .gt. 0. ) then
+               vishp = di0**(zeta/2.)
+            elseif ( zeta .lt. 0. ) then
+               vishp = di0**(-zeta)
+            else
+               vishp = 1.
+            endif
+
+            ! density parameter :
+            viroi = 2.6795546 - 0.010732829*lqi - 1.176491*lroi         &
+                    + 3.2512268E-4*lqi2 + 0.13920371*lroi**2.           &
+                    - 5.6243169E-4*lqi*lroi
+            viroi = min(1.,viroi)
+
+            ! the divide between land and ocean :
+            if ( xland .eq. 1. ) then   ! land
+               vti = exp(265.16805 - 0.28802545*lqi - 3.754874E-3*lqi2  &
+                     - 93.843132*ltk + 8.8315122*ltk2)                  &
+                     /1.e+6*vishp*viroi*(1.0837/rhoz)**0.35
+            else                        ! ocean
+               vti = exp(252.86312 - 0.23844613*lqi - 4.6185936E-3*lqi2 &
+                     - 89.119066*ltk + 8.3851678*ltk2)                  &
+                     /1.e+6*vishp*viroi*(1.0837/rhoz)**0.35
+            endif
          endif
 
-#ifdef vti_xland
-         if ( xland .eq. 1.0 ) then
-            vti = 0.7 * vti
-         endif
-#endif
          vti = min ( vimax , max ( vimin , vti ) )
       else
          vti = vimin
@@ -5842,7 +5946,7 @@ CONTAINS
 !-------------------------------------------------------------------
 
 !-------------------------------------------------------------------
-      SUBROUTINE semi_sedi(qvar,ihail,improve,iter,km,dzl,rho,qc,tz,xland,ww,precip,dt)
+      SUBROUTINE semi_sedi(qvar,ihail,improve,iter,km,dzl,rho,qc,qv,p,tz,xland,ww,precip,dt)
 !-------------------------------------------------------------------
 !
 ! This routine is a semi-Lagrangain forward advection for hydrometeors
@@ -5853,6 +5957,8 @@ CONTAINS
 ! dzl    depth of model layer (m)
 ! rho    dry air density (kg/m^3)
 ! qc     dry mixing ratio of condensate (kg/kg)
+! qv     specific humidity (kg/kg)
+! p      pressure (Pa)
 ! tz     air temperature (K)
 ! ww     terminal velocity (m/s)
 ! precip total precipitation at surface (mm)
@@ -5873,7 +5979,7 @@ CONTAINS
       character(len=2) :: qvar
       integer, intent(in) :: ihail, improve, km, iter
       real, intent(in) ::  dt
-      real, intent(in) :: dzl(km), rho(km), tz(km)
+      real, intent(in) :: dzl(km), rho(km), tz(km), qv(km), p(km)
       real, intent(in) :: xland
       real, intent(out) :: ww(km)
       real, intent(out) :: precip
@@ -5900,7 +6006,7 @@ CONTAINS
         if ( qvar .eq. 'qr' ) call vtr_mks(rho(k),qc(k),ww(k))
         if ( qvar .eq. 'qs' ) call vts_mks(improve,rho(k),qc(k),tz(k),ww(k))
         if ( qvar .eq. 'qg' ) call vtg_mks(ihail,improve,rho(k),qc(k),tz(k),ww(k))
-        if ( qvar .eq. 'qi' ) call vti_mks(improve,rho(k),tz(k),qc(k),xland,ww(k))
+        if ( qvar .eq. 'qi' ) call vti_mks(improve,rho(k),tz(k),qc(k),qv(k),p(k),xland,ww(k))
       enddo
       do k = 1,km
         qq(k) = qc(k)*rho(k)
@@ -5980,7 +6086,7 @@ CONTAINS
           if ( qvar .eq. 'qr' ) call vtr_mks(rho(k),qc(k),wa(k))
           if ( qvar .eq. 'qs' ) call vts_mks(improve,rho(k),qc(k),tz(k),wa(k))
           if ( qvar .eq. 'qg' ) call vtg_mks(ihail,improve,rho(k),qc(k),tz(k),wa(k))
-          if ( qvar .eq. 'qi' ) call vti_mks(improve,rho(k),tz(k),qc(k),xland,wa(k))
+          if ( qvar .eq. 'qi' ) call vti_mks(improve,rho(k),tz(k),qc(k),qv(k),p(k),xland,wa(k))
         enddo
 
         do k = 1,km
@@ -6103,6 +6209,17 @@ CONTAINS
        enddo
 
        END SUBROUTINE semi_sedi
+
+       REAL FUNCTION f_qsi(tair,p0)
+       IMPLICIT NONE
+       REAL :: tair   !real temperature (K)
+       REAL :: p0     !pressure (Pa)
+       REAL :: rp0
+
+       rp0 = 3.799052e3 / (p0 * 10.)
+       f_qsi = rp0 * exp(c218 - c580 / (tair - c76) )
+
+       END FUNCTION f_qsi
 
 END MODULE  module_mp_gsfcgce_3ice_nuwrf
 
