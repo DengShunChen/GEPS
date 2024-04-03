@@ -100,7 +100,7 @@ MODULE module_mp_gsfcgce_3ice_nuwrf
                                            BergCon3,  BergCon4
 
    ! critical q of hydrometeor characteristics (eg. fall speed, radius)
-   REAL,    PRIVATE :: cimin, crmin, csmin, cgmin
+   REAL,    PRIVATE :: cwmin, cimin, crmin, csmin, cgmin
 
 !
    REAL,    PRIVATE, DIMENSION( 31 )  ::      aa1,  aa2
@@ -1715,6 +1715,7 @@ CONTAINS
       endif
 
       ! critical q of hydrometeor characteristics (eg. fall speed, radius)
+      cwmin = 1.e-12
       cimin = 1.e-12
       crmin = 1.e-10
       csmin = 1.e-10
@@ -2354,16 +2355,24 @@ CONTAINS
       LOGICAL, OPTIONAL, INTENT(IN) :: diagflag
       INTEGER, OPTIONAL, INTENT(IN) :: do_radar_ref
 !+---+-----------------------------------------------------------------+
+      integer, parameter :: rewflag = 1
+      ! 1 : default
+      ! 2 : mapping spectrum, different over land and ocean
+      real :: mdc1,mdc2,mdc3,mdc4,mdc5,mdc6,mvdc
+      real :: efd1,efd2,efd3,efd4,efd5,efd6,efdc
+      real :: ltk,ltk2
+      real :: lqc,lqc2
+
       integer, parameter :: reiflag = 2
       ! 1 : default
       ! 2 : Wyser 1998
-      ! 3 : Fu 2007 (not yet)
-      ! 4 : Heymsfild et al. 2014
-      ! 5 : Dolinar et al. 2022 (not yet)
-      ! 6 : Mitchell et al. 2011
+      ! 3 : Heymsfild et al. 2014
+      ! 4 : Mitchell et al. 2011
+      ! 5 : mapping spectrum, different over land and ocean
       real :: reimin, reimax
       real :: iwc_0, bw98
       real :: md22, bd22, sigma, cd22, xd22
+      real :: lqi,lqi2,efdi
 !
 !JJS20090623      save  
 
@@ -4811,6 +4820,8 @@ CONTAINS
 
 ! for cloud water
 
+   if ( rewflag .eq. 1 ) then
+   ! default
    if (qcl(i,j,k) .lt. cmin) then
       refc(i,k,j) = 0.e0
    else
@@ -4869,9 +4880,50 @@ CONTAINS
                    refc(i,k,j) = 1.e0/lambda * gamfac3 * 1.e4  !effective radius [micron]
 #endif
    endif ! qcl(i,j,k) < cmin test
+   endif
+
+   if ( rewflag .eq. 2 ) then
+      ! mapping spectrum, different over land and ocean
+      if (qcl(i,j,k) .ge. cwmin) then
+         if ( xland(i,j) .eq. 1. ) then
+            mdc1 = 5.8936819
+            mdc2 = -7.013013
+            mdc3 = 1.3178721
+            mdc4 = 1.1741987
+            mdc5 = 2.6110916E-3
+            mdc6 = -0.26646396
+         else
+            mdc1 = 173.57305
+            mdc2 = -64.370929
+            mdc3 = 0.36833626
+            mdc4 = 6.1389254
+            mdc5 = 5.5915321E-3
+            mdc6 = -0.12488698
+         endif
+         efd1 = 1.6855156
+         efd2 = 0.84147302
+         efd3 = -0.46783369
+         efd4 = 1.005305E-2
+         efd5 = 3.4833332E-2
+         efd6 = 1.4727223E-2
+
+         ltk  = log(tair(i,j))
+         lqc  = -1.*log(qcl(i,j,k))
+         ltk2 = ltk*ltk
+         lqc2 = lqc*lqc
+         mvdc = exp(mdc1 + mdc2*ltk + mdc3*lqc + mdc4*ltk2     &
+                + mdc5*lqc2 + mdc6*ltk*lqc)
+         efdc = exp(efd1 + efd2*log(mvdc) + efd3*log(1000.)    &
+                + efd4*log(mvdc)**2. + efd5*log(1000.)**2.     &
+                + efd6*log(mvdc)*log(1000.))
+         refc(i,k,j) = min(max(efdc/2.,0.5),50)
+      else
+         refc(i,k,j) = 0.5  !test
+      endif
+   endif
 
 ! for cloud ice
-
+   if ( reiflag .eq. 1 ) then
 !   if (qci(i,j,k) .lt. cmin) then
    if (qci(i,j,k) .lt. cimin) then
       refi(i,k,j) = 0.e0
@@ -4913,6 +4965,7 @@ CONTAINS
       if (tair(i,j) .lt. 223.16) refi(i,k,j) = 25.e0
 #endif
    endif ! qci(i,j,k) < cmin test
+   endif
 
    if ( reiflag .eq. 2 ) then
       ! Wyser 1998 , equation 15 and 35:
@@ -4929,21 +4982,6 @@ CONTAINS
    endif
 
    if ( reiflag .eq. 3 ) then
-      ! Fu 2007 :
-      reimin = 10.0 ; reimax = 150.0
-      if ( qci(i,j,k) .ge. cimin ) then
-         if ( tairc(i,j) .gt. -10.0 ) then
-            refi(i,k,j) = 100.0 + tairc(i,j)*5.94
-         else
-            refi(i,k,j) = 47.05 + tairc(i,j)*(0.6624 + 0.001741*tairc(i,j))
-         endif
-         refi(i,k,j) = max (reimin, min (reimax, refi(i,k,j)))
-      else
-         refi(i,k,j) = 0.0
-      endif
-   endif
-
-   if ( reiflag .eq. 4 ) then
       ! Heymsfield et al. 2014 , equation 9e :
       reimin = 10.0
       if ( qci(i,j,k) .ge. cimin ) then
@@ -4960,38 +4998,7 @@ CONTAINS
       endif
    endif
 
-   if ( reiflag .eq. 5 ) then
-      reimin = 0.0
-      ! Dolinar et al. 2022, equation 2~9
-      ! all-ice cloud parameterization from CALIOP-CloudSat 2C-ICE data :
-      if ( qci(i,j,k) .ge. cimin ) then
-         ! calculate extinction sigma : 
-         md22 = 5.17581 + tair(i,j)*(-0.06242+tair(i,j)*(0.00028-tair(i,j)*4.25497e-7))
-         bd22 = 28.00394 + tair(i,j)*(-0.32662+tair(i,j)*(0.00143-tair(i,j)*2.12271e-6))
-         sigma = exp(md22*log(qci(i,j,k)*rho(i,j,k)*1.e+6)+bd22)  ! sigma in 1/km, IWC in g/m^3
-                                                                  ! rho (g/cm^3) must be converted in g/m^3
-         ! calculate scaling factor xd22 :
-         if ( sigma.le.2.4 ) then
-            cd22 = 35.6336 + 11.9597*sigma
-         else
-            cd22 = 56.3089 + 3.2007*sigma
-         endif
-         xd22 = cd22 - 61.0842
-         ! calculate effective radius :
-         if ( tair(i,j).le.210.0 ) then
-            refi(i,k,j) = xd22 - 1583.9369 + tair(i,j)* &
-                          (20.6833+tair(i,j)*(-0.0865+tair(i,j)*0.00012))
-         else
-            refi(i,k,j) = xd22 + 2544.9612 + tair(i,j)* &
-                          (-33.3326+tair(i,j)*(0.1438-tair(i,j)*0.00020))
-         endif
-         refi(i,k,j) = max (reimin, refi(i,k,j))
-      else
-         refi(i,k,j) = 0.0
-      endif
-   endif
-
-   if ( reiflag .eq. 6 ) then
+   if ( reiflag .eq. 4 ) then
       reimin = 0.0
       ! Mitchell et al. 2011, equation 9
       ! IWC in mg/m^3, T in oC, rei in micron
@@ -5002,7 +5009,30 @@ CONTAINS
       else
          refi(i,k,j) = 0.0
       endif
-    endif
+   endif
+
+   if ( reiflag .eq. 5 ) then
+      ! mapping spectrum, different over land and ocean
+      if ( qci(i,j,k) .ge. cimin ) then
+         ltk  = log(tair(i,j))
+         lqi  = -1.*log(qci(i,j,k))
+         ltk2 = ltk*ltk
+         lqi2 = lqi*lqi
+         if ( xland(i,j) .eq. 1.0 ) then
+            ! over land
+            efdi = exp(161.47584 - 0.26232591*lqi + 4.3393883E-4*lqi2 &
+                   - 57.057846*ltk + 5.3668153*ltk2)/10.
+         else
+            ! over ocean
+            efdi = exp(161.92213 - 0.26232591*lqi + 4.3393883E-4*lqi2 &
+                   - 57.057846*ltk + 5.3668153*ltk2)/10.
+         endif
+         refi(i,k,j) = efdi/2.
+         refi(i,k,j) = min( max (refi(i,k,j),1.5),500.)
+      else
+         refi(i,k,j) = 1.5  !test
+      endif
+   endif
 !JJS 20140305 ^^^^^  Calculate effective radius for all cloud species
 
  2000 continue
