@@ -310,11 +310,11 @@
 !---------------------------------------------------------------------------
 ! for new rad
 !---------------------------------------------------------------------------
-      real      fusl(nxp,lev+1,my_max),fdsl(nxp,lev+1,my_max),   &
-                fuir(nxp,lev+1,my_max),fdir(nxp,lev+1,my_max),   &
-                fuslr(nxp,lev+1,my_max),fdslr(nxp,lev+1,my_max), &
-                fuirr(nxp,lev+1,my_max),fdirr(nxp,lev+1,my_max), &
-                asl_clr(nxp,lev,my_max),atl_clr(nxp,lev,my_max), &
+      real(kind=RTYPE)  fusl(nxp,lev+1,my_max) ,fdsl(nxp,lev+1,my_max),  &
+                        fuir(nxp,lev+1,my_max) ,fdir(nxp,lev+1,my_max),  &
+                        fuslr(nxp,lev+1,my_max),fdslr(nxp,lev+1,my_max), &
+                        fuirr(nxp,lev+1,my_max),fdirr(nxp,lev+1,my_max)
+      real      asl_clr(nxp,lev,my_max),atl_clr(nxp,lev,my_max), &
                 clds(nxp,lev,my_max)
       real      rld_clr(nxp,my_max),sld_clr(nxp,my_max)
       real      asol_clr(nxp,my_max),olr_clr(nxp,my_max),ss_clr(nxp,my_max), &
