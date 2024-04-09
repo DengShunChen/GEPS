@@ -1,9 +1,3 @@
-#ifdef USE_CUDA
-#define trngra3 trngra3_gpu
-#define ujoinsr ujoinsr_gpu
-#define tranuv tranuv_gpu
-#endif
-
        subroutine intgrt
 !
 !***********************************************************************

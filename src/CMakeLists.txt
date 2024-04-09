@@ -360,6 +360,11 @@ if(${USE_CUDA})
         nvidia/mpe_transpose_rs1_gpu.f90
         nvidia/mpe_transpose_sr_gpu.f90
         nvidia/transr_gpu.f90
+        nvidia/trandv_gpu.f90
+        nvidia/joinrs_gpu.f90
+        nvidia/mpe_transpose_rs_gpu.f90
+        nvidia/tranrs_gpu.f90
+        nvidia/rstrandz_gpu.f90
     )
 endif()
 

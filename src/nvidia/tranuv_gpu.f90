@@ -122,7 +122,7 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
          ws4(k, 2, 2, l) = -div(k, 2, l, m)
       end do
       end do
-      
+
       !$acc loop
       do k = 1, lev*2*2*myhalf
          tcc(k, 1, 1, 1) = 0.
@@ -131,14 +131,14 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
       nb = 32
       jchk = iand(myhalf, 1)
       jje = myhalf - jchk
-      
+
       fj_ws3 = 0.0
       fj_ws4 = 0.0
       fj_tcc = 0.0
       fj_wc = 0.0
       fj_wd = 0.0
       jlistnum_fj = 0
-      
+
       !$acc loop seq
       do j = 1, jje
          if (mf .le. mtrundef(j)) then
@@ -157,7 +157,7 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
       end do
       !$acc end kernels
       !$acc end data
-      
+
       !$acc data copy(wc) async(1)
       !$acc parallel loop gang async(1)
       do j_fj = 1, jlistnum_fj
@@ -173,7 +173,7 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
 
       llistnum_fj = jtrun - mf + 1
       call dgemm_async('n', 'n', lev*2*2, jlistnum_fj, llistnum_fj, 1.0d+0, fj_ws3, lev*2*2, fj_wc, &
-                 jtrun, 1.0d+0, fj_tcc, lev*2*2, 1)
+                       jtrun, 1.0d+0, fj_tcc, lev*2*2, 1)
 
       !$acc data copy(wd) async(1)
       !$acc parallel loop gang async(1)
@@ -204,13 +204,13 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
       !$acc kernels async(1)
       fj_tcc = 0.0
       !$acc end kernels
-      
+
       !$acc end data
       !$acc wait(1)
 
       llistnum_fj = jtrun - mf + 1
       call dgemm_async('n', 'n', lev*2*2, jlistnum_fj, llistnum_fj, 1.0d+0, fj_ws4, lev*2*2, fj_wd, &
-                 jtrun, 1.0d+0, fj_tcc, lev*2*2, 1)
+                       jtrun, 1.0d+0, fj_tcc, lev*2*2, 1)
 
       !$acc parallel loop gang async(1)
       do j_fj = 1, jlistnum_fj
@@ -226,29 +226,29 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
       if (jchk .eq. 1) then
          j = myhalf
          if (mf .le. mtrundef(j)) then
-         !$acc data copy(wc, wd) async(1)
-         !$acc parallel loop collapse(2) private(sa00, sa10, sa20, sa30) async(1)
-         do kk = 1, lev2*2, nb
-         do ll = mf, jtrun, nb
-            do k = kk, min(kk + nb - 1, lev2*2), 4
-               sa00 = tcc(k, 1, 1, j)
-               sa10 = tcc(k + 1, 1, 1, j)
-               sa20 = tcc(k + 2, 1, 1, j)
-               sa30 = tcc(k + 3, 1, 1, j)
-               do l = ll, min(ll + nb - 1, jtrun)
-                  sa00 = sa00 + ws3(k, 1, 1, l)*wc(l, j) + ws4(k, 1, 1, l)*wd(l, j)
-                  sa10 = sa10 + ws3(k + 1, 1, 1, l)*wc(l, j) + ws4(k + 1, 1, 1, l)*wd(l, j)
-                  sa20 = sa20 + ws3(k + 2, 1, 1, l)*wc(l, j) + ws4(k + 2, 1, 1, l)*wd(l, j)
-                  sa30 = sa30 + ws3(k + 3, 1, 1, l)*wc(l, j) + ws4(k + 3, 1, 1, l)*wd(l, j)
+            !$acc data copy(wc, wd) async(1)
+            !$acc parallel loop collapse(2) private(sa00, sa10, sa20, sa30) async(1)
+            do kk = 1, lev2*2, nb
+            do ll = mf, jtrun, nb
+               do k = kk, min(kk + nb - 1, lev2*2), 4
+                  sa00 = tcc(k, 1, 1, j)
+                  sa10 = tcc(k + 1, 1, 1, j)
+                  sa20 = tcc(k + 2, 1, 1, j)
+                  sa30 = tcc(k + 3, 1, 1, j)
+                  do l = ll, min(ll + nb - 1, jtrun)
+                     sa00 = sa00 + ws3(k, 1, 1, l)*wc(l, j) + ws4(k, 1, 1, l)*wd(l, j)
+                     sa10 = sa10 + ws3(k + 1, 1, 1, l)*wc(l, j) + ws4(k + 1, 1, 1, l)*wd(l, j)
+                     sa20 = sa20 + ws3(k + 2, 1, 1, l)*wc(l, j) + ws4(k + 2, 1, 1, l)*wd(l, j)
+                     sa30 = sa30 + ws3(k + 3, 1, 1, l)*wc(l, j) + ws4(k + 3, 1, 1, l)*wd(l, j)
+                  end do
+                  tcc(k, 1, 1, j) = sa00
+                  tcc(k + 1, 1, 1, j) = sa10
+                  tcc(k + 2, 1, 1, j) = sa20
+                  tcc(k + 3, 1, 1, j) = sa30
                end do
-               tcc(k, 1, 1, j) = sa00
-               tcc(k + 1, 1, 1, j) = sa10
-               tcc(k + 2, 1, 1, j) = sa20
-               tcc(k + 3, 1, 1, j) = sa30
             end do
-         end do
-         end do
-         !$acc end data
+            end do
+            !$acc end data
          end if
       end if
 
@@ -317,12 +317,11 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
       !$acc end data
       !$acc wait(1)
 
-
       llistnum_fj = jtrun - mf + 1
-      
+
       call dgemm_async('n', 'n', lev*2*2, jlistnum_fj, llistnum_fj, 1.0d+0, fj_ws3, lev*2*2, fj_wc, &
-                 jtrun, 1.0d+0, fj_tc2, lev*2*2, 1)
-      
+                       jtrun, 1.0d+0, fj_tc2, lev*2*2, 1)
+
       !$acc data copy(wd) async(1)
       !$acc parallel loop gang async(1)
       do j_fj = 1, jlistnum_fj
@@ -357,7 +356,7 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
 
       llistnum_fj = jtrun - mf + 1
       call dgemm_async('n', 'n', lev*2*2, jlistnum_fj, llistnum_fj, 1.0d+0, fj_ws4, lev*2*2, fj_wd, &
-                 jtrun, 1.0d+0, fj_tc2, lev*2*2, 1)
+                       jtrun, 1.0d+0, fj_tc2, lev*2*2, 1)
 
       !$acc parallel loop gang async(1)
       do j_fj = 1, jlistnum_fj
@@ -374,29 +373,29 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
       if (jchk .eq. 1) then
          j = myhalf
          if (mf .le. mtrundef(j)) then
-         !$acc data copy(wc, wd) async(1)
-         !$acc parallel loop collapse(2) private(sa00, sa10, sa20, sa30) async(1)
-         do kk = 1, lev2*2, nb
-         do ll = mf, jtrun, nb
-            do k = kk, min(kk + nb - 1, lev2*2), 4
-               sa00 = tc2(k, 1, 1, j)
-               sa10 = tc2(k + 1, 1, 1, j)
-               sa20 = tc2(k + 2, 1, 1, j)
-               sa30 = tc2(k + 3, 1, 1, j)
-               do l = ll, min(ll + nb - 1, jtrun)
-                  sa00 = sa00 + ws3(k, 1, 1, l)*wc(l, j) + ws4(k, 1, 1, l)*wd(l, j)
-                  sa10 = sa10 + ws3(k + 1, 1, 1, l)*wc(l, j) + ws4(k + 1, 1, 1, l)*wd(l, j)
-                  sa20 = sa20 + ws3(k + 2, 1, 1, l)*wc(l, j) + ws4(k + 2, 1, 1, l)*wd(l, j)
-                  sa30 = sa30 + ws3(k + 3, 1, 1, l)*wc(l, j) + ws4(k + 3, 1, 1, l)*wd(l, j)
+            !$acc data copy(wc, wd) async(1)
+            !$acc parallel loop collapse(2) private(sa00, sa10, sa20, sa30) async(1)
+            do kk = 1, lev2*2, nb
+            do ll = mf, jtrun, nb
+               do k = kk, min(kk + nb - 1, lev2*2), 4
+                  sa00 = tc2(k, 1, 1, j)
+                  sa10 = tc2(k + 1, 1, 1, j)
+                  sa20 = tc2(k + 2, 1, 1, j)
+                  sa30 = tc2(k + 3, 1, 1, j)
+                  do l = ll, min(ll + nb - 1, jtrun)
+                     sa00 = sa00 + ws3(k, 1, 1, l)*wc(l, j) + ws4(k, 1, 1, l)*wd(l, j)
+                     sa10 = sa10 + ws3(k + 1, 1, 1, l)*wc(l, j) + ws4(k + 1, 1, 1, l)*wd(l, j)
+                     sa20 = sa20 + ws3(k + 2, 1, 1, l)*wc(l, j) + ws4(k + 2, 1, 1, l)*wd(l, j)
+                     sa30 = sa30 + ws3(k + 3, 1, 1, l)*wc(l, j) + ws4(k + 3, 1, 1, l)*wd(l, j)
+                  end do
+                  tc2(k, 1, 1, j) = sa00
+                  tc2(k + 1, 1, 1, j) = sa10
+                  tc2(k + 2, 1, 1, j) = sa20
+                  tc2(k + 3, 1, 1, j) = sa30
                end do
-               tc2(k, 1, 1, j) = sa00
-               tc2(k + 1, 1, 1, j) = sa10
-               tc2(k + 2, 1, 1, j) = sa20
-               tc2(k + 3, 1, 1, j) = sa30
             end do
-         end do
-         end do
-         !$acc end data
+            end do
+            !$acc end data
          end if
       end if
 
@@ -519,7 +518,7 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
 !  22 continue
 
 !2dMPI
-   call ujoinsr_gpu(cc, ut, vt, dummy, dummy, nx, my_max, levF, jlistnum, 2, 1)
+   call ujoinsr(cc, ut, vt, dummy, dummy, nx, my_max, levF, jlistnum, 2, 1)
 
    return
 end
