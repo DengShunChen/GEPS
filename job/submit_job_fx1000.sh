@@ -23,7 +23,7 @@ if [ $JCAP = 639 ] ; then
   export NPEX=4
   export NPEY=384
 elif [ $JCAP = 383 ] ; then
-  export NPEX=2
+  export NPEX=4
   export NPEY=96
 fi
 
@@ -32,6 +32,6 @@ export MPI=$((${NPEX}*${NPEY}))
 #==============================================================================================================#
 source /users/xa09/sample/setup_mpi+omp.fx1000 $OMP
 
-./regression_383_ndy.ksh
+./regression.ksh
 
 echo "Ending at: " `date`
