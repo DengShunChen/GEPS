@@ -44,12 +44,12 @@
       if(istat.ne.0)stop'mpmd_init fail !'
 #else
     ! the whole group, (gfs + io)
-    if(present(mpi_comm_mct)) then
+      #ifdef TIMCOMCPL
       MPI_COMM_atm = mpi_comm_mct
-    else
+      #else
       MPI_COMM_atm = MPI_COMM_WORLD
       call MPI_INIT( ierr )
-    end if
+      #endif
     call MPI_COMM_RANK( MPI_COMM_atm, myrank_all, ierr )
     call MPI_COMM_SIZE( MPI_COMM_atm, nsize_all,  ierr )
     root_rsm = nsize_all
