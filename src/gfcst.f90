@@ -30,8 +30,10 @@
 !
 
 #ifdef TIMCOMCPL
+      write(*,*) " "
       call mpe_init(mpi_comm_mct)
 #else
+      write(*,*) " "
       call mpe_init
 #endif
 !

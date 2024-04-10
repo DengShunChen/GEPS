@@ -3,6 +3,7 @@
 #-- enviornment
  user=`whoami`
 # datamv='login11'
+ dtg='18090800'
  if [ ${machine} = a100 ]; then
          mach='x86_64'
  elif [ ${machine} = fx1000 ]; then
@@ -12,7 +13,7 @@
  DMSPATH=/package/${mach}/dms/dms.v4/bin
  GFSDIR=$MDIR
  GFSFIX=$MDIR/fix
- GFSWRK=${GFSDIR}/work_${machine}
+ GFSWRK=${GFSDIR}/work_${dtg}
  rm -rf $GFSWRK
  mkdir -p $GFSWRK
 
@@ -25,8 +26,7 @@
    DMSFLAG=GI
  fi
 
- dtg='18090800'
- fgdtg=$(/users/xb80/bin/Caldtg.ksh ${dtg} -6)
+ fgdtg=$(/data/common/gfs/scripts/Caldtg.ksh ${dtg} -6)
 
  idmshead='MASOPS'
  idmsbody=''
@@ -39,7 +39,7 @@
  odmsdb=${idmsdb}
 
 #-- executable
- EXEC='MTCo639L72_'${machine}
+ EXEC='MTCo639L72_'${mach}
 
 #---------------------------------------------------------#
  idmsfile=${idmshead}${idmsbody}${idmstail}@${idmsdb}
@@ -67,9 +67,9 @@
  export source="/data/common/gfs/dms_data/bckdms.ufs"
  export target="${dmsdb_home}/bckdms.ufs"
  
- if [ ! -e ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S ] ; then
-   ${DMSPATH}/rdmscrt BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
-   ${LNCP} ${source}/BCK_TCo${JCAP}_${DMSFLAG}30S/* ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S
+ if [ ! -e ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S_xnew ] ; then
+   ${DMSPATH}/rdmscrt BCK_TCo${JCAP}_${DMSFLAG}30S_xnew@bckdms
+   ${LNCP} ${source}/BCK_TCo${JCAP}_${DMSFLAG}30S_xnew/* ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S_xnew
  fi
 #----------------------------------------------------------------#
 
@@ -131,8 +131,13 @@ if [ $JCAP = 639  ] ; then
   MODLST_RES='dt=450., hfilt=1., cgw=4.2e-5, cgwd=1.20, cmbk=1.00,'
   MODEL_BASIC='nco=640,'
 elif [ $JCAP = 383  ] ; then
-  MODLST_RES='dt=720., hfilt=1., cgw=2.6e-5, cgwd=1.60, cmbk=0.30,'
   MODEL_BASIC='nco=384,'
+  MODLST_RES="dt=600., hfilt=1., cgwd=2.4, cmbk=0.6, tofd=t, ksgeo=1, outdms=0, outgrb2=1,
+              domfc=1080., out_green=t, otgreen=3., nmmiph=12, nmgwcv=1, two_loop=t,
+              nmcup=7, nmshl=4,factop=80.,mass_dp=f,itter=1,alpha=0.65,"
+  NPEX=4
+  NPEY=96
+  DMSFLAG=GI
 fi
 
 if [ $machine = a100 ] ; then
@@ -142,48 +147,43 @@ fi
 
 cat > ${GFSWRK}/namlsts << EOF
  &model_param
-  nco=640,
+  ${MODEL_BASIC}
   lev=72,
   ncld=7,
-  octahedral=true,
-  nout=9000,
-  io_quilting=false,
+  octahedral=t,
+  nout=90000,
+  io_quilting=f,
   npex=${NPEX},
   npey=${NPEY},
-  ${MODEL_BASIC}
  &end
 
- &modlst
-  taui=0.0, taue=120.0, tauo=1.0, taup=6.0, taureg=6.,
-  dt=450.0,
-  cstar=f, update=t, lsimpl=t,
-  hfilt=1.,
-  ksgeo=2, yesdia=t,
-  dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f, 
-  dograv=true, docgrav=true,
-  donnmi=true, 
-  dosppt=false, dospptout=false, 
-  doshum=false,
-  cutfreq=3, nnmivm=3,
-  doincr=f,
-  hdiff=t, frad=1.0, ldiag=0,
-  idg=40, jdg=108,
-  itypbl=0, numreduce=5, ptmeans=800.,
-  irad=2, nmland=2,
-  nmcup=6, nmshl=3, nmpbl=4, nmmiph=12,
-  nmgwor=2, nmgwcv=2,
-  ktcup=20, cgw=4.2e-5,
-  mtnvar=14, doo3l=t,
-  ioutsigr=1,
-  ggdef='${DMSFLAG}0G', gmdef='${DMSFLAG}MG',
-  domfc=384., out_green=t, otgreen=3., out_hp=false,
-  ndsladvh2=false,
-  isot=1, ivegsrc=1, cgwd=1.20, cmbk=1.00,
-  spl1=10., spl2=100.,
-  two_loop=t,
-  itter=2, vd=0.002, factop=60.,
-  ${MODLST_RES}
-  ${MODLST_PHY}
+&modlst
+ outrsm=false, rsmoutinv=6, rlon1=100., rlon2=150., rlat1=5., rlat2=40., rgrdsz=0.25,
+ taui=0.0, taue=120.0, tauo=1.0, taup=6.0, taureg=0.,
+ cstar=f, update=t, lsimpl=t,
+ ksgeo=1, yesdia=t,
+ dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f,
+ dograv=t, docgrav=t,
+ donnmi=t,
+ dosppt=f, doskeb=f, dospptout=f,
+ doshum=f,
+ cutfreq=3, nnmivm=3,
+ doincr=f,
+ hdiff=t, frad=1.0, ldiag=0,
+ idg=40, jdg=108,
+ itypbl=0, numreduce=8, ptmeans=800.,
+ irad=2, nmland=2,
+ nmcup=6, nmshl=3, nmpbl=4, nmmiph=2,
+ nmgwor=2, nmgwcv=1,
+ ktcup=20,
+ mtnvar=14, doo3l=t,
+ ioutsigr=1,
+ ggdef='${DMSFLAG}0G', gmdef='${DMSFLAG}MG',
+ domfc=1080., out_green=t, otgreen=3., out_hp=f,
+ ndsladvh2=f,
+ isot=1, ivegsrc=1, cgwd=2.40, cmbk=0.60,
+ spl1=5., spl2=100., tofd=t
+ ${MODLST_RES}
  &end
 
  &typ
