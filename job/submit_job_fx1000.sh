@@ -18,7 +18,7 @@ OMP=1
 
 export I_MPI_PIN_CELL=core
 export JCAP=383
-
+export MDIR=`cd ../ ; pwd`
 if [ $JCAP = 639 ] ; then
   export NPEX=4
   export NPEY=384
@@ -28,10 +28,11 @@ elif [ $JCAP = 383 ] ; then
 fi
 
 export MPI=$((${NPEX}*${NPEY}))
-
+export machine=fx1000
 #==============================================================================================================#
 source /users/xa09/sample/setup_mpi+omp.fx1000 $OMP
 
 ./regression.ksh
 
 echo "Ending at: " `date`
+
