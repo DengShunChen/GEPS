@@ -899,7 +899,7 @@
       implicit none
 !
       integer   nx,my,nc,istat,lenc,lev
-      real      glob(nx,my),mout(nx,my)
+      real(kind=RTYPE) glob(nx,my),mout(nx,my)
 
       if (myrank .eq. nc) then
         mout  = glob
