@@ -100,7 +100,7 @@ export FIXDIR=${GFSFIX}
 
 export ANADMS=${idmsfile}
 export FCSTDMS=${odmsfile}
-export BCKOPS=BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
+export BCKOPS=BCK_TCo${JCAP}_${DMSFLAG}30S_xnew@bckdms
 
 ${DMSPATH}/rdmspurge -f FCSTDMS
 ${DMSPATH}/rdmscrt -l34 FCSTDMS
