@@ -3,7 +3,7 @@
 #-- enviornment
  user=`whoami`
 # datamv='login11'
- dtg='18090800'
+# dtg='18090800'
  if [ ${machine} = a100 ]; then
          mach='x86_64'
  elif [ ${machine} = fx1000 ]; then
@@ -52,7 +52,7 @@
 
   # TCo IC data path
   export source="/data/common/gfs/dms_data/ncep_ana.ufs/TCo${JCAP}l72_${dtg}"
-
+#  export source="/data/common/gfs/GEPSv3_lib/data/MASOP_ic/MASOPS_eps000"
   # link/copy DMS files
   export target="${dmsdb_home}/${idmsdb}.ufs"
 

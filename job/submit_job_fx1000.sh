@@ -29,6 +29,8 @@ fi
 
 export MPI=$((${NPEX}*${NPEY}))
 export machine=fx1000
+mdir=`cd ../ ; pwd`
+export dtg=`cat ${mdir}/job/run_date |cut -c3-10`
 #==============================================================================================================#
 source /users/xa09/sample/setup_mpi+omp.fx1000 $OMP
 
