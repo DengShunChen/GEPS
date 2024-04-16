@@ -128,9 +128,9 @@
       integer ibs(nx)
 
 !cmy----
-      real afusl(nx,lev+1),afdsl(nx,lev+1),afuslr(nx,lev+1),        &
-           afdslr(nx,lev+1),afuir(nx,lev+1),afdir(nx,lev+1),        &
-           afuirr(nx,lev+1),afdirr(nx,lev+1)
+      real(kind=RTYPE) afusl(nx,lev+1) ,afdsl(nx,lev+1),afuslr(nx,lev+1), &
+                       afdslr(nx,lev+1),afuir(nx,lev+1),afdir(nx,lev+1) , &
+                       afuirr(nx,lev+1),afdirr(nx,lev+1)
 !cmy----
 
       real    clwc(nx,lev),ciwc(nx,lev),cre(nx,lev),cde(nx,lev),    &
@@ -754,8 +754,8 @@
        wk1(i) = fuir(i+jj)
        wk2(i) = fdir(i+jj)
       end do
-      call splin1 ( wk1, afuir(1,j), lvlw, nxj, il, cof, 1.0 )
-      call splin1 ( wk2, afdir(1,j), lvlw, nxj, il, cof, 1.0 )
+      call splin1_sp ( wk1, afuir(1,j), lvlw, nxj, il, cof, 1.0 )
+      call splin1_sp ( wk2, afdir(1,j), lvlw, nxj, il, cof, 1.0 )
       end do
 !cmy-------------------------------------------------------------------
 
@@ -787,8 +787,8 @@
        wk1(i) = fuirr(i+jj)
        wk2(i) = fdirr(i+jj)
       end do
-      call splin1 ( wk1, afuirr(1,j), lvlw, nxj, il, cof, 1.0 )
-      call splin1 ( wk2, afdirr(1,j), lvlw, nxj, il, cof, 1.0 )
+      call splin1_sp ( wk1, afuirr(1,j), lvlw, nxj, il, cof, 1.0 )
+      call splin1_sp ( wk2, afdirr(1,j), lvlw, nxj, il, cof, 1.0 )
       end do
 !cmy-------------------------------------------------------------------
 
