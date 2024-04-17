@@ -158,6 +158,8 @@ subroutine tracking(tau,dt_trk,dt,nx,my,                                  &
 
 ! do tracking
   dtaup= mod(tau+0.001, tau)
+  if ( tau < 0.001 )    dtaup=0.0
+  
   DoFindTrack=(dtaup .lt. dtx_tau)
 !  print*,'DoFindTrack',dtaup,dtx_tau,DoFindTrack
   if(myrank.eq.0)print *,' in tracking tau=',tau
@@ -237,9 +239,9 @@ subroutine tracking(tau,dt_trk,dt,nx,my,                                  &
           call xy2ll(rixtyp(ip),rjytyp(ip),tflon(nc,ip,n),tflat(nc,ip,n),tlon,tlat,nx,my)
           i=ixtyp(ip,n) ; j=jytyp(ip,n) 
           if(ip .eq. 4) then 
-            tensity(nc,ip,n)=field(i,j)!+1457.0 
+            tensity(nc,ip,n)=field(i,j)+1457.0 
           elseif(ip .eq. 5) then
-            tensity(nc,ip,n)=field(i,j)!+5574.0
+            tensity(nc,ip,n)=field(i,j)+5574.0
           else
             tensity(nc,ip,n)=field(i,j)
           endif

@@ -225,7 +225,7 @@ contains
           j=jlist1(jj)
           nxj=nxdef_2d(j)
           do i=1,nxj
-            h850(i,jj)= phips(i,jj,k)+phistd(k)
+            h850(i,jj)= phips(i,jj,k)
           enddo
         enddo
 !byl          call unify_reduceintp(nx,my,my_max,phips(1,1,k),h850)
@@ -244,7 +244,7 @@ contains
           j=jlist1(jj)
           nxj=nxdef_2d(j)
           do i=1,nxj
-            h500(i,jj)= phips(i,jj,k)+phistd(k)
+            h500(i,jj)= phips(i,jj,k)
           enddo
         enddo
 !byl          call unify_reduceintp(nx,my,my_max,phips(1,1,k),h500)
