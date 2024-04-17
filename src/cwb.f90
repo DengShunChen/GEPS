@@ -281,6 +281,7 @@
       real(kind=RTYPE), dimension(:), allocatable ::        &
                        sumtotpy,sumwatpy,sumtotty,sumwatty
 
+
       allocate(sumtotp(nxp,my_max),sumwatp(nxp,my_max),     &
                sumtottx(nx,my_max),sumwattx(nx,my_max))
       ! dry air mass conservation

@@ -624,7 +624,7 @@
       icrad = frad*3600.0/dt + 0.0001 ! frad =1.0 set in block.f
       iter  = tau*3600.0/dt  + 0.0001
       uprad = .false.
-      if ( (mod(iter,icrad).eq.0) .or. (iter.eq.1) )  uprad = .true.
+      if ( (mod(iter-1,icrad).eq.0) )  uprad = .true.
       doozon = doozon .and. dorad
       uprad  = uprad  .and. dorad
 !
