@@ -989,11 +989,7 @@
       enddo
       call transr1(jtrun,jtmax,nx,my,my_max,poly,pltemp,pt,nsizey)
 
-<<<<<<< HEAD
-!      if ( mass_dp ) then
-=======
       !mass conservation
->>>>>>> GEPSdev
       call ptotc(pdry,dpprt)
       pcorr = (pdryi-pdry) * sqrt(2.)
 !
