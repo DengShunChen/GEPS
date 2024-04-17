@@ -407,7 +407,8 @@
 !c         
 !c  vectorized periodic gaussian elimination solver
 !c         
-      dimension y(m,n),work(10000) 
+!      dimension y(m,n),work(10000)
+      dimension y(m,n),work(m+3*n)  ! wei 20231019 
 !c         
 !c gaussian elimination        
 !c         

@@ -57,8 +57,6 @@
                   skeb3du,skeb3dv,diss_est,skebfilt,      &
                   keb,kea,skebest
 !-----------------------------------------------------------------------
-      use mod_grb2_param , only : grbid ,grbfile ,opn_grb2 ,cls_grb2
-
       implicit  none
 !
 !  local work array
@@ -582,6 +580,7 @@
        pten=0.
 
        deldm=0.
+
 
 
 
@@ -1318,15 +1317,15 @@
           j=jlist1(jj)
           nxj=nxdef_2d(j)
           do i = 1,nxj
-            hf24(i,jj)  = hf24(i,jj)+hflux(i,jj)*dtx
-            qf24(i,jj)  = qf24(i,jj)+qflux(i,jj)*dtx
-            ss24(i,jj)  = ss24(i,jj)+ss(i,jj)*dtx
-            rs24(i,jj)  = rs24(i,jj)+rs(i,jj)*dtx
-            asol24(i,jj)= asol24(i,jj)+asol(i,jj)*dtx
-            olr24(i,jj) = olr24(i,jj)+olr(i,jj)*dtx
-            rain24(i,jj)= rain24(i,jj)+totalp(i,jj)
+            hf24(i,jj)    = hf24(i,jj)   +hflux(i,jj)*dtx
+            qf24(i,jj)    = qf24(i,jj)   +qflux(i,jj)*dtx
+            ss24(i,jj)    = ss24(i,jj)   +ss(i,jj)   *dtx
+            rs24(i,jj)    = rs24(i,jj)   +rs(i,jj)   *dtx
+            asol24(i,jj)  = asol24(i,jj) +asol(i,jj) *dtx
+            olr24(i,jj)   = olr24(i,jj)  +olr(i,jj)  *dtx
+            rain24(i,jj)  = rain24(i,jj) +totalp(i,jj)
             rainlp24(i,jj)=rainlp24(i,jj)+totallp(i,jj)
-            flash24(i,jj)=flash24(i,jj)+flash(i,jj)*dtx
+            flash24(i,jj) =flash24(i,jj) +flash(i,jj)*dtx
           enddo
         enddo
         dt24 = dt24 + dtx
@@ -1429,34 +1428,13 @@
       ltrack=(dtaup .lt. dtx_tau)
 !       if(myrank.eq.0)print *,'chkltr dtaup,dt_trk,dtx_tau=',dtaup,dt_trk,dtx_tau
 
-
         if(myrank==0) call system_clock(toutsrt)
-!       open grib2 file
-        if( outgrb2 == 1 .and. myrank == 0 )then
-          lopngrb2=.false.
-          if(histim)lopngrb2=.true.
-          if(ltrack)lopngrb2=.true.
-          if( itau .le. nint(domfc) )lopngrb2=.true.
-          if( out_hp .and. mod( itau , 3 ) == 0 )lopngrb2=.true.
-          if( out_green .and. mod( itau , nint(otgreen) ) == 0 )lopngrb2=.true.
-          if( mod( itau , 24 ) == 0  )lopngrb2=.true.
-
-          if(lopngrb2)then
             if(io_quilting)then
               write( keydoit,'(A6,I4.4,A4,I12.12,A8)') &
               "OPEN..",itau,"....",idtg,"H...DOIT"
               ntag=ntag+1
               call mpe_send_key(keydoit,ntag,istat)
-            else
-             grbid=233  ! 231 outflds    233 mfc
- 133                      format( A  ,A ,I10.10 ,A , i4.4 ,A      )
-             write(grbfile,133 )trim(ifilout_grb),'/GFS_',idtg/100 ,'_',itau,'.grb2'
-             if(myrank==0) print*,'OutFileName= ',trim(grbfile)
-             call opn_grb2(nx,my,idtg,itau,istat)
             endif
-          endif
-        endif
-!
 !
 !--- histim (start)
       if ( histim .or. ltrack )  then
@@ -1641,6 +1619,7 @@
           endif
         endif   ! end of (wrestrt)
 !
+!        !---output sigma layer data---
 !        dtaup = mod( tauo+0.001, taup )
 !ds        dtaup = mod( tau+0.001, taup )
 !ds       if(tau.le.(taureg+0.001) .and. dtaup.lt.0.01)then
@@ -1655,7 +1634,7 @@
 #endif
         endif
 !-------------------------------------------------------------------------------
-
+!     !---output sigma layer radiation data---
 !      if (myrank .eq. 0) print *,'ioutsigr =',ioutsigr
       if (ioutsigr .eq. 0 .and. histim ) then
       if (myrank .eq. 0) print *,'outsigr start !!!'
@@ -1756,8 +1735,8 @@
 !      endif
 !#endif
 !
-!        if(typhoon .and. ltrack)then
-         if(typhoon .and. ltrack .and. itau .le. 384 )then
+!       if(typhoon .and. ltrack)then
+        if(typhoon .and. ltrack .and. itau .le. 384 )then
           if(myrank .eq. 0)print *,' calling tracking,  tau= ',tau
 !          if(myrank .eq. 0)print *,'dt_trk=',dt_trk
           call tracking(tau,dt_trk,dt,nx,my,                            &
@@ -1776,7 +1755,7 @@
 !        if( histim .and. (mod(float(itau)+0.00001, 12.) .lt. 0.01) ) then
           raincu=0.
           rainlp=0.
-          runoff=0.
+!         runoff=0.
 !          call zilch (raincu,nxmy)
 !          call zilch (rainlp,nxmy)
 !          call zilch (runoff,nxmy)
@@ -1787,7 +1766,7 @@
       endif     ! end of (histim) --- --- ---
 
 !       output f006 data for FV3
-        !if (abs(tau+0.00001-6.) .lt. 0.01) then
+        if(outfv3)then
         if ( itau ==  6  ) then
 #ifndef NO_OUT
           if (myrank .eq. 0) print *,'output FV3 data !!!'
@@ -1795,6 +1774,7 @@
                             ,q2,fm,fh,fm10,fh2,srflag,ustar)
 #endif
         endif !(abs(tau+0.00001-6.) .lt. 0.01)
+        endif
 
 !
 !kc             output t2,raintot,u10,v10,ctot at 1 hour interval within 192hr.
@@ -1803,51 +1783,35 @@
 !               if(myrank .eq. 0) print*,'domfc at tau,dtaup=',tau,dtaup
 !               if(tau.le.192. .and. dtaup.lt.0.01)then
 
-        if( itau .le. nint(domfc) .and. mod( itau , 1 ) == 0  )then
-          if(myrank .eq. 0) print *,'out1 at tau=',itau
+        if( mod( itau , 1 ) == 0  )then
+
+          if( itau .le. nint(domfc) )then
+           if(myrank .eq. 0) print *,'out1 at tau=',itau
 #ifndef NO_OUT
-          call out2d_mfc(nx,lev,my,my_max,itau,idtg                 &
+           call out2d_mfc(nx,lev,my,my_max,itau,idtg        &
                       ,raincu1,rainlp1,raintot,glob,t2,q2,rh2,rh10  &
                       ,u10,v10,tmax,tmin,rld,sld,ctot,pt,ggdef)
 #endif
+          endif !  ( tau <= domfc )
           raincu1=0.0
           rainlp1=0.0
           tmax=0.0
           tmin=0.0
-        endif !  ( tau <= domfc )
-!       endif
+        endif
 !
 
-!       output 3hr accumulated precipitation for CWB home page
-        if( out_hp .and. mod( itau , 3 ) == 0 )then
-!        if(out_hp)then
-!           if (mod(tau+0.00001, 3.) .lt. 0.01) then
-#ifndef NO_OUT
-          call  outflds_hp(nint(tau),nx,my,my_max,idtg                           &
-                          ,raincu3,rainlp3,ggdef)
-#endif
-          raincu3=0.
-          rainlp3=0.
-!          endif
-!        endif
-        endif
 !
 !       out green energy plan
         if( out_green .and. mod( itau , nint(otgreen) ) == 0 )then
-!        if(out_green)then
-!          if (mod(tau+0.00001, otgreen) .lt. 0.01) then
 #ifndef NO_OUT
             call  outflds_green(nint(tau),nx,my,my_max,lev,ncld                &
                           , idtg,cp,rgas,grav,t2,u10,v10,ss,pk                 &
                           , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6)
 #endif
-!           if (mod(tau+0.00001, 6. ) .lt. 0.01) then
             if ( mod( itau , 6 ) == 0 ) then
              raincu6=0.
              rainlp6=0.
             endif
-!          endif
-!        endif
         endif
 !
 !       output flux at 24 hour interval
@@ -1865,39 +1829,6 @@
           call out24(nx,my,my_max,hf24,qf24,ss24,rs24,asol24,olr24,rain24,rainlp24,dt24 &
                   ,glob,itau,idtg,ggdef,flash24)
 #endif
-          if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
-            call outtseadiffFCT24(nx,my,my_max,dt24,itau,idtg,ggdef)
-          endif
-
-          if(do_sit)then
-!           output sit var. at "outsitmean" interval
-            if(outsitmean .gt. 0. ) then
-!              dtaup = mod(tau+0.001, outsitmean)
-!              if( dtaup .lt. dtx_tau ) then
-               if(  mod( itau , NINT(outsitmean) ) == 0  )then
-                 if(myrank .eq. 0) print *,'outsitmean at tau=',itau
-                 call writesitmean(nx,my,my_max,lkvl,itau,idtg,ggdef)
-               endif
-            endif
-            if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
-              call outtseadiffSIT24(nx,my,my_max,ratioSIT,dtsit24,itau,idtg,ggdef)
-            endif
-            if(loutsit24)then
-              call outsit24(nx,my,my_max,lkvl,itau,idtg,ggdef)
-            endif
-            call dtgfix12(idtg,idtg_temp,itau-1)
-            ibeforeyymm=idtg_temp/1000000
-            call dtgfix12(idtg,idtg_temp,itau)
-            icurrentyymm=idtg_temp/1000000
-            lnewyymm=icurrentyymm/=ibeforeyymm
-            if(myrank .eq. 0) then
-              print *,'ibeforeyymm=',ibeforeyymm,'icurrentyymm=',icurrentyymm &
-                     ,'lnewyymm=',lnewyymm
-            endif
-            if( lnewyymm ) then
-              call outsitmon(nx,my,my_max,lkvl,itau,idtg,ggdef)
-            endif
-          endif ! (do_sit)
 !
 !         zero set arrays
 !
@@ -1920,29 +1851,19 @@
         endif ! (  mod( itau , 24 ) == 0  )
 
 !
-        if (dosppt .and.  dospptout .and. mod( itau , 1 ) == 0 ) then
-           call spptout(tau)
-        endif
-        if (doskeb .and.  doskebout .and. mod( itau , 1 ) == 0 ) then
-           call skebout(tau)
+        if( mod( itau , 1 ) == 0 )then
+         if (dosppt .and.  dospptout   ) then
+            call spptout(tau)
+         endif
+         if (doskeb .and.  doskebout  ) then
+            call skebout(tau)
+         endif
         endif
 
         if(do_sit .AND. lgodas .AND. ldailysst) then
           CALL read_dailygodas(idtg,tau,dtx)
         endif
 
-        !close grib2 file
-        if(outgrb2==1.and.myrank==0)then
-          if(lopngrb2)then
-            if(io_quilting)then
-              keydoit(1:4)='CLSE'
-              ntag=ntag+1
-              call mpe_send_key(keydoit,ntag,istat)
-            else
-              call cls_grb2(istat)
-            endif
-          endif
-        endif
         if(myrank==0)then
           call system_clock(toutend,toutrate)
           print *, "In output tau: ",itau," CPU Time: " &
