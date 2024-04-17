@@ -182,19 +182,6 @@
 ! changed to correct julian in restart
              call readalb(bckfile,nx,my,my_max,julian,ggdef,       &
                           alvsf,alvwf,alnsf,alnwf,facsf,facwf)
-             do jj=1,jlistnum
-               j=jlist1(jj)
-               nxj=nxdef_2d(j)
-               do i=1,nxj
-                 alvsf(i,jj)=alvsf(i,jj)*0.01
-                 alvwf(i,jj)=alvwf(i,jj)*0.01
-                 alnsf(i,jj)=alnsf(i,jj)*0.01
-                 alnwf(i,jj)=alnwf(i,jj)*0.01
-                 facsf(i,jj)=facsf(i,jj)*0.01
-                 facwf(i,jj)=facwf(i,jj)*0.01
-               enddo
-             enddo
-
           endif ! irad=2
         endif ! if(mod(taui,24.) /= 0.) then
 
