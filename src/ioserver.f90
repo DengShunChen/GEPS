@@ -116,7 +116,7 @@ integer*8::idtg
 real(kind=RTYPE)::fld(nx*my)
 integer,allocatable::ptp0(:,:)
 real*4,allocatable ::z(:,:)
-real::t12
+integer::t12
 integer  ifromtau,itotau,istat
 ifromtau=0
 nxmy=nx*my
@@ -142,7 +142,7 @@ do while (.true.)
 #endif
     write(grbfile,133 )trim(ifilout_grb),'/GFS_',idtg/100 ,'_',itau,'.grb2'
     print*,'OutFileName= ',trim(grbfile)
-    call opn_grb2(nx,my,idtg,itau,istat)
+    call opn_grb2(grbid,nx,my,idtg,itau,istat)
 
     ncnt=0
     ntag=ntag+1
@@ -175,7 +175,7 @@ do while (.true.)
       ncnt=0
     end do ! while ( key(1:4)='DOIT' )
 
-    call cls_grb2(istat)
+    call cls_grb2(grbid,istat)
 
     !CWB20160927 for NWP control
 #ifdef O38K

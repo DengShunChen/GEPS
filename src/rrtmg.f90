@@ -33,6 +33,7 @@
       use index
       use radn
       use const, only: RTYPE
+!      use noah, only:ioutsigr
 ! -------------------------------------------------------------------
 ! --- for rrtmg input :
 !
@@ -96,8 +97,8 @@
 ! --- 3d
 !
       real    htrsw(nx,lev),htrlw(nx,lev)
-      real    fusl(nx,lev+1),fdsl(nx,lev+1)
-      real    fuir(nx,lev+1),fdir(nx,lev+1)
+      real(kind=RTYPE)    fusl(nx,lev+1),fdsl(nx,lev+1)
+      real(kind=RTYPE)    fuir(nx,lev+1),fdir(nx,lev+1)
      
       real    dummy1(nx,lev),dummy2(nx,lev)
       real    work1(nx,lev+1),work2(nx,lev+1)
@@ -122,8 +123,8 @@
 ! --- 3d 
 !
       real    htrsw0(nx,lev),htrlw0(nx,lev)
-      real    fuslr(nx,lev+1),fdslr(nx,lev+1)
-      real    fuirr(nx,lev+1),fdirr(nx,lev+1)
+      real(kind=RTYPE)    fuslr(nx,lev+1),fdslr(nx,lev+1)
+      real(kind=RTYPE)    fuirr(nx,lev+1),fdirr(nx,lev+1)
 !
       real    dummy4(nx,lev),dummy5(nx,lev)
       real    work5(nx,lev+1),work6(nx,lev+1)
@@ -529,6 +530,7 @@
        enddo
 !       enddo
 
+!       if(ioutsigr == 0)then
        do k = 1, lev+1
           kc=lev-k+2
        do i = 1, nxj
@@ -542,6 +544,7 @@
           fdirr(i,kc)=work8(i,k)
        enddo
        enddo
+!       endif ! ioutsigr .eq. 0
        deallocate(tracer)
 
        return
