@@ -920,7 +920,7 @@
 !
       if ( .not. restrt ) then
         pdryi = 0.
-        call ptot(pdryi,dpprt)
+        call ptotc(pdryi,dpprt)
       endif
 !
 !  compute globel moisture budget and p-coordinate variables
