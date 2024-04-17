@@ -479,6 +479,35 @@
 
       return
       end
+!-------------------------------------------------------------------------
+      subroutine mpe2d_unify_my1d(work,a)
+
+! unify a(nx_full,my_partial) to work(nx_full,my_full)
+
+      use param
+      use index
+      use mpi
+      use const, only: RTYPE,MPI_RTYPE
+
+      real(kind=RTYPE) work(my)
+      real(kind=RTYPE) a(my_max)
+      real(kind=RTYPE) b(my_max*nsizey)
+
+      work=0.
+      b=0.
+
+      call MPI_ALLGATHER( a,my_max, MPI_RTYPE, &
+                          b,my_max, MPI_RTYPE, &
+                          col_comm, IERR )
+
+
+      do j=1,my
+        jj=jlist2(j)
+        work(j)=b(jj)
+      enddo
+
+      return
+      end
 !----------------------------------------------------------------------------------------------
       subroutine mpe2d_unify_spec_lev(ain,aout,lev,levp,jtrun,jtmax,mlistnum,proc,comm)
 
