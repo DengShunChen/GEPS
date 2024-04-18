@@ -1245,7 +1245,7 @@ subroutine warm_rain (dt, ks, ke, dp, dz, tz, qv, ql, qr, qi, qs, qg, &
     
     call check_column (ks, ke, qr, no_fall)
 
-    reevap = 0
+    reevap = 0.
     
     if (no_fall) then
         vtr (:) = vf_min
@@ -1475,7 +1475,7 @@ subroutine revap_racc (ks, ke, dt, tz, qv, ql, qr, qi, qs, qg, den, denfac, rh_r
     real, intent (in), dimension (ks:ke) :: rhcz
     real (kind = r8), intent (inout), dimension (ks:ke) :: tz
     real, intent (inout), dimension (ks:ke) :: qv, qr, ql, qi, qs, qg
-    real, intent (out) :: reevap
+    real, intent (inout) :: reevap
     ! local:
     real (kind = r8), dimension (ks:ke) :: cvm
     real, dimension (ks:ke) :: q_liq, q_sol, lcpk
