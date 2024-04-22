@@ -328,7 +328,7 @@
           tautemp=tau+24.     !tau +24 hr
           icurrenttau=int(tautemp)
           tauleft=float(int((tautemp-int(tautemp)+0.001)*3600./dtx))*dtx !(sec)
-          if(tauleft .eq. 3600.) then
+          if(tauleft > 3599. ) then
           icurrenttau=icurrenttau+1
           tauleft=0.
           endif

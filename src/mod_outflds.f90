@@ -743,7 +743,9 @@ contains
 !byl        call mpe_unify(glob,nx,my,2,mpe_double)
         call syslbl_w('b00010',idtg,itau,ggdef)
 !byl        if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+        if(outdms.gt.0)then
         if(lwrite) call dmswrit(nx,my,lenc,kflag,glob,istat)
+        endif
         if(outgrb2==1.and.myrank==0)then
           call wrt_grb2_v2(itau,0,3,0,2,103,0,0,glob)
         endif

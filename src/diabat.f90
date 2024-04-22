@@ -1984,7 +1984,7 @@
         istep= int(tau/(dt/3600.)+0.01)
         tauleft=float(int((tau-int(tau)+0.001)*3600./dt))*dt
         icurrenttau=int(tau)
-        if(tauleft == 3600.0 )then
+        if(tauleft > 3599.0 )then
            icurrenttau=icurrenttau+1
            tauleft=0.0
         endif
