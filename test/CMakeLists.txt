@@ -75,7 +75,7 @@ else()
 endif()
 
 function(subroutine_mpi_test target)
-   add_executable(${target} ${target}.f90)
+   add_executable(${target} ${target}.f90 helper.f90)
    add_test(NAME ${target}
       COMMAND mpiexec -n 8 ${target}
       WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/test
@@ -94,5 +94,13 @@ subroutine_mpi_test(test_trandv)
 subroutine_mpi_test(test_joinrs)
 subroutine_mpi_test(test_tranrs)
 subroutine_mpi_test(test_rstrandz)
+subroutine_mpi_test(test_transr1)
+subroutine_mpi_test(test_prexp_hybrid_cwb)
+subroutine_mpi_test(test_trngra)
+subroutine_mpi_test(test_siimpl)
+subroutine_mpi_test(test_tranrs1)
+subroutine_mpi_test(test_gridnl_hybrid_ndsl)
+subroutine_mpi_test(test_hdiffu)
+subroutine_mpi_test(test_whdiffu)
 endif()
 
