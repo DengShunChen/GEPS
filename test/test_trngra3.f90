@@ -25,13 +25,11 @@ subroutine trngra3_unit
    implicit none
 
    integer, parameter :: steps = 16
-   real(kind=RTYPE) cim(jtmax)
-   real(kind=RTYPE) poly(jtrun, my/2, jtmax), dpoly(jtrun, my/2, jtmax)
-   real(kind=RTYPE) s(lev, 2, jtrun, jtmax)
-   real(kind=RTYPE) dlpl(nxp, levF, my_max), dtpl(nxp, levF, my_max)
-   real(kind=RTYPE) dlpl_gpu(nxp, levF, my_max), dtpl_gpu(nxp, levF, my_max)
-   integer i
-   integer async_id
+   real(kind=RTYPE), dimension(jtmax) :: cim
+   real(kind=RTYPE), dimension(jtrun, my/2, jtmax) :: poly, dpoly
+   real(kind=RTYPE), dimension(lev, 2, jtrun, jtmax) :: s
+   real(kind=RTYPE), dimension(nxp, levF, my_max) :: dlpl, dtpl, dlpl_gpu, dtpl_gpu
+   integer :: i, async_id
 
    async_id = 1
 
@@ -49,21 +47,17 @@ subroutine trngra3_unit
    do i = 1, steps
       call trngra3(jtrun, jtmax, nx, levp, my, my_max, cim, poly, dpoly, s, dlpl, dtpl, nsizey)
    end do
-
+   
+   !$acc enter data copyin(mtrundef, jlist1, jlist2, nlist, mlist) async(async_id)
+   !$acc enter data copyin(cim, poly, dpoly, s, dlpl_gpu, dtpl_gpu) async(async_id)
    do i = 1, steps
-      !$acc enter data copyin(cim, poly, dpoly, s, dlpl_gpu, dtpl_gpu) async(async_id)
-      !$acc wait(async_id)
-      call trngra3_gpu(jtrun, jtmax, nx, levp, my, my_max, cim, poly, dpoly, s, dlpl_gpu, dtpl_gpu, nsizey)
-      !$acc wait(async_id)
-      !$acc exit data copyout(dlpl_gpu, dtpl_gpu) delete(cim, poly, dpoly, s) async(async_id)
-      !$acc wait(async_id)
+      call trngra3_gpu(jtrun, jtmax, nx, levp, my, my_max, cim, poly, dpoly, s, dlpl_gpu, dtpl_gpu, nsizey, async_id)
    end do
+   !$acc exit data copyout(dlpl_gpu, dtpl_gpu) delete(cim, poly, dpoly, s) async(async_id)
+   !$acc exit data delete(mtrundef, jlist1, jlist2, nlist, mlist) async(async_id)
+   !$acc wait(async_id)
 
-   if (all(abs(dlpl - dlpl_gpu) <= 1e-10) .AND. all(abs(dtpl - dtpl_gpu) <= 1e-10)) then
-      PRINT *, "test_trngra3 passed."
-   else
-      PRINT *, "test_trngra3 failed."
-      call exit(1)
-   end if
-
+   call assert_allclose(dlpl_gpu, size(dlpl_gpu), dlpl, size(dlpl), 1e-10, 1e-10, "Array dlpl")
+   call assert_allclose(dtpl_gpu, size(dtpl_gpu), dtpl, size(dtpl), 1e-10, 1e-10, "Array dtpl")
+   
 end subroutine trngra3_unit

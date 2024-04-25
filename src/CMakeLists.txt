@@ -365,6 +365,13 @@ if(${USE_CUDA})
         nvidia/mpe_transpose_rs_gpu.f90
         nvidia/tranrs_gpu.f90
         nvidia/rstrandz_gpu.f90
+        nvidia/transr1_gpu.f90
+        nvidia/prexp_hybrid_cwb_gpu.f90
+        nvidia/trngra_gpu.f90
+        nvidia/siimpl_gpu.f90
+        nvidia/tranrs1_gpu.f90
+        nvidia/gridnl_hybrid_ndsl_gpu.f90
+        nvidia/hdiffu_gpu.f90
     )
 endif()
 

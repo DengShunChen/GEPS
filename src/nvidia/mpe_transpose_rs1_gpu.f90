@@ -1,4 +1,4 @@
-subroutine mpe_transpose_rs1_sp_gpu(sbuf, rbuf, n, m, lev, nsize, comm)
+subroutine mpe_transpose_rs1_sp_gpu(sbuf, rbuf, n, m, lev, nsize, comm, async_id)
 
    use const, only: RTYPE, MPI_RTYPE
    use mpi
@@ -9,8 +9,6 @@ subroutine mpe_transpose_rs1_sp_gpu(sbuf, rbuf, n, m, lev, nsize, comm)
    real(kind=RTYPE) sbuf(n, nsize, m, lev), rbuf(n, m*nsize, lev) ! Present on device
    real(kind=RTYPE) swork(lev, n, m, nsize), rwork(lev, n, m*nsize)
    integer async_id
-
-   async_id = 1
 
    len_tr = n*m
 
@@ -32,7 +30,7 @@ subroutine mpe_transpose_rs1_sp_gpu(sbuf, rbuf, n, m, lev, nsize, comm)
                      RWORK, LEN_TR*LEV, MPI_RTYPE, &
                      comm, IERR)
    !$acc end host_data
-   !$acc parallel loop collapse(3)
+   !$acc parallel loop collapse(3) async(async_id)
    do k = 1, lev
    do j = 1, m*nsize
    do i = 1, n
