@@ -374,7 +374,7 @@
 !c
 
 !ch> 
-      call mpe2d_unify(hld2,pt)
+      call mpe2d_unify_nx(ww1,pt)
 !ch<
 
       do 170 jj = 1, jlistnum
@@ -384,7 +384,7 @@
 !
       do 145 i = 1, nxdef(j)
 !ch    ppp = log( pt(i,jj) + ptop )
-       ppp = log( hld2(i,j) + ptop )
+       ppp = log( ww1(i,jj) + ptop )
        if( preplt(i,lmaxp1) .ge. ppp ) then
           preplt(i,lmaxp2) = 2.0*preplt(i,lmaxp1) - preplt(i,lmax)
        else
@@ -538,7 +538,8 @@
   195 continue
 !
       call mpe_unify(hld1,nx,my,2,mpe_double)
-      call mpe2d_unify(hld2,anlslp)
+      call mpe2d_unify_nx(ww1,anlslp)
+      call mpe2d_unify_my(hld2,ww1)
       if(myrank .eq. 0 ) print*,'pt, anlslp at (86,127)= ',hld1(86,127) &
                         ,hld2(86,127)
 !
