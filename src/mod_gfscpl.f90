@@ -177,17 +177,17 @@ subroutine gfs_cpl_recv4gocn(compid, mask_lnd, tgfs, ssufs, ssvfs)
   call unify_reduceintp(nx, my, my_max, ocnwrk3, ocnwrk4)
   tg_glb = ocnwrk4
 
-  ocnwrk4 = sst_glb
+  ocnwrk4 = SST
   call mpe2d_unify(ocnwrk4, ocnwrk6, .true.)
-  SST = ocnwrk6
+  sst_glb = ocnwrk6
 
-  ocnwrk4 = ssu_glb
+  ocnwrk4 = SSU
   call mpe2d_unify(ocnwrk4, ocnwrk6, .true.)
-  SSU = ocnwrk6
+  ssu_glb = ocnwrk6
 
-  ocnwrk4 = ssv_glb
+  ocnwrk4 = SSV
   call mpe2d_unify(ocnwrk4, ocnwrk6, .true.)
-  SSV = ocnwrk6
+  ssv_glb = ocnwrk6
 !      if(myrank .eq. 0) write(*,*) 'ssu_glbmax=', maxval(ssu_glb)
   !call mpe2d_unify_nx(sst_nxj, SST)
   !call mpe2d_unify_my(sst_glb, sst_nxj)
