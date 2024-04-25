@@ -37,6 +37,7 @@
       opok  = 1.0/1000.0**capa
 !
       ptopk= ptop*opok*ptop**capa
+      pk2d = 0.0
 !
       do k=1,lev
       do i=1,nxj

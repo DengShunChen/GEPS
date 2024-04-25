@@ -149,3 +149,133 @@ subroutine mpe2d_transpose_nxp_lev_gpu(ain, aout, nxp, nx, lev, levp, num, my, m
 
    return
 end
+
+subroutine mpe2d_reshape_pl_gpu(plin, plout)
+
+! reshape spec coef
+
+   use mpi
+   use param
+   use index
+   use const, only: RTYPE
+   use openacc
+   use cudafor
+
+   implicit none
+
+   integer i, j, m, mf, nl
+   integer i_array(mlistnum)
+   integer jtsize
+
+   real(kind=RTYPE) plin(jtrun, jtmax, 2) ! Present on device
+   real(kind=RTYPE) plout(jtp, 2) ! Present on device
+   real(kind=RTYPE) b1(jtf, 2)
+   integer async_id, istat
+   integer(kind=cuda_stream_kind) :: stream
+
+   async_id = 1
+   stream = acc_get_cuda_stream(async_id)
+   !$acc enter data copyin(mlist) async(async_id)
+   !$acc enter data create(b1) async(async_id)
+   !$acc host_data use_device(plout, b1)
+   istat = cudaMemSetAsync(plout, 0.0, size(plout), stream)
+   istat = cudaMemSetAsync(b1, 0.0, size(b1), stream)
+   !$acc end host_data
+   i = 1
+   do m = 1, mlistnum
+      i_array(m) = i
+      mf = mlist(m)
+      i = i + jtrun - mf + 1
+   end do
+   !$acc enter data copyin(i_array) async(async_id)
+   !$acc parallel loop async(async_id)
+   do m = 1, mlistnum
+      mf = mlist(m)
+      NL = jtrun - mf + 1
+      i = i_array(m)
+      b1(i:i + nl - 1, 1) = plin(mf:jtrun, m, 1)
+      b1(i:i + nl - 1, 2) = plin(mf:jtrun, m, 2)
+   end do
+
+   jtsize = jtend - jtstart + 1
+   !$acc parallel loop async(async_id)
+   do i = 1, jtsize
+      plout(i, 1) = b1(jtstart + i - 1, 1)
+      plout(i, 2) = b1(jtstart + i - 1, 2)
+   end do
+   !$acc exit data delete(mlist, b1, i_array) async(async_id)
+   return
+end
+
+subroutine mpe2d_transpose_siimpl_gpu(ain, aout, &
+                                      levp, jtrun, jtmax, lev, jtp, jtf, mlistnum, mlist, nsizex, row_comm)
+
+! transpose siimpl spec
+
+   use mpi
+   use const, only: RTYPE, MPI_RTYPE
+   use openacc
+   use cudafor
+
+   implicit none
+
+   integer levp, jtrun, jtmax, lev, jtp, jtf, mlistnum, mlist(jtrun), nsizex, row_comm
+   integer m, mf, nl, i, levp2, nlen, ierr, j, k
+
+   real(kind=RTYPE) ain(levp, 2, jtrun, jtmax) ! Present on device
+   real(kind=RTYPE) aout(lev, 2, jtp) ! Present on device
+   real(kind=RTYPE) c1(levp, 2, jtf)
+   real(kind=RTYPE) c2(levp, 2, jtp, nsizex)
+   integer async_id, istat
+   integer(kind=cuda_stream_kind) :: stream
+   integer i_array(mlistnum)
+
+   async_id = 1
+   stream = acc_get_cuda_stream(async_id)
+
+   !$acc enter data copyin(mlist) async(async_id)
+   !$acc enter data create(c1, c2) async(async_id)
+   !$acc host_data use_device(aout, c1, c2)
+   istat = cudaMemSetAsync(aout, 0.0, size(aout), stream)
+   istat = cudaMemSetAsync(c1, 0.0, size(c1), stream)
+   istat = cudaMemSetAsync(c2, 0.0, size(c2), stream)
+   !$acc end host_data
+
+   levp2 = levp*2
+   i = 1
+   do m = 1, mlistnum
+      i_array(m) = i
+      mf = mlist(m)
+      i = i + jtrun - mf + 1
+   end do
+   !$acc enter data copyin(i_array) async(async_id)
+
+   !$acc parallel loop async(async_id)
+   do m = 1, mlistnum
+      mf = mlist(m)
+      NL = jtrun - mf + 1
+      i = i_array(m)
+      c1(1:levp, 1, i:i + nl - 1) = ain(1:levp, 1, mf:jtrun, m)
+      c1(1:levp, 2, i:i + nl - 1) = ain(1:levp, 2, mf:jtrun, m)
+   end do
+
+   nlen = levp2*jtp
+   !$acc wait(async_id)
+   !$acc host_data use_device(c1, c2)
+   call MPI_ALLTOALL(c1, nlen, MPI_RTYPE, &
+                     c2, nlen, MPI_RTYPE, &
+                     row_comm, IERR)
+   !$acc end host_data
+
+   !$acc parallel loop collapse(2) async(async_id)
+   do j = 1, jtp
+      do i = 1, nsizex
+         k = levp*(i - 1) + 1
+         aout(k:k + levp - 1, 1, j) = c2(1:levp, 1, j, i)
+         aout(k:k + levp - 1, 2, j) = c2(1:levp, 2, j, i)
+      end do
+   end do
+   !$acc exit data delete(mlist, c1, c2, i_array) async(async_id)
+
+   return
+end
