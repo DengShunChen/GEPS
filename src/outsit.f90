@@ -967,7 +967,7 @@
 
       use mpe
       use index
-      use const,             only: kflag,RTYPE,outdms,outgrb2
+      use const,             only: kflag,RTYPE,outdms,outgrb2,ihdgo,ihdgo2
       use mod_sitgrid,       only: tseadiffSIT24
       use mod_grb2_param,only: wrt_grb2_v2
 
@@ -997,8 +997,10 @@
       call syslbl_w ('w0002f',idtg,itau,ggdef)
       if(outdms.gt.0) &
       call dmswrit(imax,jmax,lenc,kflag,glob,istat)
-      if( outgrb2==1.and.myrank==0 ) &
+      if( outgrb2==1.and.myrank==0 ) then
+      ihdgo2 = ihdgo
       call wrt_grb2_v2(itau,10,3,199,6,168,0,1,glob)
+      endif
       tseadiffSIT24=0.
 
       call unify_reduceintp(nx,my,my_max,wrk2,glob)

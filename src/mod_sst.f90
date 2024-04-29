@@ -314,7 +314,7 @@
 
           icurrenttau=int(tau)
           tauleft=float(int((tau-int(tau)+0.001)*3600./dtx))*dtx   !(sec)
-          if(tauleft .eq. 3600.) then
+          if(tauleft > 3599.) then
           icurrenttau=icurrenttau+1
           tauleft=0.
           endif
@@ -836,7 +836,7 @@
 
       use index 
       use mpe
-      use const, only: kflag,RTYPE,outdms,outgrb2
+      use const, only: kflag,RTYPE,outdms,outgrb2,ihdgo,ihdgo2
       use mod_grb2_param,only: wrt_grb2_v2
 
       implicit none
@@ -863,8 +863,10 @@
       call syslbl_w ('w0001f',idtg,itau,ggdef)
       if(outdms.gt.0) &
       call dmswrit(imax,jmax,lenc,kflag,glob,istat)
-      if( outgrb2==1.and.myrank==0 ) &
+      if( outgrb2==1.and.myrank==0 )then
+      ihdgo2 = ihdgo
       call wrt_grb2_v2(itau,10,3,199,6,168,0,2,glob)
+      endif
       tseadiffFCT24=0.
 
       END SUBROUTINE 
@@ -1802,7 +1804,7 @@
 !ps       ydate = yr*10000.+mo*100.+dy+(hr+mn/60.+se/3600.)/24.
        icurrenttau=int(tau)
        tauleft=float(int((tau-int(tau)+0.001)*3600./dtx))*dtx   !(sec)
-       if(tauleft .eq. 3600.) then
+       if(tauleft > 3599.) then
         icurrenttau=icurrenttau+1
         tauleft=0.
        endif
@@ -2532,7 +2534,6 @@
             real, INTENT(OUT):: jd
             integer:: yr,mo,dy
             real:: zsec
-
             call get_date_component(zdate, yr, mo, dy, zsec)
             jd=Set_JulianDay(yr, mo, dy, zsec) 
 
@@ -2585,7 +2586,10 @@
              END IF
 
            CASE default
-             print*,'mo_time_weight:Get_JulianMonLen, month invalid'
+             if(myrank==0) then
+             print*,'mo_time_weight:Get_JulianMonLen, month invalid' &
+                   , 'ky=',ky,'km=',km
+             endif
 
            END SELECT
 !           Get_JulianMonLen = idmax
