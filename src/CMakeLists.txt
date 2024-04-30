@@ -427,14 +427,15 @@ else()
           mod_grid.f90
           mod_rank.f90
           mpe_ndslfv_gpu.f90
+          mod_mpe.f90
           mod_ndslfv_monoadv_gpu.f90)
         add_dependencies(${LIB} mod_ndslfv_monoadv_gpu)
         target_link_libraries( ${LIB} PUBLIC mod_ndslfv_monoadv_gpu
-                ${NetCDF_Fortran_LIBRARIES}
-                ${DMS_LIBRARIES}
-                ${W3_LIBRARIES}
+          ${NetCDF_Fortran_LIBRARIES}
+          ${DMS_LIBRARIES}
+          ${W3_LIBRARIES}
         )
-	target_link_options(${LIB} PUBLIC "-Mconcur")
+        target_link_options(${LIB} PUBLIC "-Mconcur")
 endif()
 
 install(TARGETS ${EXEC} DESTINATION ${CMAKE_INSTALL_PREFIX})
