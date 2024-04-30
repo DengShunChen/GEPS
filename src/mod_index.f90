@@ -41,17 +41,17 @@
       common/mpi2d_comm/nsizex,nsizey,mrow,ncol,row_comm,col_comm,row_rank,col_rank
 
       integer Lstart,Lend,Llen,nxp,levp,jlen,nxf,levf,myf,Llistnum,      &
-              Lstart_ncld,Lend_ncld,jtf,jtp,jtstart,jtend,jtlen
+              Lstart_ncld,Lend_ncld,jtf,jtp,jtstart,jtend,jtlen,nxptot
       common /iwork/Lstart,Lend,Llen,nxp,levp,jlen,nxf,levf,myf,Llistnum,&
-              Lstart_ncld,Lend_ncld,jtf,jtp,jtstart,jtend,jtlen
+              Lstart_ncld,Lend_ncld,jtf,jtp,jtstart,jtend,jtlen,nxptot
 
       integer, dimension(:),allocatable,save :: Llist,Llist_ncld,jtlen_all,    &
-                            nxjp,nxjstart,nxjend,nxjlen,nxdef_2d
+                            nxjp,nxjstart,nxjend,nxjlen,nxdef_2d,nxjp_acc
 
       integer, dimension(:,:),allocatable,save :: nxjstart_all, &
                               nxjend_all,nxjlen_all,map2to1
 
-      contains 
+      contains
 
          subroutine allocate_index_array
 
@@ -67,7 +67,9 @@
                      jtlen_all(nsizex),nxjp(my),   &
                      nxjstart(my),nxjend(my),nxjlen(my),nxdef_2d(my),    &
                      nxjstart_all(nsizex,my),nxjend_all(nsizex,my),      &
-                     nxjlen_all(nsizex,my),map2to1(nxp,my),stat=ierr)
+                     nxjlen_all(nsizex,my),map2to1(nxp,my), &
+                     nxjp_acc(my_max+1), &
+                     stat=ierr)
 
            if (ierr/= 0) then
                write(6,*) 'mod_index : allocate fail 1'

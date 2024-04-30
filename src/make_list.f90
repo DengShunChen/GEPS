@@ -146,7 +146,7 @@
 
       do n=1,ncld
          i1=(n-1)*levp
-         i2=(n-1)*lev 
+         i2=(n-1)*lev
       do ii=1,levp
          mm=i1+ii
          jj=i2+Llist(ii)
@@ -163,7 +163,7 @@
                mlist(mm)=m
              endif
                n=(ipe-1)*jtmax+mm
-               nlist(m)=n 
+               nlist(m)=n
                if(ipe-1 .eq. col_rank) ilist(m)=mm
                m=m-1
             endif
@@ -175,7 +175,7 @@
                mlist(mm+1)=m
              endif
                n=(ipe-1)*jtmax+mm+1
-               nlist(m)=n 
+               nlist(m)=n
                if(ipe-1 .eq. col_rank) ilist(m)=mm+1
                m=m-1
             endif
@@ -212,7 +212,7 @@
 !         jtp=(jtf/nsizex)+1
           jtp=(jtf-j2)/nsizex+1
         endif
-      
+
 !       jtstart=row_rank*j1+1+min(row_rank,j2)
 !       jtend=jtstart+j1-1
 !       if(j2> row_rank)jtend=jtend+1
@@ -278,13 +278,13 @@
       use index
 
       implicit  none
-      integer   i,ii,j,n1,n2,nxj,tmp(my,nsizex)
+      integer   i,ii,j,n1,n2,nxj,tmp(my,nsizex),lat
 
 ! nxp  : nx  partial
 ! nxjp : nxj partial
 
 ! nxjstart : nxj start
-! nxjend   : nxj end  
+! nxjend   : nxj end
 
 ! map2to1  : 2d local index to 1d global index
 
@@ -324,6 +324,15 @@
 !        print 102, j,i,nxjstart_all(i,j),nxjend_all(i,j),nxjlen_all(i,j)
          enddo
       enddo
+
+      nxjp_acc = 0
+      nxjp_acc(1) = 1
+      do j = 1,jlistnum
+         lat = jlist1(j)
+         nxjp_acc(j+1) = nxjp_acc(j) + nxjp(lat)
+      end do
+      nxptot = nxjp_acc(jlistnum+1)-1
+
 !     stop
 
 101   format('j,nxj,nxjstart,nxjend,nxjlen=',5I6)
