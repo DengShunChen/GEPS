@@ -174,6 +174,7 @@
       do n=1,num
         call syslbl_w (dmskey(n),idtg,ntau,ggdef)
         call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),glob)
+        !call qmaxn3_w (glob,1,1,1,nx,my,1)
         if ( myrank .eq. n-1 ) then
           mout=glob
           ihdgo2=ihdgo

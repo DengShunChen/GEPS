@@ -57,7 +57,7 @@ contains
       call syslbl_w(lrec(k),idtg,itau,ggdef)
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,wk1,istat)
       call qmaxn3_w(wk1,1,1,1,nx,my,1)
-      ptp0(7)=nint(plev(k))
+      ptp0=(/0,2,11,6,100,-2,nint(plev(k)),-999,-999/)
       call split2(nx,my,lenc,ncnt,wk1,pout,ptp0,ptp1)
       go to 20
       endif
@@ -70,7 +70,8 @@ contains
       endif
       if(outgrb2 == 1 )then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call wrt_grb2_v2(itau,0,2,11,6,100,-2,ptp1(7),pout)
+        call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+            ,ptp1(6),ptp1(7),pout)
       endif
 !
       return
@@ -152,7 +153,7 @@ contains
       call syslbl_w(lrec(k),idtg,itau,ggdef)
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,wk1,istat)
       call qmaxn3_w(wk1,1,1,1,nx,my,1)
-      ptp0(7)=nint(plev(k))
+      ptp0=(/0,2,196,6,100,-2,nint(plev(k)),-999,-999/)
       call split2(nx,my,lenc,ncnt,wk1,pout,ptp0,ptp1)
       go to 20
       endif
@@ -165,7 +166,8 @@ contains
       endif
       if(outgrb2 == 1 )then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call wrt_grb2_v2(itau,0,2,196,6,100,-2,ptp1(7),pout)
+        call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+            ,ptp1(6),ptp1(7),pout)
       endif
 !
       return
@@ -284,7 +286,7 @@ contains
 !
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,slp,istat)
       call qmaxn3_w(slp,1,1,1,nx,my,1)
-      ptp0(7)=nint(plev(k))
+      ptp0=(/0,3,5,1,100,-2,nint(plev(k)),-999,-999/)
       call split2(nx,my,lenc,ncnt,slp,pout,ptp0,ptp1)
 !
       go to 20
@@ -298,7 +300,8 @@ contains
       endif
       if(outgrb2 == 1 )then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call wrt_grb2_v2(itau,0,3,5,1,100,-2,ptp1(7),pout)
+        call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+            ,ptp1(6),ptp1(7),pout)
       endif
 !
       return
@@ -383,7 +386,7 @@ contains
 !
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3_w(glob,1,1,1,nx,my,1)
-      ptp0(7)=nint(plev(k))
+      ptp0=(/0,1,1,2,100,-2,nint(plev(k)),-999,-999/)
       call split2(nx,my,lenc,ncnt,glob,pout,ptp0,ptp1)
       go to 30
       endif
@@ -395,7 +398,8 @@ contains
       endif
       if(outgrb2 == 1 )then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call wrt_grb2_v2(itau,0,1,1,2,100,-2,ptp1(7),pout)
+        call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+            ,ptp1(6),ptp1(7),pout)
       endif
 !
       return
@@ -545,7 +549,7 @@ contains
       call syslbl_w(lrec(k),idtg,itau,ggdef)
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3_w(glob,1,1,1,nx,my,1)
-      gtp0(7)=nint(plev(k))
+      gtp0=(/ptp0,ptp1,ptp2,ptp3,100,-2,nint(plev(k)),-999,-999/)
       call split2(nx,my,lenc,ncnt,glob,pout,gtp0,gtp1)
       go to 30
       endif
@@ -557,7 +561,8 @@ contains
       endif
       if(outgrb2 == 1 )then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call wrt_grb2_v2(itau,Ptp0,Ptp1,Ptp2,Ptp3,100,-2,gtp1(7),pout)
+        call wrt_grb2_v2(itau,gtp1(1),gtp1(2),gtp1(3),gtp1(4),gtp1(5) &
+            ,gtp1(6),gtp1(7),pout)
       endif
 !
    40 continue
@@ -627,7 +632,7 @@ contains
 !
       call syslbl_w(lrec(k),idtg,itau,ggdef)
       call qmaxn3_w(glob,1,1,1,nx,my,1)
-      ptp0(7)=nint(plev(k))
+      ptp0=(/0,6,32,3,100,-2,nint(plev(k)),-999,-999/)
       call split2(nx,my,lenc,ncnt,glob,pout,ptp0,ptp1)
       go to 30
       endif
@@ -639,7 +644,8 @@ contains
       endif
       if(outgrb2 == 1 )then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call wrt_grb2_v2(itau,0,6,32,3,100,-2,ptp1(7),pout)
+        call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+            ,ptp1(6),ptp1(7),pout)
       endif
 !
    40 continue
@@ -840,7 +846,7 @@ contains
 !
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3_w(slp,1,1,1,nx,my,1)
-      ptp0(7)=nint(plev(k))
+      ptp0=(/0,0,0,2,100,-2,nint(plev(k)),-999,-999/)
       call split2(nx,my,lenc,ncnt,slp,pout,ptp0,ptp1)
       go to 30
       endif
@@ -852,7 +858,8 @@ contains
       endif
       if(outgrb2 == 1 )then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call wrt_grb2_v2(itau,0,0,0,2,100,-2,ptp1(7),pout)
+        call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+            ,ptp1(6),ptp1(7),pout)
       endif
 !
       return
@@ -950,7 +957,7 @@ contains
 !
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,wk1,istat)
       call qmaxn3_w(wk1,1,1,1,nx,my,1)
-      ptp0(7)=nint(plev(k))
+      ptp0=(/0,2,12,6,100,-2,nint(plev(k)),-999,-999/)
       call split2(nx,my,lenc,ncnt,wk1,pout,ptp0,ptp1)
       go to 20
       endif
@@ -962,7 +969,8 @@ contains
       endif
       if(outgrb2 == 1 )then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call wrt_grb2_v2(itau,0,2,12,6,100,-2,ptp1(7),pout)
+        call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+            ,ptp1(6),ptp1(7),pout)
       endif
 !
       return
@@ -1081,7 +1089,7 @@ contains
 !
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3_w(glob,1,1,1,nx,my,1)
-      ptp0(7)=nint(plev(k))
+      ptp0=(/0,2,2,2,100,-2,nint(plev(k)),-999,-999/)
       call split2(nx,my,lenc,ncnt,glob,pout,ptp0,ptp1)
       go to 30
       endif
@@ -1093,7 +1101,8 @@ contains
       endif
       if(outgrb2 == 1 )then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call wrt_grb2_v2(itau,0,2,2,2,100,-2,ptp1(7),pout)
+        call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+            ,ptp1(6),ptp1(7),pout)
       endif
 !
 !  now the v components
@@ -1155,7 +1164,7 @@ contains
 !
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3_w(glob,1,1,1,nx,my,1)
-      ptp0(7)=nint(plev(k))
+      ptp0=(/0,2,3,2,100,-2,nint(plev(k)),-999,-999/)
       call split2(nx,my,lenc,ncnt,glob,pout,ptp0,ptp1)
       go to 40
       endif
@@ -1167,7 +1176,8 @@ contains
       endif
       if(outgrb2 == 1 )then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call wrt_grb2_v2(itau,0,2,3,2,100,-2,ptp1(7),pout)
+        call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+            ,ptp1(6),ptp1(7),pout)
       endif
 !
 !  now the w components
@@ -1194,7 +1204,7 @@ contains
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3_w(glob,1,1,1,nx,my,1)
       glob=glob*100.
-      ptp0(7)=nint(plev(k))
+      ptp0=(/0,2,8,6,100,-2,nint(plev(k)),-999,-999/)
       call split2(nx,my,lenc,ncnt,glob,pout,ptp0,ptp1)
       go to 42
       endif
@@ -1206,7 +1216,8 @@ contains
       endif
       if(outgrb2 == 1 )then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call wrt_grb2_v2(itau,0,2,8,6,100,-2,ptp1(7),pout)
+        call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+            ,ptp1(6),ptp1(7),pout)
       endif
 !
       return
