@@ -174,6 +174,7 @@
       do n=1,num
         call syslbl_w (dmskey(n),idtg,ntau,ggdef)
         call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),glob)
+        !call qmaxn3_w (glob,1,1,1,nx,my,1)
         if ( myrank .eq. n-1 ) then
           mout=glob
           ihdgo2=ihdgo
@@ -226,28 +227,32 @@
          enddo
        enddo
 
+       if( mod( itau , 3 ) == 0 )then
+
        if(outgrb2 == 1 )then
         if(myrank==0)then
         !convective precipitation
         call syslbl_w ('B00632',idtg,ntau,ggdef)
         glob=raincu3
         call unify_reduceintp(nx,my,my_max,glob,mout)
+        ihdgo2 = ihdgo
         call wrt_grb2_accu_v2(itau,0,1,10,2,103,0,0,1,3,mout)
         !
         call syslbl_w ('B00642',idtg,ntau,ggdef)
         glob=rainlp3
         call unify_reduceintp(nx,my,my_max,glob,mout)
+        ihdgo2 = ihdgo
         call wrt_grb2_accu_v2(itau,0,1,9,2,103,0,0,1,3,mout)
 
         call syslbl_w ('B00622',idtg,ntau,ggdef)
         glob=raincu3 + rainlp3
         call unify_reduceintp(nx,my,my_max,glob,mout)
+        ihdgo2 = ihdgo
         call wrt_grb2_accu_v2(itau,0,1,9,2,103,0,0,1,3,mout)
 
         endif
        endif
 
-       if( mod( itau , 3 ) == 0 )then
         do jj = 1, jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
@@ -256,7 +261,8 @@
             rainlp3(i,jj)= 0.0
           enddo
         enddo
-       endif
+
+       endif ! mod(itau,3)==0
 
       endif !out_hp
 
