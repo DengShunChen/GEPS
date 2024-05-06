@@ -1,11 +1,11 @@
-# 
+#
 # Copyright (c) 2024, NVIDIA CORPORATION.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #      http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -102,5 +102,9 @@ subroutine_mpi_test(test_tranrs1)
 subroutine_mpi_test(test_gridnl_hybrid_ndsl)
 subroutine_mpi_test(test_hdiffu)
 subroutine_mpi_test(test_whdiffu)
+subroutine_mpi_test(test_cyclic_cell_massadvx)
+subroutine_mpi_test(test_ndslfv_monoadvh)
+subroutine_mpi_test(test_ndslfv_monoadvh_fgnl)
+subroutine_mpi_test(test_ndslfv_monoadvv)
+subroutine_mpi_test(test_ndslfv_monoadvv_fgnl)
 endif()
-
