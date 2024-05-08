@@ -258,7 +258,6 @@
 !                    , ut,vt,tt,qt,phi,rdiv                                       &
 !                    , km_soil,smc,slc,stc,canopy,zice,ggdef,gmdef )
 
-<<<<<<< HEAD
       raintot=0.
       raincu=0.
       rainlp=0.
@@ -294,26 +293,6 @@
       snow_cpl = 0.
       cpl_send_init = .true.
 #endif
-=======
-          raintot = 0.
-          raincu = 0.
-          rainlp = 0.
-          raincu6 = 0.
-          rainlp6 = 0.
-          raincu3 = 0.
-          rainlp3 = 0.
-          raincu1 = 0.
-          rainlp1 = 0.
-          gfx = 0.
-          if (.not. restrt) then
-             rld = 0.
-             sld = 0.
-          end if
-          recn = 1
-          rdivm = 0.
-          flash = 0.
-          pdry = 0.
->>>>>>> GEPSdev
 !
 !
 ! read mountant variables for topographic gravity wave drag
@@ -509,7 +488,6 @@
              icurrentyear = idtg_sst/100000000
           end if   !end lopgsst
 !
-<<<<<<< HEAD
 #ifdef TIMCOMCPL
       call gfs_cpl_recv4gocn(compid, land, tg, ssu, ssv)
 !      if(myrank .eq. 0) then
@@ -523,9 +501,6 @@
 #endif 
 
  10   continue
-=======
-10        continue
->>>>>>> GEPSdev
 
           dtx_tau = dtx/3600.
 
@@ -1239,44 +1214,6 @@
 !  for physical parameterization,output spectrum u,v,t,q to grid point
 !
 
-<<<<<<< HEAD
-      if (yesdia)  then
-        qp(:,:,:) = qt(:,:,:)
-        call diabat ( fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd     &
-                    , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw      &
-                    , idg,jdg,ldiag,dtx,tau,hours,julian,year,yrd             &
-                    , frad,ozon,njump,itypbl,ktcup,ktpbl,ktshl,grav           &
-                    , rgas,cp,stbo,s0,evaprh,hltm,ptop,sigma,dsigma,il,ib     &
-                    , cof,xlat,xlon,sgeo,z0,alb,land,ocean,ice                &
-                    , snr,tg,tgclim,curate,plcl,cumtop,totalp,raintot,raincu  &
-                    , rainlp,raincu6,rainlp6,raincu3,rainlp3,raincu1,rainlp1  &
-                    , hflux,qflux,ustar,tstar,qstar,e                         &
-                    , eps,o3l,dtrad,ss,rs,plt,pk,pk2                          &
-                    , ptp,    up,    vp,   ttp,qm                             &
-                    , pt ,    ut,    vt,    tt,qt                             &
-                    , gwclim,tice,hice,qgini,thdai,tengi                      &
-                    , acld,std,asol,olr,drag,ugws,vgws                        &
-                    , sdpbl,t2,q2,rh2,rh10,u10,v10,gfx                        &
-                    , fm,fh,fm10,fh2,srflag                                   &
-                    , rld,km_soil,smc,stc,canopy,runoff                       &
-                    , sigmaf,istyp,ivegtyp,wltsmc,refsmc,maxsmc,dfkt,xktk,dfk &
-                    , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,cnvwr,cnvcr,pdot    &
-                    , shdmax,shdmin,snoalb                                    &
-                    , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth        &
-                    , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                   &
-                    , nmgwor,nmgwcv,hprime_b,mtnvar,docgrav,nmmiph            &
-!--------------------------------------------------------------------------------
-                    , fusl,fdsl,fuir,fdir                                     &
-                    , fuslr,fdslr,fuirr,fdirr                                 &
-                    , asl_clr,atl_clr,clds                                    &
-                    , ss_clr,rs_clr,asol_clr,olr_clr,sld_clr,rld_clr          &
-                    , alvsf,alvwf,alnsf,alnwf,facsf,facwf                     &
-                    , idtg,doo3l,nfxr,sfalb,sfemis,isot,ivegsrc               &
-                    , itimestep,lrun_sitvdiff,ic_sit                          &
-!xb110>
-!byl                      , rmr,smr,flash)
-                      , flash,tsflw,vvel,totallp,ustress,vstress,ssu,ssv)
-=======
           if (yesdia) then
              qp(:, :, :) = qt(:, :, :)
              call diabat(fwd, docup, dodry, dolsp, dopbl, dorad, doshl, dograv, tofd &
@@ -1312,8 +1249,7 @@
                          , itimestep, lrun_sitvdiff, ic_sit &
                          !xb110>
                          !byl                      , rmr,smr,flash)
-                         , flash, tsflw, vvel, totallp)
->>>>>>> GEPSdev
+                         , flash, tsflw, vvel, totallp,ustress,vstress,ssu,ssv)
 !xb110<
 !--------------------------------------------------------------------------------
 !
@@ -1331,15 +1267,6 @@
                 ! SKEB process
                 if (doskeb) call skebest(um, vm)
 
-<<<<<<< HEAD
-          call trandv(jtrun,jtmax,nx,my,my_max,lev,ut,vt,weight,cim &
-                       ,onocos,poly,dpoly,vornow,divnow,nsizey)
-        else
-          ! adjustmen of surface pressure, virtual potential
-          ! temperature and all tracers for one loop
-          if ( mass_dp ) call adjptq(dta,pltemp,plten)
-        endif ! two_loop
-=======
                 call trandv(jtrun, jtmax, nx, my, my_max, lev, ut, vt, weight, cim &
                             , onocos, poly, dpoly, vornow, divnow, nsizey)
              else
@@ -1348,7 +1275,6 @@
                 if (mass_dp) call adjptq(dta, pltemp, plten)
 
              end if ! two_loop
->>>>>>> GEPSdev
 
           end if    ! end of (yesdia)
 
@@ -2102,7 +2028,6 @@
 !
 ! new year, read obs sst
 !
-<<<<<<< HEAD
       if(lopgsst) then
         inexttau = int(tau+dtx/3600.+0.001)
         call dtgfix12(idtg,idtg1_sst,inexttau)
@@ -2170,20 +2095,6 @@
 #endif
 
       itau=tau+0.001
-=======
-          if (lopgsst) then
-             inexttau = int(tau + dtx/3600.+0.001)
-             call dtgfix12(idtg, idtg1_sst, inexttau)
-             inextyear = idtg1_sst/100000000
-             lnewyear = icurrentyear /= inextyear
-             if (lnewyear) then
-                call read_opgsst(idtg1_sst, ggdef, ocean, ice)
-                icurrentyear = idtg1_sst/100000000
-             end if
-          end if   !end lopgsst
-!
-          itau = tau + 0.001
->>>>>>> GEPSdev
 #ifdef TIMING
           tm_2 = mpi_wtime()
 #endif
