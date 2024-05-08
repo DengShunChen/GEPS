@@ -11,6 +11,8 @@
       integer   i,j,jj,nxj,ii
       real      fp(nxp,my_max),ff(nx,my)
 
+      fp=0.
+
       do jj = 1, jlistnum
        j=jlist1(jj)
        ii=nxjstart(j)
@@ -38,6 +40,8 @@
       integer   nx,my,my_max
       integer   i,j,jj,nxj,ii
       integer   fp(nxp,my_max),ff(nx,my)
+
+      fp=0.
 
       do jj = 1, jlistnum
        j=jlist1(jj)
