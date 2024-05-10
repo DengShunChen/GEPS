@@ -213,6 +213,7 @@
 !-----------------------------------------------------------------------
 !
       call days (cdtg,julian,hours)
+      call leapyear(idate(1))
 !
       flag =.false.
       if(myrank .eq. 0)then

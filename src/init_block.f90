@@ -9,6 +9,7 @@
       use physcons, only :con_cp  ,con_rerth,con_omega,con_g   , &
                           con_sbc ,con_solr ,con_hvap ,con_hfus, &
                           con_tice
+      use leapyr
 
       implicit none
 
@@ -483,6 +484,11 @@
       idate(6)=0
       idate(7)=0
       idate(8)=0
+!---------------------------------------------------------------------------
+! for leapyear
+      leap=.false.
+      leapm1=.false.
+      yrd=365
 !---------------------------------------------------------------------------
       sashal=.true.
       crick_proof=.false.

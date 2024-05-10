@@ -173,7 +173,7 @@
           if(myrank.eq.0) print*,'update climatology data, for restart in julian day= ',julian,' tau=',taui
 
           call readclx( nx,my,my_max,julian,land,ocean,ice,tgclim,gwclim      &
-                       ,z0,alb,sst,bckfile,sigmaf,istyp,ivegtyp,ls            &
+                       ,z0,alb,sst,sigmaf,istyp,ivegtyp,ls            &
                        ,shdmax,shdmin,slopetyp,snoalb,ggdef,isot,ivegsrc )
 !---------------------------------------------------------------------
 !   read new albedo:
