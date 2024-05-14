@@ -90,7 +90,7 @@
 !  ---  outputs:
 !     real (kind=kind_phys), dimension(im), intent(out) :: qsurf,         &
       real (kind=kind_phys), dimension(im) :: qsurf,         &
-             cmm, chh, gflux, evap, hflx, ep
+             cmm, chh, gflux, evap, hflx, ep, cpl_u1, cpl_v1
 
 !  ---  locals:
 
@@ -99,6 +99,10 @@
       integer :: i
 
       logical :: flag(im)
+      cpl_u1=0.
+      cpl_v1=0.
+      cpl_u1=u1
+      cpl_v1=v1
 !
 !===> ...  begin here
 !
@@ -112,7 +116,7 @@
 
         if ( flag(i) ) then
 
-          wind     = max(sqrt((u1(i)-ssu(i))**2 + (v1(i)-ssv(i))**2)          &
+          wind     = max(sqrt((cpl_u1(i)-ssu(i))**2 + (cpl_v1(i)-ssv(i))**2)          &
                        + max( 0.0, min( ddvel(i), 30.0 ) ), 1.0)
           
           q0       = max( q1(i), 1.0e-8 )

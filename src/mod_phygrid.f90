@@ -161,6 +161,7 @@
           rh10=0.;      q2=0.;     fm=0.;   fm10=0.
             fh=0.;     fh2=0.; srflag=0.
            gwr=0.;     ssv=0.;    ssu=0.
+           ustress=0.; vstress=0.
 !
            allocate (fpsp(nxp,my_max),fpsp1(nxp,my_max),stat=ierr)
 

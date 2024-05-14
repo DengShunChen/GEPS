@@ -23,7 +23,8 @@
       ,                                      stress,  fm, fh, ustar        &
       ,                                      wind, ddvel, fm10, fh2,fh10   &
       ,                                      sigmaf, shdmax, tsurf, snwdph &
-      ,                                      ustress, vstress, ssu, ssv
+      ,                                      ustress, vstress, ssu, ssv    &
+      ,                                      cpl_u1, cpl_v1
       integer, dimension(im) ::  vegtype, islimsk
 
       logical   flag_iter(im) ! added by s.lu
@@ -70,9 +71,13 @@
 !  ps is in pascals, wind is wind speed,
 !  surface roughness length is converted to m from cm
 !
+      cpl_u1=0.
+      cpl_v1=0.
+      cpl_u1=u1
+      cpl_v1=v1
       do i=1,imj
         if(flag_iter(i)) then
-          wind(i) = max(sqrt((u1(i)-ssu(i))**2 + (v1(i)-ssv(i))**2) &
+          wind(i) = max(sqrt((cpl_u1(i)-ssu(i))**2 + (cpl_v1(i)-ssv(i))**2) &
                       + max(0.0, min(ddvel(i), 30.0)), 1.0)
           tem1    = 1.0 + rvrdm1 * max(q1(i),1.e-8)
           thv1    = t1(i) * prslki(i) * tem1
@@ -302,8 +307,8 @@
           stress(i) = cm(i) * wind(i) * wind(i)
           ustar(i)  = sqrt(stress(i))
 !! jwhwu 20110311
-         ustress(i) = - stress(i) * (u1(I)-ssu(I)) / wind(i)
-         vstress(i) = - stress(i) * (v1(I)-ssv(I)) / wind(i)
+         ustress(i) = - stress(i) * (cpl_u1(I)-ssu(I)) / wind(i)
+         vstress(i) = - stress(i) * (cpl_v1(I)-ssv(I)) / wind(i)
 !
 !  update z0 over ocean
 !
