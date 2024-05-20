@@ -54,6 +54,10 @@ subroutine gfs_cpl_send2gocn(compid, u10m, v10m, t02m, q02m, &
 
   integer :: cnt, i, ii, j, jj, nxj 
 
+  ocnwrk1=0.
+  ocnwrk2=0.
+  glob_var=0.
+
   ocnwrk1 = u10m
   call unify_reduceintp(nlon_glb, nlat_glb, nlat, ocnwrk1, ocnwrk2(:,:,1))
   glob_var(:,:,1) = ocnwrk2(:,:,1)
@@ -155,12 +159,17 @@ subroutine gfs_cpl_recv4gocn(compid, mask_lnd, tgfs, ssufs, ssvfs)
   sst_nxj = 0.0
   sst_glb = 0.0
   cnt = 0
+  SST=0.
   SSU=0.
   SSV=0.
   ssu_glb=0.
   ssv_glb=0.
   ssufs=0.
   ssvfs=0.
+  ocnwrk3=0.
+  ocnwrk4=0.
+  ocnwrk5=0.
+  ocnwrk6=0.
 
   do jj = 1, jlistnum
     j = jlist1(jj)
