@@ -12,7 +12,7 @@
  DMSPATH=/package/${mach}/dms/dms.v4/bin
  GFSDIR=$MDIR
  GFSFIX=$MDIR/fix
- GFSWRK=${GFSDIR}/work_${machine}
+ export GFSWRK=${GFSDIR}/work_${machine}
  rm -rf $GFSWRK
  mkdir -p $GFSWRK
 
@@ -106,7 +106,8 @@ ${DMSPATH}/rdmspurge -f FCSTDMS
 ${DMSPATH}/rdmscrt -l34 FCSTDMS
 
 export FLIB_CNTL_BARRIER_ERR=FALSE
-export O3FORC=${O3FORC:-${FIXDIR}/global_o3prdlos.f77}
+#export O3FORC=${O3FORC:-${FIXDIR}/global_o3prdlos.f77}
+export O3FORC=${O3FORC:-${FIXDIR}/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77}
 export O3CLIM=${O3CLIM:-${FIXDIR}/global_o3clim.txt}
 export AEROSOL_FILE=${AEROSOL_FILE:-${FIXDIR}/global_climaeropac_global.txt}
 export EMMISSIVITY_FILE=${EMMISSIVITY_FILE:-${FIXDIR}/global_sfc_emissivity_idx.txt}
@@ -114,7 +115,8 @@ export EMMISSIVITY_FILE=${EMMISSIVITY_FILE:-${FIXDIR}/global_sfc_emissivity_idx.
 
 cd $GFSWRK
 #====================================================================
-ln -fs $O3FORC fort.28
+#ln -fs $O3FORC fort.28
+ln -fs $O3FORC global_o3prdlos
 ln -fs $O3CLIM fort.48
 ln -fs $AEROSOL_FILE  aerosol.dat
 ln -fs $EMMISSIVITY_FILE sfc_emissivity_idx.txt

@@ -24,8 +24,9 @@
       
       character*80 pathname,filename,truefile
 
-      data pathname/'FIXDIR'/
-      data filename/'global_o3prdlos.f77'/
+!      data pathname/'FIXDIR'/
+      data pathname/'GFSWRK'/
+      data filename/'global_o3prdlos'/
       me=1
 !       
       call getfname(pathname,filename,truefile,istat)
@@ -33,8 +34,8 @@
         print *,'getfname : error',truefile
         call mpe_finalize
         call dmsexit(-1)
-      else
-!       if(myrank .eq. 0) print *,truefile
+!      else
+!        if(myrank .eq. 0) print *,truefile
       endif
 !
     open(kozpl,file=trim(truefile),form='unformatted',convert='BIG_ENDIAN')
