@@ -1012,7 +1012,7 @@
             call rozone(nxjp(j),nxp,lev,plt(1,1,jj),o3l(1,1,jj),sinl(j),julian)
           endif
         else
-          if (pl_coeff > 2) then
+          if (pl_coeff > 4) then
             do k=1,lev
               do i=1,nxj
                 del(i,k) = 100.0*( dsigma(k,1)*pst(i,jj)+dsigma(k,2))  !  pa
