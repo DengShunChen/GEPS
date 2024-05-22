@@ -124,7 +124,7 @@
                                      sedi_w_v3 => do_sedi_w
 ! for Goddard (GCE) 3ICE MP
       use module_mp_gsfcgce_3ice_nuwrf, only: gsfcgce_3ice_nuwrf
-      use module_mp_gsfcgce_3ice_cwb  , only: gsfcgce_3ice_cwb
+!      use module_mp_gsfcgce_3ice_cwb  , only: gsfcgce_3ice_cwb
       use module_mp_gsfcgce,   only: gsfcgce
 ! for Goddard (GCE) 4ICE MP
       use module_mp_gce4ice,   only: gsfcgce_4ice_nuwrf
@@ -1006,7 +1006,7 @@
 
         nmgce3 = 2   ! nmgce3=1 : WRF
                      ! nmgce3=2 : NASA Unified WRF
-                     ! nmgce3=3 : CWB WRF
+                     ! nmgce3=3 : CWB WRF(not used)
 
         ihail = 0  !run gsfcgce with graupel option
         ICE2  = 0  !run gsfcgce with snow, ice and hail/graupel
@@ -1127,23 +1127,17 @@
                    .false., qg3d,                                       &
                    ihail, ice2 )
 
-          if ( nmgce3 .eq. 3 )                                          &
-          call gsfcgce_3ice_cwb                                         &
-                 ( th3d, qv3d, qc3d, qr3d, qi3d, qs3d, qg3d,            &
-!                   rho3d, pii3d, p3d, dta, z3d,                         &
-                   rho3d, pii3d, p3d, dts, z3d,                         &
-                   ht, dz3d, itimestep,                                 &
-!                   ids,ide, jds,jde, kds,kde,                           & ! domain dims
-                   1, nx , 1, 1, 1, lev,                                & ! memory dims
-                   1, nxj, 1, 1, 1, lev,                                & ! tile   dims
-                   sr2d, rainnc2d, rain2d,                              &
-                   snownc2d, snow2d, graupelnc2d, graupel2d,            &
-!#ifdef EffectRad_GCE3
-!                   land2d,                                              &
-!                   rew3d, rer3d, rei3d,                                 &
-!                   res3d, reg3d,                                        &
-!#endif
-                   land2d )
+!          if ( nmgce3 .eq. 3 )                                          &
+!          call gsfcgce_3ice_cwb                                         &
+!                 ( th3d, qv3d, qc3d, qr3d, qi3d, qs3d, qg3d,            &
+!                   rho3d, pii3d, p3d, dts, z3d,                         &
+!                   ht, dz3d, itimestep,                                 &
+!!                   ids,ide, jds,jde, kds,kde,                           & ! domain dims
+!                   1, nx , 1, 1, 1, lev,                                & ! memory dims
+!                   1, nxj, 1, 1, 1, lev,                                & ! tile   dims
+!                   sr2d, rainnc2d, rain2d,                              &
+!                   snownc2d, snow2d, graupelnc2d, graupel2d,            &
+!                   land2d )
 
         endif
 

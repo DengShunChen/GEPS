@@ -2363,7 +2363,7 @@ CONTAINS
       real :: ltk,ltk2
       real :: lqc,lqc2
 
-      integer, parameter :: reiflag = 2
+      integer, parameter :: reiflag = 5
       ! 1 : default
       ! 2 : Wyser 1998
       ! 3 : Heymsfild et al. 2014
@@ -2973,7 +2973,7 @@ CONTAINS
             endif
 
 !            call vqrqi(2,improve,r00,fv0,qi(i,j),vi(i,j))
-            call vti_mks(improve,rho_mks(i,k,j),tair(i,j),qi(i,j),qv(i,j),p0_mks(i,j,k),xland(i,j),vi(i,j))  !in MKS
+            call vti_mks(improve,rho_mks(i,k,j),tair(i,j),qi(i,j),qv(i,j),p0_mks(i,k,j),xland(i,j),vi(i,j))  !in MKS
             vi(i,j) = vi(i,j) * 100.  !in CGS
 
             if (qr(i,j) .le. crmin) vr(i,j)=0.0
@@ -4908,7 +4908,7 @@ CONTAINS
          efd6 = 1.4727223E-2
 
          ltk  = log(tair(i,j))
-         lqc  = -1.*log(qcl(i,j,k))
+         lqc  = -1.*log(qcl(i,j,k)*rho_mks(i,k,j))
          ltk2 = ltk*ltk
          lqc2 = lqc*lqc
          mvdc = exp(mdc1 + mdc2*ltk + mdc3*lqc + mdc4*ltk2     &
@@ -5015,7 +5015,7 @@ CONTAINS
       ! mapping spectrum, different over land and ocean
       if ( qci(i,j,k) .ge. cimin ) then
          ltk  = log(tair(i,j))
-         lqi  = -1.*log(qci(i,j,k))
+         lqi  = -1.*log(qci(i,j,k)*rho_mks(i,k,j))
          ltk2 = ltk*ltk
          lqi2 = lqi*lqi
          if ( xland(i,j) .eq. 1.0 ) then
@@ -5589,7 +5589,7 @@ CONTAINS
       real, intent(in) :: xland !land-sea mask
       real, intent(out):: vti   !terminal velocity (m/s)
 
-      integer, parameter :: vtiflag = 4
+      integer, parameter :: vtiflag = 7
       ! 1 : Starr and Cox (1985)        , igce = 1
       ! 2 : Heymsfield and Donner (1990), igce!= 1
       ! 3 : Hong et al. (2004)          , igce = 1 , improve = 3
