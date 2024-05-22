@@ -1,5 +1,5 @@
 subroutine mpe_transpose_rs_sp_gpu(sbuf, rbuf, lev, n, m, nsize, comm)
-
+   ! Present on device: sbuf, rbuf
    use const, only: RTYPE, MPI_RTYPE
    use mpi
 
@@ -10,30 +10,30 @@ subroutine mpe_transpose_rs_sp_gpu(sbuf, rbuf, lev, n, m, nsize, comm)
    real(kind=RTYPE) swork(lev, n, m, nsize)
 
    integer async_id
-   async_id = 1
 
+   async_id = 1
    len_tr = m*n
 
    !$acc enter data create(swork) async(async_id)
-   !$acc kernels async(async_id)
-   !$acc loop collapse(4)
+
+   !$acc parallel loop collapse(4) async(async_id)
    do j = 1, m
-   do ii = 1, nsize
-   do i = 1, n
-   do k = 1, lev
-      swork(k, i, j, ii) = sbuf(k, i, ii, j)
+      do ii = 1, nsize
+         do i = 1, n
+            do k = 1, lev
+               swork(k, i, j, ii) = sbuf(k, i, ii, j)
+            end do
+         end do
+      end do
    end do
-   end do
-   end do
-   end do
-   !$acc end kernels
+
    !$acc wait(async_id)
+
    !$acc host_data use_device(swork, rbuf)
-   call MPI_ALLTOALL(SWORK, LEN_TR*LEV, MPI_RTYPE, &
-                     RBUF, LEN_TR*LEV, MPI_RTYPE, &
-                     comm, IERR)
+   call MPI_ALLTOALL(SWORK, LEN_TR*LEV, MPI_RTYPE, RBUF, LEN_TR*LEV, MPI_RTYPE, comm, IERR)
    !$acc end host_data
-   !$acc exit data delete(swork)
+
+   !$acc exit data delete(swork) async(async_id)
 
    return
 end

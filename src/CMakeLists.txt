@@ -372,6 +372,7 @@ if(${USE_CUDA})
         nvidia/tranrs1_gpu.f90
         nvidia/gridnl_hybrid_ndsl_gpu.f90
         nvidia/hdiffu_gpu.f90
+        nvidia/intgrt_gpu.f90
     )
 endif()
 

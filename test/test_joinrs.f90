@@ -43,11 +43,11 @@ subroutine joinrs_unit
    do i = 1, steps
       call joinrs(cc, r1, r2, dummy, dummy, nx, my_max, lev, jlistnum, 2, ncld)
    end do
-   !$acc enter data create(cc_gpu) copyin(r1, r2) async(async_id)
+   !$acc enter data create(cc_gpu) copyin(r1, r2, jlist1, nxjlen, nxjlen_all) async(async_id)
    do i = 1, steps
       call joinrs_gpu(cc_gpu, r1, r2, dummy, dummy, nx, my_max, lev, jlistnum, 2, ncld)
    end do
-   !$acc exit data delete(r1, r2) copyout(cc_gpu) async(async_id)
+   !$acc exit data delete(r1, r2, jlist1, nxjlen, nxjlen_all) copyout(cc_gpu) async(async_id)
    !$acc wait(async_id)
 
    if (all(abs(cc - cc_gpu) <= 1e-10)) then
