@@ -50,11 +50,11 @@ subroutine tranrs_unit
 
    do i = 1, steps
       cc_buffer = cc
-      !$acc enter data copyin(poly, w, cc_buffer) create(wss_gpu) async(async_id)
+      !$acc enter data copyin(poly, w, cc_buffer, nlist, jlist2) create(wss_gpu) async(async_id)
       !$acc wait(async_id)
       call tranrs_gpu(jtrun, jtmax, nx, my, my_max, lev, poly, w, cc_buffer, wss_gpu, num, nsizey)
       !$acc wait(async_id)
-      !$acc exit data delete(poly, w, cc_buffer) copyout(wss_gpu) async(async_id)
+      !$acc exit data delete(poly, w, cc_buffer, nlist, jlist2) copyout(wss_gpu) async(async_id)
       !$acc wait(async_id)
    end do
 

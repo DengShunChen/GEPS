@@ -726,9 +726,9 @@ contains
    ! ============================================================
    subroutine ndslfv_update_gpu(lonsperlat, vdzonl, vdmerd, &
                                 vdzonlr, vdmerdr, deltim, forward)
-
-      !  update all horizontal components into momentum eqs
-      !  for Semi-Lagrangian vertical advection
+!  Present on device: lonsperlat, vdzonl, vdmerd, vdzonlr, vdmerdr, jlist1
+!  update all horizontal components into momentum eqs
+!  for Semi-Lagrangian vertical advection
 
       use index
       use param, only: nx, my, lev, my_max
@@ -736,7 +736,6 @@ contains
       implicit none
       integer, intent(in):: lonsperlat(my)
       real(kind=RTYPE), intent(in):: deltim
-
       real(kind=RTYPE) vdmerd(nxp, lev, my_max), vdzonl(nxp, lev, my_max)
       real(kind=RTYPE) vdmerdr(nxp, lev, my_max), vdzonlr(nxp, lev, my_max)
       integer i, k, j, lat, lons_lat
@@ -748,20 +747,20 @@ contains
       else
          dt2 = 2.*deltim
       end if
-      !$acc parallel loop collapse(2) async(async_id) &
-      !$acc& copyin(dt2) &
-      !$acc& present_or_copyin(jlist1, lonsperlat) &
-      !$acc& private(lat,lons_lat)
+      !$acc parallel loop collapse(3) async(async_id) &
+      !$acc& present(jlist1, lonsperlat, vdzonl, vdzonlr, vdmerd, vdmerdr) &
+      !$acc& private(lat, lons_lat)
       do j = 1, jlistnum
-         do k = 1, lev
-            lat = jlist1(j)
-            lons_lat = lonsperlat(lat)
-            !$acc loop vector
-            do i = 1, lons_lat
-               vdzonl(i, k, j) = vdzonlr(i, k, j)*dt2 + vdzonl(i, k, j)
-               vdmerd(i, k, j) = vdmerdr(i, k, j)*dt2 + vdmerd(i, k, j)
-            end do
-         end do
+      do k = 1, lev
+      do i = 1, nxp
+         lat = jlist1(j)
+         lons_lat = lonsperlat(lat)
+         if (i .le. lons_lat) then
+            vdzonl(i, k, j) = vdzonlr(i, k, j)*dt2 + vdzonl(i, k, j)
+            vdmerd(i, k, j) = vdmerdr(i, k, j)*dt2 + vdmerd(i, k, j)
+         end if
+      end do
+      end do
       end do
       !$acc end parallel loop
       return

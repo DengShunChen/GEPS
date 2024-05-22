@@ -26,11 +26,13 @@ subroutine transr_unit
 
    integer, parameter :: steps = 10
    integer, parameter :: num = 1
-   integer :: i
+   integer :: i, async_id
    real(kind=RTYPE) :: poly(jtrun, my/2, jtmax)
    real(kind=RTYPE) :: wss(lev, 2, num, jtrun, jtmax)
    real(kind=RTYPE) :: cc(nx + 2, lev, num, my_max)
    real(kind=RTYPE) :: cc_gpu(nx + 2, lev, num, my_max)
+
+   async_id = 1
 
    call random_seed()
    call random_number(poly)
@@ -42,14 +44,12 @@ subroutine transr_unit
       call transr(jtrun, jtmax, nx, my, my_max, levp, poly, wss, cc, num, nsizey)
    end do
    do i = 1, steps
+      !$acc enter data copyin(poly, wss, cc_gpu, jlist2, jlist1, mtrundef, nlist) async(async_id)
       call transr_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, wss, cc_gpu, num, nsizey)
+      !$acc exit data copyout(poly, wss, cc_gpu, jlist2, jlist1, mtrundef, nlist) async(async_id)
+      !$acc wait(async_id)
    end do
 
-   if (all(abs(cc - cc_gpu) <= 1e-10)) then
-      print *, "test_transr passed."
-   else
-      print *, "test_transr failed."
-      call exit(1)
-   end if
+   call assert_allclose(cc_gpu, size(cc_gpu), cc, size(cc), 1e-10, 1e-10, "Array cc")
 
 end subroutine

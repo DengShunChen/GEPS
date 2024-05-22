@@ -51,7 +51,7 @@ subroutine trngra3_unit
    !$acc enter data copyin(mtrundef, jlist1, jlist2, nlist, mlist) async(async_id)
    !$acc enter data copyin(cim, poly, dpoly, s, dlpl_gpu, dtpl_gpu) async(async_id)
    do i = 1, steps
-      call trngra3_gpu(jtrun, jtmax, nx, levp, my, my_max, cim, poly, dpoly, s, dlpl_gpu, dtpl_gpu, nsizey, async_id)
+      call trngra3_gpu(jtrun, jtmax, nx, levp, my, my_max, cim, poly, dpoly, s, dlpl_gpu, dtpl_gpu, nsizey)
    end do
    !$acc exit data copyout(dlpl_gpu, dtpl_gpu) delete(cim, poly, dpoly, s) async(async_id)
    !$acc exit data delete(mtrundef, jlist1, jlist2, nlist, mlist) async(async_id)
