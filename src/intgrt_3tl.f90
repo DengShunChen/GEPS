@@ -1708,7 +1708,7 @@
           print *,'icurrenttau=',icurrenttau, &
                   ',tauleft=',tauleft
         endif
-        if(tauleft .eq. 3600.) then
+        if(tauleft > 3599.) then
           icurrenttau=icurrenttau+1
           tauleft=0.
         endif

@@ -93,7 +93,8 @@
       out_green= .false.
       out_hp   = .false.
       outgrb2  =      0  !output grib2 format
-      outdms   =      1  !output dmskey 1:real-8  ,2:real-4
+      outdms   =      1  !output dmskey 
+      outfv3   = .false.
 ! pdf cloud
       pdfcloud=.false.
 ! stochastic physics

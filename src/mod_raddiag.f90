@@ -2,6 +2,7 @@
 !------------------------------------------------------------------------------
 ! for radiation diagnose
 !------------------------------------------------------------------------------
+      use const, only : RTYPE
       use param
       use index
       implicit none
@@ -12,9 +13,11 @@
             asold   ,                                                  &
             asol_clr, sld_clr, rld_clr 
 
-      real, dimension(:,:,:), allocatable, save ::                     &
+      real(kind=RTYPE),dimension(:,:,:),allocatable,save ::            &
             fusl   , fdsl   , fuir   , fdir   ,                        &
-            fuslr  , fdslr  , fuirr  , fdirr  ,                        &
+            fuslr  , fdslr  , fuirr  , fdirr  
+
+      real, dimension(:,:,:), allocatable, save ::                     &
             asl_clr, atl_clr, clds 
 
       contains 

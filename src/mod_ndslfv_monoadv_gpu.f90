@@ -13,8 +13,7 @@ module mod_ndslfv_monoadv_gpu
                                            vmwrk_d(:, :), &
                                            qpwrk_d(:, :), &
                                            ainp_d(:, :, :), &
-                                           aout_d(:, :, :), &
-                                           buf(:, :)
+                                           aout_d(:, :, :)
 
    integer, allocatable:: nydef_loc(:), imflst(:), &
                           wndmdf_all(:), wndmdf(:)
@@ -33,7 +32,7 @@ module mod_ndslfv_monoadv_gpu
    type(cudaEvent), allocatable :: cudaEV(:)
    integer :: cudast_D2H, cudast_H2D, cudast_advh_u, cudast_advh_v
 contains
-  subroutine allocate_ndslfv_array_gpu
+   subroutine allocate_ndslfv_array_gpu
       use param
       use index, only: nsizex, jlist2_2d, nxjlen_all, nxdef
       use grid, only: nxp, ndslhvar, &
@@ -86,7 +85,9 @@ contains
                 wndmdf(num_ndslhvar_gpu))
       nydef_loc = my*2
       imflst = nx
-      wndmdf_all = (/-1, -1, 1, 1, 1, 1/)
+      wndmdf_all = 1
+      wndmdf_all(1:2) = (/-1, -1/)
+
       do i = 1, ndslhvar
          if (myrank .eq. mod(i - 1, use_gpu_num)) then
             wndmdf(mod(i - 1, num_ndslhvar_gpu) + 1) = wndmdf_all(i)
@@ -111,14 +112,6 @@ contains
          stat=istat)
       if (istat /= 0) then
          write (6, *) 'mod_ndsl_monoadv_gpu : allocate fail 1'
-         stop
-      end if
-
-      allocate ( &
-         buf(nxp*lev*ncld, my_max), &
-         stat=istat)
-      if (istat /= 0) then
-         write (6, *) 'mod_ndsl_monoadv_gpu : allocate fail 2'
          stop
       end if
 
@@ -175,7 +168,6 @@ contains
       deallocate (cudaST, cudaEV)
       deallocate (nydef_loc, imflst, wndmdf_all, wndmdf)
       deallocate (umwrk, vmwrk, advhwrk)
-      deallocate (buf)
 
       if (myrank < use_gpu_num) then
          deallocate (vvlat, qq_3df)
@@ -198,29 +190,31 @@ contains
          !$acc& )
       end if
 
-    end subroutine deallocate_ndslfv_array_gpu
+   end subroutine deallocate_ndslfv_array_gpu
    ! ============================================================
-   subroutine ndslfv_monoadvh_gpu(ttm_sl, pten_sl, uum_sl, vvm_sl, qm_sl, &
+   subroutine ndslfv_monoadvh_gpu(tt, pt, ut, vt, qt, qm, &
                                   um, vm, deltim, xy, forward)
       use param
       use rank
       use index
       use const, only: RTYPE, cosl, MPI_RTYPE
-      use grid, only: ut, vt, tt, qm, ut_sl, vt_sl, ndslhvar
+      use grid, only: ndslhvar
       use mpi
       use cudafor
       implicit none
       ! input
       real(kind=RTYPE):: um(nxp, lev, my_max), &
-                         vm(nxp, lev, my_max)
+                         vm(nxp, lev, my_max), &
+                         qm(nxp, lev*ncld, my_max)
+
       real(kind=RTYPE), intent(in):: deltim
       logical, intent(in):: forward
       ! output
-      real(kind=RTYPE), intent(out):: qm_sl(nxp, lev*ncld, my_max), &
-                                      pten_sl(nxp, lev, my_max), &
-                                      uum_sl(nxp, lev, my_max), &
-                                      vvm_sl(nxp, lev, my_max), &
-                                      ttm_sl(nxp, lev, my_max)
+      real(kind=RTYPE):: qt(nxp, lev*ncld, my_max), &
+                         pt(nxp, lev, my_max), &
+                         ut(nxp, lev, my_max), &
+                         vt(nxp, lev, my_max), &
+                         tt(nxp, lev, my_max)
       ! local
       real(kind=RTYPE):: um3df(nx, my, lev), &
                          vm3df(nx, my, lev), &
@@ -229,17 +223,20 @@ contains
       !
       integer xy, istat, i, j, k, n
       integer ierr, ii, jf, nn, kk, m, pts
-      wndmdf = (/-1, -1, 1, 1, 1, 1/)
+      ! wndmdf = 1
+      ! wndmdf(1:2) = (/-1, -1/)
       firstcomp = .true.
       ! ----------------------------------------
-      call advh_gather4GPU_dev(umwrk_d, um, 1, 0, buf)
-      call advh_gather4GPU_dev(vmwrk_d, vm, 1, 0, buf)
+      !$acc host_data use_device(um, vm, ut, vt, tt, qm)
+      call advh_gather4GPU_dev(umwrk_d, um, 1, 0)
+      call advh_gather4GPU_dev(vmwrk_d, vm, 1, 0)
       ! u v t at n-1
-      call advh_gather4GPU_dev(ainp_d(1, 1, 1), ut, 1, 0, buf)
-      call advh_gather4GPU_dev(ainp_d(1, 1, 2), vt, 1, 0, buf)
-      call advh_gather4GPU_dev(ainp_d(1, 1, 3), tt, 1, 0, buf)
+      call advh_gather4GPU_dev(ainp_d(1, 1, 1), ut, 1, 0)
+      call advh_gather4GPU_dev(ainp_d(1, 1, 2), vt, 1, 0)
+      call advh_gather4GPU_dev(ainp_d(1, 1, 3), tt, 1, 0)
       ! rq at n-1
-      call advh_gather4GPU_dev(qpwrk_d, qm, ncld, 0, buf)
+      call advh_gather4GPU_dev(qpwrk_d, qm, ncld, 0)
+      !$acc end host_data
       ! ----------------------------------------
       if (myrank .eq. 0) then
          !$acc data &
@@ -353,18 +350,21 @@ contains
       ! call mpe_barrier
       ! ----------------------------------------
       ! u v t at n
-      call advh_scatter4GPU_dev(uum_sl, aout_d(1, 1, 1), 1, 0, buf)
-      call advh_scatter4GPU_dev(vvm_sl, aout_d(1, 1, 2), 1, 0, buf)
-      call advh_scatter4GPU_dev(ttm_sl, aout_d(1, 1, 3), 1, 0, buf)
+      !$acc host_data use_device(ut, vt, tt, qt)
+      call advh_scatter4GPU_dev(ut, aout_d(1, 1, 1), 1, 0)
+      call advh_scatter4GPU_dev(vt, aout_d(1, 1, 2), 1, 0)
+      call advh_scatter4GPU_dev(tt, aout_d(1, 1, 3), 1, 0)
       ! rq at n
-      call advh_scatter4GPU_dev(qm_sl, qpwrk_d, ncld, 0, buf)
+      call advh_scatter4GPU_dev(qt, qpwrk_d, ncld, 0)
+      !$acc end host_data
       ! ----------------------------------------
 
       return
    end subroutine ndslfv_monoadvh_gpu
-! ============================================================
+   ! ============================================================
    subroutine ndslfv_monoadvh_fgnl_gpu(vdzonl, vdmerd, ddtemp, &
-                                       ut, vt, tt, um, vm, deltim, xy, nvars, forward)
+                                       ut, vt, tt, um, vm, deltim, &
+                                       xy, nvars, forward)
       use param
       use rank
       use index
@@ -394,16 +394,18 @@ contains
       !
       integer xy, istat, i, j, k, n
       integer ierr, ii, jf, nn, kk, m, pts
-      wndmdf = (/-1, -1, 1, 1, 1, 1/)
+      ! wndmdf = 1
+      ! wndmdf(1:2) = (/-1, -1/)
       firstcomp = .true.
       ! ----------------------------------------
-      call advh_gather4GPU_dev(umwrk_d, um, 1, 0, buf)
-      call advh_gather4GPU_dev(vmwrk_d, vm, 1, 0, buf)
+      !$acc host_data use_device(um, vm, ut, vt, tt)
+      call advh_gather4GPU_dev(umwrk_d, um, 1, 0)
+      call advh_gather4GPU_dev(vmwrk_d, vm, 1, 0)
       ! u v t at n-1
-      call advh_gather4GPU_dev(ainp_d(1, 1, 1), ut, 1, 0, buf)
-      call advh_gather4GPU_dev(ainp_d(1, 1, 2), vt, 1, 0, buf)
-      if (nvars .ge. 3) call advh_gather4GPU_dev(ainp_d(1, 1, 3), tt, 1, 0, buf)
-      ! rq at n-1
+      call advh_gather4GPU_dev(ainp_d(1, 1, 1), ut, 1, 0)
+      call advh_gather4GPU_dev(ainp_d(1, 1, 2), vt, 1, 0)
+      call advh_gather4GPU_dev(ainp_d(1, 1, 3), tt, 1, 0)
+      !$acc end host_data
       ! ----------------------------------------
       if (myrank .eq. 0) then
          !$acc data &
@@ -475,14 +477,296 @@ contains
       ! call mpe_barrier
       ! ----------------------------------------
       ! u v t at n
-      call advh_scatter4GPU_dev(vdzonl, aout_d(1, 1, 1), 1, 0, buf)
-      call advh_scatter4GPU_dev(vdmerd, aout_d(1, 1, 2), 1, 0, buf)
-      if (nvars .ge. 3) call advh_scatter4GPU_dev(ddtemp, aout_d(1, 1, 3), 1, 0, buf)
+      !$acc host_data use_device(vdzonl, vdmerd, ddtemp)
+      call advh_scatter4GPU_dev(vdzonl, aout_d(1, 1, 1), 1, 0)
+      call advh_scatter4GPU_dev(vdmerd, aout_d(1, 1, 2), 1, 0)
+      call advh_scatter4GPU_dev(ddtemp, aout_d(1, 1, 3), 1, 0)
+      !$acc end host_data
       ! ----------------------------------------
 
       return
    end subroutine ndslfv_monoadvh_fgnl_gpu
-! ============================================================
+   ! ============================================================
+   subroutine ndslfv_monoadvv_gpu(ddtemp, qvadv, vdzonl, vdmerd, pdot, &
+                                  pt, lonsperlat, deltim, forward)
+      !
+      ! a routine to do non-iteration semi-Lagrangain advection
+      ! considering advection  with monotonicity in interpolation
+      ! contact: hann-ming henry juang
+      ! program log:
+      ! 2011 02 20 : henry juang, initial implemented into nems as NDSL with mass_dp
+      ! 2013 09 30 : henry juang, add option of theta advection, (used later)
+      !
+      !
+      use openacc
+      use cudafor
+      use param
+      use grid, only: latpart, ndslvvar
+      use index, only: jlistnum, jlist1, nxp, nxjp_acc, nxjp, nxptot
+      use rank
+      use const
+      use mpe
+      implicit none
+
+      real(kind=RTYPE), intent(inout):: ddtemp(nxp, lev, my_max), &
+                                        qvadv(nxp, lev, ncld, my_max), &
+                                        vdmerd(nxp, lev, my_max), &
+                                        vdzonl(nxp, lev, my_max)
+      real(kind=RTYPE), intent(in):: pdot(nxp, lev + 1, latpart), &
+                                     pt(nxp, latpart)
+      integer, intent(in):: lonsperlat(my)
+      real(kind=RTYPE), intent(in):: deltim
+
+      real(kind=RTYPE):: plev(lev + 1, nxptot), &
+                         qqlon(lev, ndslvvar, nxptot)
+
+      integer mono, mass
+      integer ii, i, n, k, kk, lon, lat, lons_lat, istr, j, nxj
+      logical forward
+      integer istat
+      integer, parameter :: async_id = 1
+      integer(kind=cuda_stream_kind) :: stream
+      !$acc data create(plev, qqlon) async(async_id)
+
+      mono = 1
+      mass = 0
+      !
+      stream = acc_get_cuda_stream(async_id)
+      !$acc host_data use_device(plev)
+      istat = cudaMemsetAsync(plev, 0., size(plev), stream)
+      !$acc end host_data
+
+      !$acc parallel loop async(async_id) &
+      !$acc& private(lat,lons_lat,istr)
+      do j = 1, jlistnum
+         lat = jlist1(j)
+         lons_lat = lonsperlat(lat)
+         istr = nxjp_acc(j) - 1
+         !$acc loop seq private(kk)
+         do k = lev, 1, -1
+            kk = lev - k + 1
+            !$acc loop vector
+            do i = 1, lons_lat
+               plev(k, istr + i) = plev(k + 1, istr + i) &
+                                   + dsigma(kk, 1)*pt(i, j) + dsigma(kk, 2)
+            end do
+         end do
+         ! d z t at n+1*
+         !$acc loop vector collapse(2) independent &
+         !$acc& private(kk)
+         do k = 1, lev
+            do i = 1, lons_lat
+               kk = lev - k + 1
+               qqlon(k, 1, istr + i) = vdzonl(i, kk, j)
+               qqlon(k, 2, istr + i) = vdmerd(i, kk, j)
+               qqlon(k, 3, istr + i) = ddtemp(i, kk, j)
+            end do
+         end do
+         ! rq at n+1*
+         !$acc loop vector collapse(3) independent &
+         !$acc& private(kk)
+         do n = 1, ncld
+            do k = 1, lev
+               do i = 1, lons_lat
+                  kk = lev - k + 1
+                  qqlon(k, n + 3, istr + i) = qvadv(i, kk, n, j)
+               end do
+            end do
+         end do
+      end do
+      !$acc end parallel loop
+
+      call vertical_cell_advect_gpu(lons_lat, nxptot, lev, ndslvvar, &
+                                    deltim, plev, pdot, &
+                                    qqlon, mass, forward, async_id)
+
+      !$acc parallel loop independent async(async_id)&
+      !$acc& private(lat,lons_lat,istr)
+      do j = 1, jlistnum
+         lat = jlist1(j)
+         lons_lat = lonsperlat(lat)
+         istr = nxjp_acc(j) - 1
+
+         ! u v t tendency at n
+         !$acc loop vector collapse(2) independent &
+         !$acc& private(kk)
+         do i = 1, lons_lat
+            do k = 1, lev
+               kk = lev - k + 1
+               vdzonl(i, kk, j) = qqlon(k, 1, istr + i)
+               vdmerd(i, kk, j) = qqlon(k, 2, istr + i)
+               ddtemp(i, kk, j) = qqlon(k, 3, istr + i)
+            end do
+         end do
+
+         ! rq tendency at n
+         !$acc loop vector collapse(3) independent &
+         !$acc& private(kk)
+         do i = 1, lons_lat
+            do n = 1, ncld
+               do k = 1, lev
+                  kk = lev - k + 1
+                  qvadv(i, kk, n, j) = qqlon(k, n + 3, istr + i)
+               end do
+            end do
+         end do
+      end do
+      !$acc end parallel loop
+      !$acc end data
+
+      return
+   end subroutine ndslfv_monoadvv_gpu
+   ! ============================================================
+   subroutine ndslfv_monoadvv_fgnl_gpu(vdzonl, vdmerd, ddtemp, pdot, &
+                                       pt, lonsperlat, deltim, nvars, forward)
+      !
+      ! a routine to do non-iteration semi-Lagrangain advection
+      ! considering advection  with monotonicity in interpolation
+      ! contact: hann-ming henry juang
+      ! program log:
+      ! 2011 02 20 : henry juang, initial implemented into nems as NDSL with mass_dp
+      ! 2013 09 30 : henry juang, add option of theta advection, (used later)
+      !
+      !
+      use openacc
+      use cudafor
+      use param
+      use grid, only: latpart, ndslvvar
+      use index, only: jlistnum, jlist1, nxp, nxjp_acc, nxjp, nxptot
+      use rank
+      use const
+      use nvtx
+      implicit none
+
+      real(kind=RTYPE), intent(inout):: ddtemp(nxp, lev, my_max), &
+                                        vdmerd(nxp, lev, my_max), &
+                                        vdzonl(nxp, lev, my_max)
+      real(kind=RTYPE), intent(in):: pdot(nxp, lev + 1, latpart), &
+                                     pt(nxp, latpart)
+      integer, intent(in):: lonsperlat(my), nvars
+      real(kind=RTYPE), intent(in):: deltim
+
+      real(kind=RTYPE):: plev(lev + 1, nxptot), &
+                         qqlon(lev, nvars, nxptot)
+
+      integer mono, mass
+      integer ii, i, n, k, kk, lon, lat, lons_lat, istr, j, nxj
+      logical forward
+      integer istat
+      integer, parameter :: async_id = 1
+      integer(kind=cuda_stream_kind) :: stream
+
+      !$acc data async(async_id) &
+      !$acc& create(plev, qqlon)
+      mono = 1
+      mass = 0
+      !
+      stream = acc_get_cuda_stream(async_id)
+      !$acc host_data use_device(plev)
+      istat = cudaMemsetAsync(plev, 0., size(plev), stream)
+      !$acc end host_data
+
+      !$acc parallel loop async(async_id) &
+      !$acc& private(lat,lons_lat,istr)
+      do j = 1, jlistnum
+         lat = jlist1(j)
+         lons_lat = lonsperlat(lat)
+         istr = nxjp_acc(j) - 1
+         !$acc loop seq private(kk)
+         do k = lev, 1, -1
+            kk = lev - k + 1
+            !$acc loop vector
+            do i = 1, lons_lat
+               plev(k, istr + i) = plev(k + 1, istr + i) &
+                                   + dsigma(kk, 1)*pt(i, j) + dsigma(kk, 2)
+            end do
+         end do
+         ! d z t at n+1*
+         !$acc loop vector collapse(2) independent &
+         !$acc& private(kk)
+         do k = 1, lev
+            do i = 1, lons_lat
+               kk = lev - k + 1
+               qqlon(k, 1, istr + i) = vdzonl(i, kk, j)
+               qqlon(k, 2, istr + i) = vdmerd(i, kk, j)
+               qqlon(k, 3, istr + i) = ddtemp(i, kk, j)
+            end do
+         end do
+      end do
+      !$acc end parallel loop
+
+      call vertical_cell_advect_gpu(lons_lat, nxptot, lev, nvars, &
+                                    deltim, plev, pdot, &
+                                    qqlon, mass, forward, async_id)
+
+      !$acc parallel loop independent async(async_id)&
+      !$acc& private(lat,lons_lat,istr)
+      do j = 1, jlistnum
+         lat = jlist1(j)
+         lons_lat = lonsperlat(lat)
+         istr = nxjp_acc(j) - 1
+
+         ! u v t tendency at n
+         !$acc loop vector collapse(2) independent &
+         !$acc& private(kk)
+         do i = 1, lons_lat
+            do k = 1, lev
+               kk = lev - k + 1
+               vdzonl(i, kk, j) = qqlon(k, 1, istr + i)
+               vdmerd(i, kk, j) = qqlon(k, 2, istr + i)
+               ddtemp(i, kk, j) = qqlon(k, 3, istr + i)
+            end do
+         end do
+      end do
+      !$acc end parallel loop
+      !$acc end data
+
+      return
+   end subroutine ndslfv_monoadvv_fgnl_gpu
+   ! ============================================================
+   subroutine ndslfv_update_gpu(lonsperlat, vdzonl, vdmerd, &
+                                vdzonlr, vdmerdr, deltim, forward)
+
+      !  update all horizontal components into momentum eqs
+      !  for Semi-Lagrangian vertical advection
+
+      use index
+      use param, only: nx, my, lev, my_max
+      use const, only: RTYPE
+      implicit none
+      integer, intent(in):: lonsperlat(my)
+      real(kind=RTYPE), intent(in):: deltim
+
+      real(kind=RTYPE) vdmerd(nxp, lev, my_max), vdzonl(nxp, lev, my_max)
+      real(kind=RTYPE) vdmerdr(nxp, lev, my_max), vdzonlr(nxp, lev, my_max)
+      integer i, k, j, lat, lons_lat
+      integer dt2
+      logical forward
+      integer, parameter :: async_id = 1
+      if (forward) then
+         dt2 = deltim
+      else
+         dt2 = 2.*deltim
+      end if
+      !$acc parallel loop collapse(2) async(async_id) &
+      !$acc& copyin(dt2) &
+      !$acc& present_or_copyin(jlist1, lonsperlat) &
+      !$acc& private(lat,lons_lat)
+      do j = 1, jlistnum
+         do k = 1, lev
+            lat = jlist1(j)
+            lons_lat = lonsperlat(lat)
+            !$acc loop vector
+            do i = 1, lons_lat
+               vdzonl(i, k, j) = vdzonlr(i, k, j)*dt2 + vdzonl(i, k, j)
+               vdmerd(i, k, j) = vdmerdr(i, k, j)*dt2 + vdmerd(i, k, j)
+            end do
+         end do
+      end do
+      !$acc end parallel loop
+      return
+   end subroutine ndslfv_update_gpu
+   ! ============================================================
    subroutine ndslfv_monoadvh_gpu_batch(ttm_sl, pten_sl, uum_sl, vvm_sl, qm_sl, &
                                         um, vm, deltim, xy, forward)
       use param
@@ -632,7 +916,7 @@ contains
 
       return
    end subroutine ndslfv_monoadvh_gpu_batch
-! ============================================================
+   ! ============================================================
    subroutine ndslfv_monoadvh2_gpu(qqlon, deltim, um, vm, &
                                    wndmdf, forward, levs, nvars, async)
       !
@@ -787,7 +1071,7 @@ contains
 
       return
    end subroutine ndslfv_monoadvh2_gpu
-! ============================================================
+   ! ============================================================
    subroutine ndslfv_monoadvh2_xy_gpu(qqlon, deltim, um, vm, &
                                       wndmdf, forward, levs, nvars, async)
       !
@@ -801,7 +1085,7 @@ contains
       use param
       use index
       use const
-      use rank, only: nsize
+      use rank, only: nsize, myrank
       implicit none
 
       real(kind=RTYPE), intent(inout) :: qqlon(nx, my, levs, nvars)
@@ -916,7 +1200,7 @@ contains
 
       return
    end subroutine ndslfv_monoadvh2_xy_gpu
-! ============================================================
+   ! ============================================================
    subroutine ndslfv_monoadvh2_yx_gpu(qqlon, deltim, um, vm, &
                                       wndmdf, forward, levs, nvars, async)
       !
@@ -1027,7 +1311,7 @@ contains
       call cyclic_cell_intpx_f2r_gpu(qqlon, qqlat, wndmdf, &
                                      nxdef, my, nx, my, levs, nvars, &
                                      async)
-  !!     !$acc wait
+    !!     !$acc wait
       istat = cudaStreamWaitEvent(cudast(async), cudaEV(2), 0)
       call cyclic_cell_massadvx_gpu(qqlon, um, deltim, mass, forward, &
                                     nxdef, my, nx, my, levs, nvars, &
@@ -1036,7 +1320,7 @@ contains
 
       return
    end subroutine ndslfv_monoadvh2_yx_gpu
-! ============================================================
+   ! ============================================================
    subroutine cyclic_cell_massadvx_gpu(qq, uc, delt, mass, forward, &
                                        im, jm, lons, lats, levs, nv, async)
       !
@@ -1046,6 +1330,7 @@ contains
       ! author: hann-ming henry juang 2008
       !
       use const, only: RTYPE
+      use rank, only: myrank
       implicit none
       !
       real(kind=RTYPE), intent(inout):: qq(lons, lats, levs, nv)
@@ -1126,14 +1411,16 @@ contains
       call def_cfl_step_gpu(step, nstep, &
                             dist, ds, 'advx', &
                             im, lons, lats, levs, async)
-      !$acc update self(nstep) async(async)
+
       ! ============================================================
       ! !$acc update self(dist(:lons+1,:lats,:levs), ds(:lons+1,:lats))
-      ! do k = 1,levs
-      !    do j = 1,jm
-      !       call def_cfl_step(im(j)+1,dist(1,j,k),ds(1,j), &
-      !            wrk_step,wrk_ns,levs+1-k,'advx')
-      !       if (nstep.lt.wrk_ns) then
+      ! do k = 1, levs
+      !    do j = 1, jm
+      !       ! print*, "dist=", maxval(dist(1:im(j)+1,j,k)), &
+      !       !      maxval(ds(1:im(j),j))
+      !       call def_cfl_step(im(j) + 1, dist(1, j, k), ds(1, j), &
+      !            wrk_step, wrk_ns, levs + 1 - k, 'advx')
+      !       if (nstep .lt. wrk_ns) then
       !          nstep = wrk_ns
       !          step(1:10) = wrk_step(1:10)
       !       end if
@@ -1202,7 +1489,6 @@ contains
                end do
             end do
          end if
-
          call cyclic_cell_ppm_intp_gpu(xnext, da, xreg, qq, &
                                        im, im, jm, lons, lats, levs, nv, two_pi, &
                                        async)
@@ -1211,7 +1497,170 @@ contains
       !$acc end data
       return
    end subroutine cyclic_cell_massadvx_gpu
-! ============================================================
+   ! ============================================================
+   subroutine cyclic_cell_massadvx_LBL_gpu(qq, uc, delt, mass, forward, &
+                                           im, jm, lons, lats, levs, nv, async, typ)
+      !
+      ! compute local positive advection with mass conservation
+      ! qq is advected by uc from past to next position
+      !
+      ! author: hann-ming henry juang 2008
+      !
+      ! --------------------
+      ! For debugging
+      ! --------------------
+      use const, only: RTYPE
+      use rank, only: myrank
+      implicit none
+      !
+      real(kind=RTYPE), intent(inout):: qq(lons, lats, levs, nv)
+      real(kind=RTYPE), intent(in)::    uc(lons, lats, levs)
+      integer, intent(in):: im(lats), jm, lons, lats, levs, nv, mass
+      real(kind=RTYPE), intent(in):: delt
+      logical forward
+      integer, intent(in):: async, typ
+      ! local
+      real(kind=RTYPE) da(lons, lats, levs, nv)
+      real(kind=RTYPE) dxfact(lons)
+      real(kind=RTYPE) xreg(lons + 1, lats, levs)
+      real(kind=RTYPE) xpast(lons + 1, lats, levs), xnext(lons + 1, lats, levs)
+      real(kind=RTYPE) uint(lons + 1)
+      real(kind=RTYPE) dist(lons + 1, lats, levs)
+      real(kind=RTYPE) ds(lons + 1, lats), step(10), dist_step
+      real(kind=RTYPE) wrk_step(10)
+      real(kind=RTYPE), parameter :: fa1 = 9./16.
+      real(kind=RTYPE), parameter :: fa2 = 1./16.
+      real(kind=RTYPE):: sc
+      real(kind=RTYPE) qq_wrk(lons, nv), xreg_wrk(lons + 1), xpast_wrk(lons + 1)
+      real(kind=RTYPE) da_wrk(lons, nv), xnext_wrk(lons + 1)
+
+      integer imp
+      integer i, j, k, n, nst, nstep, wrk_ns
+
+      ! sc = 2.0 * pi
+      !$acc data async(async) &
+      !$acc& present_or_copyin(im(:lats),jm,levs,sc,nv,two_pi) &
+      !$acc& create( &
+      !$acc& da(:lons,:lats,:levs,:nv), sc, &
+      !$acc& xpast(:lons+1,:lats,:levs), &
+      !$acc& xnext(:lons+1,:lats,:levs), &
+      !$acc& xreg(:lons+1,:lats,:levs), &
+      !$acc& ds(:lons+1,:lats), dist(:lons+1,:lats,:levs), &
+      !$acc& qq_wrk, da_wrk, xreg_wrk, xpast_wrk, xnext_wrk, &
+      !$acc& nstep,step(:10)) &
+      !$acc& present( &
+      !$acc& uc(lons,lats,levs), &
+      !$acc& delt &
+      !$acc& )
+      !----------------------------------------
+      !$acc parallel loop collapse(2) async(async) &
+      !$acc& private(imp,i,uint(:lons+1))
+      do k = 1, levs
+         do j = 1, jm
+            imp = im(j)
+            !
+            ! 4th order interpolation from mid point to cell interfaces
+            !
+            do i = 3, imp - 1
+               uint(i) = fa1*(uc(i, j, k) + uc(i - 1, j, k)) &
+                         - fa2*(uc(i + 1, j, k) + uc(i - 2, j, k))
+            end do
+            uint(2) = fa1*(uc(2, j, k) + uc(1, j, k)) &
+                      - fa2*(uc(3, j, k) + uc(imp, j, k))
+            uint(1) = fa1*(uc(1, j, k) + uc(imp, j, k)) &
+                      - fa2*(uc(2, j, k) + uc(imp - 1, j, k))
+
+            uint(imp + 1) = uint(1)
+            uint(imp) = fa1*(uc(imp, j, k) + uc(imp - 1, j, k)) &
+                        - fa2*(uc(1, j, k) + uc(imp - 2, j, k))
+
+            do i = 1, imp + 1
+               dist(i, j, k) = uint(i)*delt
+            end do
+         end do
+      end do
+      ! ----------------------------------------
+      !$acc parallel loop async(async) &
+      !$acc& private(imp,i)
+      do j = 1, jm
+         imp = im(j)
+         do i = 1, imp + 1
+            ds(i, j) = two_pi/float(imp)
+         end do
+      end do
+
+      nstep = 0
+      if (typ .ne. 0) then
+         call def_cfl_step_gpu(step, nstep, &
+                               dist, ds, 'advx', &
+                               im, lons, lats, levs, async)
+      end if
+
+      do k = 1, levs
+         do j = 1, jm
+            if (typ .eq. 0) then
+               call def_cfl_step_gpu(step, nstep, &
+                                     dist(1, j, k), ds(1, j), 'advx', &
+                                     (/im(j)/), lons, 1, 1, async)
+               ! else
+               !    nstep = typ
+               !    do nst = 1,nstep
+               !       step(nst) = 1./nstep
+               !    end do
+               !    !$acc  update device(step)
+            end if
+
+            do nst = 1, nstep
+               imp = im(j)
+               !$acc parallel loop copyin(imp,nst) &
+               !$acc& private(dist_step)
+               do i = 1, imp + 1
+                  xreg(i, j, k) = (i - 1.5)*ds(i, j)
+
+                  dist_step = dist(i, j, k)*step(nst)
+                  xpast(i, j, k) = xreg(i, j, k) - dist_step
+                  xnext(i, j, k) = xreg(i, j, k) + dist_step
+               end do
+
+               !$acc kernels
+               do n = 1, nv
+                  do i = 1, imp
+                     qq_wrk(i, n) = qq(i, j, k, n)
+                  end do
+
+                  do i = 1, imp + 1
+                     xreg_wrk(i) = xreg(i, j, k)
+                     xpast_wrk(i) = xpast(i, j, k)
+                     xnext_wrk(i) = xnext(i, j, k)
+                  end do
+
+               end do
+               !$acc end kernels
+               call cyclic_cell_ppm_intp_gpu_v2(xreg_wrk, qq_wrk, &
+                                                xpast_wrk, da_wrk, &
+                                                (/imp/), (/imp/), 1, lons, 1, 1, nv, two_pi, &
+                                                async)
+
+               call cyclic_cell_ppm_intp_gpu(xnext_wrk, da_wrk, &
+                                             xreg_wrk, qq_wrk, &
+                                             (/imp/), (/imp/), 1, lons, 1, 1, nv, two_pi, &
+                                             async)
+
+               !$acc kernels
+               do n = 1, nv
+                  do i = 1, imp
+                     qq(i, j, k, n) = qq_wrk(i, n)
+                  end do
+               end do
+               !$acc end kernels
+
+            end do ! do nst
+         end do ! do jm
+      end do ! do levs
+      !$acc end data
+      return
+   end subroutine cyclic_cell_massadvx_LBL_gpu
+   ! ============================================================
    subroutine cyclic_cell_massadvy_gpu(qq, vc, delt, mass, forward, &
                                        jm, im, latf, lons, levs, nv, async)
       !
@@ -1307,10 +1756,12 @@ contains
       call def_cfl_step_gpu(step, nstep, &
                             dist, ds, 'advy', &
                             nydef_loc, latf, lons, levs, async)
-      !$acc update self(nstep) async(async)
       ! ============================================================
+      ! !$acc update self(dist(:latf+1,:lons,:levs), ds(:latf+1,:lons))
       ! do k =1,levs
       !    do i =1,im
+      !       ! print*, "dist=", maxval(dist(1:jm+1,i,k)), &
+      !       !      maxval(ds(1:jm,i))
       !       call def_cfl_step(jm+1,dist(1,i,k),ds, &
       !            wrk_step,wrk_ns,levs+1-k,'advy')
       !       if(nstep.lt.wrk_ns) then
@@ -1362,7 +1813,8 @@ contains
                end do
             end do
             call cyclic_cell_ppm_intp_gpu(ygrd, qq, ypast, da, &
-                                          nydef_loc, nydef_loc, im, latf, lons, levs, nv, sc_advy, &
+                                          nydef_loc, nydef_loc, &
+                                          im, latf, lons, levs, nv, sc_advy, &
                                           async)
          end if
          if (mass .eq. 1) then
@@ -1383,15 +1835,17 @@ contains
          end if
          !
          call cyclic_cell_ppm_intp_gpu(ynext, da, ygrd, qq, &
-                                       nydef_loc, nydef_loc, im, latf, lons, levs, nv, sc_advy, &
+                                       nydef_loc, nydef_loc, &
+                                       im, latf, lons, levs, nv, sc_advy, &
                                        async)
       end do
       !$acc end data
       return
    end subroutine cyclic_cell_massadvy_gpu
-! ============================================================
+   ! ============================================================
    subroutine cyclic_cell_intpx_r2f_gpu(out, inp, wndmdf, &
-                                        imrlst, jm, lons, lats, levs, nv, async)
+                                        imrlst, jm, lons, lats, levs, nv, &
+                                        async)
       !
       ! do  mass conserving interpolation from different grid at given latitude
       !
@@ -1461,7 +1915,8 @@ contains
       !
       ! mass conserving interpolation from full grid to reduced grid
       call cyclic_cell_ppm_intp_gpu_v2(xpast, inp, xnext, wrk, &
-                                       imrlst, imflst, jm, lons, lats, 1, nlevs, two_pi, &
+                                       imrlst, imflst, &
+                                       jm, lons, lats, 1, nlevs, two_pi, &
                                        async)
 
       !$acc parallel loop collapse(3) async(async) &
@@ -1497,9 +1952,10 @@ contains
       !$acc end data
       return
    end subroutine cyclic_cell_intpx_r2f_gpu
-! ============================================================
+   ! ============================================================
    subroutine cyclic_cell_intpx_f2r_gpu(out, inp, wndmdf, &
-                                        imrlst, jm, lons, lats, levs, nv, async)
+                                        imrlst, jm, lons, lats, levs, nv, &
+                                        async)
       !
       ! do  mass conserving interpolation from different grid at given latitude
 
@@ -1585,8 +2041,9 @@ contains
       end do
       ! mass conserving interpolation from full grid to reduced grid
       call cyclic_cell_ppm_intp_gpu_v2(xpast, wrk, xnext, out, &
-                                       imflst, imrlst, jm, lons, lats, 1, levs*nv, two_pi, &
-                                       async)
+                                       imflst, imrlst, &
+                                       jm, lons, lats, 1, levs*nv, &
+                                       two_pi, async)
 
       ! the data of closed to the equator remains unchanged
       !$acc parallel loop collapse(2) async(async)
@@ -1599,9 +2056,11 @@ contains
       !$acc end data
       return
    end subroutine cyclic_cell_intpx_f2r_gpu
-! ============================================================
+   ! ============================================================
    subroutine cyclic_cell_ppm_intp_gpu(pp, qq, pn, qn, &
-                                       imlst_inp, imlst_out, jm, lons, lats, levs, nv, sc, run_st)
+                                       imlst_inp, imlst_out, &
+                                       jm, lons, lats, levs, nv, sc, &
+                                       run_st)
       !
       ! mass conservation in cyclic bc interpolation: interpolate a group
       ! of grid point  coordiante call pp at interface with quantity qq at
@@ -1663,9 +2122,11 @@ contains
       !$acc end data
       return
    end subroutine cyclic_cell_ppm_intp_gpu
-! ============================================================
+   ! ============================================================
    subroutine cyclic_cell_ppm_intp_gpu_v2(pp, qq, pn, qn, &
-                                          imlst_inp, imlst_out, jm, lons, lats, levs, nv, sc, async)
+                                          imlst_inp, imlst_out, &
+                                          jm, lons, lats, levs, nv, sc, &
+                                          async)
       !
       ! mass conservation in cyclic bc interpolation: interpolate a group
       ! of grid point  coordiante call pp at interface with quantity qq at
@@ -1730,7 +2191,427 @@ contains
       !$acc end data
       return
    end subroutine cyclic_cell_ppm_intp_gpu_v2
-! ============================================================
+   ! ------------------------------------------------------------------------
+   subroutine vertical_cell_advect_gpu(lons, londim, levs, nvars, &
+                                       deltim, ssi, wwi, qql, mass, forward, &
+                                       async_id)
+      !
+      use const, only: RTYPE
+      use grid, only: latpart
+      use index, only: jlistnum, jlist1, nxjp, nxp, nxjp_acc
+      use rank
+      implicit none
+
+      real(kind=RTYPE), intent(inout):: qql(levs, nvars, londim)
+      integer, intent(in):: londim, levs, nvars, lons, mass, &
+                            async_id
+
+      real(kind=RTYPE), intent(in):: deltim, &
+                                     ssi(levs + 1, londim), &
+                                     wwi(nxp, levs + 1, latpart)
+
+      real(kind=RTYPE):: xgrid(levs + 1, londim), &
+                         xpast(levs + 1, londim), &
+                         xnext(levs + 1, londim), &
+                         dd(levs + 1, londim), &
+                         ds(levs, londim), &
+                         step(10), dd_step, &
+                         dsfact, sstmp, dpdt, check, &
+                         da(levs, nvars, londim)
+
+      integer km, i, j, k, n, nst, nstep, nxj, lat, istr
+      logical forward
+      integer istat
+      integer(kind=cuda_stream_kind) :: stream
+
+      stream = acc_get_cuda_stream(async_id)
+      !$acc data async(async_id) &
+      !$acc& create(dd, ds, xgrid, xpast, xnext, da, &
+      !$acc& step, nstep)
+
+      !$acc host_data use_device(dd)
+      istat = cudaMemsetAsync(dd, 0., size(dd), stream)
+      !$acc end host_data
+
+      !$acc kernels async(async_id)
+      do i = 1, londim
+         do k = 1, levs
+            ds(k, i) = ssi(k, i) - ssi(k + 1, i)
+         end do
+      end do
+      !$acc end kernels
+
+      !$acc parallel loop independent async(async_id)&
+      !$acc& private(lat,nxj,istr)
+      do j = 1, jlistnum
+         lat = jlist1(j)
+         nxj = nxjp(lat)
+         istr = nxjp_acc(j) - 1
+         do k = 2, levs
+            do i = 1, nxj
+               dd(k, istr + i) = wwi(i, k, j)*deltim
+            end do
+         end do
+      end do
+      !$acc end parallel loop
+
+      ! <<<< ========================================
+      ! !$acc update self(dd, ds) async(async_id)
+      ! !$acc wait(async_id)
+      ! do i = 1, londim
+      !    call def_cfl_step(levs + 1, dd(1, i), ds(1, i), &
+      !                      step, nstep, levs + 1, 'advv')
+      ! end do
+      ! !$acc update device(step) async(async_id)
+      ! !$acc wait(async_id)
+      ! =============================================
+      call def_cfl_step_gpu_type2(step, nstep, dd, ds, 'advv', &
+                                  levs + 1, londim, async_id)
+      ! ======================================== >>>>
+      do nst = 1, nstep
+         !hmhj give direction for value larger with k larger
+         if (forward) then
+
+            !$acc kernels async(async_id)
+            do i = 1, londim
+               do k = 1, levs + 1
+                  dd_step = dd(k, i)*step(nst)
+                  ! for ppm interpolation
+                  xgrid(k, i) = ssi(k, i)
+                  xpast(k, i) = ssi(k, i)
+                  xnext(k, i) = ssi(k, i) + dd_step
+               end do
+            end do
+            do i = 1, londim
+               do n = 1, nvars
+                  do k = 1, levs
+                     da(k, n, i) = qql(k, n, i)
+                  end do
+               end do
+            end do
+            !$acc end kernels
+         else
+            !$acc kernels async(async_id)
+            do i = 1, londim
+               do k = 1, levs + 1
+                  dd_step = dd(k, i)*step(nst)
+                  ! for ppm interpolation
+                  xgrid(k, i) = ssi(k, i)
+                  xpast(k, i) = ssi(k, i) - dd_step
+                  xnext(k, i) = ssi(k, i) + dd_step
+               end do
+            end do
+            !$acc end kernels
+
+            call vertical_cell_ppm_intp_gpu(xgrid, qql, xpast, da, &
+                                            levs, nvars, londim, async_id)
+         end if
+
+         !
+
+         if (mass .eq. 1) then
+            !$acc kernels async(async_id)
+            do i = 1, londim
+               do n = 1, nvars
+                  do k = 1, levs
+                     dsfact = (xpast(k, i) - xpast(k + 1, i)) &
+                              /(xnext(k, i) - xnext(k + 1, i))
+                     da(k, n, i) = da(k, n, i)*dsfact
+                  end do
+               end do
+            end do
+            !$acc end kernels
+         end if
+
+         call vertical_cell_ppm_intp_gpu(xnext, da, xgrid, qql, &
+                                         levs, nvars, londim, async_id)
+      end do
+      !$acc end data
+
+      return
+   end subroutine vertical_cell_advect_gpu
+   ! ============================================================
+   subroutine vertical_cell_ppm_intp_gpu(pp, qq, pn, qn, &
+                                         levs, nvars, nxy, async_id)
+      !
+      ! mass conservation in vertical interpolation: interpolate a group
+      ! of grid point  coordiante call pp at interface with quantity qq at
+      ! cell averaged to a group of new grid point coordinate call pn at
+      ! interface with quantity qn at cell average with ppm spline.
+      ! in vertical with mass conservation is under the condition that
+      ! pp(1)=pn(1), pp(levs+1)=pn(levs+1)
+      !
+      ! pp    pressure at interfac level as input
+      ! qq    quantity at layer as input
+      ! pn    pressure at interface of new grid structure as input
+      ! qn    quantity at layer as output
+      ! levs  numer of verical layers
+      !
+      ! author : henry.juang@noaa.gov
+      !
+      use const, only: RTYPE
+      use index, only: nxp
+      implicit none
+      !
+      real(kind=RTYPE) pp(levs + 1, nxy)
+      real(kind=RTYPE) qq(levs, nvars, nxy)
+      real(kind=RTYPE) pn(levs + 1, nxy)
+      real(kind=RTYPE) qn(levs, nvars, nxy)
+      integer levs, nvars, nxy
+      integer, intent(in):: async_id
+      !
+      real(kind=RTYPE):: massm, massc, massp, massbot, masstop, &
+                         qmi(levs, nvars, nxy), qpi(levs, nvars, nxy), &
+                         dql, dqh, dqlist(levs + 1, nvars, nxy), &
+                         hh(levs, nxy), &
+                         dqi, dqimax, dqimin, dqmono(levs, nvars, nxy), &
+                         tl, tl2, tl3, tlp, tlm, tlc, &
+                         th(levs + 1, nxy), th2, th3, thp, &
+                         thm, thc, &
+                         dpp, dqq, c1, c2
+
+      integer i, k, kl, kh, kk, kkl, kkh, n
+      integer kklist(levs + 1, nxy), left, right, mid
+      integer, parameter :: mono = 1
+      integer istat
+      integer(kind=cuda_stream_kind) :: stream
+
+      stream = acc_get_cuda_stream(async_id)
+
+      !$acc data async(async_id) &
+      !$acc create(hh,kklist,qmi,qpi,th,dqlist)
+
+      istat = 0
+      !$acc parallel loop async(async_id) &
+      !$acc& copy(istat) reduction(+:istat)
+      do i = 1, nxy
+         if ((pp(1, i) .ne. pn(1, i)) .or. &
+             (pp(levs + 1, i) .ne. pn(levs + 1, i))) then
+            print *, ' Error in vertical_cell_ppm_intp for domain values '
+            print *, "i pp1 pn1", i, pp(1, i), pn(1, i)
+            print *, "i ppt pnt", i, pp(levs + 1, i), pn(levs + 1, i)
+            istat = istat + 1
+         end if
+      end do
+      !$acc end parallel
+      !$acc wait(async_id)
+      if (istat .ne. 0) then
+         print *, "istat=", istat
+         call exit(2)
+      end if
+      ! if (pp(1) .ne. pn(1) .or. pp(levs + 1) .ne. pn(levs + 1)) then
+      !    print *, ' Error in vertical_cell_ppm_intp for domain values '
+      !    !! print *, ' i pp1 pn1 ppt pnt ', i, &
+      !    ! pp(1), pn(1), pp(levs + 1), pn(levs + 1)
+      !    call abort
+      ! end if
+
+      !$acc host_data use_device(th,dqlist)
+      istat = cudaMemsetAsync(th, 0., size(th), stream)
+      istat = cudaMemsetAsync(dqlist, 0., size(dqlist), stream)
+      !$acc end host_data
+      ! ****************************************
+      ! prepare thickness for grid
+      ! ****************************************
+      !$acc kernels async(async_id)
+      do i = 1, nxy
+         do k = 1, levs
+            hh(k, i) = pp(k + 1, i) - pp(k, i)
+         end do
+      end do
+      !$acc end kernels
+
+      ! ****************************************
+      ! find kkh
+      ! ****************************************
+      !$acc parallel loop async(async_id) &
+      !$acc& private(left,right,mid)
+      do i = 1, nxy
+         kklist(1, i) = 1
+         !$acc loop
+         do k = 1, levs
+            left = 1
+            right = levs + 1
+            do while (right - left > 1)
+               mid = (left + right)/2
+               if (pn(k + 1, i) .ge. pp(mid, i)) then
+                  right = mid
+               else
+                  left = mid
+               end if
+            end do
+            kklist(k + 1, i) = left
+         end do
+      end do
+
+      ! ************************************************************
+      ! prepare location with monotonic concerns
+      ! ************************************************************
+      !$acc parallel loop collapse(2) async(async_id)&
+      !$acc& private(massbot,masstop,massm,massc,massp,dqi,dqimax,dqimin) &
+      !$acc& create(dqmono)
+      do i = 1, nxy
+         do n = 1, nvars
+            massbot = (3.*hh(1, i) + hh(2, i))*qq(1, n, i) - 2.*hh(1, i)*qq(2, n, i)
+            massm = massbot/(hh(1, i) + hh(2, i))
+            massc = qq(1, n, i)
+            massp = qq(1 + 1, n, i)
+            dqi = 0.25*(massp - massm)
+            dqimax = max(massm, massc, massp) - massc
+            dqimin = massc - min(massm, massc, massp)
+            dqmono(1, n, i) = sign(min(abs(dqi), dqimin, dqimax), dqi)
+            !$acc loop vector
+            do k = 2, levs - 1
+               massp = qq(k + 1, n, i)
+               massc = qq(k, n, i)
+               massm = qq(k - 1, n, i)
+               dqi = 0.25*(massp - massm)
+               dqimax = max(massm, massc, massp) - massc
+               dqimin = massc - min(massm, massc, massp)
+               dqmono(k, n, i) = sign(min(abs(dqi), dqimin, dqimax), dqi)
+            end do
+
+            masstop = (3.*hh(levs, i) + hh(levs - 1, i))*qq(levs, n, i) &
+                      - 2.*hh(levs, i)*qq(levs - 1, n, i)
+            massp = masstop/(hh(levs, i) + hh(levs - 1, i))
+            massc = qq(levs, n, i)
+            massm = qq(levs - 1, n, i)
+            dqi = 0.25*(massp - massm)
+            dqimax = max(massm, massc, massp) - massc
+            dqimin = massc - min(massm, massc, massp)
+            dqmono(levs, n, i) = sign(min(abs(dqi), dqimin, dqimax), dqi)
+            ! ************************************************************
+            ! compute value at interface with momotone
+            ! ************************************************************
+            !$acc loop vector
+            do k = 2, levs
+               qmi(k, n, i) = (qq(k - 1, n, i)*hh(k, i) + qq(k, n, i)*hh(k - 1, i)) &
+                              /(hh(k, i) + hh(k - 1, i)) &
+                              + (dqmono(k - 1, n, i) - dqmono(k, n, i))/3.0
+            end do
+            !$acc loop vector
+            do k = 1, levs - 1
+               qpi(k, n, i) = qmi(k + 1, n, i)
+            end do
+            qmi(1, n, i) = qq(1, n, i)
+            qpi(1, n, i) = qq(1, n, i)
+            qmi(levs, n, i) = qq(levs, n, i)
+            qpi(levs, n, i) = qq(levs, n, i)
+         end do
+      end do
+      !$acc end parallel loop
+
+      ! ****************************************
+      ! do monotonicity
+      ! ****************************************
+      if (mono .eq. 1) then
+         !$acc parallel loop collapse(2) async(async_id)&
+         !$acc private(c1,c2)
+         do i = 1, nxy
+            do n = 1, nvars
+
+               do k = 1, levs
+                  c1 = qpi(k, n, i) - qq(k, n, i)
+                  c2 = qq(k, n, i) - qmi(k, n, i)
+                  if (c1*c2 .le. 0.0) then
+                     qmi(k, n, i) = qq(k, n, i)
+                     qpi(k, n, i) = qq(k, n, i)
+                  end if
+               end do
+
+               do k = 1, levs
+                  c1 = (qpi(k, n, i) - qmi(k, n, i)) &
+                       *(qq(k, n, i) - 0.5*(qpi(k, n, i) + qmi(k, n, i)))
+                  c2 = (qpi(k, n, i) - qmi(k, n, i))*(qpi(k, n, i) - qmi(k, n, i))/6.
+                  if (c1 .gt. c2) then
+                     qmi(k, n, i) = 3.*qq(k, n, i) - 2.*qpi(k, n, i)
+                  else if (c1 .lt. -c2) then
+                     qpi(k, n, i) = 3.*qq(k, n, i) - 2.*qmi(k, n, i)
+                  end if
+               end do
+            end do
+         end do
+         !$acc end parallel loop
+      end if
+
+      ! ************************************************************
+      ! start interpolation by integral of ppm spline
+      ! ************************************************************
+      !$acc parallel loop async(async_id) &
+      !$acc& private(th2,th3,kkh,thp,thm,thc)
+      !! !$acc& create(thp,thm,thc)
+      do i = 1, nxy
+         !$acc loop vector
+         do kh = 2, levs + 1
+            kkh = kklist(kh, i)
+            th(kh, i) = (pn(kh, i) - pp(kkh, i))/hh(kkh, i)
+         end do
+
+         !$acc loop vector collapse(2)
+         do n = 1, nvars
+            do kh = 2, levs + 1
+               kkh = kklist(kh, i)
+
+               th2 = th(kh, i)*th(kh, i)
+               th3 = th2*th(kh, i)
+               thp = th3 - th2
+               thm = th3 - 2.*th2 + th(kh, i)
+               thc = -2.*th3 + 3.*th2
+
+               dqlist(kh, n, i) = thp*qpi(kkh, n, i) &
+                                  + thm*qmi(kkh, n, i) &
+                                  + thc*qq(kkh, n, i)
+            end do
+         end do
+      end do
+      !$acc end parallel loop
+
+      !$acc parallel loop collapse(2) gang async(async_id) &
+      !$acc& private(k,kl,kh,kkh,kkl,tl,dqh,dql,dpp,dqq)
+      do i = 1, nxy
+         do n = 1, nvars
+            !$acc loop vector independent
+            do k = 1, levs
+               kl = k
+               kh = k + 1
+               kkh = kklist(kh, i)
+               kkl = kklist(k, i)
+
+               tl = th(k, i)
+               dqh = dqlist(kh, n, i)
+               dql = dqlist(kl, n, i)
+               ! ****************************************
+               ! mass interpolate
+               ! ****************************************
+               if (kkh .eq. kkl) then
+                  qn(k, n, i) = (dqh - dql)/(th(kh, i) - tl)
+               else if (kkh .gt. kkl) then
+                  dpp = (1.-tl)*hh(kkl, i) + th(kh, i)*hh(kkh, i)
+                  !$acc loop seq
+                  do kk = kkl + 1, kkh - 1
+                     dpp = dpp + hh(kk, i)
+                  end do
+
+                  dql = qq(kkl, n, i) - dql
+                  dqq = dql*hh(kkl, i) + dqh*hh(kkh, i)
+                  !$acc loop seq
+                  do kk = kkl + 1, kkh - 1
+                     dqq = dqq + qq(kk, n, i)*hh(kk, i)
+                  end do
+                  qn(k, n, i) = dqq/dpp
+               else
+                  print *, ' Error in vertical_cell_ppm_intp for lev messed up '
+                  print *, ' pn ', (pn(kk, i), kk=1, levs + 1)
+                  print *, ' pp ', (pp(kk, i), kk=1, levs + 1)
+               end if
+            end do     ! end of k loop
+         end do
+      end do
+      !$acc end parallel loop
+      !$acc end data
+      return
+   end subroutine vertical_cell_ppm_intp_gpu
+   ! ============================================================
    subroutine ppm_indx(locs, kklist, kstr, kend, pn, pp, sc, &
                        im_inp, im_out, jm, lons, lats, levs, async)
       ! pp    location at interfac point as input
@@ -1813,23 +2694,25 @@ contains
             if (pnmin .lt. locs(lonp + 1, j, k)) then
                !$acc loop independent
                do i = lonp, 1, -1
-                  if (pnmin .ge. locs(i, j, k) .and. pnmin .lt. locs(i + 1, j, k)) then
+                  if ((pnmin .ge. locs(i, j, k)) .and. &
+                      (pnmin .lt. locs(i + 1, j, k))) then
                      kstr(j, k) = i
                   end if
                end do
             else
                !$acc loop independent
                do i = lonp + 1, 2*lonp
-                  if (pnmin .ge. locs(i, j, k) .and. pnmin .lt. locs(i + 1, j, k)) then
+                  if ((pnmin .ge. locs(i, j, k)) .and. &
+                      (pnmin .lt. locs(i + 1, j, k))) then
                      kstr(j, k) = i
                   end if
                end do
             end if
-            ! if(kstr(j,k).eq.0) then
-            !    print *,' Error: can not find kstr: pnmin locs(1,j,k) locs(2*lonp,j,k) ',&
-            !         pnmin,locs(1,j,k),locs(2*lonp,j,k)
-            !    print *,' Error: pn(1) pn(2) pn(3) ',pn(1,j,k),pn(2,j,k),pn(3,j,k)
-            ! endif
+            ! if (kstr(j, k) .eq. 0) then
+            !    print *, ' Error: can not find kstr: pnmin locs(1,j,k) locs(2*lonp,j,k) ', &
+            !       pnmin, locs(1, j, k), locs(2*lonp, j, k)
+            !    print *, ' Error: pn(1) pn(2) pn(3) ', pn(1, j, k), pn(2, j, k), pn(3, j, k)
+            ! end if
             kstr(j, k) = max(3, kstr(j, k))
          end do
       end do
@@ -1868,9 +2751,9 @@ contains
             kend(j, k) = min(3*lonp - 2, kend(j, k))
          end do
       end do
-  !! ****************************************
-  !! << kklist >>
-  !! ****************************************
+    !! ****************************************
+    !! << kklist >>
+    !! ****************************************
       !$acc parallel loop collapse(2) async(async) &
       !$acc& private(i,lonn,mid,right,left)
       do k = 1, levs
@@ -1897,7 +2780,7 @@ contains
       !$acc end data
       return
    end subroutine ppm_indx
-! ============================================================
+   ! ============================================================
    subroutine ppm_indx_intpsr(locs, kklist, kstr, kend, pn, pp, sc, &
                               im_inp, im_out, jm, lons, lats, levs, async)
       ! pp    location at interfac point as input
@@ -1981,9 +2864,9 @@ contains
             kend(j, k) = min(3*lonp - 2, kend(j, k))
          end do
       end do
-  !! ****************************************
-  !! << kklist >>
-  !! ****************************************
+    !! ****************************************
+    !! << kklist >>
+    !! ****************************************
       !$acc parallel loop collapse(2) async(async)&
       !$acc& private(i,kk,lonp,lonn)
       do k = 1, levs
@@ -2009,7 +2892,7 @@ contains
 
       return
    end subroutine ppm_indx_intpsr
-! ============================================================
+   ! ============================================================
    subroutine ppm_poly(qq, hh, qpi, qmi, &
                        mass, locs, kklist, kstr, kend, &
                        im_inp, im_out, jm, lons, lats, levs, nv, async)
@@ -2141,7 +3024,7 @@ contains
       !$acc end data
       return
    end subroutine ppm_poly
-! ============================================================
+   ! ============================================================
    subroutine ppm_intp(out, pn, locs, kklist, &
                        mass, hh, qpi, qmi, &
                        im_out, jm, lons, lats, levs, nv, async)
@@ -2253,7 +3136,7 @@ contains
       end do
       !$acc end data
    end subroutine ppm_intp
-! ============================================================
+   ! ============================================================
    subroutine def_cfl_step_gpu(step, nstep, dist, del, job, &
                                im, lons, lats, levs, async)
       !
@@ -2263,7 +3146,6 @@ contains
       !
       !
       use const, only: RTYPE
-
       implicit none
       !
 
@@ -2285,13 +3167,12 @@ contains
 
       check_max = 0.0
       loc_max = 0.0
-      !$acc update device(nstep,step(:10)) async(async)
       !$acc data present_or_copyin(im(:lats),lons,lats,levs)
       !----------------------------------------
       !$acc parallel async(async) &
-      !$acc& copyin(loc_max, check_max, check_point,safe_step) &
+      !$acc& copy(check_max) &
+      !$acc& copyin(loc_max, check_point) &
       !$acc& present(dist(lons+1,lats,levs), del(lons+1,lats), &
-      !$acc& nstep, step(10), &
       !$acc& im(lats),lons,lats,levs )
       !--------------------
       !$acc loop collapse(2) &
@@ -2300,9 +3181,9 @@ contains
       do k = 1, levs
          do j = 1, lats
             imp = im(j)
+            loc_max = 0.
             !$acc loop seq
             do i = 1, imp
-               loc_max = 0.
                check = abs((dist(i + 1, j, k) - dist(i, j, k))/del(i, j))
                if ((check .ge. check_point) .and. (check .gt. loc_max)) then
                   loc_max = check
@@ -2311,43 +3192,110 @@ contains
             check_max = max(check_max, loc_max)
          end do
       end do
-      ! print*,"finish loop"
-      ! print*,"check_max/check_point ",check_max, check_point
+      !$acc end parallel
+      !$acc end data
+
+      if (check_max .ge. check_point) then
+         nstep = int(check_max/safe_step) + 1
+         ! ----------------------------------------
+         write (*, "(1X,A, 1pe15.7, A, i3, 3(1X,A))") &
+            " max def_cfl ", check_max, " needs ", nstep, &
+            " steps in ", job, "(gpu) processing"
+         ! ----------------------------------------
+         rstep = safe_step/check_max
+         ! rstep = 1./nstep
+         do n = 1, nstep - 1
+            step(n) = rstep
+         end do
+         last_step = 1.-(nstep - 1)*rstep
+         step(nstep) = last_step
+
+         if (nstep > 10) then
+            call exit(1)
+            print *, "Error in def_cfl_step_gpu"
+         end if
+      end if
+      !$acc update device(step)
+
+      return
+   end subroutine def_cfl_step_gpu
+   ! ============================================================
+   subroutine def_cfl_step_gpu_type2(step, nstep, dist, del, job, &
+                                     lda, len, async_id)
+      !
+      ! compute the deformation cfl condition
+      ! select the maxima value of the deformation CFL and provide step to
+      ! avoid it.
+      !
+      !
+      use const, only: RTYPE
+      use rank
+      implicit none
+      !
+
+      real(kind=RTYPE), intent(out):: step(10)
+      integer, intent(out):: nstep
+      real(kind=RTYPE), intent(in) :: dist(lda, len), del(lda - 1, len)
+      integer, intent(in) :: lda, len
+      integer, intent(in) :: async_id
+      ! local
+      integer i, j, n, k, nchk
+      real(kind=RTYPE) rstep, check, check_max, check_point, loc_max
+      real(kind=RTYPE) safe_step, last_step
+      character*4 job
+      !
+      check_point = 1.00
+      safe_step = 0.99
+      nstep = 1
+      step(1) = 1.0
+
+      check_max = 0.0
+      loc_max = 0.0
+      !$acc update device(nstep,step(:10)) async(async_id)
+      !----------------------------------------
+      !$acc kernels async(async_id) &
+      !$acc& copy(check_max) &
+      !$acc& copyin(loc_max, check_point,safe_step)
+      !--------------------
+      !$acc loop &
+      !$acc& private(i,check,loc_max) &
+      !$acc& reduction(max:check_max)
+      do j = 1, len
+         loc_max = 0.
+         !$acc loop seq
+         do i = 1, lda - 1
+            check = abs((dist(i + 1, j) - dist(i, j))/del(i, j))
+            if ((check .ge. check_point) .and. (check .gt. loc_max)) then
+               loc_max = check
+            end if
+         end do
+         check_max = max(check_max, loc_max)
+      end do
+      !$acc end kernels
+      !$acc wait(async_id)
 
       if (check_max .ge. check_point) then
          nstep = int(check_max/safe_step) + 1
          rstep = safe_step/check_max
+         ! ----------------------------------------
+         write (*, "(1X,A, 1pe15.7, 2(1X,A,i3), 3(1X,A))") &
+            " max def_cfl ", check_max, "needs ", nstep, &
+            "steps in ", myrank, "rank in", job, "(gpu) processing"
+         ! ----------------------------------------
+         if (nstep > 10) then
+            call exit(1)
+            print *, "Error in def_cfl_step_gpu_type2"
+         end if
+
          do n = 1, nstep - 1
             step(n) = rstep
          end do
          last_step = 1.-(nstep - 1)*rstep
          step(nstep) = last_step
       end if
-      !$acc end parallel
-      !$acc end data
-      ! if(check_max.ge.check_point) then
-      !    nstep = int(check_max/safe_step) + 1
-      !    if ( job .eq. 'advv' ) then
-      !       print *,' max def_cfl ',check_max,' needs ',nstep,    &
-      !            'steps at level',im+1-nchk,'of',im,'in ',job,' processing'
-      !    else if ( job .eq. 'advx' ) then
-      !       print *,' max def_cfl ',check_max,' needs ',nstep,    &
-      !            'in ',job,' processing'
-      !    else if ( job .eq. 'advy' ) then
-      !       print *,' max def_cfl ',check_max,' needs ',nstep,    &
-      !            'in ',job,' processing'
-      !    endif
+      !$acc update device(step) async(async_id)
 
-      !    rstep =  safe_step / check_max
-      !    do n=1,nstep-1
-      !       step(n) = rstep
-      !    enddo
-      !    last_step = 1. - ( nstep - 1 ) * rstep
-      !    step(nstep) = last_step
-      ! endif
-      !
       return
-   end subroutine def_cfl_step_gpu
-
-! ============================================================
- end module mod_ndslfv_monoadv_gpu
+   end subroutine def_cfl_step_gpu_type2
+   ! ============================================================
+end module mod_ndslfv_monoadv_gpu

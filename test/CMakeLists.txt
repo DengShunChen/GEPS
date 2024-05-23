@@ -1,11 +1,11 @@
-# 
+#
 # Copyright (c) 2024, NVIDIA CORPORATION.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #      http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -75,7 +75,7 @@ else()
 endif()
 
 function(subroutine_mpi_test target)
-   add_executable(${target} ${target}.f90)
+   add_executable(${target} ${target}.f90 helper.f90)
    add_test(NAME ${target}
       COMMAND mpiexec -n 8 ${target}
       WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/test
@@ -90,5 +90,21 @@ subroutine_mpi_test(test_tranuv)
 subroutine_mpi_test(test_ujoinsr)
 subroutine_mpi_test(test_trngra3)
 subroutine_mpi_test(test_transr)
+subroutine_mpi_test(test_trandv)
+subroutine_mpi_test(test_joinrs)
+subroutine_mpi_test(test_tranrs)
+subroutine_mpi_test(test_rstrandz)
+subroutine_mpi_test(test_transr1)
+subroutine_mpi_test(test_prexp_hybrid_cwb)
+subroutine_mpi_test(test_trngra)
+subroutine_mpi_test(test_siimpl)
+subroutine_mpi_test(test_tranrs1)
+subroutine_mpi_test(test_gridnl_hybrid_ndsl)
+subroutine_mpi_test(test_hdiffu)
+subroutine_mpi_test(test_whdiffu)
+subroutine_mpi_test(test_cyclic_cell_massadvx)
+subroutine_mpi_test(test_ndslfv_monoadvh)
+subroutine_mpi_test(test_ndslfv_monoadvh_fgnl)
+subroutine_mpi_test(test_ndslfv_monoadvv)
+subroutine_mpi_test(test_ndslfv_monoadvv_fgnl)
 endif()
-

@@ -265,6 +265,8 @@ subroutine rfftmlt_loop(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, jump, 
    integer :: i, k
    real(8) :: scale
 
+   async_id = 1
+
    do jj = 1, jlistnum
       j = jlist1(jj)
       nxj = nxdef(j)
@@ -275,10 +277,9 @@ subroutine rfftmlt_loop(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, jump, 
          call cache_fft_plan(1, jump, nxj, m, isign, plan_list(jj))
       end if
 
-      async_id = plan_list(jj)
       if (mod(jump, 2) .eq. 0) then
          stream = acc_get_cuda_stream(async_id)
-         istat = cufftSetStream(async_id, stream)
+         istat = cufftSetStream(plan_list(jj), stream)
 
          if (isign .eq. 1) then
 
@@ -290,7 +291,7 @@ subroutine rfftmlt_loop(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, jump, 
             end do
 
             !$acc host_data use_device(cc, gwk1)
-            istat = cufftExecZ2D(async_id, gwk1(1, 1, jj), cc(1, 1, jj))
+            istat = cufftExecZ2D(plan_list(jj), gwk1(1, 1, jj), cc(1, 1, jj))
             !$acc end host_data
             if (istat .ne. CUFFT_SUCCESS) then
                print *, 'cufftExecZ2D', istat
@@ -299,7 +300,7 @@ subroutine rfftmlt_loop(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, jump, 
             scale = 1.0/dfloat(nxj)
 
             !$acc host_data use_device(cc, gwk1)
-            istat = cufftExecD2Z(async_id, cc(1, 1, jj), gwk1(1, 1, jj))
+            istat = cufftExecD2Z(plan_list(jj), cc(1, 1, jj), gwk1(1, 1, jj))
             !$acc end host_data
             if (istat .ne. CUFFT_SUCCESS) then
                print *, 'cufftExecD2Z', istat
@@ -318,9 +319,104 @@ subroutine rfftmlt_loop(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, jump, 
       end if
    end do
 
-   do jj = 1, jlistnum
-      !$acc wait(plan_list(jj))
-   end do
-
 end subroutine rfftmlt_loop
 
+subroutine rfftmlt_loop_identical(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, jump, m, isign)
+   use cudafor
+   use cufft
+   use openacc
+   use iso_c_binding
+   implicit none
+
+   interface c_interface
+      subroutine find_fft_plan(inc, jump, n, m, isign, plan) bind(C, name="find_fft_plan")
+         use iso_c_binding
+         implicit none
+         integer(c_int), value, intent(in) :: inc, jump, n, m, isign
+         integer(c_int), intent(out) :: plan
+      end subroutine find_fft_plan
+      subroutine cache_fft_plan(inc, jump, n, m, isign, plan) bind(C, name="cache_fft_plan")
+         use iso_c_binding
+         implicit none
+         integer(c_int), value, intent(in) :: inc, jump, n, m, isign, plan
+      end subroutine cache_fft_plan
+   end interface c_interface
+
+   integer :: jlistnum, jump, m, isign, jlistnum
+   integer :: jj, j, nxj
+   real(8), dimension(jump, m, *) :: cc, gwk1 ! Present on device
+   real, dimension(4096, *) :: trigsj
+   integer, dimension(19, *) :: ifaxj
+   integer, dimension(*) :: jlist1, nxdef
+   integer(kind=int_ptr_kind()) :: work_size
+   integer :: async_id
+   integer(kind=cuda_stream_kind) :: stream
+   integer(4) :: istat
+   integer :: i, k
+   real(8) :: scale
+   integer(4) :: base_plan, plan_id
+
+   async_id = 1
+   
+   j = jlist1(1)
+   nxj = nxdef(j)
+   call find_fft_plan(1, jump, nxj, m, isign, base_plan)
+   if (base_plan .eq. -1) then
+      do jj = 1, jlistnum
+         j = jlist1(jj)
+         nxj = nxdef(j)
+         call fft_create_plan(plan_id, 1)
+         call fft_make_plan(1, jump, nxj, m, isign, plan_id, work_size)
+         call cache_fft_plan(1, jump, nxj, m, isign, plan_id)
+      end do
+      base_plan = plan_id - jlistnum + 1
+   end if
+
+   do jj = 1, jlistnum
+      j = jlist1(jj)
+      nxj = nxdef(j)
+      plan_id = base_plan + jj - 1
+
+      if (mod(jump, 2) .eq. 0) then
+         stream = acc_get_cuda_stream(async_id)
+         istat = cufftSetStream(plan_id, stream)
+
+         if (isign .eq. 1) then
+
+            !$acc parallel loop collapse(2) async(async_id)
+            do k = 1, m
+            do i = 1, nxj + 2
+               gwk1(i, k, jj) = cc(i, k, jj)
+            end do
+            end do
+
+            !$acc host_data use_device(cc, gwk1)
+            istat = cufftExecZ2D(plan_id, gwk1(1, 1, jj), cc(1, 1, jj))
+            !$acc end host_data
+            if (istat .ne. CUFFT_SUCCESS) then
+               print *, 'cufftExecZ2D', istat
+            end if
+         else
+            scale = 1.0/dfloat(nxj)
+
+            !$acc host_data use_device(cc, gwk1)
+            istat = cufftExecD2Z(plan_id, cc(1, 1, jj), gwk1(1, 1, jj))
+            !$acc end host_data
+            if (istat .ne. CUFFT_SUCCESS) then
+               print *, 'cufftExecD2Z', istat
+            end if
+
+            !$acc parallel loop collapse(2) async(async_id)
+            do k = 1, m
+            do i = 1, nxj + 2
+               cc(i, k, jj) = gwk1(i, k, jj)*scale
+            end do
+            end do
+         end if
+
+      else
+         print *, 'fft jump is odd, CWB obsoleted, jump=', jump
+      end if
+   end do
+
+end subroutine rfftmlt_loop_identical

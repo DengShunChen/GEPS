@@ -10,5 +10,5 @@ gscond.o : gscond.f90
 	$(FC90) $(FFLAGS) -Knosimd $*.f90
 gscondp.o : gscondp.f90
 	$(FC90) $(FFLAGS) -Knosimd $*.f90
-cwb.o : cwb.f90 mod_index.o mod_mpe.o mod_rank.o mod_const.o mod_param.o mod_grid.o
+cwb.o : cwb.f90 mod_index.o mod_rank.o mod_const.o mod_param.o mod_grid.o
 	$(FC90) $(FFLAGS) -Knosimd $*.f90

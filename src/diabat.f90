@@ -1,7 +1,7 @@
       subroutine diabat ( fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd  &
                     , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw       &
 !                    , idg,jdg,ldiag,dt,tau,hours,julian,year,yrd               &
-                    , idg,jdg,ldiag,dt,tau,hours,julian,year                   &
+                    , idg,jdg,ldiag,dt,tau,hours,year                          &
                     , frad,ozon,njump,itypbl,ktcup,ktpbl,ktshl,grav            &
                     , rgas,cp,stbo,s0,evaprh,hltm,ptop,sigma,dsigma,il,ib,cof  &
                     , xlat,xlon,sgeo,z0,alb,land,ocean,ice,snr                 &
@@ -170,7 +170,7 @@
                                       pdfcloud,cmbk,cgwd, fsit, dosppt, doshum, dossst, &
                                       use_zmtnblck,ldailyFCTicesndpt,dSITdt_intv, &
                                       weightSIT,bckfile,ggdef,doclx,doslavepp,    &
-                                      RTYPE,qmin
+                                      RTYPE,qmin,julian
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
@@ -205,7 +205,7 @@
        integer   isot,ivegsrc
 !-----------------------------------------------------------------------
       integer   nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,idg,  &
-                jdg,ldiag,julian,njump,itypbl,ktcup,ktpbl,ktshl,     &
+                jdg,ldiag,njump,itypbl,ktcup,ktpbl,ktshl,            &
                 km_soil
 
       logical   docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon,     &
@@ -260,7 +260,7 @@
 
 ! new soil
 ! for noah
-      integer   slopetyp(nxp,my_max)
+      integer   slopetyp(nxp,my_max) ! class ofsurface slope
 
       real      slc(nxp,km_soil,my_max),zice(nxp,my_max),         &
                 cice(nxp,my_max),xtice(nxp,my_max),               &
@@ -312,11 +312,11 @@
 !---------------------------------------------------------------------------
 ! for new rad
 !---------------------------------------------------------------------------
-      real      fusl(nxp,lev+1,my_max),fdsl(nxp,lev+1,my_max),   &
-                fuir(nxp,lev+1,my_max),fdir(nxp,lev+1,my_max),   &
-                fuslr(nxp,lev+1,my_max),fdslr(nxp,lev+1,my_max), &
-                fuirr(nxp,lev+1,my_max),fdirr(nxp,lev+1,my_max), &
-                asl_clr(nxp,lev,my_max),atl_clr(nxp,lev,my_max), &
+      real(kind=RTYPE)  fusl(nxp,lev+1,my_max) ,fdsl(nxp,lev+1,my_max),  &
+                        fuir(nxp,lev+1,my_max) ,fdir(nxp,lev+1,my_max),  &
+                        fuslr(nxp,lev+1,my_max),fdslr(nxp,lev+1,my_max), &
+                        fuirr(nxp,lev+1,my_max),fdirr(nxp,lev+1,my_max)
+      real      asl_clr(nxp,lev,my_max),atl_clr(nxp,lev,my_max), &
                 clds(nxp,lev,my_max)
       real      rld_clr(nxp,my_max),sld_clr(nxp,my_max)
       real      asol_clr(nxp,my_max),olr_clr(nxp,my_max),ss_clr(nxp,my_max), &
@@ -324,6 +324,7 @@
                 ctot(nxp,my_max),chig(nxp,my_max),cmid(nxp,my_max),clow(nxp,my_max)
 
       ! for sppt
+      !real(kind=RTYPE) :: cld_save_sppt(nxp,lev,my_max)
       real(kind=RTYPE) :: ut_save_sppt(nxp,lev,my_max)     
       real(kind=RTYPE) :: vt_save_sppt(nxp,lev,my_max)        
       real(kind=RTYPE) :: tt_save_sppt(nxp,lev,my_max)        
@@ -354,7 +355,8 @@
       real :: dtradc(nxp,lev,my_max)
       real :: dtradn(nxp,lev)
       integer :: zmtnblck(nxp)
-      real :: ru,vru,upert,vpert,tpert,qpert,qnew,dtdtr
+      real :: ru,vru,upert,vpert,tpert,qpert,qnew,dtdtr &
+              ,cldpert,cldnew
 
       integer itimestep,ii
 
@@ -624,6 +626,7 @@
          if(julian.gt.yrdold) julian=mod(julian,yrdold)
          doozon = .true.
          doclxu = .true.
+         if (myrank .eq. 0 ) print*,'TYW test in diabat, julian = ',julian,yrd
       endif
 !      leap = mod ( year , 4 )
 !      yrd = 365
@@ -653,19 +656,6 @@
         if (irad .eq. 2) then
           call readalb(nx,my,my_max,julian,         &
                      alvsf,alvwf,alnsf,alnwf,facsf,facwf)
-
-          do jj=1,jlistnum
-            j=jlist1(jj)
-            nxj=nxdef_2d(j)
-            do i=1,nxj
-              alvsf(i,jj)=alvsf(i,jj)*0.01
-              alvwf(i,jj)=alvwf(i,jj)*0.01
-              alnsf(i,jj)=alnsf(i,jj)*0.01
-              alnwf(i,jj)=alnwf(i,jj)*0.01
-              facsf(i,jj)=facsf(i,jj)*0.01
-              facwf(i,jj)=facwf(i,jj)*0.01
-            enddo
-          enddo
         endif
 !
         do jj = 1, jlistnum
@@ -680,7 +670,9 @@
 !---------------------------------------------------------------------
 ! (2)  tg replaced by climate sea surface temperature
 !---------------------------------------------------------------------
+!            if ( .not. do_sit )then
             if (ocean(i,jj)) tg(i,jj)=sstc(i,jj)
+!            endif
 !---------------------------------------------------------------------
 ! (3)  set ice thickness => not for couple
 !---------------------------------------------------------------------
@@ -709,6 +701,7 @@
         enddo
 
       endif ! doclxu
+
 !
 ! for nonorographic gravity wave drag
 !
@@ -954,12 +947,12 @@
         work1(i)    = max(0.0, min(1.0,work1(i)))
         work2(i)    = 1.0 - work1(i)
         garea(i)    = tem1*tem2
-        if(land(i,jj))slimsk(i)=1
-        if(ocean(i,jj))slimsk(i)=0
-        if(ice(i,jj))slimsk(i)=2
-        if(land(i,jj))islimsk(i)=1
+        if(land (i,jj))slimsk (i)=1
+        if(ocean(i,jj))slimsk (i)=0
+        if(ice  (i,jj))slimsk (i)=2
+        if(land (i,jj))islimsk(i)=1
         if(ocean(i,jj))islimsk(i)=0
-        if(ice(i,jj))islimsk(i)=2
+        if(ice  (i,jj))islimsk(i)=2
       enddo
 
     !    compute new time level p**kapa quantites
@@ -999,6 +992,7 @@
             vt_save_sppt(i,k,jj)=vt(i,k,jj)
             tt_save_sppt(i,k,jj)=tt(i,k,jj)
             qt_save_sppt(i,k,jj)=qt(i,k,jj)
+            !cld_save_sppt(i,k,jj)=clds(i,k,jj)
           enddo
         enddo
       endif ! end dosppt if stetement
@@ -2002,7 +1996,7 @@
         istep= int(tau/(dt/3600.)+0.01)
         tauleft=float(int((tau-int(tau)+0.001)*3600./dt))*dt
         icurrenttau=int(tau)
-        if(tauleft == 3600.0 )then
+        if(tauleft > 3599.0 )then
            icurrenttau=icurrenttau+1
            tauleft=0.0
         endif
@@ -2353,6 +2347,7 @@
             upert = ( ut(i,k,jj) - ut_save_sppt(i,k,jj) ) * ru
             vpert = ( vt(i,k,jj) - vt_save_sppt(i,k,jj) ) * ru
             tpert = ( tt(i,k,jj) - tt_save_sppt(i,k,jj) - dtdtr ) * ru
+            ru = (sppt3d(i,k,jj)*0.5 ) + 1. !test reduce q-perturb
             qpert = ( qt(i,k,jj) - qt_save_sppt(i,k,jj) ) * ru
 
             ut(i,k,jj) = ut_save_sppt(i,k,jj) + upert
@@ -2364,6 +2359,13 @@
                qt(i,k,jj) = qnew
                tt(i,k,jj) = tt_save_sppt(i,k,jj) + tpert + dtdtr
             endif
+            !cloud fraction perturb
+            !ru = (sppt3d(i,k,jj)*0.5 ) + 1.
+            !cldpert = ( clds(i,k,jj) - cld_save_sppt(i,k,jj) ) * ru
+            !cldnew = cld_save_sppt(i,k,jj) + cldpert
+            !if ( cldnew .ge. qmin .and. cldnew .lt. 1.0 ) then
+            !   clds(i,k,jj) = cldnew
+            !endif
           enddo
         enddo
       endif
@@ -2467,8 +2469,6 @@
           rainlp(i,jj) = rainlp(i,jj) + rlsp(i,jj)*rainfc
           raincu1(i,jj)= raincu1(i,jj)+ rcup(i,jj)*rainfc
           rainlp1(i,jj)= rainlp1(i,jj)+ rlsp(i,jj)*rainfc
-          raincu3(i,jj)= raincu3(i,jj)+ rcup(i,jj)*rainfc
-          rainlp3(i,jj)= rainlp3(i,jj)+ rlsp(i,jj)*rainfc
           raincu6(i,jj)= raincu6(i,jj)+ rcup(i,jj)*rainfc
           rainlp6(i,jj)= rainlp6(i,jj)+ rlsp(i,jj)*rainfc
           raintot(i,jj)= raintot(i,jj)+ totalp(i,jj)
@@ -2483,8 +2483,9 @@
           nxj=nxdef_2d(j)
           do i = 1,nxj
             totalp(i,jj) = (tau-dtau)* totalp(i,jj)
+            runoff(i,jj) = (tau-dtau)* runoff(i,jj)
           enddo
-       enddo
+        enddo
       endif
 !
 !      call mpe_unify(totalp,nx,my,2,mpe_double)

@@ -294,27 +294,22 @@ subroutine advh_allgather4GPU(aout, ainp, nv)
    return
 end subroutine advh_allgather4GPU
 ! ============================================================
-subroutine advh_gather4GPU_dev(aout, ainp, nv, id, wrk)
+subroutine advh_gather4GPU_dev(aout, ainp, nv, id)
    use const, only: RTYPE, MPI_RTYPE
    use param, only: nx, my, lev, my_max
-   use index, only: nxp, nsizex, jlist2_2d, nxjlen_all
-   use rank, only: nsize, mpi_comm_gfs, myrank
+   use index, only: nxp
+   use rank, only: nsize, mpi_comm_gfs
    use cudafor
    use mpi
-
    implicit none
    integer, intent(in):: nv, id
    real(kind=RTYPE), device:: aout(nxp*lev*nv, my_max*nsize)
-   real(kind=RTYPE), device:: wrk(nxp*lev*nv, my_max)
-   real(kind=RTYPE) :: ainp(nxp, lev, nv, my_max)
-   integer ierr, pts, id, istat, i
-   real tmp
-   pts = nxp*lev*my_max*nv
-   ierr = cudamemcpy(wrk, ainp, pts, &
-                     cudaMemcpyHostToDevice)
+   real(kind=RTYPE), device:: ainp(nxp*lev*nv, my_max)
+   integer pts, ierr
 
-   call MPI_GATHER(wrk, nxp*lev*nv*my_max, MPI_RTYPE, &
-                   aout, nxp*lev*nv*my_max, MPI_RTYPE, &
+   pts = nxp*lev*nv*my_max
+   call MPI_GATHER(ainp, pts, MPI_RTYPE, &
+                   aout, pts, MPI_RTYPE, &
                    id, MPI_COMM_gfs, IERR)
 
    return
@@ -362,7 +357,7 @@ subroutine advh_scatter4GPU(aout, ainp, nv, id)
    return
 end subroutine advh_scatter4GPU
 ! ============================================================
-subroutine advh_scatter4GPU_dev(aout, ainp, nv, id, wrk)
+subroutine advh_scatter4GPU_dev(aout, ainp, nv, id)
    use const, only: RTYPE, MPI_RTYPE
    use param, only: nx, my, lev, my_max
    use index, only: nxp
@@ -371,18 +366,15 @@ subroutine advh_scatter4GPU_dev(aout, ainp, nv, id, wrk)
    use mpi
    implicit none
    integer, intent(in):: nv, id
-   real(kind=RTYPE):: aout(nxp*lev*nv, my_max)
-   real(kind=RTYPE), device:: wrk(nxp*lev*nv, my_max)
+   real(kind=RTYPE), device:: aout(nxp*lev*nv, my_max)
    real(kind=RTYPE), device:: ainp(nxp*lev*nv, my_max*nsize)
    integer ierr, pts
 
-   call MPI_SCATTER(ainp, nxp*lev*nv*my_max, MPI_RTYPE, &
-                    wrk, nxp*lev*nv*my_max, MPI_RTYPE, &
+   pts = nxp*lev*nv*my_max
+   call MPI_SCATTER(ainp, pts, MPI_RTYPE, &
+                    aout, pts, MPI_RTYPE, &
                     id, MPI_COMM_gfs, IERR)
 
-   pts = nxp*lev*my_max*nv
-   ierr = cudamemcpy(aout, wrk, pts, &
-                     cudaMemcpyDeviceToHost)
    return
 end subroutine advh_scatter4GPU_dev
 ! ============================================================

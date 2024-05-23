@@ -133,6 +133,7 @@ mod_fftcom.f90
 mod_fj_pad.f90
 mod_grb2_param.f90
 mod_grid.f90
+mod_leap.f90
 mod_index.f90
 mod_mpe.f90
 mod_netcdf.f90
@@ -360,6 +361,18 @@ if(${USE_CUDA})
         nvidia/mpe_transpose_rs1_gpu.f90
         nvidia/mpe_transpose_sr_gpu.f90
         nvidia/transr_gpu.f90
+        nvidia/trandv_gpu.f90
+        nvidia/joinrs_gpu.f90
+        nvidia/mpe_transpose_rs_gpu.f90
+        nvidia/tranrs_gpu.f90
+        nvidia/rstrandz_gpu.f90
+        nvidia/transr1_gpu.f90
+        nvidia/prexp_hybrid_cwb_gpu.f90
+        nvidia/trngra_gpu.f90
+        nvidia/siimpl_gpu.f90
+        nvidia/tranrs1_gpu.f90
+        nvidia/gridnl_hybrid_ndsl_gpu.f90
+        nvidia/hdiffu_gpu.f90
     )
 endif()
 
@@ -415,14 +428,15 @@ else()
           mod_grid.f90
           mod_rank.f90
           mpe_ndslfv_gpu.f90
+          mod_mpe.f90
           mod_ndslfv_monoadv_gpu.f90)
         add_dependencies(${LIB} mod_ndslfv_monoadv_gpu)
         target_link_libraries( ${LIB} PUBLIC mod_ndslfv_monoadv_gpu
-                ${NetCDF_Fortran_LIBRARIES}
-                ${DMS_LIBRARIES}
-                ${W3_LIBRARIES}
+          ${NetCDF_Fortran_LIBRARIES}
+          ${DMS_LIBRARIES}
+          ${W3_LIBRARIES}
         )
-	target_link_options(${LIB} PUBLIC "-Mconcur")
+        target_link_options(${LIB} PUBLIC "-Mconcur")
 endif()
 
 install(TARGETS ${EXEC} DESTINATION ${CMAKE_INSTALL_PREFIX})

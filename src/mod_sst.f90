@@ -181,6 +181,7 @@
           allocate ( opgsst(nxp,my_max,0:13), stat=ierr)
              if (ierr/= 0) then
                  write(6,*) 'mod_opgsst : allocate fail 1 '
+                 call dmsexit(-1)
                  stop
              end if
 
@@ -313,7 +314,7 @@
 
           icurrenttau=int(tau)
           tauleft=float(int((tau-int(tau)+0.001)*3600./dtx))*dtx   !(sec)
-          if(tauleft .eq. 3600.) then
+          if(tauleft > 3599.) then
           icurrenttau=icurrenttau+1
           tauleft=0.
           endif
@@ -327,7 +328,7 @@
           tautemp=tau+24.     !tau +24 hr
           icurrenttau=int(tautemp)
           tauleft=float(int((tautemp-int(tautemp)+0.001)*3600./dtx))*dtx !(sec)
-          if(tauleft .eq. 3600.) then
+          if(tauleft > 3599. ) then
           icurrenttau=icurrenttau+1
           tauleft=0.
           endif
@@ -521,9 +522,9 @@
                       iitemp=itemp
                     endif
                     if (jtemp .eq. 0) then
-                      jjtemp=my
+                      jjtemp=1 
                     elseif (jtemp .gt. my) then
-                      jjtemp=1
+                      jjtemp=my
                     else
                       jjtemp=jtemp
                     endif
@@ -729,6 +730,7 @@
           REAL wweight
           REAL plon(nx,my_max),plat(my)
           LOGICAL locean(nxp,my_max)
+          real::ssttend
 
           write(cdtg,'(i12)') idtg1
           read(cdtg,'(i4.4,i2.2,i2.2,i2.2,i2.2)') iyyyy,imm,idd,ihh,imn
@@ -779,10 +781,11 @@
               call reducepickr(sstFCT(1,j),nxdef(j),nx,1)
             end if
             DO ii=1,nxj
-              wweight=0.
-              i=nxjstart(j)+ii-1
-              dailyClmANAsst(ii,jj,2)=sstANA(i,j)
-              if(locean(ii,jj) .AND. dailyClm_option .eq. 1) then   !dailyClm_option=1
+             wweight=0.
+             i=nxjstart(j)+ii-1
+             dailyClmANAsst(ii,jj,2)=sstANA(i,j)
+             if(locean(ii,jj) )then
+              if( dailyClm_option .eq. 1) then   !dailyClm_option=1
                 if(ldailyFCTsst)then
                 !similar to (Yuejian Zhu, operational)             
                 !  wweight=min(float(itau)/24./35.,1.)
@@ -800,8 +803,7 @@
                   dailyFCTsst(ii,jj,2)=wweight*(ANAsstT0(ii,jj)-dailyClmANAsst(ii,jj,0))  &
                                        +dailyClmANAsst(ii,jj,2)
                 endif
-              endif
-              if(ldailyFCTsst .AND. locean(ii,jj) .AND. dailyClm_option .eq. 2) then   !dailyClm_option=2
+              elseif( ldailyFCTsst .AND. dailyClm_option .eq. 2) then   !dailyClm_option=2
                 dailyClmFCTsst(ii,jj,2)=sstFCT(i,j)
                 !idea from Yuejian Zhu(2018 JGR)
                  wweight=min(max(float(itau)/24./35.,0.),1.)
@@ -809,12 +811,16 @@
                      +dailyClmANAsst(ii,jj,2))+wweight*(dailyFCTsst(ii,jj,2)    &
                      -(dailyClmFCTsst(ii,jj,2)-dailyClmANAsst(ii,jj,2)))
               endif
-              if(locean(ii,jj) .AND. dailyFCTsst(ii,jj,1).ge.sstmin &
-                .AND. dailyFCTsst(ii,jj,2).ge.sstmin)then
-                dFCTsstdt(ii,jj)=(dailyFCTsst(ii,jj,2)-dailyFCTsst(ii,jj,1))/(24.*3600.)
+              if( dailyFCTsst(ii,jj,1).ge.sstmin .AND. &
+                  dailyFCTsst(ii,jj,2).ge.sstmin )then
+                !remove large tendency 20231207
+                ssttend =  dailyFCTsst(ii,jj,2)-dailyFCTsst(ii,jj,1)
+                ssttend = min( 10. , max( -10. , ssttend ))
+                dFCTsstdt(ii,jj)=ssttend/(24.*3600.)
               else
                 dFCTsstdt(ii,jj)=0.
               endif
+             endif !if locean
 
             ENDDO
           ENDDO
@@ -830,7 +836,8 @@
 
       use index 
       use mpe
-      use const, only: kflag,RTYPE
+      use const, only: kflag,RTYPE,outdms,outgrb2,ihdgo,ihdgo2
+      use mod_grb2_param,only: wrt_grb2_v2
 
       implicit none
 
@@ -854,7 +861,12 @@
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       call syslbl_w ('w0001f',idtg,itau,ggdef)
+      if(outdms.gt.0) &
       call dmswrit(imax,jmax,lenc,kflag,glob,istat)
+      if( outgrb2==1.and.myrank==0 )then
+      ihdgo2 = ihdgo
+      call wrt_grb2_v2(itau,10,3,199,6,168,0,2,glob)
+      endif
       tseadiffFCT24=0.
 
       END SUBROUTINE 
@@ -935,9 +947,9 @@
           call mpe_bcast(istat,1,0,mpe_integer)
           if(istat.ne.0)then
             if(myrank.eq.0) print *,'dmsopn ocaf error'
-            stop
             call mpe_finalize
             call dmsexit(-1)
+            stop
           endif
 
 
@@ -1229,6 +1241,7 @@
                  WRITE(nerr,*) 'expected number of latitudes = ',ngl
                  WRITE(nerr,*) 'number of latitudes of ocean data = ',io_ngl
                  WRITE(nerr,*)  'read_godas','unexpected resolution'
+                 call dmsexit(-1)
                  stop
               END IF
               CALL io_inq_dimid  (woanc1%file_id, 'depth', io_var_id)
@@ -1251,6 +1264,7 @@
                    WRITE (message_text,*) 'Read nodepth error in file <',fn0,'>'
                    WRITE(nerr,*) '',message_text
                    WRITE(nerr,*) 'read_godas','unexpected resolution'
+                   call dmsexit(-1)
                    stop
                 END IF
               ENDIF
@@ -1264,6 +1278,7 @@
                    WRITE (message_text,*) 'Read nodepth error in file <',fn2,'>'
                    WRITE(nerr,*) '',message_text
                    WRITE(nerr,*) 'read_godas','unexpected resolution'
+                   call dmsexit(-1)
                    stop
                 ENDIF
               ENDIF
@@ -1618,6 +1633,7 @@
           WRITE (message_text,*) 'Could not open unit<',nwoa0,'>'
           WRITE(nerr,*) '',message_text
           WRITE(nerr,*) 'read_woa0', 'Could not open woa0 file'
+          call dmsexit(-1)
           stop
         ENDIF
         WRITE(nerr,'(/,A,I2)') ' Read WOA0 3.0 '
@@ -1633,6 +1649,7 @@
           WRITE(nerr,*) 'expected number of latitudes = ',ngl
          WRITE(nerr,*) 'number of latitudes of world ocean atlas data =',io_ngl
           WRITE(nerr,*) 'read_WOA0','unexpected resolution'
+          call dmsexit(-1)
           stop
         END IF
         CALL io_inq_dimid  (woa0nc1%file_id, 'depth', io_var_id)
@@ -1787,7 +1804,7 @@
 !ps       ydate = yr*10000.+mo*100.+dy+(hr+mn/60.+se/3600.)/24.
        icurrenttau=int(tau)
        tauleft=float(int((tau-int(tau)+0.001)*3600./dtx))*dtx   !(sec)
-       if(tauleft .eq. 3600.) then
+       if(tauleft > 3599.) then
         icurrenttau=icurrenttau+1
         tauleft=0.
        endif
@@ -1806,7 +1823,7 @@
          ihy2=ihy1+1
          CALL chlen (ifilin_nc,80,lnc)
          WRITE (fn(1), '(A,A11,i4)') ifilin_nc(1:lnc),'/dailygodas',ihy0
-         WRITE (fn(2), '(A,A11,i4)') ifilin_nc(1:lnc),'/dailygodas',ihy1
+         WRITE (fn(2), '(A,A11,i4)') ifilin_nc(1:lnc),'/dailygodas',yrori !ihy1
          WRITE (fn(3), '(A,A11,i4)') ifilin_nc(1:lnc),'/dailygodas',ihy2
 !ps         WRITE (fn(1), '("dailygodas",i4)') ihy0
 !ps         WRITE (fn(2), '("dailygodas",i4)') ihy1
@@ -1922,9 +1939,9 @@
        if (myrank.eq.3) print *,'myrank3 istat=',istat
        if(istat .ne. 0)then
         if(myrank.eq.0) print *,'read_godas_3days fn2',' terminated.'
-        stop
         call mpe_finalize
         call dmsexit(-1)
+        stop
        endif
         
 !       CALL p_bcast (nodepth, p_io)
@@ -1975,57 +1992,57 @@
            ALLOCATE (timevals1(nts1))
            CALL IO_GET_VAR_DOUBLE(gpnc1%file_id, io_var_id, timevals1)
            tsID=1
-           DO WHILE ( (ydate.GT.INT(timevals1(tsID))).AND.(tsID.LE.nts1) )
+           DO WHILE ( (ydate.GT.INT(timevals1(tsID))).AND.(tsID.LT.nts1) )
              tsID=tsID+1
            ENDDO
            if(myrank .eq. 0) print*,"tsID=",tsID,",nts1=",nts1
-           IF ( tsID .gt. nts1 ) THEN
-             INQUIRE (file=fn(3), exist=lex2)
-             IF ( .NOT. lex2 ) THEN
-               WRITE (message_text,*) 'Could not open file <',fn(3),'>'
-               WRITE(nerr,*) message_text
-               WRITE(nerr,*) 'read_godas_3days fn3 ', 'run terminated.'
-               istat=-1
-             ELSE
-               CALL IO_open (fn(3), gpnc2, IO_READ)
-               CALL IO_INQ_DIMID (gpnc2%file_id, 'time', ndimid2)
-               CALL IO_INQ_DIMLEN (gpnc2%file_id, ndimid2, nts2)
-               IF ( nts2 .lt. 1 ) THEN
-                 WRITE (message_text,*) 'File <',fn(3),'>'
-                 WRITE (nerr,*) message_text
-                 WRITE (nerr,*) 'read_dailygodas:','To few time steps<1'
-                 istat=-1
-               ELSE
-                 ALLOCATE (timevals2(nts2))
-                 CALL IO_INQ_VARID (gpnc2%file_id, 'time', io_var_id)
-                 CALL IO_GET_VAR_DOUBLE(gpnc2%file_id, io_var_id, timevals2)
-                 tsID=1
-                 DO WHILE ( (ydate.GT.INT(timevals2(tsID))).AND.(tsID.LE.nts2) )
-                   tsID=tsID+1
-                 ENDDO
-                 IF ( tsID .gt. nts2 ) THEN
-                   WRITE(nerr,*) 'read_dailygodas', 'Date not found'
-                   istat=-1
-                 ELSE
-                   IF ( lwarning_msg.GE.1 ) THEN
-                     WRITE (nerr,*) 'read_godas_3days: timevals2_date=',timevals2(tsID)
-                   ENDIF  
-                   tsID_godas(2)=tsID
-                   files_godas(2)=3
-                   nts_godas(2)=nts2
-                 ENDIF
-               ENDIF
-               CALL IO_close(gpnc2)
-               IF (ALLOCATED(timevals2)) DEALLOCATE(timevals2)
-             ENDIF
-           ELSE
+!           IF ( tsID .gt. nts1 ) THEN
+!             INQUIRE (file=fn(3), exist=lex2)
+!             IF ( .NOT. lex2 ) THEN
+!               WRITE (message_text,*) 'Could not open file <',fn(3),'>'
+!               WRITE(nerr,*) message_text
+!               WRITE(nerr,*) 'read_godas_3days fn3 ', 'run terminated.'
+!               istat=-1
+!             ELSE
+!               CALL IO_open (fn(3), gpnc2, IO_READ)
+!               CALL IO_INQ_DIMID (gpnc2%file_id, 'time', ndimid2)
+!               CALL IO_INQ_DIMLEN (gpnc2%file_id, ndimid2, nts2)
+!               IF ( nts2 .lt. 1 ) THEN
+!                 WRITE (message_text,*) 'File <',fn(3),'>'
+!                 WRITE (nerr,*) message_text
+!                 WRITE (nerr,*) 'read_dailygodas:','To few time steps<1'
+!                 istat=-1
+!               ELSE
+!                 ALLOCATE (timevals2(nts2))
+!                 CALL IO_INQ_VARID (gpnc2%file_id, 'time', io_var_id)
+!                 CALL IO_GET_VAR_DOUBLE(gpnc2%file_id, io_var_id, timevals2)
+!                 tsID=1
+!                 DO WHILE ( (ydate.GT.INT(timevals2(tsID))).AND.(tsID.LE.nts2) )
+!                   tsID=tsID+1
+!                 ENDDO
+!                 IF ( tsID .gt. nts2 ) THEN
+!                   WRITE(nerr,*) 'read_dailygodas', 'Date not found'
+!                   istat=-1
+!                 ELSE
+!                   IF ( lwarning_msg.GE.1 ) THEN
+!                     WRITE (nerr,*) 'read_godas_3days: timevals2_date=',timevals2(tsID)
+!                   ENDIF  
+!                   tsID_godas(2)=tsID
+!                   files_godas(2)=3
+!                   nts_godas(2)=nts2
+!                 ENDIF
+!               ENDIF
+!               CALL IO_close(gpnc2)
+!               IF (ALLOCATED(timevals2)) DEALLOCATE(timevals2)
+!             ENDIF
+!           ELSE
              tsID_godas(2)=tsID
              files_godas(2)=2
              nts_godas(2)=nts1
              IF ( lwarning_msg.GE.1 ) THEN
                WRITE (nerr,*) 'read_godas_3days: timevals1_date=',timevals1(tsID)
              ENDIF
-           ENDIF
+!           ENDIF
          ENDIF
          CALL IO_close(gpnc1)
          IF (ALLOCATED(timevals1)) DEALLOCATE(timevals1)
@@ -2036,9 +2053,9 @@
        CALL mpe_bcast (istat, 1, 0, mpe_integer)
        if(istat .ne. 0)then
         if(myrank.eq.0) print *,'read_godas_3days.2', 'run terminated.'
-        stop
         call mpe_finalize
         call dmsexit(-1)
+        stop
        endif
 
        if(myrank .eq. 0) print*,'read to read_goads_dayp1' 
@@ -2076,8 +2093,8 @@
        IF (dayID .EQ. DAY_PLUS1) THEN
        ! read Day+1 data
          IF (tsID_godas(2).EQ.nts_godas(2)) THEN
-           files_godas(3)=files_godas(2)+1
-           tsID_godas(3)=1                   !first record of file 3
+           files_godas(3)=files_godas(2)!+1
+           tsID_godas(3)=nts_godas(2)         !first record of file 3
          ELSE
            files_godas(3)=files_godas(2)
            tsID_godas(3)=tsID_godas(2)+1
@@ -2085,8 +2102,8 @@
        ELSEIF (dayID .EQ. DAY_MINUS1) THEN
        ! read Day-1 data
          IF (tsID_godas(2).EQ.1) THEN
-           files_godas(1)=files_godas(2)-1
-           tsID_godas(1)=LAST_RECORD                !last record of file 1 !!!????? NEED to CODE
+           files_godas(1)=files_godas(2)!-1
+           tsID_godas(1)=1 !LAST_RECORD     !last record of file 
          ELSE
            files_godas(1)=files_godas(2)
            tsID_godas(1)=tsID_godas(2)-1
@@ -2136,9 +2153,9 @@
        CALL mpe_bcast (istat, 1, 0, mpe_integer)
        if(istat .ne. 0)then
          if(myrank.eq.0) print *,'read_dailygodas', 'run terminated.'
-         stop
          call mpe_finalize
          call dmsexit(-1)
+         stop
        endif
 
        CALL mpe_bcast(timevals_godas,3,0,mpe_double)
@@ -2448,9 +2465,9 @@
                print *,'ydate=',ydate,'timevals_godas(2)=',timevals_godas(2) &
                       ,'timevals_godas(3)=',timevals_godas(3) 
                print *,'time_weights', 'GODAS PENTAD Date not found'
-               stop
                CALL mpe_finalize
                CALL dmsexit(-1)
+               stop
              ENDIF
           !!! IF(wgtd(1).GT.1._dp .OR. wgtd(2).GT.1._dp )THEN
           !!!   WRITE(nerr,*) 'get_5dwgtd yr, mo, dy, hr, mn, se=',yr,
@@ -2517,7 +2534,6 @@
             real, INTENT(OUT):: jd
             integer:: yr,mo,dy
             real:: zsec
-
             call get_date_component(zdate, yr, mo, dy, zsec)
             jd=Set_JulianDay(yr, mo, dy, zsec) 
 
@@ -2570,7 +2586,10 @@
              END IF
 
            CASE default
-             print*,'mo_time_weight:Get_JulianMonLen, month invalid'
+             if(myrank==0) then
+             print*,'mo_time_weight:Get_JulianMonLen, month invalid' &
+                   , 'ky=',ky,'km=',km
+             endif
 
            END SELECT
 !           Get_JulianMonLen = idmax

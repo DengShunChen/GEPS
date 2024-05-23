@@ -382,10 +382,18 @@
             ice(i,jj) =.false.
             land(i,jj)=.false.
             sea(i,jj) =.false.
-            if(ls(i,jj) .eq. 0)sea(i,jj) =.true.
-            if(ls(i,jj) .eq. 1)land(i,jj)=.true.
-            if(ls(i,jj) .eq. 1)slopetyp(i,jj)=max(1,slopetyp(i,jj))
-            if( (ls(i,jj).eq.0) .and. (icex(i,jj).eq.1) ) solt(i,jj)=271.2
+            if(ls(i,jj) .eq. 0)then !ocean
+              sea(i,jj) =.true.
+              if( (icex(i,jj).eq.1) )then !sea ice
+                 solt(i,jj)=271.2 ! deep soil temp for sea-ice points (=271.2)
+                 ice(i,jj)=.true.        
+                 sea(i,jj)=.false.
+              endif
+            elseif(ls(i,jj) .eq. 1)then !land
+              land(i,jj)=.true.
+              slopetyp(i,jj)=max(1,slopetyp(i,jj))
+            endif
+
 !soil if(icex(i,j) .eq. 1)then
 !soil sea(i,j)=.false.
 !soil land(i,j)=.false.
@@ -405,18 +413,18 @@
 !
 !  modify deep soil temp for sea-ice points (=271.2)
 !
-      do 52 jj=1,jlistnum
-        j=jlist1(jj)
-       nxj=nxdef_2d(j)
-      do 52 i=1,nxj
-      if ( (ls(i,jj).eq.0) .and. (icex(i,jj).eq.1) ) then
-!soil
-! in new soil model, ice present sea-ice
-      ice(i,jj)=.true.        !sea ice
-      sea(i,jj)=.false.
-!soil
-      endif
-  52  continue
+!      do 52 jj=1,jlistnum
+!        j=jlist1(jj)
+!       nxj=nxdef_2d(j)
+!      do 52 i=1,nxj
+!      if ( (ls(i,jj).eq.0) .and. (icex(i,jj).eq.1) ) then
+!!soil
+!! in new soil model, ice present sea-ice
+!      ice(i,jj)=.true.        !sea ice
+!      sea(i,jj)=.false.
+!!soil
+!      endif
+!  52  continue
 !
       return
       end

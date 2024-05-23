@@ -52,7 +52,7 @@
       return
       end
 !
-      subroutine datecheck(iy,im,julian,ih)
+      subroutine datecheck(iy,julian,ih)
       use radn,   only: idate
       use leapyr
       use rank
