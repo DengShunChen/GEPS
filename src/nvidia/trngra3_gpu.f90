@@ -1,5 +1,5 @@
-subroutine trngra3_gpu(jtrun, jtmax, nx, lev, my, my_max, cim, poly, dpoly, s, dlpl, dtpl, nsize, async_id)
-!
+subroutine trngra3_gpu(jtrun, jtmax, nx, lev, my, my_max, cim, poly, dpoly, s, dlpl, dtpl, nsize)
+! Present on device: cim, poly, dpoly, s, dlpl, dtpl, mtrundef, jlist1, jlist2, nlist, mlist
 !  subroutine to transform spectral terrain pressure to grid point
 !  fields of zonal and meridional derivatives of terrain pressure
 !
@@ -33,26 +33,26 @@ subroutine trngra3_gpu(jtrun, jtmax, nx, lev, my, my_max, cim, poly, dpoly, s, d
    implicit none
 
    integer jtrun, jtmax, nx, lev, my, my_max, nsize
-   real(kind=RTYPE) poly(jtrun, my/2, jtmax), dpoly(jtrun, my/2, jtmax) ! Present on device
-   real(kind=RTYPE) s(lev, 2, jtrun, jtmax) ! Present on device
-   real(kind=RTYPE) cim(jtmax) ! Present on device
-   real(kind=RTYPE) dlpl(nxp, levF, my_max), dtpl(nxp, levF, my_max) ! Present on device
+   real(kind=RTYPE) poly(jtrun, my/2, jtmax), dpoly(jtrun, my/2, jtmax)
+   real(kind=RTYPE) s(lev, 2, jtrun, jtmax)
+   real(kind=RTYPE) cim(jtmax)
+   real(kind=RTYPE) dlpl(nxp, levF, my_max), dtpl(nxp, levF, my_max)
    integer myhalf, k, m, mf, l, j, jj, i, jtrunj, mm, mp, mlst, nxj, ii
    real(kind=RTYPE) cc(nx + 2, lev, 2, my_max)
    real(kind=RTYPE) gwk1(nx + 2, lev, 2, my_max)
    real(kind=RTYPE) twcc_fk(my_max, jtmax*nsize, lev, 2)
    real(kind=RTYPE) twdd_fk(my_max, jtmax*nsize, lev, 2)
-   real(kind=RTYPE) wcu_fk(my_max, nsize, jtmax, lev*2), wcv_fk(my_max, nsize, jtmax, lev*2)
+   real(kind=RTYPE) wcu_fk(my_max*nsize, jtmax, lev, 2), wcv_fk(my_max*nsize, jtmax, lev, 2)
    real(kind=RTYPE) wcu_t(lev, 2, my), wcv_t(lev, 2, my), wcu_t1, wcu_t2, wcv_t1, wcv_t2
    real(kind=RTYPE) dummy
    integer async_id, istat
    integer(kind=cuda_stream_kind) :: stream
 
+   async_id = 1
    stream = acc_get_cuda_stream(async_id)
+   myhalf = my/2
 
    !$acc enter data create(wcu_t, wcv_t, wcu_fk, wcv_fk, twcc_fk, twdd_fk, cc, gwk1) async(async_id)
-
-   myhalf = my/2
 
    !$acc host_data use_device(wcu_fk, wcv_fk)
    istat = cudaMemSetAsync(wcu_fk, 0.0, size(wcu_fk), stream)
@@ -88,7 +88,7 @@ subroutine trngra3_gpu(jtrun, jtmax, nx, lev, my, my_max, cim, poly, dpoly, s, d
                      wcu_t1 = wcu_t1 + s(k, 2, L, m)*poly(L, jj, m)
                      wcu_t2 = wcu_t2 - s(k, 1, L, m)*poly(L, jj, m)
                      wcv_t1 = wcv_t1 + s(k, 1, L, m)*dpoly(L, jj, m)
-                     wcv_t2 = wcv_t2+ s(k, 2, L, m)*dpoly(L, jj, m)
+                     wcv_t2 = wcv_t2 + s(k, 2, L, m)*dpoly(L, jj, m)
                   end do
                   !$acc loop seq
                   do L = mf + 1, jtrun, 2
@@ -99,19 +99,18 @@ subroutine trngra3_gpu(jtrun, jtmax, nx, lev, my, my_max, cim, poly, dpoly, s, d
                   end do
                end if
                jj = jlist2(j)
-               i = mod(jj - 1, my_max) + 1
-               ii = (jj - 1)/my_max + 1
-               wcu_fk(i, ii, m, k) = wcu_t1*cim(m)
-               wcu_fk(i, ii, m, lev + k) = wcu_t2*cim(m)
-               wcv_fk(i, ii, m, k) = wcv_t1
-               wcv_fk(i, ii, m, lev + k) = wcv_t2
+               wcu_fk(jj, m, k, 1) = wcu_t1*cim(m)
+               wcu_fk(jj, m, k, 2) = wcu_t2*cim(m)
+               wcv_fk(jj, m, k, 1) = wcv_t1
+               wcv_fk(jj, m, k, 2) = wcv_t2
             end if
          end do
       end do
    end do
 
-   call mpe_transpose_rs1_sp_gpu(wcu_fk, twcc_fk, my_max, jtmax, lev*2, nsize, col_comm, async_id)
-   call mpe_transpose_rs1_sp_gpu(wcv_fk, twdd_fk, my_max, jtmax, lev*2, nsize, col_comm, async_id)
+   ! Present on device: wcu_fk, twcc_fk, wcv_fk, twdd_fk
+   call mpe_transpose_rs1_sp_gpu(wcu_fk, twcc_fk, my_max, jtmax, lev*2, nsize, col_comm)
+   call mpe_transpose_rs1_sp_gpu(wcv_fk, twdd_fk, my_max, jtmax, lev*2, nsize, col_comm)
 
    !$acc host_data use_device(cc)
    istat = cudaMemSetAsync(cc, 0.0, size(cc), stream)
@@ -132,31 +131,18 @@ subroutine trngra3_gpu(jtrun, jtmax, nx, lev, my, my_max, cim, poly, dpoly, s, d
          cc(mm, k, 2, jj) = twdd_fk(jj, mlst, k, 1)
          cc(mp, k, 2, jj) = twdd_fk(jj, mlst, k, 2)
       end do
-      end do
+   end do
    end do
 
-   if (lreduce .eq. 0) then
 #ifdef SP
-      call rfftmlt_sp(cc, gwk1, trigs, ifax, 1, nx + 2, nx, jlistnum*lev*2, 1)
-#else
-      call rfftmlt_gpu(cc, gwk1, trigs, ifax, 1, nx + 2, nx, jlistnum*lev*2, 1)
+   print *, "Symbol SP is not supported."
+   call exit(1)
 #endif
-   else
-#ifdef SP
-!$omp  parallel do default(none)                                &
-!$omp  private(jj,j,nxj,gwk1)                                   &
-!$omp  shared(jlistnum,jlist1,nxdef,cc,trigsj,ifaxj,nx,lev)     &
-!$omp  schedule(dynamic)
-      do jj = 1, jlistnum
-         j = jlist1(jj)
-         nxj = nxdef(j)
-         call rfftmlt_sp(cc(1, 1, 1, jj), gwk1(1, 1, 1, jj), trigsj(1, j), ifaxj(1, j), 1, nx + 2, nxj, lev*2, 1)
-      end do
-!$omp end parallel do
-#else
-      call rfftmlt_loop_identical(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, lev*2, 1)
 
-#endif
+   if (lreduce .eq. 0) then
+      call rfftmlt_gpu(cc, gwk1, trigs, ifax, 1, nx + 2, nx, jlistnum*lev*2, 1)
+   else
+      call rfftmlt_loop_identical(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, lev*2, 1)
    end if
 
    call ujoinsr_gpu(cc, dlpl, dtpl, dummy, dummy, nx, my_max, levF, jlistnum, 2, 1)

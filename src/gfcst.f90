@@ -48,7 +48,11 @@
 !  time integration
 !
       if ( ttl ) then
+#ifdef USE_CUDA
+        call intgrt_gpu
+#else
         call intgrt
+#endif
       else
         call intgrt_3tl
       endif

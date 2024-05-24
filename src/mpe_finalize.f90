@@ -35,6 +35,7 @@
 ! deallocate dynamic arrays
 #ifdef USE_CUDA
       call deallocate_ndslfv_array_gpu
+      call fft_destroy_plan
 #endif
       call deallocate_grid_array
       call deallocate_phygrid_array
