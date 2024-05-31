@@ -85,7 +85,7 @@ subroutine intgrt_gpu
       ptm(nxp, my_max), &
       deldm(nxp, my_max), sdpbl(nxp, my_max)
 
-   integer ierr, ittw, itt, year, yrd
+   integer ierr, ittw, itt, year
 !
    real(kind=RTYPE) glob(nx, my)
    real hf24(nxp, my_max), qf24(nxp, my_max), ss24(nxp, my_max), rs24(nxp, my_max), &
@@ -227,8 +227,8 @@ subroutine intgrt_gpu
    hprime_b = 0.
 !
    year = idate(1)
-   yrd = 365
-   if (mod(year, 4) .eq. 0) yrd = 366
+!   yrd = 365
+!   if (mod(year, 4) .eq. 0) yrd = 366
 !
    do jj = 1, jlistnum
       j = jlist1(jj)
@@ -1082,7 +1082,7 @@ subroutine intgrt_gpu
       qp(:, :, :) = qt(:, :, :)
       call diabat(fwd, docup, dodry, dolsp, dopbl, dorad, doshl, dograv, tofd &
                   , nx, my, my_max, lev, ncld, nmcup, nmpbl, nmland, nmshl, cgw &
-                  , idg, jdg, ldiag, dtx, tau, hours, julian, year, yrd &
+                  , idg, jdg, ldiag, dtx, tau, hours, year &
                   , frad, ozon, njump, itypbl, ktcup, ktpbl, ktshl, grav &
                   , rgas, cp, stbo, s0, evaprh, hltm, ptop, sigma, dsigma, il, ib &
                   , cof, xlat, xlon, sgeo, z0, alb, land, ocean, ice &
@@ -1825,6 +1825,7 @@ subroutine intgrt_gpu
 !
       if (mod(itau, 24) == 0) then
          if (myrank .eq. 0) print *, 'out24 at tau=', itau
+         if (myrank .eq. 0) print *, 'julian = ', julian
 !         call mpe_unify(hf24,nx,my,2,mpe_double)
 !         call mpe_unify(qf24,nx,my,2,mpe_double)
 !         call mpe_unify(ss24,nx,my,2,mpe_double)
