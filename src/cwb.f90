@@ -31,7 +31,7 @@
       if(ip.eq.0)then
         open(1,file=model//'ctl',form='formatted',status='old')
         do i=1,9999
-           read(1,'(I4)',end=100)tau(i)
+           read(1,*,end=100)tau(i)
            cnt=cnt+1
         enddo
 100     close(1)
