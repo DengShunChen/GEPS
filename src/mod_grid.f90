@@ -75,7 +75,6 @@
                write(6,*) 'mod_grid : allocate fail 1 '
                stop
            end if
-           !$acc enter data create(tt,ut,vt,qt,qm)
 
            allocate (pt(nxp,my_max),dlpl(nxp,my_max),dtpl(nxp,my_max), &
                     sgeo(nxp,my_max), pdiff(nxp,my_max),&
@@ -97,7 +96,6 @@
 
            allocate (dlphi(nxp,lev,my_max),  &
                      dtphi(nxp,lev,my_max),stat=ierr)
-           !$acc enter data create(dlphi, dtphi)
            if (ierr/= 0) then
                write(6,*) 'mod_grid for ndsl : allocate fail 4'
                stop
@@ -141,16 +139,13 @@
          subroutine deallocate_grid_array
 
            deallocate (ut,vt,sd,vvel,rvor,rdiv,tt,qt,phi,plt,pk,pk2,up,vp,ttp,qp,qm)
-           !$acc exit data delete(tt,ut,vt,qt,qm)
            deallocate (rdivm)
            deallocate ( pt,dlpl,dtpl,sgeo,pdiff, &
                 ptend,t1000,tsave,std,ptp)
-           !$acc exit data delete(dlpl,dtpl)
            ! for Semi-Lagrangian
            deallocate (gslati,gglati,lonstr,lonlen,latstr,latlen)
            deallocate (fa1,fa2,fa3,fa4)
            deallocate (dlphi,dtphi)
-           !$acc exit data delete(dlphi, dtphi)
 !!         deallocate (ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl,qm_sl,pt_sl,ptp_sl)
            deallocate (ut_sl,vt_sl)
 

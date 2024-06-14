@@ -30,8 +30,9 @@ subroutine tranuv_unit
    real(kind=RTYPE) vor(lev, 2, jtrun, jtmax), div(lev, 2, jtrun, jtmax)
    real(kind=RTYPE) ut(nxp, levF, my_max), vt(nxp, levF, my_max)
    real(kind=RTYPE) ut_gpu(nxp, levF, my_max), vt_gpu(nxp, levF, my_max)
+   integer i, async_id
 
-   print *, "jtrun = ", jtrun, "jtmax = ", jtmax, "nx = ", nx, "my = ", my, "my_max = ", my_max, "levp = ", levp, "nsizey = ", nsizey, "levF = ", levF
+   async_id = 1
 
    call random_seed()
    call random_number(onocos)
@@ -47,14 +48,17 @@ subroutine tranuv_unit
    ut_gpu = 0.
    vt_gpu = 0.
 
-   call tranuv(jtrun, jtmax, nx, my, my_max, levp, onocos, wcfac, wdfac, poly, dpoly, vor, div, ut, vt, nsizey)
-   call tranuv_gpu(jtrun, jtmax, nx, my, my_max, levp, onocos, wcfac, wdfac, poly, dpoly, vor, div, ut_gpu, vt_gpu, nsizey)
+   do i = 1, 16
+      call tranuv(jtrun, jtmax, nx, my, my_max, levp, onocos, wcfac, wdfac, poly, dpoly, vor, div, ut, vt, nsizey)
+   end do
+   do i = 1, 16
+      !$acc enter data copyin(onocos, wcfac, wdfac, poly, dpoly, vor, div, ut_gpu, vt_gpu, jlist1, nlist, mtrundef, mlist, jlist2) async(async_id)
+      call tranuv_gpu(jtrun, jtmax, nx, my, my_max, levp, onocos, wcfac, wdfac, poly, dpoly, vor, div, ut_gpu, vt_gpu, nsizey)
+      !$acc exit data copyout(onocos, wcfac, wdfac, poly, dpoly, vor, div, ut_gpu, vt_gpu, jlist1, nlist, mtrundef, mlist, jlist2) async(async_id)
+      !$acc wait(async_id)
+   end do
 
-   if (all(abs(ut - ut_gpu) <= 1e-10) .AND. all(abs(vt - vt_gpu) <= 1e-10)) then
-      PRINT *, "test_tranuv passed."
-   else
-      PRINT *, "test_tranuv failed."
-      call exit(1)
-   end if
+   call assert_allclose(ut_gpu, size(ut_gpu), ut, size(ut), 1e-8, 1e-8, "Array ut")
+   call assert_allclose(vt_gpu, size(vt_gpu), vt, size(vt), 1e-8, 1e-8, "Array vt")
 
 end subroutine tranuv_unit

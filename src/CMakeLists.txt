@@ -133,6 +133,7 @@ mod_fftcom.f90
 mod_fj_pad.f90
 mod_grb2_param.f90
 mod_grid.f90
+mod_leap.f90
 mod_index.f90
 mod_mpe.f90
 mod_netcdf.f90
@@ -373,6 +374,7 @@ if(${USE_CUDA})
         nvidia/tranrs1_gpu.f90
         nvidia/gridnl_hybrid_ndsl_gpu.f90
         nvidia/hdiffu_gpu.f90
+        nvidia/intgrt_gpu.f90
     )
 endif()
 

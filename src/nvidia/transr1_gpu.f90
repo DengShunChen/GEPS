@@ -68,6 +68,7 @@ subroutine transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, s, r, nsize)
    !$acc end host_data
 
    do m = 1, mlistnum
+      mf = mlist(m)
       jlistnum_fj = 0
       do j = 1, myhalf
          if (mf .le. mtrundef(j)) then
