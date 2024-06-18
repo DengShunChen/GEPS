@@ -4,19 +4,22 @@
 ! See LICENSE for license information.
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+#define NCCLCHECK(ierr) call nccl_check_helper(ierr, __FILE__, __LINE__)
+
 subroutine mpe2d_transpose_nx_levp_gpu(ain, aout, nxp, nx, lev, levp, num, my, my_max, jlistnum, jlen, nsizex, comm)
 ! Present on device: ain, aout, jlist1
 ! transpose (nx full,lev partial) to (nx partial,lev full), num variables packed
 
-   use index, only: jlist1, nxjlen_all
+   use index, only: jlist1, nxjlen_all, nccl_row_comm
    use const, only: RTYPE, MPI_RTYPE
    use openacc
    use cudafor
-   use mpi
+   use nccl
 
    implicit none
 
-   integer nxp, nx, lev, levp, my, my_max, jlen, nsizex, comm
+   integer nxp, nx, lev, levp, my, my_max, jlen, nsizex
+   type(ncclComm) :: comm
    real(kind=RTYPE) ain(nx, levp, num, my_max), aout(nxp, lev, num, my_max)
    real(kind=RTYPE) b1(levp, num, jlen, nxp, nsizex), b2(levp, num, jlen, nxp, nsizex)
    integer nlen, j, jj, i, k, KL, ierr, jlistnum, num, n, i1, i2, j1
@@ -51,12 +54,8 @@ subroutine mpe2d_transpose_nx_levp_gpu(ain, aout, nxp, nx, lev, levp, num, my, m
    end do
 
    nlen = nxp*levp*jlen*num
-   !$acc wait(async_id)
-   !$acc host_data use_device(b1, b2)
-   call MPI_ALLTOALL(b1, nlen, MPI_RTYPE, &
-                     b2, nlen, MPI_RTYPE, &
-                     comm, IERR)
-   !$acc end host_data
+
+   call nccl_alltoall_fp64(b1, nlen, b2, nlen, comm, nsizex, async_id)
 
    !$acc parallel loop collapse(2) async(async_id)
    do jj = 1, jlistnum
@@ -85,10 +84,12 @@ subroutine mpe2d_transpose_nxp_lev_gpu(ain, aout, nxp, nx, lev, levp, num, my, m
    use openacc
    use cudafor
    use mpi
+   use nccl
 
    implicit none
 
-   integer nx, nxp, lev, levp, my, my_max, jlen, nsizex, comm
+   integer nx, nxp, lev, levp, my, my_max, jlen, nsizex
+   type(ncclComm) :: comm
    real(kind=RTYPE) ain(nxp, lev, num, my_max), aout(nx, levp, num, my_max)
    real(kind=RTYPE) b1(nxp, jlen, num, lev), b2(nxp, jlen, num, levp, nsizex)
    integer nlen, j, i, k, ierr, jlistnum, num, n, i1, i2, j1, ii
@@ -132,12 +133,8 @@ subroutine mpe2d_transpose_nxp_lev_gpu(ain, aout, nxp, nx, lev, levp, num, my, m
    end do
    !$acc enter data copyin(i1_array) async(async_id)
 
-   !$acc wait(async_id)
-
    nlen = nxp*levp*jlen*num
-   !$acc host_data use_device(b1, b2)
-   call MPI_ALLTOALL(b1, nlen, MPI_RTYPE, b2, nlen, MPI_RTYPE, comm, IERR)
-   !$acc end host_data
+   call nccl_alltoall_fp64(b1, nlen, b2, nlen, comm, nsizex, async_id)
 
    !$acc parallel loop collapse(5) private(i1, i2) async(async_id)
    do n = 1, num
@@ -163,9 +160,7 @@ subroutine mpe2d_transpose_nxp_lev_gpu(ain, aout, nxp, nx, lev, levp, num, my, m
 end
 
 subroutine mpe2d_reshape_pl_gpu(plin, plout)
-
-! reshape spec coef
-
+   ! Present on device: plin, plout
    use mpi
    use param
    use index
@@ -179,15 +174,14 @@ subroutine mpe2d_reshape_pl_gpu(plin, plout)
    integer i_array(mlistnum)
    integer jtsize
 
-   real(kind=RTYPE) plin(jtrun, jtmax, 2) ! Present on device
-   real(kind=RTYPE) plout(jtp, 2) ! Present on device
+   real(kind=RTYPE) plin(jtrun, jtmax, 2)
+   real(kind=RTYPE) plout(jtp, 2)
    real(kind=RTYPE) b1(jtf, 2)
    integer async_id, istat
    integer(kind=cuda_stream_kind) :: stream
 
    async_id = 1
    stream = acc_get_cuda_stream(async_id)
-   !$acc enter data copyin(mlist) async(async_id)
    !$acc enter data create(b1) async(async_id)
    !$acc host_data use_device(plout, b1)
    istat = cudaMemSetAsync(plout, 0.0, size(plout), stream)
@@ -215,7 +209,7 @@ subroutine mpe2d_reshape_pl_gpu(plin, plout)
       plout(i, 1) = b1(jtstart + i - 1, 1)
       plout(i, 2) = b1(jtstart + i - 1, 2)
    end do
-   !$acc exit data delete(mlist, b1, i_array) async(async_id)
+   !$acc exit data delete(b1, i_array) async(async_id)
    return
 end
 
@@ -228,11 +222,13 @@ subroutine mpe2d_transpose_siimpl_gpu(ain, aout, &
    use const, only: RTYPE, MPI_RTYPE
    use openacc
    use cudafor
+   use nccl
 
    implicit none
 
-   integer levp, jtrun, jtmax, lev, jtp, jtf, mlistnum, mlist(jtrun), nsizex, row_comm
-   integer m, mf, nl, i, levp2, nlen, ierr, j, k
+   integer levp, jtrun, jtmax, lev, jtp, jtf, mlistnum, mlist(jtrun), nsizex
+   type(ncclComm) :: row_comm
+   integer m, mf, nl, i, levp2, nlen, ierr, j, k, ii
 
    real(kind=RTYPE) ain(levp, 2, jtrun, jtmax) ! Present on device
    real(kind=RTYPE) aout(lev, 2, jtp) ! Present on device
@@ -271,19 +267,18 @@ subroutine mpe2d_transpose_siimpl_gpu(ain, aout, &
    end do
 
    nlen = levp2*jtp
-   !$acc wait(async_id)
-   !$acc host_data use_device(c1, c2)
-   call MPI_ALLTOALL(c1, nlen, MPI_RTYPE, &
-                     c2, nlen, MPI_RTYPE, &
-                     row_comm, IERR)
-   !$acc end host_data
 
-   !$acc parallel loop collapse(2) async(async_id)
+   call nccl_alltoall_fp64(c1, nlen, c2, nlen, row_comm, nsizex, async_id)
+
+   !$acc parallel loop collapse(4) private(ii) async(async_id)
    do j = 1, jtp
       do i = 1, nsizex
-         k = levp*(i - 1) + 1
-         aout(k:k + levp - 1, 1, j) = c2(1:levp, 1, j, i)
-         aout(k:k + levp - 1, 2, j) = c2(1:levp, 2, j, i)
+         do m = 1, 2
+            do k = 1, levp
+               ii = levp*(i - 1)
+               aout(ii + k, m, j) = c2(k, m, j, i)
+            end do
+         end do
       end do
    end do
    !$acc exit data delete(c1, c2, i_array) async(async_id)
@@ -300,6 +295,7 @@ subroutine mpe2d_unify_nx_gpu(work, a)
    use const, only: RTYPE, MPI_RTYPE
    use openacc
    use cudafor
+   use nccl
 
    real(kind=RTYPE) work(nx, my_max)
    real(kind=RTYPE) a(nxp, my_max)
@@ -328,12 +324,8 @@ subroutine mpe2d_unify_nx_gpu(work, a)
    end do
    !$acc enter data copyin(ii_array) async(async_id)
 
-   !$acc wait(async_id)
-
    !$acc host_data use_device(a, b)
-   call MPI_ALLGATHER(a, nxp*my_max, MPI_RTYPE, &
-                      b, nxp*my_max, MPI_RTYPE, &
-                      row_comm, IERR)
+   NCCLCHECK(ncclAllGather(a, b, nxp*my_max, ncclFloat64, nccl_row_comm, stream))
    !$acc end host_data
 
    !$acc parallel loop collapse(2) private(j, ii, nn) async(async_id)
@@ -361,6 +353,7 @@ subroutine mpe2d_reshape_pl_back_gpu(plin, plout)
    use const, only: RTYPE, MPI_RTYPE
    use openacc
    use cudafor
+   use nccl
 
    implicit none
 
@@ -400,12 +393,8 @@ subroutine mpe2d_reshape_pl_back_gpu(plin, plout)
    end do
    !$acc enter data copyin(i_array, j_array) async(async_id)
 
-   !$acc wait(async_id)
-
    !$acc host_data use_device(plin, b2)
-   call MPI_ALLGATHER(plin, jtp*2, MPI_RTYPE, &
-                      b2, jtp*2, MPI_RTYPE, &
-                      row_comm, IERR)
+   NCCLCHECK(ncclAllGather(plin, b2, jtp*2, ncclFloat64, nccl_row_comm, stream))
    !$acc end host_data
 
    !$acc parallel loop collapse(3) private(mf, i, j) async(async_id)
@@ -436,10 +425,12 @@ subroutine mpe2d_transpose_siimpl_back_gpu(ain, aout, levp, jtrun, jtmax, lev, j
    use const, only: RTYPE, MPI_RTYPE
    use openacc
    use cudafor
+   use nccl
 
    implicit none
 
-   integer levp, jtrun, jtmax, lev, jtp, jtf, mlistnum, mlist(jtrun), nsizex, row_comm
+   integer levp, jtrun, jtmax, lev, jtp, jtf, mlistnum, mlist(jtrun), nsizex
+   type(ncclComm) :: row_comm
    integer m, n, mf, nl, i, nlen, ierr, j, k, q
 
    real(kind=RTYPE) ain(lev, 2, jtp)
@@ -487,14 +478,8 @@ subroutine mpe2d_transpose_siimpl_back_gpu(ain, aout, levp, jtrun, jtmax, lev, j
    end do
    !$acc enter data copyin(i_array, j_array) async(async_id)
 
-   !$acc wait(async_id)
-
    nlen = jtp*2*levp
-   !$acc host_data use_device(b1, b2)
-   call MPI_ALLTOALL(b1, nlen, MPI_RTYPE, &
-                     b2, nlen, MPI_RTYPE, &
-                     row_comm, IERR)
-   !$acc end host_data
+   call nccl_alltoall_fp64(b1, nlen, b2, nlen, row_comm, nsizex, async_id)
 
    !$acc parallel loop collapse(4) private(mf, i, j) async(async_id)
    do m = 1, mlistnum

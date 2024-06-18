@@ -100,7 +100,7 @@ subroutine tranrs1_gpu(jtrun, jtmax, nx, my, my_max, poly, w, r, s, nsize)
    end do
 
    ! Present on device: twcc_fk, wcc_fk
-   call mpe_transpose_rs1_sp_gpu(twcc_fk, wcc_fk, jtmax, my_max, 2, nsize, col_comm, async_id)
+   call mpe_transpose_rs1_sp_gpu(twcc_fk, wcc_fk, jtmax, my_max, 2, nsize, nccl_col_comm, async_id)
    !$acc exit data delete(twcc_fk, gwk1, cc) async(async_id)
    !$acc enter data create(wss, fj_polyw, wccSUM, wccDIF) async(async_id)
    !$acc parallel loop gang async(async_id) private(mf, wss, fj_polyw, i1, i2, i3, wccSUM, wccDIF)

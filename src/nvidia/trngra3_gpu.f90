@@ -109,8 +109,8 @@ subroutine trngra3_gpu(jtrun, jtmax, nx, lev, my, my_max, cim, poly, dpoly, s, d
    end do
 
    ! Present on device: wcu_fk, twcc_fk, wcv_fk, twdd_fk
-   call mpe_transpose_rs1_sp_gpu(wcu_fk, twcc_fk, my_max, jtmax, lev*2, nsize, col_comm)
-   call mpe_transpose_rs1_sp_gpu(wcv_fk, twdd_fk, my_max, jtmax, lev*2, nsize, col_comm)
+   call mpe_transpose_rs1_sp_gpu(wcu_fk, twcc_fk, my_max, jtmax, lev*2, nsize, nccl_col_comm)
+   call mpe_transpose_rs1_sp_gpu(wcv_fk, twdd_fk, my_max, jtmax, lev*2, nsize, nccl_col_comm)
 
    !$acc host_data use_device(cc)
    istat = cudaMemSetAsync(cc, 0.0, size(cc), stream)

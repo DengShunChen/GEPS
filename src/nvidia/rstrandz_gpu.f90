@@ -96,7 +96,7 @@ subroutine rstrandz_gpu(jtrun, jtmax, nx, my, my_max, lev &
    call mpe_transpose_rs_sp_gpu(twcc_fk, wcc_fk, lev*2*2, jtmax, my_max, nsize, col_comm)
 #else
    ! Present on device: twcc_fk, wcc_fk
-   call mpe_transpose_rs_gpu(twcc_fk, wcc_fk, lev*2*2, jtmax, my_max, nsize, col_comm)
+   call mpe_transpose_rs_gpu(twcc_fk, wcc_fk, lev*2*2, jtmax, my_max, nsize, nccl_col_comm)
 #endif
    !$acc exit data delete(gwk1, cc, twcc_fk) async(async_id)
 

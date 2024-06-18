@@ -1,3 +1,5 @@
+#define NCCLCHECK(ierr) call nccl_check_helper(ierr, __FILE__, __LINE__)
+
 subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
                       , rad, cosl, ut, vt, vornow, divnow, temnow, eps4 &
                       , trefs)
@@ -67,11 +69,8 @@ subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
       wmax(k) = wt
    end do
 
-   !$acc wait(async_id)
-
    !$acc host_data use_device(wmax, wmax_buf)
-   call MPI_ALLREDUCE(wmax, wmax_buf, lev, MPI_REAL8, &
-                      MPI_MAX, MPI_COMM_gfs, IERR)
+   NCCLCHECK(ncclAllReduce(wmax, wmax_buf, lev, ncclFloat64, ncclMax, nccl_comm_gfs, stream))
    !$acc end host_data
 
    !$acc parallel loop async(async_id)
@@ -213,12 +212,10 @@ subroutine whdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
       wmax(k) = wt
    end do
 
-   !$acc wait(async_id)
-
    !$acc host_data use_device(wmax, wmax_buf)
-   call MPI_ALLREDUCE(wmax, wmax_buf, lev, MPI_REAL8, &
-                      MPI_MAX, MPI_COMM_gfs, IERR)
+   NCCLCHECK(ncclAllReduce(wmax, wmax_buf, lev, ncclFloat64, ncclMax, nccl_comm_gfs, stream))
    !$acc end host_data
+
    !$acc parallel loop async(async_id)
    do i = 1, lev
       wmax(i) = wmax_buf(i)

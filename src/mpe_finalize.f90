@@ -36,6 +36,7 @@
 #ifdef USE_CUDA
       call deallocate_ndslfv_array_gpu
       call fft_destroy_plan
+      call nccl_destroy
 #endif
       call deallocate_grid_array
       call deallocate_phygrid_array

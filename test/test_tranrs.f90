@@ -58,11 +58,6 @@ subroutine tranrs_unit
       !$acc wait(async_id)
    end do
 
-   if (all(abs(wss - wss_gpu) <= 1e-10)) then
-      print *, "test_tranrs passed."
-   else
-      print *, "test_tranrs failed."
-      call exit(1)
-   end if
+   call assert_allclose(wss_gpu, size(wss_gpu), wss, size(wss), 1e-10, 1e-10, "Array wss")
 
 end subroutine

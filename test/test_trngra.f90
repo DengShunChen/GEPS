@@ -57,16 +57,11 @@ subroutine trngra_unit
    do i = 1, steps
       call trngra_gpu(jtrun, jtmax, nx, my, my_max, cim, poly, dpoly, s, dlpl_gpu, dtpl_gpu, nsizey)
    end do
-   !$acc wait(async_id)
    !$acc exit data delete(mlist, mtrundef, jlist2, jlist1, nlist, nxjlen, nxjstart, nxjend) async(async_id)
    !$acc exit data copyout(dlpl_gpu, dtpl_gpu) delete(cim, poly, dpoly, s) async(async_id)
    !$acc wait(async_id)
 
-   if (all(abs(dlpl - dlpl_gpu) <= 1e-10) .AND. all(abs(dtpl - dtpl_gpu) <= 1e-10)) then
-      PRINT *, "test_trngra passed."
-   else
-      PRINT *, "test_trngra failed."
-      call exit(1)
-   end if
+   call assert_allclose(dlpl_gpu, size(dlpl_gpu), dlpl, size(dlpl), 1e-10, 1e-10, "Array dlpl")
+   call assert_allclose(dtpl_gpu, size(dtpl_gpu), dtpl, size(dtpl), 1e-10, 1e-10, "Array dtpl")
 
 end subroutine trngra_unit

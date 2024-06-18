@@ -69,7 +69,6 @@ subroutine transr_gpu(jtrun, jtmax, nx, my, my_max, lev, poly, wss &
    stream = acc_get_cuda_stream(async_id)
 
    !$acc enter data create(gwk1, ws2, tcc, tc2, fj_tcc, fj_tc2, fj_wss, fj_ws2, fj_poly, wcc_fk, twcc_fk) async(async_id)
-   !$acc wait(async_id)
    !$acc host_data use_device(cc, wcc_fk)
    istat = cudaMemsetAsync(cc, 0.0, size(cc), stream)
    istat = cudaMemsetAsync(wcc_fk, 0.0, size(wcc_fk), stream)
@@ -226,8 +225,7 @@ subroutine transr_gpu(jtrun, jtmax, nx, my, my_max, lev, poly, wss &
       end do
    end do
 
-   call mpe_transpose_sr_sp_async(wcc_fk, twcc_fk, lev*2*num, jtmax, my_max, nsize, col_comm, async_id)
-!      call mpe_transpose_sr(wcc_fk,twcc_fk,lev*2*num,jtmax,my_max,nsize,col_comm)
+   call mpe_transpose_sr_sp_gpu(wcc_fk, twcc_fk, lev*2*num, jtmax, my_max, nsize, nccl_col_comm)
 
    !$acc parallel loop gang async(async_id)
    do jj = 1, jlistnum
@@ -301,7 +299,6 @@ subroutine transr_gpu(jtrun, jtmax, nx, my, my_max, lev, poly, wss &
    end if
 
    !$acc exit data delete(jlist_fj, gwk1, ws2, tcc, tc2, fj_tcc, fj_tc2, fj_wss, fj_ws2, fj_poly, wcc_fk, twcc_fk) async(async_id)
-   !$acc wait(async_id)
 
    return
 end

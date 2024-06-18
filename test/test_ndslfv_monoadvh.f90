@@ -101,7 +101,7 @@ subroutine ndslfv_monoadvh_unit(xy)
    end if
 
    !$acc data create(tt_gpu, ut_gpu, vt_gpu, qt_gpu, &
-   !$acc& um, vm)
+   !$acc& um, vm, qm)
    do i = 1, steps
       if (myrank .eq. 0) write (*, '("<< ", i3, " >>")') i
 
@@ -239,7 +239,7 @@ subroutine VarErr(Err, a, lda, b, ldb, lev, nvar)
                                   B(ldb, lev*nvar, my_max)
 
    integer i, j, k, nxj, jj, pts
-   real(kind=RTYPE) tmp, vamax, sum, pi
+   real(kind=RTYPE) tmp, vamax, sum_local, pi
    if (octahedral) then
       pts = (20 + nx)*my*lev
    elseif (numreduce == -99) then
@@ -250,16 +250,16 @@ subroutine VarErr(Err, a, lda, b, ldb, lev, nvar)
    do jj = 1, jlistnum
       j = jlist1(jj)
       nxj = nxdef(j)
-      sum = 0.
+      sum_local = 0.
       do k = 1, lev*nvar
          do i = 1, nxj
             tmp = A(i, k, jj) - B(i, k, jj)
             Err(1) = max(Err(1), abs(tmp))
-            sum = sum + tmp**2
+            sum_local = sum_local + tmp**2
          end do
       end do
-      Err(2) = Err(2) + sum*(2.*pi/nxj)/(lev*nvar)*weight(j)
-      Err(3) = Err(3) + sum
+      Err(2) = Err(2) + sum_local*(2.*pi/nxj)/(lev*nvar)*weight(j)
+      Err(3) = Err(3) + sum_local
    end do
 
    call mpe_global_max(Err(1), 1, RTYPE)

@@ -1,5 +1,7 @@
       module index
-
+#ifdef USE_CUDA
+      use nccl
+#endif
       implicit none
 
       public
@@ -39,6 +41,9 @@
 !2dMPI
       integer nsizex,nsizey,mrow,ncol,row_comm,col_comm,row_rank,col_rank
       common/mpi2d_comm/nsizex,nsizey,mrow,ncol,row_comm,col_comm,row_rank,col_rank
+#ifdef USE_CUDA
+      type(ncclComm) :: nccl_row_comm, nccl_col_comm
+#endif
 
       integer Lstart,Lend,Llen,nxp,levp,jlen,nxf,levf,myf,Llistnum,      &
               Lstart_ncld,Lend_ncld,jtf,jtp,jtstart,jtend,jtlen,nxptot
