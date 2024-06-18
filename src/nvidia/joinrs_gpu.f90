@@ -59,7 +59,7 @@ subroutine join1rs_gpu(cc, r1, nx, my_max, lev, jnum, ncld)
    end do
 
    ! Present on device: bufA, bufB, jlist1, nxjlen, nxjlen_all
-   call mpe2d_transpose_nxp_lev_gpu(bufA, bufB, nxp, nx, lev, levp, ncld, myf, my_max, jlistnum, jlen, nsizex, row_comm)
+   call mpe2d_transpose_nxp_lev_gpu(bufA, bufB, nxp, nx, lev, levp, ncld, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
 
    !$acc parallel loop collapse(4) async(async_id)
    do jj = 1, jlistnum
@@ -128,7 +128,7 @@ subroutine join2rs_gpu(cc, r1, r2, nx, my_max, lev, jnum, ncld)
    end do
 
    ! Present on device: bufA, bufB, jlist1, nxjlen, nxjlen_all
-   call mpe2d_transpose_nxp_lev_gpu(bufA, bufB, nxp, nx, lev, levp, 1 + ncld, myf, my_max, jlistnum, jlen, nsizex, row_comm)
+   call mpe2d_transpose_nxp_lev_gpu(bufA, bufB, nxp, nx, lev, levp, 1 + ncld, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
 
    !$acc parallel loop collapse(4) async(async_id)
    do jj = 1, jlistnum
@@ -184,7 +184,7 @@ subroutine join3rs_gpu(cc, r1, r2, r3, nx, my_max, lev, jnum, ncld)
    end do
    end do
 
-   call mpe2d_transpose_nxp_lev_gpu(bufA, bufB, nxp, nx, lev, levp, 2 + ncld, myf, my_max, jlistnum, jlen, nsizex, row_comm)
+   call mpe2d_transpose_nxp_lev_gpu(bufA, bufB, nxp, nx, lev, levp, 2 + ncld, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
 
    do jj = 1, jlistnum
    do n = 1, 2 + ncld

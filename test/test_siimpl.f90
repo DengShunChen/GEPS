@@ -66,13 +66,13 @@ subroutine siimpl_unit
                , temmid, divmid, plmid, temten, divten, plten, alpha)
 
    !$acc enter data copyin(plten_gpu, plmid, temmid, temten_gpu, divmid, divten_gpu, &
-   !$acc& jtwvp, spalm, arrhyd, eps4L, evecin, eigval, evectr, arsddt, dsigma) async(async_id)
+   !$acc& jtwvp, spalm, arrhyd, eps4L, evecin, eigval, evectr, arsddt, dsigma, mlist) async(async_id)
    call siimpl_gpu(jtrun, jtmax, lev, dtahi, ptmeans, dsigma, spalm, eps4, eigval &
                    , evecin, evectr, arrhyd, arsddt, temmid, divmid, plmid &
                    , temmid, divmid, plmid, temten_gpu, divten_gpu, plten_gpu, alpha)
 
    !$acc exit data copyout(plten_gpu, plmid, temmid, temten_gpu, divmid, divten_gpu, &
-   !$acc& jtwvp, spalm, arrhyd, eps4L, evecin, eigval, evectr, arsddt, dsigma) async(async_id)
+   !$acc& jtwvp, spalm, arrhyd, eps4L, evecin, eigval, evectr, arsddt, dsigma, mlist) async(async_id)
    !$acc wait(async_id)
 
    call assert_allclose(temten_gpu, size(temten_gpu), temten, size(temten), 1e-10, 1e-10, "Array temten")

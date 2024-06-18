@@ -52,11 +52,6 @@ subroutine transr1_unit
    !$acc exit data copyout(poly, s, r_gpu) async(async_id)
    !$acc wait(async_id)
 
-   if (all(abs(r - r_gpu) <= 1e-10)) then
-      print *, "test_transr1 passed."
-   else
-      print *, "test_transr1 failed."
-      call exit(1)
-   end if
+   call assert_allclose(r_gpu, size(r_gpu), r, size(r), 1e-10, 1e-10, "Array r")
 
 end subroutine

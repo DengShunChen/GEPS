@@ -83,7 +83,6 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
    stream = acc_get_cuda_stream(async_id)
 
 !CWBinit
-   wcc_fk = 0.
 
    myhalf = my/2
    lev2 = lev*2
@@ -91,9 +90,12 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
    nb = 32
    jchk = iand(myhalf, 1)
    jje = myhalf - jchk
+   !$acc enter data create(jlist_fj, jlistnum_fj_array) async(async_id)
+   !$acc parallel loop private(mf, jlistnum_fj) async(async_id)
    do m = 1, mlistnum
       mf = mlist(m)
       jlistnum_fj = 0
+      !$acc loop seq
       do j = 1, jje
          if (mf .le. mtrundef(j)) then
             jlistnum_fj = jlistnum_fj + 1
@@ -102,6 +104,7 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
       end do
       jlistnum_fj_array(m) = jlistnum_fj
    end do
+   !$acc exit data copyout(jlistnum_fj_array) async(async_id)
 
    if (lfirst) then
 !CWB2015 >>>
@@ -118,9 +121,11 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
       lfirst = .false.
    end if
 
-   !$acc enter data copyin(coslr, jlist_fj) &
+   !$acc enter data copyin(coslr) &
    !$acc& create(gwk1, cc, twcc_fk, ws3, ws4, tcc, tc2, wcc_fk, fj_ws3, fj_ws4, fj_tcc, fj_wc, fj_wd, fj_tc2, wc, wd) async(async_id)
-   !$acc wait(async_id)
+   !$acc host_data use_device(wcc_fk)
+   istat = cudaMemsetAsync(wcc_fk, 0.0, size(wcc_fk), stream)
+   !$acc end host_data
    do m = 1, mlistnum
       mf = mlist(m)
       !$acc parallel loop collapse(2) async(async_id)
@@ -405,7 +410,7 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
    end do   ! end of big m loop
 
    ! Present on device: wcc_fk, twcc_fk
-   call mpe_transpose_sr_sp_gpu(wcc_fk, twcc_fk, lev*2*2, jtmax, my_max, nsize, col_comm)
+   call mpe_transpose_sr_sp_gpu(wcc_fk, twcc_fk, lev*2*2, jtmax, my_max, nsize, nccl_col_comm)
 
    do jj = 1, jlistnum
       !$acc kernels present(cc) async(async_id)

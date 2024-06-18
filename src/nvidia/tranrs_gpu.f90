@@ -135,7 +135,7 @@ subroutine tranrs_gpu(jtrun, jtmax, nx, my, my_max, lev, poly, w, cc &
    end do
 
    ! Present on device: twcc_fk, wcc_fk
-   call mpe_transpose_rs_sp_gpu(twcc_fk, wcc_fk, lev*2*num, jtmax, my_max, nsize, col_comm)
+   call mpe_transpose_rs_sp_gpu(twcc_fk, wcc_fk, lev*2*num, jtmax, my_max, nsize, nccl_col_comm)
    !$acc exit data delete(twcc_fk) async(async_id)
 
    do m = 1, mlistnum

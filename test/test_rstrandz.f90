@@ -66,11 +66,7 @@ subroutine rstrandz_unit
    !$acc exit data copyout(hldten_gpu, vorten_gpu) delete(vdmer, vdzon, w, cim, onocos, poly, dpoly) async(async_id)
    !$acc wait(async_id)
 
-   if (all(abs(hldten - hldten_gpu) <= 1e-10) .AND. all(abs(vorten - vorten_gpu) <= 1e-10)) then
-      PRINT *, "test_rstrandz passed."
-   else
-      PRINT *, "test_rstrandz failed."
-      call exit(1)
-   end if
+   call assert_allclose(hldten_gpu, size(hldten_gpu), hldten, size(hldten), 1e-10, 1e-1, "Array hldten")
+   call assert_allclose(vorten_gpu, size(vorten_gpu), vorten, size(vorten), 1e-10, 1e-1, "Array vorten")
 
 end subroutine rstrandz_unit

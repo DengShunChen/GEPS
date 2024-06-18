@@ -171,7 +171,7 @@ subroutine transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, s, r, nsize)
 !*** r1 start ***
 
    !$acc enter data create(twcc_fk) async(async_id)
-   call mpe_transpose_rs1_sp_gpu(wcc_fk, twcc_fk, my_max, jtmax, 2, nsize, col_comm, async_id)
+   call mpe_transpose_rs1_sp_gpu(wcc_fk, twcc_fk, my_max, jtmax, 2, nsize, nccl_col_comm, async_id)
 
    !$acc enter data create(cc) async(async_id)
    !$acc host_data use_device(cc)
@@ -193,29 +193,17 @@ subroutine transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, s, r, nsize)
 
    !$acc enter data create(gwk1) async(async_id)
 !
+
+#ifdef SP
+   print *, "Symbol SP is not supported."
+#endif
+
    if (lreduce .eq. 0) then
-#ifdef SP
-      call rfftmlt_sp(cc, gwk1, trigs, ifax, 1, nx + 2, nx, jlistnum, 1)
-#else
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, jlistnum, 1)
-#endif
    else
-#ifdef SP
-!$omp  parallel do default(none)                            &
-!$omp  private(jj,j,nxj,gwk1)                               &
-!$omp  shared(jlistnum,jlist1,nxdef,cc,trigsj,ifaxj,nx    ) &
-!$omp  schedule(dynamic)
-      do jj = 1, jlistnum
-         j = jlist1(jj)
-         nxj = nxdef(j)
-         call rfftmlt_sp(cc(1, jj), gwk1(1, jj), trigsj(1, j), ifaxj(1, j), &
-                         1, nx + 2, nxj, 1, 1)
-      end do
-!$omp end parallel do
-#else
       call rfftmlt_loop_identical(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, 1, 1)
-#endif
    end if
+
    !$acc parallel loop async(async_id)
    do jj = 1, jlistnum
       j = jlist1(jj)

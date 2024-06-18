@@ -1,12 +1,13 @@
 subroutine mpe_transpose_rs_sp_gpu(sbuf, rbuf, lev, n, m, nsize, comm)
    ! Present on device: sbuf, rbuf
-   use const, only: RTYPE, MPI_RTYPE
-   use mpi
+   use const, only: RTYPE
+   use nccl
 
    implicit none
-   integer n, m, lev, nsize, i, j, k, ii, len_tr, ierr, comm
+   integer n, m, lev, nsize, i, j, k, ii, len_tr
+   type(ncclComm) :: comm
 
-   real(kind=RTYPE) sbuf(lev, n, nsize, m), rbuf(lev, n, m*nsize) ! present on device
+   real(kind=RTYPE) sbuf(lev, n, nsize, m), rbuf(lev, n, m*nsize)
    real(kind=RTYPE) swork(lev, n, m, nsize)
 
    integer async_id
@@ -27,11 +28,7 @@ subroutine mpe_transpose_rs_sp_gpu(sbuf, rbuf, lev, n, m, nsize, comm)
       end do
    end do
 
-   !$acc wait(async_id)
-
-   !$acc host_data use_device(swork, rbuf)
-   call MPI_ALLTOALL(SWORK, LEN_TR*LEV, MPI_RTYPE, RBUF, LEN_TR*LEV, MPI_RTYPE, comm, IERR)
-   !$acc end host_data
+   call nccl_alltoall_fp64(swork, len_tr*lev, rbuf, len_tr*lev, comm, nsize, async_id)
 
    !$acc exit data delete(swork) async(async_id)
 
@@ -39,14 +36,15 @@ subroutine mpe_transpose_rs_sp_gpu(sbuf, rbuf, lev, n, m, nsize, comm)
 end
 
 subroutine mpe_transpose_rs_gpu(sbuf, rbuf, lev, n, m, nsize, comm)
-!
-   use mpi
+   ! Present on device: sbuf, rbuf
+   use nccl
 
    implicit none
-   integer n, m, lev, nsize, i, j, k, ii, len_tr, ierr, comm
+   integer n, m, lev, nsize, i, j, k, ii, len_tr, ierr
+   type(ncclComm) :: comm
 
-   real sbuf(lev, n, nsize, m) ! Present on device
-   real rbuf(lev, n, m*nsize) ! Present on device
+   real sbuf(lev, n, nsize, m)
+   real rbuf(lev, n, m*nsize)
 #ifdef MPISP
 #   ifdef UNIFY_ONLY
    real*8 swork(lev, n, m, nsize)
@@ -78,31 +76,18 @@ subroutine mpe_transpose_rs_gpu(sbuf, rbuf, lev, n, m, nsize, comm)
    end do
    end do
    end do
-   !$acc wait(async_id)
-!
+
 #ifdef MPISP
 #   ifdef UNIFY_ONLY
-   !$acc host_data use_device(swork, rbuf)
-   call MPI_ALLTOALL(SWORK, LEN_TR*LEV, MPI_REAL8, &
-                     RBUF, LEN_TR*LEV, MPI_REAL8, &
-                     comm, IERR)
-   !$acc end host_data
+   call nccl_alltoall_fp64(swork, len_tr*lev, rbuf, len_tr*lev, comm, nsize, async_id)
 #   else
-   !$acc host_data use_device(swork, rwork)
-   call MPI_ALLTOALL(SWORK, LEN_TR*LEV, MPI_REAL4, &
-                     rwork, LEN_TR*LEV, MPI_REAL4, &
-                     comm, IERR)
-   !$acc end host_data
+   call nccl_alltoall_fp64(swork, len_tr*lev, rwork, len_tr*lev, comm, nsize, async_id)
    !$acc kernels async(async_id)
    rbuf = rwork
    !$acc end kernels
 #   endif
 #else
-   !$acc host_data use_device(swork, rbuf)
-   call MPI_ALLTOALL(SWORK, LEN_TR*LEV, MPI_REAL8, &
-                     RBUF, LEN_TR*LEV, MPI_REAL8, &
-                     comm, IERR)
-   !$acc end host_data
+   call nccl_alltoall_fp64(swork, len_tr*lev, rbuf, len_tr*lev, comm, nsize, async_id)
 #endif
    !$acc exit data delete(swork) async(async_id)
 #ifdef MPISP
@@ -110,6 +95,6 @@ subroutine mpe_transpose_rs_gpu(sbuf, rbuf, lev, n, m, nsize, comm)
    !$acc exit data delete(rwork) async(async_id)
 #endif
 #endif
-!
+
    return
 end
