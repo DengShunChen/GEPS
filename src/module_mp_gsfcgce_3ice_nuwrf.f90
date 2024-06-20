@@ -5755,7 +5755,14 @@ CONTAINS
             endif
 
             ! shape parameter (ice aspect ratio) :
-            adagr = inhgr**thrd
+!            adagr = inhgr**thrd
+! >>> reduce upper-level vti :
+            if ( tc .ge. -40. ) then
+              adagr = inhgr**thrd
+            else
+              adagr = inhgr**0.8
+            endif
+! <<<
             ltk   = log(tz)
             ltk2  = ltk*ltk
             lqi   = -1.*log(rhoz*qiz)
