@@ -53,11 +53,6 @@
       real ws4(lev,2,2,jtrun)
       real(kind=RTYPE) dummy
 
-#ifdef USE_CUDA
-		call trngra3_gpu(jtrun, jtmax, nx, lev, my, my_max, cim, poly, dpoly, s, dlpl, dtpl, nsize)
-		return
-#endif
-
 !
       myhalf=my/2
 !

@@ -31,7 +31,7 @@
       if(ip.eq.0)then
         open(1,file=model//'ctl',form='formatted',status='old')
         do i=1,9999
-           read(1,'(I4)',end=100)tau(i)
+           read(1,*,end=100)tau(i)
            cnt=cnt+1
         enddo
 100     close(1)
@@ -260,11 +260,10 @@
    10 continue
       return
       end
-
-      subroutine ptot(pdrym,lprint)
+!
+      subroutine ptotc(pdrym,lprint)
 
       use index
-      use mpe
       use rank
       use const
       use param
@@ -276,19 +275,23 @@
       logical lprint
       real    sumtot   ,sumwat    ,dsigp                    &
              ,sumtotm  ,sumwatm   ,pdrym                    &
-             ,sumtott  ,sumwatt   ,qtot 
-      
+             ,qtot
+      real(kind=RTYPE), dimension(:,:), allocatable ::      &
+                       sumtotp,sumwatp,sumtottx,sumwattx
+      real(kind=RTYPE), dimension(:), allocatable ::        &
+                       sumtotpy,sumwatpy,sumtotty,sumwatty
 
+
+      allocate(sumtotp(nxp,my_max),sumwatp(nxp,my_max),     &
+               sumtottx(nx,my_max),sumwattx(nx,my_max))
       ! dry air mass conservation
-      sumtot=0.
-      sumwat=0.
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
-        nxjf=nxdef(j)
+!        nxjf=nxdef(j)
         do i = 1,nxj
-          sumtott=0.
-          sumwatt=0.
+          sumtotp(i,jj)=0.
+          sumwatp(i,jj)=0.
           do k = 1, lev
             dsigp = dsigma(k,1)*pt(i,jj)+dsigma(k,2)
             qtot=0.
@@ -296,17 +299,45 @@
                kk=k+(n-1)*lev
                qtot = qtot + qt(i,kk,jj)
             enddo
-            sumtott = sumtott  + dsigp
-            sumwatt = sumwatt  + dsigp * qtot
+            sumtotp(i,jj) = sumtotp(i,jj)  + dsigp
+            sumwatp(i,jj) = sumwatp(i,jj)  + dsigp * qtot
           enddo
-          sumtot = sumtot + sumtott * cosl(j) * nx / nxjf
-          sumwat = sumwat + sumwatt * cosl(j) * nx / nxjf
         enddo
       enddo
 
-!          call mpe_global_sum(kn,1,mpe_integer)
-      call mpe_global_sum(sumtot,1,mpe_double)
-      call mpe_global_sum(sumwat,1,mpe_double)
+      call mpe2d_unify_nx(sumtottx,sumtotp)
+      call mpe2d_unify_nx(sumwattx,sumwatp)
+
+      deallocate(sumtotp,sumwatp)
+      allocate(sumtotpy(my_max),sumwatpy(my_max))
+
+      sumtotpy=0.
+      sumwatpy=0.
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxjf=nxdef(j)
+        do i = 1, nxjf
+          sumtotpy(jj) = sumtotpy(jj) + sumtottx(i,jj)*cosl(j)*nx/nxjf
+          sumwatpy(jj) = sumwatpy(jj) + sumwattx(i,jj)*cosl(j)*nx/nxjf
+        enddo
+      enddo
+
+      deallocate(sumtottx,sumwattx)
+      allocate(sumtotty(my),sumwatty(my))
+
+      call mpe2d_unify_my1d(sumtotty,sumtotpy)
+      call mpe2d_unify_my1d(sumwatty,sumwatpy)
+
+      deallocate(sumtotpy,sumwatpy)
+
+      sumtot=0.
+      sumwat=0.
+      do j = 1, my
+        sumtot = sumtot + sumtotty(j)
+        sumwat = sumwat + sumwatty(j)
+      enddo
+
+      deallocate(sumtotty,sumwatty)
 
       kn      = nx * my
       sumtotm = sumtot / float(kn)
@@ -329,7 +360,6 @@
       subroutine adjptq(dta,pltemp,pltend)
 
       use index
-      use mpe
       use rank
       use const
       use param

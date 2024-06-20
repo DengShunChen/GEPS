@@ -5,14 +5,14 @@
 #else
       use rank, only : root_io
 #endif
+      use const,only : keyo,KLENO
       use mpi
-      character*34 key
 
 #if defined(RSM) && defined(CWB_MPMD)
-      call MPI_SEND( key, 34, MPI_CHARACTER, root_io, J, &
+      call MPI_SEND( keyo, KLENO, MPI_CHARACTER, root_io, J, &
                      MPI_COMM_gfs_all, ist )
 #else
-      call MPI_SEND( key, 34, MPI_CHARACTER, root_io, J, &
+      call MPI_SEND( keyo, KLENO, MPI_CHARACTER, root_io, J, &
                      MPI_COMM_WORLD, ist )
 #endif
       return

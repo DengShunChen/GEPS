@@ -17,6 +17,7 @@
 
       real, dimension(:,:,:),allocatable,save :: plt
 !! for Semi-Lagrangian
+      real(kind=RTYPE), dimension(:,:,:),allocatable,save :: rdivm
       real(kind=RTYPE), dimension(:,:),allocatable,save :: dlpl,dtpl
       real(kind=RTYPE), dimension(:,:,:),allocatable,save ::        &
                            ut,vt,tt,qt,up,vp,ttp,qp,qm,sd,vvel,     &
@@ -35,7 +36,7 @@
       integer, allocatable :: latstr(:),latlen(:)
       real(kind=RTYPE), allocatable :: gslati(:),gglati(:)
       real(kind=RTYPE), allocatable :: fa1(:),fa2(:),fa3(:),fa4(:)
-      contains 
+      contains
 
          subroutine allocate_grid_array
 
@@ -56,6 +57,7 @@
                      up(nxp,lev,my_max),  &
                      vp(nxp,lev,my_max),  &
                     ttp(nxp,lev,my_max),  &
+                  rdivm(nxp,lev,my_max),  &
                   qp(nxp,lev*ncld,my_max),&
                   qm(nxp,lev*ncld,my_max),&
 !! for Semi-Lagrangian
@@ -78,7 +80,6 @@
                     sgeo(nxp,my_max), pdiff(nxp,my_max),&
                     ptend(nxp,my_max), t1000(nxp,my_max), tsave(nxp,my_max), &
                     std(nxp,my_max), ptp(nxp,my_max) ,stat=ierr)
-
            if (ierr/= 0) then
                write(6,*) 'mod_grid : allocate fail 2 '
                stop
@@ -95,7 +96,6 @@
 
            allocate (dlphi(nxp,lev,my_max),  &
                      dtphi(nxp,lev,my_max),stat=ierr)
-
            if (ierr/= 0) then
                write(6,*) 'mod_grid for ndsl : allocate fail 4'
                stop
@@ -120,6 +120,10 @@
            ttp=0.
            qt=0.
            qp=0.
+!! for Semi-Lagrangiain
+           rdivm=0.
+           ut_sl=0.
+           vt_sl=0.
            qm=0.
            sd=0.
            vvel=0.
@@ -135,9 +139,10 @@
          subroutine deallocate_grid_array
 
            deallocate (ut,vt,sd,vvel,rvor,rdiv,tt,qt,phi,plt,pk,pk2,up,vp,ttp,qp,qm)
+           deallocate (rdivm)
            deallocate ( pt,dlpl,dtpl,sgeo,pdiff, &
-               ptend,t1000,tsave,std,ptp)
-! for Semi-Lagrangian
+                ptend,t1000,tsave,std,ptp)
+           ! for Semi-Lagrangian
            deallocate (gslati,gglati,lonstr,lonlen,latstr,latlen)
            deallocate (fa1,fa2,fa3,fa4)
            deallocate (dlphi,dtphi)

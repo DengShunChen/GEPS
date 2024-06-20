@@ -78,7 +78,7 @@
       if (lchk.eq.1) then
         l=jtrun
         do k=1,lev2*num
-          ws2(k,1,1,l) = -wss(k,1,1,l,m)
+          ws2(k,1,1,l) = wss(k,1,1,l,m)
         enddo
       endif
 !

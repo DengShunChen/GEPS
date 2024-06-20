@@ -1,17 +1,18 @@
 module mod_stochastic_physics
-  use mpe, only : mpe_bcast, mpe_double
+  use mpe, only : mpe_bcast, mpe_double, mpe_integer
   use rank, only : myrank
   use index
   use param
   use const, only : aki, bki, first_call, dosppt, doshum, doskeb, dossst, &
-                    poly, dpoly, wdfac, wcfac, onocos, radsq, weight, RTYPE 
+                    poly, dpoly, wdfac, wcfac, onocos, radsq, weight,     &
+                    RTYPE, rad, cosl 
   use mersenne_twister, only: random_setseed,random_gauss,random_stat
   implicit none
   private 
 
   type random_pattern
-    real, allocatable :: n2du(:,:,:)
-    real, allocatable :: n2dv(:,:,:)
+    real(kind=RTYPE), allocatable :: n2du(:,:,:)
+    real(kind=RTYPE), allocatable :: n2dv(:,:,:)
     real(kind=RTYPE), allocatable :: n2d(:,:)
     real, allocatable :: kenorm(:,:)
     real(kind=RTYPE), allocatable :: spec(:,:)
@@ -29,7 +30,7 @@ module mod_stochastic_physics
     integer, public :: seed
   end type random_pattern
 
-  integer :: recn=1
+  integer,save :: recnsppt=1, recnskeb=1
   real ::  dt
   logical, public :: ncep_seeds=.false.
   real,allocatable :: sl(:)
@@ -266,8 +267,9 @@ contains
     endif
 
     do k=1,lev
-      if (myrank == 0) print *,'mod_stochastic_physics : k,sl,vfact_sppt',k,sl(k),vfact_sppt(k)
+      if (myrank == 0) print 301,'mod_stochastic_physics : k,sl,vfact_sppt',k,sl(k),vfact_sppt(k)
     enddo
+    301 format ( A , I4 , 2F20.12 )
 
   end subroutine init_sppt
 
@@ -307,8 +309,9 @@ contains
          if (sl(k).LT. 2*shum_sigefold) then
             vfact_shum(k)=0.0
          endif
-        if (myrank == 0) print *,'mod_stochastic_physics : k,sl,vfact_shum',k,sl(k),vfact_shum(k)
+        if (myrank == 0) print 301,'mod_stochastic_physics : k,sl,vfact_shum',k,sl(k),vfact_shum(k)
       enddo
+    301 format ( A , I4 , 2F20.12 )
   end subroutine init_shum
 
   subroutine init_skeb(dtau)
@@ -379,8 +382,9 @@ contains
     enddo
 
     do k=1,lev
-      if (myrank == 0) print *,'mod_stochastic_physics : k,sl,vfact_skeb',k,sl(k),vfact_skeb(k)
+      if (myrank == 0) print 301,'mod_stochastic_physics : k,sl,vfact_skeb',k,sl(k),vfact_skeb(k)
     enddo
+    301 format ( A , I4 , 2F20.12 )
     ! calculate vertical interpolation weights
     do k=1,skeblevs
       skeb_vloc(k)=sl(lev)-real(skeblevs-k)/real(skeblevs-1.0)*(sl(lev)-sl(1))
@@ -401,13 +405,13 @@ contains
       enddo
     enddo
     deallocate(skeb_vloc)
+    skeb_vwts(:,1)=1.0-skeb_vwts(:,2)
+    skeb_vpts(:,2)=skeb_vpts(:,1)+1
     if (myrank .eq. 0) then
       do k=1,lev
         print*,'skeb vpts ',skeb_vpts(k,1),skeb_vwts(k,2)
       enddo
     endif
-    skeb_vwts(:,1)=1.0-skeb_vwts(:,2)
-    skeb_vpts(:,2)=skeb_vpts(:,1)+1
 
   end subroutine init_skeb
 
@@ -464,7 +468,7 @@ contains
     implicit none
     integer :: timearray(3),iseed
     integer :: n, k, nscale, ncx, ml, ms, ns, i, j
-    real :: rerth, pi, var, radsq, correLsq, rkT, rnn1
+    real :: rerth, pi, var, correLsq, rkT, rnn1
     type(random_pattern), intent(inout) :: rpattern(nscale)
     integer :: irand
     real :: dt
@@ -476,7 +480,7 @@ contains
  
     rerth = 6.3712e+6      ! radius of earth (m)
     pi = 4.*atan(1.)
-    radsq = rerth*rerth
+!    radsq = rerth*rerth
 
     do n=1,nscale
       ncx = 2.*pi*rerth/rpattern(n)%lenscale
@@ -489,6 +493,8 @@ contains
         allocate(rpattern(n)%n2du(nxp,my_max,skeblevs))
         allocate(rpattern(n)%n2dv(nxp,my_max,skeblevs))
         allocate(rpattern(n)%kenorm(rpattern(n)%mlmax,2))
+        rpattern(n)%n2du(:,:,:)=0.0
+        rpattern(n)%n2dv(:,:,:)=0.0
       endif
       allocate(rpattern(n)%spec(rpattern(n)%mlmax,2))
       allocate(rpattern(n)%varspec(rpattern(n)%mlmax))
@@ -510,7 +516,8 @@ contains
           count4 = count - count_trunc
         endif
       endif
-      call mpe_bcast(count4,1,0,mpe_double) 
+!     call mpe_bcast(count4,1,0,mpe_double) 
+      call mpe_bcast(count4,1,0,mpe_integer)
       if (rpattern(n)%seed == -999 ) then
         rpattern(n)%seed = count4
       endif
@@ -701,7 +708,8 @@ contains
     integer, intent(in) :: nscale
     real, intent(in) :: vfact(nlev) 
     type(random_pattern), intent(inout) :: rpattern(nscale)
-    real(kind=RTYPE), intent(  out) :: n3du(nxp,nlev,my_max),n3dv(nxp,nlev,my_max) 
+    real(kind=RTYPE), intent(  out) :: n3du(nxp,nlev,my_max),n3dv(nxp,nlev,my_max)
+
  
     n3du = 0.
     n3dv = 0.
@@ -797,7 +805,7 @@ contains
     implicit none
     type(random_pattern), intent(inout) :: rpattern
     integer :: ml, ns, ms, k
-    real, allocatable ::            specpv(:,:,:),specpd(:,:,:)
+    real(kind=RTYPE), allocatable :: specpv(:,:,:),specpd(:,:,:)
     real(kind=RTYPE), allocatable :: bufr2d(:,:,:) ,noise(:,:) ,specf(:,:)
 
     allocate(bufr2d(jtrun,jtmax*nsizey,2)) 
@@ -917,8 +925,8 @@ contains
       call unify_reduceintp(nx,my,my_max,rpattern_sppt(n)%n2d,glob)   
       if ( myrank .eq. 0 ) then
         glob4=glob
-        write(ihead,rec=recn) glob4
-        recn=recn+1
+        write(ihead,rec=recnsppt) glob4
+        recnsppt=recnsppt+1
       endif
     enddo
     do k=lev,1,-1
@@ -932,8 +940,8 @@ contains
       call unify_reduceintp(nx,my,my_max,temp,glob)   
       if ( myrank.eq.0 ) then
         glob4=glob
-        write(ihead,rec=recn) glob4
-        recn=recn+1
+        write(ihead,rec=recnsppt) glob4
+        recnsppt=recnsppt+1
       endif
     enddo
 
@@ -949,7 +957,7 @@ contains
     implicit none
 
     integer :: n, ii, i, jj, j, k, nxj
-    real    :: xx
+    real    :: xx, axx
     real(kind=RTYPE) :: spectmp(levp,2,jtrun,jtmax),                 &
                         cc(nx+2,levp,1,my_max),                      &
                         um(nxp,lev,my_max),vm(nxp,lev,my_max),       &
@@ -959,11 +967,13 @@ contains
         do jj =1,jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
+          xx=radsq*onocos(j)
           do k=1,lev
             do i=1,nxj
-              diss_est(i,k,jj)=(um(i,k,jj)*ut(i,k,jj)                &
+              diss_est(i,k,jj)=((um(i,k,jj)*ut(i,k,jj)               &
                                +vm(i,k,jj)*vt(i,k,jj))               &
-                               +0.5*(um(i,k,jj)**2.+vm(i,k,jj)**2.)
+                               +0.5*(um(i,k,jj)**2.+vm(i,k,jj)**2.)) &
+                               *xx
             enddo
           enddo
         enddo
@@ -980,13 +990,20 @@ contains
         do jj = 1, jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
-          xx=radsq*onocos(j)
+          xx=rad/cosl(j)
+          axx=cosl(j)/rad
           do k = 1, lev
             do i = 1, nxj
-              keb(i,k,jj)=0.5*(ut(i,k,jj)**2.+vt(i,k,jj)**2.)*xx
+              !change virtual wind to real wind
+              ut(i,k,jj)=ut(i,k,jj)*xx
+              vt(i,k,jj)=vt(i,k,jj)*xx
+              keb(i,k,jj)=0.5*(ut(i,k,jj)**2.+vt(i,k,jj)**2.)
               ut(i,k,jj)=ut(i,k,jj)+skeb3du(i,k,jj)*diss_est(i,k,jj)
               vt(i,k,jj)=vt(i,k,jj)+skeb3dv(i,k,jj)*diss_est(i,k,jj)
-              kea(i,k,jj)=0.5*(ut(i,k,jj)**2.+vt(i,k,jj)**2.)*xx
+              kea(i,k,jj)=0.5*(ut(i,k,jj)**2.+vt(i,k,jj)**2.)
+              !change back to virtual wind
+              ut(i,k,jj)=ut(i,k,jj)*axx
+              vt(i,k,jj)=vt(i,k,jj)*axx
             enddo
           enddo
         enddo
@@ -1000,14 +1017,15 @@ contains
     integer      :: i, j, k, jj, nxj, ihead, n
     integer      :: nxmy4
     real         :: tau,xx
-    real         :: glob(nx,my),temp(nxp,my_max)
+    real(kind=RTYPE):: glob(nx,my),temp(nxp,my_max)
     real(kind=4) :: glob4(nx,my)
 
 
     ihead=15
     nxmy4=nx*my*4
     if ( myrank .eq. 0 ) then
-      open(ihead,file='skeb.dat',access='direct',form='unformatted',recl=nxmy4,status='unknown')
+      open(ihead,file='skeb.dat',access='direct',form='unformatted'   &
+                ,recl=nxmy4,status='unknown',convert='big_endian')
     endif
 
     do k=lev,1,-1
@@ -1021,8 +1039,8 @@ contains
       call unify_reduceintp(nx,my,my_max,temp,glob)   
       if ( myrank.eq.0 ) then
         glob4=glob
-        write(ihead,rec=recn) glob4
-        recn=recn+1
+        write(ihead,rec=recnskeb) glob4
+        recnskeb=recnskeb+1
       endif
     enddo
 
@@ -1037,8 +1055,8 @@ contains
       call unify_reduceintp(nx,my,my_max,temp,glob)
       if ( myrank.eq.0 ) then
         glob4=glob
-        write(ihead,rec=recn) glob4
-        recn=recn+1
+        write(ihead,rec=recnskeb) glob4
+        recnskeb=recnskeb+1
       endif
     enddo
 
@@ -1046,16 +1064,15 @@ contains
       do jj=1,jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
-        xx=radsq*onocos(j)
         do i=1,nxj
-          temp(i,jj)=diss_est(i,k,jj)*xx
+          temp(i,jj)=diss_est(i,k,jj)
         enddo
       enddo
       call unify_reduceintp(nx,my,my_max,temp,glob)
       if ( myrank.eq.0 ) then
         glob4=glob
-        write(ihead,rec=recn) glob4
-        recn=recn+1
+        write(ihead,rec=recnskeb) glob4
+        recnskeb=recnskeb+1
       endif
     enddo
 
@@ -1070,8 +1087,8 @@ contains
       call unify_reduceintp(nx,my,my_max,temp,glob)
       if ( myrank.eq.0 ) then
         glob4=glob
-        write(ihead,rec=recn) glob4
-        recn=recn+1
+        write(ihead,rec=recnskeb) glob4
+        recnskeb=recnskeb+1
       endif
     enddo
 
@@ -1086,8 +1103,8 @@ contains
       call unify_reduceintp(nx,my,my_max,temp,glob)
       if ( myrank.eq.0 ) then
         glob4=glob
-        write(ihead,rec=recn) glob4
-        recn=recn+1
+        write(ihead,rec=recnskeb) glob4
+        recnskeb=recnskeb+1
       endif
     enddo
 
@@ -1232,7 +1249,7 @@ contains
       kk=lev-k+1
       prsl(kk)=sigma(k,2)+sigma(k+1,2)
       prsl(kk)=prsl(kk)+(sigma(k,1)+sigma(k+1,1))*1000.
-      prsl(kk)=0.5*prsl(kk)/1000.
+      prsl(kk)=0.5*prsl(kk)
     enddo
 
       write(forydef,8) my
@@ -1245,7 +1262,7 @@ contains
       OPEN(UNIT=ch, FILE='skeb.ctl', STATUS='UNKNOWN'             &
          , ACCESS='SEQUENTIAL')
 
-      write(ch,'(A23)') 'dset ^skeb.dat'
+      write(ch,'(A14)') 'dset ^skeb.dat'
       write(ch,'(A18)') 'options big_endian'
       write(ch,'(A12)') 'undef -999.0'
       write(ch,12) 'ydef' ,my, 'levels'
@@ -1256,7 +1273,7 @@ contains
       do j=1,iter
        js=1+8*(j-1)
        je=js+7
-       write(10,10) mlat(js:je)
+       write(ch,10) mlat(js:je)
       enddo
       if ( .not. jrem ) write(10,forydef) mlat(je+1:my)
        
@@ -1270,9 +1287,9 @@ contains
       do j=1,iter
        js=1+8*(j-1)
        je=js+7
-       write(10,11) prsl(js:je)
+       write(ch,11) prsl(js:je)
       enddo
-      if ( .not. jrem ) write(10,forzdef) prsl(je+1:my)
+      if ( .not. jrem ) write(ch,forzdef) prsl(je+1:my)
       write(ch,'(A4,1X,I2)') 'vars',5
       write(ch,16) 'skebu  '   , lev,'99','U-dir 3D Random Pattern'
       write(ch,16) 'skebv  '   , lev,'99','V-dir 3D Random Pattern'
@@ -1285,9 +1302,9 @@ contains
       endif
 
 8     format("(",I4,"(2x,F11.7))")
-9     format("(",I4,"(2x,F7.5))")
+9     format("(",I4,"(2x,F10.5))")
 10    format(8(2x,F11.7))
-11    format(8(2x,F7.5))
+11    format(8(2x,F10.5))
 12    format(A4,1X,I4,1X,A6)
 13    format(A4,1X,I4,1X,A10,1X,F10.7)
 14    format(A4,1X,I4,1X,A6,1X,A2,A1,A2,A3,A4,1X,A3)

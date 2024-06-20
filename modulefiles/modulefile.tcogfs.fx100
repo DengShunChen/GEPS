@@ -64,7 +64,6 @@ setenv CFLAGS_COM "-c -Xg"
 module use  /nwpr/gfs/xb80/modulefiles/nceplibs/$machine
 module load w3nco/v2.0.6
 module unuse  /nwpr/gfs/xb80/modulefiles/nceplibs/$machine
-
 # Loading gfs modules 
 module use  /nwpr/gfs/xb80/modulefiles/$machine
 module load netcdf/3.6.3

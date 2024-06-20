@@ -62,8 +62,8 @@ integer*4,parameter :: numcoord=1 !number of values in array
       !add default 
       integer*4  :: grbnxmy
       !grib2 file name
-      character::grbfile*255
-      integer*4::grbid=134
+      character::grbfile*255 ,ofdir*255
+      integer*4::grbid=23,grbparid=24
       integer*8::grb_idtg
       !for ensemble
       integer::grbmem=-1 ,grbnumm
@@ -374,8 +374,39 @@ integer*4,parameter :: numcoord=1 !number of values in array
               call mpe_send_data(fld ,grbnxmy ,ntag,ist)
             else
               r4out(:)=fld(:)
-              call  wrt_grb2_io(itau,t0,t1,t2,p3,t10,t11,t12, r4out )
+              call  wrt_grb2_io(itau,t0,t1,t2,p3,t10,t11,nint(t12), r4out )
             endif
+            end
+      !=======================================================================
+            subroutine wrt_grb2_v2(itau,t0,t1,t2,p3,t10,t11,t12,fld)
+            use param, only : nx,my
+            use const, only: idtg,RTYPE,ihdgo2
+            integer::  t0,t1,t2,t10,t11,p3
+            integer::  t12
+            integer::ptp0(9)
+            integer::itau,ist,istat,i,ia
+            real(kind=RTYPE)::fld(nx*my)
+            real*4::r4out(nx*my)
+!            character:: ihdg2*26,clen*7
+
+             do i = 1, 26
+              ia=ichar(ihdgo2(i:i))
+              if((ia.ge.97).and.(ia.le.122))then
+                ia=ia-32
+                ihdgo2(i:i)=char(ia)
+              endif
+             enddo
+
+ 133                      format( A  ,A1 ,A6,A4 )
+#ifdef O38K
+              write(grbfile,133 )trim(ofdir),'/',ihdgo2(1:6),ihdgo2(13:16)
+#else
+              write(grbfile,133 )trim(ofdir),'/',ihdgo2(1:6),ihdgo2(11:14)
+#endif
+              r4out(:)=fld(:)
+              call opn_grb2(grbparid,nx,my,idtg,itau,istat)              
+              call wrt_grb2_io(itau,t0,t1,t2,p3,t10,t11,t12, r4out )
+              call cls_grb2(grbparid,istat)
             end
       !=======================================================================
             subroutine wrt_grb2_accu(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,fld)
@@ -400,8 +431,37 @@ integer*4,parameter :: numcoord=1 !number of values in array
               call mpe_send_data(fld ,grbnxmy ,ntag,ist)
             else
               r4out(:)=fld(:)
-              call wrt_grb2_accu_io(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,r4out)
+              call wrt_grb2_accu_io(itau,t0,t1,t2,p3,t10,t11,nint(t12),t24,t27,r4out)
             endif
+            end
+      !=======================================================================
+            subroutine wrt_grb2_accu_v2(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,fld)
+            use param, only : nx,my
+            use const, only: idtg,RTYPE,ihdgo2
+            integer::  t0,t1,t2,t10,t11,p3,t24,t27
+            integer::  t12
+            integer::ptp0(9)
+            integer::itau,ist,istat,i,ia
+            real(kind=RTYPE)::fld(nx*my)
+            real*4::r4out(nx*my)
+!            character:: ihdg2*26,clen*7
+             do i = 1, 26
+              ia=ichar(ihdgo2(i:i))
+              if((ia.ge.97).and.(ia.le.122))then
+                ia=ia-32
+                ihdgo2(i:i)=char(ia)
+              endif
+             enddo
+ 133                      format( A  ,A1 ,A6,A4 )
+#ifdef O38K
+              write(grbfile,133 )trim(ofdir),'/',ihdgo2(1:6),ihdgo2(13:16)
+#else
+              write(grbfile,133 )trim(ofdir),'/',ihdgo2(1:6),ihdgo2(11:14)
+#endif
+              r4out(:)=fld(:)
+              call opn_grb2(grbparid,nx,my,idtg,itau,istat)              
+              call wrt_grb2_accu_io(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,r4out)
+              call cls_grb2(grbparid,istat)
             end
       !=======================================================================
             !subroutine seclist45(itau,t1,t2,t10,t11,t12,t13,t14,t15,p3,p5)
@@ -422,8 +482,8 @@ integer*4,parameter :: numcoord=1 !number of values in array
             use grib_mod
       !     use mod_typhoon, only: write_mem    !for read ensemble member num
             implicit none
-            integer*4::  t0,t1,t2,t10,t11,t13,t14,p3,p5
-            real::  t12,t15
+            integer*4::  t0,t1,t2,t10,t11,t12,t13,t14,p3,p5
+            real::  t15
             integer::itau
             real*4::fld(grbnxmy)
 
@@ -465,7 +525,7 @@ integer*4,parameter :: numcoord=1 !number of values in array
                  coordlist,numcoord,idrsnum3,idrstmpl3,idrstmplen3, &
                  fld,grbnxmy,ibmap,bmap,ierr)
             call gribend(cgrib,lcgrib,lengrib,ierr)
-            call wryte(grbid,lengrib,cgrib)
+            call wryte(grbparid,lengrib,cgrib)
             return
             end subroutine
       !=======================================================================
@@ -489,9 +549,9 @@ integer*4,parameter :: numcoord=1 !number of values in array
             !t24  ;0 ave 1 accu
             !t27  :average of time range 
             use grib_mod
-            integer itau,t0,t1,t2,t10,t11,t13,t14,t16,t17,t18,t19,t20,t21,   &
+            integer itau,t0,t1,t2,t10,t11,t12,t13,t14,t16,t17,t18,t19,t20,t21,   &
                         t22,t23,t24,t25,t26,t27,t28,t29,p3,p5
-            real t12,t15
+            real t15
             real*4::fld(grbnxmy)
             integer*8::idtg2
             character:: cdtg*12
@@ -558,7 +618,7 @@ integer*4,parameter :: numcoord=1 !number of values in array
                  coordlist,numcoord,idrsnum3,idrstmpl3,idrstmplen3, &
                  fld,grbnxmy,ibmap,bmap,ierr)
             call gribend(cgrib,lcgrib,lengrib,ierr)
-            call wryte(grbid,lengrib,cgrib)
+            call wryte(grbparid,lengrib,cgrib)
             return
             !end
             end subroutine
@@ -628,14 +688,14 @@ integer*4,parameter :: numcoord=1 !number of values in array
             return
             end subroutine
       !=======================================================================
-            subroutine opn_grb2(nx,my,idtg,itau ,ierr)
+            subroutine opn_grb2(grbidin,nx,my,idtg,itau ,ierr)
             use grib_mod
-                 integer::nx,my,itau,ierr
+                 integer::nx,my,itau,ierr,grbidin
                  integer*8::idtg
                  if( .not. allocated( cgrib ) )allocate( cgrib(lcgrib) , bmap(nx*my) )
                  lengrib=0
                  cgrib=''
-                 call baopenw(grbid,trim(grbfile),ierr)
+                 call baopenw(grbidin,trim(grbfile),ierr)
                  call latlong(nx,my)
                  call seclist01(idtg,itau)
                  if(grbmem>=0)then
@@ -643,10 +703,10 @@ integer*4,parameter :: numcoord=1 !number of values in array
                    ipdsnum_acc=11
                  endif
             end subroutine 
-            subroutine cls_grb2 (ierr)
+            subroutine cls_grb2 (grbidin,ierr)
             use grib_mod
-              integer::ierr
-              call baclose(grbid,ierr)
+              integer::ierr,grbidin
+              call baclose(grbidin,ierr)
       !       deallocate(cgrib,bmap)
             end subroutine 
 

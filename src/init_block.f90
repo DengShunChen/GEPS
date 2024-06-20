@@ -9,6 +9,7 @@
       use physcons, only :con_cp  ,con_rerth,con_omega,con_g   , &
                           con_sbc ,con_solr ,con_hvap ,con_hfus, &
                           con_tice
+      use leapyr
 
       implicit none
 
@@ -92,7 +93,8 @@
       out_green= .false.
       out_hp   = .false.
       outgrb2  =      0  !output grib2 format
-      outdms   =      1  !output dmskey 1:real-8  ,2:real-4
+      outdms   =      1  !output dmskey 
+      outfv3   = .false.
 ! pdf cloud
       pdfcloud=.false.
 ! stochastic physics
@@ -153,7 +155,7 @@
       cmbk = 1.0
       cgwd = 1.2
 !-for Cloud Micro Physics
-      nmmiph=2
+      nmmiph=12
       ntinc=7   ! tracer index for ice number concentration
       ntrnc=8   ! tracer index for rain number concentration
 !     ntlnc=9   ! tracer index for liquid number concentration
@@ -483,6 +485,11 @@
       idate(6)=0
       idate(7)=0
       idate(8)=0
+!---------------------------------------------------------------------------
+! for leapyear
+      leap=.false.
+      leapm1=.false.
+      yrd=365
 !---------------------------------------------------------------------------
       sashal=.true.
       crick_proof=.false.

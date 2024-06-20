@@ -25,10 +25,11 @@ subroutine cufft_loop_unit(jlistnum, my_max, jump, m, isign)
 
    do i = 1, jlistnum
       call random_number(temp)
-      nxdef(i) = FLOOR(jump*temp)
+      nxdef(i) = FLOOR((jump - 2)*temp)
    end do
 
-   nxdef = 719
+   call random_number(cc)
+   cc_cufft = cc
 
    do jj = 1, jlistnum
       j = jlist1(jj)
@@ -36,7 +37,10 @@ subroutine cufft_loop_unit(jlistnum, my_max, jump, m, isign)
       call rfftmlt(cc(1, 1, jj), work(1, 1, jj), trigsj(1, j), ifaxj(1, j), 1, jump, nxj, m, isign)
    end do
 
-   call rfftmlt_loop(cc_cufft, work, trigsj, ifaxj, jlist1, nxdef, jlistnum, my_max, jump, m, isign)
+   !$acc enter data copyin(cc_cufft) create(work) async(1)
+   call rfftmlt_loop(cc_cufft, work, trigsj, ifaxj, jlist1, nxdef, jlistnum, jump, m, isign)
+   !$acc exit data copyout(cc_cufft) delete(work) async(1)
+   !$acc wait(1)
 
    if (all(abs(cc - cc_cufft) <= 1e-10)) then
       PRINT *, "test_cufft_loop passed."

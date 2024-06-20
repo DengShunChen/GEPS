@@ -140,19 +140,18 @@
       integer,  intent(in)    :: islimsk(nx)
       integer,  intent(in)    :: itimestep
       real,     intent(in)    :: tpi,dta
-      real,     intent(in)    :: phii(nx,lev+1),phi(nx,lev)
+      real,     intent(in)    :: phii(nx,lev+1)
       real,     intent(in)    :: area
       real,     intent(in)    :: ptop
       real,     intent(in)    :: rhc_mp(nx,lev)
-      real,     intent(in)    :: pk(nx,lev)
-      real,     intent(in)    :: sgeo(nx)
       real,     intent(in)    :: snr(nx)
       real,     intent(in)    :: plt(nx,lev)
+      real(kind=RTYPE), intent(in):: phi(nx,lev),pk(nx,lev),sgeo(nx)
       real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),dsigma(lev,2)
 !  ---  inputs/outputs:
       real, intent(inout) :: tt(nx,lev)
       real,     intent(inout) :: qa(nx,lev)
-      real,     intent(inout) :: vvel(nx,lev) !mb/s
+      real(kind=RTYPE), intent(inout) :: vvel(nx,lev) !mb/s
       real, intent(inout) :: ut(nx,lev),vt(nx,lev)
       real(kind=RTYPE), intent(inout) :: qt(nx,lev*ncld)
 #ifdef update_dp
