@@ -1,8 +1,3 @@
-#ifdef USE_CUDA
-#define ndslfv_monoadvv ndslfv_monoadvv_gpu
-#define ndslfv_monoadvv_fgnl ndslfv_monoadvv_fgnl_gpu
-#define ndslfv_update  ndslfv_update_gpu
-#endif
        subroutine intgrt
 !
 !***********************************************************************
@@ -29,12 +24,6 @@
           use mod_typhoon
           use noah
           use namelist_soilveg
-#ifdef USE_CUDA
-          use mod_ndslfv_monoadv_gpu, only: ndslfv_monoadvh_fgnl_gpu, &
-                                            ndslfv_monoadvh_gpu, &
-                                            ndslfv_monoadvv_gpu, ndslfv_monoadvv_fgnl_gpu, &
-                                            ndslfv_update_gpu
-#endif
 !-----------------------------------------------------------------------
           USE mod_sitgrid
           USE mod_sit_vdiff, ONLY: sit_vdiff_end, cal_ratioBlending
@@ -196,10 +185,6 @@
           tm_1 = mpi_wtime()
           tm_2 = mpi_wtime()
 #endif
-          ! ------------------------------------------------------------
-          ! << openacc allocate data >>
-          !$acc enter data create(um,vm)
-          ! ------------------------------------------------------------
 !      fsit=-99.             !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
           !default fsit<=0., turn on sit_vdiff every tau
           ic_sit = -99             !if fsit>0., store now tau is the ic_sit times when sit_vidff is turn on
@@ -598,13 +583,6 @@
 !
 !     advet grid non-linear forcing from t-dt/2 to t+dt/2 via NDSL advection
 !
-#ifdef USE_CUDA
-             !$acc update device(ut, vt, tt, um, vm)
-             !$acc data copyout(vdzonl,vdmerd,ddtemp)
-             call ndslfv_monoadvh_fgnl_gpu(vdzonl, vdmerd, ddtemp, &
-                                           ut, vt, tt, um, vm, dtahi, xy, 3, forward)
-             !$acc end data
-#else
              call mpe2d_transpose_ndsl_p2f(um, ut_sl, &
                                            nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, row_comm)
              call mpe2d_transpose_ndsl_p2f(vm, vt_sl, &
@@ -628,7 +606,6 @@
                                            nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, row_comm)
              call mpe2d_transpose_ndsl_f2p(ttm_sl, ddtemp, &
                                            nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, row_comm)
-#endif
 !
 !     calculate vertical velocity at mid-point
 !
@@ -662,43 +639,6 @@
              call trngra3(jtrun, jtmax, nx, levp, my, my_max, cim, poly, dpoly &
                           , hldten, dlphi, dtphi, nsizey)
              !
-#ifdef USE_CUDA
-             !$acc data async(async_id) &
-             !$acc& present_or_copyin(jlistnum, jlist1, nxdef_2d, nxjp, &
-             !$acc& nxjp_acc, lev, nxptot, dsigma, &
-             !$acc& dtahi, onocos, radsq) &
-             !$acc& create(vdzonl, vdmerd, ddtemp, &
-             !$acc& vdmerdg, vdzonlg, &
-             !$acc& vdzonlrp, vdmerdrp, &
-             !$acc& dtphi, dlphi, pdot, ptm)
-
-             !$acc update device(vdzonl, vdmerd, ddtemp) async(async_id)
-             !$acc update device(pdot, ptm) async(async_id)
-             !$acc update device(vdzonlg, vdmerdg) async(async_id)
-             !$acc update device(dtphi, dlphi) async(async_id)
-
-             !$acc parallel loop collapse(2) async(async_id) &
-             !$acc& private(j,nxj)
-             do jj = 1, jlistnum
-                do k = 1, lev
-                   j = jlist1(jj)
-                   nxj = nxdef_2d(j)
-                   !$acc loop vector
-                   do i = 1, nxj
-                      vdmerdrp(i, k, jj) = vdmerdg(i, k, jj) - dtphi(i, k, jj)/radsq/onocos(j)
-                      vdzonlrp(i, k, jj) = vdzonlg(i, k, jj) - dlphi(i, k, jj)/radsq
-                   end do
-                end do
-             end do !jj = 1,jlistnum
-
-             call ndslfv_update(nxjp, vdzonl, vdmerd, vdzonlrp, vdmerdrp, dtahi, forward)
-
-             call ndslfv_monoadvv_fgnl(vdzonl, vdmerd, ddtemp, pdot, ptm &
-                                       , nxjp, dtahi, 3, forward)
-             !$acc update self(vdzonl,vdmerd,ddtemp) async(async_id)
-             !$acc end data
-             !$acc wait(async_id)
-#else
              do jj = 1, jlistnum
                 j = jlist1(jj)
                 nxj = nxdef_2d(j)
@@ -717,7 +657,6 @@
              call ndslfv_monoadvv_fgnl(vdzonl, vdmerd, ddtemp, pdot, ptm &
                                        , nxjp, dtahi, 3, forward)
              !      enddo
-#endif
 
 !CWB2021 ndsl single precision test
 
@@ -885,52 +824,6 @@
                       , hldten, 1, nsizey)
           call trngra3(jtrun, jtmax, nx, levp, my, my_max, cim, poly, dpoly &
                        , hldten, dlphi, dtphi, nsizey)
-
-#ifdef USE_CUDA
-          !$acc data present_or_copyin(jlistnum,jlist1,nxdef_2d, nxjp, &
-          !$acc& nxjp_acc, ncld, lev, nxptot, ndslvvar, dsigma,  &
-          !$acc& dtah, onocos,radsq &
-          !$acc& )&
-          !$acc& create(vdmerdg, vdzonlg, pdot, ptm) &
-          !$acc& async(async_id)
-
-          !$acc update device(tt, ut, vt, qm, um, vm) async(async_id)
-          !$acc update device(dtphi, dlphi) async(async_id)
-          !$acc update device(vdmerdg, vdzonlg) async(async_id)
-          !$acc update device(ptm, pdot) async(async_id)
-
-          !$acc parallel loop collapse(2) async(async_id) &
-          !$acc& private(j,nxj)
-          do jj = 1, jlistnum
-             do k = 1, lev
-                j = jlist1(jj)
-                nxj = nxdef_2d(j)
-                !$acc loop vector
-                do i = 1, nxj
-                   vdmerdg(i, k, jj) = vdmerdg(i, k, jj) - dtphi(i, k, jj)/radsq/onocos(j)
-                   vdzonlg(i, k, jj) = vdzonlg(i, k, jj) - dlphi(i, k, jj)/radsq
-                end do
-             end do
-          end do !jj = 1,jlistnum
-          !$acc wait(async_id)
-          ! ****************************************
-          ! Semi-Lagrangian
-          !       Horizontal Advection
-          ! ****************************************
-          call ndslfv_monoadvh_gpu(tt, pten, ut, vt, qt, qm, &
-                                   um, vm, dtah, xy, forward)
-          ! ****************************************
-          !       update all horizontal informations
-          ! ****************************************
-          call ndslfv_update(nxjp, ut, vt, vdzonlg, vdmerdg, dtah, forward)
-          ! ****************************************
-          !       Vertical Advection
-          ! ****************************************
-          call ndslfv_monoadvv(tt, qt, ut, vt, pdot, ptm, nxjp, dtah, forward)
-          !$acc update self(tt,ut,vt,qt) async(async_id)
-          !$acc end data
-          !$acc wait(async_id)
-#else
 !
           do jj = 1, jlistnum
              j = jlist1(jj)
@@ -1014,7 +907,7 @@
 !      do itt = 1,itter
           call ndslfv_monoadvv(tt, qt, ut, vt, pdot, ptm, nxjp, dtah, forward)
 !      enddo
-#endif
+
 !CWB2021 ndsl single precision test
 
           call mpe2d_unify_nx(ww1, deldm)
@@ -2019,11 +1912,6 @@
           else if (istat .eq. 1) then
              if (myrank .eq. 0) then
                 print *, ' finished integration '
-                ! ------------------------------------------------------------
-                ! << openacc deallocate data >>
-                !$acc exit data delete(um,vm)
-                ! ------------------------------------------------------------
-
                 ! for io quilting
                 if (io_quilting) then
 !         ntag=ntag+1

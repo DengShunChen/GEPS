@@ -24,10 +24,10 @@ end program test_ndslfv_monoadvh_fgnl
 subroutine ndslfv_monoadvh_fgnl_unit(xy, forward)
    use const, only: RTYPE, dt, cosl, itter
    use rank, only: myrank
-   use param, only: nx, my_max, lev, ncld
+   use param, only: nx, my, my_max, lev, ncld
    use index, only: nxp, levp, levf, myf, jlistnum, jlen, nsizex, row_comm, &
-                    nxdef, jlist1
-   use grid, only: ut, vt, tt, ut_sl, vt_sl
+                    nxdef, jlist1, jlist2_2d, nxjlen_all, nxdef
+   use grid, only: ut, vt, tt, ut_sl, vt_sl, gglati, fa1, fa2, fa3, fa4
    use mod_ndslfv_monoadv_gpu, only: ndslfv_monoadvh_fgnl_gpu
    use mpe
    implicit none
@@ -103,6 +103,9 @@ subroutine ndslfv_monoadvh_fgnl_unit(xy, forward)
       write (*, '(A, 1pe15.7)'), "vmamax=", vmmax
    end if
 
+   !$acc enter data copyin(nx, my, lev, ncld, nxp, nsizex, &
+   !$acc& gglati, fa1, fa2, fa3, fa4, jlist2_2d, nxjlen_all, nxdef, cosl)
+
    do i = 1, steps
       if (myrank .eq. 0) write (*, '("<< ", i3, " >>")') i
       ! << CPU >>
@@ -144,6 +147,9 @@ subroutine ndslfv_monoadvh_fgnl_unit(xy, forward)
 
       !$acc end data
    end do
+
+   !$acc exit data delete(nx, my, lev, ncld, nxp, nsizex, &
+   !$acc& gglati, fa1, fa2, fa3, fa4, jlist2_2d, nxjlen_all, cosl, nxdef)
 
    call Varerr(err_arr(1, 1), tt_gpu, nxp, tt_cpu, nxp, lev, 1)
    call Varerr(err_arr(1, 2), ut_gpu, nxp, ut_cpu, nxp, lev, 1)
