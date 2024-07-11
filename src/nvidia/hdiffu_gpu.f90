@@ -56,14 +56,15 @@ subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
    !$acc parallel loop gang async(async_id) private(wt)
    do k = 1, lev
       wt = 0.0
-      !$acc loop worker reduction(max:wt)
+      !$acc loop vector collapse(2) reduction(max:wt) private(j,nxj,xx)
       do jj = 1, jlistnum
-         j = jlist1(jj)
-         nxj = nxdef_2d(j)
-         xx = rad/cosl(j)
-         !$acc loop vector
-         do i = 1, nxj
-            wt = max(wt, xx*sqrt(ut(i, k, jj)**2 + vt(i, k, jj)**2))
+         do i = 1, nxp
+            j = jlist1(jj)
+            nxj = nxdef_2d(j)
+            if (i .le. nxj) then
+               xx = rad/cosl(j)
+               wt = max(wt, xx*sqrt(ut(i, k, jj)**2 + vt(i, k, jj)**2))
+            end if
          end do
       end do
       wmax(k) = wt
@@ -150,7 +151,6 @@ subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
       ! Present on device: temnow, vornow, divnow, Llist, mlist
       call filter_top_gpu(jtrun, jtmax, levp, hdk1, ncld, temnow, vornow, divnow)
    end if
-   !$acc wait(async_id)
 !--------------------------------------------------------------------
    return
 end
@@ -167,7 +167,6 @@ subroutine whdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
    use param, only: octahedral
    use openacc
    use cudafor
-   use mpi
 
    implicit none
 
@@ -199,14 +198,15 @@ subroutine whdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
    !$acc parallel loop gang async(async_id) private(wt)
    do k = 1, lev
       wt = 0.0
-      !$acc loop worker reduction(max:wt) private(j, nxj, xx)
+      !$acc loop vector collapse(2) reduction(max:wt) private(j, nxj, xx)
       do jj = 1, jlistnum
-         j = jlist1(jj)
-         nxj = nxdef_2d(j)
-         xx = rad/cosl(j)
-         !$acc loop vector
-         do i = 1, nxj
-            wt = max(wt, xx*sqrt(ut(i, k, jj)**2 + vt(i, k, jj)**2))
+         do i = 1, nxp
+            j = jlist1(jj)
+            nxj = nxdef_2d(j)
+            if (i .le. nxj) then
+               xx = rad/cosl(j)
+               wt = max(wt, xx*sqrt(ut(i, k, jj)**2 + vt(i, k, jj)**2))
+            end if
          end do
       end do
       wmax(k) = wt
@@ -270,9 +270,10 @@ subroutine whdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
    do k = 1, hdk1
       if (wmax(k) .gt. windmax3) windchk = .true.
    end do
-   if (windchk) &
+   if (windchk) then
       ! Present on device: temnow, vornow, divnow, Llist, mlist
       call filter_top_gpu(jtrun, jtmax, levp, hdk1, ncld, temnow, vornow, divnow)
+   end if
    return
 end
 
@@ -299,7 +300,7 @@ subroutine filter_top_gpu(jtrun, jtmax, lev, ktop, ncld, temnow &
 
    real wvn_top(ktop + 1), djt
 
-   integer k, mode, m, mf, n, nflt, IERR, KL
+   integer k, mode, m, mf, n, nflt, KL
    real pi, flt, fac
    integer async_id, istat, ierr
    integer(kind=cuda_stream_kind) :: stream
