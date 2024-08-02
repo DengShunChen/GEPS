@@ -1660,7 +1660,7 @@
             ut(i,k,jj) = ut(i,k,jj) + utgwc(i,k) * dta
             vt(i,k,jj) = vt(i,k,jj) + vtgwc(i,k) * dta
             eng1 = 0.5*(ut(i,k,jj)*ut(i,k,jj)+vt(i,k,jj)*vt(i,k,jj))
-            tt(i,k,jj) = tt(i,k,jj) + (eng0-eng1)/(dta*cp)
+            tt(i,k,jj) = tt(i,k,jj) + (eng0-eng1)/cp
           enddo
         enddo
       endif  !(end of docgrav and nmgwcv=2)
