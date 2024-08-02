@@ -158,7 +158,7 @@ subroutine tracking(tau,dt_trk,dt,nx,my,                                  &
 
 ! do tracking
   dtaup= mod(tau+0.001, tau)
-  if ( tau < 0.001 )    dtaup=0.0
+  !if ( tau < 0.001 )    dtaup=0.0
   
   DoFindTrack=(dtaup .lt. dtx_tau)
 !  print*,'DoFindTrack',dtaup,dtx_tau,DoFindTrack
@@ -250,6 +250,42 @@ subroutine tracking(tau,dt_trk,dt,nx,my,                                  &
           tensity(nc,ip,n)=undef
         endif
       enddo ! ip=1,nvar
+!
+!cjh
+      if ( (tensity(nc,1,n) .eq. undef) .and. (tensity(nc,4,n) .ne. undef) )then
+           tflon(nc,1,n)=0.5*(tflon(nc-1,1,n)+tflon(nc,4,n))
+           tflat(nc,1,n)=0.5*(tflat(nc-1,1,n)+tflat(nc,4,n))
+           tensity(nc,1,n)=tensity(nc-1,1,n)
+      endif
+      if ( (tensity(nc,1,n) .eq. undef) .and. (tensity(nc,4,n) .eq. undef) )then
+         if( tensity(nc,2,n) .ne. undef)  then
+            if( abs(tflon(nc,2,n)-tflon(nc-1,1,n)) .lt. 4. .and. &
+                abs(tflat(nc,2,n)-tflat(nc-1,1,n)) .lt. 4.) then
+              tflon(nc,1,n)=0.5*(tflon(nc-1,1,n)+tflon(nc,2,n))
+              tflat(nc,1,n)=0.5*(tflat(nc-1,1,n)+tflat(nc,2,n))
+              tensity(nc,1,n)=tensity(nc-1,1,n)
+              tflon(nc,4,n)=0.5*(tflon(nc-1,4,n)+tflon(nc,2,n))
+              tflat(nc,4,n)=0.5*(tflat(nc-1,4,n)+tflat(nc,2,n))
+              tensity(nc,4,n)=tensity(nc-1,4,n)
+            endif
+         endif
+      endif
+      if( (tensity(nc,4,n) .eq. undef) .and. (tensity(nc,1,n).ne.undef) )then
+        tflon(nc,4,n)=0.5*(tflon(nc-1,4,n)+tflon(nc,1,n))
+        tflat(nc,4,n)=0.5*(tflat(nc-1,4,n)+tflat(nc,1,n))
+        tensity(nc,4,n)=tensity(nc-1,4,n)
+      endif
+      if( (tensity(nc,2,n) .eq. undef) .and. (tensity(nc,3,n).ne.undef) )then
+        tflon(nc,2,n)=0.5*(tflon(nc-1,2,n)+tflon(nc,3,n))
+        tflat(nc,2,n)=0.5*(tflat(nc-1,2,n)+tflat(nc,3,n))
+        tensity(nc,2,n)=tensity(nc-1,2,n)
+      endif
+      if( (tensity(nc,3,n) .eq. undef) .and. (tensity(nc,2,n).ne.undef) )then
+        tflon(nc,3,n)=0.5*(tflon(nc-1,3,n)+tflon(nc,2,n))
+        tflat(nc,3,n)=0.5*(tflat(nc-1,3,n)+tflat(nc,2,n))
+        tensity(nc,3,n)=tensity(nc-1,3,n)
+      endif
+
 !
       if(myrank.eq.0)then
         print *,' tau=',tau,' typhoon=',typname(n),' nrec=',nrec(n)
