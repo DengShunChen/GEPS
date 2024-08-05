@@ -99,6 +99,7 @@ subroutine intgrt_gpu
 !
    real(kind=RTYPE) pltemp(jtrun, jtmax, 2), cc(nx + 2, levp, 1, my_max), &
       ww1(nx, my_max)
+   real(kind=RTYPE) cc_cg((nx + 2)*levp*2*my_max), gwk1_cg((nx + 2)*levp*2*my_max)
 !byl      real      dlgeo(nxp,my_max),dtgeo(nxp,my_max)
 !byl      real      cc3(nx+2,levp,3,my_max),wss3(levp,2,3,jtrun,jtmax)
 !
@@ -474,6 +475,31 @@ subroutine intgrt_gpu
 !#ifdef TIMING
 !      tm_1=mpi_wtime()
 !#endif
+
+   !$acc enter data copyin(up, vp, ttp, rdiv, ptp) async(async_id)
+   !$acc enter data copyin(pdot, vdmerd, vdzonl, vdmerdr, vdzonlr, &
+   !$acc& vdmerdrp, vdzonlrp, ddtemp, pten, deldm) async(async_id)
+   !$acc enter data copyin(ut, vt, tt, um, vm, dtahi) async(async_id)
+   !$acc enter data copyin(nxjp, sigma, ptm, pk, pk2, plt, &
+   !$acc& rdivm, tm, qt, phi, dtpl, dlpl, sinl, &
+   !$acc& dsigma, onocos, cor, diveng, vdmerdg, vdzonlg, &
+   !$acc& sdpbl, sd, vvel, sgeo) async(async_id)
+   !$acc enter data copyin(cc, jlist1, nxjlen, nxjlen_all, &
+   !$acc& nlist, jlist2, poly, weight, hldten, &
+   !$acc& mtrundef, mlist, cim, dpoly, dlphi, dtphi) async(async_id)
+   !$acc enter data copyin(nxdef_2d, nxjp_acc, nxptot) async(async_id)
+   !$acc enter data copyin(ww1, plten) async(async_id)
+   !$acc enter data copyin(temten, divten, vorten) async(async_id)
+   !$acc enter data copyin(plmid, temmid, divmid, temnow, divnow, plnow, &
+   !$acc& jtwvp, spalm, arrhyd, eps4L, evecin, eigval, evectr, arsddt) async(async_id)
+   !$acc enter data copyin(vormid, cosl, eps4, trefs, Llist, hdk2, vornow) async(async_id)
+   !$acc enter data copyin(wcfac, wdfac, nxjstart, nxjend) async(async_id)
+   !$acc enter data copyin(qm, nxdef, pltemp, pt) async(async_id)
+   !$acc enter data copyin(ptend, wkmf, vorold, divold, temold, plold) async(async_id)
+   !$acc enter data copyin(ut_sl, vt_sl, uum_sl, vvm_sl, ttm_sl, &
+   !$acc& lonlen, lonstr, latlen, jlist1_sl, gglati, fa1, fa2, fa3, fa4) async(async_id)
+   !$acc enter data copyin(qm_sl, pten_sl, cc_cg, gwk1_cg) async(async_id)
+   !$acc wait(async_id)
 100 continue
 !
    tau = tau + dtx/3600.
@@ -516,30 +542,6 @@ subroutine intgrt_gpu
 !
 !  global mean tempertures (tbar) and specific humid (qbar)
 !
-   !$acc enter data copyin(nx, my, lev, ncld, nxp, nsizex, &
-   !$acc& gglati, fa1, fa2, fa3, fa4, jlist2_2d) async(async_id)
-
-   !$acc enter data copyin(up, vp, ttp, rdiv, ptp) async(async_id)
-   !$acc enter data copyin(pdot, vdmerd, vdzonl, vdmerdr, vdzonlr, &
-   !$acc& vdmerdrp, vdzonlrp, ddtemp, pten, deldm) async(async_id)
-   !$acc enter data copyin(ut, vt, tt, um, vm, dtahi) async(async_id)
-   !$acc enter data copyin(nxjp, sigma, ptm, pk, pk2, plt, &
-   !$acc& rdivm, tm, qt, phi, dtpl, dlpl, sinl, &
-   !$acc& dsigma, onocos, cor, diveng, vdmerdg, vdzonlg, &
-   !$acc& sdpbl, sd, vvel, sgeo) async(async_id)
-   !$acc enter data copyin(cc, jlist1, nxjlen, nxjlen_all, &
-   !$acc& nlist, jlist2, poly, weight, hldten, &
-   !$acc& mtrundef, mlist, cim, dpoly, dlphi, dtphi) async(async_id)
-   !$acc enter data copyin(nxdef_2d, nxjp_acc, nxptot) async(async_id)
-   !$acc enter data copyin(ww1, plten) async(async_id)
-   !$acc enter data copyin(temten, divten, vorten) async(async_id)
-   !$acc enter data copyin(plmid, temmid, divmid, temnow, divnow, plnow, &
-   !$acc& jtwvp, spalm, arrhyd, eps4L, evecin, eigval, evectr, arsddt) async(async_id)
-   !$acc enter data copyin(vormid, cosl, eps4, trefs, Llist, hdk2, vornow) async(async_id)
-   !$acc enter data copyin(wcfac, wdfac, nxjstart, nxjend) async(async_id)
-   !$acc enter data copyin(qm, nxdef, pltemp, pt) async(async_id)
-   !$acc enter data copyin(ptend, wkmf, vorold, divold, temold, plold) async(async_id)
-   !$acc wait(async_id)
    !$acc host_data use_device(plmid, plnow, divmid, divnow, vormid, vornow, temmid, temnow)
    istat = cudaMemcpyAsync(plmid, plnow, size(plmid), cudaMemcpyDeviceToDevice, stream)
    istat = cudaMemcpyAsync(divmid, divnow, size(divmid), cudaMemcpyDeviceToDevice, stream)
@@ -600,11 +602,24 @@ subroutine intgrt_gpu
 !
 !     advet grid non-linear forcing from t-dt/2 to t+dt/2 via NDSL advection
 !
-      !$acc wait(async_id)
-      ! To Do: Make ndslfv_monoadvh_fgnl_gpu asynchronous
-      call ndslfv_monoadvh_fgnl_gpu(vdzonl, vdmerd, ddtemp, &
-                                    ut, vt, tt, um, vm, dtahi, xy, 3, forward)
-      !$acc wait(async_id)
+      call mpe2d_transpose_ndsl_p2f_gpu(um, ut_sl, &
+                                        nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+      call mpe2d_transpose_ndsl_p2f_gpu(vm, vt_sl, &
+                                        nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+      call mpe2d_transpose_ndsl_p2f_gpu(ut, uum_sl, &
+                                        nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+      call mpe2d_transpose_ndsl_p2f_gpu(vt, vvm_sl, &
+                                        nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+      call mpe2d_transpose_ndsl_p2f_gpu(tt, ttm_sl, &
+                                        nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+      call ndslfv_monoadvh_fgnl_gpu_refactor(uum_sl, vvm_sl, ttm_sl &
+                                             , nxdef, dtahi, xy, levp, 3, forward)
+      call mpe2d_transpose_ndsl_f2p_gpu(uum_sl, vdzonl, &
+                                        nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+      call mpe2d_transpose_ndsl_f2p_gpu(vvm_sl, vdmerd, &
+                                        nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+      call mpe2d_transpose_ndsl_f2p_gpu(ttm_sl, ddtemp, &
+                                        nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
 !
 !     calculate vertical velocity at mid-point
 !
@@ -633,11 +648,11 @@ subroutine intgrt_gpu
 !
       end do !jj = 1,jlistnum
 
-      call joinrs_gpu(cc, diveng, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
-      call tranrs_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc &
-                      , hldten, 1, nsizey)
+      call joinrs_gpu(cc_cg, diveng, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
+      call tranrs_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc_cg &
+                      , hldten, 1, nsizey, gwk1_cg)
       call trngra3_gpu(jtrun, jtmax, nx, levp, my, my_max, cim, poly, dpoly &
-                       , hldten, dlphi, dtphi, nsizey)
+                       , hldten, dlphi, dtphi, nsizey, cc_cg, gwk1_cg)
 
       !$acc parallel loop collapse(3) private(j, nxj) async(async_id)
       do jj = 1, jlistnum
@@ -661,7 +676,7 @@ subroutine intgrt_gpu
 
       call mpe2d_unify_nx_gpu(ww1, deldm)
       call tranrs1_gpu(jtrun, jtmax, nx, my, my_max, poly, weight, ww1 &
-                       , plten, nsizey)
+                       , plten, nsizey, cc_cg, gwk1_cg)
 
       if (forward) then
          !$acc parallel loop collapse(3) private(j, nxj) async(async_id)
@@ -695,12 +710,12 @@ subroutine intgrt_gpu
          end do
       end if
 
-      call joinrs_gpu(cc, ddtemp, dummy, dummy, dummy, nx, my_max, lev &
+      call joinrs_gpu(cc_cg, ddtemp, dummy, dummy, dummy, nx, my_max, lev &
                       , jlistnum, 1, 1)
-      call tranrs_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc &
-                      , temten, 1, nsizey)
+      call tranrs_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc_cg &
+                      , temten, 1, nsizey, gwk1_cg)
       call rstrandz_gpu(jtrun, jtmax, nx, my, my_max, levp, vdmerd, vdzonl &
-                        , weight, cim, onocos, poly, dpoly, divten, vorten, nsizey)
+                        , weight, cim, onocos, poly, dpoly, divten, vorten, nsizey, cc_cg, gwk1_cg)
 
       if (forward) then
          if (lsimpl) &
@@ -809,14 +824,14 @@ subroutine intgrt_gpu
 !     update all new wind field at mid-point
 !
       call tranuv_gpu(jtrun, jtmax, nx, my, my_max, levp, onocos, wcfac, wdfac &
-                      , poly, dpoly, vormid, divmid, um, vm, nsizey)
-      call transr_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, divmid, cc, 1, nsizey)
-      call ujoinsr_gpu(cc, rdivm, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
-      call transr_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, temmid, cc, 1, nsizey)
-      call ujoinsr_gpu(cc, tm, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
-      call transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, plmid, ptm, nsizey)
+                      , poly, dpoly, vormid, divmid, um, vm, nsizey, cc_cg, gwk1_cg)
+      call transr_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, divmid, cc_cg, 1, nsizey, gwk1_cg)
+      call ujoinsr_gpu(cc_cg, rdivm, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
+      call transr_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, temmid, cc_cg, 1, nsizey, gwk1_cg)
+      call ujoinsr_gpu(cc_cg, tm, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
+      call transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, plmid, ptm, nsizey, cc_cg, gwk1_cg)
       call trngra_gpu(jtrun, jtmax, nx, my, my_max, cim, poly, dpoly, plmid &
-                      , dlpl, dtpl, nsizey)
+                      , dlpl, dtpl, nsizey, cc_cg, gwk1_cg)
       forward = .false.
    end do ! do itt=1,itter
 !
@@ -847,11 +862,11 @@ subroutine intgrt_gpu
                                   , sgeo(1, jj))
    end do !jj = 1,jlistnum
 
-   call joinrs_gpu(cc, diveng, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
-   call tranrs_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc &
-                   , hldten, 1, nsizey)
+   call joinrs_gpu(cc_cg, diveng, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
+   call tranrs_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc_cg &
+                   , hldten, 1, nsizey, gwk1_cg)
    call trngra3_gpu(jtrun, jtmax, nx, levp, my, my_max, cim, poly, dpoly &
-                    , hldten, dlphi, dtphi, nsizey)
+                    , hldten, dlphi, dtphi, nsizey, cc_cg, gwk1_cg)
 
    !$acc parallel loop collapse(2) async(async_id) &
    !$acc& private(j,nxj)
@@ -866,13 +881,34 @@ subroutine intgrt_gpu
          end do
       end do
    end do !jj = 1,jlistnum
-   !$acc wait(async_id)
    ! ****************************************
    ! Semi-Lagrangian
    !       Horizontal Advection
    ! ****************************************
-   call ndslfv_monoadvh_gpu(tt, pten, ut, vt, qt, qm, &
-                            um, vm, dtah, xy, forward)
+   ! call ndslfv_monoadvh_gpu(tt, pten, ut, vt, qt, qm, &
+   !                          um, vm, dtah, xy, forward)
+   call mpe2d_transpose_ndsl_p2f_gpu(um, ut_sl, &
+                                     nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+   call mpe2d_transpose_ndsl_p2f_gpu(vm, vt_sl, &
+                                     nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+   call mpe2d_transpose_ndsl_p2f_gpu(ut, uum_sl, &
+                                     nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+   call mpe2d_transpose_ndsl_p2f_gpu(vt, vvm_sl, &
+                                     nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+   call mpe2d_transpose_ndsl_p2f_gpu(tt, ttm_sl, &
+                                     nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+   call mpe2d_transpose_ndsl_p2f_gpu(qm, qm_sl, &
+                                     nxp, nx, levf, levp, ncld, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+   call ndslfv_monoadvh_gpu_refactor(ttm_sl, qm_sl, pten_sl, uum_sl, vvm_sl &
+                                     , nxdef, dtah, xy, levp)
+   call mpe2d_transpose_ndsl_f2p_gpu(ttm_sl, tt, &
+                                     nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+   call mpe2d_transpose_ndsl_f2p_gpu(uum_sl, ut, &
+                                     nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+   call mpe2d_transpose_ndsl_f2p_gpu(vvm_sl, vt, &
+                                     nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+   call mpe2d_transpose_ndsl_f2p_gpu(qm_sl, qt, &
+                                     nxp, nx, levf, levp, ncld, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
    ! ****************************************
    !       update all horizontal informations
    ! ****************************************
@@ -884,7 +920,7 @@ subroutine intgrt_gpu
 
    call mpe2d_unify_nx_gpu(ww1, deldm)
    call tranrs1_gpu(jtrun, jtmax, nx, my, my_max, poly, weight, ww1 &
-                    , plten, nsizey)
+                    , plten, nsizey, cc_cg, gwk1_cg)
 
    !$acc parallel loop collapse(3) private(mf) async(async_id)
    do i = 1, 2
@@ -897,12 +933,10 @@ subroutine intgrt_gpu
          end do
       end do
    end do
-   call transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, pltemp, pt, nsizey)
+   call transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, pltemp, pt, nsizey, cc_cg, gwk1_cg)
 
    !mass conservation
-   !$acc update self(pt, qt) async(async_id)
-   !$acc wait(async_id)
-   call ptotc(pdry, dpprt)
+   call ptotc_gpu(pdry, dpprt)
    pcorr = (pdryi - pdry)*sqrt(2.)
 !
    if (two_loop) then
@@ -924,12 +958,12 @@ subroutine intgrt_gpu
             end do
          end do
       end do
-      call joinrs_gpu(cc, ddtemp, dummy, dummy, dummy, nx, my_max, lev &
+      call joinrs_gpu(cc_cg, ddtemp, dummy, dummy, dummy, nx, my_max, lev &
                       , jlistnum, 1, 1)
-      call tranrs_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc &
-                      , temten, 1, nsizey)
+      call tranrs_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc_cg &
+                      , temten, 1, nsizey, gwk1_cg)
       call rstrandz_gpu(jtrun, jtmax, nx, my, my_max, levp, vdmerd, vdzonl &
-                        , weight, cim, onocos, poly, dpoly, divten, vorten, nsizey)
+                        , weight, cim, onocos, poly, dpoly, divten, vorten, nsizey, cc_cg, gwk1_cg)
 
 !        if ( mass_dp ) then
       ! sureface pressure global mean correction
@@ -976,7 +1010,7 @@ subroutine intgrt_gpu
          end do
       end do
 
-      call transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, plten, ptend, nsizey)
+      call transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, plten, ptend, nsizey, cc_cg, gwk1_cg)
 
       !$acc parallel loop gang private(mf, wkmf_local) async(async_id)
       do m = 1, mlistnum
@@ -1001,7 +1035,7 @@ subroutine intgrt_gpu
 
       sptend = sqrt(0.5*sptend)*3600.0
       if (myrank .eq. 0) &
-         print *, 'gpu  surf pres tend rms =', sptend, ' mb/hrs'
+         print *, 'surf pres tend rms =', sptend, ' mb/hrs'
 !
 !  take a time step
 !
@@ -1046,37 +1080,14 @@ subroutine intgrt_gpu
 !
 !  for physical parameterization,output spectrum u,v,t,q to grid point
 !
-      call transr_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, temnow, cc, 1, nsizey)
+      call transr_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, temnow, cc_cg, 1, nsizey, gwk1_cg)
 
-      call ujoinsr_gpu(cc, tt, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
+      call ujoinsr_gpu(cc_cg, tt, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
       call tranuv_gpu(jtrun, jtmax, nx, my, my_max, levp, onocos, wcfac, wdfac &
-                      , poly, dpoly, vornow, divnow, ut, vt, nsizey)
-      call transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, plnow, pt, nsizey)
+                      , poly, dpoly, vornow, divnow, ut, vt, nsizey, cc_cg, gwk1_cg)
+      call transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, plnow, pt, nsizey, cc_cg, gwk1_cg)
 
    end if ! two_loop
-   !$acc exit data copyout(up, vp, ttp, rdiv, ptp) async(async_id)
-   !$acc exit data copyout(pdot, vdmerd, vdzonl, vdmerdr, vdzonlr, &
-   !$acc& vdmerdrp, vdzonlrp, ddtemp, pten, deldm) async(async_id)
-   !$acc exit data copyout(ut, vt, tt, um, vm, dtahi) async(async_id)
-   !$acc exit data copyout(nxjp, sigma, ptm, pk, pk2, plt, &
-   !$acc& rdivm, tm, qt, phi, dtpl, dlpl, sinl, &
-   !$acc& dsigma, onocos, cor, diveng, vdmerdg, vdzonlg, &
-   !$acc& sdpbl, sd, vvel, sgeo) async(async_id)
-   !$acc exit data copyout(cc, jlist1, nxjlen, nxjlen_all, &
-   !$acc& nlist, jlist2, poly, weight, hldten, &
-   !$acc& mtrundef, mlist, cim, dpoly, dlphi, dtphi) async(async_id)
-   !$acc exit data delete(nxdef_2d, nxjp_acc, nxptot) async(async_id)
-   !$acc exit data copyout(ww1, plten) async(async_id)
-   !$acc exit data copyout(temten, divten, vorten) async(async_id)
-   !$acc exit data copyout(plmid, temmid, divmid, temnow, divnow, plnow, &
-   !$acc& jtwvp, spalm, arrhyd, eps4L, evecin, eigval, evectr, arsddt) async(async_id)
-   !$acc exit data copyout(vormid, cosl, eps4, trefs, Llist, hdk2, vornow) async(async_id)
-   !$acc exit data copyout(wcfac, wdfac, nxjstart, nxjend) async(async_id)
-   !$acc exit data copyout(qm, nxdef, pltemp, pt) async(async_id)
-   !$acc exit data copyout(ptend, wkmf, vorold, divold, temold, plold) async(async_id)
-   !$acc exit data delete(nx, my, lev, ncld, nxp, nsizex, &
-   !$acc& gglati, fa1, fa2, fa3, fa4, jlist2_2d) async(async_id)
-   !$acc wait(async_id)
 
    !  stochastic_physics
    call run_stochastic_physics()
@@ -1085,6 +1096,30 @@ subroutine intgrt_gpu
 !
 
    if (yesdia) then
+      !$acc exit data copyout(up, vp, ttp, rdiv, ptp) async(async_id)
+      !$acc exit data copyout(pdot, vdmerd, vdzonl, vdmerdr, vdzonlr, &
+      !$acc& vdmerdrp, vdzonlrp, ddtemp, pten, deldm) async(async_id)
+      !$acc exit data copyout(ut, vt, tt, um, vm, dtahi) async(async_id)
+      !$acc exit data copyout(nxjp, sigma, ptm, pk, pk2, plt, &
+      !$acc& rdivm, tm, qt, phi, dtpl, dlpl, sinl, &
+      !$acc& dsigma, onocos, cor, diveng, vdmerdg, vdzonlg, &
+      !$acc& sdpbl, sd, vvel, sgeo) async(async_id)
+      !$acc exit data copyout(cc, jlist1, nxjlen, nxjlen_all, &
+      !$acc& nlist, jlist2, poly, weight, hldten, &
+      !$acc& mtrundef, mlist, cim, dpoly, dlphi, dtphi) async(async_id)
+      !$acc exit data delete(nxdef_2d, nxjp_acc, nxptot) async(async_id)
+      !$acc exit data copyout(ww1, plten) async(async_id)
+      !$acc exit data copyout(temten, divten, vorten) async(async_id)
+      !$acc exit data copyout(plmid, temmid, divmid, temnow, divnow, plnow, &
+      !$acc& jtwvp, spalm, arrhyd, eps4L, evecin, eigval, evectr, arsddt) async(async_id)
+      !$acc exit data copyout(vormid, cosl, eps4, trefs, Llist, hdk2, vornow) async(async_id)
+      !$acc exit data copyout(wcfac, wdfac, nxjstart, nxjend) async(async_id)
+      !$acc exit data copyout(qm, nxdef, pltemp, pt) async(async_id)
+      !$acc exit data copyout(ptend, wkmf, vorold, divold, temold, plold) async(async_id)
+      !$acc exit data copyout(ut_sl, vt_sl, uum_sl, vvm_sl, ttm_sl, &
+      !$acc& lonlen, lonstr, latlen, jlist1_sl, gglati, fa1, fa2, fa3, fa4) async(async_id)
+      !$acc exit data copyout(qm_sl, pten_sl, cc_cg, gwk1_cg) async(async_id)
+      !$acc wait(async_id)
       qp(:, :, :) = qt(:, :, :)
       call diabat(fwd, docup, dodry, dolsp, dopbl, dorad, doshl, dograv, tofd &
                   , nx, my, my_max, lev, ncld, nmcup, nmpbl, nmland, nmshl, cgw &
@@ -1145,7 +1180,30 @@ subroutine intgrt_gpu
          if (mass_dp) call adjptq(dta, pltemp, plten)
 
       end if ! two_loop
-
+      !$acc enter data copyin(up, vp, ttp, rdiv, ptp) async(async_id)
+      !$acc enter data copyin(pdot, vdmerd, vdzonl, vdmerdr, vdzonlr, &
+      !$acc& vdmerdrp, vdzonlrp, ddtemp, pten, deldm) async(async_id)
+      !$acc enter data copyin(ut, vt, tt, um, vm, dtahi) async(async_id)
+      !$acc enter data copyin(nxjp, sigma, ptm, pk, pk2, plt, &
+      !$acc& rdivm, tm, qt, phi, dtpl, dlpl, sinl, &
+      !$acc& dsigma, onocos, cor, diveng, vdmerdg, vdzonlg, &
+      !$acc& sdpbl, sd, vvel, sgeo) async(async_id)
+      !$acc enter data copyin(cc, jlist1, nxjlen, nxjlen_all, &
+      !$acc& nlist, jlist2, poly, weight, hldten, &
+      !$acc& mtrundef, mlist, cim, dpoly, dlphi, dtphi) async(async_id)
+      !$acc enter data copyin(nxdef_2d, nxjp_acc, nxptot) async(async_id)
+      !$acc enter data copyin(ww1, plten) async(async_id)
+      !$acc enter data copyin(temten, divten, vorten) async(async_id)
+      !$acc enter data copyin(plmid, temmid, divmid, temnow, divnow, plnow, &
+      !$acc& jtwvp, spalm, arrhyd, eps4L, evecin, eigval, evectr, arsddt) async(async_id)
+      !$acc enter data copyin(vormid, cosl, eps4, trefs, Llist, hdk2, vornow) async(async_id)
+      !$acc enter data copyin(wcfac, wdfac, nxjstart, nxjend) async(async_id)
+      !$acc enter data copyin(qm, nxdef, pltemp, pt) async(async_id)
+      !$acc enter data copyin(ptend, wkmf, vorold, divold, temold, plold) async(async_id)
+      !$acc enter data copyin(ut_sl, vt_sl, uum_sl, vvm_sl, ttm_sl, &
+      !$acc& lonlen, lonstr, latlen, jlist1_sl, gglati, fa1, fa2, fa3, fa4) async(async_id)
+      !$acc enter data copyin(qm_sl, pten_sl, cc_cg, gwk1_cg) async(async_id)
+      !$acc wait(async_id)
    end if    ! end of (yesdia)
 
 !CWB2021
@@ -1153,6 +1211,7 @@ subroutine intgrt_gpu
 !        if ( mod(itimestep,2) .eq. 0 ) xy = -1 * xy
    xy = -1*xy
    if (.not. two_loop) then
+      print *, "not two_loop entry"
 !
 !  after phyical parameterization,transform grid point u,v,t,q to
 !  spectrum
@@ -1288,6 +1347,7 @@ subroutine intgrt_gpu
 ! update tg, dtsea/dt (W00100)
 !
    if (ldailyFCTsst .OR. ldailyFCTicesndpt .OR. dailyClm_option .ge. 1) then
+      print *, "daily entry"
       if (tau .ge. 24.) then
          do jj = 1, jlistnum
             j = jlist1(jj)
@@ -1343,16 +1403,12 @@ subroutine intgrt_gpu
 
 !!      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,vornow,cc,1,nsizey)
 !!      call ujoinsr(cc,rvor,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-   !$acc enter data copyin(poly, divnow, cc, jlist2, jlist1, mtrundef, nlist, rdiv, temnow, tt, plnow, pt, &
-   !$acc& nxjlen, nxjstart, nxjend) async(async_id)
-   !$acc enter data copyin(sigma, ptm, pk, pk2, plt, nxjp) async(async_id)
-   !$acc enter data copyin(cim, dpoly, dlpl, dtpl, mlist) async(async_id)
-   !$acc enter data copyin(onocos, wcfac, wdfac, vornow, ut, vt) async(async_id)
-   call transr_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, divnow, cc, 1, nsizey)
-   call ujoinsr_gpu(cc, rdiv, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
-   call transr_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, temnow, cc, 1, nsizey)
-   call ujoinsr_gpu(cc, tt, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
-   call transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, plnow, pt, nsizey)
+
+   call transr_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, divnow, cc_cg, 1, nsizey, gwk1_cg)
+   call ujoinsr_gpu(cc_cg, rdiv, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
+   call transr_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, temnow, cc_cg, 1, nsizey, gwk1_cg)
+   call ujoinsr_gpu(cc_cg, tt, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
+   call transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, plnow, pt, nsizey, cc_cg, gwk1_cg)
 !
 !   computing new p**capa quantities
 !
@@ -1366,23 +1422,18 @@ subroutine intgrt_gpu
 !  zonal and meridional gradients of terrain pressure
 !
    call trngra_gpu(jtrun, jtmax, nx, my, my_max, cim, poly, dpoly, plnow &
-                   , dlpl, dtpl, nsizey)
+                   , dlpl, dtpl, nsizey, cc_cg, gwk1_cg)
 !
 !  velocity components
 !
    call tranuv_gpu(jtrun, jtmax, nx, my, my_max, levp, onocos, wcfac, wdfac &
-                   , poly, dpoly, vornow, divnow, ut, vt, nsizey)
-   !$acc exit data copyout(poly, divnow, cc, jlist2, jlist1, mtrundef, nlist, rdiv, temnow, tt, plnow, pt, &
-   !$acc& nxjlen, nxjstart, nxjend) async(async_id)
-   !$acc exit data copyout(sigma, ptm, pk, pk2, plt, nxjp) async(async_id)
-   !$acc exit data copyout(cim, dpoly, dlpl, dtpl, mlist) async(async_id)
-   !$acc exit data copyout(onocos, wcfac, wdfac, vornow, ut, vt) async(async_id)
-   !$acc wait(async_id)
+                   , poly, dpoly, vornow, divnow, ut, vt, nsizey, cc_cg, gwk1_cg)
 !
 !
 !  detact instability occure or not
 !
    if (tau .gt. 12.) then
+      print *, "tau gt 12 entry"
 !        sptendmax2=0.409
 !        sptendmax1=0.379
       if (sptend .le. sptendmax1) n_stable = n_stable + 1
@@ -1430,6 +1481,30 @@ subroutine intgrt_gpu
 !     check tau in hourly for output
    dtaup = mod(tau + 0.001, 1.)
    if (dtaup .lt. 0.01) then
+      !$acc exit data copyout(up, vp, ttp, rdiv, ptp) async(async_id)
+      !$acc exit data copyout(pdot, vdmerd, vdzonl, vdmerdr, vdzonlr, &
+      !$acc& vdmerdrp, vdzonlrp, ddtemp, pten, deldm) async(async_id)
+      !$acc exit data copyout(ut, vt, tt, um, vm, dtahi) async(async_id)
+      !$acc exit data copyout(nxjp, sigma, ptm, pk, pk2, plt, &
+      !$acc& rdivm, tm, qt, phi, dtpl, dlpl, sinl, &
+      !$acc& dsigma, onocos, cor, diveng, vdmerdg, vdzonlg, &
+      !$acc& sdpbl, sd, vvel, sgeo) async(async_id)
+      !$acc exit data copyout(cc, jlist1, nxjlen, nxjlen_all, &
+      !$acc& nlist, jlist2, poly, weight, hldten, &
+      !$acc& mtrundef, mlist, cim, dpoly, dlphi, dtphi) async(async_id)
+      !$acc exit data delete(nxdef_2d, nxjp_acc, nxptot) async(async_id)
+      !$acc exit data copyout(ww1, plten) async(async_id)
+      !$acc exit data copyout(temten, divten, vorten) async(async_id)
+      !$acc exit data copyout(plmid, temmid, divmid, temnow, divnow, plnow, &
+      !$acc& jtwvp, spalm, arrhyd, eps4L, evecin, eigval, evectr, arsddt) async(async_id)
+      !$acc exit data copyout(vormid, cosl, eps4, trefs, Llist, hdk2, vornow) async(async_id)
+      !$acc exit data copyout(wcfac, wdfac, nxjstart, nxjend) async(async_id)
+      !$acc exit data copyout(qm, nxdef, pltemp, pt) async(async_id)
+      !$acc exit data copyout(ptend, wkmf, vorold, divold, temold, plold) async(async_id)
+      !$acc exit data copyout(ut_sl, vt_sl, uum_sl, vvm_sl, ttm_sl, &
+      !$acc& lonlen, lonstr, latlen, jlist1_sl, gglati, fa1, fa2, fa3, fa4) async(async_id)
+      !$acc exit data copyout(qm_sl, pten_sl, cc_cg, gwk1_cg) async(async_id)
+      !$acc wait(async_id)
       itau = NINT(tau)
 
       dtaup = mod(tau + 0.001, tauo)
@@ -1905,13 +1980,38 @@ subroutine intgrt_gpu
 !ch       call mpe_broadcast(istat,1,flag,mpe_integer)
 !         call mpe_bcast(istat,1,0,mpe_integer)
       end if !histim
-
+      !$acc enter data copyin(up, vp, ttp, rdiv, ptp) async(async_id)
+      !$acc enter data copyin(pdot, vdmerd, vdzonl, vdmerdr, vdzonlr, &
+      !$acc& vdmerdrp, vdzonlrp, ddtemp, pten, deldm) async(async_id)
+      !$acc enter data copyin(ut, vt, tt, um, vm, dtahi) async(async_id)
+      !$acc enter data copyin(nxjp, sigma, ptm, pk, pk2, plt, &
+      !$acc& rdivm, tm, qt, phi, dtpl, dlpl, sinl, &
+      !$acc& dsigma, onocos, cor, diveng, vdmerdg, vdzonlg, &
+      !$acc& sdpbl, sd, vvel, sgeo) async(async_id)
+      !$acc enter data copyin(cc, jlist1, nxjlen, nxjlen_all, &
+      !$acc& nlist, jlist2, poly, weight, hldten, &
+      !$acc& mtrundef, mlist, cim, dpoly, dlphi, dtphi) async(async_id)
+      !$acc enter data copyin(nxdef_2d, nxjp_acc, nxptot) async(async_id)
+      !$acc enter data copyin(ww1, plten) async(async_id)
+      !$acc enter data copyin(temten, divten, vorten) async(async_id)
+      !$acc enter data copyin(plmid, temmid, divmid, temnow, divnow, plnow, &
+      !$acc& jtwvp, spalm, arrhyd, eps4L, evecin, eigval, evectr, arsddt) async(async_id)
+      !$acc enter data copyin(vormid, cosl, eps4, trefs, Llist, hdk2, vornow) async(async_id)
+      !$acc enter data copyin(wcfac, wdfac, nxjstart, nxjend) async(async_id)
+      !$acc enter data copyin(qm, nxdef, pltemp, pt) async(async_id)
+      !$acc enter data copyin(ptend, wkmf, vorold, divold, temold, plold) async(async_id)
+      !$acc enter data copyin(ut_sl, vt_sl, uum_sl, vvm_sl, ttm_sl, &
+      !$acc& lonlen, lonstr, latlen, jlist1_sl, gglati, fa1, fa2, fa3, fa4) async(async_id)
+      !$acc enter data copyin(qm_sl, pten_sl, cc_cg, gwk1_cg) async(async_id)
+      !$acc wait(async_id)
    end if !  (mod(tau+0.001, 1.) .lt. 0.01)  hourly for output
+
 !    ---------------------------------------------------------------
 !
 ! new year, read obs sst
 !
    if (lopgsst) then
+      print *, "lopgsst entry"
       inexttau = int(tau + dtx/3600.+0.001)
       call dtgfix12(idtg, idtg1_sst, inexttau)
       inextyear = idtg1_sst/100000000
@@ -1927,6 +2027,30 @@ subroutine intgrt_gpu
    tm_2 = mpi_wtime()
 #endif
    if (itau .lt. itaue) go to 100
+   !$acc exit data copyout(up, vp, ttp, rdiv, ptp) async(async_id)
+   !$acc exit data copyout(pdot, vdmerd, vdzonl, vdmerdr, vdzonlr, &
+   !$acc& vdmerdrp, vdzonlrp, ddtemp, pten, deldm) async(async_id)
+   !$acc exit data copyout(ut, vt, tt, um, vm, dtahi) async(async_id)
+   !$acc exit data copyout(nxjp, sigma, ptm, pk, pk2, plt, &
+   !$acc& rdivm, tm, qt, phi, dtpl, dlpl, sinl, &
+   !$acc& dsigma, onocos, cor, diveng, vdmerdg, vdzonlg, &
+   !$acc& sdpbl, sd, vvel, sgeo) async(async_id)
+   !$acc exit data copyout(cc, jlist1, nxjlen, nxjlen_all, &
+   !$acc& nlist, jlist2, poly, weight, hldten, &
+   !$acc& mtrundef, mlist, cim, dpoly, dlphi, dtphi) async(async_id)
+   !$acc exit data delete(nxdef_2d, nxjp_acc, nxptot) async(async_id)
+   !$acc exit data copyout(ww1, plten) async(async_id)
+   !$acc exit data copyout(temten, divten, vorten) async(async_id)
+   !$acc exit data copyout(plmid, temmid, divmid, temnow, divnow, plnow, &
+   !$acc& jtwvp, spalm, arrhyd, eps4L, evecin, eigval, evectr, arsddt) async(async_id)
+   !$acc exit data copyout(vormid, cosl, eps4, trefs, Llist, hdk2, vornow) async(async_id)
+   !$acc exit data copyout(wcfac, wdfac, nxjstart, nxjend) async(async_id)
+   !$acc exit data copyout(qm, nxdef, pltemp, pt) async(async_id)
+   !$acc exit data copyout(ptend, wkmf, vorold, divold, temold, plold) async(async_id)
+   !$acc exit data copyout(ut_sl, vt_sl, uum_sl, vvm_sl, ttm_sl, &
+   !$acc& lonlen, lonstr, latlen, jlist1_sl, gglati, fa1, fa2, fa3, fa4) async(async_id)
+   !$acc exit data copyout(qm_sl, pten_sl, cc_cg, gwk1_cg) async(async_id)
+   !$acc wait(async_id)
    !
    flag = .false.
    if (myrank .eq. 0) then

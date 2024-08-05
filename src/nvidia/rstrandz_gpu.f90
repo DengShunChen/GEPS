@@ -1,12 +1,15 @@
+#define CUDACHECK(ierr) call cuda_check_helper(ierr, __FILE__, __LINE__)
+
 subroutine rstrandz_gpu(jtrun, jtmax, nx, my, my_max, lev &
                         , vdmer, vdzon, w, cim, onocos, poly, dpoly &
-                        , hldten, vorten, nsize)
+                        , hldten, vorten, nsize, cc, gwk1)
    ! Present on device: vdmer, vdzon, w, cim, onocos, poly, dpoly, hldten, vorten
-   ! Present on device: nlist, jlist2, mtrundef, jlist1, nxjlen, nxjlen_all
+   ! Present on device: nlist, jlist2, mtrundef, jlist1, nxjlen, nxjlen_all, nxdef
    use const, only: RTYPE
    use index
    use paramt
    use fftcom
+   use fft_cuda_graph
    use openacc
    use cudafor
 
@@ -53,7 +56,7 @@ subroutine rstrandz_gpu(jtrun, jtmax, nx, my, my_max, lev &
    async_id = 1
    stream = acc_get_cuda_stream(async_id)
 
-   !$acc enter data create(twcc_fk, gwk1, cc, wcc_fk) async(async_id)
+   !$acc enter data create(twcc_fk, wcc_fk) async(async_id)
 
    !$acc host_data use_device(twcc_fk, gwk1)
    istat = cudaMemSetAsync(twcc_fk, 0.0, size(twcc_fk), stream)
@@ -74,7 +77,14 @@ subroutine rstrandz_gpu(jtrun, jtmax, nx, my, my_max, lev &
    if (length_fft .eq. 0 .and. lreduce .eq. 0) then
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, lev*jlistnum*2, -1)
    else
-      call rfftmlt_loop_identical(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, lev*2, -1)
+      if (rstrandz_graph_created) then
+         CUDACHECK(cudaGraphLaunch(rstrandz_graph_exec, stream))
+      else
+         call rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, lev*2, -1, rstrandz_graph)
+     CUDACHECK(cudaGraphInstantiate(rstrandz_graph_exec, rstrandz_graph, rstrandz_error_node, rstrandz_buffer, rstrandz_buffer_len))
+         rstrandz_graph_created = .true.
+         CUDACHECK(cudaGraphLaunch(rstrandz_graph_exec, stream))
+      end if
    end if
 
    !$acc parallel loop collapse(3) async(async_id)
@@ -98,7 +108,7 @@ subroutine rstrandz_gpu(jtrun, jtmax, nx, my, my_max, lev &
    ! Present on device: twcc_fk, wcc_fk
    call mpe_transpose_rs_gpu(twcc_fk, wcc_fk, lev*2*2, jtmax, my_max, nsize, nccl_col_comm)
 #endif
-   !$acc exit data delete(gwk1, cc, twcc_fk) async(async_id)
+   !$acc exit data delete(twcc_fk) async(async_id)
 
    do m = 1, mlistnum
       mf = mlist(m)

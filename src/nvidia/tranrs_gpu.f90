@@ -1,6 +1,8 @@
+#define CUDACHECK(ierr) call cuda_check_helper(ierr, __FILE__, __LINE__)
+
 subroutine tranrs_gpu(jtrun, jtmax, nx, my, my_max, lev, poly, w, cc &
-                      , wss, num, nsize)
-!  Present on device: poly, w, cc, wss, nlist, jlist2
+                      , wss, num, nsize, gwk1)
+!  Present on device: poly, w, cc, wss, nlist, jlist2, jlist1, nxdef
 !  subroutine to transform a scalar grid point field to spectral
 !  coefficients
 !
@@ -26,6 +28,7 @@ subroutine tranrs_gpu(jtrun, jtmax, nx, my, my_max, lev, poly, w, cc &
    use const, only: RTYPE
    use index
    use fftcom
+   use fft_cuda_graph
    use fj_pad
    use openacc
    use cudafor
@@ -57,7 +60,7 @@ subroutine tranrs_gpu(jtrun, jtmax, nx, my, my_max, lev, poly, w, cc &
    async_id = 1
    stream = acc_get_cuda_stream(async_id)
 
-   !$acc enter data create(twcc_fk, gwk1, wcc_fk) async(async_id)
+   !$acc enter data create(twcc_fk, wcc_fk) async(async_id)
 
    !$acc host_data use_device(twcc_fk, wss, gwk1)
    istat = cudaMemsetAsync(twcc_fk, 0.0, size(twcc_fk), stream)
@@ -79,9 +82,15 @@ subroutine tranrs_gpu(jtrun, jtmax, nx, my, my_max, lev, poly, w, cc &
    if (length_fft .eq. 0 .and. lreduce .eq. 0) then
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, lev*jlistnum*num, -1)
    else
-      call rfftmlt_loop_identical(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, lev*num, -1)
+      if (tranrs_graph_created) then
+         CUDACHECK(cudaGraphLaunch(tranrs_graph_exec, stream))
+      else
+         call rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, lev*num, -1, tranrs_graph)
+         CUDACHECK(cudaGraphInstantiate(tranrs_graph_exec, tranrs_graph, tranrs_error_node, tranrs_buffer, tranrs_buffer_len))
+         tranrs_graph_created = .true.
+         CUDACHECK(cudaGraphLaunch(tranrs_graph_exec, stream))
+      end if
    end if
-   !$acc exit data delete(gwk1) async(async_id)
 
    mchk = iand(jtrun, 3)
 

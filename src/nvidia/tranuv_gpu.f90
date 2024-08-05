@@ -1,6 +1,15 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Copyright (c) 2024, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+!
+! See LICENSE for license information.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+#define CUDACHECK(ierr) call cuda_check_helper(ierr, __FILE__, __LINE__)
+
 subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
-                      , wdfac, poly, dpoly, vor, div, ut, vt, nsize)
-! Present on device: onocos, wcfac, wdfac, poly, dpoly, vor, div, ut, vt, jlist1, nlist, mtrundef, mlist, jlist2
+                      , wdfac, poly, dpoly, vor, div, ut, vt, nsize, cc, gwk1)
+! Present on device: onocos, wcfac, wdfac, poly, dpoly, vor, div, ut, vt, cc, gwk1
+! jlist1, nlist, mtrundef, mlist, jlist2, nxdef
 !  subroutine to transform vorticity and divergence to velocity
 !  components
 !
@@ -29,8 +38,8 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
 !
    use const, only: RTYPE
    use index
-!     use paramt
    use fftcom
+   use fft_cuda_graph
    use openacc
    use cudafor
 
@@ -60,9 +69,6 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
    real(kind=RTYPE) tc2(lev, 2, 2, my)
    real(kind=RTYPE) wc(jtrun, my/2), wd(jtrun, my/2)
 
-!CWB2015
-!     real      coslr(jm)
-!     save coslr
    real(kind=RTYPE), dimension(:), allocatable, save ::  coslr
 
    logical lfirst
@@ -81,8 +87,6 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
 
    async_id = 1
    stream = acc_get_cuda_stream(async_id)
-
-!CWBinit
 
    myhalf = my/2
    lev2 = lev*2
@@ -107,14 +111,11 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
    !$acc exit data copyout(jlistnum_fj_array) async(async_id)
 
    if (lfirst) then
-!CWB2015 >>>
-!       allocate(coslr(jm),stat=ierr)
       allocate (coslr(my), stat=ierr)
       if (ierr /= 0) then
          write (6, *) 'tranuv : allocate fail '
          stop
       end if
-!CWB2015 <<<
       do j = 1, my
          coslr(j) = 1./onocos(j)
       end do
@@ -122,9 +123,9 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
    end if
 
    !$acc enter data copyin(coslr) &
-   !$acc& create(gwk1, cc, twcc_fk, ws3, ws4, tcc, tc2, wcc_fk, fj_ws3, fj_ws4, fj_tcc, fj_wc, fj_wd, fj_tc2, wc, wd) async(async_id)
+   !$acc& create(twcc_fk, ws3, ws4, tcc, tc2, wcc_fk, fj_ws3, fj_ws4, fj_tcc, fj_wc, fj_wd, fj_tc2, wc, wd) async(async_id)
    !$acc host_data use_device(wcc_fk)
-   istat = cudaMemsetAsync(wcc_fk, 0.0, size(wcc_fk), stream)
+   CUDACHECK(cudaMemsetAsync(wcc_fk, 0.0, size(wcc_fk), stream))
    !$acc end host_data
    do m = 1, mlistnum
       mf = mlist(m)
@@ -154,14 +155,14 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
          end do
       end do
       !$acc host_data use_device(tcc, fj_ws3, fj_ws4, fj_tcc, fj_wc, fj_wd)
-      istat = cudaMemsetAsync(tcc, 0.0, size(tcc), stream)
-      istat = cudaMemsetAsync(fj_ws3, 0.0, size(fj_ws3), stream)
-      istat = cudaMemsetAsync(fj_ws4, 0.0, size(fj_ws4), stream)
-      istat = cudaMemsetAsync(fj_tcc, 0.0, size(fj_tcc), stream)
-      istat = cudaMemsetAsync(fj_wc, 0.0, size(fj_wc), stream)
-      istat = cudaMemsetAsync(fj_wd, 0.0, size(fj_wd), stream)
+      CUDACHECK(cudaMemsetAsync(tcc, 0.0, size(tcc), stream))
+      CUDACHECK(cudaMemsetAsync(fj_ws3, 0.0, size(fj_ws3), stream))
+      CUDACHECK(cudaMemsetAsync(fj_ws4, 0.0, size(fj_ws4), stream))
+      CUDACHECK(cudaMemsetAsync(fj_tcc, 0.0, size(fj_tcc), stream))
+      CUDACHECK(cudaMemsetAsync(fj_wc, 0.0, size(fj_wc), stream))
+      CUDACHECK(cudaMemsetAsync(fj_wd, 0.0, size(fj_wd), stream))
       !$acc end host_data
-      !$acc parallel loop collapse(2) async(async_id)
+      !$acc parallel loop collapse(2) private(l_fj) async(async_id)
       do l = 1, jtrun
          do k = 1, lev2*2
             if (l .ge. mf) then
@@ -215,7 +216,7 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
          end do
       end do
       !$acc host_data use_device(fj_tcc)
-      istat = cudaMemsetAsync(fj_tcc, 0.0, size(fj_tcc), stream)
+      CUDACHECK(cudaMemsetAsync(fj_tcc, 0.0, size(fj_tcc), stream))
       !$acc end host_data
 
       llistnum_fj = jtrun - mf + 1
@@ -288,12 +289,12 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
       end do
 
       !$acc host_data use_device(tc2, fj_ws3, fj_ws4, fj_tc2, fj_wc, fj_wd)
-      istat = cudaMemsetAsync(tc2, 0.0, size(tc2), stream)
-      istat = cudaMemsetAsync(fj_ws3, 0.0, size(fj_ws3), stream)
-      istat = cudaMemsetAsync(fj_ws4, 0.0, size(fj_ws4), stream)
-      istat = cudaMemsetAsync(fj_tc2, 0.0, size(fj_tc2), stream)
-      istat = cudaMemsetAsync(fj_wc, 0.0, size(fj_wc), stream)
-      istat = cudaMemsetAsync(fj_wd, 0.0, size(fj_wd), stream)
+      CUDACHECK(cudaMemsetAsync(tc2, 0.0, size(tc2), stream))
+      CUDACHECK(cudaMemsetAsync(fj_ws3, 0.0, size(fj_ws3), stream))
+      CUDACHECK(cudaMemsetAsync(fj_ws4, 0.0, size(fj_ws4), stream))
+      CUDACHECK(cudaMemsetAsync(fj_tc2, 0.0, size(fj_tc2), stream))
+      CUDACHECK(cudaMemsetAsync(fj_wc, 0.0, size(fj_wc), stream))
+      CUDACHECK(cudaMemsetAsync(fj_wd, 0.0, size(fj_wd), stream))
       !$acc end host_data
 
       !$acc parallel loop collapse(2) private(l_fj) async(async_id)
@@ -352,7 +353,7 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
       end do
 
       !$acc host_data use_device(fj_tc2)
-      istat = cudaMemsetAsync(fj_tc2, 0.0, size(fj_tc2), stream)
+      CUDACHECK(cudaMemsetAsync(fj_tc2, 0.0, size(fj_tc2), stream))
       !$acc end host_data
 
       llistnum_fj = jtrun - mf + 1
@@ -482,22 +483,19 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, onocos, wcfac &
    if (length_fft .eq. 0 .and. lreduce .eq. 0) then
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, lev*jlistnum*2, 1) ! CWB2015
    else
-      call rfftmlt_loop_identical(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, lev*2, 1)
+      if (tranuv_graph_created) then
+         CUDACHECK(cudaGraphLaunch(tranuv_graph_exec, stream))
+      else
+         call rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, lev*2, 1, tranuv_graph)
+         CUDACHECK(cudaGraphInstantiate(tranuv_graph_exec, tranuv_graph, tranuv_error_node, tranuv_buffer, tranuv_buffer_len))
+         tranuv_graph_created = .true.
+         CUDACHECK(cudaGraphLaunch(tranuv_graph_exec, stream))
+      end if
    end if
-!
-!     do 22 jj=1,jlistnum
-!       j= jlist1(jj)
-!       nxj=nxdef(j)
-!     do 22 k=1,lev
-!     do 22 i=1,nxj
-!     ut(i,k,jj)= cc(i,k,1,jj)
-!     vt(i,k,jj)= cc(i,k,2,jj)
-!  22 continue
 
-!2dMPI
    call ujoinsr_gpu(cc, ut, vt, dummy, dummy, nx, my_max, levF, jlistnum, 2, 1)
    !$acc exit data delete(coslr, jlist_fj, &
-   !$acc& gwk1, cc, twcc_fk, ws3, ws4, tcc, tc2, wcc_fk, fj_ws3, fj_ws4, fj_tcc, fj_wc, fj_wd, fj_tc2, wc, wd) async(async_id)
+   !$acc& twcc_fk, ws3, ws4, tcc, tc2, wcc_fk, fj_ws3, fj_ws4, fj_tcc, fj_wc, fj_wd, fj_tc2, wc, wd) async(async_id)
 
    return
 end
