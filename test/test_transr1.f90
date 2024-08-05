@@ -25,12 +25,11 @@ subroutine transr1_unit
    implicit none
 
    integer, parameter :: steps = 16
-   integer :: i
-   real(kind=RTYPE) :: poly(jtrun, my/2, jtmax)
-   real(kind=RTYPE) :: s(jtrun, jtmax, 2)
-   real(kind=RTYPE) :: r(nxp, my_max)
-   real(kind=RTYPE) :: r_gpu(nxp, my_max)
-   integer :: async_id
+   integer :: i, async_id
+   real(kind=RTYPE), dimension(jtrun, my/2, jtmax) :: poly
+   real(kind=RTYPE), dimension(jtrun, jtmax, 2) :: s
+   real(kind=RTYPE), dimension(nxp, my_max) :: r, r_gpu
+   real(kind=RTYPE), dimension(nx + 2, my_max) :: cc, gwk1
 
    async_id = 1
 
@@ -43,13 +42,13 @@ subroutine transr1_unit
    do i = 1, steps
       call transr1(jtrun, jtmax, nx, my, my_max, poly, s, r, nsizey)
    end do
-   !$acc enter data copyin(poly, s, r_gpu) async(async_id)
-   !$acc enter data copyin(jlist2, jlist1, mtrundef, nlist, nxjlen, nxjstart, nxjend) async(async_id)
+   !$acc enter data copyin(poly, s, r_gpu, cc, gwk1) async(async_id)
+   !$acc enter data copyin(jlist2, jlist1, mtrundef, nlist, nxjlen, nxjstart, nxjend, nxdef) async(async_id)
    do i = 1, steps
-      call transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, s, r_gpu, nsizey)
+      call transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, s, r_gpu, nsizey, cc, gwk1)
    end do
-   !$acc exit data delete(jlist2, jlist1, mtrundef, nlist, nxjlen, nxjstart, nxjend) async(async_id)
-   !$acc exit data copyout(poly, s, r_gpu) async(async_id)
+   !$acc exit data delete(jlist2, jlist1, mtrundef, nlist, nxjlen, nxjstart, nxjend, nxdef) async(async_id)
+   !$acc exit data copyout(poly, s, r_gpu, cc, gwk1) async(async_id)
    !$acc wait(async_id)
 
    call assert_allclose(r_gpu, size(r_gpu), r, size(r), 1e-10, 1e-10, "Array r")
