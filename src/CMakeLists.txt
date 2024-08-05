@@ -375,6 +375,11 @@ if(${USE_CUDA})
         nvidia/hdiffu_gpu.f90
         nvidia/intgrt_gpu.f90
         nvidia/helper.f90
+        nvidia/ndslfv_monoadvh_gpu.f90
+        nvidia/ndslfv_para_gpu.f90
+        nvidia/ndslfv_pack_gpu.f90
+        nvidia/cwb_gpu.f90
+        nvidia/fft_cuda_graph_m.f90
     )
 endif()
 

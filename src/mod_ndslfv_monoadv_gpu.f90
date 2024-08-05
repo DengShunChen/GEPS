@@ -2395,7 +2395,6 @@ contains
          end if
       end do
       !$acc end parallel
-      !$acc wait(async_id)
       if (istat .ne. 0) then
          print *, "istat=", istat
          call exit(2)
@@ -3273,7 +3272,6 @@ contains
          check_max = max(check_max, loc_max)
       end do
       !$acc end kernels
-      !$acc wait(async_id)
 
       if (check_max .ge. check_point) then
          nstep = int(check_max/safe_step) + 1
