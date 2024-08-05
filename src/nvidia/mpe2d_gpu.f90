@@ -501,3 +501,213 @@ subroutine mpe2d_transpose_siimpl_back_gpu(ain, aout, levp, jtrun, jtmax, lev, j
 
    return
 end
+
+subroutine mpe2d_transpose_ndsl_p2f_gpu(ain, aout, nxp, nx, lev, levp, ncld, my, my_max, jlistnum, jlen, nsizex, comm)
+   ! Present on device: ain, aout, jlist1, nxjlen, nxjlen_all
+   ! transpose (nx partial,lev full) to (nx full,lev partial) for NDSL
+
+   use index, only: lreduce, nxjlen_all, jlist1, nxjlen
+   use const, only: RTYPE, MPI_RTYPE
+   use openacc
+   use cudafor
+   use nccl
+
+   implicit none
+
+   real(kind=RTYPE) ain(nxp, lev, ncld, my_max), &
+      aout(nx, levp, ncld, my_max), &
+      c1(nxp, jlen, ncld, lev), &
+      c2(nxp, jlen, ncld, levp, nsizex)
+
+   integer nxp, nx, lev, levp, ncld, my, my_max, jlen, nsizex
+   type(ncclComm) :: comm
+   integer nlen, ii, j, i, k, kk, ierr, jlistnum, nn, jj, n, l
+   integer :: async_id, istat, ii_array(nsizex, jlistnum)
+   integer(kind=cuda_stream_kind) :: stream
+
+   async_id = 1
+   stream = acc_get_cuda_stream(async_id)
+
+   !$acc enter data create(c1, c2) async(async_id)
+
+   !$acc host_data use_device(c1, c2, aout)
+   istat = cudaMemsetAsync(c1, 0.0, size(c1), stream)
+   istat = cudaMemsetAsync(c2, 0.0, size(c2), stream)
+   istat = cudaMemsetAsync(aout, 0.0, size(aout), stream)
+   !$acc end host_data
+
+   !$acc parallel loop collapse(4) private(jj, kk) async(async_id)
+   do k = 1, lev
+      do j = 1, jlistnum
+         do i = 1, nxp
+            do n = 1, ncld
+               jj = jlist1(j)
+               if (i .le. nxjlen(jj)) then
+                  kk = lev - k + 1
+                  c1(i, j, n, kk) = ain(i, k, n, j)
+               end if
+            end do
+         end do
+      end do
+   end do
+
+   nlen = nxp*levp*jlen*ncld
+
+   call nccl_alltoall_fp64(c1, nlen, c2, nlen, comm, nsizex, async_id)
+
+   do j = 1, jlistnum
+      jj = jlist1(j)
+      ii = 0
+      do i = 1, nsizex
+         ii_array(i, j) = ii
+         ii = ii + nxjlen_all(i, jj)
+      end do
+   end do
+
+   !$acc enter data copyin(ii_array) async(async_id)
+
+   !$acc parallel loop collapse(5) private(jj, nn, ii) async(async_id)
+   do k = 1, levp
+      do j = 1, jlistnum
+         do i = 1, nsizex
+            do n = 1, ncld
+               do l = 1, nxp
+                  jj = jlist1(j)
+                  nn = nxjlen_all(i, jj)
+                  if (l .le. nn) then
+                     ii = ii_array(i, j)
+                     aout(ii + l, k, n, j) = c2(l, j, n, k, i)
+                  end if
+               end do
+            end do
+         end do
+      end do
+   end do
+
+   !$acc exit data delete(c1, c2, ii_array) async(async_id)
+
+   return
+end
+
+subroutine mpe2d_transpose_ndsl_f2p_gpu(ain, aout, nxp, nx, lev, levp, ncld, my, my_max, jlistnum, jlen, proc, comm)
+   ! Present on device: ain, aout, jlist1, nxjlen_all, nxjp
+   ! transpose (nx full,lev partial) to (nx partial,lev full) for NDSL
+
+   use index, only: jlist1, nsizex, lreduce, nxjstart_all, nxjend_all, nxjlen_all, nxjp
+   use const, only: RTYPE, MPI_RTYPE
+   use cudafor
+   use openacc
+   use nccl
+
+   implicit none
+
+   real(kind=RTYPE) ain(nx, levp, ncld, my_max), &
+      aout(nxp, lev, ncld, my_max), &
+      c1(levp, ncld, jlen, nxp, proc), &
+      c2(levp, ncld, jlen, nxp, proc)
+
+   integer nxp, nx, lev, levp, ncld, my, my_max, jlen, proc
+   type(ncclComm) :: comm
+   integer nlen, ii, j, jj, i, k, KL, ierr, jlistnum, n, i1, i2, i3, i4, l
+   integer :: async_id, istat, i1_array(nsizex, jlistnum)
+   integer(kind=cuda_stream_kind) :: stream
+
+   async_id = 1
+   stream = acc_get_cuda_stream(async_id)
+
+   !$acc enter data create(c1, c2) async(async_id)
+
+   !$acc host_data use_device(c1, c2, aout)
+   istat = cudaMemsetAsync(c1, 0.0, size(c1), stream)
+   istat = cudaMemsetAsync(c2, 0.0, size(c2), stream)
+   istat = cudaMemsetAsync(aout, 0.0, size(aout), stream)
+   !$acc end host_data
+
+   do j = 1, jlistnum
+      jj = jlist1(j)
+      i1 = 0
+      do i = 1, nsizex
+         i1_array(i, j) = i1
+         i1 = i1 + nxjlen_all(i, jj)
+      end do
+   end do
+   !$acc enter data copyin(i1_array) async(async_id)
+
+   !$acc parallel loop collapse(5) private(jj, i1) async(async_id)
+   do j = 1, jlistnum
+      do k = 1, levp
+         do i = 1, nsizex
+            do n = 1, ncld
+               do l = 1, nxp
+                  jj = jlist1(j)
+                  if (l .le. nxjlen_all(i, jj)) then
+                     i1 = i1_array(i, j)
+                     c1(k, n, j, l, i) = ain(i1 + l, k, n, j)
+                  end if
+               end do
+            end do
+         end do
+      end do
+   end do
+
+   nlen = nxp*levp*jlen*ncld
+   call nccl_alltoall_fp64(c1, nlen, c2, nlen, comm, proc, async_id)
+
+   !$acc parallel loop collapse(5) private(ii, l) async(async_id)
+   do jj = 1, jlistnum
+      do i = 1, nxp
+         do j = 1, proc
+            do k = 1, levp
+               do n = 1, ncld
+                  ii = jlist1(jj)
+                  if (i .le. nxjp(ii)) then
+                     l = lev - (j - 1)*levp - (k - 1)
+                     aout(i, l, n, jj) = c2(k, n, jj, i, j)
+                  end if
+               end do
+            end do
+         end do
+      end do
+   end do
+
+   !$acc exit data delete(c1, c2, i1_array) async(async_id)
+
+   return
+end
+
+subroutine mpe2d_unify_my1d_gpu(work, a)
+   ! Present on device: work, a, jlist2
+   ! unify a(nx_full,my_partial) to work(nx_full,my_full)
+
+   use param
+   use index
+   use mpi
+   use const, only: RTYPE, MPI_RTYPE
+   use openacc
+   use cudafor
+
+   real(kind=RTYPE) work(my)
+   real(kind=RTYPE) a(my_max)
+   real(kind=RTYPE) b(my_max*nsizey)
+   integer :: async_id, istat
+   integer(kind=cuda_stream_kind) :: stream
+
+   async_id = 1
+   stream = acc_get_cuda_stream(async_id)
+   !$acc enter data create(b) async(async_id)
+   !$acc host_data use_device(work, b)
+   istat = cudaMemsetAsync(work, 0.0, size(work), stream)
+   istat = cudaMemsetAsync(b, 0.0, size(b), stream)
+   !$acc end host_data
+   !$acc host_data use_device(a, b)
+   NCCLCHECK(ncclAllGather(a, b, my_max, ncclFloat64, nccl_col_comm, stream))
+   !$acc end host_data
+   !$acc parallel loop private(jj) async(async_id)
+   do j = 1, my
+      jj = jlist2(j)
+      work(j) = b(jj)
+   end do
+   !$acc exit data delete(b) async(async_id)
+
+   return
+end

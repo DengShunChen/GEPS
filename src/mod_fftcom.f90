@@ -4,6 +4,7 @@
 
       public
 
+
 !
 !cc   common/fft/ trigs(512),ifax(19)
 !t180 common/fft/ trigs(1024),ifax(19)
