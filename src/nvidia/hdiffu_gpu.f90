@@ -1,6 +1,10 @@
+#define NCCLCHECK(ierr) call nccl_check_helper(ierr, __FILE__, __LINE__)
+
 subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
                       , rad, cosl, ut, vt, vornow, divnow, temnow, eps4 &
                       , trefs)
+   ! Present on device: cosl, ut, vt, vornow, divnow, temnow, eps4, trefs
+   ! Present on device: jlist1, nxdef_2d, Llist, hdk2
    use index
    use mpe
    use rank
@@ -48,28 +52,26 @@ subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
    nf = jtrun - 1
    wmax = 0.0
 
-   !$acc enter data copyin(jlist1, nxdef_2d, cosl, ut, vt, wmax, Llist, hdk2, mlist, eps4, vornow, divnow, temnow, trefs) create(wmax_buf, vordiss, divdiss) async(async_id)
+   !$acc enter data copyin(wmax) create(wmax_buf, vordiss, divdiss) async(async_id)
    !$acc parallel loop gang async(async_id) private(wt)
    do k = 1, lev
       wt = 0.0
-      !$acc loop worker reduction(max:wt)
+      !$acc loop vector collapse(2) reduction(max:wt) private(j,nxj,xx)
       do jj = 1, jlistnum
-         j = jlist1(jj)
-         nxj = nxdef_2d(j)
-         xx = rad/cosl(j)
-         !$acc loop vector
-         do i = 1, nxj
-            wt = max(wt, xx*sqrt(ut(i, k, jj)**2 + vt(i, k, jj)**2))
+         do i = 1, nxp
+            j = jlist1(jj)
+            nxj = nxdef_2d(j)
+            if (i .le. nxj) then
+               xx = rad/cosl(j)
+               wt = max(wt, xx*sqrt(ut(i, k, jj)**2 + vt(i, k, jj)**2))
+            end if
          end do
       end do
       wmax(k) = wt
    end do
 
-   !$acc wait(async_id)
-
    !$acc host_data use_device(wmax, wmax_buf)
-   call MPI_ALLREDUCE(wmax, wmax_buf, lev, MPI_REAL8, &
-                      MPI_MAX, MPI_COMM_gfs, IERR)
+   NCCLCHECK(ncclAllReduce(wmax, wmax_buf, lev, ncclFloat64, ncclMax, nccl_comm_gfs, stream))
    !$acc end host_data
 
    !$acc parallel loop async(async_id)
@@ -122,7 +124,7 @@ subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
          end do
       end do
    end do
-   !$acc exit data copyout(wmax) delete(jlist1, nxdef_2d, cosl, ut, vt, wmax_buf, Llist, hdk2, mlist, eps4, trefs, vordiss, divdiss) async(async_id)
+   !$acc exit data copyout(wmax) delete(wmax_buf, vordiss, divdiss) async(async_id)
    !$acc wait(async_id)
 !
 !       estimate the dissipation of kinetic energy
@@ -146,10 +148,9 @@ subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
       if (wmax(k) .gt. windmax3) windchk = .true.
    end do
    if (windchk) then
+      ! Present on device: temnow, vornow, divnow, Llist, mlist
       call filter_top_gpu(jtrun, jtmax, levp, hdk1, ncld, temnow, vornow, divnow)
    end if
-   !$acc exit data copyout(vornow, divnow, temnow) async(async_id)
-   !$acc wait(async_id)
 !--------------------------------------------------------------------
    return
 end
@@ -157,6 +158,8 @@ end
 subroutine whdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
                        , rad, cosl, ut, vt, vornow, divnow, temnow &
                        , eps4, trefs)
+   ! Present on device: cosl, ut, vt, vornow, divnow, temnow, eps4, trefs
+   ! Present on device: jlist1, nxdef_2d, Llist, hdk2
    use index
    use mpe
    use rank
@@ -164,7 +167,6 @@ subroutine whdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
    use param, only: octahedral
    use openacc
    use cudafor
-   use mpi
 
    implicit none
 
@@ -192,29 +194,28 @@ subroutine whdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
    async_id = 1
    stream = acc_get_cuda_stream(async_id)
 
-   !$acc enter data copyin(jlist1, nxdef_2d, cosl, wmax, ut, vt, Llist, hdk2, mlist, eps4, vornow, divnow, temnow, trefs) create(wmax_buf) async(async_id)
+   !$acc enter data create(wmax) create(wmax_buf) async(async_id)
    !$acc parallel loop gang async(async_id) private(wt)
    do k = 1, lev
       wt = 0.0
-      !$acc loop worker reduction(max:wt) private(j, nxj, xx)
+      !$acc loop vector collapse(2) reduction(max:wt) private(j, nxj, xx)
       do jj = 1, jlistnum
-         j = jlist1(jj)
-         nxj = nxdef_2d(j)
-         xx = rad/cosl(j)
-         !$acc loop vector
-         do i = 1, nxj
-            wt = max(wt, xx*sqrt(ut(i, k, jj)**2 + vt(i, k, jj)**2))
+         do i = 1, nxp
+            j = jlist1(jj)
+            nxj = nxdef_2d(j)
+            if (i .le. nxj) then
+               xx = rad/cosl(j)
+               wt = max(wt, xx*sqrt(ut(i, k, jj)**2 + vt(i, k, jj)**2))
+            end if
          end do
       end do
       wmax(k) = wt
    end do
 
-   !$acc wait(async_id)
-
    !$acc host_data use_device(wmax, wmax_buf)
-   call MPI_ALLREDUCE(wmax, wmax_buf, lev, MPI_REAL8, &
-                      MPI_MAX, MPI_COMM_gfs, IERR)
+   NCCLCHECK(ncclAllReduce(wmax, wmax_buf, lev, ncclFloat64, ncclMax, nccl_comm_gfs, stream))
    !$acc end host_data
+
    !$acc parallel loop async(async_id)
    do i = 1, lev
       wmax(i) = wmax_buf(i)
@@ -263,21 +264,22 @@ subroutine whdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
          end do
       end do
    end do
-   !$acc exit data copyout(wmax) delete(jlist1, nxdef_2d, cosl, ut, vt, wmax_buf, Llist, hdk2, mlist, eps4, trefs) async(async_id)
+   !$acc exit data copyout(wmax) delete(wmax_buf) async(async_id)
    !$acc wait(async_id)
    windchk = .false.
    do k = 1, hdk1
       if (wmax(k) .gt. windmax3) windchk = .true.
    end do
-   if (windchk) &
+   if (windchk) then
+      ! Present on device: temnow, vornow, divnow, Llist, mlist
       call filter_top_gpu(jtrun, jtmax, levp, hdk1, ncld, temnow, vornow, divnow)
-   !$acc exit data copyout(vornow, divnow, temnow) async(async_id)
-   !$acc wait(async_id)
+   end if
    return
 end
 
 subroutine filter_top_gpu(jtrun, jtmax, lev, ktop, ncld, temnow &
                           , vornow, divnow)
+   ! Present on device: temnow, vornow, divnow, Llist, mlist
 !
 !  apply Lanczos filter to top "ktop" layers
 !
@@ -295,11 +297,10 @@ subroutine filter_top_gpu(jtrun, jtmax, lev, ktop, ncld, temnow &
    real(kind=RTYPE) temnow(lev, 2, jtrun, jtmax), &
       vornow(lev, 2, jtrun, jtmax), &
       divnow(lev, 2, jtrun, jtmax)
-   ! Present on device
 
    real wvn_top(ktop + 1), djt
 
-   integer k, mode, m, mf, n, nflt, IERR, KL
+   integer k, mode, m, mf, n, nflt, KL
    real pi, flt, fac
    integer async_id, istat, ierr
    integer(kind=cuda_stream_kind) :: stream
@@ -359,7 +360,7 @@ subroutine filter_top_gpu(jtrun, jtmax, lev, ktop, ncld, temnow &
 !2dMPI <
       end do
    else
-      !$acc enter data copyin(Llist, mlist, wvn_top) async(async_id)
+      !$acc enter data copyin(wvn_top) async(async_id)
       !$acc parallel loop gang async(async_id) private(KL)
       do k = 1, lev
 !2dMPI >
@@ -397,7 +398,7 @@ subroutine filter_top_gpu(jtrun, jtmax, lev, ktop, ncld, temnow &
          end if
 !2dMPI <
       end do
-      !$acc exit data delete(Llist, mlist, wvn_top) async(async_id)
+      !$acc exit data delete(wvn_top) async(async_id)
    end if
 !
    return

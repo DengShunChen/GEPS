@@ -53,7 +53,6 @@ subroutine whdiffu_unit
    call random_number(temmid)
    call random_number(trefs)
 
-   print *, dtah, my, my_max, nx, jtrun, jtmax, lev, ncld, hfiltm, rad
    do i = 1, steps
       vormid_cpu = vormid
       divmid_cpu = divmid
@@ -67,9 +66,12 @@ subroutine whdiffu_unit
       vormid_gpu = vormid
       divmid_gpu = divmid
       temmid_gpu = temmid
+      !$acc enter data copyin(cosl, um, vm, vormid_gpu, divmid_gpu, temmid_gpu, eps4, trefs, jlist1, nxdef_2d, Llist, hdk2) async(async_id)
       call whdiffu_gpu(dtah, my, my_max, nx, jtrun, jtmax, lev, ncld &
                        , hfiltm, rad, cosl, um, vm, vormid_gpu, divmid_gpu, temmid_gpu &
                        , eps4, trefs)
+      !$acc exit data copyout(cosl, um, vm, vormid_gpu, divmid_gpu, temmid_gpu, eps4, trefs, jlist1, nxdef_2d, Llist, hdk2) async(async_id)
+      !$acc wait(async_id)
    end do
 
    call assert_allclose(vormid_gpu, size(vormid_gpu), vormid_cpu, size(vormid_cpu), 1e-10, 1e-10, "Array vormid")

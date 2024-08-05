@@ -1,5 +1,13 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Copyright (c) 2024, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+!
+! See LICENSE for license information.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+#define CUDACHECK(ierr) call cuda_check_helper(ierr, __FILE__, __LINE__)
+
 subroutine trngra_gpu(jtrun, jtmax, nx, my, my_max, cim, poly, dpoly, s &
-                      , dlpl, dtpl, nsize)
+                      , dlpl, dtpl, nsize, cc, gwk1)
 !
 !  subroutine to transform spectral terrain pressure to grid point
 !  fields of zonal and meridional derivatives of terrain pressure
@@ -27,6 +35,7 @@ subroutine trngra_gpu(jtrun, jtmax, nx, my, my_max, cim, poly, dpoly, s &
    use const, only: RTYPE
    use index
    use fftcom
+   use fft_cuda_graph
    use openacc
    use cudafor
 
@@ -56,15 +65,13 @@ subroutine trngra_gpu(jtrun, jtmax, nx, my, my_max, cim, poly, dpoly, s &
 
    async_id = 1
    stream = acc_get_cuda_stream(async_id)
-
-   !$acc enter data create(wcu_fk, wcv_fk, wcu_t, wcv_t, twcc_fk, twdd_fk, cc, gwk1) async(async_id)
-   !$acc host_data use_device(wcu_fk, wcv_fk)
-   istat = cudaMemSetAsync(wcu_fk, 0.0, size(wcu_fk), stream)
-   istat = cudaMemSetAsync(wcv_fk, 0.0, size(wcv_fk), stream)
-   !$acc end host_data
-
    myhalf = my/2
 
+   !$acc data create(wcu_fk, wcv_fk, wcu_t, wcv_t, twcc_fk, twdd_fk) async(async_id)
+   !$acc host_data use_device(wcu_fk, wcv_fk)
+   CUDACHECK(cudaMemSetAsync(wcu_fk, 0.0, size(wcu_fk), stream))
+   CUDACHECK(cudaMemSetAsync(wcv_fk, 0.0, size(wcv_fk), stream))
+   !$acc end host_data
    !$acc parallel loop gang(dim:2) async(async_id)
    do m = 1, mlistnum
       mf = mlist(m)
@@ -105,11 +112,11 @@ subroutine trngra_gpu(jtrun, jtmax, nx, my, my_max, cim, poly, dpoly, s &
       end do
    end do
 
-   call mpe_transpose_rs1_sp_gpu(wcu_fk, twcc_fk, my_max, jtmax, 2, nsize, col_comm, async_id)
-   call mpe_transpose_rs1_sp_gpu(wcv_fk, twdd_fk, my_max, jtmax, 2, nsize, col_comm, async_id)
+   call mpe_transpose_rs1_sp_gpu(wcu_fk, twcc_fk, my_max, jtmax, 2, nsize, nccl_col_comm, async_id)
+   call mpe_transpose_rs1_sp_gpu(wcv_fk, twdd_fk, my_max, jtmax, 2, nsize, nccl_col_comm, async_id)
 
    !$acc host_data use_device(cc)
-   istat = cudaMemSetAsync(cc, 0.0, size(cc), stream)
+   CUDACHECK(cudaMemSetAsync(cc, 0.0, size(cc), stream))
    !$acc end host_data
 
    !$acc parallel loop gang async(async_id)
@@ -128,26 +135,21 @@ subroutine trngra_gpu(jtrun, jtmax, nx, my, my_max, cim, poly, dpoly, s &
       end do
    end do
 
+#ifdef SP
+   print *, "Symbol SP is not supported."
+#endif
+
    if (lreduce .eq. 0) then
-#ifdef SP
-      call rfftmlt_sp(cc, gwk1, trigs, ifax, 1, nx + 2, nx, jlistnum*2, 1)
-#else
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, jlistnum*2, 1)
-#endif
    else
-#ifdef SP
-!$omp  parallel do default(none)                          &
-!$omp  private(jj,j,nxj,gwk1)                             &
-!$omp  shared(jlistnum,jlist1,nxdef,cc,trigsj,ifaxj,nx)
-      do jj = 1, jlistnum
-         j = jlist1(jj)
-         nxj = nxdef(j)
-         call rfftmlt_sp(cc(1, 1, jj), gwk1(1, 1, jj), trigsj(1, j), ifaxj(1, j), 1, nx + 2, nxj, 2, 1)
-      end do
-!$omp end parallel do
-#else
-      call rfftmlt_loop_identical(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, 2, 1)
-#endif
+      if (trngra_graph_created) then
+         CUDACHECK(cudaGraphLaunch(trngra_graph_exec, stream))
+      else
+         call rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, 2, 1, trngra_graph)
+         CUDACHECK(cudaGraphInstantiate(trngra_graph_exec, trngra_graph, trngra_error_node, trngra_buffer, trngra_buffer_len))
+         trngra_graph_created = .true.
+         CUDACHECK(cudaGraphLaunch(trngra_graph_exec, stream))
+      end if
    end if
 
    !$acc parallel loop async(async_id)
@@ -156,6 +158,5 @@ subroutine trngra_gpu(jtrun, jtmax, nx, my, my_max, cim, poly, dpoly, s &
       dlpl(1:nxjlen(j), jj) = -cc(nxjstart(j):nxjend(j), 1, jj)
       dtpl(1:nxjlen(j), jj) = -cc(nxjstart(j):nxjend(j), 2, jj)
    end do
-   !$acc exit data delete(cc, gwk1, twcc_fk, twdd_fk, wcu_t, wcv_t, wcu_fk, wcv_fk) async(async_id)
-   !$acc wait(async_id)
-end
+   !$acc end data
+end subroutine trngra_gpu

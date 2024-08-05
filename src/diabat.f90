@@ -1,6 +1,7 @@
       subroutine diabat ( fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd  &
                     , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw       &
-                    , idg,jdg,ldiag,dt,tau,hours,julian,year,yrd               &
+!                    , idg,jdg,ldiag,dt,tau,hours,julian,year,yrd               &
+                    , idg,jdg,ldiag,dt,tau,hours,year                          &
                     , frad,ozon,njump,itypbl,ktcup,ktpbl,ktshl,grav            &
                     , rgas,cp,stbo,s0,evaprh,hltm,ptop,sigma,dsigma,il,ib,cof  &
                     , xlat,xlon,sgeo,z0,alb,land,ocean,ice,snr                 &
@@ -169,7 +170,7 @@
                                       pdfcloud,cmbk,cgwd, fsit, dosppt, doshum, dossst, &
                                       use_zmtnblck,ldailyFCTicesndpt,dSITdt_intv, &
                                       weightSIT,bckfile,ggdef,doclx,doslavepp,    &
-                                      RTYPE,qmin
+                                      RTYPE,qmin,julian
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
@@ -192,6 +193,7 @@
 ! for land_noah_new
       use namelist_soilveg, only :MAX_SLOPETYP,MAX_SOILTYP,MAX_VEGTYP
       use mod_stochastic_physics, only : sppt3d, shum3d, ssst3d
+      use leapyr
 !-----------------------------------------------------------------------
       implicit  none
 !-----------------------------------------------------------------------
@@ -203,7 +205,7 @@
        integer   isot,ivegsrc
 !-----------------------------------------------------------------------
       integer   nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,idg,  &
-                jdg,ldiag,julian,njump,itypbl,ktcup,ktpbl,ktshl,     &
+                jdg,ldiag,njump,itypbl,ktcup,ktpbl,ktshl,            &
                 km_soil
 
       logical   docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon,     &
@@ -504,7 +506,9 @@
                                          cicetm,snrtm, zicetm,xticetm, &
                                        obswtbtm, tgtm
       character*12 cdtg
-      integer yr, mo, dy, hr, mn, leap, yrd, year
+!      integer yr, mo, dy, hr, mn, leap, yrd, year
+      integer yr, mo, dy, hr, mn, year
+      integer iy, ihtmp, yrdold
       real tauhr
       real dtx_tau,dtaup,dtxb
       INTEGER, PARAMETER :: nerr = 6
@@ -609,16 +613,24 @@
       dtx_tau=dt/3600.
       dtxb  = dtx_tau/100.
       hours = hours + dtx_tau
+      ihtmp=int(hours+1.e-5)
+      if(abs(hours-real(ihtmp)) .lt. 1.e-7) hours=real(ihtmp)
       if ( hours .gt. 24.+dtxb .and. mod(hours,24.) .le. dtx_tau+dtxb )  then
          hours = mod ( hours,24.0 )
          julian= julian + 1
-         if ( julian .gt. yrd ) julian = julian - yrd
+         iy=idate(1)
+         ihtmp=int(hours)
+         yrdold=yrd
+         call datecheck(iy,julian,ihtmp)
+!         if ( julian .gt. yrd ) julian = julian - yrd
+         if(julian.gt.yrdold) julian=mod(julian,yrdold)
          doozon = .true.
          doclxu = .true.
+         if (myrank .eq. 0 ) print*,'TYW test in diabat, julian = ',julian,yrd
       endif
-      leap = mod ( year , 4 )
-      yrd = 365
-      if ( leap .eq. 0 ) yrd = 366
+!      leap = mod ( year , 4 )
+!      yrd = 365
+!      if ( leap .eq. 0 ) yrd = 366
 !
       icrad = frad*3600.0/dt + 0.0001 ! frad =1.0 set in block.f
       iter  = tau*3600.0/dt  + 0.0001
@@ -1648,7 +1660,7 @@
             ut(i,k,jj) = ut(i,k,jj) + utgwc(i,k) * dta
             vt(i,k,jj) = vt(i,k,jj) + vtgwc(i,k) * dta
             eng1 = 0.5*(ut(i,k,jj)*ut(i,k,jj)+vt(i,k,jj)*vt(i,k,jj))
-            tt(i,k,jj) = tt(i,k,jj) + (eng0-eng1)/(dta*cp)
+            tt(i,k,jj) = tt(i,k,jj) + (eng0-eng1)/cp
           enddo
         enddo
       endif  !(end of docgrav and nmgwcv=2)

@@ -134,7 +134,7 @@ subroutine trandv_gpu(jtrun, jtmax, nx, my, my_max, lev, ut, vt, w, cim &
    end do
    end do
 
-   call mpe_transpose_rs_sp_gpu(twcc_fk, wcc_fk, levp*2*2, jtmax, my_max, nsize, col_comm)
+   call mpe_transpose_rs_sp_gpu(twcc_fk, wcc_fk, levp*2*2, jtmax, my_max, nsize, nccl_col_comm)
    !$acc exit data delete(twcc_fk, gwk1, cc) async(async_id)
 
    do m = 1, mlistnum

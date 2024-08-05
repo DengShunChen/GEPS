@@ -1,4 +1,7 @@
-subroutine tranrs1_gpu(jtrun, jtmax, nx, my, my_max, poly, w, r, s, nsize)
+#define CUDACHECK(ierr) call cuda_check_helper(ierr, __FILE__, __LINE__)
+
+subroutine tranrs1_gpu(jtrun, jtmax, nx, my, my_max, poly, w, r, s, nsize, cc, gwk1)
+   ! Present on device: poly, w, r, s, jlist1, nxdef, mtrundef, nlist, mlist, jlist2
 !
 !  subroutine to transform a scalar grid point field to spectral
 !  coefficients
@@ -24,6 +27,7 @@ subroutine tranrs1_gpu(jtrun, jtmax, nx, my, my_max, poly, w, r, s, nsize)
    use index
    use paramt
    use fftcom
+   use fft_cuda_graph
    use openacc
    use cudafor
 
@@ -33,9 +37,9 @@ subroutine tranrs1_gpu(jtrun, jtmax, nx, my, my_max, poly, w, r, s, nsize)
    integer mlx, myhalf, jj, j, nxj, i, jtrunj, m, mm, mp, mlst, mf
    integer l, i1, i2, i3, j1, j2
 
-   real(kind=RTYPE) poly(jtrun, my/2, jtmax), w(my) ! Present on device
-   real(kind=RTYPE) r(nx, my_max) ! Present on device
-   real(kind=RTYPE) s(jtrun, jtmax, 2) ! Present on device
+   real(kind=RTYPE) poly(jtrun, my/2, jtmax), w(my)
+   real(kind=RTYPE) r(nx, my_max)
+   real(kind=RTYPE) s(jtrun, jtmax, 2)
    real(kind=RTYPE) gwk1(nx + 2, my_max)
 
    real(kind=RTYPE) wcc_fk(jtmax, my_max*nsize, 2)
@@ -55,7 +59,7 @@ subroutine tranrs1_gpu(jtrun, jtmax, nx, my, my_max, poly, w, r, s, nsize)
    async_id = 1
    stream = acc_get_cuda_stream(async_id)
 
-   !$acc enter data create(twcc_fk, gwk1, cc, wcc_fk) async(async_id)
+   !$acc enter data create(twcc_fk, wcc_fk) async(async_id)
    !$acc host_data use_device(twcc_fk, gwk1)
    istat = cudaMemSetAsync(twcc_fk, 0.0, size(twcc_fk), stream)
    istat = cudaMemSetAsync(gwk1, 0.0, size(gwk1), stream)
@@ -73,28 +77,22 @@ subroutine tranrs1_gpu(jtrun, jtmax, nx, my, my_max, poly, w, r, s, nsize)
       end do
    end do
 
+#ifdef SP
+   print *, "Symbol SP is not supported."
+   call exit(1)
+#endif
+
    if (lreduce .eq. 0) then
-#ifdef SP
-      call rfftmlt_sp(cc, gwk1, trigs, ifax, 1, nx + 2, nx, jlistnum, -1)
-#else
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, jlistnum, -1)
-#endif
    else
-#ifdef SP
-!$omp  parallel do default(none)                         &
-!$omp  private(jj,j,nxj,gwk1)                            &
-!$omp  shared(jlistnum,jlist1,nxdef,cc,trigsj,ifaxj,nx)  &
-!$omp  schedule(dynamic)
-      do jj = 1, jlistnum
-         j = jlist1(jj)
-         nxj = nxdef(j)
-         call rfftmlt_sp(cc(1, jj), gwk1(1, jj), trigsj(1, j), ifaxj(1, j), &
-                         1, nx + 2, nxj, 1, -1)
-      end do
-!$omp end parallel do
-#else
-      call rfftmlt_loop_identical(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, 1, -1)
-#endif
+      if (tranrs1_graph_created) then
+         CUDACHECK(cudaGraphLaunch(tranrs1_graph_exec, stream))
+      else
+         call rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, 1, -1, tranrs1_graph)
+         CUDACHECK(cudaGraphInstantiate(tranrs1_graph_exec, tranrs1_graph, tranrs1_error_node, tranrs1_buffer, tranrs1_buffer_len))
+         tranrs1_graph_created = .true.
+         CUDACHECK(cudaGraphLaunch(tranrs1_graph_exec, stream))
+      end if
    end if
 
    !$acc parallel loop gang async(async_id) private(jj, jtrunj)
@@ -111,9 +109,10 @@ subroutine tranrs1_gpu(jtrun, jtmax, nx, my, my_max, poly, w, r, s, nsize)
       end do
    end do
 
-   call mpe_transpose_rs1_sp_gpu(twcc_fk, wcc_fk, jtmax, my_max, 2, nsize, col_comm, async_id)
-   !$acc exit data delete(twcc_fk, gwk1, cc) async(async_id)
-   !$acc enter data copyin(mlist, jlist2) create(wss, fj_polyw, wccSUM, wccDIF) async(async_id)
+   ! Present on device: twcc_fk, wcc_fk
+   call mpe_transpose_rs1_sp_gpu(twcc_fk, wcc_fk, jtmax, my_max, 2, nsize, nccl_col_comm, async_id)
+   !$acc exit data delete(twcc_fk) async(async_id)
+   !$acc enter data create(wss, fj_polyw, wccSUM, wccDIF) async(async_id)
    !$acc parallel loop gang async(async_id) private(mf, wss, fj_polyw, i1, i2, i3, wccSUM, wccDIF)
    do m = 1, mlistnum
       mf = mlist(m)
@@ -200,7 +199,6 @@ subroutine tranrs1_gpu(jtrun, jtmax, nx, my, my_max, poly, w, r, s, nsize)
 
    end do
    !$acc exit data delete(wcc_fk, wss, fj_polyw, wccSUM, wccDIF) async(async_id)
-   !$acc wait(async_id)
 
    return
 end

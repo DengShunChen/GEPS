@@ -1,11 +1,15 @@
+#define CUDACHECK(ierr) call cuda_check_helper(ierr, __FILE__, __LINE__)
+
 subroutine rstrandz_gpu(jtrun, jtmax, nx, my, my_max, lev &
                         , vdmer, vdzon, w, cim, onocos, poly, dpoly &
-                        , hldten, vorten, nsize)
-
+                        , hldten, vorten, nsize, cc, gwk1)
+   ! Present on device: vdmer, vdzon, w, cim, onocos, poly, dpoly, hldten, vorten
+   ! Present on device: nlist, jlist2, mtrundef, jlist1, nxjlen, nxjlen_all, nxdef
    use const, only: RTYPE
    use index
    use paramt
    use fftcom
+   use fft_cuda_graph
    use openacc
    use cudafor
 
@@ -17,10 +21,10 @@ subroutine rstrandz_gpu(jtrun, jtmax, nx, my, my_max, lev &
 
    real(kind=RTYPE) poly(jtrun, my/2, jtmax), &
       dpoly(jtrun, my/2, jtmax), cim(jtmax), &
-      onocos(my), w(my) ! Present on device
+      onocos(my), w(my)
 
-   real(kind=RTYPE) hldten(lev, 2, jtrun, jtmax), vorten(lev, 2, jtrun, jtmax) ! Present on device
-   real(kind=RTYPE) vdmer(nxp, levf, my_max), vdzon(nxp, levf, my_max), dummy ! Present on device
+   real(kind=RTYPE) hldten(lev, 2, jtrun, jtmax), vorten(lev, 2, jtrun, jtmax)
+   real(kind=RTYPE) vdmer(nxp, levf, my_max), vdzon(nxp, levf, my_max), dummy
 
    real(kind=RTYPE) gwk1(nx + 2, lev, 2, my_max)
    real(kind=RTYPE) wss(lev, 2, 2, jtrun)
@@ -52,8 +56,7 @@ subroutine rstrandz_gpu(jtrun, jtmax, nx, my, my_max, lev &
    async_id = 1
    stream = acc_get_cuda_stream(async_id)
 
-   !$acc enter data copyin(nlist, jlist2, mtrundef) async(async_id)
-   !$acc enter data create(twcc_fk, gwk1, cc, wcc_fk) async(async_id)
+   !$acc enter data create(twcc_fk, wcc_fk) async(async_id)
 
    !$acc host_data use_device(twcc_fk, gwk1)
    istat = cudaMemSetAsync(twcc_fk, 0.0, size(twcc_fk), stream)
@@ -63,53 +66,49 @@ subroutine rstrandz_gpu(jtrun, jtmax, nx, my, my_max, lev &
    myhalf = my/2
    lev2 = lev*2
 
+   ! Present on device: cc, vdmer, vdzon, jlist1, nxjlen, nxjlen_all
    call joinrs_gpu(cc, vdmer, vdzon, dummy, dummy, nx, my_max, levf, jlistnum, 2, 1)
 
+#ifdef SP
+   print *, "Symbol SP is not supported."
+   call exit(1)
+#endif
+
    if (length_fft .eq. 0 .and. lreduce .eq. 0) then
-#ifdef SP
-      call rfftmlt_sp(cc, gwk1, trigs, ifax, 1, nx + 2, nx, lev*jlistnum*2, -1)
-#else
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, lev*jlistnum*2, -1)
-#endif
    else
-#ifdef SP
-!$omp  parallel do default(none)                            &
-!$omp  private(jj,j,nxj,gwk1)                               &
-!$omp  shared(jlistnum,jlist1,nxdef,cc,trigsj,ifaxj,nx,lev) &
-!$omp  schedule(dynamic)
-      do jj = 1, jlistnum
-         j = jlist1(jj)
-         nxj = nxdef(j)
-         call rfftmlt_sp(cc(1, 1, 1, jj), gwk1(1, 1, 1, jj), trigsj(1, j), ifaxj(1, j), &
-                         1, nx + 2, nxj, lev*2, -1)
-      end do
-!$omp end parallel do
-#else
-      call rfftmlt_loop_identical(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, lev*2, -1)
-#endif
+      if (rstrandz_graph_created) then
+         CUDACHECK(cudaGraphLaunch(rstrandz_graph_exec, stream))
+      else
+         call rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, lev*2, -1, rstrandz_graph)
+     CUDACHECK(cudaGraphInstantiate(rstrandz_graph_exec, rstrandz_graph, rstrandz_error_node, rstrandz_buffer, rstrandz_buffer_len))
+         rstrandz_graph_created = .true.
+         CUDACHECK(cudaGraphLaunch(rstrandz_graph_exec, stream))
+      end if
    end if
 
    !$acc parallel loop collapse(3) async(async_id)
    do j = 1, jlistnum
-   do m = 1, jtrun
-   do k = 1, lev
-      mm = 2*m - 1
-      mp = mm + 1
-      mlst = nlist(m)
-      twcc_fk(k, 1, 1, mlst, j) = cc(mm, k, 1, j)
-      twcc_fk(k, 2, 1, mlst, j) = cc(mp, k, 1, j)
-      twcc_fk(k, 1, 2, mlst, j) = cc(mm, k, 2, j)
-      twcc_fk(k, 2, 2, mlst, j) = cc(mp, k, 2, j)
-   end do
-   end do
+      do m = 1, jtrun
+         do k = 1, lev
+            mm = 2*m - 1
+            mp = mm + 1
+            mlst = nlist(m)
+            twcc_fk(k, 1, 1, mlst, j) = cc(mm, k, 1, j)
+            twcc_fk(k, 2, 1, mlst, j) = cc(mp, k, 1, j)
+            twcc_fk(k, 1, 2, mlst, j) = cc(mm, k, 2, j)
+            twcc_fk(k, 2, 2, mlst, j) = cc(mp, k, 2, j)
+         end do
+      end do
    end do
 
 #ifdef SP
    call mpe_transpose_rs_sp_gpu(twcc_fk, wcc_fk, lev*2*2, jtmax, my_max, nsize, col_comm)
 #else
-   call mpe_transpose_rs_gpu(twcc_fk, wcc_fk, lev*2*2, jtmax, my_max, nsize, col_comm)
+   ! Present on device: twcc_fk, wcc_fk
+   call mpe_transpose_rs_gpu(twcc_fk, wcc_fk, lev*2*2, jtmax, my_max, nsize, nccl_col_comm)
 #endif
-   !$acc exit data delete(gwk1, cc, twcc_fk) async(async_id)
+   !$acc exit data delete(twcc_fk) async(async_id)
 
    do m = 1, mlistnum
       mf = mlist(m)
@@ -277,6 +276,6 @@ subroutine rstrandz_gpu(jtrun, jtmax, nx, my, my_max, lev &
       end do
 
    end do
-   !$acc exit data delete(jlist2, mtrundef, wcc_fk, wcc2, wcc3, wcc4, wcc5, wd, wp, wss, jlist_fj, fj_wss23, fj_wss45, fj_wcc2, fj_wcc3, fj_wcc4, fj_wcc5, fj_wd2, fj_wp3, fj_wd4, fj_wp5) async(async_id)
+   !$acc exit data delete(wcc_fk, wcc2, wcc3, wcc4, wcc5, wd, wp, wss, jlist_fj, fj_wss23, fj_wss45, fj_wcc2, fj_wcc3, fj_wcc4, fj_wcc5, fj_wd2, fj_wp3, fj_wd4, fj_wp5) async(async_id)
    return
 end
