@@ -626,7 +626,6 @@
          if(julian.gt.yrdold) julian=mod(julian,yrdold)
          doozon = .true.
          doclxu = .true.
-         if (myrank .eq. 0 ) print*,'TYW test in diabat, julian = ',julian,yrd
       endif
 !      leap = mod ( year , 4 )
 !      yrd = 365

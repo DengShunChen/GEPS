@@ -116,11 +116,9 @@
 !
 !   restart  : write(7) work array
 !
-          real, dimension(:), allocatable :: work_io
           integer itauezz
           real dtauzz, tautv
           character cmdxx*256
-          integer len1, len2
 !-------------------------------------------------------------------
           integer i, j, k, m, n, jj, kk, mf, kw, nxj, nml, lmax, leng, nxmy, &
              jlim, mlst, mlmax2, itaui, itaue, itauo, itaup, &
@@ -228,7 +226,7 @@
 !                    , ut,vt,tt,qt,phi,rdiv                                       &
 !                    , km_soil,smc,slc,stc,canopy,zice,ggdef,gmdef )
 
-          raintot = 0.
+!          raintot = 0.
           raincu = 0.
           rainlp = 0.
           raincu6 = 0.
@@ -241,6 +239,7 @@
           if (.not. restrt) then
              rld = 0.
              sld = 0.
+             raintot = 0.
           end if
           recn = 1
           rdivm = 0.
@@ -365,7 +364,7 @@
                 rainlp3(i, jj) = 0.
                 raincu1(i, jj) = 0.
                 rainlp1(i, jj) = 0.
-                raintot(i, jj) = 0.
+!                raintot(i, jj) = 0.
                 runoff(i, jj) = 0.  ! soil
                 tmax(i, jj) = 0.
                 tmin(i, jj) = 0.
@@ -1414,7 +1413,7 @@
 
         if(myrank==0) call system_clock(toutsrt)
             if(io_quilting)then
-              write( keydoit,'(A6,I4.4,A4,I12.12,A8)') &
+              write( keydoit,'(A6,I4.4,A4,I12.12,A8)')    &
               "OPEN..",itau,"....",idtg,"H...DOIT"
               ntag=ntag+1
               call mpe_send_key(keydoit,ntag,istat)
@@ -1424,7 +1423,8 @@
              if (histim .or. ltrack) then
                 !itau = tau + 0.1
                 itau = NINT(tau)
-                if (myrank .eq. 0) print *, ' history file written at tau= ', itau
+                if (myrank .eq. 0) print *,               &
+                   ' history file written at tau= ', itau
 !
 ! output gwr or gwet
 ! in new soil model, gwr did not exist
@@ -1443,7 +1443,8 @@
                       if (istyp(i, jj) .ne. 0) then
                          www = smc(i, 1, jj)*0.2 + smc(i, 2, jj)*0.8
                          gwet(i, jj) = (www - wltsmc(istyp(i, jj)))/ &
-                                       (refsmc(istyp(i, jj)) - wltsmc(istyp(i, jj)))
+                                       (refsmc(istyp(i, jj)) -       &
+                                        wltsmc(istyp(i, jj)))
                       else
                          gwet(i, jj) = 1.0
                       end if
@@ -1461,42 +1462,23 @@
 800                   format(i7.7)
                       write (ccore, '(i4.4)') myrank
 !
-                      rfile = trim(cwbout)//'cwbout_'//ctau
+                      cmdxx =' '
+                      cmdxx = 'mkdir -p '//trim(cwbout)//'cwbout_'//ctau
+                      call system(trim(cmdxx))
+                      rfile = trim(cwbout)//'cwbout_'//ctau//'/'//ccore
+                      i = 200 + myrank
+                      open (i, file=rfile, form='unformatted')
+                      write(i) vornow
+                      write(i) divnow
+                      write(i) temnow
+                      write(i) vorold
+                      write(i) divold
+                      write(i) temold
+                      write(i) trefs
+                      write(i) plnow
+                      write(i) plold
+                      close(i)
 !
-                      if (myrank .eq. 0) open (unit=7, file=rfile, form='unformatted')
-                      len1 = 2*levp*jtrun*jtmax*nsize
-                      len2 = 2*jtrun*jtmax*nsize
-                      allocate (work_io(len1))
-                      call mpe_gather_io(work_io, vornow, len1/nsize, nsize)
-                      if (myrank == 0) write (7) work_io
-                      call mpe_gather_io(work_io, divnow, len1/nsize, nsize)
-                      if (myrank == 0) write (7) work_io
-                      call mpe_gather_io(work_io, temnow, len1/nsize, nsize)
-                      if (myrank == 0) write (7) work_io
-                      call mpe_gather_io(work_io, vorold, len1/nsize, nsize)
-                      if (myrank == 0) write (7) work_io
-                      call mpe_gather_io(work_io, divold, len1/nsize, nsize)
-                      if (myrank == 0) write (7) work_io
-                      call mpe_gather_io(work_io, temold, len1/nsize, nsize)
-                      if (myrank == 0) write (7) work_io
-                      call mpe_gather_io(work_io, trefs, len1/nsize, nsize)
-                      if (myrank == 0) then
-                         write (7) work_io
-                         call flush (7)
-                      end if
-                      deallocate (work_io)
-                      allocate (work_io(len2))
-                      call mpe_gather_io(work_io, plnow, len2/nsize, nsize)
-                      if (myrank == 0) write (7) work_io
-                      call mpe_gather_io(work_io, plold, len2/nsize, nsize)
-                      if (myrank == 0) write (7) work_io
-!           call mpe_gather_io(work_io,dsqgeo,len2/nsize,nsize)
-!           call mpe_gather_io(work_io,spgeo,len2/nsize,nsize)
-                      deallocate (work_io)
-                      if (myrank == 0) then
-                         call flush (7)
-                         close (7)
-                      end if
                       cmdxx = 'mkdir -p '//trim(phyout)//'phyout_'//ctau
                       call system(trim(cmdxx))
                       rfile = trim(phyout)//'phyout_'//ctau//'/'//ccore
@@ -1520,6 +1502,7 @@
                       write (i) raincu
                       write (i) rainlp
                       write (i) totalp
+                      write (i) raintot
                       write (i) curate
                       write (i) plcl
                       write (i) cumtop
