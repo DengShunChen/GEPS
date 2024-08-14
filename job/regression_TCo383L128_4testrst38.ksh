@@ -271,9 +271,10 @@ elif [ $rstau -lt 1000000 ]; then
 elif [ $rstau -lt 10000000 ]; then
    rstt=${rstau}
 fi
+mkdir -p $GFSWRKR/cwbout_${rstt}
 mkdir -p $GFSWRKR/phyout_${rstt}
-cp ${GFSDIR}/work_${machine}/GFSRST/cwbout_${rstt} $GFSWRKR/
-cp ${GFSDIR}/work_${machine}/GFSRST/phyout_${rstt}/* $GFSWRKR/phyout_${rstt}/
+ln -sf ${GFSDIR}/work_${machine}/GFSRST/cwbout_${rstt}/* $GFSWRKR/cwbout_${rstt}/.
+ln -sf ${GFSDIR}/work_${machine}/GFSRST/phyout_${rstt}/* $GFSWRKR/phyout_${rstt}/.
 
 if [ $JCAP = 639  ] ; then
   MODLST_RES='dt=450., hfilt=1., cgw=4.2e-5,'
