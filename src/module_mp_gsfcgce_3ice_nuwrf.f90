@@ -1,4 +1,5 @@
 !#define SL_sedi
+!#define new_saturation
 !WRF:MODEL_LAYER:PHYSICS
 !
 
@@ -3195,6 +3196,15 @@ CONTAINS
                y5(i,j)=1./(tair(i,j)-c76)
                qsw(i,j)=rp0*exp(c172-c409*y4(i,j))
                qsi(i,j)=rp0*exp(c218-c580*y5(i,j))
+#ifdef new_saturation
+               esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+               esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+               if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
+               qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+               qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+               esw(i,j) = esw(i,j)*10.  !in CGS
+               esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
                ! EMK...Prevent division by zero
 !               hfact=(qv(i,j)+qb0-qsi(i,j))/(qsw(i,j)-qsi(i,j))
                hfact=(qv(i,j)+qb0-qsi(i,j))/(qsw(i,j)-qsi(i,j)+cmin1)
@@ -3271,6 +3281,11 @@ CONTAINS
                y2(i,j)=exp(c218-c580*rtair(i,j))
                qsi(i,j)=rp0*y2(i,j)
                esi(i,j)=c610*y2(i,j)
+#ifdef new_saturation
+               esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+               qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+               esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
                ssi(i,j)=(qv(i,j)+qb0)/qsi(i,j)-1.
                r_nci=min(1.e-6*exp(-.46*tairc(i,j)),1.)
 !               R_NCI=min(1.e-8*EXP(-.6*TAIRC(I,J)),1.) ! use Tao's
@@ -3900,6 +3915,15 @@ CONTAINS
                 rtair(i,j)=1./(tair(i,j)-c76)
                 y5(i,j)=exp(c218-c580*rtair(i,j))
                 qsi(i,j)=rp0*y5(i,j)
+#ifdef new_saturation
+                esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+                esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+                if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
+                qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+                qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+                esw(i,j) = esw(i,j)*10.  !in CGS
+                esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
                 SSI(i,j)=(qv(i,j)+qb0)/qsi(i,j)-1.
                 fssi=min(xssi,max(.0,xssi*(tairc(i,j)+44.)/(44.0-38.0))) !max ssi f(tair)
                 fssi=min(ssi(i,j),fssi)
@@ -3943,6 +3967,11 @@ CONTAINS
              if (qc(i,j) .gt. 0.0) then
                 y4(i,j) = 1./(tair(i,j)-c358)
                 qsw(i,j)=rp0*exp(c172-c409*y4(i,j))
+#ifdef new_saturation
+                esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+                qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+                esw(i,j) = esw(i,j)*10.  !in CGS
+#endif
                 xncld=qc(i,j)/4.e-9                         !cloud number
                 esat=0.6112*exp(17.67*tairc(i,j)/(tairc(i,j)+243.5))*10.
                 rv=0.622*esat/(p0(i,j,k)/1000.-esat)
@@ -4038,6 +4067,11 @@ CONTAINS
             y2(i,j)=exp(c218-c580*rtair(i,j))
             qsi(i,j)=rp0*y2(i,j)
             esi(i,j)=c610*y2(i,j)
+#ifdef new_saturation
+            esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+            qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+            esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
             ssi(i,j)=(qv(i,j)+qb0)/qsi(i,j)-1.
             y1(i,j)=1./tair(i,j)
             y3(i,j)=SQRT(qi(i,j))
@@ -4098,6 +4132,11 @@ CONTAINS
                 y2(i,j)=exp(c218-c580*rtair(i,j))
                 qsi(i,j)=rp0*y2(i,j)
                 esi(i,j)=c610*y2(i,j)
+#ifdef new_saturation
+                esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+                qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+                esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
                 ssi(i,j)=(qv(i,j)+qb0)/qsi(i,j)-1.
                 dm(i,j)=max( (qv(i,j)+qb0-qsi(i,j)), 0.)
                 rsub1(i,j)=cs580*qsi(i,j)*rtair(i,j)*rtair(i,j)
@@ -4128,6 +4167,11 @@ CONTAINS
                 y2(i,j)=exp(c218-c580*rtair(i,j))
                 qsi(i,j)=rp0*y2(i,j)
                 esi(i,j)=c610*y2(i,j)
+#ifdef new_saturation
+                esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+                qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+                esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
                 ssi(i,j)=(qv(i,j)+qb0)/qsi(i,j)-1.
                 ami20=3.76e-8
                 y1(i,j)=1./tair(i,j)
@@ -4169,6 +4213,15 @@ CONTAINS
                y2(i,j)=1./(tair(i,j)-c76)
                qsw(i,j)=rp0*exp(c172-c409*y1(i,j))
                qsi(i,j)=rp0*exp(c218-c580*y2(i,j))
+#ifdef new_saturation
+               esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+               esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+               if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
+               qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+               qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+               esw(i,j) = esw(i,j)*10.  !in CGS
+               esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
                dd(i,j)=cp409*y1(i,j)*y1(i,j)
                dd1(i,j)=cp580*y2(i,j)*y2(i,j)
                if (qc(i,j).le.cmin) qc(i,j)=cmin
@@ -4221,6 +4274,15 @@ CONTAINS
                y2(i,j)=1./(tair(i,j)-c76)
                qsw(i,j)=rp0*exp(c172-c409*y1(i,j))
                qsi(i,j)=rp0*exp(c218-c580*y2(i,j))
+#ifdef new_saturation
+               esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+               esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+               if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
+               qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+               qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+               esw(i,j) = esw(i,j)*10.  !in CGS
+               esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
                dd(i,j)=cp409*y1(i,j)*y1(i,j)
                dd1(i,j)=cp580*y2(i,j)*y2(i,j)
                y5(i,j)=avcp*cnd(i,j)+ascp*dep(i,j)
@@ -4281,6 +4343,11 @@ CONTAINS
           if (tair(i,j) .ge. 253.16) then
               y1(i,j)=1./(tair(i,j)-c358)
               qsw(i,j)=rp0*exp(c172-c409*y1(i,j))
+#ifdef new_saturation
+              esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+              qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+              esw(i,j) = esw(i,j)*10.  !in CGS
+#endif
               dd(i,j)=cp409*y1(i,j)*y1(i,j)
               dm(i,j)=qv(i,j)+qb0-qsw(i,j)
               cnd(i,j)=dm(i,j)/(1.+avcp*dd(i,j)*qsw(i,j))
@@ -4294,6 +4361,11 @@ CONTAINS
 !c             cnd(i,j)=0.0
              y2(i,j)=1./(tair(i,j)-c76)
              qsi(i,j)=rp0*exp(c218-c580*y2(i,j))
+#ifdef new_saturation
+             esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+             qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+             esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
              dd1(i,j)=cp580*y2(i,j)*y2(i,j)
              dep(i,j)=(qv(i,j)+qb0-qsi(i,j))/(1.+ascp*dd1(i,j)*qsi(i,j))
 !c    ******   deposition or sublimation of qi    ******
@@ -4317,6 +4389,11 @@ CONTAINS
          if (tair(i,j).ge.t00) THEN
             y1(i,j)=1./(tair(i,j)-c358)
             qsw(i,j)=rp0*exp(c172-c409*y1(i,j))
+#ifdef new_saturation
+            esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+            qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+            esw(i,j) = esw(i,j)*10.  !in CGS
+#endif
             dd(i,j)=cp409*y1(i,j)*y1(i,j)
             dm(i,j)=qv(i,j)+qb0-qsw(i,j)
             cnd(i,j)=dm(i,j)/(1.+avcp*dd(i,j)*qsw(i,j))
@@ -4332,6 +4409,15 @@ CONTAINS
             qsw(i,j)=rp0*exp(c172-c409*y1(i,j))
             y2(i,j)=1./(tair(i,j)-c76)
             qsi(i,j)=rp0*exp(c218-c580*y2(i,j))
+#ifdef new_saturation
+            esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+            esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+            if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
+            qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+            qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+            esw(i,j) = esw(i,j)*10.  !in CGS
+            esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
 
 !            fssi=min(0.20,max(0.,0.20*(tair(i,j)-t0+44.0)/(44.0-38.0)))
 !vvvvvvvvvvvvv Tao 20110722 vvvvvvvvvvvvvv
@@ -4439,6 +4525,11 @@ CONTAINS
               y2(i,j)=exp(c218-c580*rtair(i,j))
               qsi(i,j)=rp0*y2(i,j)
               esi(i,j)=c610*y2(i,j)
+#ifdef new_saturation
+              esi(i,j)=min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+              qsi(i,j)=0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+              esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
 
               SSI(I,J)=(QV(I,J)+QB0)/QSI(I,J)-1.
               IF (DLT1(I,J).EQ.1.) SSI(I,J)=max(SSI(I,J),0.)
@@ -4517,6 +4608,11 @@ CONTAINS
 	     y2(i,j)=exp( c172-c409*rtair(i,j) )
 	     esw(i,j)=c610*y2(i,j)
              qsw(i,j)=rp0*y2(i,j)
+#ifdef new_saturation
+             esw(i,j)=min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+             qsw(i,j)=0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+             esw(i,j) = esw(i,j)*10.  !in CGS
+#endif
              ssw(i,j)=(qv(i,j)+qb0)/qsw(i,j)-1.
              dm(i,j)=qv(i,j)+qb0-qsw(i,j)
              rsub1(i,j)=cv409*qsw(i,j)*rtair(i,j)*rtair(i,j)
@@ -4531,6 +4627,11 @@ CONTAINS
 !               tair(i,j)=(pt(i,j)+tb0)*pi0
 !               rtair(i,j)=1./(tair(i,j)-c358)
              qsw(i,j)=rp0*exp(c172-c409*rtair(i,j))
+#ifdef new_saturation
+             esw(i,j)=min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+             qsw(i,j)=0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+             esw(i,j) = esw(i,j)*10.  !in CGS
+#endif
              ssw(i,j)=(qv(i,j)+qb0)/qsw(i,j)-1.0
              dm(i,j)=qv(i,j)+qb0-qsw(i,j)
              rsub1(i,j)=cv409*qsw(i,j)*rtair(i,j)*rtair(i,j)
@@ -4586,6 +4687,11 @@ CONTAINS
              y2(i,j)=exp( c172-c409*rtair(i,j) )
              esw(i,j)=c610*y2(i,j)
              qsw(i,j)=rp0*y2(i,j)
+#ifdef new_saturation
+             esw(i,j)=min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+             qsw(i,j)=0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+             esw(i,j) = esw(i,j)*10.  !in CGS
+#endif
              ssw(i,j)=1.-(qv(i,j)+qb0)/qsw(i,j)
              dm(i,j)=qsw(i,j)-qv(i,j)-qb0
              rsub1(i,j)=cv409*qsw(i,j)*rtair(i,j)*rtair(i,j)
@@ -5635,6 +5741,9 @@ CONTAINS
       ! for TCWA1 semi-theoretical approach
       integer :: hid
       real    :: qsi,sqrhoz,rhoi,adagr,inhgr,ltk,lqi,ltk2,lqi2,zeta,vishp,viroi,ssi,lroi
+#ifdef new_saturation
+      real    :: esi
+#endif
       real, parameter :: thrd = 1./3.
       real, parameter :: di0 = 6.e-6
       real, dimension(0:120) :: itble       ! deposition growth coefficients
@@ -5751,6 +5860,10 @@ CONTAINS
             ! with prescribed ice properties(shape and density) :
             tc = tz - t0
             qsi = f_qsi(tz,p)
+#ifdef new_saturation
+            esi = min(0.99*p,esi_mks(tz))
+            qsi = 0.622*esi/(p-esi)
+#endif
 
             ! deposition density :
             if ( tc .ge. -40. ) then
@@ -5775,7 +5888,9 @@ CONTAINS
             if ( tc .ge. -40. ) then
               adagr = inhgr**thrd
             else
-              adagr = inhgr**0.8
+!              adagr = inhgr**0.8
+!              adagr = inhgr**0.9
+              adagr = inhgr
             endif
 ! <<<
             ltk   = log(tz)
@@ -6273,5 +6388,52 @@ CONTAINS
 
        END FUNCTION f_qsi
 
+#ifdef new_saturation
+       REAL FUNCTION esi_mks(tair)
+       IMPLICIT NONE
+       REAL :: tair   !real temperature (K)
+!
+!  COMPUTE SATURATION VAPOR PRESSURE POLYSVP RETURNED IN UNITS OF PA. T IS INPUT IN UNITS OF K.
+!  REPLACE GOFF-GRATCH WITH FASTER FORMULATION FROM FLATAU ET AL. 1992, TABLE 4 (RIGHT-HAND COLUMN)
+       REAL :: DT
+       REAL :: a0i,a1i,a2i,a3i,a4i,a5i,a6i,a7i,a8i
+       DATA a0i,a1i,a2i,a3i,a4i,a5i,a6i,a7i,a8i /6.11147274,0.503160820, &
+            0.188439774E-1,0.420895665E-3,0.615021634E-5,0.602588177E-7, &
+            0.385852041E-9,0.146898966E-11,0.252751365E-14/
+
+       DT = MAX(-80.,tair - 273.16)
+       esi_mks = a0i + DT*(a1i + DT*(a2i + DT*(a3i + DT*(a4i + DT*(a5i + &
+                 DT*(a6i + DT*(a7i + a8i*DT)))))))
+       esi_mks = esi_mks*100.  !convert to Pa
+!  
+!  Goff-Gratch equation (Goff and Gratch 1945)
+!       esi_mks = c610 * exp( c218 - c580 / (tair - c76) )
+!       esi_mks = esi_mks / 10.  !convert to Pa
+
+       END FUNCTION esi_mks
+
+       REAL FUNCTION esw_mks(tair)
+       IMPLICIT NONE
+       REAL :: tair   !real temperature (K)
+!
+!  COMPUTE SATURATION VAPOR PRESSURE POLYSVP RETURNED IN UNITS OF PA. T IS INPUT IN UNITS OF K.
+!  REPLACE GOFF-GRATCH WITH FASTER FORMULATION FROM FLATAU ET AL. 1992, TABLE 4 (RIGHT-HAND COLUMN)
+       REAL :: DT
+       REAL :: a0,a1,a2,a3,a4,a5,a6,a7,a8
+       DATA a0,a1,a2,a3,a4,a5,a6,a7,a8 /6.11239921,0.443987641,          &
+            0.142986287E-1,0.264847430E-3,0.302950461E-5,0.206739458E-7, &
+            0.640689451E-10,-0.952447341E-13,-0.976195544E-15/
+
+       DT = MAX(-80.,tair - 273.16)
+       esw_mks = a0 + DT*(a1 + DT*(a2 + DT*(a3 + DT*(a4 + DT*(a5 + DT*   &
+                 (a6 + DT*(a7 + a8*DT)))))))
+       esw_mks = esw_mks*100.  !convert to Pa
+!
+!  Goff-Gratch equation (Goff and Gratch 1945)
+!       esw_mks = c610 * exp( c172 - c409 / (tair - c358) )
+!       esw_mks = esw_mks / 10.   !convert to Pa
+
+       END FUNCTION esw_mks
+#endif
 END MODULE  module_mp_gsfcgce_3ice_nuwrf
 
