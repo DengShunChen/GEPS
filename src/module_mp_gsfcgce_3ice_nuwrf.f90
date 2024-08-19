@@ -159,7 +159,7 @@ CONTAINS
                       ,rho, pii, p, dt_in, z                       &
                       ,ht, dz8w, grav, w                           &
 !                      ,rhowater, rhosnow                           &
-                      ,itimestep, xland                            &
+                      ,itimestep, xlat, xland                      &
 !                      ,ids,ide, jds,jde, kds,kde                   & ! domain dims
                       ,ims,ime, jms,jme, kms,kme                   & ! memory dims
                       ,its,ite, jts,jte, kts,kte                   & ! tile   dims
@@ -291,7 +291,7 @@ CONTAINS
                                                             grav
 !                                                        rhowater, &
 !                                                         rhosnow
-
+  REAL, INTENT(IN   ) :: xlat
   LOGICAL, INTENT(IN), OPTIONAL :: F_QG
 
 !  LOCAL VAR
@@ -523,7 +523,7 @@ CONTAINS
 !c microphysics in GCE
 
    call SATICEL_S( dt_in, IHAIL, itaobraun, ICE2, istatmin,      &
-                   new_ice_sat, id, improve,                     &
+                   new_ice_sat, id, improve, xlat,               &
 !                   th, th_old, qv, ql, qr,                      &
                    th, qv, ql, qr,                               &
                    qi, qs, qg,                                   &
@@ -1944,7 +1944,7 @@ CONTAINS
   end subroutine vqrqi
 
   SUBROUTINE saticel_s (dt, ihail, itaobraun, ice2, istatmin,          &
-                       new_ice_sat, id, improve,                       &
+                       new_ice_sat, id, improve, xlat,                 &
                        ptwrf, qvwrf, qlwrf, qrwrf,                     &
                        qiwrf, qswrf, qgwrf,                            &
                        rho_mks, pi_mks, p0_mks, w_mks,                 &
@@ -2373,6 +2373,10 @@ CONTAINS
       real :: iwc_0, bw98
       real :: md22, bd22, sigma, cd22, xd22
       real :: lqi,lqi2,efdi
+
+      ! calculate allowable ice supersautration :
+      real, intent(in) :: xlat
+      real :: d2r, arg
 !
 !JJS20090623      save  
 
@@ -2482,9 +2486,20 @@ CONTAINS
       ucog=687.97*roqg**0.25/tng**0.75
       uwet=4.464**0.95
 
-      xssi=0.10  ! maximum allowable ice supersaturation
-
       CPI=4.*ATAN(1.)
+
+   ! maximum allowable ice supersaturation :
+   !  default :
+      xssi = 0.10
+   !  test  :
+!      xssi = 0.05
+   !  test  :
+   !  for abs(xlat)<=30  : cos(arg)=0 , xssi=0.10
+   !  for abs(xlat)>=60  : cos(arg)=1 , xssi=0.05
+!      d2r = CPI/180.0
+!      arg = max( min( abs(xlat),60.0 ),30.0 )
+!      arg = (60.0 - arg) * 3.0 * d2r
+!      xssi = 0.10 - 0.05 * ( cos(arg) )**2.0
 
 !   ??????????
       tslopes=0.10539656   ! increase tns by 40 from -5 to -40C

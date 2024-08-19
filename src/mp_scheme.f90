@@ -91,7 +91,7 @@
            ( nmmiph,nx,nxj,lev,ncld,plt,ptop,                          &
              dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,            &
              itimestep,sgeo,phi,rhc_mp,pk,                             &
-             snr,                                                      &
+             snr,xlat,                                                 &
 !  ---  inputs/outputs:
              tt,qt,qa,ut,vt,vvel,pst,                                  &
 !  ---  outputs:
@@ -139,7 +139,7 @@
 !      integer,  intent(in)    :: ntcw,ntrw,ntiw,ntsw,ntgl,ntinc,ntrnc
       integer,  intent(in)    :: islimsk(nx)
       integer,  intent(in)    :: itimestep
-      real,     intent(in)    :: tpi,dta
+      real,     intent(in)    :: tpi,dta,xlat
       real,     intent(in)    :: phii(nx,lev+1)
       real,     intent(in)    :: area
       real,     intent(in)    :: ptop
@@ -1088,7 +1088,7 @@
                    rho3d, pii3d, p3d, dts, z3d,                         &
                    ht, dz3d, con_g, w3d,                                &
 !                   rhowater, rhosnow,                                   &
-                   itimestep, land2d,                                   &
+                   itimestep, xlat, land2d,                             &
 !                   ids,ide, jds,jde, kds,kde,                           & ! domain dims
                    1, nx , 1, 1, 1, lev,                                & ! memory dims
                    1, nxj, 1, 1, 1, lev,                                & ! tile   dims
