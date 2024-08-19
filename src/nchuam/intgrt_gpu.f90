@@ -1,19 +1,22 @@
+#define ndslfv_monoadvv ndslfv_monoadvv_gpu
+#define ndslfv_monoadvv_fgnl ndslfv_monoadvv_fgnl_gpu
+#define ndslfv_update  ndslfv_update_gpu
 subroutine intgrt_gpu
    !$acc routine(prexp_hybrid_cwb_gpu) vector
    !$acc routine(gridnl_hybrid_ndsl_gpu) vector
-!
-!***********************************************************************
-!  this subroutine is the basic time stepping driver.  it does the
-!  gaussian quadrature integrations to compute the adiabatic spectral
-!  tendencies for the model variables. these tendencies are adjusted
-!  with a semi-implicit method to make the model stable for long
-!  time steps.  time steps are made with a time filter to remove
-!  any computational modes.
-!
-!  modify to f90 by C-H Lee and sort by River Chen in 2015
-!
-!***********************************************************************
-!
+   !
+   !***********************************************************************
+   !  this subroutine is the basic time stepping driver.  it does the
+   !  gaussian quadrature integrations to compute the adiabatic spectral
+   !  tendencies for the model variables. these tendencies are adjusted
+   !  with a semi-implicit method to make the model stable for long
+   !  time steps.  time steps are made with a time filter to remove
+   !  any computational modes.
+   !
+   !  modify to f90 by C-H Lee and sort by River Chen in 2015
+   !
+   !***********************************************************************
+   !
    use param
    use mpe
    use rank
@@ -26,11 +29,14 @@ subroutine intgrt_gpu
    use mod_typhoon
    use noah
    use namelist_soilveg
+   ! use nvtx
+   use cudafor
+   use openacc
    use mod_ndslfv_monoadv_gpu, only: ndslfv_monoadvh_fgnl_gpu, &
                                      ndslfv_monoadvh_gpu, &
                                      ndslfv_monoadvv_gpu, ndslfv_monoadvv_fgnl_gpu, &
                                      ndslfv_update_gpu
-!-----------------------------------------------------------------------
+   !-----------------------------------------------------------------------
    USE mod_sitgrid
    USE mod_sit_vdiff, ONLY: sit_vdiff_end, cal_ratioBlending
    USE mod_sit_control, ONLY: xmissing, lgodas, locaf, lwoa0 &
@@ -48,26 +54,24 @@ subroutine intgrt_gpu
                       , tseaold, tseanow, tseanew, dtseadt &
                       , tseadiffFCT, tseadiffFCT24, outtseadiffFCT24
    USE mo_netcdf, ONLY: lkvl, cleanup_netcdf
-!-----------------------------------------------------------------------
+   !-----------------------------------------------------------------------
    use raddiag
    use radn
    use albn
-!-----------------------------------------------------------------------
+   !-----------------------------------------------------------------------
    use mod_stochastic_physics, only: spptout, skebout, &
                                      run_stochastic_physics, &
                                      destroy_stochastic_physics, &
                                      skeb3du, skeb3dv, diss_est, skebfilt, &
                                      keb, kea, skebest
-   use openacc
-   use cudafor
-!-----------------------------------------------------------------------
+   !-----------------------------------------------------------------------
    implicit none
-!
-!  local work array
-!
+   !
+   !  local work array
+   !
    integer nfxr
-!  for Semi-Lagrangian
-!
+   !  for Semi-Lagrangian
+   !
    real(kind=RTYPE) ndsldtah, dtah, dtahi, dta, &
       diveng(nxp, lev, my_max), &
       qm_sl(nx, levp*ncld, my_max), &
@@ -85,8 +89,9 @@ subroutine intgrt_gpu
       ptm(nxp, my_max), &
       deldm(nxp, my_max), sdpbl(nxp, my_max)
 
+   !          integer ierr, ittw, itt, year, yrd
    integer ierr, ittw, itt, year
-!
+   !
    real(kind=RTYPE) glob(nx, my)
    real hf24(nxp, my_max), qf24(nxp, my_max), ss24(nxp, my_max), rs24(nxp, my_max), &
       asol24(nxp, my_max), olr24(nxp, my_max), rain24(nxp, my_max), &
@@ -96,40 +101,39 @@ subroutine intgrt_gpu
    integer kn
 
    real tmin(nxp, my_max), tmax(nxp, my_max)!,td(nxp,my_max),temp
-!
+   !
    real(kind=RTYPE) pltemp(jtrun, jtmax, 2), cc(nx + 2, levp, 1, my_max), &
       ww1(nx, my_max)
-   real(kind=RTYPE) cc_cg((nx + 2)*levp*2*my_max), gwk1_cg((nx + 2)*levp*2*my_max)
-!byl      real      dlgeo(nxp,my_max),dtgeo(nxp,my_max)
-!byl      real      cc3(nx+2,levp,3,my_max),wss3(levp,2,3,jtrun,jtmax)
-!
+   !byl      real      dlgeo(nxp,my_max),dtgeo(nxp,my_max)
+   !byl      real      cc3(nx+2,levp,3,my_max),wss3(levp,2,3,jtrun,jtmax)
+   !
    character rfile*255, ctau*7, ccore*4
-!!      real      tbar(lev),qbar(lev*ncld),qbrrow(ncld,my)
+  !!      real      tbar(lev),qbar(lev*ncld),qbrrow(ncld,my)
    integer, parameter :: ktop = 4
-   real fac(ktop), wkj(my, 4), wkmf(jtrun), windmax3
+   real fac(ktop), wkj(my, 4), wkmf(jtrun), wkmf_local, windmax3
    data windmax3/130./
-!
+   !
    logical histim, tchange, flag, forward, fwd
-!
+   !
    logical wrestrt
-!
-! for topographic gravity wave drag
-!
+   !
+   ! for topographic gravity wave drag
+   !
    real hprime_b(nxp, mtnvar, my_max)
 
-! for due point temperature
+   ! for due point temperature
    real tda, tdb
    parameter(tda=17.27, tdb=237.7)
 
-!
-!   restart  : write(7) work array
-!
+   !
+   !   restart  : write(7) work array
+   !
    real, dimension(:), allocatable :: work_io
    integer itauezz
    real dtauzz, tautv
    character cmdxx*256
    integer len1, len2
-!-------------------------------------------------------------------
+   !-------------------------------------------------------------------
    integer i, j, k, m, n, jj, kk, mf, kw, nxj, nml, lmax, leng, nxmy, &
       jlim, mlst, mlmax2, itaui, itaue, itauo, itaup, &
       ntau, itau, lcwb, lphy, ifromtau, itotau, istat, &
@@ -141,12 +145,12 @@ subroutine intgrt_gpu
       sptendmax2, sptendmax1, dt_chg
    integer recn
 
-! for io quilting
+   ! for io quilting
    character*34 keydoit, keydone
    data keydoit/"DOIT..........................DOIT"/
    data keydone/"DONE..........................DONE"/
-!
-!for sst_restore_tau>0., update sst(W00100), seaice(W00091), snowdepth(B00650)
+   !
+   !for sst_restore_tau>0., update sst(W00100), seaice(W00091), snowdepth(B00650)
    integer*8 idtg_sst, idtg1_sst, idtg_temp
    integer icurrenttau, yyyymmdd, hhii
    logical lsstrestore, iceold(nxp, my_max), oceanold(nxp, my_max)
@@ -155,52 +159,90 @@ subroutine intgrt_gpu
    real sst(nxp, my_max), ssttau, tautemp
    integer yr, mo, dy, hr, mn
 
-!for opgsst sst
+   !for opgsst sst
    integer*8 idtg1_opgsst
    integer icurrentyear, inextyear, inexttau
    logical lnewyear
    real tauleft
 
-!for SIT
+   !for SIT
    integer icurrentyymmdd, inextyymmdd
    logical lnewday
    integer icurrentyymm, ibeforeyymm
    logical lnewyymm
    integer ic_sit, nc_sit
    logical turn_sit, lrun_sitvdiff
-!pscheckdata
+   !pscheckdata
    integer lenc, itautest
    real mout(nx, my)
    integer nc
    integer*8 :: toutsrt, toutend, toutrate      !For CPU Timings
    logical:: lopngrb2 !open grib2 file
 
-!CWB2021 ndsl single precision test
+   !CWB2021 ndsl single precision test
    real(kind=RTYPE) &
       pdot(nxp, lev + 1, latpart)
-!
-!xb110>
-!byl      real rmr(nxp,lev,my_max),smr(nxp,lev,my_max)
-!for lightning scheme from ECMWF
+   !
+   !xb110>
+   !byl      real rmr(nxp,lev,my_max),smr(nxp,lev,my_max)
+   !for lightning scheme from ECMWF
    real flash(nxp, my_max), flash24(nxp, my_max)
-!xb110<
+   !xb110<
 
    integer, parameter:: async_id = 1
-   integer :: stats
    integer(kind=cuda_stream_kind) :: stream
-   real wkmf_local
 #ifdef TIMING
-! for timing
+   ! for timing
    real*8 tm_1, tm_2, tm_use, mpi_wtime
-!CWB2020
+   !CWB2020
    tm_1 = mpi_wtime()
    tm_2 = mpi_wtime()
 #endif
    ! ------------------------------------------------------------
-   ! << openacc allocate data >>
+   ! << OpenACC ALLOCATE DATA >>
    stream = acc_get_cuda_stream(async_id)
+   !$acc enter data copyin(nxjp, nxp, lev, ncld, ndslvvar) async(async_id)
+   !$acc enter data copyin(nx, my, my_max, jlistnum, mlistnum, jtrun, jtmax, levp, nsizey, nsizex) async(async_id)
+   !$acc enter data copyin(jlist1, nxdef_2d, nxjp_acc, nxptot, &
+   !$acc& jlist2_2d, nxjlen_all, nxdef, mlist, Llist, &
+   !$acc& gglati, fa1, fa2, fa3, fa4) async(async_id)
+  !! << const >>
+   !$acc enter data copyin(cp, rad, radsq, sinl, cosl, &
+   !$acc& onocos, cor, sigma, dsigma, ptop, hdk1, hdk2) async(async_id)
+   !$acc enter data copyin(poly, dpoly, weight, cim, wcfac, wdfac) async(async_id)
+   !$acc enter data copyin(ptmeans, spalm, eps4, eigval, evecin ,evectr, &
+   !$acc& arrhyd, arsddt) async(async_id)
+   !$acc enter data copyin(hfiltx, alphax) async(async_id)
+  !! << grid >>
+   !$acc enter data copyin(sgeo) async(async_id)
+  !! << spec >>
+   !$acc enter data copyin(trefs) async(async_id)
+   ! ++++++++++++++++++++++++++++++++++++++++++++++++++
+  !! << const >>
+   !$acc enter data create(pcorr) async(async_id)
+  !! << grid >>
+   !$acc enter data create(tt, ut, vt, qt, qm) async(async_id)
+   !$acc enter data create(dtphi, dlphi, dlpl, dtpl) async(async_id)
+   !$acc enter data create(rdivm, rdiv, phi, sd, vvel) async(async_id)
+   !$acc enter data create(pt, ptend) async(async_id)
+   !$acc enter data create(up, vp, ttp, ptp) async(async_id)
+   !$acc enter data create(pk, pk2, plt) async(async_id)
+  !! << spec >>
+   !$acc enter data create( &
+   !$acc& temold, divold, vorold, plold, &
+   !$acc& temmid, divmid, vormid, plmid, &
+   !$acc& temnow, divnow, vornow, plnow, &
+   !$acc& temten, divten, vorten, plten, hldten &
+   !$acc& ) async(async_id)
+  !! << local >>
+   !$acc enter data create(diveng, tm, um, vm, &
+   !$acc& vdzonl, vdmerd, vdmerdg, vdzonlg, vdzonlrp, vdmerdrp, &
+   !$acc& ddtemp, ptm, deldm, pdot, sdpbl, pltemp) async(async_id)
+
+   !$acc enter data create(cc, ww1, pten, hfiltm) async(async_id)
+   !$acc wait(async_id)
    ! ------------------------------------------------------------
-!      fsit=-99.             !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
+   !      fsit=-99.             !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
    !default fsit<=0., turn on sit_vdiff every tau
    ic_sit = -99             !if fsit>0., store now tau is the ic_sit times when sit_vidff is turn on
    nc_sit = 1               !if fsit>0., when mod(tau/fsit)<0.001, turn on sit_vdiff for "nc_sit" timesteps
@@ -212,36 +254,36 @@ subroutine intgrt_gpu
    else
       wrestrt = .false.
    end if
-!
+   !
    ttm_sl = 0.
    pten_sl = 0.
    qm_sl = 0.
    vvm_sl = 0.
    uum_sl = 0.
-!
+   !
    lmax = 16
    nfxr = 33
    cc = 0.
    istat = 0
-!
-! TYW added 20240112
+   !
+   ! TYW added 20240112
    hprime_b = 0.
-!
+   !
    year = idate(1)
-!   yrd = 365
-!   if (mod(year, 4) .eq. 0) yrd = 366
-!
+   !      yrd  = 365
+   !      if ( mod(year,4) .eq. 0 ) yrd = 366
+   !
    do jj = 1, jlistnum
       j = jlist1(jj)
-!ch     nxj=nxdef(j)
+      !ch     nxj=nxdef(j)
       call prexp_hybrid_cwb(nxjp(j), nxp, lev, ptop, sigma, pt(1, jj), &
                             pk(1, 1, jj), pk2(1, 1, jj), plt(1, 1, jj))
    end do
-!      call  outsigs ( 0,nx,my,my_max,lev,ncld                                    &
-!                    , idtg,ifilout,ptop,rad,grav                                 &
-!                    , cp,cosl,pt,sgeo,snr,gwr,tg,pk,pk2                          &
-!                    , ut,vt,tt,qt,phi,rdiv                                       &
-!                    , km_soil,smc,slc,stc,canopy,zice,ggdef,gmdef )
+   !      call  outsigs ( 0,nx,my,my_max,lev,ncld                                    &
+   !                    , idtg,ifilout,ptop,rad,grav                                 &
+   !                    , cp,cosl,pt,sgeo,snr,gwr,tg,pk,pk2                          &
+   !                    , ut,vt,tt,qt,phi,rdiv                                       &
+   !                    , km_soil,smc,slc,stc,canopy,zice,ggdef,gmdef )
 
    raintot = 0.
    raincu = 0.
@@ -261,23 +303,23 @@ subroutine intgrt_gpu
    rdivm = 0.
    flash = 0.
    pdry = 0.
-!
-!
-! read mountant variables for topographic gravity wave drag
-!
+   !
+   !
+   ! read mountant variables for topographic gravity wave drag
+   !
    if (yesdia .and. dograv .and. nmgwor .eq. 2) then
       call read_mtnvar(nx, my, mtnvar, hprime_b)
-!
+      !
       if (myrank .eq. 0) &
          print *, 'read mtnvar=14 hprime_b=', (hprime_b(1, i, 1), i=1, mtnvar)
    end if
-!
+   !
    tchange = .false.
    nxmy = nx*my
    nml = nx*my*lev
    mlmax2 = mlmax*2
    leng = mlmax*2*lev
-!
+   !
    itaui = taui + 0.1
    itaue = taue + 0.1
    itauo = tauo + 0.1
@@ -286,13 +328,14 @@ subroutine intgrt_gpu
       tau = taui
    end if
    dtx = dt
-!
+   !
    dta = dtx
    dtah = 0.5*dta
    ndsldtah = dtah/float(itter)
    dtahi = dtah/float(itter)
-!
-!jwhwu 201407 add time control
+   !$acc enter data copyin(dta, dtah, ndsldtah, dtahi)
+   !
+   !jwhwu 201407 add time control
    if (dorst) then
       open (7, file='./timectl', status='old')
       read (7, '(i8)') itauezz
@@ -302,20 +345,20 @@ subroutine intgrt_gpu
          print *, 'the integration will be extended up to ', itauezz, ' hours'
       end if
    end if
-!#endif
-!
-!  compute initial moisture and potential temperature
-!
+   !#endif
+   !
+   !  compute initial moisture and potential temperature
+   !
    qgini = 0.0
    thdai = 0.0
    tkei = 0.0
    tpei = 0.0
    do i = 1, 4
-   do j = 1, my
-      wkj(j, i) = 0.
+      do j = 1, my
+         wkj(j, i) = 0.
+      end do
    end do
-   end do
-!
+   !
    do jj = 1, jlistnum
       j = jlist1(jj)
       nxj = nxdef_2d(j)
@@ -334,7 +377,7 @@ subroutine intgrt_gpu
    end do
 
    call mpe_unify(wkj, my, 4, 1, mpe_double)
-!
+   !
    cosw = 0.
    do j = 1, my
       nxj = nxdef(j)
@@ -350,14 +393,14 @@ subroutine intgrt_gpu
    thdai = thdai/cosw
    tengi = tengi/cosw
    !
-!
+   !
    if (myrank .eq. 0) &
       print *, 'qgini, thdai, tengi= ', qgini, thdai, tengi
-!
+   !
    if (myrank .eq. 0) print *, ' beginning integration '
-!
-!  zero out precip arrays
-!
+   !
+   !  zero out precip arrays
+   !
    dt24 = 0.
    do jj = 1, jlistnum
       j = jlist1(jj)
@@ -387,7 +430,7 @@ subroutine intgrt_gpu
          flash24(i, jj) = 0.  !xb110, flash density
       end do
    end do
-!
+   !
    if (itaui .eq. 0) then   ! when restart, don't zero out
       do jj = 1, jlistnum
          j = jlist1(jj)
@@ -401,48 +444,51 @@ subroutine intgrt_gpu
          end do
       end do
    end if
-!xb110>
-!byl      rmr = 0.
-!byl      smr = 0.
-!xb110<
-!
-!***********************************************************************
-!     start time integration iterations
-!***********************************************************************
-!
-! sppt
+   !xb110>
+   !byl      rmr = 0.
+   !byl      smr = 0.
+   !xb110<
+   !
+   !***********************************************************************
+   !     start time integration iterations
+   !***********************************************************************
+   !$acc update device(dtpl, dlpl) async(async_id)
+   !$acc update device(rdiv, ut, vt, tt, qt, pt) async(async_id)
+   !$acc update device(vornow, divnow, temnow, plnow) async(async_id)
+   !
+   ! sppt
    if (.not. restrt) then
       itimestep = 1
    end if
-!
+   !
    n_stable = 0
    n_unstable = 0
 
    if (dta .gt. 720) then
-!!        dt_chg=1800.
+     !!        dt_chg=1800.
       nc_stable = 1
-!        sptendmax2=0.3605
-!        sptendmax1=0.2605
+      !        sptendmax2=0.3605
+      !        sptendmax1=0.2605
       sptendmax2 = 0.4005
       sptendmax1 = 0.3005
    else if (dta .le. 720 .and. dta .gt. 450) then
-!!        dt_chg=720.
+     !!        dt_chg=720.
       nc_stable = 2
       sptendmax2 = 0.4005
       sptendmax1 = 0.3005
    else if (dta .le. 450) then
-!!        dt_chg=450.
+     !!        dt_chg=450.
       nc_stable = 4
       sptendmax2 = 0.4305
       sptendmax1 = 0.3305
    end if
 
-!
-!      if(typhoon)then
-!        dt_trk=6.
-!      else
-!        dt_trk=tauo
-!      endif
+   !
+   !      if(typhoon)then
+   !        dt_trk=6.
+   !      else
+   !        dt_trk=tauo
+   !      endif
    ! store first idtg to idtg_sst
    icurrenttau = int(tau)
    call dtgfix12(idtg, idtg_sst, icurrenttau)
@@ -455,7 +501,7 @@ subroutine intgrt_gpu
       call read_opgsst(idtg_sst, ggdef, ocean, ice)
       icurrentyear = idtg_sst/100000000
    end if   !end lopgsst
-!
+   !
 10 continue
 
    dtx_tau = dtx/3600.
@@ -463,47 +509,22 @@ subroutine intgrt_gpu
    if (myrank .eq. 0) then
       print *, 'forcast begin tau=', itaui, ' to tau=', itaue
 
-!     ! for io quilting
-!      if(io_quilting)then
-!         ntag=ntag+1
-!         call mpe_send_key(keydoit,ntag,istat)
-!      endif
+      !     ! for io quilting
+      !      if(io_quilting)then
+      !         ntag=ntag+1
+      !         call mpe_send_key(keydoit,ntag,istat)
+      !      endif
 
    end if
 
-!CWB2020 fix the bug for negative timing info
-!#ifdef TIMING
-!      tm_1=mpi_wtime()
-!#endif
-
-   !$acc enter data copyin(up, vp, ttp, rdiv, ptp) async(async_id)
-   !$acc enter data copyin(pdot, vdmerd, vdzonl, vdmerdr, vdzonlr, &
-   !$acc& vdmerdrp, vdzonlrp, ddtemp, pten, deldm) async(async_id)
-   !$acc enter data copyin(ut, vt, tt, um, vm, dtahi) async(async_id)
-   !$acc enter data copyin(nxjp, sigma, ptm, pk, pk2, plt, &
-   !$acc& rdivm, tm, qt, phi, dtpl, dlpl, sinl, &
-   !$acc& dsigma, onocos, cor, diveng, vdmerdg, vdzonlg, &
-   !$acc& sdpbl, sd, vvel, sgeo) async(async_id)
-   !$acc enter data copyin(cc, jlist1, nxjlen, nxjlen_all, &
-   !$acc& nlist, jlist2, poly, weight, hldten, &
-   !$acc& mtrundef, mlist, cim, dpoly, dlphi, dtphi) async(async_id)
-   !$acc enter data copyin(nxdef_2d, nxjp_acc, nxptot) async(async_id)
-   !$acc enter data copyin(ww1, plten) async(async_id)
-   !$acc enter data copyin(temten, divten, vorten) async(async_id)
-   !$acc enter data copyin(plmid, temmid, divmid, temnow, divnow, plnow, &
-   !$acc& jtwvp, spalm, arrhyd, eps4L, evecin, eigval, evectr, arsddt) async(async_id)
-   !$acc enter data copyin(vormid, cosl, eps4, trefs, Llist, hdk2, vornow) async(async_id)
-   !$acc enter data copyin(wcfac, wdfac, nxjstart, nxjend) async(async_id)
-   !$acc enter data copyin(qm, nxdef, pltemp, pt) async(async_id)
-   !$acc enter data copyin(ptend, wkmf, vorold, divold, temold, plold) async(async_id)
-   !$acc enter data copyin(ut_sl, vt_sl, uum_sl, vvm_sl, ttm_sl, &
-   !$acc& lonlen, lonstr, latlen, jlist1_sl, gglati, fa1, fa2, fa3, fa4) async(async_id)
-   !$acc enter data copyin(qm_sl, pten_sl, cc_cg, gwk1_cg) async(async_id)
-   !$acc wait(async_id)
+   !CWB2020 fix the bug for negative timing info
+   !#ifdef TIMING
+   !      tm_1=mpi_wtime()
+   !#endif
 100 continue
-!
+   !
    tau = tau + dtx/3600.
-
+   ! call nvtxStartRange("Intgrt")
 #ifdef TIMING
    tm_use = tm_2 - tm_1
    if (myrank .eq. 0) print 265, tau, tm_use
@@ -513,7 +534,7 @@ subroutine intgrt_gpu
    if (myrank .eq. 0) print 265, tau
 265 format(' tau= ', f8.3)
 #endif
-!
+   !
    if (do_sit) then
       lsitstart = (itimestep .le. 1)
       if (fsit .le. 0) then
@@ -536,25 +557,31 @@ subroutine intgrt_gpu
          print *, 'final turn_sit=', turn_sit, ',run_sitvdiff=', lrun_sitvdiff
       end if
    end if
+   !
+  !!      endif
+   !
+   !  global mean tempertures (tbar) and specific humid (qbar)
+   !
 
-!
-!!      endif
-!
-!  global mean tempertures (tbar) and specific humid (qbar)
-!
-   !$acc host_data use_device(plmid, plnow, divmid, divnow, vormid, vornow, temmid, temnow)
+   !$acc host_data use_device(plmid, plnow, divmid, divnow, vormid, vornow, &
+   !$acc& temmid, temnow)
    istat = cudaMemcpyAsync(plmid, plnow, size(plmid), cudaMemcpyDeviceToDevice, stream)
    istat = cudaMemcpyAsync(divmid, divnow, size(divmid), cudaMemcpyDeviceToDevice, stream)
    istat = cudaMemcpyAsync(vormid, vornow, size(vormid), cudaMemcpyDeviceToDevice, stream)
    istat = cudaMemcpyAsync(temmid, temnow, size(temmid), cudaMemcpyDeviceToDevice, stream)
    !$acc end host_data
-   !$acc host_data use_device(plten, divten, vorten, hldten)
-   istat = cudaMemsetAsync(plten, 0.0, size(plten), stream)
-   istat = cudaMemsetAsync(divten, 0.0, size(divten), stream)
-   istat = cudaMemsetAsync(vorten, 0.0, size(vorten), stream)
-   istat = cudaMemsetAsync(hldten, 0.0, size(hldten), stream)
-   !$acc end host_data
-   !$acc host_data use_device(up, um, ut, vp, vm, vt, ttp, tm, tt, rdivm, rdiv, qm, qt, ptp, ptm, pt)
+
+   ! plten = 0.
+   ! divten = 0.
+   ! vorten = 0.
+   ! temten = 0.
+   ! hldten = 0.
+
+   !     estimate all field at t+dt/2
+   itt = min(itimestep, 2)
+   !
+   !$acc host_data use_device(up, um, ut, &
+   !$acc& vp, vm, vt, ttp, tm, tt, rdivm, rdiv, qm, qt, ptp, ptm, pt)
    istat = cudaMemcpyAsync(up, ut, size(up), cudaMemcpyDeviceToDevice, stream)
    istat = cudaMemcpyAsync(um, ut, size(um), cudaMemcpyDeviceToDevice, stream)
    istat = cudaMemcpyAsync(vp, vt, size(vp), cudaMemcpyDeviceToDevice, stream)
@@ -567,76 +594,63 @@ subroutine intgrt_gpu
    istat = cudaMemcpyAsync(ptm, pt, size(ptm), cudaMemcpyDeviceToDevice, stream)
    !$acc end host_data
 
-! estimate all field at t+dt/2
-   itt = min(itimestep, 2)
-
-!
-! Transfer Spectral to Gridpoint for u,v,t,q,ps at n-1
-!
-   ! call transr1(jtrun,jtmax,nx,my,my_max,poly,plmid,ptm,nsizey)
-   ! call tranuv(jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac    &
-   !                ,poly,dpoly,vormid,divmid,um,vm,nsizey)
-   ! call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divmid,cc,1,nsizey)
-   ! call ujoinsr(cc,rdivm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-   ! call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temmid,cc,1,nsizey)
-   ! call ujoinsr(cc,tm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+   !
+   ! Transfer Spectral to Gridpoint for u,v,t,q,ps at n-1
+   !
+   !      call transr1(jtrun,jtmax,nx,my,my_max,poly,plmid,ptm,nsizey)
+   !      call tranuv(jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac    &
+   !                 ,poly,dpoly,vormid,divmid,um,vm,nsizey)
+   !      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divmid,cc,1,nsizey)
+   !      call ujoinsr(cc,rdivm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+   !      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temmid,cc,1,nsizey)
+   !      call ujoinsr(cc,tm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
    forward = .true.
    fwd = .true.
+
    do itt = 1, itter
-!
-! for Semi-Lagrangian advection
-!
-      !$acc host_data use_device(pdot, vdmerd, vdzonl, vdmerdr, vdzonlr, &
+      ! call nvtxStartRange("ndsl", mod(itt,2)+1)
+      !
+      ! for Semi-Lagrangian advection
+      !
+      !$acc host_data use_device(pdot, vdmerd, vdzonl, &
       !$acc& vdmerdrp, vdzonlrp, ddtemp, pten, deldm)
-      istat = cudaMemsetAsync(pdot, 0.0, size(pdot), stream)
-      istat = cudaMemsetAsync(vdmerd, 0.0, size(vdmerd), stream)
-      istat = cudaMemsetAsync(vdzonl, 0.0, size(vdzonl), stream)
-      istat = cudaMemsetAsync(vdmerdr, 0.0, size(vdmerdr), stream)
-      istat = cudaMemsetAsync(vdzonlr, 0.0, size(vdzonlr), stream)
-      istat = cudaMemsetAsync(vdmerdrp, 0.0, size(vdmerdrp), stream)
-      istat = cudaMemsetAsync(vdzonlrp, 0.0, size(vdzonlrp), stream)
-      istat = cudaMemsetAsync(ddtemp, 0.0, size(ddtemp), stream)
-      istat = cudaMemsetAsync(pten, 0.0, size(pten), stream)
-      istat = cudaMemsetAsync(deldm, 0.0, size(deldm), stream)
+      istat = cudaMemsetAsync(pdot, 0., size(pdot), stream)
+      ! istat = cudaMemsetAsync(vdmerd,   0., size(vdmerd), stream)
+      ! istat = cudaMemsetAsync(vdzonl,   0., size(vdzonl), stream)
+      ! istat = cudaMemsetAsync(vdmerdr,  0., size(vdmerdr), stream)
+      ! istat = cudaMemsetAsync(vdzonlr,  0., size(vdzonlr), stream)
+      istat = cudaMemsetAsync(vdmerdrp, 0., size(vdmerdrp), stream)
+      istat = cudaMemsetAsync(vdzonlrp, 0., size(vdzonlrp), stream)
+      ! istat = cudaMemsetAsync(ddtemp,   0., size(ddtemp), stream)
+      istat = cudaMemsetAsync(pten, 0., size(pten), stream)
+
+      istat = cudaMemsetAsync(deldm, 0., size(deldm), stream)
       !$acc end host_data
-!
-!     advet grid non-linear forcing from t-dt/2 to t+dt/2 via NDSL advection
-!
-      call mpe2d_transpose_ndsl_p2f_gpu(um, ut_sl, &
-                                        nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
-      call mpe2d_transpose_ndsl_p2f_gpu(vm, vt_sl, &
-                                        nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
-      call mpe2d_transpose_ndsl_p2f_gpu(ut, uum_sl, &
-                                        nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
-      call mpe2d_transpose_ndsl_p2f_gpu(vt, vvm_sl, &
-                                        nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
-      call mpe2d_transpose_ndsl_p2f_gpu(tt, ttm_sl, &
-                                        nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
-      call ndslfv_monoadvh_fgnl_gpu_refactor(uum_sl, vvm_sl, ttm_sl &
-                                             , nxdef, dtahi, xy, levp, 3, forward)
-      call mpe2d_transpose_ndsl_f2p_gpu(uum_sl, vdzonl, &
-                                        nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
-      call mpe2d_transpose_ndsl_f2p_gpu(vvm_sl, vdmerd, &
-                                        nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
-      call mpe2d_transpose_ndsl_f2p_gpu(ttm_sl, ddtemp, &
-                                        nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
-!
-!     calculate vertical velocity at mid-point
-!
-!      call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plmid      &
-!                 ,dlpl,dtpl,nsizey)
-!
+      !
+      !     advet grid non-linear forcing from t-dt/2 to t+dt/2 via NDSL advection
+      !
+      !$acc wait(async_id)
+      call ndslfv_monoadvh_fgnl_gpu(vdzonl, vdmerd, ddtemp, &
+                                    ut, vt, tt, um, vm, dtahi, xy, 3, forward)
+
+      ! ************************************************************
+      !     calculate vertical velocity at mid-point
+      ! ************************************************************
       !$acc parallel loop gang private(j) async(async_id)
       do jj = 1, jlistnum
          j = jlist1(jj)
-!
-!   new p**capa quantities were computed in previous diabat call
-!
+         ! nxj = nxdef_2d(j)
+         ! ************************************************************
+         !   new p**capa quantities were computed in previous diabat call
+         ! ************************************************************
+        !! input: nxjp, nxp, lev, ptop, sigma, ptm
+        !! output: pk, pk2, plt
          call prexp_hybrid_cwb_gpu(nxjp(j), nxp, lev, ptop, sigma, ptm(1, jj), &
                                    pk(1, 1, jj), pk2(1, 1, jj), plt(1, 1, jj))
-!
-!
-!ndy        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld               &
+         !
+        !! input: um, vm, rdivm, tm, qt,
+        !!        ptm, dtpl, dlpl, pk ,pk2, pten
+        !! output: phi, diveng, vdmerdg, vdzonlg, deldm, sdpbl, sd, pdot, vvel
          call gridnl_hybrid_ndsl_gpu(nxjp(j), nxp, lev, ncld &
                                      , cp, radsq, um(1, 1, jj), vm(1, 1, jj), rdivm(1, 1, jj), tm(1, 1, jj) &
                                      , qt(1, 1, jj), phi(1, 1, jj), ptm(1, jj), dtpl(1, jj), dlpl(1, jj), sinl(j) &
@@ -645,38 +659,40 @@ subroutine intgrt_gpu
                                      !ndy        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj),2 )
                                      , deldm(1, jj), sdpbl(1, jj), sd(1, 1, jj), pdot(1, 1, jj), vvel(1, 1, jj) &
                                      , sgeo(1, jj))
-!
+         !
       end do !jj = 1,jlistnum
 
-      call joinrs_gpu(cc_cg, diveng, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
-      call tranrs_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc_cg &
-                      , hldten, 1, nsizey, gwk1_cg)
+      call joinrs_gpu(cc, diveng, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
+      call tranrs_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc &
+                      , hldten, 1, nsizey)
       call trngra3_gpu(jtrun, jtmax, nx, levp, my, my_max, cim, poly, dpoly &
-                       , hldten, dlphi, dtphi, nsizey, cc_cg, gwk1_cg)
+                       , hldten, dlphi, dtphi, nsizey)
 
-      !$acc parallel loop collapse(3) private(j, nxj) async(async_id)
+      !
+      !$acc parallel loop collapse(2) async(async_id) &
+      !$acc& private(j,nxj)
       do jj = 1, jlistnum
          do k = 1, lev
-            do i = 1, nxp
-               j = jlist1(jj)
-               nxj = nxdef_2d(j)
-               if (i .le. nxj) then
-                  vdmerdrp(i, k, jj) = vdmerdg(i, k, jj) - dtphi(i, k, jj)/radsq/onocos(j)
-                  vdzonlrp(i, k, jj) = vdzonlg(i, k, jj) - dlphi(i, k, jj)/radsq
-               end if
+            j = jlist1(jj)
+            nxj = nxdef_2d(j)
+            !$acc loop vector
+            do i = 1, nxj
+               vdmerdrp(i, k, jj) = vdmerdg(i, k, jj) - dtphi(i, k, jj)/radsq/onocos(j)
+               vdzonlrp(i, k, jj) = vdzonlg(i, k, jj) - dlphi(i, k, jj)/radsq
             end do
          end do
-      end do
+      end do !jj = 1,jlistnum
 
-      call ndslfv_update_gpu(nxjp, vdzonl, vdmerd, vdzonlrp, vdmerdrp, dtahi, forward)
+      call ndslfv_update(nxjp, vdzonl, vdmerd, vdzonlrp, vdmerdrp, dtahi, forward)
 
-      call ndslfv_monoadvv_fgnl_gpu(vdzonl, vdmerd, ddtemp, pdot, ptm &
-                                    , nxjp, dtahi, 3, forward)
-      !$acc wait(async_id)
+      call ndslfv_monoadvv_fgnl(vdzonl, vdmerd, ddtemp, pdot, ptm &
+                                , nxjp, dtahi, 3, forward)
+
+      !CWB2021 ndsl single precision test
 
       call mpe2d_unify_nx_gpu(ww1, deldm)
       call tranrs1_gpu(jtrun, jtmax, nx, my, my_max, poly, weight, ww1 &
-                       , plten, nsizey, cc_cg, gwk1_cg)
+                       , plten, nsizey)
 
       if (forward) then
          !$acc parallel loop collapse(3) private(j, nxj) async(async_id)
@@ -710,28 +726,38 @@ subroutine intgrt_gpu
          end do
       end if
 
-      call joinrs_gpu(cc_cg, ddtemp, dummy, dummy, dummy, nx, my_max, lev &
+      !
+     !! input: ddtemp
+     !! output: temten, divten, vorten
+      call joinrs_gpu(cc, ddtemp, dummy, dummy, dummy, nx, my_max, lev &
                       , jlistnum, 1, 1)
-      call tranrs_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc_cg &
-                      , temten, 1, nsizey, gwk1_cg)
+      call tranrs_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc &
+                      , temten, 1, nsizey)
       call rstrandz_gpu(jtrun, jtmax, nx, my, my_max, levp, vdmerd, vdzonl &
-                        , weight, cim, onocos, poly, dpoly, divten, vorten, nsizey, cc_cg, gwk1_cg)
+                        , weight, cim, onocos, poly, dpoly, divten, vorten, nsizey)
 
       if (forward) then
-         if (lsimpl) &
+         if (lsimpl) then
+           !! input: temmid, divmid, plmid, alphax
+           !! output: temten, divten, plten
             call siimpl_gpu(jtrun, jtmax, lev, dtahi, ptmeans, dsigma, spalm, eps4, eigval &
                             , evecin, evectr, arrhyd, arsddt, temmid, divmid, plmid &
                             , temmid, divmid, plmid, temten, divten, plten, alphax)
+         end if
+
       else
-         if (lsimpl) &
+         if (lsimpl) then
+           !! input: temnow, divnow, plnow, temmid, divmid, plmid, alphax
+           !! output: temten, divten, plten
             call siimpl_gpu(jtrun, jtmax, lev, dtah, ptmeans, dsigma, spalm, eps4, eigval &
                             , evecin, evectr, arrhyd, arsddt, temnow, divnow, plnow &
                             , temmid, divmid, plmid, temten, divten, plten, alphax)
+         end if
       end if
 
       mlst = ilist(1)
       if (mlst .ne. 0) then
-         !$acc kernels async(async_id)
+         !$acc kernels copyin(mlst) async(async_id)
          plten(1, mlst, 1) = 0.0
          plten(1, mlst, 2) = 0.0
          !$acc end kernels
@@ -766,7 +792,6 @@ subroutine intgrt_gpu
                end do
             end do
          end do
-
          !$acc parallel loop collapse(3) private(mf) async(async_id)
          do i = 1, 2
             do m = 1, mlistnum
@@ -779,6 +804,10 @@ subroutine intgrt_gpu
             end do
          end do
          hfiltm = mwhd*hfiltx
+        !! input: hfiltm, rad, trefs, um, vm,
+        !! output: vormid, divmid, temmid
+         !$acc wait(async_id)
+         !$acc update device(hfiltm) async(async_id)
          call whdiffu_gpu(dtahi, my, my_max, nx, jtrun, jtmax, lev, ncld &
                           , hfiltm, rad, cosl, um, vm, vormid, divmid, temmid &
                           , eps4, trefs)
@@ -798,7 +827,6 @@ subroutine intgrt_gpu
                end do
             end do
          end do
-
          !$acc parallel loop collapse(3) private(mf) async(async_id)
          do i = 1, 2
             do m = 1, mlistnum
@@ -810,49 +838,66 @@ subroutine intgrt_gpu
                end do
             end do
          end do
+
          hfiltm = mwhd*hfiltx
+        !! input: hfiltm, rad, trefs, um, vm,
+        !! output: vormid, divmid, temmid
+         !$acc wait(async_id)
+         !$acc update device(hfiltm) async(async_id)
          call whdiffu_gpu(dtah, my, my_max, nx, jtrun, jtmax, lev, ncld &
                           , hfiltm, rad, cosl, um, vm, vormid, divmid, temmid &
                           , eps4, trefs)
       end if
-!
-!      call hdiffu ( dth,my,my_max,nx,jtrun,jtmax,lev,ncld     &
-!                   ,hfiltm,rad,cosl,ut,vt,vormid,divmid,temmid  &
-!                   ,eps4,trefs)
-!
-!
-!     update all new wind field at mid-point
-!
+      ! ************************************************************
+      !     update all new wind field at mid-point
+      ! ************************************************************
+     !! input: vormid, divmid
+     !! output: um, vm
       call tranuv_gpu(jtrun, jtmax, nx, my, my_max, levp, onocos, wcfac, wdfac &
-                      , poly, dpoly, vormid, divmid, um, vm, nsizey, cc_cg, gwk1_cg)
-      call transr_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, divmid, cc_cg, 1, nsizey, gwk1_cg)
-      call ujoinsr_gpu(cc_cg, rdivm, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
-      call transr_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, temmid, cc_cg, 1, nsizey, gwk1_cg)
-      call ujoinsr_gpu(cc_cg, tm, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
-      call transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, plmid, ptm, nsizey, cc_cg, gwk1_cg)
+                      , poly, dpoly, vormid, divmid, um, vm, nsizey)
+     !! input: divmid, temmid
+     !! output: rdivm, tm
+      call transr_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, divmid, cc, 1, nsizey)
+      call ujoinsr_gpu(cc, rdivm, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
+      call transr_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, temmid, cc, 1, nsizey)
+      call ujoinsr_gpu(cc, tm, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
+     !! input: plmid
+     !! output: ptm, dlpl, dtpl
+      call transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, plmid, ptm, nsizey)
       call trngra_gpu(jtrun, jtmax, nx, my, my_max, cim, poly, dpoly, plmid &
-                      , dlpl, dtpl, nsizey, cc_cg, gwk1_cg)
+                      , dlpl, dtpl, nsizey)
+
+      !$acc wait(async_id)
+      ! call nvtxEndRange
       forward = .false.
    end do ! do itt=1,itter
-!
-!  the gaussian quadrature loop for spectral tendencies.  subroutine
-!  'gridnl' is called for companion mirror image gaussian latitudes
-!  these non-linear contributions are then combined in 'rstran' using
-!  the symmetry properties of the spherical harmonics
-!
+
+   ! call nvtxStartRange("ndsl-p3", 3)
+   !
+   !  the gaussian quadrature loop for spectral tendencies.  subroutine
+   !  'gridnl' is called for companion mirror image gaussian latitudes
+   !  these non-linear contributions are then combined in 'rstran' using
+   !  the symmetry properties of the spherical harmonics
+   !
    forward = .false.
    !$acc parallel loop gang private(j) async(async_id)
    do jj = 1, jlistnum
       j = jlist1(jj)
-!
-!   new p**capa quantities were computed in previous diabat call
-!
+      ! nxj = nxdef_2d(j)
+      ! ************************************************************
+      !   new p**capa quantities were computed in previous diabat call
+      ! ************************************************************
+     !! input: ptm
+     !! output: pk, pk2, plt
       call prexp_hybrid_cwb_gpu(nxjp(j), nxp, lev, ptop, sigma, ptm(1, jj), &
                                 pk(1, 1, jj), pk2(1, 1, jj), plt(1, 1, jj))
-!
-!       Calculate Vertical velocity & Stream Functions
-!
-!!        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
+      !
+      !       Calculate Vertical velocity & Stream Functions
+      !
+     !!        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
+     !! input: um, vm, rdivm, tm, qt,
+     !!        ptm, dtpl, dlpl, pk ,pk2, pten
+     !! output: phi, diveng, vdmerdg, vdzonlg, deldm, sdpbl, sd, pdot, vvel
       call gridnl_hybrid_ndsl_gpu(nxjp(j), nxp, lev, ncld &
                                   , cp, radsq, um(1, 1, jj), vm(1, 1, jj), rdivm(1, 1, jj), tm(1, 1, jj) &
                                   , qm(1, 1, jj), phi(1, 1, jj), ptm(1, jj), dtpl(1, jj), dlpl(1, jj), sinl(j) &
@@ -861,12 +906,13 @@ subroutine intgrt_gpu
                                   , deldm(1, jj), sdpbl(1, jj), sd(1, 1, jj), pdot(1, 1, jj), vvel(1, 1, jj) &
                                   , sgeo(1, jj))
    end do !jj = 1,jlistnum
+   !
 
-   call joinrs_gpu(cc_cg, diveng, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
-   call tranrs_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc_cg &
-                   , hldten, 1, nsizey, gwk1_cg)
+   call joinrs_gpu(cc, diveng, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
+   call tranrs_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc &
+                   , hldten, 1, nsizey)
    call trngra3_gpu(jtrun, jtmax, nx, levp, my, my_max, cim, poly, dpoly &
-                    , hldten, dlphi, dtphi, nsizey, cc_cg, gwk1_cg)
+                    , hldten, dlphi, dtphi, nsizey)
 
    !$acc parallel loop collapse(2) async(async_id) &
    !$acc& private(j,nxj)
@@ -881,46 +927,27 @@ subroutine intgrt_gpu
          end do
       end do
    end do !jj = 1,jlistnum
+   !$acc wait(async_id)
    ! ****************************************
    ! Semi-Lagrangian
    !       Horizontal Advection
    ! ****************************************
-   ! call ndslfv_monoadvh_gpu(tt, pten, ut, vt, qt, qm, &
-   !                          um, vm, dtah, xy, forward)
-   call mpe2d_transpose_ndsl_p2f_gpu(um, ut_sl, &
-                                     nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
-   call mpe2d_transpose_ndsl_p2f_gpu(vm, vt_sl, &
-                                     nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
-   call mpe2d_transpose_ndsl_p2f_gpu(ut, uum_sl, &
-                                     nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
-   call mpe2d_transpose_ndsl_p2f_gpu(vt, vvm_sl, &
-                                     nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
-   call mpe2d_transpose_ndsl_p2f_gpu(tt, ttm_sl, &
-                                     nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
-   call mpe2d_transpose_ndsl_p2f_gpu(qm, qm_sl, &
-                                     nxp, nx, levf, levp, ncld, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
-   call ndslfv_monoadvh_gpu_refactor(ttm_sl, qm_sl, pten_sl, uum_sl, vvm_sl &
-                                     , nxdef, dtah, xy, levp)
-   call mpe2d_transpose_ndsl_f2p_gpu(ttm_sl, tt, &
-                                     nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
-   call mpe2d_transpose_ndsl_f2p_gpu(uum_sl, ut, &
-                                     nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
-   call mpe2d_transpose_ndsl_f2p_gpu(vvm_sl, vt, &
-                                     nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
-   call mpe2d_transpose_ndsl_f2p_gpu(qm_sl, qt, &
-                                     nxp, nx, levf, levp, ncld, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+   call ndslfv_monoadvh_gpu(tt, pten, ut, vt, qt, qm, &
+                            um, vm, dtah, xy, forward)
    ! ****************************************
    !       update all horizontal informations
    ! ****************************************
-   call ndslfv_update_gpu(nxjp, ut, vt, vdzonlg, vdmerdg, dtah, forward)
+   call ndslfv_update(nxjp, ut, vt, vdzonlg, vdmerdg, dtah, forward)
    ! ****************************************
    !       Vertical Advection
    ! ****************************************
-   call ndslfv_monoadvv_gpu(tt, qt, ut, vt, pdot, ptm, nxjp, dtah, forward)
+   call ndslfv_monoadvv(tt, qt, ut, vt, pdot, ptm, nxjp, dtah, forward)
+
+   !CWB2021 ndsl single precision test
 
    call mpe2d_unify_nx_gpu(ww1, deldm)
    call tranrs1_gpu(jtrun, jtmax, nx, my, my_max, poly, weight, ww1 &
-                    , plten, nsizey, cc_cg, gwk1_cg)
+                    , plten, nsizey)
 
    !$acc parallel loop collapse(3) private(mf) async(async_id)
    do i = 1, 2
@@ -933,17 +960,23 @@ subroutine intgrt_gpu
          end do
       end do
    end do
-   call transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, pltemp, pt, nsizey, cc_cg, gwk1_cg)
+
+   call transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, pltemp, pt, nsizey)
 
    !mass conservation
-   call ptotc_gpu(pdry, dpprt)
+   !$acc update self(pt, qt) async(async_id)
+   !$acc wait(async_id)
+  !! input: pt, qt, dpprt
+  !! outout: pdry, pcorr
+   call ptotc(pdry, dpprt)
    pcorr = (pdryi - pdry)*sqrt(2.)
-!
+   !$acc update device(pcorr) async(async_id)
+   !
    if (two_loop) then
-!
-!  after phyical parameterization,transform grid point u,v,t,q to
-!  spectrum
-!
+      !
+      !  after phyical parameterization,transform grid point u,v,t,q to
+      !  spectrum
+      !
       !$acc parallel loop collapse(3) private(j, nxj) async(async_id)
       do jj = 1, jlistnum
          do k = 1, lev
@@ -958,45 +991,47 @@ subroutine intgrt_gpu
             end do
          end do
       end do
-      call joinrs_gpu(cc_cg, ddtemp, dummy, dummy, dummy, nx, my_max, lev &
+      !
+      call joinrs_gpu(cc, ddtemp, dummy, dummy, dummy, nx, my_max, lev &
                       , jlistnum, 1, 1)
-      call tranrs_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc_cg &
-                      , temten, 1, nsizey, gwk1_cg)
+      call tranrs_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc &
+                      , temten, 1, nsizey)
       call rstrandz_gpu(jtrun, jtmax, nx, my, my_max, levp, vdmerd, vdzonl &
-                        , weight, cim, onocos, poly, dpoly, divten, vorten, nsizey, cc_cg, gwk1_cg)
+                        , weight, cim, onocos, poly, dpoly, divten, vorten, nsizey)
 
-!        if ( mass_dp ) then
+      !        if ( mass_dp ) then
       ! sureface pressure global mean correction
       mlst = ilist(1)
       if (mlst .ne. 0) then
-         !$acc kernels async(async_id)
+         !$acc kernels copyin(mlst, pcorr) async(async_id)
          plten(1, mlst, 1) = plten(1, mlst, 1) + pcorr/dta
          plten(1, mlst, 2) = plten(1, mlst, 2) + pcorr/dta
          !$acc end kernels
       end if
-!        endif
-!
+      !        endif
+      !
       if (lsimpl) then
-!
-!   apply semi-implicit adjustemts to above explicitly computed
-!   tendencies to stablize integration for long time steps
-!
-!CWB2021
+         !
+         !   apply semi-implicit adjustemts to above explicitly computed
+         !   tendencies to stablize integration for long time steps
+         !
+         !CWB2021
          call siimpl_gpu(jtrun, jtmax, lev, dta, ptmeans, dsigma, spalm, eps4, eigval &
                          , evecin, evectr, arrhyd, arsddt, temnow, divnow, plnow &
                          , temmid, divmid, plmid, temten, divten, plten, alphax)
       end if
-!
-!  zero out global mean tendencies for divergence, vorticity, and
-!  terrain pressure to ensure consistency with gauss's theorem.
-!
-!        if ( .not. mass_dp ) then
-!          mlst=ilist(1)
-!          if(mlst .ne. 0) then
-!            plten(1,mlst,1) = 0.0
-!            plten(1,mlst,2) = 0.0
-!          endif
-!        endif
+      !
+      !  zero out global mean tendencies for divergence, vorticity, and
+      !  terrain pressure to ensure consistency with gauss's theorem.
+      !
+      !        if ( .not. mass_dp ) then
+      !          mlst=ilist(1)
+      !          if(mlst .ne. 0) then
+      !            plten(1,mlst,1) = 0.0
+      !            plten(1,mlst,2) = 0.0
+      !          endif
+      !        endif
+
       !$acc parallel loop collapse(3) private(mf) async(async_id)
       do m = 1, mlistnum
          do i = 1, 2
@@ -1009,9 +1044,9 @@ subroutine intgrt_gpu
             end do
          end do
       end do
-
-      call transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, plten, ptend, nsizey, cc_cg, gwk1_cg)
-
+      !
+      call transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, plten, ptend, nsizey)
+      !$acc enter data create(wkmf) async(async_id)
       !$acc parallel loop gang private(mf, wkmf_local) async(async_id)
       do m = 1, mlistnum
          mf = mlist(m)
@@ -1024,22 +1059,20 @@ subroutine intgrt_gpu
          end do
          wkmf(mf) = wkmf_local
       end do
+      !$acc exit data copyout(wkmf) async(async_id)
       !$acc wait(async_id)
-      !$acc update self(wkmf) async(async_id)
-      !$acc wait(async_id)
-      sptend = 0.0
       call mpe_unify(wkmf, 1, jtrun, 3, mpe_double)
+      sptend = 0.0
       do mf = 1, jtrun
          sptend = sptend + wkmf(mf)
       end do
-
+      !
       sptend = sqrt(0.5*sptend)*3600.0
       if (myrank .eq. 0) &
-         print *, 'surf pres tend rms =', sptend, ' mb/hrs'
-!
-!  take a time step
-!
-
+         print *, '[GPU]  surf pres tend rms =', sptend, ' mb/hrs'
+      !
+      !  take a time step
+      !
       !$acc parallel loop collapse(4) private(mf) async(async_id)
       do m = 1, mlistnum
          do n = 1, jtrun
@@ -1058,7 +1091,7 @@ subroutine intgrt_gpu
             end do
          end do
       end do
-
+      !
       !$acc parallel loop collapse(3) private(mf) async(async_id)
       do i = 1, 2
          do m = 1, mlistnum
@@ -1071,58 +1104,56 @@ subroutine intgrt_gpu
             end do
          end do
       end do
-
+      !
+      !
       if (hdiff) then
+         !$acc update device(hfiltx) async(async_id)
          call hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld &
                          , hfiltx, rad, cosl, um, vm, vornow, divnow, temnow &
                          , eps4, trefs)
       end if
-!
-!  for physical parameterization,output spectrum u,v,t,q to grid point
-!
-      call transr_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, temnow, cc_cg, 1, nsizey, gwk1_cg)
-
-      call ujoinsr_gpu(cc_cg, tt, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
+      !
+      !  for physical parameterization,output spectrum u,v,t,q to grid point
+      !
+     !! input: temnow, vornow, divnow, plnow
+     !! output: tt, ut, vt, pt
+      call transr_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, temnow, cc, 1, nsizey)
+      call ujoinsr_gpu(cc, tt, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
       call tranuv_gpu(jtrun, jtmax, nx, my, my_max, levp, onocos, wcfac, wdfac &
-                      , poly, dpoly, vornow, divnow, ut, vt, nsizey, cc_cg, gwk1_cg)
-      call transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, plnow, pt, nsizey, cc_cg, gwk1_cg)
-
+                      , poly, dpoly, vornow, divnow, ut, vt, nsizey)
+      call transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, plnow, pt, nsizey)!
    end if ! two_loop
+   !$acc update self(rdivm, ptm, dlpl, dtpl) async(async_id)
+   !$acc update self(um, vm, tm) async(async_id)
+   !$acc update self(divten, vorten, temten, plten) async(async_id)
+   !$acc update self(vormid, divmid, temmid, plmid) async(async_id)
+   !$acc update self(vorold, divold, temold, plold) async(async_id)
+   !$acc update self(vornow, divnow, temnow, plnow) async(async_id)
+   !$acc update self(phi, pdot) async(async_id)
+   !$acc update self(vvel, sdpbl, sd) async(async_id)
+   !$acc update self(pk ,pk2, plt) async(async_id)
+
+   !$acc update self(tt, ut, vt, qt) async(async_id)
+   !$acc update self(pt, pltemp, ptend) async(async_id)
+   !$acc update self(ptp, up, vp, ttp, qm) async(async_id)
+   !$acc wait(async_id)
+   ! call nvtxEndRange
+!!!! ---------------------------------------- !!!!
+!!!! << END GPU >>                            !!!!
+!!!! ---------------------------------------- !!!!
 
    !  stochastic_physics
    call run_stochastic_physics()
-!
-!  for physical parameterization,output spectrum u,v,t,q to grid point
-!
+   !
+   !  for physical parameterization,output spectrum u,v,t,q to grid point
+   !
 
    if (yesdia) then
-      !$acc exit data copyout(up, vp, ttp, rdiv, ptp) async(async_id)
-      !$acc exit data copyout(pdot, vdmerd, vdzonl, vdmerdr, vdzonlr, &
-      !$acc& vdmerdrp, vdzonlrp, ddtemp, pten, deldm) async(async_id)
-      !$acc exit data copyout(ut, vt, tt, um, vm, dtahi) async(async_id)
-      !$acc exit data copyout(nxjp, sigma, ptm, pk, pk2, plt, &
-      !$acc& rdivm, tm, qt, phi, dtpl, dlpl, sinl, &
-      !$acc& dsigma, onocos, cor, diveng, vdmerdg, vdzonlg, &
-      !$acc& sdpbl, sd, vvel, sgeo) async(async_id)
-      !$acc exit data copyout(cc, jlist1, nxjlen, nxjlen_all, &
-      !$acc& nlist, jlist2, poly, weight, hldten, &
-      !$acc& mtrundef, mlist, cim, dpoly, dlphi, dtphi) async(async_id)
-      !$acc exit data delete(nxdef_2d, nxjp_acc, nxptot) async(async_id)
-      !$acc exit data copyout(ww1, plten) async(async_id)
-      !$acc exit data copyout(temten, divten, vorten) async(async_id)
-      !$acc exit data copyout(plmid, temmid, divmid, temnow, divnow, plnow, &
-      !$acc& jtwvp, spalm, arrhyd, eps4L, evecin, eigval, evectr, arsddt) async(async_id)
-      !$acc exit data copyout(vormid, cosl, eps4, trefs, Llist, hdk2, vornow) async(async_id)
-      !$acc exit data copyout(wcfac, wdfac, nxjstart, nxjend) async(async_id)
-      !$acc exit data copyout(qm, nxdef, pltemp, pt) async(async_id)
-      !$acc exit data copyout(ptend, wkmf, vorold, divold, temold, plold) async(async_id)
-      !$acc exit data copyout(ut_sl, vt_sl, uum_sl, vvm_sl, ttm_sl, &
-      !$acc& lonlen, lonstr, latlen, jlist1_sl, gglati, fa1, fa2, fa3, fa4) async(async_id)
-      !$acc exit data copyout(qm_sl, pten_sl, cc_cg, gwk1_cg) async(async_id)
-      !$acc wait(async_id)
+      ! call nvtxStartRange("diabat")
       qp(:, :, :) = qt(:, :, :)
       call diabat(fwd, docup, dodry, dolsp, dopbl, dorad, doshl, dograv, tofd &
                   , nx, my, my_max, lev, ncld, nmcup, nmpbl, nmland, nmshl, cgw &
+                  !                         , idg, jdg, ldiag, dtx, tau, hours, julian, year, yrd &
                   , idg, jdg, ldiag, dtx, tau, hours, year &
                   , frad, ozon, njump, itypbl, ktcup, ktpbl, ktshl, grav &
                   , rgas, cp, stbo, s0, evaprh, hltm, ptop, sigma, dsigma, il, ib &
@@ -1155,11 +1186,11 @@ subroutine intgrt_gpu
                   !xb110>
                   !byl                      , rmr,smr,flash)
                   , flash, tsflw, vvel, totallp)
-!xb110<
-!--------------------------------------------------------------------------------
-!
-! add reynolds stress
-!
+      !xb110<
+      !--------------------------------------------------------------------------------
+      !
+      ! add reynolds stress
+      !
       call rayleifr(nx, my, my_max, lev, rad, cosl, dt, ut, vt)
 
       if (two_loop) then
@@ -1180,42 +1211,19 @@ subroutine intgrt_gpu
          if (mass_dp) call adjptq(dta, pltemp, plten)
 
       end if ! two_loop
-      !$acc enter data copyin(up, vp, ttp, rdiv, ptp) async(async_id)
-      !$acc enter data copyin(pdot, vdmerd, vdzonl, vdmerdr, vdzonlr, &
-      !$acc& vdmerdrp, vdzonlrp, ddtemp, pten, deldm) async(async_id)
-      !$acc enter data copyin(ut, vt, tt, um, vm, dtahi) async(async_id)
-      !$acc enter data copyin(nxjp, sigma, ptm, pk, pk2, plt, &
-      !$acc& rdivm, tm, qt, phi, dtpl, dlpl, sinl, &
-      !$acc& dsigma, onocos, cor, diveng, vdmerdg, vdzonlg, &
-      !$acc& sdpbl, sd, vvel, sgeo) async(async_id)
-      !$acc enter data copyin(cc, jlist1, nxjlen, nxjlen_all, &
-      !$acc& nlist, jlist2, poly, weight, hldten, &
-      !$acc& mtrundef, mlist, cim, dpoly, dlphi, dtphi) async(async_id)
-      !$acc enter data copyin(nxdef_2d, nxjp_acc, nxptot) async(async_id)
-      !$acc enter data copyin(ww1, plten) async(async_id)
-      !$acc enter data copyin(temten, divten, vorten) async(async_id)
-      !$acc enter data copyin(plmid, temmid, divmid, temnow, divnow, plnow, &
-      !$acc& jtwvp, spalm, arrhyd, eps4L, evecin, eigval, evectr, arsddt) async(async_id)
-      !$acc enter data copyin(vormid, cosl, eps4, trefs, Llist, hdk2, vornow) async(async_id)
-      !$acc enter data copyin(wcfac, wdfac, nxjstart, nxjend) async(async_id)
-      !$acc enter data copyin(qm, nxdef, pltemp, pt) async(async_id)
-      !$acc enter data copyin(ptend, wkmf, vorold, divold, temold, plold) async(async_id)
-      !$acc enter data copyin(ut_sl, vt_sl, uum_sl, vvm_sl, ttm_sl, &
-      !$acc& lonlen, lonstr, latlen, jlist1_sl, gglati, fa1, fa2, fa3, fa4) async(async_id)
-      !$acc enter data copyin(qm_sl, pten_sl, cc_cg, gwk1_cg) async(async_id)
-      !$acc wait(async_id)
+
+      ! call nvtxEndRange
    end if    ! end of (yesdia)
 
-!CWB2021
+   !CWB2021
    itimestep = itimestep + 1
-!        if ( mod(itimestep,2) .eq. 0 ) xy = -1 * xy
+   !        if ( mod(itimestep,2) .eq. 0 ) xy = -1 * xy
    xy = -1*xy
    if (.not. two_loop) then
-      print *, "not two_loop entry"
-!
-!  after phyical parameterization,transform grid point u,v,t,q to
-!  spectrum
-!
+      !
+      !  after phyical parameterization,transform grid point u,v,t,q to
+      !  spectrum
+      !
       do jj = 1, jlistnum
          j = jlist1(jj)
          nxj = nxdef_2d(j)
@@ -1227,7 +1235,7 @@ subroutine intgrt_gpu
             end do
          end do
       end do
-!
+      !
       call joinrs(cc, ddtemp, dummy, dummy, dummy, nx, my_max, lev &
                   , jlistnum, 1, 1)
       call tranrs(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc &
@@ -1235,36 +1243,36 @@ subroutine intgrt_gpu
       call rstrandz(jtrun, jtmax, nx, my, my_max, levp, vdmerd, vdzonl &
                     , weight, cim, onocos, poly, dpoly, divten, vorten, nsizey)
 
-!        if ( mass_dp ) then
+      !        if ( mass_dp ) then
       ! sureface pressure global mean correction
       mlst = ilist(1)
       if (mlst .ne. 0) then
          plten(1, mlst, 1) = plten(1, mlst, 1) + pcorr/dta
          plten(1, mlst, 2) = plten(1, mlst, 2) + pcorr/dta
       end if
-!        endif
-!
+      !        endif
+      !
       if (lsimpl) then
-!
-!   apply semi-implicit adjustemts to above explicitly computed
-!   tendencies to stablize integration for long time steps
-!
-!CWB2021
+         !
+         !   apply semi-implicit adjustemts to above explicitly computed
+         !   tendencies to stablize integration for long time steps
+         !
+         !CWB2021
          call siimpl(jtrun, jtmax, lev, dta, ptmeans, dsigma, spalm, eps4, eigval &
                      , evecin, evectr, arrhyd, arsddt, temnow, divnow, plnow &
                      , temmid, divmid, plmid, temten, divten, plten, alphax)
       end if
-!
-!  zero out global mean tendencies for divergence, vorticity, and
-!  terrain pressure to ensure consistency with gauss's theorem.
-!
-!        if ( .not. mass_dp ) then
-!          mlst=ilist(1)
-!          if(mlst .ne. 0) then
-!            plten(1,mlst,1) = 0.0
-!            plten(1,mlst,2) = 0.0
-!          endif
-!        endif
+      !
+      !  zero out global mean tendencies for divergence, vorticity, and
+      !  terrain pressure to ensure consistency with gauss's theorem.
+      !
+      !        if ( .not. mass_dp ) then
+      !          mlst=ilist(1)
+      !          if(mlst .ne. 0) then
+      !            plten(1,mlst,1) = 0.0
+      !            plten(1,mlst,2) = 0.0
+      !          endif
+      !        endif
       do m = 1, mlistnum
          mf = mlist(m)
          if (mf .eq. 1) then
@@ -1276,7 +1284,7 @@ subroutine intgrt_gpu
             end do
          end if
       end do
-!
+      !
       call transr1(jtrun, jtmax, nx, my, my_max, poly, plten, ptend, nsizey)
       do mf = 1, jtrun
          wkmf(mf) = 0.
@@ -1294,29 +1302,29 @@ subroutine intgrt_gpu
       do mf = 1, jtrun
          sptend = sptend + wkmf(mf)
       end do
-!
+      !
       sptend = sqrt(0.5*sptend)*3600.0
       if (myrank .eq. 0) &
          print *, '  surf pres tend rms =', sptend, ' mb/hrs'
-!
-!  take a time step
-!
+      !
+      !  take a time step
+      !
       do m = 1, mlistnum
          mf = mlist(m)
          do n = mf, jtrun
             do i = 1, 2
-            do k = 1, levp
-               vorold(k, i, n, m) = vornow(k, i, n, m)
-               divold(k, i, n, m) = divnow(k, i, n, m)
-               temold(k, i, n, m) = temnow(k, i, n, m)
-               vornow(k, i, n, m) = dta*vorten(k, i, n, m) + vorold(k, i, n, m)
-               divnow(k, i, n, m) = dta*divten(k, i, n, m) + divold(k, i, n, m)
-               temnow(k, i, n, m) = dta*temten(k, i, n, m) + temold(k, i, n, m)
-            end do
+               do k = 1, levp
+                  vorold(k, i, n, m) = vornow(k, i, n, m)
+                  divold(k, i, n, m) = divnow(k, i, n, m)
+                  temold(k, i, n, m) = temnow(k, i, n, m)
+                  vornow(k, i, n, m) = dta*vorten(k, i, n, m) + vorold(k, i, n, m)
+                  divnow(k, i, n, m) = dta*divten(k, i, n, m) + divold(k, i, n, m)
+                  temnow(k, i, n, m) = dta*temten(k, i, n, m) + temold(k, i, n, m)
+               end do
             end do
          end do
       end do
-!
+      !
       do i = 1, 2
          do m = 1, mlistnum
             mf = mlist(m)
@@ -1326,8 +1334,8 @@ subroutine intgrt_gpu
             end do
          end do
       end do
-!
-!
+      !
+      !
       if (hdiff) call hdiffu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld &
                              , hfiltx, rad, cosl, um, vm, vornow, divnow, temnow &
                              , eps4, trefs)
@@ -1343,11 +1351,10 @@ subroutine intgrt_gpu
                      , onocos, poly, dpoly, vornow, divnow, nsizey)
       end if
    end if ! .not. two_loop
-!
-! update tg, dtsea/dt (W00100)
-!
+   !
+   ! update tg, dtsea/dt (W00100)
+   !
    if (ldailyFCTsst .OR. ldailyFCTicesndpt .OR. dailyClm_option .ge. 1) then
-      print *, "daily entry"
       if (tau .ge. 24.) then
          do jj = 1, jlistnum
             j = jlist1(jj)
@@ -1356,8 +1363,8 @@ subroutine intgrt_gpu
                i = nxjstart(j) + ii - 1
                if (ocean(ii, jj)) then
                   tseanew(ii, jj) = dta*dtseadt(ii, jj) + tseaold(ii, jj)
-!                  tseaold(ii,jj)=tseanow(ii,jj) + tfilt*(tseaold(ii,jj)     &
-!                                 -2.0*tseanow(ii,jj)+tseanew(ii,jj) )
+                  !                  tseaold(ii,jj)=tseanow(ii,jj) + tfilt*(tseaold(ii,jj)     &
+                  !                                 -2.0*tseanow(ii,jj)+tseanew(ii,jj) )
                   tseaold(ii, jj) = tseanew(ii, jj)
                   tseanow(ii, jj) = tseanew(ii, jj)
 
@@ -1371,10 +1378,10 @@ subroutine intgrt_gpu
       end if
       CALL read_dailyFCT(idtg, tau, dt, tg, cice, sndepth, xlon, xlat, ocean)
    end if
-!
-! accumulate some flux every time step to output point (24 hour)
-! 1994 11 11
-!
+   !
+   ! accumulate some flux every time step to output point (24 hour)
+   ! 1994 11 11
+   !
    do jj = 1, jlistnum
       j = jlist1(jj)
       nxj = nxdef_2d(j)
@@ -1391,51 +1398,59 @@ subroutine intgrt_gpu
       end do
    end do
    dt24 = dt24 + dtx
-!
-!
-!  from updated spectral variables compute corresponding grid
-!  point fields
-!
-!!      call joinsr(wss3,vornow,divnow,temnow,dummy,jtrun,jtmax,levp &
-!!                 ,mlistnum,3,1)
-!!      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,wss3,cc3,3,nsizey)
-!!      call ujoinsr(cc3,rvor,rdiv,tt,dummy,nx,my_max,lev,jlistnum,3,1)
+   !
+   !
+   !  from updated spectral variables compute corresponding grid
+   !  point fields
+   !
+  !!      call joinsr(wss3,vornow,divnow,temnow,dummy,jtrun,jtmax,levp &
+  !!                 ,mlistnum,3,1)
+  !!      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,wss3,cc3,3,nsizey)
+  !!      call ujoinsr(cc3,rvor,rdiv,tt,dummy,nx,my_max,lev,jlistnum,3,1)
 
-!!      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,vornow,cc,1,nsizey)
-!!      call ujoinsr(cc,rvor,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+  !!      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,vornow,cc,1,nsizey)
+  !!      call ujoinsr(cc,rvor,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+  !! input: divnow, temnow, plnow, vornow, divnow
+  !! output: rdiv, tt, pt, pk, pk2, plt, dlpl, dtpl, ut, vt
+   !$acc update device(qt) async(async_id)
+   !$acc update device(divnow, plnow, vornow, temnow) async(async_id)
+   !$acc update device(sigma, sgeo) async(async_id)
+   call transr_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, divnow, cc, 1, nsizey)
+   call ujoinsr_gpu(cc, rdiv, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
 
-   call transr_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, divnow, cc_cg, 1, nsizey, gwk1_cg)
-   call ujoinsr_gpu(cc_cg, rdiv, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
-   call transr_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, temnow, cc_cg, 1, nsizey, gwk1_cg)
-   call ujoinsr_gpu(cc_cg, tt, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
-   call transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, plnow, pt, nsizey, cc_cg, gwk1_cg)
-!
-!   computing new p**capa quantities
-!
+   call transr_gpu(jtrun, jtmax, nx, my, my_max, levp, poly, temnow, cc, 1, nsizey)
+   call ujoinsr_gpu(cc, tt, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
+
+   call transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, plnow, pt, nsizey)
+   !
+   !   computing new p**capa quantities
+   !
    !$acc parallel loop gang private(j) async(async_id)
    do jj = 1, jlistnum
       j = jlist1(jj)
-      call prexp_hybrid_cwb_gpu(nxjp(j), nxp, lev, ptop, sigma, ptm(1, jj), &
+      call prexp_hybrid_cwb_gpu(nxjp(j), nxp, lev, ptop, sigma, pt(1, jj), &
                                 pk(1, 1, jj), pk2(1, 1, jj), plt(1, 1, jj))
    end do
-!
-!  zonal and meridional gradients of terrain pressure
-!
+   !
+   !  zonal and meridional gradients of terrain pressure
+   !
    call trngra_gpu(jtrun, jtmax, nx, my, my_max, cim, poly, dpoly, plnow &
-                   , dlpl, dtpl, nsizey, cc_cg, gwk1_cg)
-!
-!  velocity components
-!
+                   , dlpl, dtpl, nsizey)
+   !
+   !  velocity components
+   !
    call tranuv_gpu(jtrun, jtmax, nx, my, my_max, levp, onocos, wcfac, wdfac &
-                   , poly, dpoly, vornow, divnow, ut, vt, nsizey, cc_cg, gwk1_cg)
-!
-!
-!  detact instability occure or not
-!
+                   , poly, dpoly, vornow, divnow, ut, vt, nsizey)
+   !$acc update self(rdiv, tt, pt, pk, pk2, plt, &
+   !$acc& dlpl, dtpl, ut, vt) async(async_id)
+   !$acc wait(async_id)
+   !
+   !
+   !  detact instability occure or not
+   !
    if (tau .gt. 12.) then
-      print *, "tau gt 12 entry"
-!        sptendmax2=0.409
-!        sptendmax1=0.379
+      !        sptendmax2=0.409
+      !        sptendmax1=0.379
       if (sptend .le. sptendmax1) n_stable = n_stable + 1
       if (sptend .gt. sptendmax2) n_unstable = n_unstable + 1
       if (myrank .eq. 0) print *, 'n_stable=', n_stable, ' n_unstable=' &
@@ -1459,10 +1474,11 @@ subroutine intgrt_gpu
          end if
          n_unstable = 0
          n_stable = 0
+         !$acc update device(hfiltx, alphax) async(async_id)
       end if
    end if
 
-! calculate Tmax Tmin @ 2m from T2
+   ! calculate Tmax Tmin @ 2m from T2
    do jj = 1, jlistnum
       j = jlist1(jj)
       nxj = nxdef_2d(j)
@@ -1477,45 +1493,22 @@ subroutine intgrt_gpu
       end do
    end do
 
-!    ---------------------------------------------------------------
-!     check tau in hourly for output
+   ! call nvtxEndRange
+   !    ---------------------------------------------------------------
+   !     check tau in hourly for output
    dtaup = mod(tau + 0.001, 1.)
    if (dtaup .lt. 0.01) then
-      !$acc exit data copyout(up, vp, ttp, rdiv, ptp) async(async_id)
-      !$acc exit data copyout(pdot, vdmerd, vdzonl, vdmerdr, vdzonlr, &
-      !$acc& vdmerdrp, vdzonlrp, ddtemp, pten, deldm) async(async_id)
-      !$acc exit data copyout(ut, vt, tt, um, vm, dtahi) async(async_id)
-      !$acc exit data copyout(nxjp, sigma, ptm, pk, pk2, plt, &
-      !$acc& rdivm, tm, qt, phi, dtpl, dlpl, sinl, &
-      !$acc& dsigma, onocos, cor, diveng, vdmerdg, vdzonlg, &
-      !$acc& sdpbl, sd, vvel, sgeo) async(async_id)
-      !$acc exit data copyout(cc, jlist1, nxjlen, nxjlen_all, &
-      !$acc& nlist, jlist2, poly, weight, hldten, &
-      !$acc& mtrundef, mlist, cim, dpoly, dlphi, dtphi) async(async_id)
-      !$acc exit data delete(nxdef_2d, nxjp_acc, nxptot) async(async_id)
-      !$acc exit data copyout(ww1, plten) async(async_id)
-      !$acc exit data copyout(temten, divten, vorten) async(async_id)
-      !$acc exit data copyout(plmid, temmid, divmid, temnow, divnow, plnow, &
-      !$acc& jtwvp, spalm, arrhyd, eps4L, evecin, eigval, evectr, arsddt) async(async_id)
-      !$acc exit data copyout(vormid, cosl, eps4, trefs, Llist, hdk2, vornow) async(async_id)
-      !$acc exit data copyout(wcfac, wdfac, nxjstart, nxjend) async(async_id)
-      !$acc exit data copyout(qm, nxdef, pltemp, pt) async(async_id)
-      !$acc exit data copyout(ptend, wkmf, vorold, divold, temold, plold) async(async_id)
-      !$acc exit data copyout(ut_sl, vt_sl, uum_sl, vvm_sl, ttm_sl, &
-      !$acc& lonlen, lonstr, latlen, jlist1_sl, gglati, fa1, fa2, fa3, fa4) async(async_id)
-      !$acc exit data copyout(qm_sl, pten_sl, cc_cg, gwk1_cg) async(async_id)
-      !$acc wait(async_id)
       itau = NINT(tau)
 
       dtaup = mod(tau + 0.001, tauo)
       histim = (dtaup .lt. dtx_tau)
-!       if(myrank.eq.0)print *,'chkhis dtaup,tauo,dtx_tau=',dtaup,tauo,dtx_tau
+      !       if(myrank.eq.0)print *,'chkhis dtaup,tauo,dtx_tau=',dtaup,tauo,dtx_tau
 
-!  for tracker
+      !  for tracker
       dt_trk = real(trk_intv)
       dtaup = mod(tau + 0.001, dt_trk)
       ltrack = (dtaup .lt. dtx_tau)
-!       if(myrank.eq.0)print *,'chkltr dtaup,dt_trk,dtx_tau=',dtaup,dt_trk,dtx_tau
+      !       if(myrank.eq.0)print *,'chkltr dtaup,dt_trk,dtx_tau=',dtaup,dt_trk,dtx_tau
 
       if (myrank == 0) call system_clock(toutsrt)
       if (io_quilting) then
@@ -1524,23 +1517,23 @@ subroutine intgrt_gpu
          ntag = ntag + 1
          call mpe_send_key(keydoit, ntag, istat)
       end if
-!
-!--- histim (start)
+      !
+      !--- histim (start)
       if (histim .or. ltrack) then
          !itau = tau + 0.1
          itau = NINT(tau)
          if (myrank .eq. 0) print *, ' history file written at tau= ', itau
-!
-! output gwr or gwet
-! in new soil model, gwr did not exist
-! but for output required,
-! define gwet as near surfce 0.5m soil layer wetness
-! define gwr as near surfce 0.5m soil layer moist contain
-! gwr=gwet*gwrcc
-! gwet(ground wetness) get from smc1*0.2+smc2*0.8
-! saturate gwrcc set to be 20mm as original land mode setting
-!
-! xb119 may2022 not need to run every time step ,move to histim inside
+         !
+         ! output gwr or gwet
+         ! in new soil model, gwr did not exist
+         ! but for output required,
+         ! define gwet as near surfce 0.5m soil layer wetness
+         ! define gwr as near surfce 0.5m soil layer moist contain
+         ! gwr=gwet*gwrcc
+         ! gwet(ground wetness) get from smc1*0.2+smc2*0.8
+         ! saturate gwrcc set to be 20mm as original land mode setting
+         !
+         ! xb119 may2022 not need to run every time step ,move to histim inside
          do jj = 1, jlistnum
             j = jlist1(jj)
             nxj = nxdef_2d(j)
@@ -1555,19 +1548,19 @@ subroutine intgrt_gpu
                gwr(i, jj) = max(0., min(1., gwet(i, jj)))*20.0
             end do
          end do
-!      call mpe_unify(gwet,nx,my,2,mpe_double)
-!      call mpe_unify(gwr,nx,my,2,mpe_double)
-!
-!
+         !      call mpe_unify(gwet,nx,my,2,mpe_double)
+         !      call mpe_unify(gwr,nx,my,2,mpe_double)
+         !
+         !
          if (wrestrt) then
-! set write out restart at the end of integration
+            ! set write out restart at the end of integration
             if (mod(float(itau), float(itauezz)) .lt. 0.01) then
                write (ctau, 800) itau
 800            format(i7.7)
                write (ccore, '(i4.4)') myrank
-!
+               !
                rfile = trim(cwbout)//'cwbout_'//ctau
-!
+               !
                if (myrank .eq. 0) open (unit=7, file=rfile, form='unformatted')
                len1 = 2*levp*jtrun*jtmax*nsize
                len2 = 2*jtrun*jtmax*nsize
@@ -1595,8 +1588,8 @@ subroutine intgrt_gpu
                if (myrank == 0) write (7) work_io
                call mpe_gather_io(work_io, plold, len2/nsize, nsize)
                if (myrank == 0) write (7) work_io
-!           call mpe_gather_io(work_io,dsqgeo,len2/nsize,nsize)
-!           call mpe_gather_io(work_io,spgeo,len2/nsize,nsize)
+               !           call mpe_gather_io(work_io,dsqgeo,len2/nsize,nsize)
+               !           call mpe_gather_io(work_io,spgeo,len2/nsize,nsize)
                deallocate (work_io)
                if (myrank == 0) then
                   call flush (7)
@@ -1605,11 +1598,11 @@ subroutine intgrt_gpu
                cmdxx = 'mkdir -p '//trim(phyout)//'phyout_'//ctau
                call system(trim(cmdxx))
                rfile = trim(phyout)//'phyout_'//ctau//'/'//ccore
-!         if (myrank .eq. 0) &
-!           open (unit=10,file=rfile,form='unformatted')
+               !         if (myrank .eq. 0) &
+               !           open (unit=10,file=rfile,form='unformatted')
                i = 200 + myrank
                open (i, file=rfile, form='unformatted')
-!jwhwu 202004 avoid undefined values.
+               !jwhwu 202004 avoid undefined values.
                write (i) land
                write (i) ocean
                write (i) ice
@@ -1639,7 +1632,7 @@ subroutine intgrt_gpu
                write (i) zice
                write (i) fpsp
                write (i) fpsp1
-!
+               !
                write (i) hflux
                write (i) qflux
                write (i) ss
@@ -1649,18 +1642,18 @@ subroutine intgrt_gpu
                write (i) sld
                write (i) rld
                write (i) asold
-!jwhwu 202003
+               !jwhwu 202003
                write (i) sfemis
                write (i) sfalb
                write (i) std
-!jwhwu
+               !jwhwu
                write (i) ctot
                write (i) clds
                write (i) pdiff
                write (i) tsave
-!jwhwu 201702 | add
+               !jwhwu 201702 | add
                write (i) tsflw
-!jwhwu 201702 | add
+               !jwhwu 201702 | add
                write (i) cosz
                write (i) slag, sdec, cdec, solcon, solhr, rsolhr, &
                   ! overcome round off problem in restart
@@ -1671,15 +1664,15 @@ subroutine intgrt_gpu
                write (i) fqp
                write (i) ftp1
                write (i) fqp1
-!jwhwu 201702 ! add
+               !jwhwu 201702 ! add
                write (i) asl
                write (i) atl
                write (i) dtrad
-!jwhwu 201910 ! add
+               !jwhwu 201910 ! add
                write (i) deltaq
                write (i) cnvwr
                write (i) cnvcr
-!jwhwu 202208 ! add
+               !jwhwu 202208 ! add
                write (i) dtcup
                write (i) ducup
                write (i) dvcup
@@ -1690,9 +1683,9 @@ subroutine intgrt_gpu
                write (i) hfiltx
                write (i) alphax
                write (i) pdryi
-!
+               !
                write (i) qt
-!         write(i) qp  !  not need
+               !         write(i) qp  !  not need
                write (i) smc
                write (i) stc
                write (i) slc
@@ -1707,13 +1700,13 @@ subroutine intgrt_gpu
                call rerun_sitgrid3(itau)
             end if
          end if   ! end of (wrestrt)
-!
-!        !---output sigma layer data---
-!        dtaup = mod( tauo+0.001, taup )
-!ds        dtaup = mod( tau+0.001, taup )
-!ds       if(tau.le.(taureg+0.001) .and. dtaup.lt.0.01)then
+         !
+         !        !---output sigma layer data---
+         !        dtaup = mod( tauo+0.001, taup )
+         !ds        dtaup = mod( tau+0.001, taup )
+         !ds       if(tau.le.(taureg+0.001) .and. dtaup.lt.0.01)then
          if (tau .le. (taureg + 0.001) .and. histim) then
-!jh        if( histim ) then
+            !jh        if( histim ) then
 #ifndef NO_OUT
             call outsigs(itau, nx, my, my_max, lev, ncld &
                          , idtg, ptop, rad, grav &
@@ -1722,9 +1715,9 @@ subroutine intgrt_gpu
                          , slc, stc, canopy, zice, ggdef, gmdef)
 #endif
          end if
-!-------------------------------------------------------------------------------
-!     !---output sigma layer radiation data---
-!      if (myrank .eq. 0) print *,'ioutsigr =',ioutsigr
+         !-------------------------------------------------------------------------------
+         !     !---output sigma layer radiation data---
+         !      if (myrank .eq. 0) print *,'ioutsigr =',ioutsigr
          if (ioutsigr .eq. 0 .and. histim) then
             if (myrank .eq. 0) print *, 'outsigr start !!!'
 #ifndef NO_OUT
@@ -1743,31 +1736,31 @@ subroutine intgrt_gpu
 #endif
             if (myrank .eq. 0) print *, 'outsigr ok !!!'
          end if
-!-------------------------------------------------------------------------------
-!  write operational fields (p-levels and surface)
-!
+         !-------------------------------------------------------------------------------
+         !  write operational fields (p-levels and surface)
+         !
 #ifndef NO_OUT
-!
-!     output cice
-!      call unify_reduceintp(nx,my,my_max,u10,glob)
-!      if ( myrank .eq. 0 ) then
-!         open(35,file='uv10.txt')
-!         write(35,'(i8,1x,i6.6)') idtg/10000,itau
-!         write(35,'(1552f6.2)') (glob(:,j),j=1,my)
-!      endif
-!      call unify_reduceintp(nx,my,my_max,v10,glob)
-!      if ( myrank .eq. 0 ) then
-!         write(35,'(1552f6.2)') (glob(:,j),j=1,my)
-!         close(35)
-!      endif
-!
-!      call unify_reduceintp(nx,my,my_max,cice,glob)
-!      if ( myrank .eq. 0 ) then
-!         open(35,file='cice.txt')
-!         write(35,'(i8,1x,i6.6)') idtg/10000,itau
-!         write(35,'(1552f6.2)') (glob(:,j),j=1,my)
-!         close(35)
-!      endif
+         !
+         !     output cice
+         !      call unify_reduceintp(nx,my,my_max,u10,glob)
+         !      if ( myrank .eq. 0 ) then
+         !         open(35,file='uv10.txt')
+         !         write(35,'(i8,1x,i6.6)') idtg/10000,itau
+         !         write(35,'(1552f6.2)') (glob(:,j),j=1,my)
+         !      endif
+         !      call unify_reduceintp(nx,my,my_max,v10,glob)
+         !      if ( myrank .eq. 0 ) then
+         !         write(35,'(1552f6.2)') (glob(:,j),j=1,my)
+         !         close(35)
+         !      endif
+         !
+         !      call unify_reduceintp(nx,my,my_max,cice,glob)
+         !      if ( myrank .eq. 0 ) then
+         !         open(35,file='cice.txt')
+         !         write(35,'(i8,1x,i6.6)') idtg/10000,itau
+         !         write(35,'(1552f6.2)') (glob(:,j),j=1,my)
+         !         close(35)
+         !      endif
 
          call transr(jtrun, jtmax, nx, my, my_max, levp, poly, vornow, cc, 1, nsizey)
          call ujoinsr(cc, rvor, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
@@ -1783,11 +1776,11 @@ subroutine intgrt_gpu
                       !xb110                    , ctot,chig,cmid,clow,hpbl,histim,flash,do_sit)
                       , ctot, chig, cmid, clow, hpbl, histim, do_sit)
 #endif
-!
-!#ifdef RSM_sigp
+         !
+         !#ifdef RSM_sigp
 #ifdef RSM
 #ifdef RSM_sig
-! for sigma coordinate
+         ! for sigma coordinate
          if (outrsm .and. mod(float(itau) + 0.00001, float(rsmoutinv)) .lt. 0.01) then
             if (myrank .eq. 0) print *, ' call rsmout for rsm output at tau=', itau
             call rsmout(idtg, itau, nx, my, my_max, lev, ncld &
@@ -1798,7 +1791,7 @@ subroutine intgrt_gpu
                         , ice, land, ocean)
          end if
 #else
-! for sigma-P coordinate
+         ! for sigma-P coordinate
          if (outrsm .and. mod(float(itau) + 0.00001, float(rsmoutinv)) .lt. 0.01) then
             if (myrank .eq. 0) print *, ' call rsmout for rsm output at tau=', itau
             call rsmout_sigp(itau, nx, my, my_max, lev, ncld &
@@ -1809,67 +1802,67 @@ subroutine intgrt_gpu
          end if
 #endif
 #endif
-!
-!#ifdef RSM
-!! RSM: output base field ncep-format data for RSM
-!      if(outrsm .and. mod(float(itau)+0.00001, float(rsmoutinv) ) .lt. 0.01)then
-!        if(myrank.eq.0)print*,' call rsmout for rsm output at tau=',itau
-!        call rsmout(idtg,itau,nx,my,my_max,lev,ncld   &
-!                , ptop,cp,rgas,grav,sgeo,pdiff        &
-!                , t1000,pt,plt,pk,pk2,phi,ut,vt       &
-!                , tt,qt,tg,snr,cosl                   &
-!                , km_soil,smc,stc                     &
-!                , ice,land,ocean)
-!      endif
-!#endif
-!
-!       if(typhoon .and. ltrack)then
+         !
+         !#ifdef RSM
+        !! RSM: output base field ncep-format data for RSM
+         !      if(outrsm .and. mod(float(itau)+0.00001, float(rsmoutinv) ) .lt. 0.01)then
+         !        if(myrank.eq.0)print*,' call rsmout for rsm output at tau=',itau
+         !        call rsmout(idtg,itau,nx,my,my_max,lev,ncld   &
+         !                , ptop,cp,rgas,grav,sgeo,pdiff        &
+         !                , t1000,pt,plt,pk,pk2,phi,ut,vt       &
+         !                , tt,qt,tg,snr,cosl                   &
+         !                , km_soil,smc,stc                     &
+         !                , ice,land,ocean)
+         !      endif
+         !#endif
+         !
+         !       if(typhoon .and. ltrack)then
          if (typhoon .and. ltrack .and. itau .le. 384) then
             if (myrank .eq. 0) print *, ' calling tracking,  tau= ', tau
-!          if(myrank .eq. 0)print *,'dt_trk=',dt_trk
+            !          if(myrank .eq. 0)print *,'dt_trk=',dt_trk
             call tracking(tau, dt_trk, dt, nx, my, &
                           ntyph, typname, ixtyp, jytyp, tlon, tlat, tflon, tflat, idtg, &
                           nrec, typhoon, tensity)
          end if
-!
-!  zero out precip arrays
-!
-!  add 12-hour check to let prep. amount be of 12-hour accumulation for
-!  every 12-hour output, but prep. amount still 24-hour accumulation for
-!  every 24-hour output without 12-hour output points
-!  (in order to be consistent to the rule followed by nfs, 11/30/2000)
-!
+         !
+         !  zero out precip arrays
+         !
+         !  add 12-hour check to let prep. amount be of 12-hour accumulation for
+         !  every 12-hour output, but prep. amount still 24-hour accumulation for
+         !  every 24-hour output without 12-hour output points
+         !  (in order to be consistent to the rule followed by nfs, 11/30/2000)
+         !
          if (mod(float(itau) + 0.00001, 12.) .lt. 0.01) then
-!        if( histim .and. (mod(float(itau)+0.00001, 12.) .lt. 0.01) ) then
+            !        if( histim .and. (mod(float(itau)+0.00001, 12.) .lt. 0.01) ) then
             raincu = 0.
             rainlp = 0.
-!         runoff=0.
-!          call zilch (raincu,nxmy)
-!          call zilch (rainlp,nxmy)
-!          call zilch (runoff,nxmy)
+            !         runoff=0.
+            !          call zilch (raincu,nxmy)
+            !          call zilch (rainlp,nxmy)
+            !          call zilch (runoff,nxmy)
          end if
-!
-!
+         !
+         !
          if (myrank .eq. 0) print *, ' history written at tau=', itau
       end if     ! end of (histim) --- --- ---
 
-!       output f006 data for FV3
+      !       output f006 data for FV3
       if (outfv3) then
-      if (itau == 6) then
+         if (itau == 6) then
 #ifndef NO_OUT
-         if (myrank .eq. 0) print *, 'output FV3 data !!!'
-         call outflds_fv3(nint(tau), nx, my, my_max, idtg, ggdef &
-                          , q2, fm, fh, fm10, fh2, srflag, ustar)
+            if (myrank .eq. 0) print *, 'output FV3 data !!!'
+            call outflds_fv3(nint(tau), nx, my, my_max, idtg, ggdef &
+                             , q2, fm, fh, fm10, fh2, srflag, ustar)
 #endif
-      end if !(abs(tau+0.00001-6.) .lt. 0.01)
+         end if !(abs(tau+0.00001-6.) .lt. 0.01)
       end if
 
-!
-!kc             output t2,raintot,u10,v10,ctot at 1 hour interval within 192hr.
-!               if(domfc)then
-!==xb118        change domfc type from logical to real
-!               if(myrank .eq. 0) print*,'domfc at tau,dtaup=',tau,dtaup
-!               if(tau.le.192. .and. dtaup.lt.0.01)then
+      !
+      !kc             output t2,raintot,u10,v10,ctot at 1 hour interval within 192hr.
+      !               if(domfc)then
+      !==xb118        change domfc type from logical to real
+      !               if(myrank .eq. 0) print*,'domfc at tau,dtaup=',tau,dtaup
+      !               if(tau.le.192. .and. dtaup.lt.0.01)then
 
       if (mod(itau, 1) == 0) then
 
@@ -1886,10 +1879,10 @@ subroutine intgrt_gpu
          tmax = 0.0
          tmin = 0.0
       end if
-!
+      !
 
-!
-!       out green energy plan
+      !
+      !       out green energy plan
       if (out_green .and. mod(itau, nint(otgreen)) == 0) then
 #ifndef NO_OUT
          call outflds_green(nint(tau), nx, my, my_max, lev, ncld &
@@ -1901,26 +1894,26 @@ subroutine intgrt_gpu
             rainlp6 = 0.
          end if
       end if
-!
-!       output flux at 24 hour interval
-!
+      !
+      !       output flux at 24 hour interval
+      !
       if (mod(itau, 24) == 0) then
          if (myrank .eq. 0) print *, 'out24 at tau=', itau
          if (myrank .eq. 0) print *, 'julian = ', julian
-!         call mpe_unify(hf24,nx,my,2,mpe_double)
-!         call mpe_unify(qf24,nx,my,2,mpe_double)
-!         call mpe_unify(ss24,nx,my,2,mpe_double)
-!         call mpe_unify(rs24,nx,my,2,mpe_double)
-!         call mpe_unify(asol24,nx,my,2,mpe_double)
-!         call mpe_unify(olr24,nx,my,2,mpe_double)
-!         call mpe_unify(rain24,nx,my,2,mpe_double)
+         !         call mpe_unify(hf24,nx,my,2,mpe_double)
+         !         call mpe_unify(qf24,nx,my,2,mpe_double)
+         !         call mpe_unify(ss24,nx,my,2,mpe_double)
+         !         call mpe_unify(rs24,nx,my,2,mpe_double)
+         !         call mpe_unify(asol24,nx,my,2,mpe_double)
+         !         call mpe_unify(olr24,nx,my,2,mpe_double)
+         !         call mpe_unify(rain24,nx,my,2,mpe_double)
 #ifndef NO_OUT
          call out24(nx, my, my_max, hf24, qf24, ss24, rs24, asol24, olr24, rain24, rainlp24, dt24 &
                     , glob, itau, idtg, ggdef, flash24)
 #endif
-!
-!         zero set arrays
-!
+         !
+         !         zero set arrays
+         !
          do jj = 1, jlistnum
             j = jlist1(jj)
             nxj = nxdef_2d(j)
@@ -1939,7 +1932,7 @@ subroutine intgrt_gpu
          dt24 = 0.0
       end if ! (  mod( itau , 24 ) == 0  )
 
-!
+      !
       if (mod(itau, 1) == 0) then
          if (dosppt .and. dospptout) then
             call spptout(tau)
@@ -1965,9 +1958,9 @@ subroutine intgrt_gpu
          flag = .false.
          if (myrank .eq. 0) then
             flag = .true.
-!CWB2016
+            !CWB2016
             if (.not. io_quilting) then
-!CWB2017             call sendmsg ('gfs',ifromtau,itotau,istat)
+               !CWB2017             call sendmsg ('gfs',ifromtau,itotau,istat)
                if (itau .eq. itotau) call sendmsg('gfs', ifromtau, itotau, istat)
             else
                istat = 0
@@ -1977,41 +1970,16 @@ subroutine intgrt_gpu
                call dmsexit(-1)
             end if
          end if
-!ch       call mpe_broadcast(istat,1,flag,mpe_integer)
-!         call mpe_bcast(istat,1,0,mpe_integer)
+         !ch       call mpe_broadcast(istat,1,flag,mpe_integer)
+         !         call mpe_bcast(istat,1,0,mpe_integer)
       end if !histim
-      !$acc enter data copyin(up, vp, ttp, rdiv, ptp) async(async_id)
-      !$acc enter data copyin(pdot, vdmerd, vdzonl, vdmerdr, vdzonlr, &
-      !$acc& vdmerdrp, vdzonlrp, ddtemp, pten, deldm) async(async_id)
-      !$acc enter data copyin(ut, vt, tt, um, vm, dtahi) async(async_id)
-      !$acc enter data copyin(nxjp, sigma, ptm, pk, pk2, plt, &
-      !$acc& rdivm, tm, qt, phi, dtpl, dlpl, sinl, &
-      !$acc& dsigma, onocos, cor, diveng, vdmerdg, vdzonlg, &
-      !$acc& sdpbl, sd, vvel, sgeo) async(async_id)
-      !$acc enter data copyin(cc, jlist1, nxjlen, nxjlen_all, &
-      !$acc& nlist, jlist2, poly, weight, hldten, &
-      !$acc& mtrundef, mlist, cim, dpoly, dlphi, dtphi) async(async_id)
-      !$acc enter data copyin(nxdef_2d, nxjp_acc, nxptot) async(async_id)
-      !$acc enter data copyin(ww1, plten) async(async_id)
-      !$acc enter data copyin(temten, divten, vorten) async(async_id)
-      !$acc enter data copyin(plmid, temmid, divmid, temnow, divnow, plnow, &
-      !$acc& jtwvp, spalm, arrhyd, eps4L, evecin, eigval, evectr, arsddt) async(async_id)
-      !$acc enter data copyin(vormid, cosl, eps4, trefs, Llist, hdk2, vornow) async(async_id)
-      !$acc enter data copyin(wcfac, wdfac, nxjstart, nxjend) async(async_id)
-      !$acc enter data copyin(qm, nxdef, pltemp, pt) async(async_id)
-      !$acc enter data copyin(ptend, wkmf, vorold, divold, temold, plold) async(async_id)
-      !$acc enter data copyin(ut_sl, vt_sl, uum_sl, vvm_sl, ttm_sl, &
-      !$acc& lonlen, lonstr, latlen, jlist1_sl, gglati, fa1, fa2, fa3, fa4) async(async_id)
-      !$acc enter data copyin(qm_sl, pten_sl, cc_cg, gwk1_cg) async(async_id)
-      !$acc wait(async_id)
-   end if !  (mod(tau+0.001, 1.) .lt. 0.01)  hourly for output
 
-!    ---------------------------------------------------------------
-!
-! new year, read obs sst
-!
+   end if !  (mod(tau+0.001, 1.) .lt. 0.01)  hourly for output
+   !    ---------------------------------------------------------------
+   !
+   ! new year, read obs sst
+   !
    if (lopgsst) then
-      print *, "lopgsst entry"
       inexttau = int(tau + dtx/3600.+0.001)
       call dtgfix12(idtg, idtg1_sst, inexttau)
       inextyear = idtg1_sst/100000000
@@ -2021,43 +1989,19 @@ subroutine intgrt_gpu
          icurrentyear = idtg1_sst/100000000
       end if
    end if   !end lopgsst
-!
+   !
    itau = tau + 0.001
 #ifdef TIMING
    tm_2 = mpi_wtime()
 #endif
    if (itau .lt. itaue) go to 100
-   !$acc exit data copyout(up, vp, ttp, rdiv, ptp) async(async_id)
-   !$acc exit data copyout(pdot, vdmerd, vdzonl, vdmerdr, vdzonlr, &
-   !$acc& vdmerdrp, vdzonlrp, ddtemp, pten, deldm) async(async_id)
-   !$acc exit data copyout(ut, vt, tt, um, vm, dtahi) async(async_id)
-   !$acc exit data copyout(nxjp, sigma, ptm, pk, pk2, plt, &
-   !$acc& rdivm, tm, qt, phi, dtpl, dlpl, sinl, &
-   !$acc& dsigma, onocos, cor, diveng, vdmerdg, vdzonlg, &
-   !$acc& sdpbl, sd, vvel, sgeo) async(async_id)
-   !$acc exit data copyout(cc, jlist1, nxjlen, nxjlen_all, &
-   !$acc& nlist, jlist2, poly, weight, hldten, &
-   !$acc& mtrundef, mlist, cim, dpoly, dlphi, dtphi) async(async_id)
-   !$acc exit data delete(nxdef_2d, nxjp_acc, nxptot) async(async_id)
-   !$acc exit data copyout(ww1, plten) async(async_id)
-   !$acc exit data copyout(temten, divten, vorten) async(async_id)
-   !$acc exit data copyout(plmid, temmid, divmid, temnow, divnow, plnow, &
-   !$acc& jtwvp, spalm, arrhyd, eps4L, evecin, eigval, evectr, arsddt) async(async_id)
-   !$acc exit data copyout(vormid, cosl, eps4, trefs, Llist, hdk2, vornow) async(async_id)
-   !$acc exit data copyout(wcfac, wdfac, nxjstart, nxjend) async(async_id)
-   !$acc exit data copyout(qm, nxdef, pltemp, pt) async(async_id)
-   !$acc exit data copyout(ptend, wkmf, vorold, divold, temold, plold) async(async_id)
-   !$acc exit data copyout(ut_sl, vt_sl, uum_sl, vvm_sl, ttm_sl, &
-   !$acc& lonlen, lonstr, latlen, jlist1_sl, gglati, fa1, fa2, fa3, fa4) async(async_id)
-   !$acc exit data copyout(qm_sl, pten_sl, cc_cg, gwk1_cg) async(async_id)
-   !$acc wait(async_id)
    !
    flag = .false.
    if (myrank .eq. 0) then
       call recmsg('gfs', ifromtau, itotau, istat)
       flag = .true.
    end if
-!ch   call mpe_broadcast(istat,1,flag,mpe_integer)
+   !ch   call mpe_broadcast(istat,1,flag,mpe_integer)
    call mpe_bcast(istat, 1, 0, mpe_integer)
 
    if (istat .eq. -1) then
@@ -2068,12 +2012,13 @@ subroutine intgrt_gpu
          print *, ' finished integration '
          ! ------------------------------------------------------------
          ! << openacc deallocate data >>
+         !$acc exit data delete(um,vm)
          ! ------------------------------------------------------------
 
          ! for io quilting
          if (io_quilting) then
-!         ntag=ntag+1
-!         call mpe_send_key(keydoit,ntag,istat)
+            !         ntag=ntag+1
+            !         call mpe_send_key(keydoit,ntag,istat)
             ntag = ntag + 1
             call mpe_send_key(keydone, ntag, istat)
          end if
@@ -2108,21 +2053,21 @@ subroutine intgrt_gpu
       end if
       return
    end if
-!
-!ch   call mpe_broadcast(ifromtau,1,flag,mpe_integer)
-!ch   call mpe_broadcast(itotau,1,flag,mpe_integer)
+   !
+   !ch   call mpe_broadcast(ifromtau,1,flag,mpe_integer)
+   !ch   call mpe_broadcast(itotau,1,flag,mpe_integer)
    call mpe_bcast(ifromtau, 1, 0, mpe_integer)
    call mpe_bcast(itotau, 1, 0, mpe_integer)
-!
+   !
    taui = float(ifromtau)
    taue = float(itotau)
    tauo = float(itotau)
    itaui = taui + 0.1
    itaue = taue + 0.1
    itauo = tauo + 0.1
-!
+   !
    go to 10
-!
+   !
    ! finilize stochastic_physics
    call destroy_stochastic_physics()
    close (35)

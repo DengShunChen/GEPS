@@ -1,4 +1,6 @@
-subroutine tranrs1_gpu(jtrun, jtmax, nx, my, my_max, poly, w, r, s, nsize)
+#define CUDACHECK(ierr) call cuda_check_helper(ierr, __FILE__, __LINE__)
+
+subroutine tranrs1_gpu(jtrun, jtmax, nx, my, my_max, poly, w, r, s, nsize, cc, gwk1)
    ! Present on device: poly, w, r, s, jlist1, nxdef, mtrundef, nlist, mlist, jlist2
 !
 !  subroutine to transform a scalar grid point field to spectral
@@ -25,6 +27,7 @@ subroutine tranrs1_gpu(jtrun, jtmax, nx, my, my_max, poly, w, r, s, nsize)
    use index
    use paramt
    use fftcom
+   use fft_cuda_graph
    use openacc
    use cudafor
 
@@ -56,7 +59,7 @@ subroutine tranrs1_gpu(jtrun, jtmax, nx, my, my_max, poly, w, r, s, nsize)
    async_id = 1
    stream = acc_get_cuda_stream(async_id)
 
-   !$acc enter data create(twcc_fk, gwk1, cc, wcc_fk) async(async_id)
+   !$acc enter data create(twcc_fk, wcc_fk) async(async_id)
    !$acc host_data use_device(twcc_fk, gwk1)
    istat = cudaMemSetAsync(twcc_fk, 0.0, size(twcc_fk), stream)
    istat = cudaMemSetAsync(gwk1, 0.0, size(gwk1), stream)
@@ -82,7 +85,14 @@ subroutine tranrs1_gpu(jtrun, jtmax, nx, my, my_max, poly, w, r, s, nsize)
    if (lreduce .eq. 0) then
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, jlistnum, -1)
    else
-      call rfftmlt_loop_identical(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, 1, -1)
+      if (tranrs1_graph_created) then
+         CUDACHECK(cudaGraphLaunch(tranrs1_graph_exec, stream))
+      else
+         call rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, 1, -1, tranrs1_graph)
+         CUDACHECK(cudaGraphInstantiate(tranrs1_graph_exec, tranrs1_graph, tranrs1_error_node, tranrs1_buffer, tranrs1_buffer_len))
+         tranrs1_graph_created = .true.
+         CUDACHECK(cudaGraphLaunch(tranrs1_graph_exec, stream))
+      end if
    end if
 
    !$acc parallel loop gang async(async_id) private(jj, jtrunj)
@@ -101,7 +111,7 @@ subroutine tranrs1_gpu(jtrun, jtmax, nx, my, my_max, poly, w, r, s, nsize)
 
    ! Present on device: twcc_fk, wcc_fk
    call mpe_transpose_rs1_sp_gpu(twcc_fk, wcc_fk, jtmax, my_max, 2, nsize, nccl_col_comm, async_id)
-   !$acc exit data delete(twcc_fk, gwk1, cc) async(async_id)
+   !$acc exit data delete(twcc_fk) async(async_id)
    !$acc enter data create(wss, fj_polyw, wccSUM, wccDIF) async(async_id)
    !$acc parallel loop gang async(async_id) private(mf, wss, fj_polyw, i1, i2, i3, wccSUM, wccDIF)
    do m = 1, mlistnum
