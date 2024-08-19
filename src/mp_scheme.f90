@@ -91,7 +91,7 @@
            ( nmmiph,nx,nxj,lev,ncld,plt,ptop,                          &
              dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,            &
              itimestep,sgeo,phi,rhc_mp,pk,                             &
-             snr,xlat,                                                 &
+             snr,xlat,ivegtyp,                                         &
 !  ---  inputs/outputs:
              tt,qt,qa,ut,vt,vvel,pst,                                  &
 !  ---  outputs:
@@ -139,6 +139,7 @@
 !      integer,  intent(in)    :: ntcw,ntrw,ntiw,ntsw,ntgl,ntinc,ntrnc
       integer,  intent(in)    :: islimsk(nx)
       integer,  intent(in)    :: itimestep
+      integer,  intent(in)    :: ivegtyp(nx)
       real,     intent(in)    :: tpi,dta,xlat
       real,     intent(in)    :: phii(nx,lev+1)
       real,     intent(in)    :: area
@@ -1073,6 +1074,7 @@
           ht(i,1) = sgeo(i)/con_g   !terrain geopotential height above sea level (m)
           if( islimsk(i) .eq. 1 ) then
             land2d(i,1) = 1.        !land
+            if ( ivegtyp(i) .eq. 15 ) land2d(i,1) = 2.   !glacial is seen as ocean
           else
             land2d(i,1) = 2.        !ocean & seaice
           endif
