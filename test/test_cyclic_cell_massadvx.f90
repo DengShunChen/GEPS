@@ -11,9 +11,10 @@ end program test_cyclic_cell_massadvx
 subroutine cyclic_cell_massadvx_unit(forward)
    use const, only: RTYPE, dt, cosl
    use rank, only: myrank
-   use param, only: nx, my_max, lev, ncld
+   use param, only: nx, my, my_max, lev, ncld
    use index, only: nxp, levp, levf, myf, jlistnum, jlen, nsizex, row_comm, &
-                    nxdef, jlist1
+                    nxdef, jlist1, jlist2_2d, nxjlen_all, nxdef
+   use grid, only: gglati, fa1, fa2, fa3, fa4
    use mod_ndslfv_monoadv_gpu
    use mpe
    implicit none
@@ -83,6 +84,9 @@ subroutine cyclic_cell_massadvx_unit(forward)
    if (myrank .eq. 0) then
       write (*, '(A, 1pe15.7)'), "umamax=", ummax
    end if
+   !$acc enter data copyin(nx, my, lev, ncld, nxp, nsizex, &
+   !$acc& gglati, fa1, fa2, fa3, fa4, jlist2_2d, nxjlen_all, cosl, nxdef)
+
    !$acc data create(ut_GPU, vt_GPU, tt_GPU, qt_GPU, &
    !$acc& ut, vt, tt, qt, um)
    do n = 1, steps
@@ -97,6 +101,9 @@ subroutine cyclic_cell_massadvx_unit(forward)
       !$acc update self(ut_GPU, vt_GPU, tt_GPU, qt_GPU)
    end do
    !$acc end data
+
+   !$acc exit data delete(nx, my, lev, ncld, nxp, nsizex, &
+   !$acc& gglati, fa1, fa2, fa3, fa4, jlist2_2d, nxjlen_all, cosl, nxdef)
 
    call Varerr(err_arr(1, 1), tt_CPU, nxp, tt_GPU, nxp, lev, 1)
    call Varerr(err_arr(1, 2), ut_CPU, nxp, ut_GPU, nxp, lev, 1)
@@ -521,7 +528,7 @@ subroutine VarErr(Err, a, lda, b, ldb, lev, nvar)
                                   B(ldb, lev, nvar, my_max)
 
    integer i, j, k, n, nxj, jj, pts
-   real(kind=RTYPE) tmp, vamax, sum, pi
+   real(kind=RTYPE) tmp, vamax, sum_local, pi
    if (octahedral) then
       pts = (20 + nx)*my*lev
    elseif (numreduce == -99) then
@@ -532,18 +539,18 @@ subroutine VarErr(Err, a, lda, b, ldb, lev, nvar)
    do jj = 1, jlistnum
       j = jlist1(jj)
       nxj = nxdef(j)
-      sum = 0.
+      sum_local = 0.
       do n = 1, nvar
          do k = 1, lev
             do i = 1, nxj
                tmp = A(i, k, n, jj) - B(i, k, n, jj)
                Err(1) = max(Err(1), abs(tmp))
-               sum = sum + tmp**2
+               sum_local = sum_local + tmp**2
             end do
          end do
       end do
-      Err(2) = Err(2) + sum*(2.*pi/nxj)/(lev*nvar)*weight(j)
-      Err(3) = Err(3) + sum
+      Err(2) = Err(2) + sum_local*(2.*pi/nxj)/(lev*nvar)*weight(j)
+      Err(3) = Err(3) + sum_local
    end do
 
    call mpe_global_max(Err(1), 1, RTYPE)

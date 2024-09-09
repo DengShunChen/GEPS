@@ -1,4 +1,7 @@
   module rank
+#ifdef USE_CUDA
+      use nccl
+#endif
 
       implicit none
 
@@ -30,5 +33,8 @@
               root_rsm,itag,                           &
 #endif
               MPI_COMM_gfs,MPI_COMM_io,ntag,Ngfs,Nio,MPI_COMM_atm
-
+#ifdef USE_CUDA
+      type(ncclUniqueId) :: nccl_id
+      type(ncclComm) :: nccl_comm_gfs
+#endif
   end module rank

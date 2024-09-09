@@ -299,6 +299,9 @@
       call allocate_raddiag_array
       ! initial block data
       call init_block
+#ifdef USE_CUDA
+      call nccl_init
+#endif
     endif
 
   end subroutine mpe_init

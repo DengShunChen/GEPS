@@ -186,7 +186,7 @@ subroutine VarErr(Err, a, lda, b, ldb, lev, nvar)
                                   B(ldb, lev*nvar, my_max)
 
    integer i, j, k, nxj, jj, pts
-   real(kind=RTYPE) tmp, vamax, sum
+   real(kind=RTYPE) tmp, vamax, sum_local
    if (octahedral) then
       pts = (20 + nx)*my*lev
    elseif (numreduce == -99) then
@@ -197,16 +197,16 @@ subroutine VarErr(Err, a, lda, b, ldb, lev, nvar)
    do jj = 1, jlistnum
       j = jlist1(jj)
       nxj = nxdef(j)
-      sum = 0.
+      sum_local = 0.
       do k = 1, lev*nvar
          do i = 1, nxj
             tmp = A(i, k, jj) - B(i, k, jj)
             Err(1) = max(Err(1), abs(tmp))
-            sum = sum + tmp**2
+            sum_local = sum_local + tmp**2
          end do
       end do
-      Err(2) = Err(2) + sum/nxj/(lev*nvar)*weight(j)
-      Err(3) = Err(3) + sum
+      Err(2) = Err(2) + sum_local/nxj/(lev*nvar)*weight(j)
+      Err(3) = Err(3) + sum_local
    end do
 
    call mpe_global_max(Err(1), 1, RTYPE)

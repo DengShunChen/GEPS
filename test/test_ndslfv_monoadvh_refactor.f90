@@ -17,17 +17,15 @@ end program test_ndslfv_monoadvh
 ! ============================================================
 subroutine ndslfv_monoadvh_unit(xy)
    use const, only: RTYPE, dt, cosl
-   use rank, only: myrank
-   use param, only: nx, my, my_max, lev, ncld
-   use index, only: nxp, levp, levf, myf, jlistnum, jlen, nsizex, row_comm, &
-                    nxdef, jlist1, jlist2_2d, nxjlen_all, nxdef
-   use grid, only: ut, vt, tt, qm, qt, ut_sl, vt_sl, &
-                   gglati, fa1, fa2, fa3, fa4
+   use rank
+   use param
+   use index
+   use grid
    use mod_ndslfv_monoadv_gpu, only: ndslfv_monoadvh_gpu
    use mpe
    implicit none
    integer, intent(in):: xy
-   integer, parameter:: steps = 5
+   integer, parameter:: steps = 1
    integer, parameter:: nvar = 4
 
    real(kind=RTYPE):: um(nxp, lev, my_max), &
@@ -52,10 +50,12 @@ subroutine ndslfv_monoadvh_unit(xy)
 
    real(kind=RTYPE) dtah, irma, irm2a
    logical forward
-   integer i, k, j, jj, nxj
+   integer i, k, j, jj, nxj, async_id
 
    real(kind=RTYPE):: err_arr(4, nvar), vamax, ummax, vmmax
    character(len=6):: name(nvar)
+
+   async_id = 1
 
    name = (/'t', 'u', 'v', 'q'/)
    dtah = 0.5*dt
@@ -101,11 +101,6 @@ subroutine ndslfv_monoadvh_unit(xy)
       write (*, '(A, 1pe15.7)'), "vmamax=", vmmax
    end if
 
-   !$acc enter data copyin(nx, my, lev, ncld, nxp, nsizex, &
-   !$acc& gglati, fa1, fa2, fa3, fa4, jlist2_2d, nxjlen_all, cosl, nxdef)
-
-   !$acc data create(tt_gpu, ut_gpu, vt_gpu, qt_gpu, &
-   !$acc& um, vm, qm)
    do i = 1, steps
       if (myrank .eq. 0) write (*, '("<< ", i3, " >>")') i
 
@@ -149,17 +144,47 @@ subroutine ndslfv_monoadvh_unit(xy)
       call vcopy(tt_gpu, tt, 1)
       call vcopy(ut_gpu, ut, 1)
       call vcopy(vt_gpu, vt, 1)
-      !$acc update device(tt_gpu, ut_gpu, vt_gpu)
-      !$acc update device(um, vm)
-      !$acc update device(qm)
-      call ndslfv_monoadvh_gpu(tt_gpu, pten, ut_gpu, vt_gpu, qt_gpu, &
-                               qm, um, vm, dtah, xy, forward)
-      !$acc update self(tt_gpu, ut_gpu, vt_gpu, qt_gpu)
-   end do
-   !$acc end data
+      !$acc enter data copyin(um, ut_sl, vm, vt_sl, ut, uum_sl, vt, vvm_sl, tt, ttm_sl, qm, qm_sl, &
+      !$acc& jlist1, nxjlen, nxjlen_all, pten_sl, cosl, nxdef, lonlen, lonstr, latlen, jlist1_sl, gglati, fa1, fa2, fa3, fa4, &
+      !$acc& tt_gpu, ut_gpu, vt_gpu, qt_gpu, nxjp) async(async_id)
+      call mpe2d_transpose_ndsl_p2f_gpu(um, ut_sl, &
+                                        nxp, nx, levf, levp, 1, myf, &
+                                        my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+      call mpe2d_transpose_ndsl_p2f_gpu(vm, vt_sl, &
+                                        nxp, nx, levf, levp, 1, myf, &
+                                        my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+      call mpe2d_transpose_ndsl_p2f_gpu(ut, uum_sl, &
+                                        nxp, nx, levf, levp, 1, myf, &
+                                        my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+      call mpe2d_transpose_ndsl_p2f_gpu(vt, vvm_sl, &
+                                        nxp, nx, levf, levp, 1, myf, &
+                                        my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+      call mpe2d_transpose_ndsl_p2f_gpu(tt, ttm_sl, &
+                                        nxp, nx, levf, levp, 1, myf, &
+                                        my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+      call mpe2d_transpose_ndsl_p2f_gpu(qm, qm_sl, &
+                                        nxp, nx, levf, levp, ncld, myf, &
+                                        my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+      call ndslfv_monoadvh_gpu_refactor(ttm_sl, qm_sl, pten_sl, uum_sl, vvm_sl, &
+                                        nxdef, dtah, xy, levp)
 
-   !$acc exit data delete(nx, my, lev, ncld, nxp, nsizex, &
-   !$acc& gglati, fa1, fa2, fa3, fa4, jlist2_2d, nxjlen_all, cosl, nxdef)
+      call mpe2d_transpose_ndsl_f2p_gpu(ttm_sl, tt_gpu, &
+                                        nxp, nx, levf, levp, 1, myf, &
+                                        my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+      call mpe2d_transpose_ndsl_f2p_gpu(uum_sl, ut_gpu, &
+                                        nxp, nx, levf, levp, 1, myf, &
+                                        my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+      call mpe2d_transpose_ndsl_f2p_gpu(vvm_sl, vt_gpu, &
+                                        nxp, nx, levf, levp, 1, myf, &
+                                        my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+      call mpe2d_transpose_ndsl_f2p_gpu(qm_sl, qt_gpu, &
+                                        nxp, nx, levf, levp, ncld, myf, &
+                                        my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+      !$acc exit data copyout(um, ut_sl, vm, vt_sl, ut, uum_sl, vt, vvm_sl, tt, ttm_sl, qm, qm_sl, &
+      !$acc& jlist1, nxjlen, nxjlen_all, pten_sl, cosl, nxdef, lonlen, lonstr, latlen, jlist1_sl, gglati, fa1, fa2, fa3, fa4, &
+      !$acc& tt_gpu, ut_gpu, vt_gpu, qt_gpu, nxjp) async(async_id)
+      !$acc wait(async_id)
+   end do
 
    call Varerr(err_arr(1, 1), tt_gpu, nxp, tt_cpu, nxp, lev, 1)
    call Varerr(err_arr(1, 2), ut_gpu, nxp, ut_cpu, nxp, lev, 1)

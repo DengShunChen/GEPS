@@ -24,7 +24,7 @@ module unuse ${MDIR}/modulefiles
  DMSPATH=/package/${machine}/dms/dms.v4/bin
  GFSDIR=$MDIR
  GFSFIX=$MDIR/fix
- GFSWRK=$MDIR/build/test
+ GFSWRK=$MDIR/build_${machine}/test
 
 #-- dms data
  JCAP=${JCAP:-639}

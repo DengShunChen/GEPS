@@ -26,11 +26,11 @@ subroutine tranrs1_unit
 
    integer, parameter :: steps = 16
    integer, parameter :: num = 1
-   real(kind=RTYPE) poly(jtrun, my/2, jtmax)
-   real(kind=RTYPE) w(my)
-   real(kind=RTYPE) r(nx, my_max)
-   real(kind=RTYPE) s(jtrun, jtmax, 2)
-   real(kind=RTYPE) s_gpu(jtrun, jtmax, 2)
+   real(kind=RTYPE), dimension(jtrun, my/2, jtmax) :: poly
+   real(kind=RTYPE), dimension(my) :: w
+   real(kind=RTYPE), dimension(nx, my_max) :: r
+   real(kind=RTYPE), dimension(jtrun, jtmax, 2) :: s, s_gpu
+   real(kind=RTYPE), dimension(nx + 2, my_max) :: cc, gwk1
    integer :: i, j, k, l, m
    integer :: async_id
 
@@ -47,20 +47,15 @@ subroutine tranrs1_unit
       call tranrs1(jtrun, jtmax, nx, my, my_max, poly, w, r, s, nsizey)
    end do
 
-   !$acc enter data copyin(poly, w, r, s_gpu) async(async_id)
+   !$acc enter data copyin(poly, w, r, s_gpu, cc, gwk1) async(async_id)
    !$acc enter data copyin(jlist1, nxdef, mtrundef, nlist) async(async_id)
    do i = 1, steps
-      call tranrs1_gpu(jtrun, jtmax, nx, my, my_max, poly, w, r, s_gpu, nsizey)
+      call tranrs1_gpu(jtrun, jtmax, nx, my, my_max, poly, w, r, s_gpu, nsizey, cc, gwk1)
    end do
-   !$acc exit data delete(jlist1, nxdef, mtrundef, nlist) async(async_id)
+   !$acc exit data delete(jlist1, nxdef, mtrundef, nlist, cc, gwk1) async(async_id)
    !$acc exit data copyout(poly, w, r, s_gpu) async(async_id)
    !$acc wait(async_id)
 
-   if (all(abs(s - s_gpu) <= 1e-10)) then
-      print *, "test_tranrs1 passed."
-   else
-      print *, "test_tranrs1 failed."
-      call exit(1)
-   end if
+   call assert_allclose(s_gpu, size(s_gpu), s, size(s), 1e-10, 1e-10, "Array s")
 
-end subroutine
+end subroutine tranrs1_unit

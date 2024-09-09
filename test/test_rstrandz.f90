@@ -33,6 +33,7 @@ subroutine rstrandz_unit
    real(kind=RTYPE) poly(jtrun, my/2, jtmax), dpoly(jtrun, my/2, jtmax)
    real(kind=RTYPE) hldten(lev, 2, jtrun, jtmax), vorten(lev, 2, jtrun, jtmax)
    real(kind=RTYPE) hldten_gpu(lev, 2, jtrun, jtmax), vorten_gpu(lev, 2, jtrun, jtmax)
+   real(kind=RTYPE) cc(nx + 2, lev, 2, my_max), gwk1(nx + 2, lev, 2, my_max)
    integer i
    integer async_id
 
@@ -56,21 +57,19 @@ subroutine rstrandz_unit
       call rstrandz(jtrun, jtmax, nx, my, my_max, lev, vdmer, vdzon, w, cim, onocos, poly, dpoly, hldten, vorten, nsizey)
    end do
 
-   !$acc enter data copyin(vdmer, vdzon, w, cim, onocos, poly, dpoly, hldten_gpu, vorten_gpu) async(async_id)
+   !$acc enter data copyin(vdmer, vdzon, w, cim, onocos, poly, dpoly, hldten_gpu, vorten_gpu, &
+   !$acc& nlist, jlist2, mtrundef, jlist1, nxjlen, nxjlen_all, nxdef, cc, gwk1) async(async_id)
    do i = 1, steps
-     call rstrandz_gpu(jtrun, jtmax, nx, my, my_max, lev, vdmer, vdzon, w, cim, onocos, poly, dpoly, hldten_gpu, vorten_gpu, nsizey)
+     call rstrandz_gpu(jtrun, jtmax, nx, my, my_max, lev, vdmer, vdzon, w, cim, onocos, poly, dpoly, hldten_gpu, vorten_gpu, nsizey, cc, gwk1)
       if (i .eq. warmup .OR. i .eq. steps) then
          !$acc wait(async_id)
       end if
    end do
-   !$acc exit data copyout(hldten_gpu, vorten_gpu) delete(vdmer, vdzon, w, cim, onocos, poly, dpoly) async(async_id)
+   !$acc exit data copyout(hldten_gpu, vorten_gpu) delete(vdmer, vdzon, w, cim, onocos, poly, dpoly, &
+   !$acc& nlist, jlist2, mtrundef, jlist1, nxjlen, nxjlen_all, nxdef, cc, gwk1) async(async_id)
    !$acc wait(async_id)
 
-   if (all(abs(hldten - hldten_gpu) <= 1e-10) .AND. all(abs(vorten - vorten_gpu) <= 1e-10)) then
-      PRINT *, "test_rstrandz passed."
-   else
-      PRINT *, "test_rstrandz failed."
-      call exit(1)
-   end if
+   call assert_allclose(hldten_gpu, size(hldten_gpu), hldten, size(hldten), 1e-10, 1e-1, "Array hldten")
+   call assert_allclose(vorten_gpu, size(vorten_gpu), vorten, size(vorten), 1e-10, 1e-1, "Array vorten")
 
 end subroutine rstrandz_unit

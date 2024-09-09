@@ -26,9 +26,9 @@ subroutine tranrs_unit
 
    integer, parameter :: steps = 10
    integer, parameter :: num = 1
-   real(kind=RTYPE), dimension(jtrun, my/2, jtmax)    :: poly
-   real(kind=RTYPE), dimension(my)                    :: w
-   real(kind=RTYPE), dimension(nx + 2, lev, num, my_max) :: cc, cc_buffer
+   real(kind=RTYPE), dimension(jtrun, my/2, jtmax) :: poly
+   real(kind=RTYPE), dimension(my) :: w
+   real(kind=RTYPE), dimension(nx + 2, lev, num, my_max) :: cc, cc_buffer, gwk1
    real(kind=RTYPE), dimension(lev, 2, num, jtrun, jtmax) :: wss, wss_gpu
    integer :: i, j, k, l, m
    integer :: async_id
@@ -48,21 +48,16 @@ subroutine tranrs_unit
       call tranrs(jtrun, jtmax, nx, my, my_max, lev, poly, w, cc_buffer, wss, num, nsizey)
    end do
 
+   !$acc enter data copyin(poly, w, cc_buffer, nlist, jlist2, jlist1, nxdef, cc) create(wss_gpu, gwk1) async(async_id)
    do i = 1, steps
+      !$acc kernels async(async_id)
       cc_buffer = cc
-      !$acc enter data copyin(poly, w, cc_buffer) create(wss_gpu) async(async_id)
-      !$acc wait(async_id)
-      call tranrs_gpu(jtrun, jtmax, nx, my, my_max, lev, poly, w, cc_buffer, wss_gpu, num, nsizey)
-      !$acc wait(async_id)
-      !$acc exit data delete(poly, w, cc_buffer) copyout(wss_gpu) async(async_id)
-      !$acc wait(async_id)
+      !$acc end kernels
+      call tranrs_gpu(jtrun, jtmax, nx, my, my_max, lev, poly, w, cc_buffer, wss_gpu, num, nsizey, gwk1)
    end do
+   !$acc exit data delete(poly, w, cc_buffer, nlist, jlist2, jlist1, nxdef, gwk1, cc) copyout(wss_gpu) async(async_id)
+   !$acc wait(async_id)
 
-   if (all(abs(wss - wss_gpu) <= 1e-10)) then
-      print *, "test_tranrs passed."
-   else
-      print *, "test_tranrs failed."
-      call exit(1)
-   end if
+   call assert_allclose(wss_gpu, size(wss_gpu), wss, size(wss), 1e-10, 1e-10, "Array wss")
 
 end subroutine

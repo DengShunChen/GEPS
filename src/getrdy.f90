@@ -173,7 +173,7 @@
           if(myrank.eq.0) print*,'update climatology data, for restart in julian day= ',julian,' tau=',taui
 
           call readclx( nx,my,my_max,julian,land,ocean,ice,tgclim,gwclim      &
-                       ,z0,alb,sst,bckfile,sigmaf,istyp,ivegtyp,ls            &
+                       ,z0,alb,sst,sigmaf,istyp,ivegtyp,ls            &
                        ,shdmax,shdmin,slopetyp,snoalb,ggdef,isot,ivegsrc )
 !---------------------------------------------------------------------
 !   read new albedo:
@@ -1349,6 +1349,8 @@
             tensity(0,m,n)=( ww4(i,j+1)+ww4(i+1,j+1)    &
                            + ww4(i,j  )+ww4(i+1,j  ) )/4.
           enddo
+          tensity(0,4,n)=tensity(0,4,n) + 1457.0
+          tensity(0,5,n)=tensity(0,5,n) + 5574.0
 !byl            tensity(0,2,n)=( v850(i,j+1)+v850(i+1,j+1)  &
 !byl                           + v850(i,j  )+v850(i+1,j  ) )/4.
 !byl            tensity(0,3,n)=( v700(i,j+1)+v700(i+1,j+1)  &

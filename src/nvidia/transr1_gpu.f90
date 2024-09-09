@@ -1,4 +1,6 @@
-subroutine transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, s, r, nsize)
+#define CUDACHECK(ierr) call cuda_check_helper(ierr, __FILE__, __LINE__)
+
+subroutine transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, s, r, nsize, cc, gwk1)
 !
 !  subroutine to transform a spectral coefficient field to
 !  grid point form
@@ -21,11 +23,11 @@ subroutine transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, s, r, nsize)
 !
    use const, only: RTYPE
    use index
-!     use paramt
    use fftcom
+   use fft_cuda_graph
    use openacc
    use cudafor
-!
+
    implicit none
 
    integer jtrun, jtmax, nx, my, my_max, nsize
@@ -53,7 +55,7 @@ subroutine transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, s, r, nsize)
    real fj_tcc(2, my)
    real fj_wss(2, jtrun)
    real fj_ws2(2, jtrun)
-   integer async_id, istat
+   integer async_id
    integer(kind=cuda_stream_kind) :: stream
 
    async_id = 1
@@ -64,10 +66,11 @@ subroutine transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, s, r, nsize)
 
    !$acc enter data create(wcc_fk) async(async_id)
    !$acc host_data use_device(wcc_fk)
-   istat = cudaMemSetAsync(wcc_fk, 0.0, size(wcc_fk), stream)
+   CUDACHECK(cudaMemSetAsync(wcc_fk, 0.0, size(wcc_fk), stream))
    !$acc end host_data
 
    do m = 1, mlistnum
+      mf = mlist(m)
       jlistnum_fj = 0
       do j = 1, myhalf
          if (mf .le. mtrundef(j)) then
@@ -99,11 +102,11 @@ subroutine transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, s, r, nsize)
          ws2(l, 2) = -wss(l, 2)
       end do
       !$acc host_data use_device(tcc, fj_tcc, fj_poly, fj_wss, fj_ws2)
-      istat = cudaMemSetAsync(tcc, 0.0, size(tcc), stream)
-      istat = cudaMemSetAsync(fj_tcc, 0.0, size(fj_tcc), stream)
-      istat = cudaMemSetAsync(fj_poly, 0.0, size(fj_poly), stream)
-      istat = cudaMemSetAsync(fj_wss, 0.0, size(fj_wss), stream)
-      istat = cudaMemSetAsync(fj_ws2, 0.0, size(fj_ws2), stream)
+      CUDACHECK(cudaMemSetAsync(tcc, 0.0, size(tcc), stream))
+      CUDACHECK(cudaMemSetAsync(fj_tcc, 0.0, size(fj_tcc), stream))
+      CUDACHECK(cudaMemSetAsync(fj_poly, 0.0, size(fj_poly), stream))
+      CUDACHECK(cudaMemSetAsync(fj_wss, 0.0, size(fj_wss), stream))
+      CUDACHECK(cudaMemSetAsync(fj_ws2, 0.0, size(fj_ws2), stream))
       !$acc end host_data
 
       jlistnum_fj = jlistnum_fj_array(m)
@@ -145,7 +148,7 @@ subroutine transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, s, r, nsize)
       end do
 
       !$acc host_data use_device(fj_tcc)
-      istat = cudaMemSetAsync(fj_tcc, 0.0, size(fj_tcc), stream)
+      CUDACHECK(cudaMemSetAsync(fj_tcc, 0.0, size(fj_tcc), stream))
       !$acc end host_data
 
       llistnum_fj = jtrun - mf + 1
@@ -170,11 +173,10 @@ subroutine transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, s, r, nsize)
 !*** r1 start ***
 
    !$acc enter data create(twcc_fk) async(async_id)
-   call mpe_transpose_rs1_sp_gpu(wcc_fk, twcc_fk, my_max, jtmax, 2, nsize, col_comm, async_id)
+   call mpe_transpose_rs1_sp_gpu(wcc_fk, twcc_fk, my_max, jtmax, 2, nsize, nccl_col_comm, async_id)
 
-   !$acc enter data create(cc) async(async_id)
    !$acc host_data use_device(cc)
-   istat = cudaMemSetAsync(cc, 0.0, size(cc), stream)
+   CUDACHECK(cudaMemSetAsync(cc, 0.0, size(cc), stream))
    !$acc end host_data
    !$acc parallel loop async(async_id)
    do jj = 1, jlistnum
@@ -190,37 +192,29 @@ subroutine transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, s, r, nsize)
       end do
    end do
 
-   !$acc enter data create(gwk1) async(async_id)
-!
+#ifdef SP
+   print *, "Symbol SP is not supported."
+#endif
+
    if (lreduce .eq. 0) then
-#ifdef SP
-      call rfftmlt_sp(cc, gwk1, trigs, ifax, 1, nx + 2, nx, jlistnum, 1)
-#else
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, jlistnum, 1)
-#endif
    else
-#ifdef SP
-!$omp  parallel do default(none)                            &
-!$omp  private(jj,j,nxj,gwk1)                               &
-!$omp  shared(jlistnum,jlist1,nxdef,cc,trigsj,ifaxj,nx    ) &
-!$omp  schedule(dynamic)
-      do jj = 1, jlistnum
-         j = jlist1(jj)
-         nxj = nxdef(j)
-         call rfftmlt_sp(cc(1, jj), gwk1(1, jj), trigsj(1, j), ifaxj(1, j), &
-                         1, nx + 2, nxj, 1, 1)
-      end do
-!$omp end parallel do
-#else
-      call rfftmlt_loop_identical(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, 1, 1)
-#endif
+      if (transr1_graph_created) then
+         CUDACHECK(cudaGraphLaunch(transr1_graph_exec, stream))
+      else
+         call rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, 1, 1, transr1_graph)
+         CUDACHECK(cudaGraphInstantiate(transr1_graph_exec, transr1_graph, transr1_error_node, transr1_buffer, transr1_buffer_len))
+         transr1_graph_created = .true.
+         CUDACHECK(cudaGraphLaunch(transr1_graph_exec, stream))
+      end if
    end if
+
    !$acc parallel loop async(async_id)
    do jj = 1, jlistnum
       j = jlist1(jj)
       r(1:nxjlen(j), jj) = cc(nxjstart(j):nxjend(j), jj)
    end do
-   !$acc exit data delete(cc, twcc_fk, jlist_fj, wss, ws2, tcc, fj_tcc, fj_poly, fj_wss, fj_ws2, wcc_fk, gwk1) async(async_id)
+   !$acc exit data delete(twcc_fk, jlist_fj, wss, ws2, tcc, fj_tcc, fj_poly, fj_wss, fj_ws2, wcc_fk) async(async_id)
 
 !*** r1  end  ***
 

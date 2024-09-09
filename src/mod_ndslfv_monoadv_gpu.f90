@@ -1,3 +1,5 @@
+#define advh_gather4GPU advh_gather4GPU_nccl
+#define advh_scatter4GPU advh_scatter4GPU_nccl
 module mod_ndslfv_monoadv_gpu
    use const, only: RTYPE
    use cudafor
@@ -140,14 +142,23 @@ contains
          dxf = two_pi/nx
          hfdxf = 0.5*dxf
          sc_advy = gglati(my*2 + 1) - gglati(1)
+
+         !! !$acc enter data &
+         !! !$acc& copyin(&
+         !! !$acc& nx,my,lev,ncld,nxp,nsizex,batch_size, &
+         !! !$acc& gglati(:my*2+1), fa1(:my*2), fa2(:my*2), &
+         !! !$acc& fa3(:my*2), fa4(:my*2), &
+         !! !$acc& cosl(:my), &
+         !! !$acc& jlist2_2d(:nsizex,:nx), nxjlen_all(:nsizex,:nx), &
+         !! !$acc& nxdef(:my), imflst(:my), &
+         !! !$acc& nydef_loc(:nx), &
+         !! !$acc& pi, two_pi, dxf, hfdxf, sc_advy) &
+         !! !$acc& create(vvlat(:my*2,:nx/2,:lev))
+
          !$acc enter data &
          !$acc& copyin(&
-         !$acc& nx,my,lev,ncld,nxp,nsizex,batch_size, &
-         !$acc& gglati(:my*2+1), fa1(:my*2), fa2(:my*2), &
-         !$acc& fa3(:my*2), fa4(:my*2), &
-         !$acc& cosl(:my), &
-         !$acc& jlist2_2d(:nsizex,:nx), nxjlen_all(:nsizex,:nx), &
-         !$acc& nxdef(:my), imflst(:my), &
+         !$acc& batch_size, &
+         !$acc& imflst(:my), &
          !$acc& nydef_loc(:nx), &
          !$acc& pi, two_pi, dxf, hfdxf, sc_advy) &
          !$acc& create(vvlat(:my*2,:nx/2,:lev))
@@ -157,38 +168,29 @@ contains
    end subroutine allocate_ndslfv_array_gpu
    ! ============================================================
    subroutine deallocate_ndslfv_array_gpu
-      use param
-      use index, only: nsizex, jlist2_2d, nxjlen_all, nxdef
-      use grid, only: nxp, ndslhvar, &
-                      gglati, fa1, fa2, fa3, fa4
-      use rank, only: myrank, nsize
-      use const, only: cosl
+      use rank, only: myrank
       implicit none
 
-      deallocate (cudaST, cudaEV)
-      deallocate (nydef_loc, imflst, wndmdf_all, wndmdf)
-      deallocate (umwrk, vmwrk, advhwrk)
-
       if (myrank < use_gpu_num) then
-         deallocate (vvlat, qq_3df)
-
          call acc_unmap_data(umwrk)
          call acc_unmap_data(vmwrk)
-         deallocate (umwrk_d, vmwrk_d, qpwrk_d, ainp_d, aout_d)
 
          !$acc exit data &
          !$acc& delete( &
-         !$acc& nx,my,lev,ncld,nxp,nsizex,batch_size, &
-         !$acc& gglati, fa1, fa2, &
-         !$acc& fa3, fa4, &
-         !$acc& cosl, &
-         !$acc& jlist2_2d, nxjlen_all, &
-         !$acc& nxdef, imflst, &
+         !$acc& batch_size, &
+         !$acc& imflst, &
          !$acc& nydef_loc, &
          !$acc& pi, two_pi, dxf, hfdxf, sc_advy, &
          !$acc& vvlat &
          !$acc& )
+
+         deallocate (umwrk_d, vmwrk_d, qpwrk_d, ainp_d, aout_d)
+         deallocate (vvlat, qq_3df)
       end if
+
+      deallocate (cudaST, cudaEV)
+      deallocate (nydef_loc, imflst, wndmdf_all, wndmdf)
+      deallocate (umwrk, vmwrk, advhwrk)
 
    end subroutine deallocate_ndslfv_array_gpu
    ! ============================================================
@@ -228,14 +230,14 @@ contains
       firstcomp = .true.
       ! ----------------------------------------
       !$acc host_data use_device(um, vm, ut, vt, tt, qm)
-      call advh_gather4GPU_dev(umwrk_d, um, 1, 0)
-      call advh_gather4GPU_dev(vmwrk_d, vm, 1, 0)
+      call advh_gather4GPU(umwrk_d, um, 1, 0)
+      call advh_gather4GPU(vmwrk_d, vm, 1, 0)
       ! u v t at n-1
-      call advh_gather4GPU_dev(ainp_d(1, 1, 1), ut, 1, 0)
-      call advh_gather4GPU_dev(ainp_d(1, 1, 2), vt, 1, 0)
-      call advh_gather4GPU_dev(ainp_d(1, 1, 3), tt, 1, 0)
+      call advh_gather4GPU(ainp_d(1, 1, 1), ut, 1, 0)
+      call advh_gather4GPU(ainp_d(1, 1, 2), vt, 1, 0)
+      call advh_gather4GPU(ainp_d(1, 1, 3), tt, 1, 0)
       ! rq at n-1
-      call advh_gather4GPU_dev(qpwrk_d, qm, ncld, 0)
+      call advh_gather4GPU(qpwrk_d, qm, ncld, 0)
       !$acc end host_data
       ! ----------------------------------------
       if (myrank .eq. 0) then
@@ -351,11 +353,11 @@ contains
       ! ----------------------------------------
       ! u v t at n
       !$acc host_data use_device(ut, vt, tt, qt)
-      call advh_scatter4GPU_dev(ut, aout_d(1, 1, 1), 1, 0)
-      call advh_scatter4GPU_dev(vt, aout_d(1, 1, 2), 1, 0)
-      call advh_scatter4GPU_dev(tt, aout_d(1, 1, 3), 1, 0)
+      call advh_scatter4GPU(ut, aout_d(1, 1, 1), 1, 0)
+      call advh_scatter4GPU(vt, aout_d(1, 1, 2), 1, 0)
+      call advh_scatter4GPU(tt, aout_d(1, 1, 3), 1, 0)
       ! rq at n
-      call advh_scatter4GPU_dev(qt, qpwrk_d, ncld, 0)
+      call advh_scatter4GPU(qt, qpwrk_d, ncld, 0)
       !$acc end host_data
       ! ----------------------------------------
 
@@ -399,12 +401,12 @@ contains
       firstcomp = .true.
       ! ----------------------------------------
       !$acc host_data use_device(um, vm, ut, vt, tt)
-      call advh_gather4GPU_dev(umwrk_d, um, 1, 0)
-      call advh_gather4GPU_dev(vmwrk_d, vm, 1, 0)
+      call advh_gather4GPU(umwrk_d, um, 1, 0)
+      call advh_gather4GPU(vmwrk_d, vm, 1, 0)
       ! u v t at n-1
-      call advh_gather4GPU_dev(ainp_d(1, 1, 1), ut, 1, 0)
-      call advh_gather4GPU_dev(ainp_d(1, 1, 2), vt, 1, 0)
-      call advh_gather4GPU_dev(ainp_d(1, 1, 3), tt, 1, 0)
+      call advh_gather4GPU(ainp_d(1, 1, 1), ut, 1, 0)
+      call advh_gather4GPU(ainp_d(1, 1, 2), vt, 1, 0)
+      call advh_gather4GPU(ainp_d(1, 1, 3), tt, 1, 0)
       !$acc end host_data
       ! ----------------------------------------
       if (myrank .eq. 0) then
@@ -478,9 +480,9 @@ contains
       ! ----------------------------------------
       ! u v t at n
       !$acc host_data use_device(vdzonl, vdmerd, ddtemp)
-      call advh_scatter4GPU_dev(vdzonl, aout_d(1, 1, 1), 1, 0)
-      call advh_scatter4GPU_dev(vdmerd, aout_d(1, 1, 2), 1, 0)
-      call advh_scatter4GPU_dev(ddtemp, aout_d(1, 1, 3), 1, 0)
+      call advh_scatter4GPU(vdzonl, aout_d(1, 1, 1), 1, 0)
+      call advh_scatter4GPU(vdmerd, aout_d(1, 1, 2), 1, 0)
+      call advh_scatter4GPU(ddtemp, aout_d(1, 1, 3), 1, 0)
       !$acc end host_data
       ! ----------------------------------------
 
@@ -726,9 +728,9 @@ contains
    ! ============================================================
    subroutine ndslfv_update_gpu(lonsperlat, vdzonl, vdmerd, &
                                 vdzonlr, vdmerdr, deltim, forward)
-
-      !  update all horizontal components into momentum eqs
-      !  for Semi-Lagrangian vertical advection
+!  Present on device: lonsperlat, vdzonl, vdmerd, vdzonlr, vdmerdr, jlist1
+!  update all horizontal components into momentum eqs
+!  for Semi-Lagrangian vertical advection
 
       use index
       use param, only: nx, my, lev, my_max
@@ -736,7 +738,6 @@ contains
       implicit none
       integer, intent(in):: lonsperlat(my)
       real(kind=RTYPE), intent(in):: deltim
-
       real(kind=RTYPE) vdmerd(nxp, lev, my_max), vdzonl(nxp, lev, my_max)
       real(kind=RTYPE) vdmerdr(nxp, lev, my_max), vdzonlr(nxp, lev, my_max)
       integer i, k, j, lat, lons_lat
@@ -748,20 +749,20 @@ contains
       else
          dt2 = 2.*deltim
       end if
-      !$acc parallel loop collapse(2) async(async_id) &
-      !$acc& copyin(dt2) &
-      !$acc& present_or_copyin(jlist1, lonsperlat) &
-      !$acc& private(lat,lons_lat)
+      !$acc parallel loop collapse(3) async(async_id) &
+      !$acc& present(jlist1, lonsperlat, vdzonl, vdzonlr, vdmerd, vdmerdr) &
+      !$acc& private(lat, lons_lat)
       do j = 1, jlistnum
-         do k = 1, lev
-            lat = jlist1(j)
-            lons_lat = lonsperlat(lat)
-            !$acc loop vector
-            do i = 1, lons_lat
-               vdzonl(i, k, j) = vdzonlr(i, k, j)*dt2 + vdzonl(i, k, j)
-               vdmerd(i, k, j) = vdmerdr(i, k, j)*dt2 + vdmerd(i, k, j)
-            end do
-         end do
+      do k = 1, lev
+      do i = 1, nxp
+         lat = jlist1(j)
+         lons_lat = lonsperlat(lat)
+         if (i .le. lons_lat) then
+            vdzonl(i, k, j) = vdzonlr(i, k, j)*dt2 + vdzonl(i, k, j)
+            vdmerd(i, k, j) = vdmerdr(i, k, j)*dt2 + vdmerd(i, k, j)
+         end if
+      end do
+      end do
       end do
       !$acc end parallel loop
       return
@@ -2394,7 +2395,6 @@ contains
          end if
       end do
       !$acc end parallel
-      !$acc wait(async_id)
       if (istat .ne. 0) then
          print *, "istat=", istat
          call exit(2)
@@ -3272,7 +3272,6 @@ contains
          check_max = max(check_max, loc_max)
       end do
       !$acc end kernels
-      !$acc wait(async_id)
 
       if (check_max .ge. check_point) then
          nstep = int(check_max/safe_step) + 1

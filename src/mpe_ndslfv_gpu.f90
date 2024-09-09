@@ -1,3 +1,4 @@
+#define NCCLCHECK(ierr) call nccl_check_helper(ierr, __FILE__, __LINE__)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 subroutine mpe_nxp2full(aout, ainp, nv)
@@ -315,6 +316,41 @@ subroutine advh_gather4GPU_dev(aout, ainp, nv, id)
    return
 end subroutine advh_gather4GPU_dev
 ! ============================================================
+subroutine advh_gather4GPU_nccl(aout, ainp, nv, id)
+  use const, only: RTYPE, MPI_RTYPE
+  use param, only: nx, my, lev, my_max
+  use index, only: nxp
+  use rank, only: nsize, nccl_comm_gfs, myrank
+  use cudafor
+  use openacc
+  use nccl
+  implicit none
+  integer, intent(in):: nv, id
+  real(kind=RTYPE), device:: aout(nxp*lev*nv*my_max,nsize)
+  real(kind=RTYPE), device:: ainp(nxp*lev*nv*my_max)
+  integer pts, i
+  integer(kind=cuda_stream_kind) :: stream
+  integer async_id
+  pts = nxp*lev*nv*my_max
+
+  async_id = 1
+  stream = acc_get_cuda_stream(async_id)
+  NCCLCHECK(ncclGroupStart())
+
+  NCCLCHECK(ncclSend(ainp, pts, ncclFloat64, id, nccl_comm_gfs, stream))
+
+  if (myrank.eq.0) then
+     do i = 1, nsize
+        NCCLCHECK(ncclRecv(aout(1, i), pts, ncclFloat64, i-1, nccl_comm_gfs, stream))
+     end do
+  end if
+
+  NCCLCHECK(ncclGroupEnd())
+  !$acc wait(async_id)
+
+  return
+end subroutine advh_gather4GPU_nccl
+! ============================================================
 subroutine advh_gather4GPU_q(aout, ainp, nv, ncld, myrank)
    use const, only: RTYPE, MPI_RTYPE
    use param, only: nx, my, lev, my_max
@@ -376,9 +412,43 @@ subroutine advh_scatter4GPU_dev(aout, ainp, nv, id)
                     id, MPI_COMM_gfs, IERR)
 
    return
-end subroutine advh_scatter4GPU_dev
-! ============================================================
-subroutine advh_scatter4GPU_q(aout, ainp, nv, ncld, myrank)
+ end subroutine advh_scatter4GPU_dev
+ ! ============================================================
+ subroutine advh_scatter4GPU_nccl(aout, ainp, nv, id)
+   use const, only: RTYPE, MPI_RTYPE
+   use param, only: nx, my, lev, my_max
+   use index, only: nxp
+   use rank, only: nsize, nccl_comm_gfs, myrank
+   use cudafor
+   use openacc
+   use nccl
+   implicit none
+   integer, intent(in):: nv, id
+   real(kind=RTYPE), device:: aout(nxp*lev*nv*my_max)
+   real(kind=RTYPE), device:: ainp(nxp*lev*nv*my_max,nsize)
+   integer i, pts
+   integer(kind=cuda_stream_kind) :: stream
+   integer async_id
+
+   pts = nxp*lev*nv*my_max
+   async_id = 1
+   stream = acc_get_cuda_stream(async_id)
+   NCCLCHECK(ncclGroupStart())
+
+   if (myrank.eq.0) then
+      do i = 1, nsize
+         NCCLCHECK(ncclSend(ainp(1,i), pts, ncclFloat64, i-1, nccl_comm_gfs, stream))
+
+      end do
+   end if
+   NCCLCHECK(ncclRecv(aout, pts, ncclFloat64, id, nccl_comm_gfs, stream))
+
+   NCCLCHECK(ncclGroupEnd())
+   !$acc wait(async_id)
+   return
+ end subroutine advh_scatter4GPU_nccl
+ ! ============================================================
+ subroutine advh_scatter4GPU_q(aout, ainp, nv, ncld, myrank)
    use const, only: RTYPE, MPI_RTYPE
    use param, only: nx, my, lev, my_max
    use index, only: nxp

@@ -1,5 +1,5 @@
 subroutine ujoinsr_gpu(cc, r1, r2, r3, r4, nx, my_max, lev, jlistnum, num, ncld)
-
+   ! Present on device: cc, r1, r2, r3, r4, jlist1
    use const, only: RTYPE
 
    implicit none
@@ -57,7 +57,8 @@ subroutine ujoin1sr_gpu(cc, r1, nx, my_max, lev, jnum, ncld)
    end do
    end do
 
-   call mpe2d_transpose_nx_levp_gpu(bufA, bufB, nxp, nx, lev, levp, ncld, myf, my_max, jlistnum, jlen, nsizex, row_comm)
+   ! Present on device: jlist1, bufA, bufB
+   call mpe2d_transpose_nx_levp_gpu(bufA, bufB, nxp, nx, lev, levp, ncld, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
 
    !$acc parallel loop gang collapse(2) async(async_id)
    do jj = 1, jlistnum
@@ -86,9 +87,9 @@ subroutine ujoin2sr_gpu(cc, r1, r2, nx, my_max, lev, jnum, ncld)
    use cudafor
 
    implicit none
-   real(kind=RTYPE) cc(nx + 2, levp, 1 + ncld, my_max) ! Present on device
-   real(kind=RTYPE) r1(nxp, lev, my_max) ! Present on device
-   real(kind=RTYPE) r2(nxp, lev*ncld, my_max) ! Present on device
+   real(kind=RTYPE) cc(nx + 2, levp, 1 + ncld, my_max)
+   real(kind=RTYPE) r1(nxp, lev, my_max)
+   real(kind=RTYPE) r2(nxp, lev*ncld, my_max)
    real(kind=RTYPE) bufA(nx, levp, 1 + ncld, my_max)
    real(kind=RTYPE) bufB(nxp, lev, 1 + ncld, my_max)
    integer nx, my_max, lev, jnum, ncld
@@ -119,7 +120,8 @@ subroutine ujoin2sr_gpu(cc, r1, r2, nx, my_max, lev, jnum, ncld)
    end do
    end do
 
-   call mpe2d_transpose_nx_levp_gpu(bufA, bufB, nxp, nx, lev, levp, 1 + ncld, myf, my_max, jlistnum, jlen, nsizex, row_comm)
+   ! Present on device: bufA, bufB, jlist1
+   call mpe2d_transpose_nx_levp_gpu(bufA, bufB, nxp, nx, lev, levp, 1 + ncld, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
 
    !$acc parallel loop collapse(3) async(async_id)
    do jj = 1, jlistnum
@@ -190,7 +192,7 @@ subroutine ujoin3sr_gpu(cc, r1, r2, r3, nx, my_max, lev, jnum, ncld)
    end do
    end do
 
-   call mpe2d_transpose_nx_levp_gpu(bufA, bufB, nxp, nx, lev, levp, 2 + ncld, myf, my_max, jlistnum, jlen, nsizex, row_comm)
+   call mpe2d_transpose_nx_levp_gpu(bufA, bufB, nxp, nx, lev, levp, 2 + ncld, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
 
    !$acc parallel loop collapse(3) async(async_id)
    do jj = 1, jlistnum
@@ -252,7 +254,7 @@ subroutine ujoin4sr_gpu(cc, r1, r2, r3, r4, nx, my_max, lev, jnum, ncld)
    end do
    end do
 
-   call mpe2d_transpose_nx_levp_gpu(bufA, bufB, nxp, nx, lev, levp, 3 + ncld, myf, my_max, jlistnum, jlen, nsizex, row_comm)
+   call mpe2d_transpose_nx_levp_gpu(bufA, bufB, nxp, nx, lev, levp, 3 + ncld, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
 
    !$acc parallel loop collapse(3) async(async_id)
    do jj = 1, jlistnum
