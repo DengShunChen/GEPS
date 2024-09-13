@@ -25,9 +25,9 @@
       use fftcom
       use mod_typhoon
       use mod_sit_control,       ONLY:sit_nml
-#ifdef USE_CUDA
-      use mod_ndslfv_monoadv_gpu, only: allocate_ndslfv_array_gpu
-#endif
+! #ifdef USE_CUDA
+!       use mod_ndslfv_monoadv_gpu, only: allocate_ndslfv_array_gpu
+! #endif
 !-----------------------------------------------------------------------
       use radn
       use noah
@@ -54,7 +54,8 @@
 
       integer i,j,k,n,jj,nn,istat,istat1,istat2,istat3,irstat,ii,Wntyph,nc,Wltyph
       integer ix,jy,ip,istat_r,istat_w,ierror,ltyph,io
-      integer ifromtau,itotau,itau,itaui,l,nxj,m,mf,my2
+      integer ifromtau,itotau,itau,itaui,l,nxj,m,mf,my2,mf1,mf2,m2,m1len,m2len
+      integer jlistnum_fj, llistnum_fj, j_str, m_str, ind
       integer tflag,Wflag,ntrac_req
 
       real    pi,rm,rl,rlm,one,onem,r2d, pnm_max,pnmcut,sumreduce
@@ -88,7 +89,7 @@
                       , weightSIT,dSITdt_intv,mwhd,doclx,doslavepp      &
                       , outdms,outgrb2,alpha,two_loop,ttl,tfilt,factop  &
                       , mass_dp,dpprt,outfv3,itter,vd,dorst
-!                       
+!
       real    si(lev+1)
       logical flag
       character*10 fulldtg,Wfulldtg
@@ -332,6 +333,8 @@
       weight(my+1-j)= weight(j)
       onocos(j)     = 1.0/(1.0-sinl(j)*sinl(j))
       onocos(my+1-j)= onocos(j)
+      coslr(j)      = 1./onocos(j)
+      coslr(my+1-j) = coslr(j)
       cosl(j)       = 1.0/sqrt(onocos(j))
       cosl(my+1-j)  = cosl(j)
   180 continue
@@ -394,9 +397,9 @@
 
 !for 2dMPI
       call make_list_nx  ! making nx index for reduce/non_reduce
-#ifdef USE_CUDA
-      call allocate_ndslfv_array_gpu
-#endif
+! #ifdef USE_CUDA
+!       call allocate_ndslfv_array_gpu
+! #endif
 !
       sumreduce=0.0
       do j=1,my
@@ -443,6 +446,55 @@
 !  define associated legendre polynomials and their derivatives
 !
       call lgndr (my2,jtrun,jtmax,sinl,poly,dpoly)
+#ifdef USE_CUDA
+      tcolt_jlist = 0
+      do m = 1, mlistnum
+         mf = mlist(m)
+         do j = 1, my/2
+            if (mf .le. mtrundef(j)) then
+               tcolt_jlist(1, m) = tcolt_jlist(1, m) + 1
+            end if
+         end do
+         do j = 1, my/2
+            if (mf .le. mtrundef(j)) then
+               tcolt_jlist(2, m) = j
+               exit
+            end if
+         end do
+      end do
+
+      poly_mlist(1) = 1
+      do m = 1, mlistnum-1
+         mf = mlist(m)
+         llistnum_fj = jtrun - mf + 1
+         poly_mlist(m+1) = llistnum_fj*my + poly_mlist(m)
+      end do
+
+      polyf = 0.
+      dpolyf = 0.
+      do m = 1, mlistnum
+         m_str = poly_mlist(m)
+         jlistnum_fj = tcolt_jlist(1, m)
+         j_str = tcolt_jlist(2, m)
+
+         mf = mlist(m)
+         llistnum_fj = jtrun - mf + 1
+         do j = 1, jlistnum_fj
+            do l = mf, jtrun
+               ind = (l - mf + 1) + (j - 1)*llistnum_fj + m_str - 1
+               jj = j_str + j -1
+               polyf(ind) = poly(l, jj, m)
+               dpolyf(ind) = dpoly(l, jj, m)
+
+               ind = ind + jlistnum_fj*llistnum_fj
+               jj = my2 - j + 1
+               polyf(ind) = (-1)**(l - mf)*poly(l, jj, m)
+               dpolyf(ind) = (-1)**(l - mf + 1)*dpoly(l, jj, m)
+            end do
+
+         end do
+      end do
+#endif
 !
 !  specify the dms read-in and write-out only for 34 keys
 !
