@@ -88,7 +88,7 @@ subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
       hfilt = hfilt/dta
    end if
 
-   !$acc parallel loop gang async(async_id) private(KL, kfac, dect, dec, facd, facv, fact)
+   !$acc parallel loop gang private(KL, kfac, dect, dec, facd, facv, fact) async(async_id)
    do k = 1, levp
       KL = Llist(k)
       kfac = min(coefu*max(float(hdk2(1) - KL), 0.), factop)
@@ -247,20 +247,22 @@ subroutine whdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
       facd = max(1., kfac)*amp
       facv = max(1., kfac)*amp
       fact = max(1., kfac)*amp
-      !$acc loop worker private(mf)
+      !$acc loop worker private(mf, c1, c2, c3)
       do m = 1, mlistnum
          mf = mlist(m)
-         !$acc loop vector private(c1, c2, c3)
-         do n = mf, jtrun
-            c1 = 1.+dta*facv*hfilt*eps4(n, m)**powd
-            c2 = 1.+dta*facd*hfilt*eps4(n, m)**powd
-            c3 = 1.+dta*fact*hfilt*eps4(n, m)**powd
-            vornow(k, 1, n, m) = vornow(k, 1, n, m)/c1
-            vornow(k, 2, n, m) = vornow(k, 2, n, m)/c1
-            divnow(k, 1, n, m) = divnow(k, 1, n, m)/c2
-            divnow(k, 2, n, m) = divnow(k, 2, n, m)/c2
-            temnow(k, 1, n, m) = (temnow(k, 1, n, m) + (c3 - 1.)*trefs(k, 1, n, m))/c3
-            temnow(k, 2, n, m) = (temnow(k, 2, n, m) + (c3 - 1.)*trefs(k, 2, n, m))/c3
+         !$acc loop vector
+         do n = 1, jtrun
+            if (n .ge. mf) then
+               c1 = 1.+dta*facv*hfilt*eps4(n, m)**powd
+               c2 = 1.+dta*facd*hfilt*eps4(n, m)**powd
+               c3 = 1.+dta*fact*hfilt*eps4(n, m)**powd
+               vornow(k, 1, n, m) = vornow(k, 1, n, m)/c1
+               vornow(k, 2, n, m) = vornow(k, 2, n, m)/c1
+               divnow(k, 1, n, m) = divnow(k, 1, n, m)/c2
+               divnow(k, 2, n, m) = divnow(k, 2, n, m)/c2
+               temnow(k, 1, n, m) = (temnow(k, 1, n, m) + (c3 - 1.)*trefs(k, 1, n, m))/c3
+               temnow(k, 2, n, m) = (temnow(k, 2, n, m) + (c3 - 1.)*trefs(k, 2, n, m))/c3
+            end if
          end do
       end do
    end do

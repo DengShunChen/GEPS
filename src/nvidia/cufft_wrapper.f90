@@ -101,6 +101,15 @@ subroutine fft_set_workspace(plan, workspace)
 end subroutine fft_set_workspace
 
 subroutine fft_exec_async(a, inc, jump, n, m, isign, plan, pa, async_id)
+  ! ------------------------------------------------------------
+  ! The input and output varialbes depend on value of isign
+  ! isign = 1:
+  !   - input: pa
+  !   - output: a
+  ! ising = -1:
+  !   - input: a
+  !   - output: a
+  ! ------------------------------------------------------------
    use cudafor
    use cufft
    use openacc
@@ -121,12 +130,13 @@ subroutine fft_exec_async(a, inc, jump, n, m, isign, plan, pa, async_id)
 
       if (isign .eq. 1) then
 
-         !$acc parallel loop collapse(2) async(async_id)
-         do j = 1, m
-         do i = 1, n + 2
-            pa(i, j) = a(i, j)
-         end do
-         end do
+         !$acc update device(pa) async(async_id)
+         ! !$acc parallel loop collapse(2) async(async_id)
+         ! do j = 1, m
+         ! do i = 1, n + 2
+         !    pa(i, j) = a(i, j)
+         ! end do
+         ! end do
 
          !$acc host_data use_device(pa, a)
          CUFFTCHECK(cufftExecZ2D(plan, pa, a))
@@ -402,6 +412,15 @@ end subroutine rfftmlt_loop_identical
 
 subroutine rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, jump, m, isign, graph)
    ! Present on device: cc, gwk1, jlist1, nxdef
+  ! ------------------------------------------------------------
+  ! The input and output varialbes depend on value of isign
+  ! isign = 1:
+  !   - input: gwk1
+  !   - output: cc
+  ! ising = -1:
+  !   - input: cc
+  !   - output: cc
+  ! ------------------------------------------------------------
    use cudafor
    use cufft
    use openacc
@@ -468,17 +487,17 @@ subroutine rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nx
 
    if (mod(jump, 2) .eq. 0) then
       if (isign .eq. 1) then
-         !$acc parallel loop gang collapse(2) private(j, nxj) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, m
-               j = jlist1(jj)
-               nxj = nxdef(j)
-               !$acc loop vector
-               do i = 1, nxj + 2
-                  gwk1(i, k, jj) = cc(i, k, jj)
-               end do
-            end do
-         end do
+         ! !$acc parallel loop gang collapse(2) private(j, nxj) async(async_id)
+         ! do jj = 1, jlistnum
+         !    do k = 1, m
+         !       j = jlist1(jj)
+         !       nxj = nxdef(j)
+         !       !$acc loop vector
+         !       do i = 1, nxj + 2
+         !          gwk1(i, k, jj) = cc(i, k, jj)
+         !       end do
+         !    end do
+         ! end do
          CUDACHECK(cudaEventRecord(spread_event, stream))
          do jj = 1, jlistnum
             plan_id = base_plan + jj - 1
