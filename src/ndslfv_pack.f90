@@ -1383,6 +1383,7 @@
       real(kind=RTYPE) th,th2,th3,qqh,thp,thm,thc
       real(kind=RTYPE) dql(nv),dqh(nv)
       real(kind=RTYPE) dpp,dqq,c1,c2,cc,r3,r6
+      real(kind=RTYPE) rdthtl
 !
 !     cyclic_length = pp(lonp+1) - pp(1)
       cyclic_length = sc
@@ -1586,8 +1587,11 @@
           dqh(n)=thp*qpi(kkh,n)+thm*qmi(kkh,n)+thc*mass(kkh,n)
         enddo
         if( kkh.eq.kkl ) then
+          rdthtl = th - tl
+          if ( rdthtl.ne.0.0 ) rdthtl = 1. / rdthtl
           do n=1,nv
-            qn(i,n) = (dqh(n)-dql(n))/(th-tl)
+!hmhj            qn(i,n) = (dqh(n)-dql(n))/(th-tl)
+            qn(i,n) = (dqh(n)-dql(n))*rdthtl
           enddo
         else if( kkh.gt.kkl ) then
           dpp  = (1.-tl)*hh(kkl) + th*hh(kkh)
@@ -1657,7 +1661,7 @@
       real(kind=RTYPE)      dqi,dqimax,dqimin,dqmono(levs,nvars)
       real(kind=RTYPE)      tl,tl2,tl3,tlp,tlm,tlc
       real(kind=RTYPE)      th,th2,th3,thp,thm,thc
-      real(kind=RTYPE)      dpp,dqq,c1,c2
+      real(kind=RTYPE)      dpp,dqq,c1,c2,rdthtl
       integer   i,k, kl, kh, kk, kkl, kkh,n
       integer, parameter :: mono=1
 !
@@ -1779,8 +1783,11 @@
         enddo
 ! mass interpolate
         if( kkh.eq.kkl ) then
+          rdthtl = th - tl
+          if ( rdthtl.ne.0.0 ) rdthtl = 1. / rdthtl
           do n=1,nvars
-            qn(k,n) = (dqh(n)-dql(n))/(th-tl)
+!hmhj            qn(k,n) = (dqh(n)-dql(n))/(th-tl)
+            qn(k,n) = (dqh(n)-dql(n))*rdthtl
           enddo
         else if( kkh.gt.kkl ) then
           dpp  = (1.-tl)*hh(kkl) + th*hh(kkh)
@@ -2048,6 +2055,7 @@
       real      th,th2,th3,qqh,thp,thm,thc
       real      dql(nv),dqh(nv)
       real      dpp,dqq,c1,c2,cc,r3,r6
+      real      rdthtl
       integer   i,k, kl, kh, kk, kkl, kkh, n
       integer, parameter :: mono=1
 !
@@ -2253,8 +2261,11 @@
           dqh(n)=thp*qpi(kkh,n)+thm*qmi(kkh,n)+thc*mass(kkh,n)
         enddo
         if( kkh.eq.kkl ) then
+          rdthtl = th - tl
+          if ( rdthtl.ne.0.0 ) rdthtl = 1. / rdthtl
           do n=1,nv
-            qn(i,n) = (dqh(n)-dql(n))/(th-tl)
+!            qn(i,n) = (dqh(n)-dql(n))/(th-tl)
+            qn(i,n) = (dqh(n)-dql(n))*rdthtl
           enddo
         else if( kkh.gt.kkl ) then
           dpp  = (1.-tl)*hh(kkl) + th*hh(kkh)

@@ -620,6 +620,7 @@ subroutine cyclic_cell_ppm_intp_two_loops_gpu(outer_index, outer_size, inner_siz
    real :: dql_t, dqh_t
    real dpp, dqq, c1, c2, cc, r3, r6
    real rt, dqmono_pre, dqmono_cur, mass_ppre, mass_pre, mass_t, mass_nxt, hh1, hh2
+   real rdthtl
    integer i, k, kl, kh, kk, kkl, kkh, n
    integer, parameter :: mono = 1
 
@@ -945,7 +946,10 @@ subroutine cyclic_cell_ppm_intp_two_loops_gpu(outer_index, outer_size, inner_siz
                   dql_t = dql_array(i, n, inner, outer)
                   dqh_t = dql_array(i + 1, n, inner, outer)
                   if (kkh .eq. kkl) then
-                     qn_t = (dqh_t - dql_t)/(th - tl)
+                     rdthtl = th - tl
+                     if ( rdthtl .ne. 0. ) rdthtl = 1. / rdthtl
+!hmhj                     qn_t = (dqh_t - dql_t)/(th - tl)
+                     qn_t = (dqh_t - dql_t) * rdthtl
                   else
                      dqq = (qq(mod(kkl - 1, imp) + 1, n, inner, outer) - dql_t)*hh(kkl, inner, outer) + dqh_t*hh(kkh, inner, outer)
                      !$acc loop seq
