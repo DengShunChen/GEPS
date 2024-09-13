@@ -4,7 +4,7 @@
     use mpi,   only : MPI_REAL4, MPI_REAL8
 
     implicit none
- 
+
     public
 
 !CWB2021 for single precison test
@@ -28,7 +28,7 @@
     character(len=KLENI):: keyi
     character(len=KLENI2):: ihdgi,ihdgi2
     character(len=12):: ihdgleni2
- 
+
 #ifdef O38K
     integer, parameter :: KLENO=38,KLENO2=28,cleno=17
     character(len=16):: ihdgleno1
@@ -39,20 +39,20 @@
     character(len=KLENO):: keyo
     character(len=KLENO2):: ihdgo,ihdgo2
     character(len=12):: ihdgleno2
- 
+
     real(kind=RTYPE), dimension(:)  , allocatable, save  :: aki,bki
     real(kind=RTYPE), dimension(:,:), allocatable, save  :: sigma,dsigma
- 
+
     integer, allocatable, save ::  mlsort(:,:)
     integer, allocatable, save ::  msort(:),lsort(:)
- 
+
     integer :: numout,ipadding,jm2,ksgeo,                     &
             ktpbl,ktshl,ktcup,julian,ldiag,idg,jdg,njump,  &
             nnmiit,nnmivm,itypbl,                          &
             nmgwor,nmgwcv,mtnvar,                          &
             ktrop,ncpu,nmcup,nmpbl,nmland,numreduce,nmshl, &
             nmmiph,itter
- 
+
     common/constI/                                         &
             numout,ipadding,jm2,ksgeo,                     &
             ktpbl,ktshl,ktcup,julian,ldiag,idg,jdg,njump,  &
@@ -60,16 +60,16 @@
             nmgwor,nmgwcv,mtnvar,                          &
             ktrop,ncpu,nmcup,nmpbl,nmland,numreduce,nmshl, &
             nmmiph,itter
- 
+
 !    real, dimension(:), allocatable, save  ::              &
 !         weight,sinl,cosl,cor,onocos
 !         tmean,spalm,eigval,pmcor,tmeans
- 
+
 !    real, dimension(:,:), allocatable, save  :: evecin,    &
 !         evectr,arrhyd,arsddt,tmcor
 
     real(kind=RTYPE), dimension(:), allocatable, save ::   &
-         weight,sinl,cosl,cor,onocos,                      &
+         weight,sinl,cosl,cor,onocos,coslr,                &
          tmean,spalm,eigval,pmcor,tmeans
     real(kind=RTYPE), dimension(:,:), allocatable, save :: &
          evecin,evectr,arrhyd,arsddt,tmcor
@@ -87,9 +87,9 @@
                          !default fsit<=0., turn on sit_vdiff every tau
     real dSITdt_intv    !interval of returning ave. dSITdt to dSST/dt
     real weightSIT      !the weighting of SIT tendency
-    real updatetg       !the time interval to update tg 
-          
- 
+    real updatetg       !the time interval to update tg
+
+
     common/constR/                                         &
          capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &
          ptop,ptmean,dt,tau,taui,taue,tauo,                &
@@ -114,7 +114,7 @@
 
     ! for wrestrt
     logical :: dorst =.false.
-         
+
     logical :: out_green,out_hp
 
     !for Semi-Lagrangain
@@ -155,7 +155,7 @@
     ! SKEB
     logical :: first_call
 
-    !for output 
+    !for output
     integer :: outgrb2    !output grib2 format
     integer :: outdms     !output dmskey
     logical :: outfv3     !output for fv3 at tau=6
@@ -190,10 +190,11 @@
     common/dmskey34/ggdef,gmdef,gsdef
 
     real(kind=RTYPE), dimension(:,:,:), allocatable, save  :: poly,dpoly
+    real, dimension(:), allocatable, save  :: polyf, dpolyf
     real(kind=RTYPE), dimension(:,:)  , allocatable, save  :: eps4,wdfac,wcfac
     real(kind=RTYPE), dimension(:)    , allocatable, save  :: cim,eps4L   ! for 2dMPI
 
-    contains 
+    contains
 
       subroutine allocate_const_array
         implicit none
@@ -206,6 +207,15 @@
             write(6,*) 'mod_const : allocate fail 1 '
             stop
         end if
+#ifdef USE_CUDA
+        allocate (polyf((jtrun+npey)*my/2*jtmax), &
+                  dpolyf((jtrun+npey)*my/2*jtmax),&
+                  stat=ierr)
+        if (ierr/= 0) then
+            write(6,*) 'mod_const : allocate fail 1.2 '
+            stop
+        end if
+#endif
 
         allocate (aki(lev+1),bki(lev+1),                         &
                   sigma(lev+1,2),dsigma(lev,2), stat= ierr)
@@ -222,7 +232,7 @@
         end if
 
         allocate (weight(my),sinl(my),cosl(my),           &
-        cor(my),onocos(my),                               &
+        cor(my),onocos(my),coslr(my),                     &
         tmean(lev),spalm(lev),eigval(lev),evecin(lev,lev),&
         evectr(lev,lev),arrhyd(lev,lev),arsddt(lev,lev),  &
         pmcor(lev),tmcor(lev,lev),tmeans(lev),            &
@@ -242,11 +252,11 @@
 
       subroutine deallocate_const_array
         implicit none
-     
+
         deallocate(poly,dpoly,eps4,wdfac,wcfac,cim)
         deallocate(aki,bki,sigma,dsigma)
         deallocate(mlsort,msort,lsort)
-        deallocate(weight,sinl,cosl,cor,onocos,          &
+        deallocate(weight,sinl,cosl,cor,onocos,coslr,&
                    tmean,spalm,eigval,pmcor,tmeans)
         deallocate(outdir)
       end subroutine
