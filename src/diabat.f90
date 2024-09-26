@@ -672,7 +672,9 @@
 ! (2)  tg replaced by climate sea surface temperature
 !---------------------------------------------------------------------
 !            if ( .not. do_sit )then
+#ifndef TIMCOMCPL
             if (ocean(i,jj)) tg(i,jj)=sstc(i,jj)
+#endif
 !            endif
 !---------------------------------------------------------------------
 ! (3)  set ice thickness => not for couple
