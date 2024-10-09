@@ -127,7 +127,10 @@ subroutine gfs_cpl_send2gocn(compid, u10m, v10m, t02m, q02m, &
 
 end subroutine gfs_cpl_send2gocn
 
-subroutine gfs_cpl_recv4gocn(compid, mask_lnd, tgfs, ssufs, ssvfs)
+!jwhwu 20241007
+!subroutine gfs_cpl_recv4gocn(compid, mask_lnd, tgfs, ssufs, ssvfs)
+subroutine gfs_cpl_recv4gocn(compid, mask_lnd, mask_ice, tgfs, ssufs, ssvfs)
+!jwhwu
   use param,        only: nx, my, my_max
   use index,        only: nxp, jlistnum, jlist1, &
                           nxdef_2d, nxjstart, lreduce, nxdef
@@ -140,7 +143,10 @@ subroutine gfs_cpl_recv4gocn(compid, mask_lnd, tgfs, ssufs, ssvfs)
   implicit none
 
   integer, intent(in) :: compid
-  logical, intent(inout) :: mask_lnd(nxp, my_max)
+!jwhwu 20241007
+! logical, intent(inout) :: mask_lnd(nxp, my_max)
+  logical, intent(inout) :: mask_lnd(nxp, my_max), mask_ice(nxp, my_max)
+!jwhwu
   real, intent(inout) :: tgfs(nxp, my_max), ssufs(nxp,my_max), ssvfs(nxp,my_max)
   real, dimension(nx, my) :: tg_glb, sst_glb, ssu_glb, ssv_glb
   real, dimension(nx, my_max) :: sst_nxj
@@ -219,7 +225,10 @@ subroutine gfs_cpl_recv4gocn(compid, mask_lnd, tgfs, ssufs, ssvfs)
 
       
     do i = 1, nxj
-      if(.not.mask_lnd(i,jj).and.sst_glb(ii,j).gt.271.0) then
+!jwhwu 20241007
+!     if(.not.mask_lnd(i,jj).and.sst_glb(ii,j).gt.271.0) then
+      if(.not.mask_lnd(i,jj).and. .not.mask_ice(i,jj)) then
+!jwhwu
         tgfs(i,jj)  = sst_glb(ii,j) 
         ssufs(i,jj) = ssu_glb(ii,j)
         ssvfs(i,jj) = ssv_glb(ii,j)

@@ -480,7 +480,7 @@
           end if   !end lopgsst
 !
 #ifdef TIMCOMCPL
-      call gfs_cpl_recv4gocn(compid, land, tg, ssu, ssv)
+      call gfs_cpl_recv4gocn(compid, land, ice, tg, ssu, ssv)
 !      if(myrank .eq. 0) then
 !        write(*,*) 'ssstg(max)=', maxval(tg)
 !        write(*,*) 'ssstg(min)=', minval(tg)
@@ -1966,7 +1966,7 @@
       if( dtaup .lt. dtx_tau ) then
         if(myrank .eq. 0) write(*,*) "TCo time to coupler", tau
 
-        call gfs_cpl_recv4gocn(compid, land, tg, ssu, ssv)
+        call gfs_cpl_recv4gocn(compid, land, ice, tg, ssu, ssv)
         u10m_cpl = u10m_cpl/dt_cpl
         v10m_cpl = v10m_cpl/dt_cpl
         t02m_cpl = t02m_cpl/dt_cpl
