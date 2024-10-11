@@ -334,7 +334,7 @@ subroutine mpe2d_unify_nx_gpu(work, a)
          j = jlist1(jj)
          ii = ii_array(i, jj) + 1
          nn = nxjlen_all(i, j)
-         work(ii:ii + nn - 1, jj) = b(1:nn, jj, 1)
+         work(ii:ii + nn - 1, jj) = b(1:nn, jj, i)
       end do
    end do
 
