@@ -322,6 +322,13 @@ CONTAINS
              preci3d, precs3d, precg3d, precr3d
 #endif
  
+  ! for the conversion of q :
+  real, dimension(its:ite,kts:kte,jts:jte) :: qtot
+
+  ! for sub-cycle time steps :
+  integer :: n, ntimes
+  real :: mp_time, dts
+
 !NUWRF BEGIN
 #if ( WRF_CHEM == 1)
 ! EMK 2011/08/25
@@ -428,14 +435,37 @@ CONTAINS
 ! JJS 20110525 ^^^^^
 #endif
 
-!c  set up constants used internally in GCE
+   ! convert specific values of q to mixing ratios :
+   qtot = 0.
+   do j = jts, jte
+   do i = its, ite
+   do k = kts, kte
+     qtot(i,k,j) = qv(i,k,j) + ql(i,k,j) + qr(i,k,j)             &
+                   + qi(i,k,j) + qs(i,k,j) + qg(i,k,j)
+     qv(i,k,j) = qv(i,k,j)/(1.-qtot(i,k,j))
+     ql(i,k,j) = ql(i,k,j)/(1.-qtot(i,k,j))
+     qr(i,k,j) = qr(i,k,j)/(1.-qtot(i,k,j))
+     qi(i,k,j) = qi(i,k,j)/(1.-qtot(i,k,j))
+     qs(i,k,j) = qs(i,k,j)/(1.-qtot(i,k,j))
+     qg(i,k,j) = qg(i,k,j)/(1.-qtot(i,k,j))
+   enddo
+   enddo
+   enddo
 
+   ! set up constants used internally in GCE
    call consat_s (ihail, itaobraun, improve)
-!NUWRF END
 
-! calculte fallflux and precipiation in MKS system
+   ! set sub-cycle time step :
+   mp_time = 300.                !standard sub-cycle time step
+   ntimes = 1                    !number of sub-cycles
+   ntimes = max (ntimes, int (dt_in / min(dt_in, mp_time)))
+   dts = dt_in / real (ntimes)   !real sub-cycle time step
 
-   call fall_flux(    dt_in, qv, qr, qi, qs, qg, p,           &
+   do n = 1, ntimes
+
+   ! calculte fallflux and precipiation in MKS system
+!   call fall_flux(    dt_in, qv, qr, qi, qs, qg, p,           &
+   call fall_flux(    dts, qv, qr, qi, qs, qg, p,             &
                       rho, th, pii, z, dz8w, ht, rainnc,      &
                       rainncv, grav,itimestep,                &
                       snownc, snowncv, sr,                    &
@@ -521,9 +551,10 @@ CONTAINS
 !!      print *,'no neg correction in mp at timestep=',itimestep
 !   endif ! iskip
 
-!c microphysics in GCE
 
-   call SATICEL_S( dt_in, IHAIL, itaobraun, ICE2, istatmin,      &
+   ! microphysics in GCE
+!   call SATICEL_S( dt_in, IHAIL, itaobraun, ICE2, istatmin,      &
+   call SATICEL_S( dts, IHAIL, itaobraun, ICE2, istatmin,        &
                    new_ice_sat, id, improve, xlat,               &
 !                   th, th_old, qv, ql, qr,                      &
                    th, qv, ql, qr,                               &
@@ -551,6 +582,21 @@ CONTAINS
 #endif
                    )
 !NUWRF END
+   enddo  !end of do n=1,ntimes
+
+   ! convert mixing values of q back to specific values :
+   do j = jts, jte
+   do i = its, ite
+   do k = kts, kte
+     qv(i,k,j) = qv(i,k,j)/(1.+qtot(i,k,j))
+     ql(i,k,j) = ql(i,k,j)/(1.+qtot(i,k,j))
+     qr(i,k,j) = qr(i,k,j)/(1.+qtot(i,k,j))
+     qi(i,k,j) = qi(i,k,j)/(1.+qtot(i,k,j))
+     qs(i,k,j) = qs(i,k,j)/(1.+qtot(i,k,j))
+     qg(i,k,j) = qg(i,k,j)/(1.+qtot(i,k,j))
+   enddo
+   enddo
+   enddo
 
   END SUBROUTINE gsfcgce_3ice_nuwrf
 

@@ -1017,11 +1017,6 @@
         rhowater = 1000.            !water density (kg/m^3), but not used
         rhosnow = 100.              !snow density (kg/m^3), but not used
 
-        mp_time = 300.              !standard sub-cycle time step
-        ntimes = 1                  !number of sub-cycles
-        ntimes = max (ntimes, int (dta / min(dta, mp_time)))
-        dts = dta / real (ntimes)   !real sub-cycle time step
-
         do k = 1, lev
           kc = lev - k + 1
           do i = 1, nxj
@@ -1038,34 +1033,9 @@
             th3d (i,k,1) = tt(i,kc)/pk(i,kc)                 !potential temperature (K)
             z3d  (i,k,1) = phi(i,kc)/con_g                   !layer geopotential height above sea level (m)
             dz3d (i,k,1) = (phii(i,k+1)-phii(i,k))/con_g     !layer thickness (m)
-
-            if ( convert_dry_q ) then
-              if ( q_remove_cond ) then
-                ! q convert to : hydrometeor mass / ( dry mass )
-                tem = qv3d(i,k,1) + qc3d(i,k,1) + qr3d(i,k,1) +         &
-                      qi3d(i,k,1) + qs3d(i,k,1) + qg3d(i,k,1)
-                if(nmmiph.eq.16) tem = tem + qh3d(i,k,1)
-              else
-                ! q convert to : hydrometeor mass / ( dry mass + condensates )
-                tem = qv3d(i,k,1)
-              endif
-              qv3d (i,k,1) = qv3d(i,k,1)/(1.-tem)
-              qc3d (i,k,1) = qc3d(i,k,1)/(1.-tem)
-              qr3d (i,k,1) = qr3d(i,k,1)/(1.-tem)
-              qi3d (i,k,1) = qi3d(i,k,1)/(1.-tem)
-              qs3d (i,k,1) = qs3d(i,k,1)/(1.-tem)
-              qg3d (i,k,1) = qg3d(i,k,1)/(1.-tem)
-              if(nmmiph.eq.16) qh3d (i,k,1) = qh3d(i,k,1)/(1.-tem)
-              ! dry air density : rho = 0.622*p/(Rd*T*(0.622+qv))
-              rho3d(i,k,1) = con_eps*p3d(i,k,1)/                        &
-                             (con_rd*tt(i,kc)*(con_eps+qv3d(i,k,1)))
-            else
-              ! moist air density : rho = p/(Rd*T*(1+0.608*qv))
-              rho3d(i,k,1) = p3d(i,k,1)/                                &
-                             (con_rd*tt(i,kc)*(1+con_fvirt*qv3d(i,k,1)))
-            endif
-
-            w3d(i,k,1) = -vvel(i,kc)*100./(rho3d(i,k,1)*con_g)  !(m/s)
+            rho3d(i,k,1) = p3d(i,k,1)/                                  &
+                           (con_rd*tt(i,kc)*(1+con_fvirt*qv3d(i,k,1)))  !air density (kg/m^3)
+            w3d  (i,k,1) = -vvel(i,kc)*100./(rho3d(i,k,1)*con_g)        !vertical velocity (m/s)
           enddo
         enddo
 
@@ -1078,18 +1048,13 @@
           endif
         enddo
 
-        do n = 1, ntimes
-
         if ( nmmiph .eq. 15 ) then 
           if ( nmgce3 .eq. 2 )                                          &
           call gsfcgce_3ice_nuwrf                                       &
                  ( th3d, qv3d, qc3d, qr3d, qi3d, qs3d,                  &
-!                   rho3d, pii3d, p3d, dta, z3d,                         &
-                   rho3d, pii3d, p3d, dts, z3d,                         &
+                   rho3d, pii3d, p3d, dta, z3d,                         &
                    ht, dz3d, con_g, w3d,                                &
-!                   rhowater, rhosnow,                                   &
                    itimestep, xlat, land2d,                             &
-!                   ids,ide, jds,jde, kds,kde,                           & ! domain dims
                    1, nx , 1, 1, 1, lev,                                & ! memory dims
                    1, nxj, 1, 1, 1, lev,                                & ! tile   dims
                    rainnc2d, rain2d,                                    &
@@ -1106,12 +1071,10 @@
           if ( nmgce3 .eq. 1 )                                          &
           call gsfcgce                                                  &
                  ( th3d, qv3d, qc3d, qr3d, qi3d, qs3d,                  &
-!                   rho3d, pii3d, p3d, dta, z3d,                         &
-                   rho3d, pii3d, p3d, dts, z3d,                         &
+                   rho3d, pii3d, p3d, dta, z3d,                         &
                    ht, dz3d, con_g,                                     &
                    rhowater, rhosnow,                                   &
                    itimestep,                                           &
-!                   ids,ide, jds,jde, kds,kde,                           & ! domain dims
                    1, nx , 1, 1, 1, lev,                                & ! memory dims
                    1, nxj, 1, 1, 1, lev,                                & ! tile   dims
                    rainnc2d, rain2d,                                    &
@@ -1129,9 +1092,8 @@
 !          if ( nmgce3 .eq. 3 )                                          &
 !          call gsfcgce_3ice_cwb                                         &
 !                 ( th3d, qv3d, qc3d, qr3d, qi3d, qs3d, qg3d,            &
-!                   rho3d, pii3d, p3d, dts, z3d,                         &
+!                   rho3d, pii3d, p3d, dta, z3d,                         &
 !                   ht, dz3d, itimestep,                                 &
-!!                   ids,ide, jds,jde, kds,kde,                           & ! domain dims
 !                   1, nx , 1, 1, 1, lev,                                & ! memory dims
 !                   1, nxj, 1, 1, 1, lev,                                & ! tile   dims
 !                   sr2d, rainnc2d, rain2d,                              &
@@ -1143,12 +1105,10 @@
         if ( nmmiph .eq. 16 )                                           &
           call gsfcgce_4ice_nuwrf                                       &
                  ( th3d, qv3d, qc3d, qr3d, qi3d, qs3d, qh3d, qg3d,      &
-!                   rho3d, pii3d, p3d, dta, z3d,                         &
-                   rho3d, pii3d, p3d, dts, z3d,                         &
+                   rho3d, pii3d, p3d, dta, z3d,                         &
                    ht, dz3d, con_g, w3d,                                &
                    rhowater, rhosnow,                                   &
                    itimestep, land2d, dx,                               &
-!                   ids,ide, jds,jde, kds,kde,                           & ! domain dims
                    1, nx , 1, 1, 1, lev,                                & ! memory dims
                    1, nxj, 1, 1, 1, lev,                                & ! tile   dims
                    rainnc2d, rain2d,                                    &
@@ -1165,68 +1125,9 @@
 #endif
                    .false. )
 
-        do i = 1, nxj
-          rlsp(i) = rlsp(i) + rain2d(i,1)  !total large scale precipitation (kg/m^2=mm)
-          sr(i)   = sr2d(i,1)
-
-          do k = 1, lev
-            kc = lev - k + 1
-            if ( convert_dry_q ) then
-              ! dry air density : rho = 0.622*p/(Rd*T*(0.622+qv))
-              rho3d(i,k,1) = con_eps*p3d(i,k,1)/(con_rd*                &
-                             th3d(i,k,1)*pii3d(i,k,1)*                  &
-                             (con_eps+qv3d(i,k,1)))
-            else
-              ! moist air density : rho = p/(Rd*T*(1+0.608*qv))
-              rho3d(i,k,1) = p3d(i,k,1)/(con_rd*                        &
-                             th3d(i,k,1)*pii3d(i,k,1)*                  &
-                            (1+con_fvirt*qv3d(i,k,1)))
-            endif
-            w3d(i,k,1) = -vvel(i,kc)*100./(rho3d(i,k,1)*con_g)  !(m/s)
-          enddo
-        enddo
-
-        rain2d = 0.
-        snow2d = 0.
-        graupel2d = 0.
-        rainnc2d = 0.
-        snownc2d = 0.
-        graupelnc2d = 0.
-        sr2d = 0.
-#ifdef EXT_DIAG
-        preci3d = 0.
-        precs3d = 0.
-        precg3d = 0.
-        precr3d = 0.
-        prech3d = 0.
-#endif
-        if ( nmmiph .eq. 16 ) then
-          hail2d = 0.
-          hailnc2d = 0.
-        endif
-
-        enddo  !end of do n=1,ntimes
-
         do k = 1, lev
           kc = lev - k + 1
           do i = 1, nxj
-            if ( convert_dry_q ) then
-              if ( q_remove_cond ) then
-                tem = qv3d(i,kc,1) + qc3d(i,kc,1) + qr3d(i,kc,1) +      &
-                      qi3d(i,kc,1) + qs3d(i,kc,1) + qg3d(i,kc,1)
-                if(nmmiph.eq.16) tem = tem + qh3d(i,kc,1)
-              else
-                tem = qv3d(i,kc,1)
-              endif
-              qv3d (i,kc,1) = qv3d(i,kc,1)/(1.+tem)
-              qc3d (i,kc,1) = qc3d(i,kc,1)/(1.+tem)
-              qr3d (i,kc,1) = qr3d(i,kc,1)/(1.+tem)
-              qi3d (i,kc,1) = qi3d(i,kc,1)/(1.+tem)
-              qs3d (i,kc,1) = qs3d(i,kc,1)/(1.+tem)
-              qg3d (i,kc,1) = qg3d(i,kc,1)/(1.+tem)
-              if(nmmiph.eq.16) qh3d (i,kc,1) = qh3d(i,kc,1)/(1.+tem)
-            endif
-
             qt(i,             k) = qv3d(i,kc,1)
             qt(i,(ntcw-1)*lev+k) = qc3d(i,kc,1)
             qt(i,(ntrw-1)*lev+k) = qr3d(i,kc,1)
@@ -1260,10 +1161,10 @@
 
           enddo
         enddo
-!        do i = 1, nxj
-!          rlsp(i) = rain2d(i,1)  !total large scale precipitation (kg/m^2=mm)
-!          sr(i)   = sr2d(i,1)
-!        enddo
+        do i = 1, nxj
+          rlsp(i) = rain2d(i,1)  !total large scale precipitation (kg/m^2=mm)
+          sr(i)   = sr2d(i,1)
+        enddo
 
         deallocate                                                      &
          ( th3d,qv3d,qc3d,qr3d,qs3d,qi3d,qg3d,pii3d,p3d,z3d,dz3d,rho3d, &
