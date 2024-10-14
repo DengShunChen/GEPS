@@ -1935,7 +1935,7 @@
            ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),ptop,             &
              dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,            &
              itimestep,sgeo(1,jj),phi,rhc_mp,pk(1,1,jj),               &
-             snr(1,jj),xlat(j),                                        &
+             snr(1,jj),xlat(j),sdec,                                   &
 !  ---  inputs/outputs:
              ttc       ,qt(1,1,jj),clds(1,1,jj),                       &
              utc       ,vtc       ,vvel(1,1,jj),                       &

@@ -1,5 +1,7 @@
 !#define SL_sedi
 !#define new_saturation
+!#define sat_predict
+!#define use_declination
 !WRF:MODEL_LAYER:PHYSICS
 !
 
@@ -186,7 +188,7 @@ CONTAINS
                       ,rho, pii, p, dt_in, z                       &
                       ,ht, dz8w, grav, w                           &
 !                      ,rhowater, rhosnow                           &
-                      ,itimestep, xlat, xland                      &
+                      ,itimestep, xlat, sdec, xland                &
 !                      ,ids,ide, jds,jde, kds,kde                   & ! domain dims
                       ,ims,ime, jms,jme, kms,kme                   & ! memory dims
                       ,its,ite, jts,jte, kts,kte                   & ! tile   dims
@@ -319,6 +321,7 @@ CONTAINS
 !                                                        rhowater, &
 !                                                         rhosnow
   REAL, INTENT(IN   ) :: xlat
+  REAL, INTENT(IN   ) :: sdec  ! sine of solar declination angle
   LOGICAL, INTENT(IN), OPTIONAL :: F_QG
 
 !  LOCAL VAR
@@ -581,7 +584,7 @@ CONTAINS
    ! microphysics in GCE
 !   call SATICEL_S( dt_in, IHAIL, itaobraun, ICE2, istatmin,      &
    call SATICEL_S( dts, IHAIL, itaobraun, ICE2, istatmin,        &
-                   new_ice_sat, id, improve, xlat,               &
+                   new_ice_sat, id, improve, xlat, sdec,         &
 !                   th, th_old, qv, ql, qr,                      &
                    th, qv, ql, qr,                               &
                    qi, qs, qg,                                   &
@@ -2017,7 +2020,7 @@ CONTAINS
   end subroutine vqrqi
 
   SUBROUTINE saticel_s (dt, ihail, itaobraun, ice2, istatmin,          &
-                       new_ice_sat, id, improve, xlat,                 &
+                       new_ice_sat, id, improve, xlat, sdec,           &
                        ptwrf, qvwrf, qlwrf, qrwrf,                     &
                        qiwrf, qswrf, qgwrf,                            &
                        rho_mks, pi_mks, p0_mks, w_mks,                 &
@@ -2450,6 +2453,26 @@ CONTAINS
       ! calculate allowable ice supersautration :
       real, intent(in) :: xlat
       real :: d2r, arg
+
+      ! calculate solar declination angle :
+      real, intent(in) :: sdec
+
+#ifdef sat_predict
+      ! saturation prediction scheme :
+      integer :: hid
+      real :: rhoair, cpm, xlv, xls, cpm1, dv1, abw, abi
+      real :: taui, tauc, taur, tau, atem
+      real :: C1, K1, ncloud, nact, qcmax, mvrc
+      real :: qimax, nice, inhgr, rhoi, mvdi, mvri
+      real :: lqr, lqr2, mvdr, efdr, kmin, kmax, kdxr, afar,  &
+              tnr, lzr, bvr, avr, mu, rhoaj, gr2, gbr25
+      real :: cnd1, cnd2, dep1, dep2, fez1, fez2, latr, ern1, ern2
+      real, dimension (its:ite,jts:jte) :: pact, fez
+
+      ! transition zone :
+      real :: dltd, nbd, sbd, nbd1, nbd2, sbd1, sbd2, latint
+      real :: fxlat
+#endif
 !
 !JJS20090623      save  
 
@@ -4114,6 +4137,387 @@ CONTAINS
 
       endif  ! pocesses 24, 25 & 26 
 
+#ifdef sat_predict
+      ! --------------------------------------------------------------------------------
+      ! saturation prediction from TCWA 1-moment scheme (Morrison and Milbrandt 2015) :
+      !  (in MKS system)
+      ! --------------------------------------------------------------------------------
+
+      pact(i,j) = 0.0
+      pint(i,j) = 0.0
+      cnd(i,j) = 0.0
+      dep(i,j) = 0.0
+      fez(i,j) = 0.0
+      ern(i,j) = 0.0
+
+      ! -------------
+      ! pact : cloud water activation
+      ! -------------
+
+      tair(i,j)  = (pt(i,j)+tb0)*pi0
+      tairc(i,j) = tair(i,j)-t0
+      rhoair = rho_mks(i,k,j)
+      xlv   = 3.1484E6-2370.*tair(i,j)             ! latent heat of vaporization (in MKS ; alv in CGS)
+      cpm1  = 1005.46*(1.+0.887*qv(i,j))           ! isobaric specific heat of air (in MKS)
+#ifdef new_saturation
+      esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+      qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+#else
+      y1(i,j) = 1./(tair(i,j)-c358)
+      qsw(i,j) = rp0*exp(c172-c409*y1(i,j))
+#endif
+      abw = 1.+xlv**2.*qsw(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)  ! abw=1+dqsdT*(Lv/Cp); dqsdT=Lv*qsw/Rv/T^2
+
+      if ( qv(i,j).gt.qsw(i,j) .and. ww1(i,j,k).gt.1.e-3 ) then
+        ! C1 and K1 over land and ocean (Roger and Yau)
+        if ( xland(i,j) .eq. 1. ) then  !land
+          C1 = 1000. ; K1 = 0.5
+        else
+          C1 = 120.  ; K1 = 0.4         !ocean
+        endif
+        ncloud = min(1.E9,1.E6*0.88*C1**(2./(K1+2.))*          &
+                 (7.E-2*ww1(i,j,k)**1.5)**(K1/(K1+2.)))
+        nact = max(0.,ncloud-qc(i,j)/5.236E-13)             ! CONVERT FROM CM-3 TO M-3 and 5 microm in radius
+        qcmax = max((qv(i,j)-qsw(i,j)),0.)/abw
+        pact(i,j) = min(max(nact*1.414E-14,0.),qcmax)       ! 1.5 micron in radius
+        tair(i,j) = tair(i,j)+pact(i,j)*xlv/cpm1
+        tairc(i,j) = tair(i,j)-t0
+        qv(i,j) = max(0.,qv(i,j)-pact(i,j))
+        qc(i,j) = max(0.,qc(i,j)+pact(i,j))
+      endif
+
+      ! -------------
+      ! pint : cloud ice initialization
+      ! -------------
+
+      xls   = 3.15E6-2370.*tair(i,j)+0.3337E6      ! latent heat of sublimation  (in MKS ; als in CGS)
+      cpm1  = 1005.46*(1.+0.887*qv(i,j))           ! isobaric specific heat of air (in MKS)
+#ifdef new_saturation
+      esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+      esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+      if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
+      qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+      qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+#else
+      y1(i,j) = 1./(tair(i,j)-c358)
+      qsw(i,j) = rp0*exp(c172-c409*y1(i,j))
+      y2(i,j) = 1./(tair(i,j)-c76)
+      qsi(i,j) = rp0*exp(c218-c580*y2(i,j))
+#endif
+      abi = 1.+xls**2.*qsi(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)  ! abi=1+dqidT*(Ls/Cp); dqidT=Ls*qsi/Rv/T^2
+
+      if ( qv(i,j).gt.qsi(i,j) .and. tair(i,j).lt.t0 ) then
+        ssi(i,j) = qv(i,j)/qsi(i,j)-1.
+        nice = 1.e3*exp(1.296E+1*ssi(i,j)-6.39E-1)
+        r_nci = max(0.,nice-qi(i,j)/4.19E-10)               ! RHOI = 800; DI = 1.E-4
+        qimax = max((qv(i,j)-qsi(i,j)),0.)/abi
+        pint(i,j) = min(max(0.,r_nci*1.02e-13),qimax)
+        tair(i,j) = tair(i,j)+pint(i,j)*xls/cpm1
+        tairc(i,j) = tair(i,j)-t0
+        qv(i,j) = max(0.,qv(i,j)-pint(i,j))
+        qi(i,j) = max(0.,qi(i,j)+pint(i,j))
+      endif
+
+      ! -------------
+      ! cnd : condensation of qv to qc
+      ! dep : deposition of qv to qi
+      ! fez : freezing of qc to qi
+      ! ern : evaporation of qr
+      ! -------------
+
+      xlv   = 3.1484E6-2370.*tair(i,j)             ! latent heat of vaporization (in MKS ; alv in CGS)
+      xls   = 3.15E6-2370.*tair(i,j)+0.3337E6      ! latent heat of sublimation  (in MKS ; als in CGS)
+      cpm1  = 1005.46*(1.+0.887*qv(i,j))           ! isobaric specific heat of air (in MKS)
+      cpm   = 1.00546e+7*(1.+0.887*qv(i,j))        ! isobaric specific heat of air (in CGS)
+#ifdef new_saturation
+      esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+      esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+      if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
+      qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+      qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+#else
+      y1(i,j) = 1./(tair(i,j)-c358)
+      qsw(i,j) = rp0*exp(c172-c409*y1(i,j))
+      y2(i,j) = 1./(tair(i,j)-c76)
+      qsi(i,j) = rp0*exp(c218-c580*y2(i,j))
+#endif
+      dv1 = 8.794E-4*pr0*tair(i,j)**1.81
+      abw = 1.+xlv**2.*qsw(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)  ! abw=1+dqsdT*(Lv/Cp); dqsdT=Lv*qsw/Rv/T^2
+      abi = 1.+xls**2.*qsi(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)  ! abi=1+dqidT*(Ls/Cp); dqidT=Ls*qsi/Rv/T^2
+
+      ! tau : supersaturation relaxation timescale (tauc,taui,taur)
+
+      if ( qc(i,j) .ge. cwmin ) then
+        ltk  = log(tair(i,j))
+        lqc  = -1.*log(qc(i,j)*rhoair)
+        ltk2 = ltk*ltk
+        lqc2 = lqc*lqc
+        if ( xland(i,j) .eq. 1. ) then
+          mvdc = exp(5.8936819 - 7.013013*ltk                  &
+                     + 1.3178721*lqc + 1.1741987*ltk2          &
+                     + 2.6110916E-3*lqc2 - 0.26646396*ltk*lqc)
+        else
+          mvdc = exp(173.57305 - 64.370929*ltk                 &
+                     + 0.36833626*lqc + 6.1389254*ltk2         &
+                     + 5.5915321E-3*lqc2 - 0.12488698*ltk*lqc)
+        endif
+        mvrc = max(5.e-7,min(5.e-5,mvdc/2.e+6))             ! diameter of cloud water
+        ncloud = 3.*qc(i,j)*rhoair/(4.*cpi*1000.*mvrc**3.)  ! concentration of cloud water
+        ncloud = min(1.e+9,max(0.1,ncloud))
+        tauc = 1./(4.*cpi*dv1*ncloud*mvrc)                  ! tauc=1/(4*pi*Dv*Nc*rc)
+      else
+        tauc = 1.e+10
+      endif
+
+      if ( qi(i,j) .ge. cimin ) then
+        ltk  = log(tair(i,j))
+        lqi  = -1.*log(qi(i,j)*rhoair)
+        ltk2 = ltk*ltk
+        lqi2 = lqi*lqi
+        if ( xland(i,j) .eq. 1. ) then
+          mvdi = exp(154.88767 - 0.25772005*lqi                &
+                     + 3.75543E-4*lqi2 - 54.560357*ltk         &
+                     + 5.1248879*ltk2 )
+        else
+          mvdi = exp(155.33396 - 0.25772005*lqi                &
+                     + 3.75543E-4*lqi2 - 54.560357*ltk         &
+                     + 5.1248879*ltk2 )
+        endif
+        mvri = min(5.e-4,max(3.e-6,mvdi/2.e+7))
+        if ( tairc(i,j) .ge. -40.0 ) then
+          hid = max(min(nint(abs(tairc(i,j))/0.25),120),0)
+          inhgr = itble(hid)
+          rhoi = 900.*exp(-3.*max((qv(i,j)-qsi(i,j))-5.e-5,0.) &
+                 /inhgr)
+        else
+          inhgr = 5.
+          ssi(i,j) = qv(i,j)/qsi(i,j)-1.
+          if ( ssi(i,j) .gt. 0.267 ) then
+            rhoi = -1027.456*ssi(i,j)+1185.834
+          else
+            rhoi = -32.332*ssi(i,j)+900.
+          endif
+        endif
+        rhoi = min(max(rhoi,50.),900.)
+        nice = 3.*qi(i,j)*rhoair/(4.*cpi*rhoi*mvri**3.)
+        nice = min(1.e+7,max(0.1,nice))
+        taui = 1./(4.*cpi*dv1*nice*mvri)                    ! taui=1/(4*pi*Dv*Ni*ri)
+      else
+        taui = 1.e+10
+      endif
+
+      if ( qr(i,j) .ge. crmin ) then
+        ltk = log(tair(i,j))
+        lqr = -1.*log(qr(i,j)*rhoair)
+        ltk2 = ltk*ltk
+        lqr2 = lqr*lqr
+        kmin = 0.2222
+        kmax = 0.8396
+        mvdr = exp(33.999045 - 13.813047*ltk                   &
+                   + 0.29834969*lqr + 1.6622025*ltk2           &
+                   + 1.2480129E-3*lqr2 - 0.104641*ltk*lqr)
+        efdr = exp(1.6855156 + 0.84147302*log(mvdr)            &
+                   - 0.46783369*log(1.e+3)                     &
+                   + 1.005305E-2*(log(mvdr))**2.               &
+                   + 3.4833332E-2*(log(1.e+3))**2.             &
+                   + 1.4727223E-2*log(mvdr)*log(1.e+3))
+        efdr = max(min(efdr,mvdr/kmin**thrd),mvdr/kmax**thrd)
+        kdxr = max(kmin,min(kmax,(mvdr/efdr)**3.))
+        afar = max(0.,(6.*kdxr-3.+sqrt(8.*kdxr+1.))/(2.-2.*kdxr))
+!        zr = (afar+3.)/efdr*1.e+6
+        lzr = log((afar+3.)/efdr*1.e+6)
+        tnr = log(6.*qr(i,j)*rhoair/cpi/1.e+3)                 & ! slope parameter for rain
+              +(4.+afar)*lzr-dgamma(afar+4.)
+        avr = exp(7.6004532 - 0.7990953*ltk                    & ! coefficient ... for rain (?)
+                  + 1.0281818*lqr - 0.16595505*lqr2            &
+                  + 1.110037E-2*lqr*lqr2                       &
+                  - 2.0925743E-4*lqr2*lqr2)
+        bvr = max(0.5,min(2., 1.2218728 - 0.1281004*ltk        & ! exponent ... for rain (?)
+              + 2.6088596E-2*lqr - 7.4467639E-3*lqr2           &
+              + 7.7592532E-4*lqr*lqr2                          &
+              - 1.7056075E-5*lqr2*lqr2))
+        mu = 1.496E-6*tair(i,j)**1.5/(tair(i,j)+120.)            ! shape parameter for rain
+        rhoaj = sqrt(1.29/rhoair)
+        gr2 = dgamma(afar+2.)
+        gbr25 = dgamma(bvr*0.5+afar+2.5)
+        taur = 1./(2.*cpi*dv1*(0.78*exp(tnr+gr2-(afar+2.)      &
+               *lzr)+0.31*sqrt(avr*rhoaj/mu)*(mu/dv1)          &
+               **thrd*exp(tnr+gbr25-(bvr*0.5+afar+2.5)         &
+               *lzr)))
+      else
+        taur = 1.e+10
+      endif
+
+      cnd1 = 0. ; cnd2 = 0. ; dep1 = 0. ; dep2 = 0.
+      fez1 = 0. ; fez2 = 0. ; ern1 = 0. ; ern2 = 0.
+      latr = 0.
+
+!>>> TGFS_modify
+      ! increase condensation at lower-level tropics :
+!      if ( abs(xlat) .le. 23.5 ) then
+!        if ( p0(i,j,k).ge.9.1e+5 .and.                         &
+!             p0(i,j,k).lt.9.4e+5 .and.                         &
+!             ww1(i,j,k).gt.1.e-3 ) then
+!          if ( qv(i,j) .gt. qsw(i,j) ) then
+!            tauc = 1.
+!          elseif ( qv(i,j) .lt. qsw(i,j)) then
+!            tauc = 1.e+10
+!          endif
+!        elseif ( p0(i,j,k) .ge. 9.5e+5 ) then
+!          if ( qv(i,j) .gt. qsw(i,j) ) then
+!            tauc = 1.e+10
+!          elseif ( qv(i,j) .lt. qsw(i,j) ) then
+!            tauc = 1.
+!          endif
+!        endif
+!      endif
+!<<< TGFS_modify
+ 
+      ! tau : multiphase supersaturation relaxation time scale defined by
+      ! 1/tau = 1/tauc + 1/taur + (1+Ls/Cp*dqsl/dT)/(1+Ls/Cp*dqsi/dT)/taui
+      tau = 1./(1./tauc+1./taur+1./taui*(1.+qsw(i,j)*          &
+            xls*xlv/cpm1/(4.61495E+2*tair(i,j)**2.))/abi)
+
+      ! atem : change in supersaturation due to Bergeron process
+      atem = (qsi(i,j)-qsw(i,j))/taui*(1.+qsw(i,j)*xls*xlv     &
+             /cpm1/(4.61495E+2*tair(i,j)**2.))/abi
+
+      ! decide values at lower latitude :
+      cnd1 = max(-qc(i,j),(atem*dt*tau/tauc+(qv(i,j)           &
+             -qsw(i,j)-atem*tau)*(1.-exp(-dt/tau))*tau         &
+             /tauc)/abw)
+      dep1 = MAX(-qi(i,j),(atem*dt*tau/taui+(qv(i,j)           &
+             -qsw(i,j)-atem*tau)*(1.-exp(-dt/tau))*tau         &
+             /taui+(qsw(i,j)-qsi(i,j))*dt/taui)/abi)
+      ern1 = MAX(-qr(i,j),(atem*dt*tau/taur+(qv(i,j)           &
+             -qsw(i,j)-atem*tau)*(1.-exp(-dt/tau))*tau         &
+             /taur)/abw)
+      fez1 = 0.
+
+#ifdef use_declination
+      ! decide values at polar regions :
+      ern2 = ern1
+      if ( tair(i,j) .ge. 253.16 ) then
+        ! T>=-20     : all ice melt; all excess vapor (over ice) condense; no deposition
+        cnd2 = max(-qc(i,j),(qv(i,j)-qsi(i,j))/abi)
+        fez2 = -qi(i,j)
+        dep2 = 0.
+      elseif ( tair(i,j).lt.253.16 .and. tair(i,j).ge.t00 ) then
+        ! -40<=T<-20 : all water freeze; all excess vapor (over water) deposite; no condensation
+        dep2 = max(-qi(i,j),(qv(i,j)-qsw(i,j))/abw)
+        fez2 = qc(i,j)
+        cnd2 = 0.
+      else
+        ! T<-40      : all water freeze; all excess vapor (over ice) deposite; no condensation
+        dep2 = max(-qi(i,j),(qv(i,j)-qsi(i,j))/abi)
+        fez2 = qc(i,j)
+        cnd2 = 0.
+      endif
+
+      ! create transition zones :
+      dltd = asin(sdec)*180.0/cpi      ! solar declination angle (in degree latitude)
+!      latint = 23.5*2.0                ! width of the transition zone (in degree latitude)
+      latint = 23.5                    ! width of the transition zone (in degree latitude)
+      sbd = dltd-90.0                  ! southern boundary of sun (in degree latitude)
+      nbd = dltd+90.0                  ! northern boundary of sun (in degree latitude)
+      sbd1 = sbd+latint/2.0            ! southern boundary of southern transition zone
+      sbd2 = sbd-latint/2.0            ! northern boundary of southern transition zone
+      nbd1 = nbd-latint/2.0            ! southern boundary of northern transition zone
+      nbd2 = nbd+latint/2.0            ! northern boundary of northern transition zone
+
+      if ( xlat.gt.sbd1 .and. xlat.lt.nbd1 ) then       ! low-latitude
+        fxlat = 0.
+      elseif ( xlat.lt.sbd2 .or. xlat.gt.nbd2 ) then    ! polar region
+        fxlat = 1.
+      elseif ( xlat.ge.sbd2 .and. xlat.le.sbd1 ) then   ! southern transition zone
+        fxlat = sin(abs(max((xlat-sbd1)*90.0/latint,-90.0)*cpi/180.0))
+      elseif ( xlat.ge.nbd1 .and. xlat.le.nbd2 ) then   ! northern transition zone
+        fxlat = sin(min((xlat-nbd1)*90.0/latint,90.0)*cpi/180.0)
+      endif
+
+      cnd(i,j) = cnd1*(1.0-fxlat) + cnd2*fxlat
+      dep(i,j) = dep1*(1.0-fxlat) + dep2*fxlat
+      fez(i,j) = fez1*(1.0-fxlat) + fez2*fxlat
+      ern(i,j) = ern1*(1.0-fxlat) + ern2*fxlat
+
+#else
+      ! (TGFS_modify) decide values at polar regions :
+      if ( abs(xlat) .ge. 66.0 ) then
+        ern2 = ern1
+        if ( tair(i,j) .ge. 253.16 ) then
+          ! T>=-20     : all ice melt; all excess vapor (over ice) condense; no deposition
+          cnd2 = max(-qc(i,j),(qv(i,j)-qsi(i,j))/abi)
+          fez2 = -qi(i,j)
+          dep2 = 0.
+        elseif ( tair(i,j).lt.253.16 .and. tair(i,j).ge.t00 ) then
+          ! -40<=T<-20 : all water freeze; all excess vapor (over water) deposite; no condensation
+          dep2 = max(-qi(i,j),(qv(i,j)-qsw(i,j))/abw)
+          fez2 = qc(i,j)
+          cnd2 = 0.
+        else
+          ! T<-40      : all water freeze; all excess vapor (over ice) deposite; no condensation
+          dep2 = max(-qi(i,j),(qv(i,j)-qsi(i,j))/abi)
+          fez2 = qc(i,j)
+          cnd2 = 0.
+        endif
+      endif
+
+      ! create a transition zone at 60~67 degree :
+      if ( abs(xlat) .lt. 66.0 ) then
+        cnd(i,j) = cnd1
+        dep(i,j) = dep1
+        fez(i,j) = 0.
+        ern(i,j) = ern1
+      elseif ( abs(xlat).ge.66.0 .and. abs(xlat).lt.67.0 ) then
+        latr = min(1.,max(0.,abs(xlat)-66.0))
+        cnd(i,j) = cnd1*(1.-latr)+cnd2*latr
+        dep(i,j) = dep1*(1.-latr)+dep2*latr
+        fez(i,j) = fez1*(1.-latr)+fez2*latr
+        ern(i,j) = ern1*(1.-latr)+ern2*latr
+      else
+        cnd(i,j) = cnd2
+        dep(i,j) = dep2
+        fez(i,j) = fez2
+        ern(i,j) = ern2
+      endif
+#endif
+
+      ! update tair, qv, qc, qi, qr :
+      tair(i,j) = tair(i,j) + (ern(i,j)+cnd(i,j))*xlv/cpm1     &
+                  + dep(i,j)*xls/cpm1 + fez(i,j)*alf/cpm
+      qv(i,j) = max(0.,qv(i,j)-cnd(i,j)-dep(i,j)-ern(i,j))
+      qc(i,j) = max(0.,qc(i,j)+cnd(i,j)-fez(i,j))
+      qi(i,j) = max(0.,qi(i,j)+dep(i,j)+fez(i,j))
+      qr(i,j) = max(0.,qr(i,j)+ern(i,j))
+
+!>>> TGFS_modify
+      ! refreeze at mid-level polar regions :
+!      if ( abs(xlat).ge.66.0 .and.                             &
+!           p0(i,j,k).ge.8.e+5 .and.                            &
+!           qc(i,j).ge.cwmin ) then
+!        latr = min(1.,max(0.,abs(xlat)-66.0))
+!        fez(i,j) = qc(i,j)*latr
+!        tair(i,j) = tair(i,j) + fez(i,j)*alf/cpm
+!        qi(i,j) = max(0.,qi(i,j)+fez(i,j))
+!        qc(i,j) = max(0.,qc(i,j)-fez(i,j))
+!      endif
+
+      ! small cloud water all refreeze at polar regions, 
+      ! in order to make the distribution more continuous :
+!      if ( abs(xlat).ge.66.5 .and. qc(i,j).lt.1.e-4 ) then
+!        tair(i,j) = tair(i,j)+qc(i,j)*alf/cpm
+!        qi(i,j) = max(0.,qi(i,j)+qc(i,j))
+!        qc(i,j) = 0.
+!      endif
+!>>> TGFS_modify
+
+      ! update pt :
+      pt(i,j) = tair(i,j)/pi0-tb0   !tair=(pt(i,j)+tb0)*pi0
+      tairc(i,j) = tair(i,j)-t0
+
+#else
+!>>> if not define sat_predict, use saturation adjustment scheme :
+
 !* 31 * pint  : initiation of qi                                  **31**
 !* 32 * pidep : deposition of qi                                  **32**
 !
@@ -4516,6 +4920,8 @@ CONTAINS
     
     endif                                        ! if (new_ice_sat = 3)
 
+!<<< end of ifdef sat_predict
+#endif
 
 !* 10 * PSDEP : DEPOSITION OR SUBLIMATION OF QS                   **10**
 !* 20 * PGSUB : SUBLIMATION OF QG                                 **20**
@@ -4670,6 +5076,9 @@ CONTAINS
 
 !!!  end of Processes 10 and 20
 
+#ifndef sat_predict
+!>>> Note that ern is already calculated in saturation prediction scheme.
+
 !* 23 * ERN : EVAPORATION OF QR (SUBSATURATION)                   **23**
 ! Steve did not make any improvement on this process
 
@@ -4728,6 +5137,8 @@ CONTAINS
               qv(i,j)=qv(i,j)+ern(i,j)
               qr(i,j)=qr(i,j)-ern(i,j)
         endif
+!>>> end of ifndef sat_predict
+#endif
 
 !!!!
 !!  add processes 30 & 33 fpr pmltg and pmlts
