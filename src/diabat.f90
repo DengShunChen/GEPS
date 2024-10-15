@@ -170,7 +170,7 @@
                                       pdfcloud,cmbk,cgwd, fsit, dosppt, doshum, dossst, &
                                       use_zmtnblck,ldailyFCTicesndpt,dSITdt_intv, &
                                       weightSIT,bckfile,ggdef,doclx,doslavepp,    &
-                                      RTYPE,qmin,julian
+                                      RTYPE,qmin,julian,doskeb
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
@@ -192,7 +192,8 @@
       use phygrid,  only :dtcup,ducup,dvcup,dtshl,dushl,dvshl,dtlsp,dulsp,dvlsp
 ! for land_noah_new
       use namelist_soilveg, only :MAX_SLOPETYP,MAX_SOILTYP,MAX_VEGTYP
-      use mod_stochastic_physics, only : sppt3d, shum3d, ssst3d
+      use mod_stochastic_physics, only : sppt3d, shum3d, ssst3d,     &
+                                         diss_dc
       use leapyr
 !-----------------------------------------------------------------------
       implicit  none
@@ -513,6 +514,8 @@
       real tauhr
       real dtx_tau,dtaup,dtxb
       INTEGER, PARAMETER :: nerr = 6
+! for dissipation convective (test)
+      real      diss_dcc(nxp,lev)
 !xb110>
       ztenh = 0.
       zqenh = 0.
@@ -542,7 +545,8 @@
       uni_cloud=.false. !if using SHOC scheme, it should be .true.
       lmfshal=( nmshl .eq. 2 .or. nmshl .eq. 3 .or. nmshl .eq. 4 ) ! .true. if using mass-flux shallow convection
       lmfdeep2=( nmcup .eq. 6 .or. nmcup .eq. 7 ) ! .true. if using scale-aware deep con
-
+!skeb dissipation (test)
+      diss_dcc=0.
 
 !     define local constants
 ! for vertical rhc
@@ -1494,6 +1498,9 @@
             ttc(i,kc) = tt(i,k,jj)
             utc(i,kc) = ut(i,k,jj)
             vtc(i,kc) = vt(i,k,jj)
+            if(doskeb)then
+              diss_dcc(i,kc) = diss_dc(i,k,jj)
+            endif
           enddo
         enddo
 
@@ -1533,7 +1540,7 @@
           call samfdeepcnv_kh(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil     &
             ,qtr,qti,qtc,ttc,utc,vtc,cldwrk(1,jj),rcup(1,jj),kbot(1,jj)  &
             ,ktop(1,jj),kuo(1,jj),islimsk,garea,dotc,ncld,cnvw,cnvc      &
-            ,snow_flxn,ptun,pqun)
+            ,snow_flxn,ptun,pqun,diss_dcc)
 
         ! for rad input of convection cloud information
         ! bottom(plcl) layer and top(cumtop) layer in pressure(mb)
@@ -1581,6 +1588,9 @@
             ptu(i,k)      = ptun(i,kc)
             pqu(i,k)      = pqun(i,kc)
             cnvwn(i,k)    = cnvwr(i,kc,jj)
+            if(doskeb)then
+              diss_dc(i,k,jj) = diss_dcc(i,kc)
+            endif
           enddo
         enddo
 
@@ -2377,7 +2387,10 @@
           do k=1,lev
             do i=1,nxj
               ru=shum3d(i,k,jj)
-              qt(i,k,jj) = qt(i,k,jj)*(1.+ru)
+              qnew = qt(i,k,jj)*(1.+ru)
+              if ( qnew .ge. qmin ) then
+                qt(i,k,jj) = qt(i,k,jj)*(1.+ru)
+              endif
             enddo
           enddo
       endif 

@@ -109,6 +109,7 @@
     logical :: doskebout    =.false.
     logical :: doshum       =.false.
     logical :: doskeb       =.false.
+    logical :: doskeb_dc    =.false.
     logical :: dossst       =.false.
     logical :: use_zmtnblck =.false.
 
