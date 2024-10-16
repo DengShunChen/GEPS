@@ -477,6 +477,10 @@ CONTAINS
      qi(i,k,j) = qi(i,k,j)/(1.-qtot(i,k,j))
      qs(i,k,j) = qs(i,k,j)/(1.-qtot(i,k,j))
      qg(i,k,j) = qg(i,k,j)/(1.-qtot(i,k,j))
+
+     ! qtot must be saved as "mixing ratio" :
+     qtot(i,k,j) = qv(i,k,j) + ql(i,k,j) + qr(i,k,j)             &
+                   + qi(i,k,j) + qs(i,k,j) + qg(i,k,j)
    enddo
    enddo
    enddo
@@ -493,7 +497,6 @@ CONTAINS
    do n = 1, ntimes
 
    ! calculte fallflux and precipiation in MKS system
-!   call fall_flux(    dt_in, qv, qr, qi, qs, qg, p,           &
    call fall_flux(    dts, qv, qr, qi, qs, qg, p,             &
                       rho, th, pii, z, dz8w, ht, rainnc,      &
                       rainncv, grav,itimestep,                &
@@ -582,35 +585,25 @@ CONTAINS
 
 
    ! microphysics in GCE
-!   call SATICEL_S( dt_in, IHAIL, itaobraun, ICE2, istatmin,      &
    call SATICEL_S( dts, IHAIL, itaobraun, ICE2, istatmin,        &
                    new_ice_sat, id, improve, xlat, sdec,         &
-!                   th, th_old, qv, ql, qr,                      &
                    th, qv, ql, qr,                               &
                    qi, qs, qg,                                   &
-!                   qvold, qlold, qrold,                         &
-!                   qiold, qsold, qgold,                         &
                    rho, pii, p, w,                               &
                    itimestep, xland,                             & 
-                   refl_10cm, diagflag, do_radar_ref,           & ! GT added for reflectivity calcs
+                   refl_10cm, diagflag, do_radar_ref,            & ! GT added for reflectivity calcs
                    refc, refr, refi, refs, refg,                 & ! cloud effective radius
-!                   ids,ide, jds,jde, kds,kde,                    & ! domain dims
                    ims,ime, jms,jme, kms,kme,                    & ! memory dims
                    its,ite, jts,jte, kts,kte,                    & ! tile   dims
-!NUWRF BEGIN
                    physc, physe, physd, physs, physm, physf,     &
                    acphysc, acphyse, acphysd, acphyss, acphysm, acphysf &
 
 #if ( WRF_CHEM == 1)
-!JJS 20110525     vvvvv
-                   ,aero, icn_diag, nc_diag, gid,                 &
-!JJS 20110525     ^^^^^
-!EMK
+                   ,aero, icn_diag, nc_diag, gid,                &
                    chem_opt,                                     &
                    gsfcgce_gocart_coupling                       &
 #endif
                    )
-!NUWRF END
    enddo  !end of do n=1,ntimes
 
    ! convert mixing values of q back to specific values :
@@ -2025,24 +2018,18 @@ CONTAINS
                        qiwrf, qswrf, qgwrf,                            &
                        rho_mks, pi_mks, p0_mks, w_mks,                 &
                        itimestep, xland,                               &
-                       refl_10cm, diagflag, do_radar_ref,           & ! GT added for reflectivity calcs
+                       refl_10cm, diagflag, do_radar_ref,              & ! GT added for reflectivity calcs
                        refc, refr, refi, refs, refg,                   & ! cloud effective radius
-!                       ids,ide, jds,jde, kds,kde,                      &
                        ims,ime, jms,jme, kms,kme,                      &
                        its,ite, jts,jte, kts,kte,                      &
-!NUWRF BEGIN
                        physc, physe, physd, physs, physm, physf,       &   
                        acphysc, acphyse, acphysd, acphyss, acphysm, acphysf &   
 #if ( WRF_CHEM == 1)
-!JJS 20110525 vvvvv
-                       ,aero, icn_diag, nc_diag, gid,                   &
-!JJS 20110525 ^^^^^
-! EMK
+                       ,aero, icn_diag, nc_diag, gid,                  &
                        chem_opt,                                       &
-                       gsfcgce_gocart_coupling                        &
+                       gsfcgce_gocart_coupling                         &
 #endif
                        )
-!NUWRF END
 !-----------------------------------------------------------------------
 !  USE module_dm
   IMPLICIT NONE
