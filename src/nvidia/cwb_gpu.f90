@@ -1,5 +1,5 @@
 subroutine ptotc_gpu(pdrym, lprint)
-   ! Present on device: jlist1, nxdef_2d, dsigma, pt, qt, nxjlen_all, cosl, jlist2
+   ! Present on device: jlist1, nxdef_2d, dsigma, pt, qt, nxjlen_all, cosl, jlist2, nxdef
    use index
    use rank
    use const
