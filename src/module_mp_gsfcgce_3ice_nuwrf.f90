@@ -21,6 +21,7 @@ MODULE module_mp_gsfcgce_3ice_nuwrf
 !   USE module_utility, ONLY: WRFU_Clock, WRFU_Alarm
 !   USE module_domain, ONLY : HISTORY_ALARM, Is_alarm_tstep
    USE module_mp_radar
+   use const , only : mass_dp
 
 !   LOGICAL, EXTERNAL :: wrf_dm_on_monitor
 
@@ -610,6 +611,11 @@ CONTAINS
    do j = jts, jte
    do i = its, ite
    do k = kts, kte
+     if ( .not. mass_dp ) then
+       ! update new mixing ratio
+       qtot(i,k,j) = qv(i,k,j) + ql(i,k,j) + qr(i,k,j)             &
+                     + qi(i,k,j) + qs(i,k,j) + qg(i,k,j)
+     endif
      qv(i,k,j) = qv(i,k,j)/(1.+qtot(i,k,j))
      ql(i,k,j) = ql(i,k,j)/(1.+qtot(i,k,j))
      qr(i,k,j) = qr(i,k,j)/(1.+qtot(i,k,j))
