@@ -2578,11 +2578,10 @@ CONTAINS
       CPI=4.*ATAN(1.)
 
    ! maximum allowable ice supersaturation :
-   !  default :
-      xssi = 0.10
-   !  test  :
-!      xssi = 0.05
-   !  test  :
+!      xssi = 0.10   !default
+      xssi = 0.05
+
+   ! xssi can be varied with latitude  :
    !  for abs(xlat)<=30  : cos(arg)=0 , xssi=0.10
    !  for abs(xlat)>=60  : cos(arg)=1 , xssi=0.05
 !      d2r = CPI/180.0
@@ -6338,11 +6337,7 @@ CONTAINS
             if ( tc .ge. -40. ) then
               adagr = inhgr**thrd
             else
-#ifdef new_saturation
               adagr = inhgr**0.8
-#else
-              adagr = inhgr**0.8
-#endif
             endif
 ! <<<
             ltk   = log(tz)
