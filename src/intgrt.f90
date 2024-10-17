@@ -282,6 +282,7 @@
       lwdn_cpl = 0.
       rain_cpl = 0.
       snow_cpl = 0.
+        dt_cpl = 0.
       cpl_send_init = .true.
 #endif
 !
