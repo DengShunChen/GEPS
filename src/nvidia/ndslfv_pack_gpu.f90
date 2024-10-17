@@ -912,8 +912,8 @@ subroutine cyclic_cell_ppm_intp_two_loops_gpu(outer_index, outer_size, inner_siz
    !$acc exit data delete(hh, kkh_array, tl_array, dql_array, dpp_array) copyout(has_error) async(async_id)
    !$acc wait(async_id)
    if (has_error) then
-      print*, "[ERROR] There is an error in cyclic_cell_ppm_intp_two_loops_gpu."
-      print*, "[ERROR] Please check pp and pn."
+      print *, "[ERROR] There is an error in cyclic_cell_ppm_intp_two_loops_gpu."
+      print *, "[ERROR] Please check pp and pn."
       call abort
    end if
 
