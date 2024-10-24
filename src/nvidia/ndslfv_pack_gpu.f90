@@ -177,7 +177,6 @@ subroutine cyclic_cell_massadvx_jlist_gpu(levs, nvars, lonfull, deltim, uu, qq, 
       outer_index_def(lan) = lons_lat
    end do
    call def_cfl_step_two_loops_gpu(outer_index_def, jlistnum, levs, dist, ds, step, nstep, max_nstep, 'advx', lonfull)
-   !$acc wait(async_id)
 
    do nst = 1, max_nstep
       !$acc parallel loop collapse(3) private(lat, lons_lat, dist_step) async(async_id)
@@ -361,7 +360,6 @@ subroutine cyclic_cell_massadvy_mylonlen_gpu(latfull, levs, nvars, deltim, vv, q
       ds_dup(1:latfull, lon) = ds
    end do
    call def_cfl_step_two_loops_gpu(outer_index_def, mylonlen, levs, dist, ds_dup, step, nstep, max_nstep, 'advy', latfull)
-   !$acc wait(async_id)
    do nst = 1, max_nstep
       !$acc parallel loop collapse(3) private(dist_step) async(async_id)
       do lon = 1, mylonlen
@@ -449,7 +447,7 @@ subroutine def_cfl_step_two_loops_gpu(outer_index, outer_size, inner_size, dist,
    real(kind=RTYPE) :: step(10, inner_size, outer_size)
    integer :: nstep(inner_size, outer_size), max_nstep
    character*4 :: job
-   integer :: outer, inner, im, n, k, nchk(inner_size, outer_size), nchk_local
+   integer :: outer, inner, im, n, k, nchk(inner_size, outer_size), nchk_local, nstep_loc
    real(kind=RTYPE) :: rstep, check, check_max(inner_size, outer_size), &
                        check_point, safe_step, last_step, check_local, check_max_local, nchk_max_local
    integer :: async_id
@@ -458,7 +456,9 @@ subroutine def_cfl_step_two_loops_gpu(outer_index, outer_size, inner_size, dist,
 
    check_point = 1.00
    safe_step = 0.99
+   max_nstep = 1
    !$acc enter data create(nchk, check_max) async(async_id)
+
    !$acc parallel loop collapse(2) async(async_id)
    do outer = 1, outer_size
       do inner = 1, inner_size
@@ -466,39 +466,34 @@ subroutine def_cfl_step_two_loops_gpu(outer_index, outer_size, inner_size, dist,
          step(1, inner, outer) = 1.0
       end do
    end do
-   !$acc parallel loop collapse(2) private(nchk_max_local, check_max_local) async(async_id)
+   !$acc parallel loop collapse(2) async(async_id)
    do outer = 1, outer_size
       do inner = 1, inner_size
-         nchk_max_local = 0
-         check_max_local = 0.0
-         !$acc loop private(im, check, nchk_local, check_local) reduction(max:nchk_max_local, check_max_local)
+         nchk_local = 0
+         check_local = 0.
+         !$acc loop private(im, check) reduction(max:nchk_local, check_local)
          do n = 1, lonn
-            im = outer_index(outer) + 1
-            if (n .le. im - 1) then
+            im = outer_index(outer)
+            if (n .le. im) then
                check = abs((dist(n + 1, inner, outer) - dist(n, inner, outer))/ds(n, outer))
                if (check .ge. check_point) then
-                  nchk_local = n
-                  check_local = check
+                  nchk_local = max(nchk_local, n)
+                  check_local = max(check_local, check)
                end if
-            else
-               nchk_local = 0
-               check_local = 0.0
             end if
-            nchk_max_local = max(nchk_max_local, nchk_local)
-            check_max_local = max(check_max_local, check_local)
          end do
-         nchk(inner, outer) = nchk_max_local
-         check_max(inner, outer) = check_max_local
+         nchk(inner, outer) = nchk_local
+         check_max(inner, outer) = check_local
       end do
    end do
-   max_nstep = 1
-   !$acc parallel loop collapse(2) private(im, rstep, last_step) async(async_id) &
-   !$acc& reduction(max: max_nstep) copy(max_nstep)
+   !$acc parallel loop collapse(2) private(rstep, last_step, nstep_loc) &
+   !$acc& reduction(max: max_nstep) copy(max_nstep) async(async_id)
    do outer = 1, outer_size
       do inner = 1, inner_size
-         im = outer_index(outer) + 1
+         nstep_loc = 1
          if (check_max(inner, outer) .ge. check_point) then
-            nstep(inner, outer) = int(check_max(inner, outer)/safe_step) + 1
+            nstep_loc = int(check_max(inner, outer)/safe_step) + 1
+            nstep(inner, outer) = nstep_loc
             ! GPU does not support print (need D2H copy)
             ! if (job .eq. 'advv') then
             !    print *, ' max def_cfl ', check_max(inner, outer), ' needs ', nstep(inner, outer), &
@@ -512,15 +507,28 @@ subroutine def_cfl_step_two_loops_gpu(outer_index, outer_size, inner_size, dist,
             ! end if
             rstep = safe_step/check_max(inner, outer)
             !$acc loop seq
-            do n = 1, nstep(inner, outer) - 1
+            do n = 1, nstep_loc - 1
                step(n, inner, outer) = rstep
             end do
-            last_step = 1.-(nstep(inner, outer) - 1)*rstep
-            step(nstep(inner, outer), inner, outer) = last_step
+            last_step = 1.-(nstep_loc - 1)*rstep
+            step(nstep_loc, inner, outer) = last_step
          end if
-         max_nstep = max(max_nstep, nstep(inner, outer))
+         max_nstep = max(max_nstep, nstep_loc)
       end do
    end do
+   !$acc wait (async_id)
+   if (max_nstep .ne. 1) then
+      print *, "max_nstep: ", max_nstep
+      !$acc update self(check_max, nstep)
+      do outer = 1, outer_size
+         do inner = 1, inner_size
+            if (nstep(inner, outer) .ne. 1) then
+               print *, ' max def_cfl ', check_max(inner, outer), ' needs ', nstep(inner, outer), &
+                  'steps of ', outer, ' at level ', inner, ' in ', job, ' processing'
+            end if
+         end do
+      end do
+   end if
    !$acc exit data delete(nchk, check_max) async(async_id)
 
 end subroutine def_cfl_step_two_loops_gpu
