@@ -140,6 +140,7 @@ subroutine cyclic_cell_massadvx_jlist_gpu(levs, nvars, lonfull, deltim, uu, qq, 
    real(kind=RTYPE) :: xreg_dup(lonfull + 1, levs, jlistnum)
    integer :: outer_index_def(jlistnum)
    logical :: forward
+   integer :: nstep_max
 
    async_id = 1
 
@@ -184,7 +185,18 @@ subroutine cyclic_cell_massadvx_jlist_gpu(levs, nvars, lonfull, deltim, uu, qq, 
    end do
    call def_cfl_step_two_loops_gpu(outer_index_def, jlistnum, levs, dist, ds, step, nstep, 'advx', lonfull)
 
-   do nst = 1, 10
+   nstep_max = 0
+   !$acc enter data copyin(nstep_max) async(async_id)
+   !$acc parallel loop collapse(2) reduction(max:nstep_max) async(async_id)
+   do lan = 1, jlistnum
+      do k = 1, levs
+         nstep_max = max(nstep_max, nstep(k, lan))
+      end do
+   end do
+   !$acc exit data copyout(nstep_max) async(async_id)
+   !$acc wait(async_id)
+
+   do nst = 1, nstep_max
       !$acc parallel loop collapse(3) private(lat, lons_lat, dist_step) async(async_id)
       do lan = 1, jlistnum
          do k = 1, levs
@@ -335,7 +347,7 @@ subroutine cyclic_cell_massadvy_mylonlen_gpu(latfull, levs, nvars, deltim, vv, q
    real(kind=RTYPE) past(latfull, nvars, levs, mylonlen), da(latfull, nvars, levs, mylonlen), next(latfull, nvars, levs, mylonlen)
    integer :: idx11, idx12, idx21, idx22, idxfa
    integer :: async_id
-   integer :: outer_index(3, mylonlen)
+   integer :: outer_index(3, mylonlen), nstep_max
    logical :: nstep_less(levs, mylonlen)
    real(kind=RTYPE) gglati_dup(latfull + 1, levs, mylonlen)
    integer :: outer_index_def(mylonlen)
@@ -394,7 +406,17 @@ subroutine cyclic_cell_massadvy_mylonlen_gpu(latfull, levs, nvars, deltim, vv, q
       ds_dup(1:latfull, lon) = ds
    end do
    call def_cfl_step_two_loops_gpu(outer_index_def, mylonlen, levs, dist, ds_dup, step, nstep, 'advy', latfull)
-   do nst = 1, 10
+   nstep_max = 0
+   !$acc enter data copyin(nstep_max) async(async_id)
+   !$acc parallel loop collapse(2) reduction(max:nstep_max) async(async_id)
+   do lon = 1, mylonlen
+      do k = 1, levs
+         nstep_max = max(nstep_max, nstep(k, lon))
+      end do
+   end do
+   !$acc exit data copyout(nstep_max) async(async_id)
+   !$acc wait(async_id)
+   do nst = 1, nstep_max
       !$acc parallel loop collapse(3) private(dist_step) async(async_id)
       do lon = 1, mylonlen
          do k = 1, levs
@@ -600,11 +622,11 @@ subroutine cyclic_cell_ppm_intp_two_loops_gpu(outer_index, outer_size, inner_siz
    integer :: outer_index(3, outer_size), outer_size, inner_size, lonn, nvars
    real(kind=RTYPE) :: pp(lonn + 1, inner_size, outer_size), pn(lonn + 1, inner_size, outer_size)
    real(kind=RTYPE) :: qq(lonn, nvars, inner_size, outer_size), qn(lonn, nvars, inner_size, outer_size)
-   real(kind=RTYPE) :: sc
+   real(kind=RTYPE) :: sc, pn_t
    logical :: nstep_less(inner_size, outer_size)
    real hh(3*lonn, inner_size, outer_size)
-   real qmi(3*lonn, nvars, inner_size, outer_size), qmi_t
-   real qpi(3*lonn, nvars, inner_size, outer_size), qpi_t, qn_t
+   real qmi_t
+   real qpi_t, qn_t
    real dqmono(3*lonn, nvars, inner_size, outer_size)
    real qi(3*lonn, nvars, inner_size, outer_size)
    real kkh_array(lonn + 1, inner_size, outer_size)
@@ -632,7 +654,7 @@ subroutine cyclic_cell_ppm_intp_two_loops_gpu(outer_index, outer_size, inner_siz
    has_error = .false.
 
    !$acc enter data create(pnmin, pnmax) copyin(has_error) async(async_id)
-   !$acc parallel loop collapse(3) private(imp, imf, locbndmin, locbndmax, rt) async(async_id)
+   !$acc parallel loop collapse(3) private(imp, imf, locbndmin, locbndmax, rt, pn_t) async(async_id)
    do outer = 1, outer_size
       do inner = 1, inner_size
          do i = 1, lonn + 1
@@ -640,14 +662,13 @@ subroutine cyclic_cell_ppm_intp_two_loops_gpu(outer_index, outer_size, inner_siz
                imp = outer_index(2, outer)
                imf = outer_index(3, outer)
                if (i .le. imf + 1) then
-                  pnmin(inner, outer) = pn(1, inner, outer)
-                  pnmax(inner, outer) = pn(imf + 1, inner, outer)
+                  pn_t = pn(1, inner, outer)
                   call locs_pp_map(pp(1, inner, outer), imp + 4, lonn, imp, sc, locbndmin)
                   call locs_pp_map(pp(1, inner, outer), 2*imp - 4, lonn, imp, sc, locbndmax)
-                  if (pnmin(inner, outer) .lt. locbndmin - sc) then
-                     rt = int((locbndmin - pnmin(inner, outer))/sc)*sc
-                  else if (pnmin(inner, outer) .gt. locbndmax) then
-                     rt = (int((locbndmax - pnmin(inner, outer))/sc) - 1)*sc
+                  if (pn_t .lt. locbndmin - sc) then
+                     rt = int((locbndmin - pn_t)/sc)*sc
+                  else if (pn_t .gt. locbndmax) then
+                     rt = (int((locbndmax - pn_t)/sc) - 1)*sc
                   else
                      rt = 0.0
                   end if
@@ -757,7 +778,7 @@ subroutine cyclic_cell_ppm_intp_two_loops_gpu(outer_index, outer_size, inner_siz
          end if
       end do
    end do
-   !$acc enter data create(qmi, qpi, dqmono, qi) async(async_id)
+   !$acc enter data create(dqmono, qi) async(async_id)
    !$acc parallel loop gang collapse(3) private(imp) async(async_id)
    do outer = 1, outer_size
       do inner = 1, inner_size
@@ -788,36 +809,11 @@ subroutine cyclic_cell_ppm_intp_two_loops_gpu(outer_index, outer_size, inner_siz
                   cc = 1./(hh1 + hh2)
                   qi(i, n, inner, outer) = mass_pre*hh1*cc + mass_t*hh2*cc + (dqmono_pre - dqmono_cur)/3.
                end do
-               if (mono .eq. 1) then
-                  !$acc loop vector private(mass_t, qmi_t, qpi_t, c1, c2, cc)
-                  do i = kstr(inner, outer) - 1, kend(inner, outer) + 1
-                     mass_t = qq(mod(i - 1, imp) + 1, n, inner, outer)
-                     qmi_t = qi(i, n, inner, outer)
-                     qpi_t = qi(i + 1, n, inner, outer)
-                     c1 = qpi_t - mass_t
-                     c2 = mass_t - qmi_t
-                     if (c1*c2 .le. 0.0) then
-                        qmi_t = mass_t
-                        qpi_t = mass_t
-                     else
-                        cc = qpi_t - qmi_t
-                        c1 = cc*(mass_t - 0.5*(qpi_t + qmi_t))
-                        c2 = cc*cc/6.
-                        if (c1 .gt. c2) then
-                           qmi_t = 3.*mass_t - 2.*qpi_t
-                        else if (c1 .lt. -c2) then
-                           qpi_t = 3.*mass_t - 2.*qmi_t
-                        end if
-                     end if
-                     qmi(i, n, inner, outer) = qmi_t
-                     qpi(i, n, inner, outer) = qpi_t
-                  end do
-               end if
             end if
          end do
       end do
    end do
-   !$acc exit data delete(dqmono, qi) async(async_id)
+   !$acc exit data delete(dqmono) async(async_id)
    !$acc enter data create(kkh_array) async(async_id)
    !$acc parallel loop collapse(2) vector_length(32) private(imp, imf, kkl, tl, kl, kh, kkh, th, th2, th3, thp, thm, thc, dpp, dqq) async(async_id)
    do outer = 1, outer_size
@@ -865,8 +861,9 @@ subroutine cyclic_cell_ppm_intp_two_loops_gpu(outer_index, outer_size, inner_siz
          end if
       end do
    end do
-   !$acc exit data delete(pnmin, pnmax, kstr, kend) async(async_id)
+   !$acc exit data delete(pnmin, pnmax) async(async_id)
    !$acc enter data create(tl_array) async(async_id)
+   !$acc enter data create(dpp_array) async(async_id)
    !$acc parallel loop gang collapse(2) private(imf) async(async_id)
    do outer = 1, outer_size
       do inner = 1, inner_size
@@ -878,6 +875,21 @@ subroutine cyclic_cell_ppm_intp_two_loops_gpu(outer_index, outer_size, inner_siz
                kkh = kkh_array(i, inner, outer)
                call locs_pp_map(pp(1, inner, outer), kkh, lonn, imp, sc, locs1)
                tl_array(i, inner, outer) = (pn(i, inner, outer) - locs1)/hh(kkh, inner, outer)
+            end do
+            !$acc loop vector private(kkl, kkh, tl, th, dpp)
+            do i = 1, imf
+               kkl = kkh_array(i, inner, outer)
+               kkh = kkh_array(i + 1, inner, outer)
+               if (kkh .gt. kkl) then
+                  tl = tl_array(i, inner, outer)
+                  th = tl_array(i + 1, inner, outer)
+                  dpp = (1.0 - tl)*hh(kkl, inner, outer) + th*hh(kkh, inner, outer)
+                  !$acc loop seq
+                  do kk = kkl + 1, kkh - 1
+                     dpp = dpp + hh(kk, inner, outer)
+                  end do
+               end if
+               dpp_array(i, inner, outer) = dpp
             end do
          end if
       end do
@@ -899,44 +911,30 @@ subroutine cyclic_cell_ppm_intp_two_loops_gpu(outer_index, outer_size, inner_siz
                   thp = th3 - th2
                   thm = th3 - 2.*th2 + th
                   thc = -2.*th3 + 3.*th2
-                  dql_array(i, n, inner, outer) = thp*qpi(kkh, n, inner, outer) + thm*qmi(kkh, n, inner, outer) + thc*qq(mod(kkh - 1, imp) + 1, n, inner, outer)
+                  qmi_t = 0.0
+                  qpi_t = 0.0
+                  if ((mono .eq. 1) .and. (kkh .ge. kstr(inner, outer) - 1) .and. (kkh .le. kend(inner, outer) + 1)) then
+                     mass_t = qq(mod(kkh - 1, imp) + 1, n, inner, outer)
+                     qmi_t = qi(kkh, n, inner, outer)
+                     qpi_t = qi(kkh + 1, n, inner, outer)
+                     c1 = qpi_t - mass_t
+                     c2 = mass_t - qmi_t
+                     if (c1*c2 .le. 0.0) then
+                        qmi_t = mass_t
+                        qpi_t = mass_t
+                     else
+                        cc = qpi_t - qmi_t
+                        c1 = cc*(mass_t - 0.5*(qpi_t + qmi_t))
+                        c2 = cc*cc/6.
+                        if (c1 .gt. c2) then
+                           qmi_t = 3.*mass_t - 2.*qpi_t
+                        else if (c1 .lt. -c2) then
+                           qpi_t = 3.*mass_t - 2.*qmi_t
+                        end if
+                     end if
+                  end if
+                  dql_array(i, n, inner, outer) = thp*qpi_t + thm*qmi_t + thc*qq(mod(kkh - 1, imp) + 1, n, inner, outer)
                end do
-            end if
-         end do
-      end do
-   end do
-   !$acc exit data delete(qmi, qpi) async(async_id)
-   !$acc enter data create(dpp_array) async(async_id)
-   !$acc parallel loop gang collapse(2) private(imf) async(async_id)
-   do outer = 1, outer_size
-      do inner = 1, inner_size
-         if (nstep_less(inner, outer)) then
-            imf = outer_index(3, outer)
-            !$acc loop vector private(kkl, kkh, tl, th, dpp)
-            do i = 1, imf
-               kkl = kkh_array(i, inner, outer)
-               kkh = kkh_array(i + 1, inner, outer)
-               if (kkh .gt. kkl) then
-                  tl = tl_array(i, inner, outer)
-                  th = tl_array(i + 1, inner, outer)
-                  dpp = (1.0 - tl)*hh(kkl, inner, outer) + th*hh(kkh, inner, outer)
-                  !$acc loop seq
-                  do kk = kkl + 1, kkh - 1
-                     dpp = dpp + hh(kk, inner, outer)
-                  end do
-               end if
-               dpp_array(i, inner, outer) = dpp
-            end do
-         end if
-      end do
-   end do
-   !$acc parallel loop gang collapse(3) private(imp, imf) async(async_id)
-   do outer = 1, outer_size
-      do inner = 1, inner_size
-         do n = 1, nvars
-            if (nstep_less(inner, outer)) then
-               imp = outer_index(2, outer)
-               imf = outer_index(3, outer)
                !$acc loop vector private(kkl, kkh, tl, th, dqq, dql_t, dqh_t)
                do i = 1, imf
                   kkl = kkh_array(i, inner, outer)
@@ -947,9 +945,9 @@ subroutine cyclic_cell_ppm_intp_two_loops_gpu(outer_index, outer_size, inner_siz
                   dqh_t = dql_array(i + 1, n, inner, outer)
                   if (kkh .eq. kkl) then
                      rdthtl = th - tl
-                     if ( rdthtl .ne. 0. ) rdthtl = 1. / rdthtl
+                     if (rdthtl .ne. 0.) rdthtl = 1./rdthtl
 !hmhj                     qn_t = (dqh_t - dql_t)/(th - tl)
-                     qn_t = (dqh_t - dql_t) * rdthtl
+                     qn_t = (dqh_t - dql_t)*rdthtl
                   else
                      dqq = (qq(mod(kkl - 1, imp) + 1, n, inner, outer) - dql_t)*hh(kkl, inner, outer) + dqh_t*hh(kkh, inner, outer)
                      !$acc loop seq
@@ -964,6 +962,7 @@ subroutine cyclic_cell_ppm_intp_two_loops_gpu(outer_index, outer_size, inner_siz
          end do
       end do
    end do
+   !$acc exit data delete(qi, kstr, kend) async(async_id)
    !$acc exit data delete(hh, kkh_array, tl_array, dql_array, dpp_array) copyout(has_error) async(async_id)
    !$acc wait(async_id)
    if (has_error) then
