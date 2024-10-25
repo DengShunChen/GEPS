@@ -2,6 +2,7 @@
 !#define new_saturation
 !#define sat_predict
 !#define use_declination
+!#define use_cpm
 !WRF:MODEL_LAYER:PHYSICS
 !
 
@@ -2460,6 +2461,15 @@ CONTAINS
       real :: dltd, nbd, sbd, nbd1, nbd2, sbd1, sbd2, latint
       real :: fxlat
 #endif
+
+      !cp=1.004e7
+      !alv=2.5e10 ; alf=3.336e9 ; als=2.8336e10
+      !rw=4.615e6 ; cw=4.187e7 ; ci=2.093e7
+      !avcp=alv/cp*pir
+      real, parameter :: cvap = 1.846e+7    !specific heat capacity of vapor (in CGS)
+      real, parameter :: cliq = 4.218e+7    !specific heat capacity of liquid (in CGS)
+      real, parameter :: cice = 2.106e+7    !specific heat capacity of ice (in CGS)
+      real :: cpm, hlv, hls, hlf
 !
 !JJS20090623      save  
 
@@ -3764,6 +3774,16 @@ CONTAINS
 !vvvvvvvvvvvvvvv Tao 20110722 vvvvvvvvvvvvvvv
       if (improve .eq. 3 .or. improve .eq. -1) then
 !^^^^^^^^^^^^^^^ Tao 20110722 ^^^^^^^^^^^^^^^ 
+#ifdef use_cpm
+          cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                cice*(qi(i,j)+qs(i,j)+qg(i,j))
+          hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+          hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+          hls = hlv + hlf
+          avcp = hlv/cpm*pir
+          ascp = hls/cpm*pir
+          afcp = hlf/cpm*pir
+#endif
          y1(i,j)=qr(i,j)/d2t
           piacr(i,j)=min(y1(i,j), piacr(i,j))
           dgacr(i,j)=min(y1(i,j), dgacr(i,j))
@@ -3940,6 +3960,16 @@ CONTAINS
              pgmlt(i,j)=r2ig*max(0.0, min(dd1(i,j), qg(i,j)))
           endif  !improve
 
+#ifdef use_cpm
+          cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                cice*(qi(i,j)+qs(i,j)+qg(i,j))
+          hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+          hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+          hls = hlv + hlf
+          avcp = hlv/cpm*pir
+          ascp = hls/cpm*pir
+          afcp = hlf/cpm*pir
+#endif
           pt(i,j)=pt(i,j)-afcp*(psmlt(i,j)+pgmlt(i,j))
           qr(i,j)=qr(i,j)+psmlt(i,j)+pgmlt(i,j)
           qs(i,j)=qs(i,j)-psmlt(i,j)
@@ -4098,12 +4128,32 @@ CONTAINS
             pcfr(i,j)=pcfr(i,j)*y2(i,j)
          endif  !y1
 
+#ifdef use_cpm
+         cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+               cice*(qi(i,j)+qs(i,j)+qg(i,j))
+         hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+         hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+         hls = hlv + hlf
+         avcp = hlv/cpm*pir
+         ascp = hls/cpm*pir
+         afcp = hlf/cpm*pir
+#endif
          pt(i,j)=pt(i,j)+afcp*y1(i,j)
          qc(i,j)=qc(i,j)-y1(i,j)
          qi(i,j)=qi(i,j)+y1(i,j)
 
       else                                  ! below is 2007 saticel_s
 
+#ifdef use_cpm
+         cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+               cice*(qi(i,j)+qs(i,j)+qg(i,j))
+         hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+         hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+         hls = hlv + hlf
+         avcp = hlv/cpm*pir
+         ascp = hls/cpm*pir
+         afcp = hlf/cpm*pir
+#endif
          if (tair(i,j).lt.t0 .and. tair(i,j).gt.t00) then
             tairc(i,j)=tair(i,j)-t0
             y1(i,j)=max( min(tairc(i,j), -1.), -31.)
@@ -4521,6 +4571,16 @@ CONTAINS
         
       if (improve .eq. 3) then
          tair(i,j)=(pt(i,j)+tb0)*pi0
+#ifdef use_cpm
+         cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+               cice*(qi(i,j)+qs(i,j)+qg(i,j))
+         hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+         hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+         hls = hlv + hlf
+         avcp = hlv/cpm*pir
+         ascp = hls/cpm*pir
+         afcp = hlf/cpm*pir
+#endif
          if (tair(i,j) .lt. t0) then
             if (qi(i,j) .le. cmin) qi(i,j)=0.
 !             if (qi(i,j) .le. cmin2) qi(i,j)=0.
@@ -4586,6 +4646,16 @@ CONTAINS
 !
           if ( itaobraun.eq.0 ) then
              tair(i,j)=(pt(i,j)+tb0)*pi0
+#ifdef use_cpm
+            cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                  cice*(qi(i,j)+qs(i,j)+qg(i,j))
+            hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+            hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+            hls = hlv + hlf
+            avcp = hlv/cpm*pir
+            ascp = hls/cpm*pir
+            afcp = hlf/cpm*pir
+#endif
              if (tair(i,j) .lt. t0) then
                 if (qi(i,j) .le. cmin1) qi(i,j)=0.
                 tairc(i,j)=tair(i,j)-t0
@@ -4622,6 +4692,16 @@ CONTAINS
 
           if ( itaobraun.eq.1 .and. improve .lt. 2) then
              tair(i,j)=(pt(i,j)+tb0)*pi0
+#ifdef use_cpm
+             cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                   cice*(qi(i,j)+qs(i,j)+qg(i,j))
+             hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+             hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+             hls = hlv + hlf
+             avcp = hlv/cpm*pir
+             ascp = hls/cpm*pir
+             afcp = hlf/cpm*pir
+#endif
              if (tair(i,j) .lt. t0) then
                 if (qi(i,j) .le. cmin) qi(i,j)=0.
                 tairc(i,j)=tair(i,j)-t0
@@ -4669,6 +4749,16 @@ CONTAINS
          if (new_ice_sat .eq. 0) then
 
                tair(i,j)=(pt(i,j)+tb0)*pi0
+#ifdef use_cpm
+               cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                     cice*(qi(i,j)+qs(i,j)+qg(i,j))
+               hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+               hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+               hls = hlv + hlf
+               avcp = hlv/cpm*pir
+               ascp = hls/cpm*pir
+               afcp = hlf/cpm*pir
+#endif
                cnd(i,j)=rt0*(tair(i,j)-t00)
                dep(i,j)=rt0*(t0-tair(i,j))
                y1(i,j)=1./(tair(i,j)-c358)
@@ -4730,6 +4820,16 @@ CONTAINS
          if (new_ice_sat .eq. 1) then
 
                tair(i,j)=(pt(i,j)+tb0)*pi0
+#ifdef use_cpm
+               cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                     cice*(qi(i,j)+qs(i,j)+qg(i,j))
+               hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+               hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+               hls = hlv + hlf
+               avcp = hlv/cpm*pir
+               ascp = hls/cpm*pir
+               afcp = hlf/cpm*pir
+#endif
                cnd(i,j)=rt0*(tair(i,j)-t00)
                dep(i,j)=rt0*(t0-tair(i,j))
                y1(i,j)=1./(tair(i,j)-c358)
@@ -4802,6 +4902,16 @@ CONTAINS
           dep(i,j)=0.0
           cnd(i,j)=0.0
           tair(i,j)=(pt(i,j)+tb0)*pi0
+#ifdef use_cpm
+          cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                cice*(qi(i,j)+qs(i,j)+qg(i,j))
+          hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+          hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+          hls = hlv + hlf
+          avcp = hlv/cpm*pir
+          ascp = hls/cpm*pir
+          afcp = hlf/cpm*pir
+#endif
           if (tair(i,j) .ge. 253.16) then
               y1(i,j)=1./(tair(i,j)-c358)
               qsw(i,j)=rp0*exp(c172-c409*y1(i,j))
@@ -4848,6 +4958,16 @@ CONTAINS
          dep(i,j)=0.0
          cnd(i,j)=0.0
          tair(i,j)=(pt(i,j)+tb0)*pi0
+#ifdef use_cpm
+         cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+               cice*(qi(i,j)+qs(i,j)+qg(i,j))
+         hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+         hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+         hls = hlv + hlf
+         avcp = hlv/cpm*pir
+         ascp = hls/cpm*pir
+         afcp = hlf/cpm*pir
+#endif
          if (tair(i,j).ge.t00) THEN
             y1(i,j)=1./(tair(i,j)-c358)
             qsw(i,j)=rp0*exp(c172-c409*y1(i,j))
@@ -4865,6 +4985,17 @@ CONTAINS
             qv(i,j)=qv(i,j)-cnd(i,j)
             qc(i,j)=qc(i,j)+cnd(i,j)
          endif
+         tair(i,j)=(pt(i,j)+tb0)*pi0
+#ifdef use_cpm
+         cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+               cice*(qi(i,j)+qs(i,j)+qg(i,j))
+         hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+         hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+         hls = hlv + hlf
+         avcp = hlv/cpm*pir
+         ascp = hls/cpm*pir
+         afcp = hlf/cpm*pir
+#endif
          if (tair(i,j).le.273.16) THEN
 !c    ******   deposition or sublimation of qi    ******
             y1(i,j)=1./(tair(i,j)-c358)
@@ -4985,6 +5116,16 @@ CONTAINS
 
            if (tair(i,j) .lt. t0) then 
 
+#ifdef use_cpm
+              cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                    cice*(qi(i,j)+qs(i,j)+qg(i,j))
+              hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+              hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+              hls = hlv + hlf
+              avcp = hlv/cpm*pir
+              ascp = hls/cpm*pir
+              afcp = hlf/cpm*pir
+#endif
               rtair(i,j)=1./(tair(i,j)-c76)
               y2(i,j)=exp(c218-c580*rtair(i,j))
               qsi(i,j)=rp0*y2(i,j)
@@ -5071,6 +5212,16 @@ CONTAINS
        if (qr(i,j) .gt. 0.0) then
           tair(i,j)=(pt(i,j)+tb0)*pi0
           rtair(i,j)=1./(tair(i,j)-c358)
+#ifdef use_cpm
+          cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                cice*(qi(i,j)+qs(i,j)+qg(i,j))
+          hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+          hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+          hls = hlv + hlf
+          avcp = hlv/cpm*pir
+          ascp = hls/cpm*pir
+          afcp = hlf/cpm*pir
+#endif
           if (improve.eq.3) then
 	     y2(i,j)=exp( c172-c409*rtair(i,j) )
 	     esw(i,j)=c610*y2(i,j)
@@ -5138,6 +5289,16 @@ CONTAINS
           pmltg(i,j)=0.0
 	     tair(i,j)=(pt(i,j)+tb0)*pi0
           tairc(i,j)=tair(i,j)-t0
+#ifdef use_cpm
+          cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                cice*(qi(i,j)+qs(i,j)+qg(i,j))
+          hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+          hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+          hls = hlv + hlf
+          avcp = hlv/cpm*pir
+          ascp = hls/cpm*pir
+          afcp = hlf/cpm*pir
+#endif
 
             ftns0(i,j)=1.
             ftng0(i,j)=1.
