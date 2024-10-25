@@ -2448,12 +2448,12 @@ CONTAINS
 #ifdef sat_predict
       ! saturation prediction scheme :
       integer :: hid
-      real :: rhoair, cpm, xlv, xls, cpm1, dv1, abw, abi
+      real :: rhoair, xlv, xls, cpm1, dv1, abw, abi
       real :: taui, tauc, taur, tau, atem
       real :: C1, K1, ncloud, nact, qcmax, mvrc
       real :: qimax, nice, inhgr, rhoi, mvdi, mvri
       real :: lqr, lqr2, mvdr, efdr, kmin, kmax, kdxr, afar,  &
-              tnr, lzr, bvr, avr, mu, rhoaj, gr2, gbr25
+              tnr, lzr, bvr, avr, mur, rhoaj, gr2, gbr25
       real :: cnd1, cnd2, dep1, dep2, fez1, fez2, latr, ern1, ern2
       real, dimension (its:ite,jts:jte) :: pact, fez
 
@@ -4363,7 +4363,7 @@ CONTAINS
 !        zr = (afar+3.)/efdr*1.e+6
         lzr = log((afar+3.)/efdr*1.e+6)
         tnr = log(6.*qr(i,j)*rhoair/cpi/1.e+3)                 & ! slope parameter for rain
-              +(4.+afar)*lzr-dgamma(afar+4.)
+              +(4.+afar)*lzr-lgamma(afar+4.)
         avr = exp(7.6004532 - 0.7990953*ltk                    & ! coefficient ... for rain (?)
                   + 1.0281818*lqr - 0.16595505*lqr2            &
                   + 1.110037E-2*lqr*lqr2                       &
@@ -4372,12 +4372,12 @@ CONTAINS
               + 2.6088596E-2*lqr - 7.4467639E-3*lqr2           &
               + 7.7592532E-4*lqr*lqr2                          &
               - 1.7056075E-5*lqr2*lqr2))
-        mu = 1.496E-6*tair(i,j)**1.5/(tair(i,j)+120.)            ! shape parameter for rain
+        mur = 1.496E-6*tair(i,j)**1.5/(tair(i,j)+120.)           ! shape parameter for rain
         rhoaj = sqrt(1.29/rhoair)
-        gr2 = dgamma(afar+2.)
-        gbr25 = dgamma(bvr*0.5+afar+2.5)
+        gr2 = lgamma(afar+2.)
+        gbr25 = lgamma(bvr*0.5+afar+2.5)
         taur = 1./(2.*cpi*dv1*(0.78*exp(tnr+gr2-(afar+2.)      &
-               *lzr)+0.31*sqrt(avr*rhoaj/mu)*(mu/dv1)          &
+               *lzr)+0.31*sqrt(avr*rhoaj/mur)*(mur/dv1)        &
                **thrd*exp(tnr+gbr25-(bvr*0.5+afar+2.5)         &
                *lzr)))
       else
