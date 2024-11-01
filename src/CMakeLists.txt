@@ -29,9 +29,9 @@ foreach(RSM_ITEM ${RSM_SRC})
   list(REMOVE_ITEM TCO_SRC ${RSM_ITEM})
 endforeach()
 
+# Remove files ending with "_gpu" in the TCO sources.
+list(FILTER TCO_SRC EXCLUDE REGEX ".*_gpu\\.f90$")
 # Remove unnecessary sources in the TCO sources.
-list(REMOVE_ITEM TCO_SRC "mod_ndslfv_monoadv_gpu.f90")
-list(REMOVE_ITEM TCO_SRC "mpe_ndslfv_gpu.f90")
 list(REMOVE_ITEM TCO_SRC "unify_grid.f90")
 list(REMOVE_ITEM TCO_SRC "unify_gridr.f90")
 list(REMOVE_ITEM TCO_SRC "unify_gridr.f90")
@@ -40,6 +40,11 @@ if(${USE_CUDA})
   file(GLOB TCO_GPU_SRC "${CMAKE_CURRENT_SOURCE_DIR}" "nvidia/*.f90"
        "nvidia/*.cc")
   list(APPEND TCO_SRC ${TCO_GPU_SRC})
+
+  file(GLOB TCO_GPU_SRC RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "*_gpu.f90")
+  list(APPEND TCO_SRC ${TCO_GPU_SRC})
+  list(REMOVE_ITEM TCO_SRC "mod_ndslfv_monoadv_gpu.f90")
+  list(REMOVE_ITEM TCO_SRC "mpe_ndslfv_gpu.f90")
 endif()
 
 if(NOT ${USE_RSM})
@@ -95,7 +100,9 @@ else()
   target_link_libraries(
     ${LIB} PUBLIC mod_ndslfv_monoadv_gpu ${NetCDF_Fortran_LIBRARIES}
                   ${DMS_LIBRARIES} ${W3_LIBRARIES})
-  target_link_options(${LIB} PUBLIC "-Mconcur")
+  if(${USE_PAR})
+    target_link_options(${LIB} PUBLIC "-Mconcur")
+  endif()
 endif()
 
 install(TARGETS ${EXEC} DESTINATION ${CMAKE_INSTALL_PREFIX})

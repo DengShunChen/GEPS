@@ -1,6 +1,4 @@
 subroutine intgrt_gpu
-   !$acc routine(prexp_hybrid_cwb_gpu) vector
-   !$acc routine(gridnl_hybrid_ndsl_gpu) vector
 !
 !***********************************************************************
 !  this subroutine is the basic time stepping driver.  it does the
@@ -739,27 +737,23 @@ subroutine intgrt_gpu
 !      call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plmid      &
 !                 ,dlpl,dtpl,nsizey)
 !
-      !$acc parallel loop gang private(j) async(async_id)
-      do jj = 1, jlistnum
-         j = jlist1(jj)
-!
-!   new p**capa quantities were computed in previous diabat call
-!
-         call prexp_hybrid_cwb_gpu(nxjp(j), nxp, lev, ptop, sigma, ptm(1, jj), &
-                                   pk(1, 1, jj), pk2(1, 1, jj), plt(1, 1, jj))
-!
-!
-!ndy        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld               &
-         call gridnl_hybrid_ndsl_gpu(nxjp(j), nxp, lev, ncld &
-                                     , cp, radsq, um(1, 1, jj), vm(1, 1, jj), rdivm(1, 1, jj), tm(1, 1, jj) &
-                                     , qt(1, 1, jj), phi(1, 1, jj), ptm(1, jj), dtpl(1, jj), dlpl(1, jj), sinl(j) &
-                                     , pk(1, 1, jj), pk2(1, 1, jj), dsigma, sigma, onocos(j), cor(j) &
-                                     , diveng(1, 1, jj), vdmerdg(1, 1, jj), vdzonlg(1, 1, jj), pten(1, 1, jj) &
-                                     !ndy        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj),2 )
-                                     , deldm(1, jj), sdpbl(1, jj), sd(1, 1, jj), pdot(1, 1, jj), vvel(1, 1, jj) &
-                                     , sgeo(1, jj))
-!
-      end do !jj = 1,jlistnum
+      !
+      !   new p**capa quantities were computed in previous diabat call
+      !
+      call prexp_hybrid_cwb_gpu_refactor(nxjp, nxp, lev, ptop, sigma, ptm, &
+                                         pk, pk2, plt)
+      !
+      !
+!ndy        call gridnl_hybrid_ndsl_2tl (nxjp,nxp,lev,ncld               &
+      call gridnl_hybrid_ndsl_gpu_refactor(nxjp, nxp, lev, ncld &
+                                           , cp, radsq, um, vm, rdivm, tm &
+                                           , qt, phi, ptm, dtpl, dlpl, sinl &
+                                           , pk, pk2, dsigma, sigma, onocos, cor &
+                                           , diveng, vdmerdg, vdzonlg, pten &
+                                           !ndy        , deldm,sdpbl,sd,pdot,sgeo,2 )
+                                           , deldm, sdpbl, sd, pdot, vvel &
+                                           , sgeo)
+      !
 
       call joinrs_gpu(cc_cg, diveng, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
       call tranrs_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, polyf, weight, &
@@ -966,26 +960,22 @@ subroutine intgrt_gpu
 !  the symmetry properties of the spherical harmonics
 !
    forward = .false.
-   !$acc parallel loop gang private(j) async(async_id)
-   do jj = 1, jlistnum
-      j = jlist1(jj)
-!
-!   new p**capa quantities were computed in previous diabat call
-!
-      call prexp_hybrid_cwb_gpu(nxjp(j), nxp, lev, ptop, sigma, ptm(1, jj), &
-                                pk(1, 1, jj), pk2(1, 1, jj), plt(1, 1, jj))
-!
-!       Calculate Vertical velocity & Stream Functions
-!
+   !
+   !   new p**capa quantities were computed in previous diabat call
+   !
+   call prexp_hybrid_cwb_gpu_refactor(nxjp, nxp, lev, ptop, sigma, ptm, &
+                                      pk, pk2, plt)
+   !
+   !       Calculate Vertical velocity & Stream Functions
+   !
 !!        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
-      call gridnl_hybrid_ndsl_gpu(nxjp(j), nxp, lev, ncld &
-                                  , cp, radsq, um(1, 1, jj), vm(1, 1, jj), rdivm(1, 1, jj), tm(1, 1, jj) &
-                                  , qm(1, 1, jj), phi(1, 1, jj), ptm(1, jj), dtpl(1, jj), dlpl(1, jj), sinl(j) &
-                                  , pk(1, 1, jj), pk2(1, 1, jj), dsigma, sigma, onocos(j), cor(j) &
-                                  , diveng(1, 1, jj), vdmerdg(1, 1, jj), vdzonlg(1, 1, jj), pten(1, 1, jj) &
-                                  , deldm(1, jj), sdpbl(1, jj), sd(1, 1, jj), pdot(1, 1, jj), vvel(1, 1, jj) &
-                                  , sgeo(1, jj))
-   end do !jj = 1,jlistnum
+   call gridnl_hybrid_ndsl_gpu_refactor(nxjp, nxp, lev, ncld &
+                                        , cp, radsq, um, vm, rdivm, tm &
+                                        , qm, phi, ptm, dtpl, dlpl, sinl &
+                                        , pk, pk2, dsigma, sigma, onocos, cor &
+                                        , diveng, vdmerdg, vdzonlg, pten &
+                                        , deldm, sdpbl, sd, pdot, vvel &
+                                        , sgeo)
 
    call joinrs_gpu(cc_cg, diveng, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
    call tranrs_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, polyf, weight, &
@@ -1166,7 +1156,7 @@ subroutine intgrt_gpu
 
       sptend = sqrt(0.5*sptend)*3600.0
       if (myrank .eq. 0) &
-         print *, 'surf pres tend rms =', sptend, ' mb/hrs'
+         print *, 'surf pres tend rms(GPU) =', sptend, ' mb/hrs'
 !
 !  take a time step
 !
@@ -1588,15 +1578,11 @@ subroutine intgrt_gpu
                               gwk1_cg, ws_cg, wc_cg, wcc_fk_cg)
    call ujoinsr_gpu(cc_cg, tt, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
    call transr1_gpu(jtrun, jtmax, nx, my, my_max, polyf, plnow, pt, nsizey, cc_cg, gwk1_cg)
-!
-!   computing new p**capa quantities
-!
-   !$acc parallel loop gang private(j) async(async_id)
-   do jj = 1, jlistnum
-      j = jlist1(jj)
-      call prexp_hybrid_cwb_gpu(nxjp(j), nxp, lev, ptop, sigma, pt(1, jj), &
-                                pk(1, 1, jj), pk2(1, 1, jj), plt(1, 1, jj))
-   end do
+   !
+   !   computing new p**capa quantities
+   !
+   call prexp_hybrid_cwb_gpu_refactor(nxjp, nxp, lev, ptop, sigma, pt, &
+                                      pk, pk2, plt)
 !
 !  zonal and meridional gradients of terrain pressure
 !
