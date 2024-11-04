@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 disp(){
  echo "$0 [fx1000|a100]" ; exit 1
@@ -8,11 +8,22 @@ if [[ "$1" =~ \-h|help ]] ; then
   disp 
 fi
 
+set -x
+
+MDIR=$(pwd)
+echo "MDIR=${MDIR}"
+cd ${MDIR}
+
 machine=${1:-fx1000}
 
 # submit with sum group
-newgrp sum  
-JID=$(pjsub -z jid TCo383L72_IC_sample_${machine} -x CMAKE_BUILD=1,GITLAB_CICD=1,machine=$machine -g sum )
+group=sum
+
+if [ $(id -gn) != $group ]; then
+  exec sg $group "$0 $*"
+fi
+
+JID=$(pjsub -z jid TCo383L72_IC_sample_${machine} -x CMAKE_BUILD=1,GITLAB_CICD=1,machine=$machine -g ${group} )
 
 # wait job finish
 echo "Job ID :  $JID"

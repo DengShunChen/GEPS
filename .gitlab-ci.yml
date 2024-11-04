@@ -32,8 +32,8 @@ arm-test:
     - cicd
   script:
     - echo "arm testing"
+    - chmod 755 job/run_rt.sh
     - cd job
-    - chmod 755 ./run_rt.sh
     - ./run_rt.sh
 
 gpu-build:
@@ -65,8 +65,8 @@ gpu-test:
     - cicd
   script:
     - echo "gpu testing"
+    - chmod 755 job/run_rt.sh
     - cd job
-    - chmod 755 ./run_rt.sh 
     - ./run_rt.sh a100
 
 stg-build:
@@ -97,6 +97,16 @@ merge_request:
     - merge_requests
   script:
     - ./compile fx1000
+    - echo "cpu regression test"
+    - chmod 755 job/run_rt.sh
+    - cd job
+    - ./run_rt.sh fx1000
+    - cd ..
     - ./compile a100
     - echo "gpu unit test"
     - ./job/unit_test.sh
+    - echo "gpu regression test"
+    - chmod 755 job/run_rt.sh
+    - cd job
+    - ./run_rt.sh a100
+    
