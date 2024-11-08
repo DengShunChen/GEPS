@@ -35,7 +35,8 @@ foreach(_lib IN ITEMS rdms gdbm)
   find_library(
     DMS_LIBRARY_${_lib}
     NAMES ${_lib}
-    PATHS ${DMS_ROOT}/lib
+    PATHS /users/xa09/pkg/x86_64/dms38key/lib
+          ${DMS_ROOT}/lib
           $ENV{DMS_ROOT}/lib
           ${DMS_ROOT}/lib64
           $ENV{DMS}
