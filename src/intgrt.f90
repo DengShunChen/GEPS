@@ -445,7 +445,7 @@
           dtx_tau = dtx/3600.
 
           if (myrank .eq. 0) then
-             print *, 'forcast begin tau=', itaui, ' to tau=', itaue
+             print *, 'forecast begin tau=', itaui, ' to tau=', itaue
 
 !     ! for io quilting
 !      if(io_quilting)then
@@ -1065,7 +1065,7 @@
 
 
           if (yesdia) then
-             qp(:, :, :) = qt(:, :, :)
+!             qp(:, :, :) = qt(:, :, :)
              call diabat(fwd, docup, dodry, dolsp, dopbl, dorad, doshl, dograv, tofd &
                          , nx, my, my_max, lev, ncld, nmcup, nmpbl, nmland, nmshl, cgw &
 !                         , idg, jdg, ldiag, dtx, tau, hours, julian, year, yrd &
@@ -1109,9 +1109,11 @@
              call rayleifr(nx, my, my_max, lev, rad, cosl, dt, ut, vt)
 
              if (two_loop) then
-                ! adjustmen of surface pressure, virtual potential
-                ! temperature and all tracers
-                if (mass_dp) call adjptq(dta, plnow, pltemp)
+                if (mass_dp) then
+                  call mpe2d_unify_nx(ww1,pt)
+                  call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1 &
+                              ,plnow,nsizey)
+                endif
                 call joinrs(cc, tt, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
                 call tranrs(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc &
                             , temnow, 1, nsizey)
@@ -1121,10 +1123,11 @@
                 call trandv(jtrun, jtmax, nx, my, my_max, lev, ut, vt, weight, cim &
                             , onocos, poly, dpoly, vornow, divnow, nsizey)
              else
-                ! adjustmen of surface pressure, virtual potential
-                ! temperature and all tracers for one loop
-                if (mass_dp) call adjptq(dta, pltemp, plten)
-
+                if (mass_dp) then
+                  call mpe2d_unify_nx(ww1,ptp)
+                  call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1 &
+                              ,plten,nsizey)
+                endif
              end if ! two_loop
 
           end if    ! end of (yesdia)
