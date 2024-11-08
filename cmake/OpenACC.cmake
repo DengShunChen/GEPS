@@ -28,7 +28,7 @@ link_directories(/home/xa09/pkg/openmpi-4.0.1/lib)
 link_libraries(-lblas -llapack)
 
 # Link library dms library
-link_directories(/package/x86_64/dms/dms.v4/lib)
+link_directories(/users/xa09/pkg/x86_64/dms38key/lib)
 link_libraries(-lrdms -lgdbm)
 
 # Link library zlib
