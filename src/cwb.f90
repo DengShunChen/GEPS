@@ -357,81 +357,137 @@
       return
       end
 !
-      subroutine adjptq(dta,pltemp,pltend)
+      subroutine adjptq(qt,qp,pnew,pten,nxj,nxp,my_max,lev,ncld,dta)
 
-      use index
-      use rank
-      use const
-      use param
-      use grid
+      use const, only : RTYPE,dsigma
 
       implicit none
 
-      integer i,j,k,n,jj,kk,nxj,nxjf,kn
-      real    dsigp    ,qtot      ,qtota                    &
-             ,sumtott  ,sumwatt   ,sumwatta                 &
+      integer          nxj,nxp,my_max,lev,ncld
+      real             dta
+      real(kind=RTYPE) qt(nxp,lev*ncld),qp(nxp,lev*ncld), &
+                       pnew(nxp),pten(nxp)
+
+      integer i,k,n,jj,kk
+      real(kind=RTYPE) pt(nxp)
+      real    dsigp    ,qtot      ,qtota                               &
+             ,sumtott  ,sumwatt   ,sumwatta                            &
              ,odpondp 
-      real(kind=RTYPE) pnew(nxp,my_max),pten(nxp,my_max)    &
-                      ,ww1(nx,my_max),pltemp(jtrun,jtmax,2) &
-                      ,pltend(jtrun,jtmax,2),dta
       
+      pt(1:nxj) = pnew(1:nxj)
       ! adjustment of surface pressure
-      do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        nxjf=nxdef(j)
         do i = 1,nxj
           sumtott=0.
           sumwatt=0.
           sumwatta=0.
           do k = 1, lev
-            dsigp = dsigma(k,1)*pt(i,jj)+dsigma(k,2)
+            dsigp = dsigma(k,1)*pt(i)+dsigma(k,2)
             qtot=0.
             qtota=0.
             do n = 1, ncld
                kk=k+(n-1)*lev
-               qtot = qtot  + qp(i,kk,jj)
-               qtota= qtota + qt(i,kk,jj)
+               qtot = qtot  + qp(i,kk)
+               qtota= qtota + qt(i,kk)
             enddo
             sumtott = sumtott  + dsigp
             sumwatt = sumwatt  + dsigp * qtot
             sumwatta= sumwatta + dsigp * qtota
-            tt(i,k,jj)  = tt(i,k,jj)*pk(i,k,jj) / (1.0+0.608*qt(i,k,jj))
           enddo
-          pnew(i,jj) = sumtott - sumwatt + sumwatta
-
+          pnew(i) = sumtott - sumwatt + sumwatta
         enddo
-      enddo
-
-      call mpe2d_unify_nx(ww1,pnew)
-      call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1            &
-                  ,pltemp,nsizey)            
-      call transr1(jtrun,jtmax,nx,my,my_max,poly,pltemp,pnew,nsizey)
 
       ! mass adjustment of all tracers and virtual potential temperature
 
-      do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pnew(1,jj), &
-                                pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
         do i = 1,nxj
           do k = 1, lev
-            odpondp =  (dsigma(k,1)*pt(i,jj)+dsigma(k,2))              &
-                     / (dsigma(k,1)*pnew(i,jj)+dsigma(k,2))
+            odpondp =  (dsigma(k,1)*pt(i)+dsigma(k,2))              &
+                     / (dsigma(k,1)*pnew(i)+dsigma(k,2))
             do n = 1, ncld
               kk=k+(n-1)*lev
-              qt(i,kk,jj) = qt(i,kk,jj) * odpondp
+              qt(i,kk) = qt(i,kk) * odpondp   ! global method
             enddo
-            tt(i,k,jj) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj))/pk(i,k,jj)
           enddo
-          pten(i,jj) = ( pnew(i,jj) - ptp(i,jj) ) / dta
+          pten(i) = ( pnew(i) - pten(i) ) / dta
         enddo
-      enddo
 
-      call mpe2d_unify_nx(ww1,pten)
-      call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1            &
-                  ,pltend,nsizey)            
+      return
+      end
+
+      subroutine adjptqintp(ut,vt,tt,qt,qp,pnew,pten,nxj,nxp,my_max, &
+                            lev,ncld,dta)
+
+      use const, only : RTYPE,dsigma,sigma
+      use grid,  only : ndslvvar
+
+      implicit none
+
+      integer          nxj,nxp,my_max,lev,ncld
+      real             dta
+      real(kind=RTYPE) ut(nxp,lev),vt(nxp,lev),tt(nxp,lev),          &
+                       qt(nxp,lev*ncld),qp(nxp,lev*ncld),            &
+                       pnew(nxp),pten(nxp),pold(nxp)
+
+      integer          i,k,n,kk,ki
+      integer          kuu,kvv,ktt
+      real(kind=RTYPE) plnew(lev+1),plold(lev+1)
+      real(kind=RTYPE) rqda(lev,ndslvvar),rqnn(lev,ndslvvar)
+      real             dsigp,qtot,qtota,odpondp,ptmp
+
+      kuu = 1
+      kvv = kuu + 1
+      ktt = kvv + 1
+      
+      pold(1:nxj) = pnew(1:nxj)
+      ! new surface pressure
+        do i = 1,nxj
+          plnew(lev+1) = 0.
+          plold(lev+1) = 0.
+          ptmp         = 0.
+          do k = 1, lev
+            ki=lev-k+1
+            dsigp = dsigma(k,1)*pold(i)+dsigma(k,2)
+            plold(ki) = plold(ki+1)-dsigp
+            qtot=0.
+            qtota=0.
+            do n = 1, ncld
+              kk=k+(n-1)*lev
+              qtot = qtot  + qp(i,kk)
+              qtota= qtota + qt(i,kk)
+            enddo
+            ptmp = ptmp+dsigp*(1.-qtot+qtota)
+          enddo
+          pnew(i) = ptmp
+          pten(i) = ( pnew(i) - pten(i) ) / dta
+
+          ! mass adjustment of all tracers and virtual potential temperature
+          do k = 1, lev
+            ki=lev-k+1
+            dsigp = dsigma(k,1)*pnew(i)+dsigma(k,2)
+            plnew(ki) = plnew(ki+1)-dsigp
+            odpondp =  (dsigma(k,1)*pold(i)+dsigma(k,2)) / dsigp 
+            rqda(ki,kuu) = ut(i,k) * odpondp
+            rqda(ki,kvv) = vt(i,k)
+            rqda(ki,ktt) = tt(i,k)
+            do n = 1, ncld
+              kk=k+(n-1)*lev
+              rqda(ki,ktt+n) = qt(i,kk) * odpondp
+            enddo
+          enddo
+
+          call fixend_cell_plm_intp(plold,rqda,plnew,rqnn,lev,ndslvvar)
+          
+          do k = 1, lev
+            ki=lev-k+1
+            ut(i,k) = rqnn(ki,kuu)
+            vt(i,k) = rqnn(ki,kvv)
+            tt(i,k) = rqnn(ki,ktt)
+            do n = 1, ncld
+              kk=k+(n-1)*lev
+              qt(i,kk) = rqnn(ki,ktt+n)
+            enddo
+          enddo
+
+        enddo
 
       return
       end
