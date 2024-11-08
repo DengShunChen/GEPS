@@ -30,7 +30,7 @@ module mod_stochastic_physics
     integer, public :: seed
   end type random_pattern
 
-  integer,save :: recnsppt=1, recnskeb=1
+  integer,save :: recnsppt=1, recnskeb=1, recnshum=1
   real ::  dt
   logical, public :: ncep_seeds=.false.
   real,allocatable :: sl(:)
@@ -62,6 +62,7 @@ module mod_stochastic_physics
   real :: shum_lscale(5) = -999.      ! length scales(meters)
   real, allocatable, dimension(:) :: vfact_shum
   real, public :: shum_sigefold = 0.2
+  real(kind=RTYPE), allocatable, save :: shum3d_dq(:,:,:)
 
   ! SKEB
   integer :: nskeb,skeblevs
@@ -95,7 +96,7 @@ module mod_stochastic_physics
   public random_pattern
 
   public nsppt, sppt, sppt_seed, sppt_decort, sppt_lscale, sppt3d
-  public nshum, shum, shum_seed, shum_decort, shum_lscale, shum3d
+  public nshum, shum, shum_seed, shum_decort, shum_lscale, shum3d, shum3d_dq
   public nskeb, skeb, skeb_seed, skeb_decort, skeb_lscale,        &
          skeb3du, skeb3dv, diss_est, diss_dc, &
          skeblevs, keb, kea
@@ -105,7 +106,7 @@ module mod_stochastic_physics
            run_stochastic_physics, &
        destroy_stochastic_physics
 
-  public spptout,skebout,skebest
+  public spptout,shumout,skebout,skebest
   public avevar_sppt2d
 
 contains
@@ -192,6 +193,7 @@ contains
     if (doshum) then
       call get_random_pattern_destroy(rpattern_shum,nshum)
       deallocate(shum3d)
+      deallocate(shum3d_dq)
       deallocate(rpattern_shum)
       deallocate(vfact_shum)
     endif
@@ -303,7 +305,8 @@ contains
       enddo
 
       allocate(shum3d(nxp,lev,my_max))       
-      shum3d = 0.
+      allocate(shum3d_dq(nxp,lev,my_max))       
+      shum3d_dq = 0.
       call get_random_pattern_init(rpattern_shum,nshum,dtau,.false.)
 
       allocate(vfact_shum(lev))
@@ -974,6 +977,52 @@ contains
  
   end subroutine spptout
 !----
+  subroutine shumout(tau)
+    implicit none
+    integer      :: i, j, k, jj, nxj, ihead, n
+    integer      :: nxmy4
+    real         :: tau
+    real*4       :: glob4(nx,my)
+    real(kind=RTYPE) :: glob(nx,my),temp(nxp,my_max)
+
+    ihead=15
+    nxmy4=nx*my*4
+    if ( myrank .eq. 0 ) then
+      open(ihead,file='shum.dat',access='direct',form='unformatted'   &
+                ,recl=nxmy4,status='unknown',convert='big_endian')
+    endif
+
+    do n=1,nshum
+      call unify_reduceintp(nx,my,my_max,rpattern_shum(n)%n2d,glob)
+      if ( myrank .eq. 0 ) then
+        glob4=glob
+        write(ihead,rec=recnshum) glob4
+        recnshum=recnshum+1
+      endif
+    enddo
+    do k=lev,1,-1
+      do jj=1,jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do i=1,nxj
+        temp(i,jj)=shum3d_dq(i,k,jj)
+        enddo
+      enddo
+      call unify_reduceintp(nx,my,my_max,temp,glob)
+      if ( myrank.eq.0 ) then
+        glob4=glob
+        write(ihead,rec=recnshum) glob4
+        recnshum=recnshum+1
+      endif
+    enddo
+
+    if ( myrank.eq.0 ) close(ihead)
+
+    !creating ctl file
+    call shumctl(tau)
+
+  end subroutine shumout
+!----
   subroutine skebest(um,vm)
     use grid,  only : ut,vt
     implicit none
@@ -1257,6 +1306,107 @@ contains
     deallocate(mlat,prsl)
   end subroutine spptctl
 !
+!----
+!----
+  subroutine shumctl(tau)
+!
+    use const, only : idtg,sinl,sigma
+    use rank, only : myrank
+
+    integer :: nxj,j,k,itau,ch,iter,remd,js,je,kk,lev1, mn, n
+    real :: pi, r2d, dlon, tau
+    real, allocatable :: mlat(:),prsl(:)
+    character(len=30) ::  forydef,forzdef
+
+    character yy*4,dd*2,hh*2,mm*2,dtg*12
+    character*3 mon(12)
+    logical jrem
+
+    data mon/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep' &
+             ,'Oct','Nov','Dec'/
+
+    allocate(mlat(my),prsl(lev))
+
+    itau=tau
+    ch=10
+    lev1=1
+    pi=4.0*atan(1.0)
+    r2d=180./pi
+    dlon=360./float(nx)
+
+    do j=1,my
+      mlat(j)=asin(sinl(j))*r2d
+    enddo
+
+    do k=1,lev
+      kk=lev-k+1
+      prsl(kk)=sigma(k,2)+sigma(k+1,2)
+      prsl(kk)=prsl(kk)+(sigma(k,1)+sigma(k+1,1))*1000.
+      prsl(kk)=0.5*prsl(kk)
+    enddo
+
+      write(forydef,8) my
+      write(forzdef,9) lev
+
+      write(dtg,'(I12)') idtg
+      read(dtg,'(A4,I2,A2,A2,A2)') yy,mn,dd,hh,mm
+
+      if ( myrank .eq. 0 ) then
+      OPEN(UNIT=ch, FILE='shum.ctl', STATUS='UNKNOWN'             &
+         , ACCESS='SEQUENTIAL')
+
+      write(ch,'(A14)') 'dset ^shum.dat'
+      write(ch,'(A18)') 'options big_endian'
+      write(ch,'(A12)') 'undef -999.0'
+      write(ch,12) 'ydef' ,my, 'levels'
+      iter=my/8
+      remd=mod(my,8)
+      jrem=(remd .eq. 0)
+      write(forydef,8) remd
+      do j=1,iter
+       js=1+8*(j-1)
+       je=js+7
+       write(ch,10) mlat(js:je)
+      enddo
+      if ( .not. jrem ) write(ch,forydef) mlat(je+1:my)
+
+      write(ch,13) 'xdef'  ,nx, 'linear 0.0',dlon
+      write(ch,14) 'tdef',itau, 'linear',hh,'Z',dd,mon(mn),yy,'1hr'
+      write(ch,12) 'zdef' ,lev, 'levels '
+      iter=lev/8
+      remd=mod(lev,8)
+      jrem=(remd .eq. 0)
+      write(forzdef,9) remd
+      do j=1,iter
+       js=1+8*(j-1)
+       je=js+7
+       write(ch,11) prsl(js:je)
+      enddo
+      if ( .not. jrem ) write(ch,forzdef) prsl(je+1:my)
+      write(ch,'(A4,1X,I2)') 'vars',nshum+1
+      do n=1,nshum
+        write(ch,15) 'scale',n ,lev1,'99',rpattern_shum(n)%lenscale/1000.,'km 2D Random Pattern'
+      enddo
+      write(ch,16) 'shum3d_dq  '   , lev,'99','3D delta q'
+      write(ch,'(A7)') 'endvars'
+
+      close(ch)
+      endif
+
+8     format("(",I4,"(2x,F11.7))")
+9     format("(",I4,"(2x,F10.5))")
+10    format(8(2x,F11.7))
+11    format(8(2x,F10.5))
+12    format(A4,1X,I4,1X,A6)
+13    format(A4,1X,I4,1X,A10,1X,F10.7)
+14    format(A4,1X,I4,1X,A6,1X,A2,A1,A2,A3,A4,1X,A3)
+15    format(A5,I1,3X,I3,1X,A2,1X,F7.1,A20)
+16    format(A6,3X,I3,1X,A2,1X,A20)
+
+    deallocate(mlat,prsl)
+  end subroutine shumctl
+
+!----
 !----
   subroutine skebctl(tau)
 !

@@ -59,7 +59,7 @@
           use radn
           use albn
 !-----------------------------------------------------------------------
-          use mod_stochastic_physics, only: spptout, skebout, &
+          use mod_stochastic_physics, only: spptout, shumout, skebout, &
                                             run_stochastic_physics, &
                                             destroy_stochastic_physics, &
                                             skeb3du, skeb3dv, diss_est, skebfilt, &
@@ -1890,6 +1890,9 @@
          endif
          if (doskeb .and.  doskebout  ) then
             call skebout(tau)
+         endif
+         if (doshum .and.  doshumout  ) then
+            call shumout(tau)
          endif
         endif
 

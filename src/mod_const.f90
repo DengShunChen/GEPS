@@ -108,6 +108,7 @@
     logical :: dospptout    =.false.
     logical :: doskebout    =.false.
     logical :: doshum       =.false.
+    logical :: doshumout    =.false.
     logical :: doskeb       =.false.
     logical :: doskeb_dc    =.false.
     logical :: dossst       =.false.

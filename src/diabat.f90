@@ -193,7 +193,7 @@
 ! for land_noah_new
       use namelist_soilveg, only :MAX_SLOPETYP,MAX_SOILTYP,MAX_VEGTYP
       use mod_stochastic_physics, only : sppt3d, shum3d, ssst3d,     &
-                                         diss_dc
+                                         diss_dc, shum3d_dq
       use leapyr
 !-----------------------------------------------------------------------
       implicit  none
@@ -2386,15 +2386,21 @@
 
       ! SHUM process 
       if (doshum) then
-          do k=1,lev
-            do i=1,nxj
-              ru=shum3d(i,k,jj)
-              qnew = qt(i,k,jj)*(1.+ru)
-              if ( qnew .ge. qmin ) then
-                qt(i,k,jj) = qt(i,k,jj)*(1.+ru)
-              endif
-            enddo
+        do k=1,lev
+          do i=1,nxj
+            ru=shum3d(i,k,jj)*0.1
+            qnew = qt(i,k,jj)*(1.+ru)
+            if ( qnew .ge. qmin ) then
+              shum3d_dq(i,k,jj)=qnew-qt(i,k,jj)
+              qt(i,k,jj) = qnew
+            else
+              print *,'myrank=',myrank,',i=',i,',jj=',jj,',k=',k,',qmin=',qmin &
+                     ,',qt=',qt(i,k,jj),',ru=',ru
+              shum3d_dq(i,k,jj)=qmin-qt(i,k,jj)
+              qt(i,k,jj) = qmin
+            endif
           enddo
+        enddo
       endif 
 
 #ifdef VERBOSE
