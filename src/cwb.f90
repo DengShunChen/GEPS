@@ -416,7 +416,7 @@
       subroutine adjptqintp(ut,vt,tt,qt,qp,pnew,pten,nxj,nxp,my_max, &
                             lev,ncld,dta)
 
-      use const, only : RTYPE,dsigma,sigma
+      use const, only : RTYPE,dsigma,sigma,qmin
       use grid,  only : ndslvvar
 
       implicit none
@@ -470,7 +470,7 @@
             rqda(ki,ktt) = tt(i,k)
             do n = 1, ncld
               kk=k+(n-1)*lev
-              rqda(ki,ktt+n) = qt(i,kk) * odpondp
+              rqda(ki,ktt+n) = max(qt(i,kk) * odpondp,qmin)
             enddo
           enddo
 
