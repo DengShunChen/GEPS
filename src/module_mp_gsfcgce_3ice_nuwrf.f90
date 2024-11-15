@@ -2448,7 +2448,7 @@ CONTAINS
 #ifdef sat_predict
       ! saturation prediction scheme :
       integer :: hid
-      real :: rhoair, xlv, xls, cpm1, dv1, abw, abi
+      real :: rhoair, xlv, xls, xlf, cpm1, dv1, abw, abi
       real :: taui, tauc, taur, tau, atem
       real :: C1, K1, ncloud, nact, qcmax, mvrc
       real :: qimax, nice, inhgr, rhoi, mvdi, mvri
@@ -4193,8 +4193,16 @@ CONTAINS
       tair(i,j)  = (pt(i,j)+tb0)*pi0
       tairc(i,j) = tair(i,j)-t0
       rhoair = rho_mks(i,k,j)
-      xlv   = 3.1484E6-2370.*tair(i,j)             ! latent heat of vaporization (in MKS ; alv in CGS)
-      cpm1  = 1005.46*(1.+0.887*qv(i,j))           ! isobaric specific heat of air (in MKS)
+#ifdef use_cpm
+      cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+            cice*(qi(i,j)+qs(i,j)+qg(i,j))      ! specific heat capacity (in CGS)
+      cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
+      hlv = alv - (cliq-cvap)*(tair(i,j)-t0)    ! latent heat of vaporization (in CGS)
+      xlv = hlv*1.e-4                           ! latent heat of vaporization (in MKS)
+#else
+      cpm1 = 1005.46*(1.+0.887*qv(i,j))         ! specific heat capacity (in MKS)
+      xlv  = 3.1484E6-2370.*tair(i,j)           ! latent heat of vaporization (in MKS)
+#endif
 #ifdef new_saturation
       esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
       qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
@@ -4202,7 +4210,7 @@ CONTAINS
       y1(i,j) = 1./(tair(i,j)-c358)
       qsw(i,j) = rp0*exp(c172-c409*y1(i,j))
 #endif
-      abw = 1.+xlv**2.*qsw(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)  ! abw=1+dqsdT*(Lv/Cp); dqsdT=Lv*qsw/Rv/T^2
+      abw = 1.+xlv**2.*qsw(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)  ! abw=1+dqsdT*(Lv/Cp)
 
       if ( qv(i,j).gt.qsw(i,j) .and. ww1(i,j,k).gt.1.e-3 ) then
         ! C1 and K1 over land and ocean (Roger and Yau)
@@ -4226,8 +4234,18 @@ CONTAINS
       ! pint : cloud ice initialization
       ! -------------
 
-      xls   = 3.15E6-2370.*tair(i,j)+0.3337E6      ! latent heat of sublimation  (in MKS ; als in CGS)
-      cpm1  = 1005.46*(1.+0.887*qv(i,j))           ! isobaric specific heat of air (in MKS)
+#ifdef use_cpm
+      cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+            cice*(qi(i,j)+qs(i,j)+qg(i,j))      ! specific heat capacity (in CGS)
+      cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
+      hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+      hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+      hls = hlv + hlf                           ! latent heat of sublimation (in CGS)
+      xls = hls*1.e-4                           ! latent heat of sublimation (in MKS)
+#else
+      cpm1  = 1005.46*(1.+0.887*qv(i,j))        ! specific heat capacity (in MKS)
+      xls   = 3.15E6-2370.*tair(i,j)+0.3337E6   ! latent heat of sublimation  (in MKS)
+#endif
 #ifdef new_saturation
       esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
       esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
@@ -4240,7 +4258,7 @@ CONTAINS
       y2(i,j) = 1./(tair(i,j)-c76)
       qsi(i,j) = rp0*exp(c218-c580*y2(i,j))
 #endif
-      abi = 1.+xls**2.*qsi(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)  ! abi=1+dqidT*(Ls/Cp); dqidT=Ls*qsi/Rv/T^2
+      abi = 1.+xls**2.*qsi(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)  ! abi=1+dqidT*(Ls/Cp)
 
       if ( qv(i,j).gt.qsi(i,j) .and. tair(i,j).lt.t0 ) then
         ssi(i,j) = qv(i,j)/qsi(i,j)-1.
@@ -4261,10 +4279,23 @@ CONTAINS
       ! ern : evaporation of qr
       ! -------------
 
-      xlv   = 3.1484E6-2370.*tair(i,j)             ! latent heat of vaporization (in MKS ; alv in CGS)
-      xls   = 3.15E6-2370.*tair(i,j)+0.3337E6      ! latent heat of sublimation  (in MKS ; als in CGS)
-      cpm1  = 1005.46*(1.+0.887*qv(i,j))           ! isobaric specific heat of air (in MKS)
-      cpm   = 1.00546e+7*(1.+0.887*qv(i,j))        ! isobaric specific heat of air (in CGS)
+#ifdef use_cpm
+      cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+            cice*(qi(i,j)+qs(i,j)+qg(i,j))      ! specific heat capacity (in CGS)
+      cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
+      hlv = alv - (cliq-cvap)*(tair(i,j)-t0)    ! latent heat of vaporization (in CGS)
+      xlv = hlv*1.e-4                           ! latent heat of vaporization (in MKS)
+      hlf = alf - (cice-cliq)*(tair(i,j)-t0)    ! latent heat of fusion (in CGS)
+      xlf = hlf*1.e-4                           ! latent heat of fusion (in MKS)
+      hls = hlv + hlf                           ! latent heat of sublimation (in CGS)
+      xls = hls*1.e-4                           ! latent heat of sublimation (in MKS)
+#else
+      cpm1  = 1005.46*(1.+0.887*qv(i,j))        ! specific heat capacity (in MKS)
+      cpm   = 1.00546e+7*(1.+0.887*qv(i,j))     ! specific heat capacity (in CGS)
+      xlv   = 3.1484E6-2370.*tair(i,j)          ! latent heat of vaporization (in MKS)
+      xls   = 3.15E6-2370.*tair(i,j)+0.3337E6   ! latent heat of sublimation  (in MKS)
+      xlf   = alf*1.e-4                         ! latent heat of fusion (in MKS)
+#endif
 #ifdef new_saturation
       esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
       esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
@@ -4278,11 +4309,13 @@ CONTAINS
       qsi(i,j) = rp0*exp(c218-c580*y2(i,j))
 #endif
       dv1 = 8.794E-4*pr0*tair(i,j)**1.81
-      abw = 1.+xlv**2.*qsw(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)  ! abw=1+dqsdT*(Lv/Cp); dqsdT=Lv*qsw/Rv/T^2
-      abi = 1.+xls**2.*qsi(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)  ! abi=1+dqidT*(Ls/Cp); dqidT=Ls*qsi/Rv/T^2
 
-      ! tau : supersaturation relaxation timescale (tauc,taui,taur)
+      ! psychrometric correction to condensation/evaporation, abw=1+dqsdT*(Lv/Cp) ; dqsdT=Lv*qsw/Rv/T^2
+      abw = 1.+xlv**2.*qsw(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)
+      ! psychrometric correction to deposition/sublimation,   abi=1+dqidT*(Ls/Cp) ; dqidT=Ls*qsi/Rv/T^2
+      abi = 1.+xls**2.*qsi(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)
 
+      ! tauc : supersaturation relaxation timescale of cloud water
       if ( qc(i,j) .ge. cwmin ) then
         ltk  = log(tair(i,j))
         lqc  = -1.*log(qc(i,j)*rhoair)
@@ -4305,6 +4338,7 @@ CONTAINS
         tauc = 1.e+10
       endif
 
+      ! taui : supersaturation relaxation timescale of cloud ice
       if ( qi(i,j) .ge. cimin ) then
         ltk  = log(tair(i,j))
         lqi  = -1.*log(qi(i,j)*rhoair)
@@ -4342,6 +4376,7 @@ CONTAINS
         taui = 1.e+10
       endif
 
+      ! taur : supersaturation relaxation timescale of rain
       if ( qr(i,j) .ge. crmin ) then
         ltk = log(tair(i,j))
         lqr = -1.*log(qr(i,j)*rhoair)
@@ -4477,50 +4512,56 @@ CONTAINS
       ern(i,j) = ern1*(1.0-fxlat) + ern2*fxlat
 
 #else
-      ! (TGFS_modify) decide values at polar regions :
-      if ( abs(xlat) .ge. 66.0 ) then
-        ern2 = ern1
-        if ( tair(i,j) .ge. 253.16 ) then
-          ! T>=-20     : all ice melt; all excess vapor (over ice) condense; no deposition
-          cnd2 = max(-qc(i,j),(qv(i,j)-qsi(i,j))/abi)
-          fez2 = -qi(i,j)
-          dep2 = 0.
-        elseif ( tair(i,j).lt.253.16 .and. tair(i,j).ge.t00 ) then
-          ! -40<=T<-20 : all water freeze; all excess vapor (over water) deposite; no condensation
-          dep2 = max(-qi(i,j),(qv(i,j)-qsw(i,j))/abw)
-          fez2 = qc(i,j)
-          cnd2 = 0.
-        else
-          ! T<-40      : all water freeze; all excess vapor (over ice) deposite; no condensation
-          dep2 = max(-qi(i,j),(qv(i,j)-qsi(i,j))/abi)
-          fez2 = qc(i,j)
-          cnd2 = 0.
-        endif
-      endif
-
-      ! create a transition zone at 60~67 degree :
-      if ( abs(xlat) .lt. 66.0 ) then
-        cnd(i,j) = cnd1
-        dep(i,j) = dep1
-        fez(i,j) = 0.
-        ern(i,j) = ern1
-      elseif ( abs(xlat).ge.66.0 .and. abs(xlat).lt.67.0 ) then
-        latr = min(1.,max(0.,abs(xlat)-66.0))
-        cnd(i,j) = cnd1*(1.-latr)+cnd2*latr
-        dep(i,j) = dep1*(1.-latr)+dep2*latr
-        fez(i,j) = fez1*(1.-latr)+fez2*latr
-        ern(i,j) = ern1*(1.-latr)+ern2*latr
-      else
-        cnd(i,j) = cnd2
-        dep(i,j) = dep2
-        fez(i,j) = fez2
-        ern(i,j) = ern2
-      endif
+!      ! (TGFS_modify) decide values at polar regions :
+!      if ( abs(xlat) .ge. 66.0 ) then
+!        ern2 = ern1
+!        if ( tair(i,j) .ge. 253.16 ) then
+!          ! T>=-20     : all ice melt; all excess vapor (over ice) condense; no deposition
+!          cnd2 = max(-qc(i,j),(qv(i,j)-qsi(i,j))/abi)
+!          fez2 = -qi(i,j)
+!          dep2 = 0.
+!        elseif ( tair(i,j).lt.253.16 .and. tair(i,j).ge.t00 ) then
+!          ! -40<=T<-20 : all water freeze; all excess vapor (over water) deposite; no condensation
+!          dep2 = max(-qi(i,j),(qv(i,j)-qsw(i,j))/abw)
+!          fez2 = qc(i,j)
+!          cnd2 = 0.
+!        else
+!          ! T<-40      : all water freeze; all excess vapor (over ice) deposite; no condensation
+!          dep2 = max(-qi(i,j),(qv(i,j)-qsi(i,j))/abi)
+!          fez2 = qc(i,j)
+!          cnd2 = 0.
+!        endif
+!      endif
+!
+!      ! create a transition zone at 60~67 degree :
+!      if ( abs(xlat) .lt. 66.0 ) then
+!        cnd(i,j) = cnd1
+!        dep(i,j) = dep1
+!        fez(i,j) = 0.
+!        ern(i,j) = ern1
+!      elseif ( abs(xlat).ge.66.0 .and. abs(xlat).lt.67.0 ) then
+!        latr = min(1.,max(0.,abs(xlat)-66.0))
+!        cnd(i,j) = cnd1*(1.-latr)+cnd2*latr
+!        dep(i,j) = dep1*(1.-latr)+dep2*latr
+!        fez(i,j) = fez1*(1.-latr)+fez2*latr
+!        ern(i,j) = ern1*(1.-latr)+ern2*latr
+!      else
+!        cnd(i,j) = cnd2
+!        dep(i,j) = dep2
+!        fez(i,j) = fez2
+!        ern(i,j) = ern2
+!      endif
+      cnd(i,j) = cnd1
+      dep(i,j) = dep1
+      fez(i,j) = fez1
+      ern(i,j) = ern1
 #endif
 
       ! update tair, qv, qc, qi, qr :
+!      tair(i,j) = tair(i,j) + (ern(i,j)+cnd(i,j))*xlv/cpm1     &
+!                  + dep(i,j)*xls/cpm1 + fez(i,j)*alf/cpm
       tair(i,j) = tair(i,j) + (ern(i,j)+cnd(i,j))*xlv/cpm1     &
-                  + dep(i,j)*xls/cpm1 + fez(i,j)*alf/cpm
+                  + dep(i,j)*xls/cpm1 + fez(i,j)*xlf/cpm1
       qv(i,j) = max(0.,qv(i,j)-cnd(i,j)-dep(i,j)-ern(i,j))
       qc(i,j) = max(0.,qc(i,j)+cnd(i,j)-fez(i,j))
       qi(i,j) = max(0.,qi(i,j)+dep(i,j)+fez(i,j))
