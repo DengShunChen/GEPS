@@ -4,20 +4,17 @@
 ! See LICENSE for license information.
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+#define CUDACHECK(ierr) call cuda_check_helper(ierr, __FILE__, __LINE__)
+#define CUFFTCHECK(ierr) call cufft_check_helper(ierr, __FILE__, __LINE__)
+
 subroutine fft_create_plan(plan, auto)
    use cufft
    implicit none
-   integer(4) :: plan, istat, auto
+   integer(4) :: plan, auto
 
-   istat = cufftCreate(plan)
-   if (istat .ne. CUFFT_SUCCESS) then
-      print *, 'cufftCreate', istat
-   end if
+   CUFFTCHECK(cufftCreate(plan))
    if (auto .eq. 0) then
-      istat = cufftSetAutoAllocation(plan, 0)
-      if (istat .ne. CUFFT_SUCCESS) then
-         print *, 'cufftSetAutoAllocation', istat
-      end if
+      CUFFTCHECK(cufftSetAutoAllocation(plan, 0))
    end if
 end subroutine fft_create_plan
 
@@ -28,7 +25,6 @@ subroutine fft_make_plan(inc, jump, n, m, isign, plan, work_size)
    integer :: inc, jump, n, m, isign, nn
 
    integer :: isign
-   integer :: istat
    integer(4) :: plan
    integer(4) :: rank
    integer :: inembed, onembed
@@ -59,10 +55,7 @@ subroutine fft_make_plan(inc, jump, n, m, isign, plan, work_size)
       ffttype = CUFFT_D2Z
       batch = m
    end if
-   istat = cufftMakePlanMany(plan, rank, n, inembed, istride, idist, onembed, ostride, odist, ffttype, batch, work_size)
-   if (istat .ne. CUFFT_SUCCESS) then
-      print *, 'cufftMakePlanMany', istat
-   end if
+   CUFFTCHECK(cufftMakePlanMany(plan, rank, n, inembed, istride, idist, onembed, ostride, odist, ffttype, batch, work_size))
 end subroutine fft_make_plan
 
 subroutine fft_destroy_plan()
@@ -84,7 +77,6 @@ subroutine fft_destroy_plan()
 
    integer :: num_plan
    integer(4), allocatable :: plan_list(:)
-   integer(4) :: istat
    integer :: i
 
    call fft_plan_size(num_plan)
@@ -92,10 +84,7 @@ subroutine fft_destroy_plan()
    call get_plan_list(plan_list)
 
    do i = 1, num_plan
-      istat = cufftDestroy(plan_list(i))
-      if (istat .ne. CUFFT_SUCCESS) then
-         print *, 'cufftDestroy', istat
-      end if
+      CUFFTCHECK(cufftDestroy(plan_list(i)))
    end do
 
 end subroutine fft_destroy_plan
@@ -103,18 +92,24 @@ end subroutine fft_destroy_plan
 subroutine fft_set_workspace(plan, workspace)
    use cufft
    implicit none
-   integer(4) :: plan, istat
+   integer(4) :: plan
    integer :: workspace(*)
 
    !$acc host_data use_device(workspace)
-   istat = cufftSetWorkArea(plan, workspace)
+   CUFFTCHECK(cufftSetWorkArea(plan, workspace))
    !$acc end host_data
-   if (istat .ne. CUFFT_SUCCESS) then
-      print *, 'cufftSetWorkArea', istat
-   end if
 end subroutine fft_set_workspace
 
 subroutine fft_exec_async(a, inc, jump, n, m, isign, plan, pa, async_id)
+  ! ------------------------------------------------------------
+  ! The input and output varialbes depend on value of isign
+  ! isign = 1:
+  !   - input: pa
+  !   - output: a
+  ! ising = -1:
+  !   - input: a
+  !   - output: a
+  ! ------------------------------------------------------------
    use cudafor
    use cufft
    use openacc
@@ -123,7 +118,7 @@ subroutine fft_exec_async(a, inc, jump, n, m, isign, plan, pa, async_id)
    integer :: inc, jump, n, m, isign, i, j
    real(8), dimension(jump, m) :: pa
    real(8), dimension(jump, m) :: a
-   integer(4) :: plan, istat
+   integer(4) :: plan
    integer :: async_id
    integer(kind=cuda_stream_kind) :: stream
 
@@ -131,32 +126,27 @@ subroutine fft_exec_async(a, inc, jump, n, m, isign, plan, pa, async_id)
    if (mod(jump, 2) .eq. 0) then
 
       stream = acc_get_cuda_stream(async_id)
-      istat = cufftSetStream(plan, stream)
+      CUFFTCHECK(cufftSetStream(plan, stream))
 
       if (isign .eq. 1) then
 
-         !$acc parallel loop collapse(2) async(async_id)
-         do j = 1, m
-         do i = 1, n + 2
-            pa(i, j) = a(i, j)
-         end do
-         end do
+         !$acc update device(pa) async(async_id)
+         ! !$acc parallel loop collapse(2) async(async_id)
+         ! do j = 1, m
+         ! do i = 1, n + 2
+         !    pa(i, j) = a(i, j)
+         ! end do
+         ! end do
 
          !$acc host_data use_device(pa, a)
-         istat = cufftExecZ2D(plan, pa, a)
+         CUFFTCHECK(cufftExecZ2D(plan, pa, a))
          !$acc end host_data
-         if (istat .ne. CUFFT_SUCCESS) then
-            print *, 'cufftExecZ2D', istat
-         end if
       else
          scale = 1.0/dfloat(n)
 
          !$acc host_data use_device(a, pa)
-         istat = cufftExecD2Z(plan, a, pa)
+         CUFFTCHECK(cufftExecD2Z(plan, a, pa))
          !$acc end host_data
-         if (istat .ne. CUFFT_SUCCESS) then
-            print *, 'cufftExecD2Z', istat
-         end if
 
          !$acc parallel loop collapse(2) async(async_id)
          do j = 1, m
@@ -171,14 +161,7 @@ subroutine fft_exec_async(a, inc, jump, n, m, isign, plan, pa, async_id)
    !$acc end data
 
 #if DEBUG
-   istat = cudaStreamSynchronize(stream)
-   if (istat .ne. cudaSuccess) then
-      print *, 'cudaStreamSynchronize', istat
-   end if
-   istat = cudaGetLastError()
-   if (istat .ne. cudaSuccess) then
-      print *, 'cudaGetLastError', istat
-   end if
+   CUDACHECK(cudaStreamSynchronize(stream))
 #endif
 
    return
@@ -261,7 +244,6 @@ subroutine rfftmlt_loop(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, jump, 
    integer(kind=int_ptr_kind()) :: work_size
    integer :: async_id
    integer(kind=cuda_stream_kind) :: stream
-   integer(4) :: istat
    integer :: i, k
    real(8) :: scale
 
@@ -279,7 +261,7 @@ subroutine rfftmlt_loop(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, jump, 
 
       if (mod(jump, 2) .eq. 0) then
          stream = acc_get_cuda_stream(async_id)
-         istat = cufftSetStream(plan_list(jj), stream)
+         CUFFTCHECK(cufftSetStream(plan_list(jj), stream))
 
          if (isign .eq. 1) then
 
@@ -291,20 +273,14 @@ subroutine rfftmlt_loop(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, jump, 
             end do
 
             !$acc host_data use_device(cc, gwk1)
-            istat = cufftExecZ2D(plan_list(jj), gwk1(1, 1, jj), cc(1, 1, jj))
+            CUFFTCHECK(cufftExecZ2D(plan_list(jj), gwk1(1, 1, jj), cc(1, 1, jj)))
             !$acc end host_data
-            if (istat .ne. CUFFT_SUCCESS) then
-               print *, 'cufftExecZ2D', istat
-            end if
          else
             scale = 1.0/dfloat(nxj)
 
             !$acc host_data use_device(cc, gwk1)
-            istat = cufftExecD2Z(plan_list(jj), cc(1, 1, jj), gwk1(1, 1, jj))
+            CUFFTCHECK(cufftExecD2Z(plan_list(jj), cc(1, 1, jj), gwk1(1, 1, jj)))
             !$acc end host_data
-            if (istat .ne. CUFFT_SUCCESS) then
-               print *, 'cufftExecD2Z', istat
-            end if
 
             !$acc parallel loop collapse(2) async(async_id)
             do k = 1, m
@@ -352,7 +328,6 @@ subroutine rfftmlt_loop_identical(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistn
    integer(kind=int_ptr_kind()) :: work_size
    integer :: async_id
    integer(kind=cuda_stream_kind) :: stream, plan_stream(jlistnum)
-   integer(4) :: istat
    integer :: i, k
    integer(4) :: base_plan, plan_id, plan_cur
    type(cudaEvent) :: spread_event, pack_event
@@ -382,8 +357,8 @@ subroutine rfftmlt_loop_identical(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistn
       plan_stream(jj) = acc_get_cuda_stream(plan_id)
    end do
 
-   istat = cudaEventCreate(spread_event)
-   istat = cudaEventCreate(pack_event)
+   CUDACHECK(cudaEventCreate(spread_event))
+   CUDACHECK(cudaEventCreate(pack_event))
 
    if (mod(jump, 2) .eq. 0) then
       if (isign .eq. 1) then
@@ -398,30 +373,24 @@ subroutine rfftmlt_loop_identical(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistn
                end do
             end do
          end do
-         istat = cudaEventRecord(spread_event, stream)
+         CUDACHECK(cudaEventRecord(spread_event, stream))
          do jj = 1, jlistnum
             plan_id = base_plan + jj - 1
-            istat = cudaStreamWaitEvent(plan_stream(jj), spread_event, 0)
-            istat = cufftSetStream(plan_id, plan_stream(jj))
+            CUDACHECK(cudaStreamWaitEvent(plan_stream(jj), spread_event, 0))
+            CUFFTCHECK(cufftSetStream(plan_id, plan_stream(jj)))
             !$acc host_data use_device(cc, gwk1)
-            istat = cufftExecZ2D(plan_id, gwk1(1, 1, jj), cc(1, 1, jj))
+            CUFFTCHECK(cufftExecZ2D(plan_id, gwk1(1, 1, jj), cc(1, 1, jj)))
             !$acc end host_data
-            if (istat .ne. CUFFT_SUCCESS) then
-               print *, 'cufftExecZ2D', istat
-            end if
-            istat = cudaEventRecord(pack_event, plan_stream(jj))
-            istat = cudaStreamWaitEvent(stream, pack_event, 0)
+            CUDACHECK(cudaEventRecord(pack_event, plan_stream(jj)))
+            CUDACHECK(cudaStreamWaitEvent(stream, pack_event, 0))
          end do
       else
          do jj = 1, jlistnum
             plan_id = base_plan + jj - 1
-            istat = cufftSetStream(plan_id, stream)
+            CUFFTCHECK(cufftSetStream(plan_id, stream))
             !$acc host_data use_device(cc, gwk1)
-            istat = cufftExecD2Z(plan_id, cc(1, 1, jj), gwk1(1, 1, jj))
+            CUFFTCHECK(cufftExecD2Z(plan_id, cc(1, 1, jj), gwk1(1, 1, jj)))
             !$acc end host_data
-            if (istat .ne. CUFFT_SUCCESS) then
-               print *, 'cufftExecD2Z', istat
-            end if
          end do
          !$acc parallel loop gang collapse(2) private(j, nxj) async(async_id)
          do jj = 1, jlistnum
@@ -443,6 +412,15 @@ end subroutine rfftmlt_loop_identical
 
 subroutine rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, jump, m, isign, graph)
    ! Present on device: cc, gwk1, jlist1, nxdef
+  ! ------------------------------------------------------------
+  ! The input and output varialbes depend on value of isign
+  ! isign = 1:
+  !   - input: gwk1
+  !   - output: cc
+  ! ising = -1:
+  !   - input: cc
+  !   - output: cc
+  ! ------------------------------------------------------------
    use cudafor
    use cufft
    use openacc
@@ -463,7 +441,7 @@ subroutine rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nx
       end subroutine cache_fft_plan
    end interface c_interface
 
-   integer :: jlistnum, jump, m, isign, jlistnum
+   integer :: jlistnum, jump, m, isign
    integer :: jj, j, nxj
    real(8), dimension(jump, m, *) :: cc, gwk1 ! Present on device
    real, dimension(4096, *) :: trigsj
@@ -473,7 +451,6 @@ subroutine rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nx
    integer(kind=int_ptr_kind()) :: work_size
    integer :: async_id
    integer(kind=cuda_stream_kind) :: stream, plan_stream(jlistnum)
-   integer(4) :: istat
    integer :: i, k
    integer(4) :: base_plan, plan_id, plan_cur
    type(cudaEvent) :: spread_event, pack_event
@@ -503,52 +480,46 @@ subroutine rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nx
       plan_stream(jj) = acc_get_cuda_stream(plan_id)
    end do
 
-   istat = cudaEventCreate(spread_event)
-   istat = cudaEventCreate(pack_event)
+   CUDACHECK(cudaEventCreate(spread_event))
+   CUDACHECK(cudaEventCreate(pack_event))
 
-   istat = cudaStreamBeginCapture(stream, cudaStreamCaptureModeGlobal)
+   CUDACHECK(cudaStreamBeginCapture(stream, cudaStreamCaptureModeGlobal))
 
    if (mod(jump, 2) .eq. 0) then
       if (isign .eq. 1) then
-         !$acc parallel loop gang collapse(2) private(j, nxj) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, m
-               j = jlist1(jj)
-               nxj = nxdef(j)
-               !$acc loop vector
-               do i = 1, nxj + 2
-                  gwk1(i, k, jj) = cc(i, k, jj)
-               end do
-            end do
-         end do
-         istat = cudaEventRecord(spread_event, stream)
+         ! !$acc parallel loop gang collapse(2) private(j, nxj) async(async_id)
+         ! do jj = 1, jlistnum
+         !    do k = 1, m
+         !       j = jlist1(jj)
+         !       nxj = nxdef(j)
+         !       !$acc loop vector
+         !       do i = 1, nxj + 2
+         !          gwk1(i, k, jj) = cc(i, k, jj)
+         !       end do
+         !    end do
+         ! end do
+         CUDACHECK(cudaEventRecord(spread_event, stream))
          do jj = 1, jlistnum
             plan_id = base_plan + jj - 1
-            istat = cudaStreamWaitEvent(plan_stream(jj), spread_event, 0)
-            istat = cufftSetStream(plan_id, plan_stream(jj))
+            CUDACHECK(cudaStreamWaitEvent(plan_stream(jj), spread_event, 0))
+            CUFFTCHECK(cufftSetStream(plan_id, plan_stream(jj)))
             !$acc host_data use_device(cc, gwk1)
-            istat = cufftExecZ2D(plan_id, gwk1(1, 1, jj), cc(1, 1, jj))
+            CUFFTCHECK(cufftExecZ2D(plan_id, gwk1(1, 1, jj), cc(1, 1, jj)))
             !$acc end host_data
-            if (istat .ne. CUFFT_SUCCESS) then
-               print *, 'cufftExecZ2D', istat
-            end if
-            istat = cudaEventRecord(pack_event, plan_stream(jj))
-            istat = cudaStreamWaitEvent(stream, pack_event, 0)
+            CUDACHECK(cudaEventRecord(pack_event, plan_stream(jj)))
+            CUDACHECK(cudaStreamWaitEvent(stream, pack_event, 0))
          end do
       else
-         istat = cudaEventRecord(spread_event, stream)
+         CUDACHECK(cudaEventRecord(spread_event, stream))
          do jj = 1, jlistnum
             plan_id = base_plan + jj - 1
-            istat = cudaStreamWaitEvent(plan_stream(jj), spread_event, 0)
-            istat = cufftSetStream(plan_id, plan_stream(jj))
+            CUDACHECK(cudaStreamWaitEvent(plan_stream(jj), spread_event, 0))
+            CUFFTCHECK(cufftSetStream(plan_id, plan_stream(jj)))
             !$acc host_data use_device(cc, gwk1)
-            istat = cufftExecD2Z(plan_id, cc(1, 1, jj), gwk1(1, 1, jj))
+            CUFFTCHECK(cufftExecD2Z(plan_id, cc(1, 1, jj), gwk1(1, 1, jj)))
             !$acc end host_data
-            if (istat .ne. CUFFT_SUCCESS) then
-               print *, 'cufftExecD2Z', istat
-            end if
-            istat = cudaEventRecord(pack_event, plan_stream(jj))
-            istat = cudaStreamWaitEvent(stream, pack_event, 0)
+            CUDACHECK(cudaEventRecord(pack_event, plan_stream(jj)))
+            CUDACHECK(cudaStreamWaitEvent(stream, pack_event, 0))
          end do
          !$acc parallel loop gang collapse(2) private(j, nxj) async(async_id)
          do jj = 1, jlistnum
@@ -566,8 +537,8 @@ subroutine rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nx
       print *, 'fft jump is odd, CWB obsoleted, jump=', jump
    end if
 
-   istat = cudaStreamEndCapture(stream, graph)
-   istat = cudaEventDestroy(spread_event)
-   istat = cudaEventDestroy(pack_event)
+   CUDACHECK(cudaStreamEndCapture(stream, graph))
+   CUDACHECK(cudaEventDestroy(spread_event))
+   CUDACHECK(cudaEventDestroy(pack_event))
 
 end subroutine rfftmlt_loop_identical_cuda_graph

@@ -35,7 +35,7 @@ subroutine trngra_gpu(jtrun, jtmax, nx, my, my_max, cim, poly, dpoly, s &
    use const, only: RTYPE
    use index
    use fftcom
-   use fft_cuda_graph
+   use spec_cuda_graph, only: fft_cg => trngra_fft_cg
    use openacc
    use cudafor
 
@@ -115,8 +115,8 @@ subroutine trngra_gpu(jtrun, jtmax, nx, my, my_max, cim, poly, dpoly, s &
    call mpe_transpose_rs1_sp_gpu(wcu_fk, twcc_fk, my_max, jtmax, 2, nsize, nccl_col_comm, async_id)
    call mpe_transpose_rs1_sp_gpu(wcv_fk, twdd_fk, my_max, jtmax, 2, nsize, nccl_col_comm, async_id)
 
-   !$acc host_data use_device(cc)
-   CUDACHECK(cudaMemSetAsync(cc, 0.0, size(cc), stream))
+   !$acc host_data use_device(gwk1)
+   CUDACHECK(cudaMemSetAsync(gwk1, 0.0, size(gwk1), stream))
    !$acc end host_data
 
    !$acc parallel loop gang async(async_id)
@@ -128,10 +128,10 @@ subroutine trngra_gpu(jtrun, jtmax, nx, my, my_max, cim, poly, dpoly, s &
          mm = 2*m - 1
          mp = mm + 1
          mlst = nlist(m)
-         cc(mm, 1, jj) = twcc_fk(jj, mlst, 1)
-         cc(mp, 1, jj) = twcc_fk(jj, mlst, 2)
-         cc(mm, 2, jj) = twdd_fk(jj, mlst, 1)
-         cc(mp, 2, jj) = twdd_fk(jj, mlst, 2)
+         gwk1(mm, 1, jj) = twcc_fk(jj, mlst, 1)
+         gwk1(mp, 1, jj) = twcc_fk(jj, mlst, 2)
+         gwk1(mm, 2, jj) = twdd_fk(jj, mlst, 1)
+         gwk1(mp, 2, jj) = twdd_fk(jj, mlst, 2)
       end do
    end do
 
@@ -142,14 +142,12 @@ subroutine trngra_gpu(jtrun, jtmax, nx, my, my_max, cim, poly, dpoly, s &
    if (lreduce .eq. 0) then
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, jlistnum*2, 1)
    else
-      if (trngra_graph_created) then
-         CUDACHECK(cudaGraphLaunch(trngra_graph_exec, stream))
-      else
-         call rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, 2, 1, trngra_graph)
-         CUDACHECK(cudaGraphInstantiate(trngra_graph_exec, trngra_graph, trngra_error_node, trngra_buffer, trngra_buffer_len))
-         trngra_graph_created = .true.
-         CUDACHECK(cudaGraphLaunch(trngra_graph_exec, stream))
+      if (.not. (fft_cg%created)) then
+         call rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, 2, 1, fft_cg%graph)
+         CUDACHECK(cudaGraphInstantiate(fft_cg%graph_exec, fft_cg%graph, fft_cg%error_node, fft_cg%buffer, fft_cg%buffer_len))
+         fft_cg%created = .true.
       end if
+      CUDACHECK(cudaGraphLaunch(fft_cg%graph_exec, stream))
    end if
 
    !$acc parallel loop async(async_id)

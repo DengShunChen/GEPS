@@ -128,6 +128,7 @@ subroutine siimpl_gpu(jtrun, jtmax, lev, dta, ptmean, dsigma, spalm, eps4 &
             n = jtwvp(m)
             if (n .ne. 1) then
                s = spalm(k)*(ploldL(m, i) + dd*pltenL(m, i) - plnowL(m, i))
+               !$acc loop seq
                do L = 1, lev
                   s = s + arrhyd(k, L)*divavg(L, i, m)
                end do
@@ -149,6 +150,7 @@ subroutine siimpl_gpu(jtrun, jtmax, lev, dta, ptmean, dsigma, spalm, eps4 &
             n = jtwvp(m)
             if (n .ne. 1) then
                d = 0.0
+               !$acc loop seq
                do L = 1, lev
                   d = d + evecin(k, L)*wrk6(L, i, m)
                end do
@@ -168,6 +170,7 @@ subroutine siimpl_gpu(jtrun, jtmax, lev, dta, ptmean, dsigma, spalm, eps4 &
             s = 0.0
             if (n .ne. 1) then
                s = 0.0
+               !$acc loop seq
                do L = 1, lev
                   s = s + evectr(k, L)*divavg(L, i, m)
                end do
@@ -187,6 +190,7 @@ subroutine siimpl_gpu(jtrun, jtmax, lev, dta, ptmean, dsigma, spalm, eps4 &
             n = jtwvp(m)
             if (n .ne. 1) then
                s = wrk3(k, i, m)
+               !$acc loop seq
                do L = 1, lev
                   s = s - arsddt(k, L)*wrk6(L, i, m)
                end do

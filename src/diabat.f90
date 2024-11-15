@@ -170,7 +170,7 @@
                                       pdfcloud,cmbk,cgwd, fsit, dosppt, doshum, dossst, &
                                       use_zmtnblck,ldailyFCTicesndpt,dSITdt_intv, &
                                       weightSIT,bckfile,ggdef,doclx,doslavepp,    &
-                                      RTYPE,qmin,julian
+                                      RTYPE,qmin,julian,mass_dp
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
@@ -491,6 +491,8 @@
                ,pqu(nxp,lev)
       integer   kbotc(nxp,my_max), ktopc(nxp,my_max)
 !xb110<
+      ! for mass dp
+      real(kind=RTYPE) qtp(nxp,lev*ncld)
 !ps
       logical lrun_sitvdiff
       integer ic_sit
@@ -627,7 +629,6 @@
          if(julian.gt.yrdold) julian=mod(julian,yrdold)
          doozon = .true.
          doclxu = .true.
-         if (myrank .eq. 0 ) print*,'TYW test in diabat, julian = ',julian,yrd
       endif
 !      leap = mod ( year , 4 )
 !      yrd = 365
@@ -984,6 +985,7 @@
           ttpp(i,k) = ttp(i,k,jj) / (1.0+0.608*qp(i,k,jj))
         enddo
       enddo
+      qtp(:,:) = qt(:,:,jj)
       !-----------------------------------------------------------------------------
       ! save the old control values for SPPT
       !-----------------------------------------------------------------------------
@@ -2391,6 +2393,18 @@
       tt_sppt(1:nxj,1:lev     ,jj) = tt(1:nxj,1:lev     ,jj)
       qt_sppt(1:nxj,1:lev*ncld,jj) = qt(1:nxj,1:lev*ncld,jj)
 #endif
+
+      ! adjustmen of surface pressure, virtual potential
+      ! temperature and all tracers
+      if (mass_dp) then
+!        call adjptq(qt(1,1,jj),qtp,pst(1,jj),ps(1,jj),nxjp(j),nxp,    &
+!                    my_max,lev,ncld,dta)
+        call adjptqintp(ut(1,1,jj),vt(1,1,jj),tt(1,1,jj),qt(1,1,jj),  &
+                        qtp,pst(1,jj),ps(1,jj),nxjp(j),nxp,my_max,    &
+                        lev,ncld,dta)
+        call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pst(1,jj), &
+                                pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
+      endif
 
     !--------------------------------------------------------------------------------
     !     weight back u and v by cosl/radus and
