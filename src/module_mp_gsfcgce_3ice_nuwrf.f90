@@ -1,5 +1,5 @@
-!#define SL_sedi
-!#define new_saturation
+#define SL_sedi
+#define new_saturation
 !#define sat_predict
 !#define use_declination
 !#define use_cpm
@@ -490,7 +490,7 @@ CONTAINS
    call consat_s (ihail, itaobraun, improve)
 
    ! set sub-cycle time step :
-   mp_time = 300.                !standard sub-cycle time step
+   mp_time = 600.                !standard sub-cycle time step
    ntimes = 1                    !number of sub-cycles
    ntimes = max (ntimes, int (dt_in / min(dt_in, mp_time)))
    dts = dt_in / real (ntimes)   !real sub-cycle time step
@@ -6547,7 +6547,7 @@ CONTAINS
 #ifdef sat_predict
               adagr = inhgr**thrd
 #else
-              adagr = inhgr**0.8
+              adagr = inhgr**0.9
 #endif
             endif
 ! <<<
