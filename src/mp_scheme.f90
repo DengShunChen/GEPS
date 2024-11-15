@@ -752,7 +752,7 @@
          ( cond0(nxj),dep0(nxj),evap0(nxj),sub0(nxj) )
 #endif
 
-        hydrostatic = .false.       !flag for hydrostatic solver
+        hydrostatic = .true.       !flag for hydrostatic solver (isobaric assumption)
         phys_hydrostatic = .true.   !flag for hydrostatic heating from physics 
         consv_te = .false.          !flag for energy conservation
         last_step = .true.          !flag for final clean-up (not sure)

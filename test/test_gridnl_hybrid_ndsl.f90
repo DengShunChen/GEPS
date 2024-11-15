@@ -22,10 +22,11 @@ subroutine gridnl_hybrid_ndsl_unit
    use param
    use const
    use index
+   use grid, only: latpart
 
    implicit none
 
-   integer, parameter :: steps = 1
+   integer, parameter :: steps = 5
    integer :: i, jj, j, nxj, async_id, seed_size
    integer, allocatable :: seed(:)
    real(kind=RTYPE) um(nxp, lev, my_max)
@@ -46,7 +47,9 @@ subroutine gridnl_hybrid_ndsl_unit
    real(kind=RTYPE) deldm(nxp, my_max), deldm_gpu(nxp, my_max)
    real(kind=RTYPE) sdpbl(nxp, my_max), sdpbl_gpu(nxp, my_max)
    real(kind=RTYPE) sd(nxp, lev, my_max), sd_gpu(nxp, lev, my_max)
-   real(kind=RTYPE) pdot(nxp, lev + 1, my_max), pdot_gpu(nxp, lev + 1, my_max)
+   !! << >>
+   real(kind=RTYPE) pdot(nxp, lev + 1, latpart), pdot_gpu(nxp, lev + 1, latpart)
+   !! << >>
    real(kind=RTYPE) vvel(nxp, lev, my_max), vvel_gpu(nxp, lev, my_max)
    real(kind=RTYPE) sgeo(nxp, my_max)
    real(kind=RTYPE) abs_diff, rel_diff
@@ -103,22 +106,31 @@ subroutine gridnl_hybrid_ndsl_unit
       end do
    end do
 
-   !$acc enter data copyin(um, vm, rdivm, tm, qt, phi, ptm, dtpl, dlpl, sinl, pk, pk2, onocos, cor, diveng_gpu, vdmerdg_gpu, vdzonlg_gpu, pten, deldm_gpu, sdpbl_gpu, sd_gpu, pdot_gpu, vvel_gpu, sgeo, dsigma) async(async_id)
+   !$acc enter data copyin(um, vm, rdivm, tm, qt, phi, phi_gpu, ptm, dtpl, dlpl, sinl, pk, pk2, onocos, cor, diveng_gpu, vdmerdg_gpu, vdzonlg_gpu, pten, deldm_gpu, sdpbl_gpu, sd_gpu, pdot_gpu, vvel_gpu, sgeo, dsigma, sigma, nxjp, jlist1) async(async_id)
    do i = 1, steps
-      !$acc parallel loop gang async(async_id) private(j, nxj)
-      do jj = 1, jlistnum
-         j = jlist1(jj)
-         nxj = nxdef_2d(j)
-         call gridnl_hybrid_ndsl_gpu(nxjp(j), nxp, lev, ncld &
-                                     , cp, radsq, um(1, 1, jj), vm(1, 1, jj), rdivm(1, 1, jj), tm(1, 1, jj) &
-                                     , qt(1, 1, jj), phi_gpu(1, 1, jj), ptm(1, jj), dtpl(1, jj), dlpl(1, jj), sinl(j) &
-                                     , pk(1, 1, jj), pk2(1, 1, jj), dsigma, sigma, onocos(j), cor(j) &
-                                     , diveng_gpu(1, 1, jj), vdmerdg_gpu(1, 1, jj), vdzonlg_gpu(1, 1, jj), pten(1, 1, jj) &
-                                    , deldm_gpu(1, jj), sdpbl_gpu(1, jj), sd_gpu(1, 1, jj), pdot_gpu(1, 1, jj), vvel_gpu(1, 1, jj) &
-                                     , sgeo(1, jj))
-      end do
+      ! !$acc parallel loop gang async(async_id) private(j, nxj)
+      ! do jj = 1, jlistnum
+      !    j = jlist1(jj)
+      !    nxj = nxdef_2d(j)
+      !    call gridnl_hybrid_ndsl_gpu(nxjp(j), nxp, lev, ncld &
+      !                                , cp, radsq, um(1, 1, jj), vm(1, 1, jj), rdivm(1, 1, jj), tm(1, 1, jj) &
+      !                                , qt(1, 1, jj), phi_gpu(1, 1, jj), ptm(1, jj), dtpl(1, jj), dlpl(1, jj), sinl(j) &
+      !                                , pk(1, 1, jj), pk2(1, 1, jj), dsigma, sigma, onocos(j), cor(j) &
+      !                                , diveng_gpu(1, 1, jj), vdmerdg_gpu(1, 1, jj), vdzonlg_gpu(1, 1, jj), pten(1, 1, jj) &
+      !                               , deldm_gpu(1, jj), sdpbl_gpu(1, jj), sd_gpu(1, 1, jj), pdot_gpu(1, 1, jj), vvel_gpu(1, 1, jj) &
+      !                                , sgeo(1, jj))
+      ! end do
+      ! ------------------------------------------------------------
+      call gridnl_hybrid_ndsl_gpu_refactor(nxjp, nxp, lev, ncld &
+           , cp, radsq, um, vm, rdivm, tm &
+           , qt, phi_gpu, ptm, dtpl, dlpl, sinl &
+           , pk, pk2, dsigma, sigma, onocos, cor &
+           , diveng_gpu, vdmerdg_gpu, vdzonlg_gpu, pten &
+           , deldm_gpu, sdpbl_gpu, sd_gpu, pdot_gpu, vvel_gpu &
+           , sgeo)
    end do
-   !$acc exit data delete(um, vm, rdivm, tm, qt, phi, ptm, dtpl, dlpl, sinl, pk, pk2, onocos, cor, pten, sgeo) copyout(deldm_gpu, sd_gpu, pdot_gpu, vvel_gpu, diveng_gpu, vdmerdg_gpu, vdzonlg_gpu, dsigma, sdpbl_gpu) async(async_id)
+   !$acc exit data delete(um, vm, rdivm, tm, qt, phi, ptm, dtpl, dlpl, sinl, pk, pk2, onocos, cor, pten, sgeo, nxjp, jlist1) &
+   !$acc& copyout(phi_gpu, deldm_gpu, sd_gpu, pdot_gpu, vvel_gpu, diveng_gpu, vdmerdg_gpu, vdzonlg_gpu, dsigma, sigma, sdpbl_gpu) async(async_id)
    !$acc wait(async_id)
 
    call assert_allclose(sd_gpu, size(sd_gpu), sd, size(sd), 1e-10, 1e-10, "Array sd")

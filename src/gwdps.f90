@@ -139,8 +139,8 @@
       real bnv2lm(im,km),pe(im),ek(im),zbk(im),up(im)
       real db(im,km),ang(im,km),uds(im,km)
       real zlen, dbtmp, r, phiang, cdmb, dbim
-!     real eng0, eng1, eng2
-      real eng0, eng1
+      real eng0, eng1, eng2
+!      real eng0, eng1
 !xb118---for TOFD
       logical tofd
       real utendform(ix,km),vtendform(ix,km),za(ix,km),                &
@@ -306,9 +306,9 @@
 !
 !xb118---for TOFD
 !--- calculate scale-aware tapering factors
+      utendform=0.0
+      vtendform=0.0
       if (tofd) then
-        utendform=0.0
-        vtendform=0.0
 ! ----  for lm and gwd calculation points
         ipt = 0
         npt = 0
@@ -997,15 +997,13 @@
             dusfc(j)   = dusfc(j)  + dtaux * del(j,k)
             dvsfc(j)   = dvsfc(j)  + dtauy * del(j,k)
           endif
-!         if (tofd)then
-!           eng2       = 0.5*((u1(j,k)+utendform(j,k)*deltim)**2.0+     &
-!                             (v1(j,k)+vtendform(j,k)*deltim)**2.0)
-!         else
-!           eng2       = 0.0
-!         endif
+
+          eng2       = 0.5*((u1(j,k)+utendform(j,k)*deltim)**2.0+     &
+                            (v1(j,k)+vtendform(j,k)*deltim)**2.0)
 !         c(j,k) = c(j,k) + max((eng0-eng1-eng2),0.0)/cp/deltim
 !org          c(j,k) = c(j,k) + max((eng0-eng1),0.0)/cp/deltim   #need to make sure the meaning of the constraint of maximum value
           c(j,k) = c(j,k) + (eng0-eng1) / (cp*deltim)
+          c(j,k) = c(j,k) + (eng0-eng2) / (cp*deltim)
 !
 !          u1(j,k) = u1(j,k) + b(j,k) * deltim
 !          v1(j,k) = v1(j,k) + a(j,k) * deltim

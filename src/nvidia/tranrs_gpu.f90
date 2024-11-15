@@ -28,7 +28,7 @@ subroutine tranrs_gpu(jtrun, jtmax, nx, my, my_max, lev, poly, w, cc &
    use const, only: RTYPE
    use index
    use fftcom
-   use fft_cuda_graph
+   use spec_cuda_graph, only: fft_cg => tranrs_fft_cg
    use fj_pad
    use openacc
    use cudafor
@@ -82,13 +82,13 @@ subroutine tranrs_gpu(jtrun, jtmax, nx, my, my_max, lev, poly, w, cc &
    if (length_fft .eq. 0 .and. lreduce .eq. 0) then
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, lev*jlistnum*num, -1)
    else
-      if (tranrs_graph_created) then
-         CUDACHECK(cudaGraphLaunch(tranrs_graph_exec, stream))
+      if (fft_cg%created) then
+         CUDACHECK(cudaGraphLaunch(fft_cg%graph_exec, stream))
       else
-         call rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, lev*num, -1, tranrs_graph)
-         CUDACHECK(cudaGraphInstantiate(tranrs_graph_exec, tranrs_graph, tranrs_error_node, tranrs_buffer, tranrs_buffer_len))
-         tranrs_graph_created = .true.
-         CUDACHECK(cudaGraphLaunch(tranrs_graph_exec, stream))
+         call rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, lev*num, -1, fft_cg%graph)
+         CUDACHECK(cudaGraphInstantiate(fft_cg%graph_exec, fft_cg%graph, fft_cg%error_node, fft_cg%buffer, fft_cg%buffer_len))
+         fft_cg%created = .true.
+         CUDACHECK(cudaGraphLaunch(fft_cg%graph_exec, stream))
       end if
    end if
 
@@ -253,3 +253,215 @@ subroutine tranrs_gpu(jtrun, jtmax, nx, my, my_max, lev, poly, w, cc &
 
    return
 end
+! ------------------------------------------------------------
+
+subroutine tranrs_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, lev, poly, w, &
+                                 cc, s, num, nsize, &
+                                 gwk1, wss, wcc, wcc_fk, fj_wp)
+!  Present on device: poly, w, cc, wss, nlist, jlist2, jlist1, nxdef
+!  subroutine to transform a scalar grid point field to spectral
+!  coefficients
+!
+! *** input ***
+!
+!  jtrun: zonal wavenumber truncation limit
+!  jtmax: maximum amount of zonal waves located in each pe
+!  nx: e-w dimension no.
+!  my: n-s dimension no.
+!  my_max: maximum amount of n-s grids located in each pe
+!  lev: number of vertical levels to transform
+!  poly: legendre polynomials
+!  w: gaussian quadrature weights
+!  cc_r8: 3-dim input grid pt. field to be transformed
+!  num: number of variables grouped together
+!
+! *** output ***
+!
+!  wss: spectral coefficient fields
+!
+!  **********************************
+!
+   use const, only: RTYPE
+   use index
+   use fftcom
+   use spec_cuda_graph, only: fft_cg => tranrs_fft_cg, lt_cg => tranrs_lt_cg
+   use fj_pad
+   use openacc
+   use cudafor
+   use cublas
+
+   implicit none
+
+   ! << output >>
+   real(kind=RTYPE), dimension(lev, 2, num, jtrun, jtmax):: s
+   ! << input >>
+   real(kind=RTYPE), dimension(nx + 2, lev, num, my_max) :: cc
+   ! << const >>
+   real, dimension((jtrun + nsize)*my/2*jtmax) :: poly
+   real(kind=RTYPE) w(my)
+   ! << buffer >>
+   real(kind=RTYPE), dimension(nx + 2, lev, num, my_max) :: gwk1
+   real, dimension(lev, 2, num, jtrun, jtmax):: wss
+   real, dimension(lev, 2, num, my, jtmax) :: wcc
+   real, dimension((jtrun + nsize)*my/2*jtmax) :: fj_wp
+   real(kind=RTYPE), dimension(lev, 2, num, jtmax, my_max*nsize) :: wcc_fk
+   ! << local >>
+   real(kind=RTYPE), dimension(lev, 2, num, jtmax*nsize, my_max) :: twcc_fk
+
+   integer jtrun, jtmax, nx, my, my_max, lev, num, nsize
+   integer myhalf, nlev2, j, jj, ii, k, l, jtrunj, m, mf, mm, mp, mlst
+   integer jlistnum_fj, llistnum_fj, j_str, m_str, ind
+
+   integer async_id, istat, id_str
+   integer(kind=cuda_stream_kind) :: stream, lt_cg_stream(jtmax)
+   type(cudaEvent) :: spread_event, pack_event
+   type(cublashandle) :: handle
+
+   async_id = 1
+   stream = acc_get_cuda_stream(async_id)
+
+   myhalf = my/2
+   nlev2 = lev*2*num
+
+   !$acc enter data create(twcc_fk) async(async_id)
+
+   !$acc host_data use_device(twcc_fk, gwk1)
+   istat = cudaMemsetAsync(twcc_fk, 0.0, size(twcc_fk), stream)
+   istat = cudaMemsetAsync(gwk1, 0.0, size(gwk1), stream)
+   !$acc end host_data
+!
+!  fft for each guassian latitude of 2-d field
+!
+#ifdef SP
+   print *, "Symbol SP is not supported."
+   call exit(1)
+#endif
+
+   if (length_fft .eq. 0 .and. lreduce .eq. 0) then
+      call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, lev*jlistnum*num, -1)
+   else
+      if (fft_cg%created) then
+         CUDACHECK(cudaGraphLaunch(fft_cg%graph_exec, stream))
+      else
+         call rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, lev*num, -1, fft_cg%graph)
+         CUDACHECK(cudaGraphInstantiate(fft_cg%graph_exec, fft_cg%graph, fft_cg%error_node, fft_cg%buffer, fft_cg%buffer_len))
+         fft_cg%created = .true.
+         CUDACHECK(cudaGraphLaunch(fft_cg%graph_exec, stream))
+      end if
+   end if
+
+   !$acc parallel loop collapse(2) private(jj, jtrunj, mm, mp, mlst) async(async_id)
+   do j = 1, jlistnum
+      do m = 1, jtrun
+         jj = jlist1(j)
+         jtrunj = mtrundef(jj)
+         if (m .le. jtrunj) then
+            mm = 2*m - 1
+            mp = mm + 1
+            mlst = nlist(m)
+            !$acc loop vector collapse(2)
+            do ii = 1, num
+               do k = 1, lev
+                  twcc_fk(k, 1, ii, mlst, j) = cc(mm, k, ii, j)
+                  twcc_fk(k, 2, ii, mlst, j) = cc(mp, k, ii, j)
+               end do
+            end do
+         end if
+      end do
+   end do
+
+   ! Present on device: twcc_fk, wcc_fk
+   call mpe_transpose_rs_sp_gpu(twcc_fk, wcc_fk, lev*2*num, jtmax, my_max, nsize, nccl_col_comm)
+   !$acc exit data delete(twcc_fk) async(async_id)
+
+   !$acc parallel loop collapse(3) private(jj, j_str, jlistnum_fj) async(async_id)
+   do j = 1, my
+      do m = 1, mlistnum
+         do k = 1, nlev2
+            jlistnum_fj = tcolt_jlist(1, m)*2
+            if (j .le. jlistnum_fj) then
+               j_str = tcolt_jlist(2, m)
+               jj = jlist2(j_str + j - 1)
+               wcc(k, 1, 1, j, m) = wcc_fk(k, 1, 1, m, jj)
+            end if
+         end do
+      end do
+   end do
+
+   if (.not. (lt_cg%created)) then
+      istat = cudaEventCreate(spread_event)
+      istat = cudaEventCreate(pack_event)
+      handle = cublasGetHandle()
+      do m = 1, mlistnum
+         lt_cg_stream(m) = acc_get_cuda_stream(m + 1)
+      end do
+
+      CUDACHECK(cudaStreamBeginCapture(stream, cudaStreamCaptureModeGlobal))
+
+      !$acc parallel loop collapse(3) &
+      !$acc& private(mf, jlistnum_fj, llistnum_fj, j_str, m_str, ind, jj) async(async_id)
+      do m = 1, mlistnum
+         do j = 1, myhalf
+            do l = 1, jtrun
+               mf = mlist(m)
+               jlistnum_fj = tcolt_jlist(1, m)
+               llistnum_fj = jtrun - mf + 1
+               if ((j .le. jlistnum_fj) .AND. (l .le. llistnum_fj)) then
+                  j_str = tcolt_jlist(2, m)
+                  m_str = poly_mlist(m)
+
+                  ind = l + (j - 1)*llistnum_fj + m_str - 1
+                  jj = j_str + j - 1
+                  fj_wp(ind) = w(jj)*poly(ind)
+
+                  ind = ind + jlistnum_fj*llistnum_fj
+                  jj = myhalf - j + 1
+                  fj_wp(ind) = w(jj)*poly(ind)
+               end if
+            end do
+         end do
+      end do
+
+      istat = cudaEventRecord(spread_event, stream)
+      do m = 1, mlistnum
+         istat = cudaStreamWaitEvent(lt_cg_stream(m), spread_event, 0)
+
+         mf = mlist(m)
+         llistnum_fj = jtrun - mf + 1
+         jlistnum_fj = tcolt_jlist(1, m)*2
+         m_str = poly_mlist(m)
+
+         !$acc host_data use_device(fj_wp, wcc, wss)
+         istat = cublasSetStream(handle, lt_cg_stream(m))
+         call dgemm('n', 't', nlev2, llistnum_fj, jlistnum_fj, &
+                    1.0, wcc(1, 1, 1, 1, m), nlev2, &
+                    fj_wp(m_str), llistnum_fj, &
+                    0.0, wss(1, 1, 1, mf, m), nlev2)
+
+         !$acc end host_data
+         istat = cudaEventRecord(pack_event, lt_cg_stream(m))
+         istat = cudaStreamWaitEvent(stream, pack_event, 0)
+      end do
+
+      CUDACHECK(cudaStreamEndCapture(stream, lt_cg%graph))
+      CUDACHECK(cudaGraphInstantiate(lt_cg%graph_exec, lt_cg%graph, lt_cg%error_node, lt_cg%buffer, lt_cg%buffer_len))
+      lt_cg%created = .true.
+      istat = cudaEventDestroy(spread_event)
+      istat = cudaEventDestroy(pack_event)
+   end if
+   CUDACHECK(cudaGraphLaunch(lt_cg%graph_exec, stream))
+
+   !$acc parallel loop collapse(3) private(mf) async(async_id)
+   do m = 1, mlistnum
+      do L = 1, jtrun
+         do k = 1, nlev2
+            mf = mlist(m)
+            if (L .ge. mf) then
+               s(k, 1, 1, L, m) = wss(k, 1, 1, L, m)
+            end if
+         end do
+      end do
+   end do
+
+   return
+end subroutine tranrs_gpu_cuda_graph
