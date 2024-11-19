@@ -9,15 +9,18 @@
 subroutine device_init(rank, size)
    use openacc
    use cublas
+   use cusparse
    implicit none
    integer :: rank, size, istat
    integer :: num_device, device_id
    type(cublashandle) :: handle
+   type(cusparseHandle) :: sparsehandle 
 
    num_device = acc_get_num_devices(acc_device_nvidia)
    device_id = mod(rank, num_device)
    call acc_set_device_num(device_id, acc_device_nvidia)
    istat = cublasCreate(handle)
+   istat = cusparseCreate(sparsehandle)
 end subroutine device_init
 
 subroutine nccl_init()
