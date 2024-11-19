@@ -90,7 +90,8 @@ subroutine intgrt_gpu
    real(kind=RTYPE), allocatable, dimension(:, :, :), device:: &
       plold_d, plnow_d, &
       rdiv_d, ut_d, vt_d, tt_d, qt_d, &
-      phi_d, plt_d, pk_d, pk2_d, vvel_d
+      phi_d, pk_d, pk2_d, vvel_d
+   real, allocatable, dimension(:, :, :), device :: plt_d
 
    real(kind=RTYPE), allocatable, dimension(:, :), device:: &
       pt_d, ptend_d
@@ -660,10 +661,10 @@ subroutine intgrt_gpu
    istat = cudaMemcpyAsync(temmid, temnow, size(temmid), cudaMemcpyDeviceToDevice, stream)
    !$acc end host_data
    !$acc host_data use_device(plten, divten, vorten, hldten)
-   istat = cudaMemsetAsync(plten, 0.0, size(plten), stream)
-   istat = cudaMemsetAsync(divten, 0.0, size(divten), stream)
-   istat = cudaMemsetAsync(vorten, 0.0, size(vorten), stream)
-   istat = cudaMemsetAsync(hldten, 0.0, size(hldten), stream)
+   istat = cudaMemsetAsync(plten, real(0.0, RTYPE), size(plten), stream)
+   istat = cudaMemsetAsync(divten, real(0.0, RTYPE), size(divten), stream)
+   istat = cudaMemsetAsync(vorten, real(0.0, RTYPE), size(vorten), stream)
+   istat = cudaMemsetAsync(hldten, real(0.0, RTYPE), size(hldten), stream)
    !$acc end host_data
    !$acc host_data use_device(up, um, ut, vp, vm, vt, ttp, tm, tt, rdivm, rdiv, qm, qt, ptp, ptm, pt)
    istat = cudaMemcpyAsync(up, ut, size(up), cudaMemcpyDeviceToDevice, stream)
@@ -699,16 +700,16 @@ subroutine intgrt_gpu
 !
       !$acc host_data use_device(pdot, vdmerd, vdzonl, vdmerdr, vdzonlr, &
       !$acc& vdmerdrp, vdzonlrp, ddtemp, pten, deldm)
-      istat = cudaMemsetAsync(pdot, 0.0, size(pdot), stream)
-      istat = cudaMemsetAsync(vdmerd, 0.0, size(vdmerd), stream)
-      istat = cudaMemsetAsync(vdzonl, 0.0, size(vdzonl), stream)
-      istat = cudaMemsetAsync(vdmerdr, 0.0, size(vdmerdr), stream)
-      istat = cudaMemsetAsync(vdzonlr, 0.0, size(vdzonlr), stream)
-      istat = cudaMemsetAsync(vdmerdrp, 0.0, size(vdmerdrp), stream)
-      istat = cudaMemsetAsync(vdzonlrp, 0.0, size(vdzonlrp), stream)
-      istat = cudaMemsetAsync(ddtemp, 0.0, size(ddtemp), stream)
-      istat = cudaMemsetAsync(pten, 0.0, size(pten), stream)
-      istat = cudaMemsetAsync(deldm, 0.0, size(deldm), stream)
+      istat = cudaMemsetAsync(pdot, real(0.0, RTYPE), size(pdot), stream)
+      istat = cudaMemsetAsync(vdmerd, real(0.0, RTYPE), size(vdmerd), stream)
+      istat = cudaMemsetAsync(vdzonl, real(0.0, RTYPE), size(vdzonl), stream)
+      istat = cudaMemsetAsync(vdmerdr, real(0.0, RTYPE), size(vdmerdr), stream)
+      istat = cudaMemsetAsync(vdzonlr, real(0.0, RTYPE), size(vdzonlr), stream)
+      istat = cudaMemsetAsync(vdmerdrp, real(0.0, RTYPE), size(vdmerdrp), stream)
+      istat = cudaMemsetAsync(vdzonlrp, real(0.0, RTYPE), size(vdzonlrp), stream)
+      istat = cudaMemsetAsync(ddtemp, real(0.0, RTYPE), size(ddtemp), stream)
+      istat = cudaMemsetAsync(pten, real(0.0, RTYPE), size(pten), stream)
+      istat = cudaMemsetAsync(deldm, real(0.0, RTYPE), size(deldm), stream)
       !$acc end host_data
 !
 !     advet grid non-linear forcing from t-dt/2 to t+dt/2 via NDSL advection

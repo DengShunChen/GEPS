@@ -19,63 +19,35 @@ add_custom_target(
   DEPENDS ${EXEC})
 
 if(${USE_CUDA})
-  list(APPEND TEST_DGEMM_WRAPPER_SRC "../src/nvidia/cublas_wrapper.f90"
-       "../src/nvidia/helper.f90" "test_dgemm_wrapper.f90")
-
-  add_executable(test_dgemm_wrapper ${TEST_DGEMM_WRAPPER_SRC})
-  add_test(NAME test_dgemm_wrapper COMMAND test_dgemm_wrapper)
-  set_target_properties(test_dgemm_wrapper PROPERTIES LINKER_LANGUAGE Fortran)
-
-  list(
-    APPEND
-    TEST_FFT_WRAPPER_SRC
-    "../src/mod_rank.f90"
-    "../src/cwb_fftw.c"
-    "../src/fftx.f90"
-    "../src/nvidia/cufft_plan_cache.cc"
-    "../src/nvidia/cufft_wrapper.f90"
-    "../src/nvidia/helper.f90"
-    "test_fft_wrapper.f90")
-
-  add_executable(test_fft_wrapper ${TEST_FFT_WRAPPER_SRC})
-  add_test(NAME test_fft_wrapper COMMAND test_fft_wrapper)
-  set_target_properties(test_fft_wrapper PROPERTIES LINKER_LANGUAGE Fortran)
-
-  list(
-    APPEND
-    TEST_CUFFT_PLAN_CACHE_SRC
-    "../src/mod_rank.f90"
-    "../src/cwb_fftw.c"
-    "../src/fftx.f90"
-    "../src/nvidia/cufft_plan_cache.cc"
-    "../src/nvidia/cufft_wrapper.f90"
-    "../src/nvidia/helper.f90"
-    "test_cufft_plan_cache.f90")
-
-  add_executable(test_cufft_plan_cache ${TEST_CUFFT_PLAN_CACHE_SRC})
-  add_test(NAME test_cufft_plan_cache COMMAND test_cufft_plan_cache)
-  set_target_properties(test_cufft_plan_cache PROPERTIES LINKER_LANGUAGE
-                                                         Fortran)
-
-  list(
-    APPEND
-    TEST_CUFFT_LOOP_SRC
-    "../src/mod_rank.f90"
-    "../src/cwb_fftw.c"
-    "../src/fftx.f90"
-    "../src/nvidia/cufft_plan_cache.cc"
-    "../src/nvidia/cufft_wrapper.f90"
-    "../src/nvidia/helper.f90"
-    "test_cufft_loop.f90")
-  add_executable(test_cufft_loop ${TEST_CUFFT_LOOP_SRC})
-  add_test(NAME test_cufft_loop COMMAND test_cufft_loop)
-  set_target_properties(test_cufft_loop PROPERTIES LINKER_LANGUAGE Fortran)
-
   if(${USE_RSM})
     set(TCO_LIB "tcogfs_rsm")
   else()
     set(TCO_LIB "tcogfs")
   endif()
+
+  add_executable(test_dgemm_wrapper "test_dgemm_wrapper.f90" "helper.f90")
+  add_test(NAME test_dgemm_wrapper COMMAND test_dgemm_wrapper)
+  set_target_properties(test_dgemm_wrapper PROPERTIES LINKER_LANGUAGE Fortran)
+  target_include_directories(test_dgemm_wrapper PUBLIC ${TCO_LIB})
+  target_link_libraries(test_dgemm_wrapper PUBLIC ${TCO_LIB})
+
+  add_executable(test_fft_wrapper "test_fft_wrapper.f90" "helper.f90")
+  add_test(NAME test_fft_wrapper COMMAND test_fft_wrapper)
+  set_target_properties(test_fft_wrapper PROPERTIES LINKER_LANGUAGE Fortran)
+  target_include_directories(test_fft_wrapper PUBLIC ${TCO_LIB})
+  target_link_libraries(test_fft_wrapper PUBLIC ${TCO_LIB})
+
+  add_executable(test_cufft_plan_cache "test_cufft_plan_cache.f90" "helper.f90")
+  add_test(NAME test_cufft_plan_cache COMMAND test_cufft_plan_cache)
+  set_target_properties(test_cufft_plan_cache PROPERTIES LINKER_LANGUAGE Fortran)
+  target_include_directories(test_cufft_plan_cache PUBLIC ${TCO_LIB})
+  target_link_libraries(test_cufft_plan_cache PUBLIC ${TCO_LIB})
+
+  add_executable(test_cufft_loop "test_cufft_loop.f90" "helper.f90")
+  add_test(NAME test_cufft_loop COMMAND test_cufft_loop)
+  set_target_properties(test_cufft_loop PROPERTIES LINKER_LANGUAGE Fortran)
+  target_include_directories(test_cufft_loop PUBLIC ${TCO_LIB})
+  target_link_libraries(test_cufft_loop PUBLIC ${TCO_LIB})
 
   function(subroutine_mpi_test target)
     add_executable(${target} ${target}.f90 helper.f90)

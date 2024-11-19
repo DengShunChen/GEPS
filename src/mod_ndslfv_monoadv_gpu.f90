@@ -535,7 +535,7 @@ contains
       !
       stream = acc_get_cuda_stream(async_id)
       !$acc host_data use_device(plev)
-      istat = cudaMemsetAsync(plev, 0., size(plev), stream)
+      istat = cudaMemsetAsync(plev, real(0.0, RTYPE), size(plev), stream)
       !$acc end host_data
 
       !$acc parallel loop async(async_id) &
@@ -686,7 +686,7 @@ contains
       !
       stream = acc_get_cuda_stream(async_id)
       !$acc host_data use_device(plev)
-      istat = cudaMemsetAsync(plev, 0., size(plev), stream)
+      istat = cudaMemsetAsync(plev, real(0.0, RTYPE), size(plev), stream)
       !$acc end host_data
 
       !$acc parallel loop async(async_id) &
@@ -2252,7 +2252,7 @@ contains
       !$acc& step, nstep)
 
       !$acc host_data use_device(dd)
-      istat = cudaMemsetAsync(dd, 0., size(dd), stream)
+      istat = cudaMemsetAsync(dd, real(0.0, RTYPE), size(dd), stream)
       !$acc end host_data
 
       !$acc kernels async(async_id)
@@ -2412,9 +2412,9 @@ contains
       do i = 1, nxy
          if ((pp(1, i) .ne. pn(1, i)) .or. &
              (pp(levs + 1, i) .ne. pn(levs + 1, i))) then
-            print *, ' Error in vertical_cell_ppm_intp for domain values '
-            print *, "i pp1 pn1", i, pp(1, i), pn(1, i)
-            print *, "i ppt pnt", i, pp(levs + 1, i), pn(levs + 1, i)
+            ! print *, ' Error in vertical_cell_ppm_intp for domain values '
+            ! print *, "i pp1 pn1", i, pp(1, i), pn(1, i)
+            ! print *, "i ppt pnt", i, pp(levs + 1, i), pn(levs + 1, i)
             istat = istat + 1
          end if
       end do
@@ -2431,8 +2431,8 @@ contains
       ! end if
 
       !$acc host_data use_device(th,dqlist,kklist)
-      istat = cudaMemsetAsync(th, 0., size(th), stream)
-      istat = cudaMemsetAsync(dqlist, 0., size(dqlist), stream)
+      istat = cudaMemsetAsync(th, real(0.0, RTYPE), size(th), stream)
+      istat = cudaMemsetAsync(dqlist, real(0.0, RTYPE), size(dqlist), stream)
       istat = cudaMemsetAsync(kklist, 1, size(kklist), stream)
       !$acc end host_data
       ! ****************************************

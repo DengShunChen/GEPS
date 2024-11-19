@@ -10,12 +10,15 @@ program test_fft_wrapper
 end program test_fft_wrapper
 
 subroutine cufft_rfftmlt_unit(inc, jump, n, m, isign)
+   use const, only: RTYPE
+
    integer :: inc, jump, n, m, isign, i, j
-   real(8), dimension(jump, m) :: a, a_cufft, work, work_gpu
+   real(kind=RTYPE), dimension(jump, m) :: a, a_cufft, work, work_gpu
    real(8), dimension(4096) :: trigs
    integer, dimension(19) :: ifax
+   real(kind=RTYPE) :: tol
 
-   call random_seed()
+   call init_seed()
    call random_number(a)
    if (isign .eq. 1) then
       do j = 1, m
@@ -26,10 +29,17 @@ subroutine cufft_rfftmlt_unit(inc, jump, n, m, isign)
    end if
    a_cufft = a
 
+#ifdef SP
+   tol = 1e-5
+   call rfftmlt_sp(a, work, trigs, ifax, inc, jump, n, m, isign)
+#else
+   tol = 1e-10
    call rfftmlt(a, work, trigs, ifax, inc, jump, n, m, isign)
+#endif
+
    call rfftmlt_gpu(a_cufft, work_gpu, trigs, ifax, inc, jump, n, m, isign)
 
-   if (all(abs(a - a_cufft) <= 1e-10)) then
+   if (all(abs(a - a_cufft) <= tol)) then
       PRINT *, "test_fft_wrapper passed."
    else
       PRINT *, "test_fft_wrapper failed."

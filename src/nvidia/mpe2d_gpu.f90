@@ -32,9 +32,9 @@ subroutine mpe2d_transpose_nx_levp_gpu(ain, aout, nxp, nx, lev, levp, num, my, m
    !$acc enter data create(b1, b2) async(async_id)
 
    !$acc host_data use_device(b1, b2, aout)
-   istat = cudaMemSetAsync(b1, 0.0, size(b1), stream)
-   istat = cudaMemSetAsync(b2, 0.0, size(b2), stream)
-   istat = cudaMemSetAsync(aout, 0.0, size(aout), stream)
+   istat = cudaMemSetAsync(b1, real(0.0, RTYPE), size(b1), stream)
+   istat = cudaMemSetAsync(b2, real(0.0, RTYPE), size(b2), stream)
+   istat = cudaMemSetAsync(aout, real(0.0, RTYPE), size(aout), stream)
    !$acc end host_data
 
    !$acc parallel loop gang async(async_id)
@@ -55,7 +55,7 @@ subroutine mpe2d_transpose_nx_levp_gpu(ain, aout, nxp, nx, lev, levp, num, my, m
 
    nlen = nxp*levp*jlen*num
 
-   call nccl_alltoall_fp64(b1, nlen, b2, nlen, comm, nsizex, async_id)
+   call nccl_alltoall(b1, nlen, b2, nlen, comm, nsizex, async_id)
 
    !$acc parallel loop collapse(2) async(async_id)
    do jj = 1, jlistnum
@@ -104,9 +104,9 @@ subroutine mpe2d_transpose_nxp_lev_gpu(ain, aout, nxp, nx, lev, levp, num, my, m
    !$acc enter data create(b1, b2) async(async_id)
 
    !$acc host_data use_device(b1, b2, aout)
-   istat = cudaMemSetAsync(b1, 0.0, size(b1), stream)
-   istat = cudaMemSetAsync(b2, 0.0, size(b2), stream)
-   istat = cudaMemSetAsync(aout, 0.0, size(aout), stream)
+   istat = cudaMemSetAsync(b1, real(0.0, RTYPE), size(b1), stream)
+   istat = cudaMemSetAsync(b2, real(0.0, RTYPE), size(b2), stream)
+   istat = cudaMemSetAsync(aout, real(0.0, RTYPE), size(aout), stream)
    !$acc end host_data
 
    !$acc parallel loop collapse(4) private(j1) async(async_id)
@@ -134,7 +134,7 @@ subroutine mpe2d_transpose_nxp_lev_gpu(ain, aout, nxp, nx, lev, levp, num, my, m
    !$acc enter data copyin(i1_array) async(async_id)
 
    nlen = nxp*levp*jlen*num
-   call nccl_alltoall_fp64(b1, nlen, b2, nlen, comm, nsizex, async_id)
+   call nccl_alltoall(b1, nlen, b2, nlen, comm, nsizex, async_id)
 
    !$acc parallel loop collapse(5) private(i1, i2) async(async_id)
    do n = 1, num
@@ -184,8 +184,8 @@ subroutine mpe2d_reshape_pl_gpu(plin, plout)
    stream = acc_get_cuda_stream(async_id)
    !$acc enter data create(b1) async(async_id)
    !$acc host_data use_device(plout, b1)
-   istat = cudaMemSetAsync(plout, 0.0, size(plout), stream)
-   istat = cudaMemSetAsync(b1, 0.0, size(b1), stream)
+   istat = cudaMemSetAsync(plout, real(0.0, RTYPE), size(plout), stream)
+   istat = cudaMemSetAsync(b1, real(0.0, RTYPE), size(b1), stream)
    !$acc end host_data
    i = 1
    do m = 1, mlistnum
@@ -243,9 +243,9 @@ subroutine mpe2d_transpose_siimpl_gpu(ain, aout, &
 
    !$acc enter data create(c1, c2) async(async_id)
    !$acc host_data use_device(aout, c1, c2)
-   istat = cudaMemSetAsync(aout, 0.0, size(aout), stream)
-   istat = cudaMemSetAsync(c1, 0.0, size(c1), stream)
-   istat = cudaMemSetAsync(c2, 0.0, size(c2), stream)
+   istat = cudaMemSetAsync(aout, real(0.0, RTYPE), size(aout), stream)
+   istat = cudaMemSetAsync(c1, real(0.0, RTYPE), size(c1), stream)
+   istat = cudaMemSetAsync(c2, real(0.0, RTYPE), size(c2), stream)
    !$acc end host_data
 
    levp2 = levp*2
@@ -268,7 +268,7 @@ subroutine mpe2d_transpose_siimpl_gpu(ain, aout, &
 
    nlen = levp2*jtp
 
-   call nccl_alltoall_fp64(c1, nlen, c2, nlen, row_comm, nsizex, async_id)
+   call nccl_alltoall(c1, nlen, c2, nlen, row_comm, nsizex, async_id)
 
    !$acc parallel loop collapse(4) private(ii) async(async_id)
    do j = 1, jtp
@@ -310,8 +310,8 @@ subroutine mpe2d_unify_nx_gpu(work, a)
    !$acc enter data create(b) async(async_id)
 
    !$acc host_data use_device(work, b)
-   istat = cudaMemsetAsync(work, 0.0, size(work), stream)
-   istat = cudaMemsetAsync(b, 0.0, size(b), stream)
+   istat = cudaMemsetAsync(work, real(0.0, RTYPE), size(work), stream)
+   istat = cudaMemsetAsync(b, real(0.0, RTYPE), size(b), stream)
    !$acc end host_data
 
    do jj = 1, jlistnum
@@ -325,7 +325,11 @@ subroutine mpe2d_unify_nx_gpu(work, a)
    !$acc enter data copyin(ii_array) async(async_id)
 
    !$acc host_data use_device(a, b)
+#ifdef SP
+   NCCLCHECK(ncclAllGather(a, b, nxp*my_max, ncclFloat32, nccl_row_comm, stream))
+#else
    NCCLCHECK(ncclAllGather(a, b, nxp*my_max, ncclFloat64, nccl_row_comm, stream))
+#endif
    !$acc end host_data
 
    !$acc parallel loop collapse(2) private(j, ii, nn) async(async_id)
@@ -373,8 +377,8 @@ subroutine mpe2d_reshape_pl_back_gpu(plin, plout)
    !$acc enter data create(b2) async(async_id)
 
    !$acc host_data use_device(plout, b2)
-   istat = cudaMemsetAsync(plout, 0.0, size(plout), stream)
-   istat = cudaMemsetAsync(b2, 0.0, size(b2), stream)
+   istat = cudaMemsetAsync(plout, real(0.0, RTYPE), size(plout), stream)
+   istat = cudaMemsetAsync(b2, real(0.0, RTYPE), size(b2), stream)
    !$acc end host_data
 
    i = 1
@@ -394,7 +398,11 @@ subroutine mpe2d_reshape_pl_back_gpu(plin, plout)
    !$acc enter data copyin(i_array, j_array) async(async_id)
 
    !$acc host_data use_device(plin, b2)
+#ifdef SP
+   NCCLCHECK(ncclAllGather(plin, b2, jtp*2, ncclFloat32, nccl_row_comm, stream))
+#else
    NCCLCHECK(ncclAllGather(plin, b2, jtp*2, ncclFloat64, nccl_row_comm, stream))
+#endif
    !$acc end host_data
 
    !$acc parallel loop collapse(3) private(mf, i, j) async(async_id)
@@ -448,9 +456,9 @@ subroutine mpe2d_transpose_siimpl_back_gpu(ain, aout, levp, jtrun, jtmax, lev, j
    !$acc enter data create(b1, b2) async(async_id)
 
    !$acc host_data use_device(b1, b2, aout)
-   istat = cudaMemsetAsync(b1, 0.0, size(b1), stream)
-   istat = cudaMemsetAsync(b2, 0.0, size(b2), stream)
-   istat = cudaMemsetAsync(aout, 0.0, size(aout), stream)
+   istat = cudaMemsetAsync(b1, real(0.0, RTYPE), size(b1), stream)
+   istat = cudaMemsetAsync(b2, real(0.0, RTYPE), size(b2), stream)
+   istat = cudaMemsetAsync(aout, real(0.0, RTYPE), size(aout), stream)
    !$acc end host_data
 
    !$acc parallel loop collapse(3) async(async_id)
@@ -479,7 +487,7 @@ subroutine mpe2d_transpose_siimpl_back_gpu(ain, aout, levp, jtrun, jtmax, lev, j
    !$acc enter data copyin(i_array, j_array) async(async_id)
 
    nlen = jtp*2*levp
-   call nccl_alltoall_fp64(b1, nlen, b2, nlen, row_comm, nsizex, async_id)
+   call nccl_alltoall(b1, nlen, b2, nlen, row_comm, nsizex, async_id)
 
    !$acc parallel loop collapse(4) private(mf, i, j) async(async_id)
    do m = 1, mlistnum
@@ -531,9 +539,9 @@ subroutine mpe2d_transpose_ndsl_p2f_gpu(ain, aout, nxp, nx, lev, levp, ncld, my,
    !$acc enter data create(c1, c2) async(async_id)
 
    !$acc host_data use_device(c1, c2, aout)
-   istat = cudaMemsetAsync(c1, 0.0, size(c1), stream)
-   istat = cudaMemsetAsync(c2, 0.0, size(c2), stream)
-   istat = cudaMemsetAsync(aout, 0.0, size(aout), stream)
+   istat = cudaMemsetAsync(c1, real(0.0, RTYPE), size(c1), stream)
+   istat = cudaMemsetAsync(c2, real(0.0, RTYPE), size(c2), stream)
+   istat = cudaMemsetAsync(aout, real(0.0, RTYPE), size(aout), stream)
    !$acc end host_data
 
    !$acc parallel loop collapse(4) private(jj, kk) async(async_id)
@@ -553,7 +561,7 @@ subroutine mpe2d_transpose_ndsl_p2f_gpu(ain, aout, nxp, nx, lev, levp, ncld, my,
 
    nlen = nxp*levp*jlen*ncld
 
-   call nccl_alltoall_fp64(c1, nlen, c2, nlen, comm, nsizex, async_id)
+   call nccl_alltoall(c1, nlen, c2, nlen, comm, nsizex, async_id)
 
    do j = 1, jlistnum
       jj = jlist1(j)
@@ -618,9 +626,9 @@ subroutine mpe2d_transpose_ndsl_f2p_gpu(ain, aout, nxp, nx, lev, levp, ncld, my,
    !$acc enter data create(c1, c2) async(async_id)
 
    !$acc host_data use_device(c1, c2, aout)
-   istat = cudaMemsetAsync(c1, 0.0, size(c1), stream)
-   istat = cudaMemsetAsync(c2, 0.0, size(c2), stream)
-   istat = cudaMemsetAsync(aout, 0.0, size(aout), stream)
+   istat = cudaMemsetAsync(c1, real(0.0, RTYPE), size(c1), stream)
+   istat = cudaMemsetAsync(c2, real(0.0, RTYPE), size(c2), stream)
+   istat = cudaMemsetAsync(aout, real(0.0, RTYPE), size(aout), stream)
    !$acc end host_data
 
    do j = 1, jlistnum
@@ -651,7 +659,7 @@ subroutine mpe2d_transpose_ndsl_f2p_gpu(ain, aout, nxp, nx, lev, levp, ncld, my,
    end do
 
    nlen = nxp*levp*jlen*ncld
-   call nccl_alltoall_fp64(c1, nlen, c2, nlen, comm, proc, async_id)
+   call nccl_alltoall(c1, nlen, c2, nlen, comm, proc, async_id)
 
    !$acc parallel loop collapse(5) private(ii, l) async(async_id)
    do jj = 1, jlistnum
@@ -696,11 +704,15 @@ subroutine mpe2d_unify_my1d_gpu(work, a)
    stream = acc_get_cuda_stream(async_id)
    !$acc enter data create(b) async(async_id)
    !$acc host_data use_device(work, b)
-   istat = cudaMemsetAsync(work, 0.0, size(work), stream)
-   istat = cudaMemsetAsync(b, 0.0, size(b), stream)
+   istat = cudaMemsetAsync(work, real(0.0, RTYPE), size(work), stream)
+   istat = cudaMemsetAsync(b, real(0.0, RTYPE), size(b), stream)
    !$acc end host_data
    !$acc host_data use_device(a, b)
+#ifdef SP
+   NCCLCHECK(ncclAllGather(a, b, my_max, ncclFloat32, nccl_col_comm, stream))
+#else
    NCCLCHECK(ncclAllGather(a, b, my_max, ncclFloat64, nccl_col_comm, stream))
+#endif
    !$acc end host_data
    !$acc parallel loop private(jj) async(async_id)
    do j = 1, my

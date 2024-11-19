@@ -63,6 +63,10 @@ subroutine tranrs1_unit
    !$acc exit data delete(wss, wcc, wcc_fk, fj_wp) async(async_id)
    !$acc wait(async_id)
 
+#ifdef SP
+   call assert_allclose(s_gpu, size(s_gpu), s, size(s), 1e-4_4, 1e-4_4, "Array s")
+#else
    call assert_allclose(s_gpu, size(s_gpu), s, size(s), 1e-10, 1e-10, "Array s")
+#endif
 
 end subroutine tranrs1_unit

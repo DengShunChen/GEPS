@@ -76,8 +76,14 @@ subroutine hdiffu_unit
       !$acc wait(async_id)
    end do
 
+#ifdef SP
+   call assert_allclose(vornow_gpu, size(vornow_gpu), vornow_cpu, size(vornow_cpu), 1e-4_4, 1e-4_4, "Array vornow")
+   call assert_allclose(divnow_gpu, size(divnow_gpu), divnow_cpu, size(divnow_cpu), 1e-4_4, 1e-4_4, "Array divnow")
+   call assert_allclose(temnow_gpu, size(temnow_gpu), temnow_cpu, size(temnow_cpu), 1e-4_4, 1e-4_4, "Array temnow")
+#else
    call assert_allclose(vornow_gpu, size(vornow_gpu), vornow_cpu, size(vornow_cpu), 1e-10, 1e-10, "Array vornow")
    call assert_allclose(divnow_gpu, size(divnow_gpu), divnow_cpu, size(divnow_cpu), 1e-10, 1e-10, "Array divnow")
    call assert_allclose(temnow_gpu, size(temnow_gpu), temnow_cpu, size(temnow_cpu), 1e-10, 1e-10, "Array temnow")
+#endif
 
 end subroutine hdiffu_unit

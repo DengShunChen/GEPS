@@ -108,7 +108,7 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, coslr, wcfac &
    !$acc enter data &
    !$acc& create(twcc_fk, ws3, ws4, tcc, tc2, wcc_fk, fj_ws3, fj_ws4, fj_tcc, fj_wc, fj_wd, fj_tc2, wc, wd) async(async_id)
    !$acc host_data use_device(wcc_fk)
-   CUDACHECK(cudaMemsetAsync(wcc_fk, 0.0, size(wcc_fk), stream))
+   CUDACHECK(cudaMemsetAsync(wcc_fk, real(0.0, RTYPE), size(wcc_fk), stream))
    !$acc end host_data
    do m = 1, mlistnum
       mf = mlist(m)
@@ -139,7 +139,7 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, coslr, wcfac &
          end do
       end do
       !$acc host_data use_device(tcc, fj_ws3, fj_ws4, fj_tcc, fj_wc, fj_wd)
-      CUDACHECK(cudaMemsetAsync(tcc, 0.0, size(tcc), stream))
+      CUDACHECK(cudaMemsetAsync(tcc, real(0.0, RTYPE), size(tcc), stream))
       CUDACHECK(cudaMemsetAsync(fj_ws3, 0.0, size(fj_ws3), stream))
       CUDACHECK(cudaMemsetAsync(fj_ws4, 0.0, size(fj_ws4), stream))
       CUDACHECK(cudaMemsetAsync(fj_tcc, 0.0, size(fj_tcc), stream))
@@ -274,7 +274,7 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, coslr, wcfac &
       end do
 
       !$acc host_data use_device(tc2, fj_ws3, fj_ws4, fj_tc2, fj_wc, fj_wd)
-      CUDACHECK(cudaMemsetAsync(tc2, 0.0, size(tc2), stream))
+      CUDACHECK(cudaMemsetAsync(tc2, real(0.0, RTYPE), size(tc2), stream))
       CUDACHECK(cudaMemsetAsync(fj_ws3, 0.0, size(fj_ws3), stream))
       CUDACHECK(cudaMemsetAsync(fj_ws4, 0.0, size(fj_ws4), stream))
       CUDACHECK(cudaMemsetAsync(fj_tc2, 0.0, size(fj_tc2), stream))
@@ -400,7 +400,7 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, coslr, wcfac &
                                 nsize, nccl_col_comm)
 
    !$acc host_data use_device(cc)
-   CUDACHECK(cudaMemSetAsync(cc, 0.0, size(cc), stream))
+   CUDACHECK(cudaMemSetAsync(cc, real(0.0, RTYPE), size(cc), stream))
    !$acc end host_data
 
    !$acc parallel loop collapse(3) private(j, jtrunj, mm, mp, mlst) async(async_id)
@@ -421,11 +421,6 @@ subroutine tranuv_gpu(jtrun, jtmax, nx, my, my_max, lev, coslr, wcfac &
          end do
       end do
    end do
-
-#ifdef SP
-   print *, "Symbol SP is not supported."
-   call exit(1)
-#endif
 
    if (length_fft .eq. 0 .and. lreduce .eq. 0) then
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, lev*jlistnum*2, 1) ! CWB2015
@@ -590,7 +585,7 @@ subroutine tranuv_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, lev, coslr, wcfac
 
       istat = cudaEventRecord(spread_event, stream)
       !$acc host_data use_device(wcc_fk)
-      CUDACHECK(cudaMemsetAsync(wcc_fk, 0.0, size(wcc_fk), stream))
+      CUDACHECK(cudaMemsetAsync(wcc_fk, real(0.0, RTYPE), size(wcc_fk), stream))
       !$acc end host_data
 
       do m = 1, mlistnum
@@ -649,7 +644,7 @@ subroutine tranuv_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, lev, coslr, wcfac
                                 nsize, nccl_col_comm)
 
    !$acc host_data use_device(gwk1)
-   CUDACHECK(cudaMemSetAsync(gwk1, 0.0, size(gwk1), stream))
+   CUDACHECK(cudaMemSetAsync(gwk1, real(0.0, RTYPE), size(gwk1), stream))
    !$acc end host_data
 
    !$acc parallel loop collapse(2) private(j, jtrunj, mm, mp, mlst) async(async_id)
@@ -669,11 +664,6 @@ subroutine tranuv_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, lev, coslr, wcfac
          end if
       end do
    end do
-
-#ifdef SP
-   print *, "Symbol SP is not supported."
-   call exit(1)
-#endif
 
    if (length_fft .eq. 0 .and. lreduce .eq. 0) then
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, lev*jlistnum*2, 1) ! CWB2015

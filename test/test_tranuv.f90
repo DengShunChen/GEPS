@@ -72,7 +72,12 @@ subroutine tranuv_unit
    !$acc exit data delete(ws1, ws2, tcc, wcc_fk , fj_wc, fj_wd) async(async_id)
    !$acc wait(async_id)
 
+#ifdef SP
+   call assert_rmse(ut_gpu, size(ut_gpu), ut, size(ut), 1e-5_4, "Array ut")
+   call assert_rmse(vt_gpu, size(vt_gpu), vt, size(vt), 1e-5_4, "Array vt")
+#else
    call assert_allclose(ut_gpu, size(ut_gpu), ut, size(ut), 1e-8, 1e-8, "Array ut")
    call assert_allclose(vt_gpu, size(vt_gpu), vt, size(vt), 1e-8, 1e-8, "Array vt")
+#endif
 
 end subroutine tranuv_unit

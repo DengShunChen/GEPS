@@ -58,13 +58,13 @@ subroutine para_we2ns_gpu(a, b, levs, latg)
       locrecv(n) = locsend(n)
    end do
 
-   call nccl_alltoallv_stride_fp64(works, lensend, lonlenmax*latlenmax*2*levs, workr, lenrecv, lonlenmax*latlenmax*2*levs, nccl_col_comm, nsizey, async_id)
+   call nccl_alltoallv_stride(works, lensend, lonlenmax*latlenmax*2*levs, workr, lenrecv, lonlenmax*latlenmax*2*levs, nccl_col_comm, nsizey, async_id)
 
    !$acc parallel loop collapse(4) private(lat1, lat2, mn) async(async_id)
    do n = 1, nsizey
-      do j = 1, latlenmax
-         do i = 1, mylonlen
-            do k = 1, levs
+      do i = 1, mylonlen
+         do k = 1, levs
+            do j = 1, latlenmax
                if (j .le. latlen(n)) then
                   lat1 = jlist1_sl(j, n)
                   lat2 = latfull + 1 - lat1
@@ -105,26 +105,32 @@ subroutine para_ns2we_gpu(a, b, levs, latg)
    real(kind=RTYPE) workr(2, levs, lonlenmax*latlenmax, nsizey)
    integer lensend(nsizey), lenrecv(nsizey)
    integer locsend(nsizey), locrecv(nsizey)
-   integer i, j, k, n, mn, lat1, lat2, ierr
+   integer i, j, k, n, mn, lat1, lat2, ierr, t, latd
    integer :: async_id
 
    async_id = 1
 
    !$acc enter data create(works, workr) async(async_id)
-   !$acc parallel loop collapse(4) private(lat1, lat2, mn) async(async_id)
+   !$acc parallel loop gang collapse(2) private(lat1) async(async_id)
    do n = 1, nsizey
       do j = 1, latlenmax
-         do i = 1, mylonlen
-            do k = 1, levs
-               if (j .le. latlen(n)) then
-                  lat1 = jlist1_sl(j, n)
-                  lat2 = latfull + 1 - lat1
-                  mn = (j - 1)*mylonlen + i
-                  works(1, k, mn, n) = a(lat1, k, i)
-                  works(2, k, mn, n) = a(lat2, k, i)
-               end if
+         if (j .le. latlen(n)) then
+            lat1 = jlist1_sl(j, n)
+            !$acc loop vector collapse(3) private(lat2, mn)
+            do i = 1, mylonlen
+               do k = 1, levs
+                  do t = 1, 2
+                     if (t .eq. 2) then
+                        lat2 = latfull + 1 - lat1
+                     else
+                        lat2 = lat1
+                     end if
+                     mn = (j - 1)*mylonlen + i
+                     works(t, k, mn, n) = a(lat2, k, i)
+                  end do
+               end do
             end do
-         end do
+         end if
       end do
    end do
 
@@ -136,7 +142,7 @@ subroutine para_ns2we_gpu(a, b, levs, latg)
       locrecv(n) = locsend(n)
    end do
 
-   call nccl_alltoallv_stride_fp64(works, lensend, lonlenmax*latlenmax*2*levs, workr, lenrecv, lonlenmax*latlenmax*2*levs, nccl_col_comm, nsizey, async_id)
+   call nccl_alltoallv_stride(works, lensend, lonlenmax*latlenmax*2*levs, workr, lenrecv, lonlenmax*latlenmax*2*levs, nccl_col_comm, nsizey, async_id)
 
    !$acc parallel loop collapse(4) private(mn) async(async_id)
    do n = 1, nsizey

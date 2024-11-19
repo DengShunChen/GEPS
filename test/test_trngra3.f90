@@ -5,10 +5,6 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 program test_trngra3
-   use param
-   use const
-
-   implicit none
 
    call mpe_init
    call cons
@@ -18,9 +14,9 @@ program test_trngra3
 end program
 
 subroutine trngra3_unit
-   use param
    use const, only: RTYPE, polyf, dpolyf, poly, dpoly, cim
    use index
+   use param
 
    use rank
    implicit none
@@ -39,7 +35,7 @@ subroutine trngra3_unit
 
    async_id = 1
 
-   call random_seed()
+   call init_seed()
    call random_number(cim)
    call random_number(poly)
    call random_number(dpoly)
@@ -97,9 +93,14 @@ subroutine trngra3_unit
    !$acc& ws, tcc, wcc_fk) async(async_id)
    !$acc wait(async_id)
 
+#ifdef SP
+   call assert_rmse(dlpl_gpu, size(dlpl_gpu), dlpl, size(dlpl), 1e-3_4, "Array dlpl")
+   call assert_rmse(dtpl_gpu, size(dtpl_gpu), dtpl, size(dtpl), 1e-3_4, "Array dtpl")
+#else
    call assert_allclose(dlpl_gpu, size(dlpl_gpu), dlpl, size(dlpl), 1e-10, 1e-10, &
                         "(allclose)Array dlpl")
    call assert_allclose(dtpl_gpu, size(dtpl_gpu), dtpl, size(dtpl), 1e-10, 1e-10, &
                         "(allclose)Array dtpl")
+#endif
 
 end subroutine trngra3_unit

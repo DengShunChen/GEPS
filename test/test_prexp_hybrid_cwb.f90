@@ -72,8 +72,14 @@ subroutine prexp_hybrid_cwb_unit
    !$acc exit data copyout(pk_gpu, pk2_gpu, plt_gpu) delete(sigma, ptm, jlist1, nxjp, nxdef_2d) async(async_id)
    !$acc wait(async_id)
 
+#ifdef SP
+   call assert_rmse(pk_gpu, size(pk_gpu), pk, size(pk), 1e-4_4, "Array pk")
+   call assert_rmse(pk2_gpu, size(pk2_gpu), pk2, size(pk2), 1e-4_4, "Array pk2")
+   call assert_rmse(plt_gpu, size(plt_gpu), plt, size(plt), 1e-4_4, "Array plt")
+#else
    call assert_allclose(pk_gpu, size(pk_gpu), pk, size(pk), 1e-8, 1e-8, "Array pk")
    call assert_allclose(pk2_gpu, size(pk2_gpu), pk2, size(pk2), 1e-8, 1e-8, "Array pk2")
    call assert_allclose(plt_gpu, size(plt_gpu), plt, size(plt), 1e-8, 1e-8, "Array plt")
+#endif
 
 end subroutine

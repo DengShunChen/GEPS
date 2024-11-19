@@ -184,7 +184,11 @@ subroutine ndslfv_monoadvh_fgnl_unit(xy, forward)
       end do
    end if
 
+#ifdef SP
+   if (all(err_arr(1, 1:nvar) < 1e-2)) then
+#else
    if (all(err_arr(1, 1:nvar) < 1e-10)) then
+#endif
       if (myrank .eq. 0) write (*, '(A,i3,A)') &
          "test_ndslfv_monoadvh_fgnl (xy=", xy, ") passed."
    else
@@ -281,7 +285,7 @@ subroutine VarErr(Err, a, lda, b, ldb, lev, nvar)
    end do
 
    call mpe_global_max(Err(1), 1, RTYPE)
-   call mpe_global_sum_r8(Err(2), 2, RTYPE)
+   call mpe_global_sum(Err(2), 2, RTYPE)
    Err(2) = sqrt(Err(2))
    Err(3) = sqrt(Err(3)/pts/nvar)
    err(4) = vamax(a, lda, lev)

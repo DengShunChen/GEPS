@@ -60,8 +60,8 @@ subroutine join1rs_gpu(cc, r1, nx, my_max, lev, jnum, ncld)
       !$acc enter data create(bufA, bufB) async(async_id)
 
       !$acc host_data use_device(bufA, bufB)
-      istat = cudaMemsetAsync(bufA, 0.0, size(bufA), stream)
-      istat = cudaMemsetAsync(bufB, 0.0, size(bufB), stream)
+      istat = cudaMemsetAsync(bufA, real(0.0, RTYPE), size(bufA), stream)
+      istat = cudaMemsetAsync(bufB, real(0.0, RTYPE), size(bufB), stream)
       !$acc end host_data
 
       !$acc parallel loop collapse(4) private(kk) async(async_id)
@@ -151,8 +151,8 @@ subroutine join2rs_gpu(cc, r1, r2, nx, my_max, lev, jnum, ncld)
       !$acc enter data create(bufA, bufB) async(async_id)
 
       !$acc host_data use_device(bufA, bufB)
-      istat = cudaMemsetAsync(bufA, 0.0, size(bufA), stream)
-      istat = cudaMemsetAsync(bufB, 0.0, size(bufB), stream)
+      istat = cudaMemsetAsync(bufA, real(0.0, RTYPE), size(bufA), stream)
+      istat = cudaMemsetAsync(bufB, real(0.0, RTYPE), size(bufB), stream)
       !$acc end host_data
 
       !$acc parallel loop collapse(3) async(async_id)

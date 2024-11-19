@@ -63,9 +63,9 @@ subroutine tranrs_gpu(jtrun, jtmax, nx, my, my_max, lev, poly, w, cc &
    !$acc enter data create(twcc_fk, wcc_fk) async(async_id)
 
    !$acc host_data use_device(twcc_fk, wss, gwk1)
-   istat = cudaMemsetAsync(twcc_fk, 0.0, size(twcc_fk), stream)
-   istat = cudaMemsetAsync(wss, 0.0, size(wss), stream)
-   istat = cudaMemsetAsync(gwk1, 0.0, size(gwk1), stream)
+   istat = cudaMemsetAsync(twcc_fk, real(0.0, RTYPE), size(twcc_fk), stream)
+   istat = cudaMemsetAsync(wss, real(0.0, RTYPE), size(wss), stream)
+   istat = cudaMemsetAsync(gwk1, real(0.0, RTYPE), size(gwk1), stream)
    !$acc end host_data
 
    mlx = (jtrun/2)*((jtrun + 1)/2)
@@ -74,11 +74,6 @@ subroutine tranrs_gpu(jtrun, jtmax, nx, my, my_max, lev, poly, w, cc &
 !
 !  fft for each guassian latitude of 2-d field
 !
-#ifdef SP
-   print *, "Symbol SP is not supported."
-   call exit(1)
-#endif
-
    if (length_fft .eq. 0 .and. lreduce .eq. 0) then
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, lev*jlistnum*num, -1)
    else
@@ -326,17 +321,12 @@ subroutine tranrs_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, lev, poly, w, &
    !$acc enter data create(twcc_fk) async(async_id)
 
    !$acc host_data use_device(twcc_fk, gwk1)
-   istat = cudaMemsetAsync(twcc_fk, 0.0, size(twcc_fk), stream)
-   istat = cudaMemsetAsync(gwk1, 0.0, size(gwk1), stream)
+   istat = cudaMemsetAsync(twcc_fk, real(0.0, RTYPE), size(twcc_fk), stream)
+   istat = cudaMemsetAsync(gwk1, real(0.0, RTYPE), size(gwk1), stream)
    !$acc end host_data
 !
 !  fft for each guassian latitude of 2-d field
 !
-#ifdef SP
-   print *, "Symbol SP is not supported."
-   call exit(1)
-#endif
-
    if (length_fft .eq. 0 .and. lreduce .eq. 0) then
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, lev*jlistnum*num, -1)
    else

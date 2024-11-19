@@ -40,7 +40,7 @@ subroutine ujoin1sr_gpu(cc, r1, nx, my_max, lev, jnum, ncld)
    stream = acc_get_cuda_stream(async_id)
 
    !$acc host_data use_device(r1)
-   istat = cudaMemSetAsync(r1, 0.0, size(r1), stream)
+   istat = cudaMemSetAsync(r1, real(0.0, RTYPE), size(r1), stream)
    !$acc end host_data
    if (npex .eq. 1) then
       !$acc parallel loop gang collapse(4) private(j, nxj, kk) async(async_id)
@@ -62,8 +62,8 @@ subroutine ujoin1sr_gpu(cc, r1, nx, my_max, lev, jnum, ncld)
       !$acc enter data create(bufA, bufB) async(async_id)
 
       !$acc host_data use_device(bufA, bufB, r1)
-      istat = cudaMemSetAsync(bufA, 0.0, size(bufA), stream)
-      istat = cudaMemSetAsync(bufB, 0.0, size(bufB), stream)
+      istat = cudaMemSetAsync(bufA, real(0.0, RTYPE), size(bufA), stream)
+      istat = cudaMemSetAsync(bufB, real(0.0, RTYPE), size(bufB), stream)
       !$acc end host_data
 
       !$acc parallel loop collapse(4) async(async_id)
@@ -123,8 +123,8 @@ subroutine ujoin2sr_gpu(cc, r1, r2, nx, my_max, lev, jnum, ncld)
    stream = acc_get_cuda_stream(async_id)
 
    !$acc host_data use_device(r1, r2)
-   istat = cudaMemSetAsync(r1, 0.0, size(r1), stream)
-   istat = cudaMemSetAsync(r2, 0.0, size(r2), stream)
+   istat = cudaMemSetAsync(r1, real(0.0, RTYPE), size(r1), stream)
+   istat = cudaMemSetAsync(r2, real(0.0, RTYPE), size(r2), stream)
    !$acc end host_data
 
    if (npex .eq. 1) then
@@ -160,8 +160,8 @@ subroutine ujoin2sr_gpu(cc, r1, r2, nx, my_max, lev, jnum, ncld)
       !$acc enter data create(bufA, bufB) async(async_id)
 
       !$acc host_data use_device(bufA, bufB)
-      istat = cudaMemSetAsync(bufA, 0.0, size(bufA), stream)
-      istat = cudaMemSetAsync(bufB, 0.0, size(bufB), stream)
+      istat = cudaMemSetAsync(bufA, real(0.0, RTYPE), size(bufA), stream)
+      istat = cudaMemSetAsync(bufB, real(0.0, RTYPE), size(bufB), stream)
       !$acc end host_data
 
       !$acc parallel loop collapse(4) async(async_id)
@@ -232,9 +232,9 @@ subroutine ujoin3sr_gpu(cc, r1, r2, r3, nx, my_max, lev, jnum, ncld)
    !$acc enter data create(bufA, bufB) async(async_id)
 
    !$acc host_data use_device(bufA, bufB, r1)
-   istat = cudaMemSetAsync(bufA, 0.0, size(bufA), stream)
-   istat = cudaMemSetAsync(bufB, 0.0, size(bufB), stream)
-   istat = cudaMemSetAsync(r1, 0.0, size(r1), stream)
+   istat = cudaMemSetAsync(bufA, real(0.0, RTYPE), size(bufA), stream)
+   istat = cudaMemSetAsync(bufB, real(0.0, RTYPE), size(bufB), stream)
+   istat = cudaMemSetAsync(r1, real(0.0, RTYPE), size(r1), stream)
    !$acc end host_data
 
    !$acc parallel loop collapse(4) async(async_id)

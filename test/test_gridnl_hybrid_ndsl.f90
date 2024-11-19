@@ -133,6 +133,16 @@ subroutine gridnl_hybrid_ndsl_unit
    !$acc& copyout(phi_gpu, deldm_gpu, sd_gpu, pdot_gpu, vvel_gpu, diveng_gpu, vdmerdg_gpu, vdzonlg_gpu, dsigma, sigma, sdpbl_gpu) async(async_id)
    !$acc wait(async_id)
 
+#ifdef SP
+   call assert_rmse(sd_gpu, size(sd_gpu), sd, size(sd), 1e-4_4, "Array sd")
+   call assert_rmse(deldm_gpu, size(deldm_gpu), deldm, size(deldm), 1e-4_4, "Array deldm")
+   call assert_rmse(pdot_gpu, size(pdot_gpu), pdot, size(pdot), 1e-4_4, "Array pdot")
+   call assert_rmse(vvel_gpu, size(vvel_gpu), vvel, size(vvel), 1e-4_4, "Array vvel")
+   call assert_rmse(sdpbl_gpu, size(sdpbl_gpu), sdpbl, size(sdpbl), 1e-4_4, "Array sdpbl")
+   call assert_rmse(vdmerdg_gpu, size(vdmerdg_gpu), vdmerdg, size(vdmerdg), 1e-4_4, "Array vdmerdg")
+   call assert_rmse(vdzonlg_gpu, size(vdzonlg_gpu), vdzonlg, size(vdzonlg), 1e-4_4, "Array vdzonlg")
+   call assert_rmse(diveng_gpu, size(diveng_gpu), diveng, size(diveng), 1e-4_4, "Array diveng")
+#else
    call assert_allclose(sd_gpu, size(sd_gpu), sd, size(sd), 1e-10, 1e-10, "Array sd")
    call assert_allclose(deldm_gpu, size(deldm_gpu), deldm, size(deldm), 1e-10, 1e-10, "Array deldm")
    call assert_allclose(pdot_gpu, size(pdot_gpu), pdot, size(pdot), 1e-10, 1e-10, "Array pdot")
@@ -141,5 +151,6 @@ subroutine gridnl_hybrid_ndsl_unit
    call assert_allclose(vdmerdg_gpu, size(vdmerdg_gpu), vdmerdg, size(vdmerdg), 1e-10, 1e-10, "Array vdmerdg")
    call assert_allclose(vdzonlg_gpu, size(vdzonlg_gpu), vdzonlg, size(vdzonlg), 1e-10, 1e-10, "Array vdzonlg")
    call assert_allclose(diveng_gpu, size(diveng_gpu), diveng, size(diveng), 1e-10, 1e-10, "Array diveng")
+#endif
 
 end subroutine

@@ -81,7 +81,12 @@ subroutine rstrandz_unit
    !$acc exit data delete(cc, gwk1, ws, wc, wcc_fk, fj_weight) async(async_id)
    !$acc wait(async_id)
 
+#ifdef SP
+   call assert_rmse(hldten_gpu, size(hldten_gpu), hldten, size(hldten), 1e-4_4, "Array hldten")
+   call assert_rmse(vorten_gpu, size(vorten_gpu), vorten, size(vorten), 1e-4_4, "Array vorten")
+#else
    call assert_allclose(hldten_gpu, size(hldten_gpu), hldten, size(hldten), 1e-10, 1e-10, "Array hldten")
    call assert_allclose(vorten_gpu, size(vorten_gpu), vorten, size(vorten), 1e-10, 1e-10, "Array vorten")
+#endif
 
 end subroutine rstrandz_unit

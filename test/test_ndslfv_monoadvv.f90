@@ -201,7 +201,11 @@ subroutine ndslfv_monoadvv_unit(fgnl, forward)
       end do
    end if
 
+#ifdef SP
+   if (all(err_arr(1, 1:nvar) < 1e-5)) then
+#else
    if (all(err_arr(1, 1:nvar) < 1e-10)) then
+#endif
       if (myrank .eq. 0) &
          write (*, '(4X, A, 1X, 2(1X,A,L)), A'), &
          "test_ndslfv_monoadvv", &
@@ -254,7 +258,7 @@ subroutine VarErr(Err, a, b, lev, nvar)
    end do
 
    call mpe_global_max(Err(1), 1, RTYPE)
-   call mpe_global_sum_r8(Err(2), 2, RTYPE)
+   call mpe_global_sum(Err(2), 2, RTYPE)
    Err(2) = sqrt(Err(2))
    Err(3) = sqrt(Err(3)/pts/nvar)
    Err(4) = vamax(a, lev)
