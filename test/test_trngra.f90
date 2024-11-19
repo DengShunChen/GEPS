@@ -58,7 +58,12 @@ subroutine trngra_unit
    !$acc exit data copyout(dlpl_gpu, dtpl_gpu) delete(cim, poly, dpoly, s, cc, gwk1) async(async_id)
    !$acc wait(async_id)
 
+#ifdef SP
+   call assert_rmse(dlpl_gpu, size(dlpl_gpu), dlpl, size(dlpl), 1e-3_4, "Array dlpl")
+   call assert_rmse(dtpl_gpu, size(dtpl_gpu), dtpl, size(dtpl), 1e-3_4, "Array dtpl")
+#else
    call assert_allclose(dlpl_gpu, size(dlpl_gpu), dlpl, size(dlpl), 1e-10, 1e-10, "Array dlpl")
    call assert_allclose(dtpl_gpu, size(dtpl_gpu), dtpl, size(dtpl), 1e-10, 1e-10, "Array dtpl")
+#endif
 
 end subroutine trngra_unit

@@ -42,7 +42,11 @@ subroutine fft_make_plan(inc, jump, n, m, isign, plan, work_size)
       onembed = n
       ostride = inc
       odist = jump
+#ifdef SP
+      ffttype = CUFFT_C2R
+#else
       ffttype = CUFFT_Z2D
+#endif
       batch = m
    else
       rank = 1
@@ -52,7 +56,11 @@ subroutine fft_make_plan(inc, jump, n, m, isign, plan, work_size)
       onembed = n
       ostride = inc
       odist = nn
+#ifdef SP
+      ffttype = CUFFT_R2C
+#else
       ffttype = CUFFT_D2Z
+#endif
       batch = m
    end if
    CUFFTCHECK(cufftMakePlanMany(plan, rank, n, inembed, istride, idist, onembed, ostride, odist, ffttype, batch, work_size))
@@ -110,14 +118,15 @@ subroutine fft_exec_async(a, inc, jump, n, m, isign, plan, pa, async_id)
   !   - input: a
   !   - output: a
   ! ------------------------------------------------------------
+   use const, only: RTYPE
    use cudafor
    use cufft
    use openacc
    implicit none
    real(8) :: scale
    integer :: inc, jump, n, m, isign, i, j
-   real(8), dimension(jump, m) :: pa
-   real(8), dimension(jump, m) :: a
+   real(kind=RTYPE), dimension(jump, m) :: pa
+   real(kind=RTYPE), dimension(jump, m) :: a
    integer(4) :: plan
    integer :: async_id
    integer(kind=cuda_stream_kind) :: stream
@@ -139,13 +148,21 @@ subroutine fft_exec_async(a, inc, jump, n, m, isign, plan, pa, async_id)
          ! end do
 
          !$acc host_data use_device(pa, a)
+#ifdef SP
+         CUFFTCHECK(cufftExecC2R(plan, pa, a))
+#else
          CUFFTCHECK(cufftExecZ2D(plan, pa, a))
+#endif
          !$acc end host_data
       else
-         scale = 1.0/dfloat(n)
+         scale = 1.0/float(n)
 
          !$acc host_data use_device(a, pa)
+#ifdef SP
+         CUFFTCHECK(cufftExecR2C(plan, a, pa))
+#else
          CUFFTCHECK(cufftExecD2Z(plan, a, pa))
+#endif
          !$acc end host_data
 
          !$acc parallel loop collapse(2) async(async_id)
@@ -168,6 +185,7 @@ subroutine fft_exec_async(a, inc, jump, n, m, isign, plan, pa, async_id)
 end subroutine fft_exec_async
 
 subroutine rfftmlt_gpu(a, work, trigs, ifax, inc, jump, n, m, isign)
+   use const, only: RTYPE
    use iso_c_binding
    implicit none
 
@@ -188,8 +206,8 @@ subroutine rfftmlt_gpu(a, work, trigs, ifax, inc, jump, n, m, isign)
    integer(4) :: plan
    real(8) :: trigs(*)
    integer :: ifax(*), inc, jump, n, m, isign
-   real(8), dimension(jump, m) :: a
-   real(8), dimension(jump, m) :: work
+   real(kind=RTYPE), dimension(jump, m) :: a
+   real(kind=RTYPE), dimension(jump, m) :: work
    integer(kind=int_ptr_kind()) :: work_size
    integer(4) :: async_id
 
@@ -214,6 +232,7 @@ subroutine fftfax_gpu(n, ifax, trigs)
 end subroutine fftfax_gpu
 
 subroutine rfftmlt_loop(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, jump, m, isign)
+   use const, only: RTYPE
    use cudafor
    use cufft
    use openacc
@@ -236,7 +255,7 @@ subroutine rfftmlt_loop(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, jump, 
 
    integer :: jlistnum, jump, m, isign, jlistnum
    integer :: jj, j, nxj
-   real(8), dimension(jump, m, *) :: cc, gwk1 ! Present on device
+   real(kind=RTYPE), dimension(jump, m, *) :: cc, gwk1 ! Present on device
    real, dimension(4096, *) :: trigsj
    integer, dimension(19, *) :: ifaxj
    integer, dimension(*) :: jlist1, nxdef
@@ -273,13 +292,21 @@ subroutine rfftmlt_loop(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, jump, 
             end do
 
             !$acc host_data use_device(cc, gwk1)
+#ifdef SP
+            CUFFTCHECK(cufftExecC2R(plan_list(jj), gwk1(1, 1, jj), cc(1, 1, jj)))
+#else
             CUFFTCHECK(cufftExecZ2D(plan_list(jj), gwk1(1, 1, jj), cc(1, 1, jj)))
+#endif
             !$acc end host_data
          else
             scale = 1.0/dfloat(nxj)
 
             !$acc host_data use_device(cc, gwk1)
+#ifdef SP
+            CUFFTCHECK(cufftExecR2C(plan_list(jj), cc(1, 1, jj), gwk1(1, 1, jj)))
+#else
             CUFFTCHECK(cufftExecD2Z(plan_list(jj), cc(1, 1, jj), gwk1(1, 1, jj)))
+#endif
             !$acc end host_data
 
             !$acc parallel loop collapse(2) async(async_id)
@@ -421,6 +448,7 @@ subroutine rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nx
   !   - input: cc
   !   - output: cc
   ! ------------------------------------------------------------
+   use const, only: RTYPE
    use cudafor
    use cufft
    use openacc
@@ -443,7 +471,7 @@ subroutine rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nx
 
    integer :: jlistnum, jump, m, isign
    integer :: jj, j, nxj
-   real(8), dimension(jump, m, *) :: cc, gwk1 ! Present on device
+   real(kind=RTYPE), dimension(jump, m, *) :: cc, gwk1 ! Present on device
    real, dimension(4096, *) :: trigsj
    integer, dimension(19, *) :: ifaxj
    integer, dimension(*) :: jlist1, nxdef
@@ -504,7 +532,11 @@ subroutine rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nx
             CUDACHECK(cudaStreamWaitEvent(plan_stream(jj), spread_event, 0))
             CUFFTCHECK(cufftSetStream(plan_id, plan_stream(jj)))
             !$acc host_data use_device(cc, gwk1)
+#ifdef SP
+            CUFFTCHECK(cufftExecC2R(plan_id, gwk1(1, 1, jj), cc(1, 1, jj)))
+#else
             CUFFTCHECK(cufftExecZ2D(plan_id, gwk1(1, 1, jj), cc(1, 1, jj)))
+#endif
             !$acc end host_data
             CUDACHECK(cudaEventRecord(pack_event, plan_stream(jj)))
             CUDACHECK(cudaStreamWaitEvent(stream, pack_event, 0))
@@ -516,7 +548,11 @@ subroutine rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nx
             CUDACHECK(cudaStreamWaitEvent(plan_stream(jj), spread_event, 0))
             CUFFTCHECK(cufftSetStream(plan_id, plan_stream(jj)))
             !$acc host_data use_device(cc, gwk1)
+#ifdef SP
+            CUFFTCHECK(cufftExecR2C(plan_id, cc(1, 1, jj), gwk1(1, 1, jj)))
+#else
             CUFFTCHECK(cufftExecD2Z(plan_id, cc(1, 1, jj), gwk1(1, 1, jj)))
+#endif
             !$acc end host_data
             CUDACHECK(cudaEventRecord(pack_event, plan_stream(jj)))
             CUDACHECK(cudaStreamWaitEvent(stream, pack_event, 0))
@@ -528,7 +564,7 @@ subroutine rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nx
                nxj = nxdef(j)
                !$acc loop vector
                do i = 1, nxj + 2
-                  cc(i, k, jj) = gwk1(i, k, jj)/dfloat(nxj)
+                  cc(i, k, jj) = gwk1(i, k, jj)/float(nxj)
                end do
             end do
          end do

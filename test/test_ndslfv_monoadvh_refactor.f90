@@ -166,11 +166,13 @@ subroutine ndslfv_monoadvh_unit(xy, fgnl, forward)
       call mpe2d_transpose_ndsl_f2p(vvm_sl, vt_cpu, &
                                     nxp, nx, levf, levp, 1, myf, &
                                     my_max, jlistnum, jlen, nsizex, row_comm)
+   end do
 
+   !$acc enter data copyin(um, ut_sl, vm, vt_sl, ut, uum_sl, vt, vvm_sl, tt, ttm_sl, qm, qm_sl, &
+   !$acc& jlist1, nxjlen, nxjlen_all, pten_sl, cosl, nxdef, lonlen, lonstr, latlen, jlist1_sl, gglati, fa1, fa2, fa3, fa4, &
+   !$acc& tt_gpu, ut_gpu, vt_gpu, qt_gpu, nxjp) async(async_id)
+   do i = 1, steps
       ! << GPU >>
-      !$acc enter data copyin(um, ut_sl, vm, vt_sl, ut, uum_sl, vt, vvm_sl, tt, ttm_sl, qm, qm_sl, &
-      !$acc& jlist1, nxjlen, nxjlen_all, pten_sl, cosl, nxdef, lonlen, lonstr, latlen, jlist1_sl, gglati, fa1, fa2, fa3, fa4, &
-      !$acc& tt_gpu, ut_gpu, vt_gpu, qt_gpu, nxjp) async(async_id)
       call mpe2d_transpose_ndsl_p2f_gpu(um, ut_sl, &
                                         nxp, nx, levf, levp, 1, myf, &
                                         my_max, jlistnum, jlen, nsizex, nccl_row_comm)
@@ -210,11 +212,11 @@ subroutine ndslfv_monoadvh_unit(xy, fgnl, forward)
       call mpe2d_transpose_ndsl_f2p_gpu(vvm_sl, vt_gpu, &
                                         nxp, nx, levf, levp, 1, myf, &
                                         my_max, jlistnum, jlen, nsizex, nccl_row_comm)
-      !$acc exit data copyout(um, ut_sl, vm, vt_sl, ut, uum_sl, vt, vvm_sl, tt, ttm_sl, qm, qm_sl, &
-      !$acc& jlist1, nxjlen, nxjlen_all, pten_sl, cosl, nxdef, lonlen, lonstr, latlen, jlist1_sl, gglati, fa1, fa2, fa3, fa4, &
-      !$acc& tt_gpu, ut_gpu, vt_gpu, qt_gpu, nxjp) async(async_id)
-      !$acc wait(async_id)
    end do
+   !$acc exit data copyout(um, ut_sl, vm, vt_sl, ut, uum_sl, vt, vvm_sl, tt, ttm_sl, qm, qm_sl, &
+   !$acc& jlist1, nxjlen, nxjlen_all, pten_sl, cosl, nxdef, lonlen, lonstr, latlen, jlist1_sl, gglati, fa1, fa2, fa3, fa4, &
+   !$acc& tt_gpu, ut_gpu, vt_gpu, qt_gpu, nxjp) async(async_id)
+   !$acc wait(async_id)
 
    call Varerr(err_arr(1, 1), tt_gpu, nxp, tt_cpu, nxp, lev, 1)
    call Varerr(err_arr(1, 2), ut_gpu, nxp, ut_cpu, nxp, lev, 1)
@@ -229,7 +231,11 @@ subroutine ndslfv_monoadvh_unit(xy, fgnl, forward)
       end do
    end if
 
+#ifdef SP
+   if (all(err_arr(1, 1:nvar) < 1e-3)) then
+#else
    if (all(err_arr(1, 1:nvar) < 1e-10)) then
+#endif
       if (myrank .eq. 0) &
          write (*, '(4X, A, 1X, A, i2, 2(1X,A,L)), A'), &
          "test_ndslfv_monoadvh", &
@@ -334,7 +340,7 @@ subroutine VarErr(Err, a, lda, b, ldb, lev, nvar)
    end do
 
    call mpe_global_max(Err(1), 1, RTYPE)
-   call mpe_global_sum_r8(Err(2), 2, RTYPE)
+   call mpe_global_sum(Err(2), 2, RTYPE)
    Err(2) = sqrt(Err(2))
    Err(3) = sqrt(Err(3)/pts/nvar)
    err(4) = vamax(a, lda, lev)

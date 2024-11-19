@@ -82,45 +82,34 @@ subroutine ndslfv_monoadvh2_xy_gpu_refactor(ddtemp, qvadv, pten, vdzonl, vdmerd 
    rdt2 = 0.5/deltim
    !$acc enter data create(uulon, vvlon, qqlon, vvlat, qqlat) async(async_id)
    !$acc host_data use_device(uulon, vvlon, qqlon)
-   istat = cudaMemsetAsync(qqlon, 0.0, size(qqlon), stream)
-   istat = cudaMemsetAsync(uulon, 0.0, size(uulon), stream)
-   istat = cudaMemsetAsync(vvlon, 0.0, size(vvlon), stream)
+   istat = cudaMemsetAsync(qqlon, real(0.0, RTYPE), size(qqlon), stream)
+   istat = cudaMemsetAsync(uulon, real(0.0, RTYPE), size(uulon), stream)
+   istat = cudaMemsetAsync(vvlon, real(0.0, RTYPE), size(vvlon), stream)
    !$acc end host_data
 
 ! =================================================================
 !   prepare wind and variable in flux form with gaussina weight
 ! =================================================================
 
-   !$acc parallel loop collapse(3) private(lat, lons_lat, kk, rma) async(async_id)
-   do lan = 1, jlistnum
-      do k = 1, levs
-         do i = 1, lonfull
-            lat = jlist1(lan)
-            lons_lat = lonsperlat(lat)
-            if (i .le. lons_lat) then
-               rma = 1./cosl(lat)
-               kk = (k - 1)*nvars
-               uulon(i, k, lan) = ut_sl(i, k, lan)*rma*rma
-               vvlon(i, k, lan) = vt_sl(i, k, lan)*rma
-               qqlon(i, kk + 1, lan) = vdzonl(i, k, lan)
-               qqlon(i, kk + 2, lan) = vdmerd(i, k, lan)
-               qqlon(i, kk + 3, lan) = ddtemp(i, k, lan)
-            end if
-         end do
-      end do
-   end do
-
-   !$acc parallel loop collapse(4) private(lat, lons_lat, kk) async(async_id)
+   !$acc parallel loop gang collapse(3) private(lat, lons_lat) async(async_id)
    do lan = 1, jlistnum
       do n = 1, ncld
          do k = 1, levs
-            do i = 1, lonfull
-               lat = jlist1(lan)
-               lons_lat = lonsperlat(lat)
-               if (i .le. lons_lat) then
-                  kk = (k - 1)*nvars + 3
-                  qqlon(i, kk + n, lan) = qvadv(i, k, n, lan)
+            lat = jlist1(lan)
+            lons_lat = lonsperlat(lat)
+            !$acc loop vector private(rma, kk)
+            do i = 1, lons_lat
+               if (n .eq. 1) then
+                  rma = 1./cosl(lat)
+                  kk = (k - 1)*nvars
+                  uulon(i, k, lan) = ut_sl(i, k, lan)*rma*rma
+                  vvlon(i, k, lan) = vt_sl(i, k, lan)*rma
+                  qqlon(i, kk + 1, lan) = vdzonl(i, k, lan)
+                  qqlon(i, kk + 2, lan) = vdmerd(i, k, lan)
+                  qqlon(i, kk + 3, lan) = ddtemp(i, k, lan)
                end if
+               kk = (k - 1)*nvars + 3
+               qqlon(i, kk + n, lan) = qvadv(i, k, n, lan)
             end do
          end do
       end do
@@ -176,33 +165,22 @@ subroutine ndslfv_monoadvh2_xy_gpu_refactor(ddtemp, qvadv, pten, vdzonl, vdmerd 
 
    call cyclic_cell_intpx_jlist_gpu(levs, nvars, lonfull, qqlon, .false.)
 
-   !$acc parallel loop collapse(3) private(lat, lons_lat, kk) async(async_id)
-   do lan = 1, jlistnum
-      do k = 1, levs
-         do i = 1, lonfull
-            lat = jlist1(lan)
-            lons_lat = lonsperlat(lat)
-            if (i .le. lons_lat) then
-               kk = (k - 1)*nvars
-               vdzonl(i, k, lan) = qqlon(i, kk + 1, lan)
-               vdmerd(i, k, lan) = qqlon(i, kk + 2, lan)
-               ddtemp(i, k, lan) = qqlon(i, kk + 3, lan)
-            end if
-         end do
-      end do
-   end do
-
-   !$acc parallel loop collapse(4) private(lat, lons_lat, kk) async(async_id)
+   !$acc parallel loop gang collapse(3) private(lat, lons_lat) async(async_id)
    do lan = 1, jlistnum
       do n = 1, ncld
          do k = 1, levs
-            do i = 1, lonfull
-               lat = jlist1(lan)
-               lons_lat = lonsperlat(lat)
-               if (i .le. lons_lat) then
-                  kk = (k - 1)*nvars + 3
-                  qvadv(i, k, n, lan) = qqlon(i, kk + n, lan)
+            lat = jlist1(lan)
+            lons_lat = lonsperlat(lat)
+            !$acc loop vector private(kk)
+            do i = 1, lons_lat
+               if (n .eq. 1) then
+                  kk = (k - 1)*nvars
+                  vdzonl(i, k, lan) = qqlon(i, kk + 1, lan)
+                  vdmerd(i, k, lan) = qqlon(i, kk + 2, lan)
+                  ddtemp(i, k, lan) = qqlon(i, kk + 3, lan)
                end if
+               kk = (k - 1)*nvars + 3
+               qvadv(i, k, n, lan) = qqlon(i, kk + n, lan)
             end do
          end do
       end do
@@ -267,9 +245,9 @@ subroutine ndslfv_monoadvh2_yx_gpu_refactor(ddtemp, qvadv, pten, vdzonl, vdmerd 
    rdt2 = 0.5/deltim
    !$acc enter data create(uulon, vvlon, qqlon, vvlat, qqlat) async(async_id)
    !$acc host_data use_device(uulon, vvlon, qqlon)
-   istat = cudaMemsetAsync(qqlon, 0.0, size(qqlon), stream)
-   istat = cudaMemsetAsync(uulon, 0.0, size(uulon), stream)
-   istat = cudaMemsetAsync(vvlon, 0.0, size(vvlon), stream)
+   istat = cudaMemsetAsync(qqlon, real(0.0, RTYPE), size(qqlon), stream)
+   istat = cudaMemsetAsync(uulon, real(0.0, RTYPE), size(uulon), stream)
+   istat = cudaMemsetAsync(vvlon, real(0.0, RTYPE), size(vvlon), stream)
    !$acc end host_data
 
 ! =================================================================
@@ -514,10 +492,6 @@ subroutine ndslfv_monoadvh2_fgnl_xy_gpu_refactor(vdzonl, vdmerd, ddtemp &
          end do
       end do
    end do
-   ! do lon = 1, mylonlen
-   !    call cyclic_cell_massadvyl(latfull, levs, nvars, deltim, &
-   !                               vvlat(1, 1, lon), qqlat(1, 1, lon), mass, forward)
-   ! end do
    call cyclic_cell_massadvy_mylonlen_gpu(latfull, levs, nvars, deltim, vvlat, qqlat, mass, forward)
    !$acc parallel loop collapse(3) private(kk) async(async_id)
    do lon = 1, mylonlen
@@ -535,11 +509,6 @@ subroutine ndslfv_monoadvh2_fgnl_xy_gpu_refactor(vdzonl, vdmerd, ddtemp &
 ! ----------------------------------------------------------------------
 
    call para_ns2we_gpu(qqlat, qqlon, nlevs, my)
-   ! do lan = 1, jlistnum
-   !    lat = jlist1(lan)
-   !    lons_lat = lonsperlat(lat)
-   !    call cyclic_cell_intpx(nlevs, lonfull, lons_lat, qqlon(1, 1, lan))
-   ! end do
    call cyclic_cell_intpx_jlist_gpu(levs, nvars, lonfull, qqlon, .false.)
    !$acc parallel loop collapse(3) private(lat, lons_lat, kk) async(async_id)
    do lan = 1, jlistnum

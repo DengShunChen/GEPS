@@ -28,7 +28,7 @@ subroutine mpe_transpose_rs_sp_gpu(sbuf, rbuf, lev, n, m, nsize, comm)
       end do
    end do
 
-   call nccl_alltoall_fp64(swork, len_tr*lev, rbuf, len_tr*lev, comm, nsize, async_id)
+   call nccl_alltoall(swork, len_tr*lev, rbuf, len_tr*lev, comm, nsize, async_id)
 
    !$acc exit data delete(swork) async(async_id)
 
@@ -79,15 +79,15 @@ subroutine mpe_transpose_rs_gpu(sbuf, rbuf, lev, n, m, nsize, comm)
 
 #ifdef MPISP
 #   ifdef UNIFY_ONLY
-   call nccl_alltoall_fp64(swork, len_tr*lev, rbuf, len_tr*lev, comm, nsize, async_id)
+   call nccl_alltoall(swork, len_tr*lev, rbuf, len_tr*lev, comm, nsize, async_id)
 #   else
-   call nccl_alltoall_fp64(swork, len_tr*lev, rwork, len_tr*lev, comm, nsize, async_id)
+   call nccl_alltoall(swork, len_tr*lev, rwork, len_tr*lev, comm, nsize, async_id)
    !$acc kernels async(async_id)
    rbuf = rwork
    !$acc end kernels
 #   endif
 #else
-   call nccl_alltoall_fp64(swork, len_tr*lev, rbuf, len_tr*lev, comm, nsize, async_id)
+   call nccl_alltoall(swork, len_tr*lev, rbuf, len_tr*lev, comm, nsize, async_id)
 #endif
    !$acc exit data delete(swork) async(async_id)
 #ifdef MPISP

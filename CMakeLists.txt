@@ -39,6 +39,7 @@ option(USE_PAR "enable Auto Parallel" ON)
 option(USE_RSM "enable output RSM initial/basefield data" OFF)
 option(USE_MPMD "enable output RSM via MPMD " OFF)
 option(USE_PCAST "enable OpenACC data correctness check" OFF)
+option(USE_SP "enable partial computation with single precision" OFF)
 
 set(GPU_ARCHS
     "80"
@@ -70,6 +71,7 @@ message(STATUS "USE_PAR:      ${USE_PAR}")
 message(STATUS "USE_RSM:      ${USE_RSM}")
 message(STATUS "USE_MPMD:     ${USE_MPMD}")
 message(STATUS "USE_PCAST:    ${USE_PCAST}")
+message(STATUS "USE_SP:       ${USE_SP}")
 message(STATUS "GPU_ARCHS:    ${GPU_ARCHS}")
 message(STATUS "Output path:  ${TCO_OUTPUT_PATH}")
 message(STATUS "Install path: ${CMAKE_INSTALL_PREFIX}")
@@ -107,6 +109,9 @@ if(${USE_RSM})
 endif()
 if(${USE_MPMD})
   add_definitions(-DCWB_MPM)
+endif()
+if(${USE_SP})
+  add_definitions(-DSP)
 endif()
 
 # ##############################################################################

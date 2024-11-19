@@ -57,6 +57,10 @@ subroutine transr_unit
    !$acc exit data delete(wss, tcc, wcc_fk) async(async_id)
    !$acc wait(async_id)
 
+#ifdef SP
+   call assert_rmse(cc_gpu, size(cc_gpu), cc, size(cc), 1e-4_4, "Array cc")
+#else
    call assert_allclose(cc_gpu, size(cc_gpu), cc, size(cc), 1e-10, 1e-10, "Array cc")
+#endif
 
 end subroutine

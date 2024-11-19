@@ -88,9 +88,9 @@ subroutine gridnl_hybrid_ndsl_gpu_refactor(nxjp, nxp, lev, ncld, cp, radsq, &
 
    !CWB2014 fixed undefined value problem in diabat line 665
    !$acc host_data use_device(sd, deldm, pdot)
-   istat = cudaMemsetAsync(sd, 0., size(sd), stream)
-   istat = cudaMemsetAsync(deldm, 0., size(deldm), stream)
-   istat = cudaMemsetAsync(pdot, 0., size(pdot), stream)
+   istat = cudaMemsetAsync(sd, real(0.0, RTYPE), size(sd), stream)
+   istat = cudaMemsetAsync(deldm, real(0.0, RTYPE), size(deldm), stream)
+   istat = cudaMemsetAsync(pdot, real(0.0, RTYPE), size(pdot), stream)
    !$acc end host_data
    !
    ! << vstruc_hybrid_cwb >>

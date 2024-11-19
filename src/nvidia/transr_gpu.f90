@@ -73,8 +73,8 @@ subroutine transr_gpu(jtrun, jtmax, nx, my, my_max, lev, poly, wss &
 
    !$acc enter data create(ws2, tcc, tc2, fj_tcc, fj_tc2, fj_wss, fj_ws2, fj_poly, wcc_fk, twcc_fk, jlist_fj, jlistnum_fj_array) async(async_id)
    !$acc host_data use_device(cc, wcc_fk)
-   CUDACHECK(cudaMemsetAsync(cc, 0.0, size(cc), stream))
-   CUDACHECK(cudaMemsetAsync(wcc_fk, 0.0, size(wcc_fk), stream))
+   CUDACHECK(cudaMemsetAsync(cc, real(0.0, RTYPE), size(cc), stream))
+   CUDACHECK(cudaMemsetAsync(wcc_fk, real(0.0, RTYPE), size(wcc_fk), stream))
    !$acc end host_data
 
    mlx = (jtrun/2)*((jtrun + 1)/2)
@@ -293,11 +293,6 @@ subroutine transr_gpu(jtrun, jtmax, nx, my, my_max, lev, poly, wss &
 
    end do
 
-#ifdef SP
-   print *, "Symbol SP is not supported."
-   call exit(1)
-#endif
-
    if (length_fft .eq. 0 .and. lreduce .eq. 0) then
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, lev*jlistnum*num, 1)
    else
@@ -381,7 +376,7 @@ subroutine transr_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, lev, poly, s &
    nlev2 = lev*2*num
    !$acc enter data create(twcc_fk) async(async_id)
    !$acc host_data use_device(gwk1)
-   CUDACHECK(cudaMemsetAsync(gwk1, 0.0, size(gwk1), stream))
+   CUDACHECK(cudaMemsetAsync(gwk1, real(0.0, RTYPE), size(gwk1), stream))
    !$acc end host_data
 
    !$acc parallel loop collapse(3) private(mf) async(async_id)
@@ -408,7 +403,7 @@ subroutine transr_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, lev, poly, s &
 
       istat = cudaEventRecord(spread_event, stream)
       !$acc host_data use_device(wcc_fk)
-      CUDACHECK(cudaMemSetAsync(wcc_fk, 0.0, size(wcc_fk), stream))
+      CUDACHECK(cudaMemSetAsync(wcc_fk, real(0.0, RTYPE), size(wcc_fk), stream))
       !$acc end host_data
 
       do m = 1, mlistnum
@@ -474,11 +469,6 @@ subroutine transr_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, lev, poly, s &
          end do
       end do
    end do
-
-#ifdef SP
-   print *, "Symbol SP is not supported."
-   call exit(1)
-#endif
 
    if (length_fft .eq. 0 .and. lreduce .eq. 0) then
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, lev*jlistnum*num, 1)

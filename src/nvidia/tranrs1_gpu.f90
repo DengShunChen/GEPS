@@ -61,8 +61,8 @@ subroutine tranrs1_gpu_old(jtrun, jtmax, nx, my, my_max, poly, w, r, s, nsize, c
 
    !$acc enter data create(twcc_fk, wcc_fk) async(async_id)
    !$acc host_data use_device(twcc_fk, gwk1)
-   istat = cudaMemSetAsync(twcc_fk, 0.0, size(twcc_fk), stream)
-   istat = cudaMemSetAsync(gwk1, 0.0, size(gwk1), stream)
+   istat = cudaMemSetAsync(twcc_fk, real(0.0, RTYPE), size(twcc_fk), stream)
+   istat = cudaMemSetAsync(gwk1, real(0.0, RTYPE), size(gwk1), stream)
    !$acc end host_data
 
    myhalf = my/2
@@ -76,11 +76,6 @@ subroutine tranrs1_gpu_old(jtrun, jtmax, nx, my, my_max, poly, w, r, s, nsize, c
          cc(i, jj) = r(i, jj)
       end do
    end do
-
-#ifdef SP
-   print *, "Symbol SP is not supported."
-   call exit(1)
-#endif
 
    if (lreduce .eq. 0) then
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, jlistnum, -1)
@@ -263,8 +258,8 @@ subroutine tranrs1_gpu(jtrun, jtmax, nx, my, my_max, poly, w, r, s, nsize, cc, g
 
    !$acc enter data create(twcc_fk, wcc_fk) async(async_id)
    !$acc host_data use_device(twcc_fk, gwk1)
-   istat = cudaMemSetAsync(twcc_fk, 0.0, size(twcc_fk), stream)
-   istat = cudaMemSetAsync(gwk1, 0.0, size(gwk1), stream)
+   istat = cudaMemSetAsync(twcc_fk, real(0.0, RTYPE), size(twcc_fk), stream)
+   istat = cudaMemSetAsync(gwk1, real(0.0, RTYPE), size(gwk1), stream)
    !$acc end host_data
 
    myhalf = my/2
@@ -278,11 +273,6 @@ subroutine tranrs1_gpu(jtrun, jtmax, nx, my, my_max, poly, w, r, s, nsize, cc, g
          cc(i, jj) = r(i, jj)
       end do
    end do
-
-#ifdef SP
-   print *, "Symbol SP is not supported."
-   call exit(1)
-#endif
 
    if (lreduce .eq. 0) then
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, jlistnum, -1)

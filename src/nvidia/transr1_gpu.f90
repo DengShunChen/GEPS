@@ -66,7 +66,7 @@ subroutine transr1_gpu_old(jtrun, jtmax, nx, my, my_max, poly, s, r, nsize, cc, 
 
    !$acc enter data create(wcc_fk) async(async_id)
    !$acc host_data use_device(wcc_fk)
-   CUDACHECK(cudaMemSetAsync(wcc_fk, 0.0, size(wcc_fk), stream))
+   CUDACHECK(cudaMemSetAsync(wcc_fk, real(0.0, RTYPE), size(wcc_fk), stream))
    !$acc end host_data
 
    do m = 1, mlistnum
@@ -176,7 +176,7 @@ subroutine transr1_gpu_old(jtrun, jtmax, nx, my, my_max, poly, s, r, nsize, cc, 
    call mpe_transpose_rs1_sp_gpu(wcc_fk, twcc_fk, my_max, jtmax, 2, nsize, nccl_col_comm, async_id)
 
    !$acc host_data use_device(cc)
-   CUDACHECK(cudaMemSetAsync(cc, 0.0, size(cc), stream))
+   CUDACHECK(cudaMemSetAsync(cc, real(0.0, RTYPE), size(cc), stream))
    !$acc end host_data
    !$acc parallel loop async(async_id)
    do jj = 1, jlistnum
@@ -191,10 +191,6 @@ subroutine transr1_gpu_old(jtrun, jtmax, nx, my, my_max, poly, s, r, nsize, cc, 
          cc(mp, jj) = twcc_fk(jj, mlst, 2)
       end do
    end do
-
-#ifdef SP
-   print *, "Symbol SP is not supported."
-#endif
 
    if (lreduce .eq. 0) then
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, jlistnum, 1)
@@ -276,7 +272,7 @@ subroutine transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, s, r, nsize, cc, gwk1
 
    !$acc enter data create(wcc_fk) async(async_id)
    !$acc host_data use_device(wcc_fk)
-   CUDACHECK(cudaMemSetAsync(wcc_fk, 0.0, size(wcc_fk), stream))
+   CUDACHECK(cudaMemSetAsync(wcc_fk, real(0.0, RTYPE), size(wcc_fk), stream))
    !$acc end host_data
 
    myhalf = my/2
@@ -313,7 +309,7 @@ subroutine transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, s, r, nsize, cc, gwk1
    call mpe_transpose_rs1_sp_gpu(wcc_fk, twcc_fk, my_max, jtmax, 2, nsize, nccl_col_comm, async_id)
 
    !$acc host_data use_device(gwk1)
-   CUDACHECK(cudaMemSetAsync(gwk1, 0.0, size(gwk1), stream))
+   CUDACHECK(cudaMemSetAsync(gwk1, real(0.0, RTYPE), size(gwk1), stream))
    !$acc end host_data
    !$acc parallel loop async(async_id)
    do jj = 1, jlistnum
@@ -328,10 +324,6 @@ subroutine transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, s, r, nsize, cc, gwk1
          gwk1(mp, jj) = twcc_fk(jj, mlst, 2)
       end do
    end do
-
-#ifdef SP
-   print *, "Symbol SP is not supported."
-#endif
 
    if (lreduce .eq. 0) then
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, jlistnum, 1)
@@ -440,7 +432,7 @@ subroutine transr1_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, poly, s, r, nsiz
 
       istat = cudaEventRecord(spread_event, stream)
       !$acc host_data use_device(wcc_fk)
-      CUDACHECK(cudaMemSetAsync(wcc_fk, 0.0, size(wcc_fk), stream))
+      CUDACHECK(cudaMemSetAsync(wcc_fk, real(0.0, RTYPE), size(wcc_fk), stream))
       !$acc end host_data
 
       do m = 1, mlistnum
@@ -499,7 +491,7 @@ subroutine transr1_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, poly, s, r, nsiz
    call mpe_transpose_rs1_sp_gpu(wcc_fk, twcc_fk, my_max, jtmax, 2, nsize, nccl_col_comm, async_id)
 
    !$acc host_data use_device(gwk1)
-   CUDACHECK(cudaMemSetAsync(gwk1, 0.0, size(gwk1), stream))
+   CUDACHECK(cudaMemSetAsync(gwk1, real(0.0, RTYPE), size(gwk1), stream))
    !$acc end host_data
    !$acc parallel loop async(async_id)
    do jj = 1, jlistnum
@@ -514,10 +506,6 @@ subroutine transr1_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, poly, s, r, nsiz
          gwk1(mp, jj) = twcc_fk(jj, mlst, 2)
       end do
    end do
-
-#ifdef SP
-   print *, "Symbol SP is not supported."
-#endif
 
    if (lreduce .eq. 0) then
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, jlistnum, 1)

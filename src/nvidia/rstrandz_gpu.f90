@@ -59,8 +59,8 @@ subroutine rstrandz_gpu(jtrun, jtmax, nx, my, my_max, lev &
    !$acc enter data create(twcc_fk, wcc_fk) async(async_id)
 
    !$acc host_data use_device(twcc_fk, gwk1)
-   istat = cudaMemSetAsync(twcc_fk, 0.0, size(twcc_fk), stream)
-   istat = cudaMemSetAsync(gwk1, 0.0, size(gwk1), stream)
+   istat = cudaMemSetAsync(twcc_fk, real(0.0, RTYPE), size(twcc_fk), stream)
+   istat = cudaMemSetAsync(gwk1, real(0.0, RTYPE), size(gwk1), stream)
    !$acc end host_data
 
    myhalf = my/2
@@ -68,11 +68,6 @@ subroutine rstrandz_gpu(jtrun, jtmax, nx, my, my_max, lev &
 
    ! Present on device: cc, vdmer, vdzon, jlist1, nxjlen, nxjlen_all
    call joinrs_gpu(cc, vdmer, vdzon, dummy, dummy, nx, my_max, levf, jlistnum, 2, 1)
-
-#ifdef SP
-   print *, "Symbol SP is not supported."
-   call exit(1)
-#endif
 
    if (length_fft .eq. 0 .and. lreduce .eq. 0) then
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, lev*jlistnum*2, -1)
@@ -103,7 +98,7 @@ subroutine rstrandz_gpu(jtrun, jtmax, nx, my, my_max, lev &
    end do
 
 #ifdef SP
-   call mpe_transpose_rs_sp_gpu(twcc_fk, wcc_fk, lev*2*2, jtmax, my_max, nsize, col_comm)
+   call mpe_transpose_rs_sp_gpu(twcc_fk, wcc_fk, lev*2*2, jtmax, my_max, nsize, nccl_col_comm)
 #else
    ! Present on device: twcc_fk, wcc_fk
    call mpe_transpose_rs_gpu(twcc_fk, wcc_fk, lev*2*2, jtmax, my_max, nsize, nccl_col_comm)
@@ -170,7 +165,7 @@ subroutine rstrandz_gpu(jtrun, jtmax, nx, my, my_max, lev &
       end do
 
       !$acc host_data use_device(wss)
-      istat = cudaMemSetAsync(wss, 0.0, size(wss), stream)
+      istat = cudaMemSetAsync(wss, real(0.0, RTYPE), size(wss), stream)
       !$acc end host_data
 
       lchk = iand(jtrun - mf + 1, 1)
@@ -336,17 +331,12 @@ subroutine rstrandz_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, lev, &
    !$acc enter data create(twcc_fk) async(async_id)
 
    !$acc host_data use_device(twcc_fk, gwk1)
-   istat = cudaMemSetAsync(twcc_fk, 0.0, size(twcc_fk), stream)
-   istat = cudaMemSetAsync(gwk1, 0.0, size(gwk1), stream)
+   istat = cudaMemSetAsync(twcc_fk, real(0.0, RTYPE), size(twcc_fk), stream)
+   istat = cudaMemSetAsync(gwk1, real(0.0, RTYPE), size(gwk1), stream)
    !$acc end host_data
 
    ! Present on device: cc, vdmer, vdzon, jlist1, nxjlen, nxjlen_all
    call joinrs_gpu(cc, vdmer, vdzon, dummy, dummy, nx, my_max, levf, jlistnum, 2, 1)
-
-#ifdef SP
-   print *, "Symbol SP is not supported."
-   call exit(1)
-#endif
 
    if (length_fft .eq. 0 .and. lreduce .eq. 0) then
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, lev*jlistnum*2, -1)
@@ -383,7 +373,7 @@ subroutine rstrandz_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, lev, &
    end do
 
 #ifdef SP
-   call mpe_transpose_rs_sp_gpu(twcc_fk, wcc_fk, lev*2*2, jtmax, my_max, nsize, col_comm)
+   call mpe_transpose_rs_sp_gpu(twcc_fk, wcc_fk, lev*2*2, jtmax, my_max, nsize, nccl_col_comm)
 #else
    ! Present on device: twcc_fk, wcc_fk
    call mpe_transpose_rs_gpu(twcc_fk, wcc_fk, lev*2*2, jtmax, my_max, nsize, nccl_col_comm)

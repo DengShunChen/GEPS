@@ -554,7 +554,7 @@ subroutine VarErr(Err, a, lda, b, ldb, lev, nvar)
    end do
 
    call mpe_global_max(Err(1), 1, RTYPE)
-   call mpe_global_sum_r8(Err(2), 2, RTYPE)
+   call mpe_global_sum(Err(2), 2, RTYPE)
    Err(2) = sqrt(Err(2))
    Err(3) = sqrt(Err(3)/pts/nvar)
    Err(4) = vamax(a, lda, lev)

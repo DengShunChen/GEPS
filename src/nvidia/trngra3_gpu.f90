@@ -121,7 +121,7 @@ subroutine trngra3_gpu(jtrun, jtmax, nx, lev, my, my_max, cim, poly, dpoly, s, d
    call mpe_transpose_sr_sp_gpu(wcc_fk, twcc_fk, lev*4, jtmax, my_max, &
                                 nsize, nccl_col_comm, async_id)
    !$acc host_data use_device(gwk1)
-   CUDACHECK(cudaMemSetAsync(gwk1, 0.0, size(gwk1), stream))
+   CUDACHECK(cudaMemSetAsync(gwk1, real(0.0, RTYPE), size(gwk1), stream))
    !$acc end host_data
 
    !$acc parallel loop collapse(2) private(j, jtrunj) async(async_id)
@@ -141,11 +141,6 @@ subroutine trngra3_gpu(jtrun, jtmax, nx, lev, my, my_max, cim, poly, dpoly, s, d
       end do
    end do
    end do
-
-#ifdef SP
-   print *, "Symbol SP is not supported."
-   call exit(1)
-#endif
 
    if (lreduce .eq. 0) then
       call rfftmlt_gpu(cc, gwk1, trigs, ifax, 1, nx + 2, nx, jlistnum*lev*2, 1)
@@ -213,6 +208,7 @@ subroutine trngra3_gpu_cuda_graph(jtrun, jtmax, nx, lev, my, my_max, &
    ! << const >>
    real, dimension((jtrun + nsize)*my/2*jtmax) :: poly, dpoly
    real(kind=RTYPE), dimension(jtmax) :: cim !! type
+   real :: cim_t
    ! << buffer >>
    real(kind=RTYPE), dimension(nx + 2, lev, 2, my_max) :: cc, gwk1
    real, dimension(lev, 2, jtrun, jtmax, 2) :: wss
@@ -253,7 +249,7 @@ subroutine trngra3_gpu_cuda_graph(jtrun, jtmax, nx, lev, my, my_max, &
    end do
 
    !$acc host_data use_device(wcc_fk)
-   CUDACHECK(cudaMemSetAsync(wcc_fk, 0.0, size(wcc_fk), stream))
+   CUDACHECK(cudaMemSetAsync(wcc_fk, real(0.0, RTYPE), size(wcc_fk), stream))
    !$acc end host_data
 
    if (.not. (lt_cg%created)) then
@@ -279,8 +275,9 @@ subroutine trngra3_gpu_cuda_graph(jtrun, jtmax, nx, lev, my, my_max, &
          !$acc host_data use_device(wss, tcc, poly, dpoly)
          ! --------------------
          istat = cublasSetStream(handle, lt_cg_stream(id_str))
+         cim_t = cim(m)
          call dgemm('n', 'n', lev2, jlistnum_fj, llistnum_fj, &
-                    cim(m), wss(1, 1, mf, m, 1), lev2, &
+                    cim_t, wss(1, 1, mf, m, 1), lev2, &
                     poly(m_str), llistnum_fj, &
                     0.0d+0, tcc(1, 1, 1, m, 1), lev2)
          istat = cudaEventRecord(pack_event, lt_cg_stream(id_str))
@@ -328,7 +325,7 @@ subroutine trngra3_gpu_cuda_graph(jtrun, jtmax, nx, lev, my, my_max, &
                                 nsize, nccl_col_comm)
 
    !$acc host_data use_device(gwk1)
-   CUDACHECK(cudaMemSetAsync(gwk1, 0.0, size(gwk1), stream))
+   CUDACHECK(cudaMemSetAsync(gwk1, real(0.0, RTYPE), size(gwk1), stream))
    !$acc end host_data
 
    !$acc parallel loop collapse(2) private(j, jtrunj, mm, mp, mlst) async(async_id)
@@ -348,11 +345,6 @@ subroutine trngra3_gpu_cuda_graph(jtrun, jtmax, nx, lev, my, my_max, &
          end if
       end do
    end do
-
-#ifdef SP
-   print *, "Symbol SP is not supported."
-   call exit(1)
-#endif
 
    if (lreduce .eq. 0) then
       call rfftmlt_gpu(cc, gwk1, trigs, ifax, 1, nx + 2, nx, jlistnum*lev*2, 1)

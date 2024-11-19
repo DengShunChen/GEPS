@@ -74,8 +74,14 @@ subroutine whdiffu_unit
       !$acc wait(async_id)
    end do
 
+#ifdef SP
+   call assert_allclose(vormid_gpu, size(vormid_gpu), vormid_cpu, size(vormid_cpu), 1e-4_4, 1e-4_4, "Array vormid")
+   call assert_allclose(divmid_gpu, size(divmid_gpu), divmid_cpu, size(divmid_cpu), 1e-4_4, 1e-4_4, "Array divmid")
+   call assert_allclose(temmid_gpu, size(temmid_gpu), temmid_cpu, size(temmid_cpu), 1e-4_4, 1e-4_4, "Array temmid")
+#else
    call assert_allclose(vormid_gpu, size(vormid_gpu), vormid_cpu, size(vormid_cpu), 1e-10, 1e-10, "Array vormid")
    call assert_allclose(divmid_gpu, size(divmid_gpu), divmid_cpu, size(divmid_cpu), 1e-10, 1e-10, "Array divmid")
    call assert_allclose(temmid_gpu, size(temmid_gpu), temmid_cpu, size(temmid_cpu), 1e-10, 1e-10, "Array temmid")
+#endif
 
 end subroutine whdiffu_unit

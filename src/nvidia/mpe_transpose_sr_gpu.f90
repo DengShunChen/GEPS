@@ -16,7 +16,7 @@ subroutine mpe_transpose_sr_sp_gpu(sbuf, rbuf, lev, n, m, nsize, comm)
 
    !$acc enter data create(rwork) async(async_id)
 
-   call nccl_alltoall_fp64(sbuf, len_tr*lev, rwork, len_tr*lev, comm, nsize, async_id)
+   call nccl_alltoall(sbuf, len_tr*lev, rwork, len_tr*lev, comm, nsize, async_id)
 
    !$acc parallel loop collapse(4) async(async_id)
    do j = 1, m

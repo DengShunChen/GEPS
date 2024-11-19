@@ -54,7 +54,11 @@ subroutine ptotc_unit
   !$acc& delete(jlist1, nxdef, nxdef_2d, dsigma, pt, qt, nxjlen_all, cosl, jlist2)
   !$acc wait(async_id)
 
+#ifdef SP
+  if (abs(pdrym - pdrym_gpu) <= 1e-4) then
+#else
   if (abs(pdrym - pdrym_gpu) <= 1e-10) then
+#endif
      print *, "(all close) test_ptotc passed."
   else
      print *, "(all close) test_ptotc failed."
