@@ -45,6 +45,8 @@ if(${USE_CUDA})
   list(APPEND TCO_SRC ${TCO_GPU_SRC})
   list(REMOVE_ITEM TCO_SRC "mod_ndslfv_monoadv_gpu.f90")
   list(REMOVE_ITEM TCO_SRC "mpe_ndslfv_gpu.f90")
+  file(GLOB TCO_GPU_SRC "${CMAKE_CURRENT_SOURCE_DIR}" "cwa/*.f90")
+  list(APPEND TCO_SRC ${TCO_GPU_SRC})
 endif()
 
 if(NOT ${USE_RSM})

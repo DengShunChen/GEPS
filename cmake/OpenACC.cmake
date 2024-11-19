@@ -48,7 +48,7 @@ link_directories(/package/x86_64/operlib/lib)
 link_libraries(-lnwp)
 
 # Additional link
-link_libraries(-ltirpc -lm -lcurl -lhdf5_hl -lhdf5 -lgfortran)
+link_libraries(-ltirpc -lm -lcurl -lhdf5_hl -lhdf5 -lgfortran -lcusparse)
 
 # Add OpenACC options
 add_compile_options(-DUSE_CUDA=1)
