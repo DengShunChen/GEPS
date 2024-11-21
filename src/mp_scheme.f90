@@ -283,26 +283,26 @@
                      1,nx,1,lev,1,nxj,1,lev,snowncv,graupelncv)
 !          Thompson
            if ( nmmiph .eq. 8 )then
-             ntnc=0.
+             allocate( qni2d(nx,lev),qnr2d(nx,lev) )
              do k=1,lev
                kc=lev-k+1
                do i=1,nxj
-                 ntnc(i,kc,1) = qt(i,(ntinc-1)*lev+k)                  &
+                 qni2d(i,kc) = qt(i,(ntinc-1)*lev+k)                   &
                       +max(0.,qti(i,kc)-q0(i,(ntiw-1)*lev+k))/icem
-                 ntnc(i,kc,2) = qt(i,(ntrnc-1)*lev+k)
+                 qnr2d(i,kc) = qt(i,(ntrnc-1)*lev+k)
                enddo
              enddo
 
              call thompson_driver(1,nx,1,lev,1,nxj,1,lev,qtc,qtr,qtrw, &
-                     qti,qtsw,qtgl,ntnc(1,1,1),ntnc(1,1,2),ttc,        &
+                     qti,qtsw,qtgl,qni2d,qnr2d,ttc,                    &
                      prsl,del,dta,kdt,rainncv,sr,islimsk,refl10,       &
                      lradar,re_cloud,re_ice,re_snow,me,phii)
 
              do k=1,lev
                kc=lev-k+1
                do i=1,nxj
-                 qt(i,(ntinc-1)*lev+k)=ntnc(i,kc,1)
-                 qt(i,(ntrnc-1)*lev+k)=ntnc(i,kc,2)
+                 qt(i,(ntinc-1)*lev+k)=qni2d(i,kc)
+                 qt(i,(ntrnc-1)*lev+k)=qnr2d(i,kc)
                enddo
              enddo
            endif
@@ -324,6 +324,7 @@
 
           enddo
         enddo
+        if ( nmmiph .eq. 8 ) deallocate( qni2d,qnr2d )
 
       endif
 
