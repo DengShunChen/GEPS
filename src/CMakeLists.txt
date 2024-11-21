@@ -35,6 +35,9 @@ list(FILTER TCO_SRC EXCLUDE REGEX ".*_gpu\\.f90$")
 list(REMOVE_ITEM TCO_SRC "unify_grid.f90")
 list(REMOVE_ITEM TCO_SRC "unify_gridr.f90")
 list(REMOVE_ITEM TCO_SRC "unify_gridr.f90")
+list(REMOVE_ITEM TCO_SRC "module_mp_gsfcgce_3ice_cwb.f90")
+list(REMOVE_ITEM TCO_SRC "module_mp_gsfcgce_3ice_nuwrf_ori.f90")
+list(REMOVE_ITEM TCO_SRC "module_mp_thompson_gfs_new_ori.f90")
 
 if(${USE_CUDA})
   file(GLOB TCO_GPU_SRC "${CMAKE_CURRENT_SOURCE_DIR}" "nvidia/*.f90"
