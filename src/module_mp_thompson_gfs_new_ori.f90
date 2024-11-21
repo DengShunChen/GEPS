@@ -57,7 +57,7 @@
 !!                  with his WRF version, including bug fixes and designed
 !!                  changes.
 
-      MODULE module_mp_thompson_new
+      MODULE module_mp_thompson
 
       USE machine, only : kind_phys
 
@@ -374,11 +374,10 @@
 !..To permit possible creation of new lookup tables as variables expand/change,
 !.. specify a name of external file(s) including version number for pre-computed
 !.. Thompson tables.
-      character(len=*), parameter ::                                    &
-           thomp_table_file = 'thompson_tables_precomp_v2.sl',          &
-           qr_acr_qg_file = 'qr_acr_qgV2.dat',                          &
-           qr_acr_qs_file = 'qr_acr_qsV2.dat',                          &
-           freeze_h2o_file = 'freezeH2O.dat'
+      character(len=*), parameter :: thomp_table_file = 'thompson_tables_precomp_v2.sl'
+      character(len=*), parameter :: qr_acr_qg_file = 'qr_acr_qgV2.dat'
+      character(len=*), parameter :: qr_acr_qs_file = 'qr_acr_qsV2.dat'
+      character(len=*), parameter :: freeze_h2o_file = 'freezeH2O.dat'
 
       INTEGER, PARAMETER, PRIVATE:: R8SIZE = 8
       INTEGER, PARAMETER, PRIVATE:: R4SIZE = 4
@@ -427,11 +426,6 @@
 !..Write tables with master MPI task after computing them in thompson_init
       LOGICAL:: thompson_table_writer
 
-!..cloud fraction scheme
-      integer, public :: cfflag_thom = 1
-      ! 1 : Xu-Randall
-      ! 2 : Thompson
-
 !+---+
 !+---+-----------------------------------------------------------------+
 !..END DECLARATIONS
@@ -445,20 +439,17 @@
 !! lookup tables in Thomspson scheme.
 !>\section gen_thompson_init thompson_init General Algorithm
 !> @{
-      SUBROUTINE new_thompson_init(is_aerosol_aware_in,                     &
-                               merra2_aerosol_aware_in,                 &
-                               mpirank, mpiroot, errmsg, errflg)
-!                               mpicomm, mpirank, mpiroot)
-!                               mpicomm, mpirank, mpiroot, &
-!                               threads, errmsg, errflg)
+      SUBROUTINE thompson_init(is_aerosol_aware_in,       &
+                               merra2_aerosol_aware_in,   &
+                               mpicomm, mpirank, mpiroot, &
+                               threads, errmsg, errflg)
 
       IMPLICIT NONE
 
       LOGICAL, INTENT(IN) :: is_aerosol_aware_in
       LOGICAL, INTENT(IN) :: merra2_aerosol_aware_in
-!      INTEGER, INTENT(IN) :: mpicomm
-      INTEGER, INTENT(IN) ::mpirank, mpiroot
-!      INTEGER, INTENT(IN) :: threads
+      INTEGER, INTENT(IN) :: mpicomm, mpirank, mpiroot
+      INTEGER, INTENT(IN) :: threads
       CHARACTER(len=*), INTENT(INOUT) :: errmsg
       INTEGER,          INTENT(INOUT) :: errflg
 
@@ -471,22 +462,18 @@
       is_aerosol_aware = is_aerosol_aware_in
       merra2_aerosol_aware = merra2_aerosol_aware_in
       if (is_aerosol_aware .and. merra2_aerosol_aware) then
-          errmsg = 'Logic error in thompson_init: ' //                  &
-                   'only one of the two options can be true, ' //       &
+          errmsg = 'Logic error in thompson_init: only one of the two options can be true, ' // &
                    'not both: is_aerosol_aware or merra2_aerosol_aware'
           errflg = 1
           return
       end if
       if (mpirank==mpiroot) then
           if (is_aerosol_aware) then
-              write (0,'(a)') &
-              'Using aerosol-aware version of Thompson MP'
+              write (0,'(a)') 'Using aerosol-aware version of Thompson microphysics'
           else if(merra2_aerosol_aware) then
-              write (0,'(a)') &
-              'Using merra2 aerosol-aware version of Thompson MP'
+              write (0,'(a)') 'Using merra2 aerosol-aware version of Thompson microphysics'
           else
-              write (0,'(a)') &
-              'Using non-aerosol-aware version of Thompson MP'
+              write (0,'(a)') 'Using non-aerosol-aware version of Thompson microphysics'
           end if
       end if
 
@@ -703,24 +690,15 @@
       t2_qg_me = PI*4.*C_cube*olfus * 0.28*Sc3*SQRT(av_g) * cgg(11)
 
 !>  - Compute constants for helping find lookup table indexes
-!      nic2 = NINT(ALOG10(r_c(1)))
-      nic2 = NINT(DLOG10(r_c(1)))
-!      nii2 = NINT(ALOG10(r_i(1)))
-      nii2 = NINT(DLOG10(r_i(1)))
-!      nii3 = NINT(ALOG10(Nt_i(1)))
-      nii3 = NINT(DLOG10(Nt_i(1)))
-!      nir2 = NINT(ALOG10(r_r(1)))
-      nir2 = NINT(DLOG10(r_r(1)))
-!      nir3 = NINT(ALOG10(N0r_exp(1)))
-      nir3 = NINT(DLOG10(N0r_exp(1)))
-!      nis2 = NINT(ALOG10(r_s(1)))
-      nis2 = NINT(DLOG10(r_s(1)))
-!      nig2 = NINT(ALOG10(r_g(1)))
-      nig2 = NINT(DLOG10(r_g(1)))
-!      nig3 = NINT(ALOG10(N0g_exp(1)))
-      nig3 = NINT(DLOG10(N0g_exp(1)))
-!      niIN2 = NINT(ALOG10(Nt_IN(1)))
-      niIN2 = NINT(DLOG10(Nt_IN(1)))
+      nic2 = NINT(ALOG10(r_c(1)))
+      nii2 = NINT(ALOG10(r_i(1)))
+      nii3 = NINT(ALOG10(Nt_i(1)))
+      nir2 = NINT(ALOG10(r_r(1)))
+      nir3 = NINT(ALOG10(N0r_exp(1)))
+      nis2 = NINT(ALOG10(r_s(1)))
+      nig2 = NINT(ALOG10(r_g(1)))
+      nig3 = NINT(ALOG10(N0g_exp(1)))
+      niIN2 = NINT(ALOG10(Nt_IN(1)))
 
 !>  - Create bins of cloud water (from min diameter up to 100 microns)
       Dc(1) = D0c*1.0d0
@@ -795,7 +773,7 @@
 !+---+-----------------------------------------------------------------+
 
       ! Assign mpicomm to module variable
-!      mpi_communicator = mpicomm
+      mpi_communicator = mpicomm
 
       ! Standard tables are only written by master MPI task;
       ! (physics init cannot be called by multiple threads,
@@ -808,7 +786,7 @@
 
       precomputed_tables_1: if (.not.precomputed_tables) then
 
-!      call cpu_time(stime)
+      call cpu_time(stime)
 
       do m = 1, ntb_r
          do k = 1, ntb_r1
@@ -911,24 +889,20 @@
          enddo
       enddo
 
-      if (mpirank==mpiroot)                                             &
-          write (*,*)'creating microphysics lookup tables ... '
-      if (mpirank==mpiroot)                                             &
-          write (*,'(a, f5.2, a, f5.2, a, f5.2, a, f5.2)')              &
-          ' using: mu_c_o=',mu_c_o,' mu_i=',mu_i,' mu_r=',mu_r,         &
-          ' mu_g=',mu_g
+      if (mpirank==mpiroot) write (*,*)'creating microphysics lookup tables ... '
+      if (mpirank==mpiroot) write (*,'(a, f5.2, a, f5.2, a, f5.2, a, f5.2)') &
+          ' using: mu_c_o=',mu_c_o,' mu_i=',mu_i,' mu_r=',mu_r,' mu_g=',mu_g
 
 !>  - Call table_ccnact() to read a static file containing CCN activation of aerosols. The
 !! data were created from a parcel model by Feingold & Heymsfield with
 !! further changes by Eidhammer and Kriedenweis
-!      if (mpirank==mpiroot) write(0,*) '  calling table_ccnAct routine'
-!      call table_ccnAct(errmsg,errflg)
-!      if (.not. errflg==0) return
+      if (mpirank==mpiroot) write(0,*) '  calling table_ccnAct routine'
+      call table_ccnAct(errmsg,errflg)
+      if (.not. errflg==0) return
 
 !>  - Call table_efrw() and table_efsw() to creat collision efficiency table 
 !! between rain/snow and cloud water
-      if (mpirank==mpiroot) &
-         write(0,*) '  creating qc collision eff tables'
+      if (mpirank==mpiroot) write(0,*) '  creating qc collision eff tables'
       call table_Efrw
       call table_Efsw
 
@@ -937,17 +911,16 @@
       call table_dropEvap
 
 !>  - Call qi_aut_qs() to create conversion of some ice mass into snow category
-      if (mpirank==mpiroot) &
-         write(0,*) '  creating ice converting to snow table'
+      if (mpirank==mpiroot) write(0,*) '  creating ice converting to snow table'
       call qi_aut_qs
 
       call cpu_time(etime)
-!      if (mpirank==mpiroot) print '("Calculating Thompson tables part 1 took ",f10.3," seconds.")', etime-stime
+      if (mpirank==mpiroot) print '("Calculating Thompson tables part 1 took ",f10.3," seconds.")', etime-stime
 
       end if precomputed_tables_1
 
 !>  - Call radar_init() to initialize various constants for computing radar reflectivity
-!      call cpu_time(stime)
+      call cpu_time(stime)
       xam_r = am_r
       xbm_r = bm_r
       xmu_r = mu_r
@@ -958,149 +931,138 @@
       xbm_g = bm_g
       xmu_g = mu_g
       call radar_init
-!      call cpu_time(etime)
-!      if (mpirank==mpiroot) print '("Calling radar_init took ",f10.3," seconds.")', etime-stime
+      call cpu_time(etime)
+      if (mpirank==mpiroot) print '("Calling radar_init took ",f10.3," seconds.")', etime-stime
 
 
       if_not_iiwarm: if (.not. iiwarm) then
 
       precomputed_tables_2: if (.not.precomputed_tables) then
 
-!      call cpu_time(stime)
+      call cpu_time(stime)
 
 !>  - Call qr_acr_qg() to create rain collecting graupel & graupel collecting rain table
-      if (mpirank==mpiroot) &
-         write(0,*) '  creating rain collecting graupel table'
-!      call cpu_time(stime)
+      if (mpirank==mpiroot) write(0,*) '  creating rain collecting graupel table'
+      call cpu_time(stime)
       call qr_acr_qg
-!      call cpu_time(etime)
-!      if (mpirank==mpiroot) print '("Computing rain collecting graupel table took ",f10.3," seconds.")', etime-stime
+      call cpu_time(etime)
+      if (mpirank==mpiroot) print '("Computing rain collecting graupel table took ",f10.3," seconds.")', etime-stime
 
 !>  - Call qr_acr_qs() to create rain collecting snow & snow collecting rain table
-      if (mpirank==mpiroot) &
-         write (*,*) '  creating rain collecting snow table'
-!      call cpu_time(stime)
+      if (mpirank==mpiroot) write (*,*) '  creating rain collecting snow table'
+      call cpu_time(stime)
       call qr_acr_qs
-!      call cpu_time(etime)
-!      if (mpirank==mpiroot) print '("Computing rain collecting snow table took ",f10.3," seconds.")', etime-stime
+      call cpu_time(etime)
+      if (mpirank==mpiroot) print '("Computing rain collecting snow table took ",f10.3," seconds.")', etime-stime
 
 !>  - Call freezeh2o() to create cloud water and rain freezing (Bigg, 1953) table
-      if (mpirank==mpiroot) &
-         write(0,*) '  creating freezing of water drops table'
-!      call cpu_time(stime)
-!      call freezeH2O(threads)
-      call freezeH2O
-!      call cpu_time(etime)
-!      if (mpirank==mpiroot) print '("Computing freezing of water drops table took ",f10.3," seconds.")', etime-stime
+      if (mpirank==mpiroot) write(0,*) '  creating freezing of water drops table'
+      call cpu_time(stime)
+      call freezeH2O(threads)
+      call cpu_time(etime)
+      if (mpirank==mpiroot) print '("Computing freezing of water drops table took ",f10.3," seconds.")', etime-stime
 
-!      call cpu_time(etime)
-!      if (mpirank==mpiroot) print '("Calculating Thompson tables part 2 took ",f10.3," seconds.")', etime-stime
+      call cpu_time(etime)
+      if (mpirank==mpiroot) print '("Calculating Thompson tables part 2 took ",f10.3," seconds.")', etime-stime
 
       end if precomputed_tables_2
 
       endif if_not_iiwarm
 
-      if (mpirank==mpiroot) &
-         write(0,*) ' ... DONE microphysical lookup tables'
+      if (mpirank==mpiroot) write(0,*) ' ... DONE microphysical lookup tables'
 
       endif if_micro_init
 
-      END SUBROUTINE new_thompson_init
+      END SUBROUTINE thompson_init
 !> @}
 
 !>\ingroup aathompson
 !!This is a wrapper routine designed to transfer values from 3D to 1D.
 !!\section gen_mpgtdriver Thompson mp_gt_driver General Algorithm
 !> @{
-      SUBROUTINE mp_gt_driver(qv, qc, qr, qi, qs, qg, ni, nr, nc,       &
-                              nwfa, nifa, nwfa2d, nifa2d,               &
-                              tt,                                       &
-!                              tt, th, pii,                              &
-                              p, w, dz, dt_in, dt_inner,                &
-                              sedi_semi, decfl, lsm,                    &
-                              RAINNC, RAINNCV,                          &
-                              SNOWNC, SNOWNCV,                          &
-                              ICENC, ICENCV,                            &
-                              GRAUPELNC, GRAUPELNCV, SR,                &
+      SUBROUTINE mp_gt_driver(qv, qc, qr, qi, qs, qg, ni, nr, nc,     &
+                              nwfa, nifa, nwfa2d, nifa2d,             &
+                              tt, th, pii,                            &
+                              p, w, dz, dt_in, dt_inner,              &
+                              sedi_semi, decfl, lsm,                  &
+                              RAINNC, RAINNCV,                        &
+                              SNOWNC, SNOWNCV,                        &
+                              ICENC, ICENCV,                          &
+                              GRAUPELNC, GRAUPELNCV, SR,              &
 #if ( WRF_CHEM == 1 )
-                              rainprod, evapprod,                       &
+                              rainprod, evapprod,                     &
 #endif
-                              refl_10cm, diagflag, do_radar_ref,        &
-                              vt_dbz_wt, first_time_step,               &
-                              re_cloud, re_ice, re_snow,                &
-                              has_reqc, has_reqi, has_reqs,             &
-                              aero_ind_fdb, rand_perturb_on,            &
-                              kme_stoch,                                &
-                              rand_pert, spp_prt_list, spp_var_list,    &
-                              spp_stddev_cutoff, n_var_spp,             &
-!                              ids,ide, jds,jde, kds,kde,                &  ! domain dims
-                              ims,ime, kms,kme,                         &  ! memory dims
-!                              ims,ime, jms,jme, kms,kme,                &  ! memory dims
-                              its,ite, kts,kte,                         &  ! tile dims
-!                              its,ite, jts,jte, kts,kte,                &  ! tile dims
-                              reset_dBZ, istep, nsteps,                 &
-                              errmsg, errflg,                           &
+                              refl_10cm, diagflag, do_radar_ref,      &
+                              vt_dbz_wt, first_time_step,             &
+                              re_cloud, re_ice, re_snow,              &
+                              has_reqc, has_reqi, has_reqs,           &
+                              aero_ind_fdb, rand_perturb_on,          &
+                              kme_stoch,                              &
+                              rand_pert, spp_prt_list, spp_var_list,  &
+                              spp_stddev_cutoff, n_var_spp,           &
+                              ids,ide, jds,jde, kds,kde,              &  ! domain dims
+                              ims,ime, jms,jme, kms,kme,              &  ! memory dims
+                              its,ite, jts,jte, kts,kte,              &  ! tile dims
+                              reset_dBZ, istep, nsteps,               &
+                              errmsg, errflg,                         &
                               ! Extended diagnostics, array pointers
                               ! only associated if ext_diag flag is .true.
-                              ext_diag,                                 &
-#ifdef EXT_DIAG
+                              ext_diag,                               &
                               !vts1, txri, txrc,                       &
-                              prw_vcdc,                                 &
-                              prw_vcde, tpri_inu, tpri_ide_d,           &
-                              tpri_ide_s, tprs_ide, tprs_sde_d,         &
-                              tprs_sde_s, tprg_gde_d,                   &
-                              tprg_gde_s, tpri_iha, tpri_wfz,           &
-                              tpri_rfz, tprg_rfz, tprs_scw, tprg_scw,   &
-                              tprg_rcs, tprs_rcs,                       &
-                              tprr_rci, tprg_rcg,                       &
-                              tprw_vcd_c, tprw_vcd_e, tprr_sml,         &
-                              tprr_gml, tprr_rcg,                       &
-                              tprr_rcs, tprv_rev, tten3, qvten3,        &
-                              qrten3, qsten3, qgten3, qiten3, niten3,   &
-                              nrten3, ncten3, qcten3,                   &
-#endif
+                              prw_vcdc,                               &
+                              prw_vcde, tpri_inu, tpri_ide_d,         &
+                              tpri_ide_s, tprs_ide, tprs_sde_d,       &
+                              tprs_sde_s, tprg_gde_d,                 &
+                              tprg_gde_s, tpri_iha, tpri_wfz,         &
+                              tpri_rfz, tprg_rfz, tprs_scw, tprg_scw, &
+                              tprg_rcs, tprs_rcs,                     &
+                              tprr_rci, tprg_rcg,                     &
+                              tprw_vcd_c, tprw_vcd_e, tprr_sml,       &
+                              tprr_gml, tprr_rcg,                     &
+                              tprr_rcs, tprv_rev, tten3, qvten3,      &
+                              qrten3, qsten3, qgten3, qiten3, niten3, &
+                              nrten3, ncten3, qcten3,                 &
                               pfils, pflls)
 
       implicit none
 
 !..Subroutine arguments
-!      INTEGER, INTENT(IN):: ids,ide, jds,jde, kds,kde
-      INTEGER, INTENT(IN):: ims,ime, kms,kme, its,ite, kts,kte
-!      INTEGER, INTENT(IN):: ims,ime, jms,jme, kms,kme,                  &
-!                            its,ite, jts,jte, kts,kte
-      REAL, DIMENSION(ims:ime, kms:kme), INTENT(INOUT)::                &
+      INTEGER, INTENT(IN):: ids,ide, jds,jde, kds,kde, &
+                            ims,ime, jms,jme, kms,kme, &
+                            its,ite, jts,jte, kts,kte
+      REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT):: &
                           qv, qc, qr, qi, qs, qg, ni, nr
-      REAL, DIMENSION(ims:ime, kms:kme), OPTIONAL, INTENT(INOUT)::      &
-                          tt!, th
-!      REAL, DIMENSION(ims:ime, kms:kme), OPTIONAL, INTENT(IN)::         &
-!                          pii
-      REAL, DIMENSION(ims:ime, kms:kme), OPTIONAL, INTENT(INOUT)::      &
+      REAL, DIMENSION(ims:ime, kms:kme, jms:jme), OPTIONAL, INTENT(INOUT):: &
+                          tt, th
+      REAL, DIMENSION(ims:ime, kms:kme, jms:jme), OPTIONAL, INTENT(IN):: &
+                          pii
+      REAL, DIMENSION(ims:ime, kms:kme, jms:jme), OPTIONAL, INTENT(INOUT):: &
                           nc, nwfa, nifa
-      REAL, DIMENSION(ims:ime), OPTIONAL, INTENT(IN):: nwfa2d, nifa2d
-      INTEGER, DIMENSION(ims:ime), INTENT(IN):: lsm
-      REAL, DIMENSION(ims:ime, kms:kme), OPTIONAL, INTENT(INOUT)::      &
+      REAL, DIMENSION(ims:ime, jms:jme), OPTIONAL, INTENT(IN):: nwfa2d, nifa2d
+      INTEGER, DIMENSION(ims:ime, jms:jme), INTENT(IN):: lsm
+      REAL, DIMENSION(ims:ime, kms:kme, jms:jme), OPTIONAL, INTENT(INOUT):: &
                           re_cloud, re_ice, re_snow
-      REAL, DIMENSION(ims:ime, kms:kme), INTENT(INOUT):: pfils, pflls
+      REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT):: pfils, pflls
       INTEGER, INTENT(IN) :: rand_perturb_on, kme_stoch, n_var_spp
       REAL, DIMENSION(:,:), INTENT(IN) :: rand_pert
       REAL, DIMENSION(:), INTENT(IN) :: spp_prt_list, spp_stddev_cutoff
       CHARACTER(len=3), DIMENSION(:), INTENT(IN) :: spp_var_list
       INTEGER, INTENT(IN):: has_reqc, has_reqi, has_reqs
 #if ( WRF_CHEM == 1 )
-      REAL, DIMENSION(ims:ime, kms:kme), INTENT(INOUT)::                &
+      REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT):: &
                           rainprod, evapprod
 #endif
-      REAL, DIMENSION(ims:ime, kms:kme), INTENT(IN)::                   &
+      REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(IN):: &
                           p, w, dz
-      REAL, DIMENSION(ims:ime), INTENT(INOUT)::                         &
+      REAL, DIMENSION(ims:ime, jms:jme), INTENT(INOUT):: &
                           RAINNC, RAINNCV, SR
-      REAL, DIMENSION(ims:ime), OPTIONAL, INTENT(INOUT)::               &
+      REAL, DIMENSION(ims:ime, jms:jme), OPTIONAL, INTENT(INOUT)::      &
                           SNOWNC, SNOWNCV,                              &
                           ICENC, ICENCV,                                &
                           GRAUPELNC, GRAUPELNCV
-      REAL, DIMENSION(ims:ime, kms:kme), INTENT(INOUT)::                &
+      REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT)::       &
                           refl_10cm
-      REAL, DIMENSION(ims:ime, kms:kme), OPTIONAL, INTENT(INOUT)::      &
+      REAL, DIMENSION(ims:ime, kms:kme, jms:jme), OPTIONAL, INTENT(INOUT):: &
                           vt_dbz_wt
       LOGICAL, INTENT(IN) :: first_time_step
       REAL, INTENT(IN):: dt_in, dt_inner
@@ -1112,8 +1074,7 @@
       ! Extended diagnostics, array pointers only associated if ext_diag flag is .true.
       LOGICAL, INTENT (IN) :: ext_diag
       LOGICAL, OPTIONAL, INTENT(IN):: aero_ind_fdb
-#ifdef EXT_DIAG
-      REAL, DIMENSION(:,:), INTENT(INOUT)::                     &
+      REAL, DIMENSION(:,:,:), INTENT(INOUT)::                     &
                           !vts1, txri, txrc,                       &
                           prw_vcdc,                               &
                           prw_vcde, tpri_inu, tpri_ide_d,         &
@@ -1128,7 +1089,6 @@
                           tprr_rcs, tprv_rev, tten3, qvten3,      &
                           qrten3, qsten3, qgten3, qiten3, niten3, &
                           nrten3, ncten3, qcten3
-#endif
 
 !..Local variables
       REAL, DIMENSION(kts:kte):: &
@@ -1136,7 +1096,6 @@
                           nr1d, nc1d, nwfa1d, nifa1d,                   &
                           t1d, p1d, w1d, dz1d, rho, dBZ, pfil1, pfll1
 !..Extended diagnostics, single column arrays
-#ifdef EXT_DIAG
       REAL, DIMENSION(:), ALLOCATABLE::                              &
                           !vtsk1, txri1, txrc1,                       &
                           prw_vcdc1,                                 &
@@ -1152,14 +1111,13 @@
                           tprr_rcs1, tprv_rev1,  tten1, qvten1,      &
                           qrten1, qsten1, qgten1, qiten1, niten1,    &
                           nrten1, ncten1, qcten1
-#endif
 
       REAL, DIMENSION(kts:kte):: re_qc1d, re_qi1d, re_qs1d
 #if ( WRF_CHEM == 1 )
       REAL, DIMENSION(kts:kte):: &
                           rainprod1d, evapprod1d
 #endif
-      REAL, DIMENSION(its:ite):: pcp_ra, pcp_sn, pcp_gr, pcp_ic
+      REAL, DIMENSION(its:ite, jts:jte):: pcp_ra, pcp_sn, pcp_gr, pcp_ic
       REAL:: dt, pptrain, pptsnow, pptgraul, pptice
       REAL:: qc_max, qr_max, qs_max, qi_max, qg_max, ni_max, nr_max
       INTEGER:: lsml
@@ -1186,57 +1144,49 @@
       test_only_once: if (first_time_step .and. istep==1) then
          ! Activate this code when removing the guard above
    
-!         if ( (present(tt) .and. (present(th) .or. present(pii))) .or.  &
-!              (.not.present(tt) .and. .not.(present(th) .and.           &
-!              present(pii))) ) then
-!            if (present(errmsg) .and. present(errflg)) then
-!               write(errmsg, '(a)') &
-!              'Logic error in mp_gt_driver: provide either tt or th+pii'
-!               errflg = 1
-!               return
-!            else
-!               write(*,'(a)') &
-!              'Logic error in mp_gt_driver: provide either tt or th+pii'
-!               stop
-!            end if
-!         end if
+         if ( (present(tt) .and. (present(th) .or. present(pii))) .or. &
+              (.not.present(tt) .and. .not.(present(th) .and. present(pii))) ) then
+            if (present(errmsg) .and. present(errflg)) then
+               write(errmsg, '(a)') 'Logic error in mp_gt_driver: provide either tt or th+pii'
+               errflg = 1
+               return
+            else
+               write(*,'(a)') 'Logic error in mp_gt_driver: provide either tt or th+pii'
+               stop
+            end if
+         end if
    
-         if (is_aerosol_aware .and. (.not.present(nc)     .or.          &
-                                     .not.present(nwfa)   .or.          &
-                                     .not.present(nifa)   .or.          &
-                                     .not.present(nwfa2d) .or.          &
+         if (is_aerosol_aware .and. (.not.present(nc)     .or. &
+                                     .not.present(nwfa)   .or. &
+                                     .not.present(nifa)   .or. &
+                                     .not.present(nwfa2d) .or. &
                                      .not.present(nifa2d)      )) then
             if (present(errmsg) .and. present(errflg)) then
-               write(errmsg, '(*(a))') 'Logic error in mp_gt_driver:'// &
-               'provide nc, nwfa, nifa, nwfa2d and nifa2d for '//       &
-               'aerosol-aware version of Thompson microphysics'
+               write(errmsg, '(*(a))') 'Logic error in mp_gt_driver: provide nc, nwfa, nifa, nwfa2d', &
+                                       ' and nifa2d for aerosol-aware version of Thompson microphysics'
                errflg = 1
                return
             else
-               write(*, '(*(a))') 'Logic error in mp_gt_driver: '//     &
-               'provide nc, nwfa, nifa, nwfa2d and nifa2d for '//       &
-               'aerosol-aware version of Thompson microphysics'
+               write(*, '(*(a))') 'Logic error in mp_gt_driver: provide nc, nwfa, nifa, nwfa2d', &
+                                  ' and nifa2d for aerosol-aware version of Thompson microphysics'
                stop
             end if
-         else if (merra2_aerosol_aware .and. (.not.present(nc)   .or.   &
-                  .not.present(nwfa) .or. .not.present(nifa) )) then
+         else if (merra2_aerosol_aware .and. (.not.present(nc)   .or. &
+                                              .not.present(nwfa) .or. &
+                                              .not.present(nifa)      )) then
             if (present(errmsg) .and. present(errflg)) then
-               write(errmsg, '(*(a))') 'Logic error in mp_gt_driver:'// &
-               'provide nc, nwfa, and nifa for merra2 aerosol-aware '// &
-               'version of Thompson microphysics'
+               write(errmsg, '(*(a))') 'Logic error in mp_gt_driver: provide nc, nwfa, and nifa', &
+                                       ' for merra2 aerosol-aware version of Thompson microphysics'
                errflg = 1
                return
             else
-               write(*, '(*(a))') 'Logic error in mp_gt_driver: '//     &
-               'provide nc, nwfa, and nifa for merra2 aerosol-aware '// &
-               'version of Thompson microphysics'
+               write(*, '(*(a))') 'Logic error in mp_gt_driver: provide nc, nwfa, and nifa', &
+                                  ' for merra2 aerosol-aware version of Thompson microphysics'
                stop
             end if
-         else if (.not.is_aerosol_aware .and. .not.merra2_aerosol_aware &
-                  .and. (present(nwfa) .or. present(nifa) .or.          &
-                  present(nwfa2d) .or. present(nifa2d))) then
-            write(*,*) 'WARNING, nc/nwfa/nifa/nwfa2d/nifa2d present '// &
-            'but is_aerosol_aware/merra2_aerosol_aware are FALSE'
+         else if (.not.is_aerosol_aware .and. .not.merra2_aerosol_aware .and. &
+                  (present(nwfa) .or. present(nifa) .or. present(nwfa2d) .or. present(nifa2d))) then
+            write(*,*) 'WARNING, nc/nwfa/nifa/nwfa2d/nifa2d present but is_aerosol_aware/merra2_aerosol_aware are FALSE'
          end if
       end if test_only_once
 
@@ -1244,7 +1194,6 @@
       !allocate (vtsk1(kts:kte))
       !allocate (txri1(kts:kte))
       !allocate (txrc1(kts:kte))
-#ifdef EXT_DIAG
       allocate_extended_diagnostics: if (ext_diag) then
          allocate (prw_vcdc1(kts:kte))
          allocate (prw_vcde1(kts:kte))
@@ -1284,13 +1233,12 @@
          allocate (ncten1(kts:kte))
          allocate (qcten1(kts:kte))
       end if allocate_extended_diagnostics
-#endif
 
 !+---+
       i_start = its
-!      j_start = jts
+      j_start = jts
       i_end   = ite
-!      j_end   = jte
+      j_end   = jte
 
 !..For idealized testing by developer.
 !     if ( (ide-ids+1).gt.4 .and. (jde-jds+1).lt.4 .and.                &
@@ -1302,16 +1250,16 @@
 !     endif
 
 !     dt = dt_in
-      RAINNC(:) = 0.0
-      SNOWNC(:) = 0.0
-      ICENC(:) = 0.0
-      GRAUPELNC(:) = 0.0
-      pcp_ra(:) = 0.0
-      pcp_sn(:) = 0.0
-      pcp_gr(:) = 0.0
-      pcp_ic(:) = 0.0
-      pfils(:,:) = 0.0
-      pflls(:,:) = 0.0
+      RAINNC(:,:) = 0.0
+      SNOWNC(:,:) = 0.0
+      ICENC(:,:) = 0.0
+      GRAUPELNC(:,:) = 0.0
+      pcp_ra(:,:) = 0.0
+      pcp_sn(:,:) = 0.0
+      pcp_gr(:,:) = 0.0
+      pcp_ic(:,:) = 0.0
+      pfils(:,:,:) = 0.0
+      pflls(:,:,:) = 0.0
       rand_pert_max = 0.0
       ndt = max(nint(dt_in/dt_inner),1)
       dt = dt_in/ndt
@@ -1345,13 +1293,13 @@
       imax_qg = 0
       imax_ni = 0
       imax_nr = 0
-!      jmax_qc = 0
-!      jmax_qr = 0
-!      jmax_qi = 0
-!      jmax_qs = 0
-!      jmax_qg = 0
-!      jmax_ni = 0
-!      jmax_nr = 0
+      jmax_qc = 0
+      jmax_qr = 0
+      jmax_qi = 0
+      jmax_qs = 0
+      jmax_qg = 0
+      jmax_ni = 0
+      jmax_nr = 0
       kmax_qc = 0
       kmax_qr = 0
       kmax_qi = 0
@@ -1360,7 +1308,7 @@
       kmax_ni = 0
       kmax_nr = 0
 
-!      j_loop:  do j = j_start, j_end
+      j_loop:  do j = j_start, j_end
       i_loop:  do i = i_start, i_end
 
 !+---+-----------------------------------------------------------------+
@@ -1393,42 +1341,41 @@
          pptsnow = 0.
          pptgraul = 0.
          pptice = 0.
-         RAINNCV(i) = 0.
+         RAINNCV(i,j) = 0.
          IF ( PRESENT (snowncv) ) THEN
-            SNOWNCV(i) = 0.
+            SNOWNCV(i,j) = 0.
          ENDIF
          IF ( PRESENT (icencv) ) THEN
-            ICENCV(i) = 0.
+            ICENCV(i,j) = 0.
          ENDIF
          IF ( PRESENT (graupelncv) ) THEN
-            GRAUPELNCV(i) = 0.
+            GRAUPELNCV(i,j) = 0.
          ENDIF
-         SR(i) = 0.
+         SR(i,j) = 0.
 
          do k = kts, kte
-!            if (present(tt)) then
-               t1d(k) = tt(i,k)
-!            else
-!               t1d(k) = th(i,k)*pii(i,k)
-!            end if
-            p1d(k) = p(i,k)
-            w1d(k) = w(i,k)
-            dz1d(k) = dz(i,k)
-            qv1d(k) = qv(i,k)
-            qc1d(k) = qc(i,k)
-            qi1d(k) = qi(i,k)
-            qr1d(k) = qr(i,k)
-            qs1d(k) = qs(i,k)
-            qg1d(k) = qg(i,k)
-            ni1d(k) = ni(i,k)
-            nr1d(k) = nr(i,k)
+            if (present(tt)) then
+               t1d(k) = tt(i,k,j)
+            else
+               t1d(k) = th(i,k,j)*pii(i,k,j)
+            end if
+            p1d(k) = p(i,k,j)
+            w1d(k) = w(i,k,j)
+            dz1d(k) = dz(i,k,j)
+            qv1d(k) = qv(i,k,j)
+            qc1d(k) = qc(i,k,j)
+            qi1d(k) = qi(i,k,j)
+            qr1d(k) = qr(i,k,j)
+            qs1d(k) = qs(i,k,j)
+            qg1d(k) = qg(i,k,j)
+            ni1d(k) = ni(i,k,j)
+            nr1d(k) = nr(i,k,j)
             rho(k) = 0.622*p1d(k)/(R*t1d(k)*(qv1d(k)+0.622))
 
             ! These arrays are always allocated and must be initialized
             !vtsk1(k) = 0.
             !txrc1(k) = 0.
             !txri1(k) = 0.
-#ifdef EXT_DIAG
             initialize_extended_diagnostics: if (ext_diag) then
                prw_vcdc1(k) = 0.
                prw_vcde1(k) = 0.
@@ -1468,16 +1415,15 @@
                ncten1(k) = 0.
                qcten1(k) = 0.
             endif initialize_extended_diagnostics
-#endif
          enddo
          if (is_aerosol_aware .or. merra2_aerosol_aware) then
             do k = kts, kte
-               nc1d(k) = nc(i,k)
-               nwfa1d(k) = nwfa(i,k)
-               nifa1d(k) = nifa(i,k)
+               nc1d(k) = nc(i,k,j)
+               nwfa1d(k) = nwfa(i,k,j)
+               nifa1d(k) = nifa(i,k,j)
             enddo
          else
-            lsml = lsm(i)
+            lsml = lsm(i,j)
             do k = kts, kte
                if(lsml == 1) then
                  nc1d(k) = Nt_c_l/rho(k)
@@ -1492,14 +1438,13 @@
 !> - Call mp_thompson()
          call mp_thompson(qv1d, qc1d, qi1d, qr1d, qs1d, qg1d, ni1d,     &
                       nr1d, nc1d, nwfa1d, nifa1d, t1d, p1d, w1d, dz1d,  &
-                      lsml, pptrain, pptsnow, pptgraul, pptice,         &
+                      lsml, pptrain, pptsnow, pptgraul, pptice, &
 #if ( WRF_CHEM == 1 )
                       rainprod1d, evapprod1d, &
 #endif
-                      rand1, rand2, rand3,                              &
-                      kts, kte, dt, i, ext_diag,                        &
-                      sedi_semi, decfl,                                 &
-#ifdef EXT_DIAG
+                      rand1, rand2, rand3, &
+                      kts, kte, dt, i, j, ext_diag,                    & 
+                      sedi_semi, decfl,                                &
                       !vtsk1, txri1, txrc1,                            &
                       prw_vcdc1, prw_vcde1,                            &
                       tpri_inu1, tpri_ide1_d, tpri_ide1_s, tprs_ide1,  &
@@ -1512,35 +1457,34 @@
                       tprr_rcs1, tprv_rev1,                            &
                       tten1, qvten1, qrten1, qsten1,                   &
                       qgten1, qiten1, niten1, nrten1, ncten1, qcten1,  &
-#endif
                       pfil1, pfll1)
 
-         pcp_ra(i) = pcp_ra(i) + pptrain
-         pcp_sn(i) = pcp_sn(i) + pptsnow
-         pcp_gr(i) = pcp_gr(i) + pptgraul
-         pcp_ic(i) = pcp_ic(i) + pptice
-         RAINNCV(i) = pptrain + pptsnow + pptgraul + pptice
-         RAINNC(i) = RAINNC(i) + pptrain + pptsnow + pptgraul + pptice
+         pcp_ra(i,j) = pcp_ra(i,j) + pptrain
+         pcp_sn(i,j) = pcp_sn(i,j) + pptsnow
+         pcp_gr(i,j) = pcp_gr(i,j) + pptgraul
+         pcp_ic(i,j) = pcp_ic(i,j) + pptice
+         RAINNCV(i,j) = pptrain + pptsnow + pptgraul + pptice
+         RAINNC(i,j) = RAINNC(i,j) + pptrain + pptsnow + pptgraul + pptice
          IF ( PRESENT(snowncv) .AND. PRESENT(snownc) ) THEN
             ! Add ice to snow if separate ice not present
             IF ( .NOT.PRESENT(icencv) .OR. .NOT.PRESENT(icenc) ) THEN
-               SNOWNCV(i) = pptsnow + pptice
-               SNOWNC(i) = SNOWNC(i) + pptsnow + pptice
+               SNOWNCV(i,j) = pptsnow + pptice
+               SNOWNC(i,j) = SNOWNC(i,j) + pptsnow + pptice
             ELSE
-               SNOWNCV(i) = pptsnow
-               SNOWNC(i) = SNOWNC(i) + pptsnow
+               SNOWNCV(i,j) = pptsnow
+               SNOWNC(i,j) = SNOWNC(i,j) + pptsnow
             ENDIF
          ENDIF
          ! Use separate ice if present (as in FV3)
          IF ( PRESENT(icencv) .AND. PRESENT(icenc) ) THEN
-            ICENCV(i) = pptice
-            ICENC(i) = ICENC(i) + pptice
+            ICENCV(i,j) = pptice
+            ICENC(i,j) = ICENC(i,j) + pptice
          ENDIF
          IF ( PRESENT(graupelncv) .AND. PRESENT(graupelnc) ) THEN
-            GRAUPELNCV(i) = pptgraul
-            GRAUPELNC(i) = GRAUPELNC(i) + pptgraul
+            GRAUPELNCV(i,j) = pptgraul
+            GRAUPELNC(i,j) = GRAUPELNC(i,j) + pptgraul
          ENDIF
-         SR(i) = (pptsnow + pptgraul + pptice)/(RAINNCV(i)+1.e-12)
+         SR(i,j) = (pptsnow + pptgraul + pptice)/(RAINNCV(i,j)+1.e-12)
 
 
 
@@ -1550,184 +1494,174 @@
          if (is_aerosol_aware) then
             if ( PRESENT (aero_ind_fdb) ) then
               if ( .not. aero_ind_fdb) then
-                nwfa1d(kts) = nwfa1d(kts) + nwfa2d(i)*dt
-                nifa1d(kts) = nifa1d(kts) + nifa2d(i)*dt
+                nwfa1d(kts) = nwfa1d(kts) + nwfa2d(i,j)*dt
+                nifa1d(kts) = nifa1d(kts) + nifa2d(i,j)*dt
               endif
             else
-              nwfa1d(kts) = nwfa1d(kts) + nwfa2d(i)*dt
-              nifa1d(kts) = nifa1d(kts) + nifa2d(i)*dt
+              nwfa1d(kts) = nwfa1d(kts) + nwfa2d(i,j)*dt
+              nifa1d(kts) = nifa1d(kts) + nifa2d(i,j)*dt
             end if
 
             do k = kts, kte
-               nc(i,k) = nc1d(k)
-               nwfa(i,k) = nwfa1d(k)
-               nifa(i,k) = nifa1d(k)
-            enddo
-         endif
-
-         if (.not.is_aerosol_aware .and. .not.merra2_aerosol_aware) then
-            do k = kts, kte
-               nc(i,k) = nc1d(k)
-               nwfa(i,k) = nwfa1d(k)
-               nifa(i,k) = nifa1d(k)
+               nc(i,k,j) = nc1d(k)
+               nwfa(i,k,j) = nwfa1d(k)
+               nifa(i,k,j) = nifa1d(k)
             enddo
          endif
 
          do k = kts, kte
-            qv(i,k) = qv1d(k)
-            qc(i,k) = qc1d(k)
-            qi(i,k) = qi1d(k)
-            qr(i,k) = qr1d(k)
-            qs(i,k) = qs1d(k)
-            qg(i,k) = qg1d(k)
-            ni(i,k) = ni1d(k)
-            nr(i,k) = nr1d(k)
-            pfils(i,k) = pfils(i,k) + pfil1(k)
-            pflls(i,k) = pflls(i,k) + pfll1(k)
-!            if (present(tt)) then
-               tt(i,k) = t1d(k)
-!            else
-!               th(i,k) = t1d(k)/pii(i,k)
-!            end if
+            qv(i,k,j) = qv1d(k)
+            qc(i,k,j) = qc1d(k)
+            qi(i,k,j) = qi1d(k)
+            qr(i,k,j) = qr1d(k)
+            qs(i,k,j) = qs1d(k)
+            qg(i,k,j) = qg1d(k)
+            ni(i,k,j) = ni1d(k)
+            nr(i,k,j) = nr1d(k)
+            pfils(i,k,j) = pfils(i,k,j) + pfil1(k)
+            pflls(i,k,j) = pflls(i,k,j) + pfll1(k)
+            if (present(tt)) then
+               tt(i,k,j) = t1d(k)
+            else
+               th(i,k,j) = t1d(k)/pii(i,k,j)
+            end if
 #if ( WRF_CHEM == 1 )
-            rainprod(i,k) = rainprod1d(k)
-            evapprod(i,k) = evapprod1d(k)
+            rainprod(i,k,j) = rainprod1d(k)
+            evapprod(i,k,j) = evapprod1d(k)
 #endif
             if (qc1d(k) .gt. qc_max) then
              imax_qc = i
-!             jmax_qc = j
+             jmax_qc = j
              kmax_qc = k
              qc_max = qc1d(k)
             elseif (qc1d(k) .lt. 0.0) then
-             write(*,'(a,e16.7,a,2i8)') 'WARNING, negative qc ', qc1d(k),&
-                        ' at i,k=', i,k
+             write(*,'(a,e16.7,a,3i8)') 'WARNING, negative qc ', qc1d(k),        &
+                        ' at i,j,k=', i,j,k
             endif
             if (qr1d(k) .gt. qr_max) then
              imax_qr = i
-!             jmax_qr = j
+             jmax_qr = j
              kmax_qr = k
              qr_max = qr1d(k)
             elseif (qr1d(k) .lt. 0.0) then
-             write(*,'(a,e16.7,a,2i8)') 'WARNING, negative qr ', qr1d(k),&
-                        ' at i,k=', i,k
+             write(*,'(a,e16.7,a,3i8)') 'WARNING, negative qr ', qr1d(k),        &
+                        ' at i,j,k=', i,j,k
             endif
             if (nr1d(k) .gt. nr_max) then
              imax_nr = i
-!             jmax_nr = j
+             jmax_nr = j
              kmax_nr = k
              nr_max = nr1d(k)
             elseif (nr1d(k) .lt. 0.0) then
-             write(*,'(a,e16.7,a,2i8)') 'WARNING, negative nr ', nr1d(k),&
-                        ' at i,k=', i,k
+             write(*,'(a,e16.7,a,3i8)') 'WARNING, negative nr ', nr1d(k),        &
+                        ' at i,j,k=', i,j,k
             endif
             if (qs1d(k) .gt. qs_max) then
              imax_qs = i
-!             jmax_qs = j
+             jmax_qs = j
              kmax_qs = k
              qs_max = qs1d(k)
             elseif (qs1d(k) .lt. 0.0) then
-             write(*,'(a,e16.7,a,2i8)') 'WARNING, negative qs ', qs1d(k),&
-                        ' at i,k=', i,k
+             write(*,'(a,e16.7,a,3i8)') 'WARNING, negative qs ', qs1d(k),        &
+                        ' at i,j,k=', i,j,k
             endif
             if (qi1d(k) .gt. qi_max) then
              imax_qi = i
-!             jmax_qi = j
+             jmax_qi = j
              kmax_qi = k
              qi_max = qi1d(k)
             elseif (qi1d(k) .lt. 0.0) then
-             write(*,'(a,e16.7,a,2i8)') 'WARNING, negative qi ', qi1d(k),&
-                        ' at i,k=', i,k
+             write(*,'(a,e16.7,a,3i8)') 'WARNING, negative qi ', qi1d(k),        &
+                        ' at i,j,k=', i,j,k
             endif
             if (qg1d(k) .gt. qg_max) then
              imax_qg = i
-!             jmax_qg = j
+             jmax_qg = j
              kmax_qg = k
              qg_max = qg1d(k)
             elseif (qg1d(k) .lt. 0.0) then
-             write(*,'(a,e16.7,a,2i8)') 'WARNING, negative qg ', qg1d(k),&
-                        ' at i,k=', i,k
+             write(*,'(a,e16.7,a,3i8)') 'WARNING, negative qg ', qg1d(k),        &
+                        ' at i,j,k=', i,j,k
             endif
             if (ni1d(k) .gt. ni_max) then
              imax_ni = i
-!             jmax_ni = j
+             jmax_ni = j
              kmax_ni = k
              ni_max = ni1d(k)
             elseif (ni1d(k) .lt. 0.0) then
-             write(*,'(a,e16.7,a,2i8)') 'WARNING, negative ni ', ni1d(k),&
-                        ' at i,k=', i,k
+             write(*,'(a,e16.7,a,3i8)') 'WARNING, negative ni ', ni1d(k),        &
+                        ' at i,j,k=', i,j,k
             endif
             if (qv1d(k) .lt. 0.0) then
-             write(*,'(a,e16.7,a,2i8)') 'WARNING, negative qv ', qv1d(k),&
-                        ' at i,k=', i,k
+             write(*,'(a,e16.7,a,3i8)') 'WARNING, negative qv ', qv1d(k),        &
+                        ' at i,j,k=', i,j,k
              if (k.lt.kte-2 .and. k.gt.kts+1) then
-                write(*,*) '   below and above are: ', qv(i,k-1), qv(i,k+1)
-                qv(i,k) = MAX(1.E-7, 0.5*(qv(i,k-1) + qv(i,k+1)))
+                write(*,*) '   below and above are: ', qv(i,k-1,j), qv(i,k+1,j)
+                qv(i,k,j) = MAX(1.E-7, 0.5*(qv(i,k-1,j) + qv(i,k+1,j)))
              else
-                qv(i,k) = 1.E-7
+                qv(i,k,j) = 1.E-7
              endif
             endif
          enddo
 
-#ifdef EXT_DIAG
          assign_extended_diagnostics: if (ext_diag) then
            do k=kts,kte
             !vts1(i,k,j)       = vtsk1(k)
             !txri(i,k,j)       = txri(i,k,j)       + txri1(k)
             !txrc(i,k,j)       = txrc(i,k,j)       + txrc1(k)
-            prw_vcdc(i,k)   = prw_vcdc(i,k)   + prw_vcdc1(k)
-            prw_vcde(i,k)   = prw_vcde(i,k)   + prw_vcde1(k)
-            tpri_inu(i,k)   = tpri_inu(i,k)   + tpri_inu1(k) 
-            tpri_ide_d(i,k) = tpri_ide_d(i,k) + tpri_ide1_d(k)
-            tpri_ide_s(i,k) = tpri_ide_s(i,k) + tpri_ide1_s(k)
-            tprs_ide(i,k)   = tprs_ide(i,k)   + tprs_ide1(k)
-            tprs_sde_s(i,k) = tprs_sde_s(i,k) + tprs_sde1_s(k)
-            tprs_sde_d(i,k) = tprs_sde_d(i,k) + tprs_sde1_d(k)
-            tprg_gde_d(i,k) = tprg_gde_d(i,k) + tprg_gde1_d(k)
-            tprg_gde_s(i,k) = tprg_gde_s(i,k) + tprg_gde1_s(k)
-            tpri_iha(i,k)   = tpri_iha(i,k)   + tpri_iha1(k)
-            tpri_wfz(i,k)   = tpri_wfz(i,k)   + tpri_wfz1(k)
-            tpri_rfz(i,k)   = tpri_rfz(i,k)   + tpri_rfz1(k)
-            tprg_rfz(i,k)   = tprg_rfz(i,k)   + tprg_rfz1(k)
-            tprs_scw(i,k)   = tprs_scw(i,k)   + tprs_scw1(k)
-            tprg_scw(i,k)   = tprg_scw(i,k)   + tprg_scw1(k)
-            tprg_rcs(i,k)   = tprg_rcs(i,k)   + tprg_rcs1(k)
-            tprs_rcs(i,k)   = tprs_rcs(i,k)   + tprs_rcs1(k)
-            tprr_rci(i,k)   = tprr_rci(i,k)   + tprr_rci1(k)
-            tprg_rcg(i,k)   = tprg_rcg(i,k)   + tprg_rcg1(k)
-            tprw_vcd_c(i,k) = tprw_vcd_c(i,k) + tprw_vcd1_c(k)
-            tprw_vcd_e(i,k) = tprw_vcd_e(i,k) + tprw_vcd1_e(k)
-            tprr_sml(i,k)   = tprr_sml(i,k)   + tprr_sml1(k)
-            tprr_gml(i,k)   = tprr_gml(i,k)   + tprr_gml1(k)
-            tprr_rcg(i,k)   = tprr_rcg(i,k)   + tprr_rcg1(k)
-            tprr_rcs(i,k)   = tprr_rcs(i,k)   + tprr_rcs1(k)
-            tprv_rev(i,k)   = tprv_rev(i,k)   + tprv_rev1(k)
-            tten3(i,k)      = tten3(i,k)      + tten1(k) 
-            qvten3(i,k)     = qvten3(i,k)     + qvten1(k)
-            qrten3(i,k)     = qrten3(i,k)     + qrten1(k)
-            qsten3(i,k)     = qsten3(i,k)     + qsten1(k)
-            qgten3(i,k)     = qgten3(i,k)     + qgten1(k)
-            qiten3(i,k)     = qiten3(i,k)     + qiten1(k) 
-            niten3(i,k)     = niten3(i,k)     + niten1(k)
-            nrten3(i,k)     = nrten3(i,k)     + nrten1(k)
-            ncten3(i,k)     = ncten3(i,k)     + ncten1(k)
-            qcten3(i,k)     = qcten3(i,k)     + qcten1(k)
+            prw_vcdc(i,k,j)   = prw_vcdc(i,k,j)   + prw_vcdc1(k)
+            prw_vcde(i,k,j)   = prw_vcde(i,k,j)   + prw_vcde1(k)
+            tpri_inu(i,k,j)   = tpri_inu(i,k,j)   + tpri_inu1(k) 
+            tpri_ide_d(i,k,j) = tpri_ide_d(i,k,j) + tpri_ide1_d(k)
+            tpri_ide_s(i,k,j) = tpri_ide_s(i,k,j) + tpri_ide1_s(k)
+            tprs_ide(i,k,j)   = tprs_ide(i,k,j)   + tprs_ide1(k)
+            tprs_sde_s(i,k,j) = tprs_sde_s(i,k,j) + tprs_sde1_s(k)
+            tprs_sde_d(i,k,j) = tprs_sde_d(i,k,j) + tprs_sde1_d(k)
+            tprg_gde_d(i,k,j) = tprg_gde_d(i,k,j) + tprg_gde1_d(k)
+            tprg_gde_s(i,k,j) = tprg_gde_s(i,k,j) + tprg_gde1_s(k)
+            tpri_iha(i,k,j)   = tpri_iha(i,k,j)   + tpri_iha1(k)
+            tpri_wfz(i,k,j)   = tpri_wfz(i,k,j)   + tpri_wfz1(k)
+            tpri_rfz(i,k,j)   = tpri_rfz(i,k,j)   + tpri_rfz1(k)
+            tprg_rfz(i,k,j)   = tprg_rfz(i,k,j)   + tprg_rfz1(k)
+            tprs_scw(i,k,j)   = tprs_scw(i,k,j)   + tprs_scw1(k)
+            tprg_scw(i,k,j)   = tprg_scw(i,k,j)   + tprg_scw1(k)
+            tprg_rcs(i,k,j)   = tprg_rcs(i,k,j)   + tprg_rcs1(k)
+            tprs_rcs(i,k,j)   = tprs_rcs(i,k,j)   + tprs_rcs1(k)
+            tprr_rci(i,k,j)   = tprr_rci(i,k,j)   + tprr_rci1(k)
+            tprg_rcg(i,k,j)   = tprg_rcg(i,k,j)   + tprg_rcg1(k)
+            tprw_vcd_c(i,k,j) = tprw_vcd_c(i,k,j) + tprw_vcd1_c(k)
+            tprw_vcd_e(i,k,j) = tprw_vcd_e(i,k,j) + tprw_vcd1_e(k)
+            tprr_sml(i,k,j)   = tprr_sml(i,k,j)   + tprr_sml1(k)
+            tprr_gml(i,k,j)   = tprr_gml(i,k,j)   + tprr_gml1(k)
+            tprr_rcg(i,k,j)   = tprr_rcg(i,k,j)   + tprr_rcg1(k)
+            tprr_rcs(i,k,j)   = tprr_rcs(i,k,j)   + tprr_rcs1(k)
+            tprv_rev(i,k,j)   = tprv_rev(i,k,j)   + tprv_rev1(k)
+            tten3(i,k,j)      = tten3(i,k,j)      + tten1(k) 
+            qvten3(i,k,j)     = qvten3(i,k,j)     + qvten1(k)
+            qrten3(i,k,j)     = qrten3(i,k,j)     + qrten1(k)
+            qsten3(i,k,j)     = qsten3(i,k,j)     + qsten1(k)
+            qgten3(i,k,j)     = qgten3(i,k,j)     + qgten1(k)
+            qiten3(i,k,j)     = qiten3(i,k,j)     + qiten1(k) 
+            niten3(i,k,j)     = niten3(i,k,j)     + niten1(k)
+            nrten3(i,k,j)     = nrten3(i,k,j)     + nrten1(k)
+            ncten3(i,k,j)     = ncten3(i,k,j)     + ncten1(k)
+            qcten3(i,k,j)     = qcten3(i,k,j)     + qcten1(k)
 
            enddo
          endif assign_extended_diagnostics
-#endif
 
          if (ndt>1 .and. it==ndt) then
 
-           SR(i) = (pcp_sn(i) + pcp_gr(i) + pcp_ic(i))/(RAINNC(i)+1.e-12)
-           RAINNCV(i) = RAINNC(i)
+           SR(i,j) = (pcp_sn(i,j) + pcp_gr(i,j) + pcp_ic(i,j))/(RAINNC(i,j)+1.e-12)
+           RAINNCV(i,j) = RAINNC(i,j)
            IF ( PRESENT (snowncv) ) THEN
-              SNOWNCV(i) = SNOWNC(i)
+              SNOWNCV(i,j) = SNOWNC(i,j)
            ENDIF
            IF ( PRESENT (icencv) ) THEN
-              ICENCV(i) = ICENC(i)
+              ICENCV(i,j) = ICENC(i,j)
            ENDIF
            IF ( PRESENT (graupelncv) ) THEN
-              GRAUPELNCV(i) = GRAUPELNC(i)
+              GRAUPELNCV(i,j) = GRAUPELNC(i,j)
            ENDIF
          endif 
 
@@ -1750,17 +1684,17 @@
              endif
 !
              if (present(vt_dbz_wt)) then
-               call calc_refl10cm (qv1d, qc1d, qr1d, nr1d, qs1d, qg1d,  &
-                                   t1d, p1d, dBZ, rand1, kts, kte, i,   &
-                                   melti, vt_dbz_wt(i,:),               &
+               call calc_refl10cm (qv1d, qc1d, qr1d, nr1d, qs1d, qg1d,   &
+                                   t1d, p1d, dBZ, rand1, kts, kte, i, j, &
+                                   melti, vt_dbz_wt(i,:,j),              &
                                    first_time_step)
              else
-               call calc_refl10cm (qv1d, qc1d, qr1d, nr1d, qs1d, qg1d,  &
-                                   t1d, p1d, dBZ, rand1, kts, kte, i,   &
+               call calc_refl10cm (qv1d, qc1d, qr1d, nr1d, qs1d, qg1d,   &
+                                   t1d, p1d, dBZ, rand1, kts, kte, i, j, &
                                    melti)
              end if
              do k = kts, kte
-               refl_10cm(i,k) = MAX(-35., dBZ(k))
+               refl_10cm(i,k,j) = MAX(-35., dBZ(k))
              enddo
            endif
            ENDIF diagflag_present
@@ -1775,15 +1709,15 @@
              call calc_effectRad (t1d, p1d, qv1d, qc1d, nc1d, qi1d, ni1d, qs1d,  &
                                   re_qc1d, re_qi1d, re_qs1d, lsml, kts, kte)
              do k = kts, kte
-               re_cloud(i,k) = MAX(re_qc_min, MIN(re_qc1d(k), re_qc_max))
-               re_ice(i,k)   = MAX(re_qi_min, MIN(re_qi1d(k), re_qi_max))
-               re_snow(i,k)  = MAX(re_qs_min, MIN(re_qs1d(k), re_qs_max))
+               re_cloud(i,k,j) = MAX(re_qc_min, MIN(re_qc1d(k), re_qc_max))
+               re_ice(i,k,j)   = MAX(re_qi_min, MIN(re_qi1d(k), re_qi_max))
+               re_snow(i,k,j)  = MAX(re_qs_min, MIN(re_qs1d(k), re_qs_max))
              enddo
            ENDIF
          ENDIF last_step_only
 
       enddo i_loop
-!      enddo j_loop
+      enddo j_loop
 
 ! DEBUG - GT
 !      write(*,'(a,7(a,e13.6,1x,a,i3,a,i3,a,i3,a,1x))') 'MP-GT:', &
@@ -1797,20 +1731,19 @@
 ! END DEBUG - GT
       enddo ! end of nt loop
 
-!      do j = j_start, j_end
+      do j = j_start, j_end
         do k = kts, kte
           do i = i_start, i_end
-            pfils(i,k) = pfils(i,k)/dt_in
-            pflls(i,k) = pflls(i,k)/dt_in
+            pfils(i,k,j) = pfils(i,k,j)/dt_in
+            pflls(i,k,j) = pflls(i,k,j)/dt_in
           enddo
         enddo 
-!      enddo
+      enddo
 
       ! These are always allocated
       !deallocate (vtsk1)
       !deallocate (txri1)
       !deallocate (txrc1)
-#ifdef EXT_DIAG
       deallocate_extended_diagnostics: if (ext_diag) then
          deallocate (prw_vcdc1)
          deallocate (prw_vcde1)
@@ -1850,7 +1783,6 @@
          deallocate (ncten1)
          deallocate (qcten1)
       end if deallocate_extended_diagnostics
-#endif
 
       END SUBROUTINE mp_gt_driver
 !> @}
@@ -1916,33 +1848,31 @@
 !! Thompson et al. (2004, 2008)\cite Thompson_2004 \cite Thompson_2008.
 !>\section gen_mp_thompson  mp_thompson General Algorithm
 !> @{
-      subroutine mp_thompson (qv1d, qc1d, qi1d, qr1d, qs1d, qg1d, ni1d, &
-                       nr1d, nc1d, nwfa1d, nifa1d, t1d, p1d, w1d, dzq,  &
-                       lsml, pptrain, pptsnow, pptgraul, pptice,        &
+      subroutine mp_thompson (qv1d, qc1d, qi1d, qr1d, qs1d, qg1d, ni1d,    &
+                          nr1d, nc1d, nwfa1d, nifa1d, t1d, p1d, w1d, dzq,  &
+                          lsml, pptrain, pptsnow, pptgraul, pptice,        &
 #if ( WRF_CHEM == 1 )
-                       rainprod, evapprod,                              &
+                          rainprod, evapprod,                              &
 #endif
-                       rand1, rand2, rand3,                             &
-                       kts, kte, dt, ii,                                &
+                          rand1, rand2, rand3,                             &
+                          kts, kte, dt, ii, jj,                            &
                           ! Extended diagnostics, most arrays only
                           ! allocated if ext_diag flag is .true.
-                       ext_diag,                                        &
-                       sedi_semi, decfl,                                &
-#ifdef EXT_DIAG
-                        !vtsk1, txri1, txrc1,                            &
-                       prw_vcdc1, prw_vcde1,                            &
-                       tpri_inu1, tpri_ide1_d, tpri_ide1_s, tprs_ide1,  &
-                       tprs_sde1_d, tprs_sde1_s,                        &
-                       tprg_gde1_d, tprg_gde1_s, tpri_iha1, tpri_wfz1,  &
-                       tpri_rfz1, tprg_rfz1, tprs_scw1, tprg_scw1,      &
-                       tprg_rcs1, tprs_rcs1, tprr_rci1,                 &
-                       tprg_rcg1, tprw_vcd1_c,                          &
-                       tprw_vcd1_e, tprr_sml1, tprr_gml1, tprr_rcg1,    &
-                       tprr_rcs1, tprv_rev1,                            &
-                       tten1, qvten1, qrten1, qsten1,                   &
-                       qgten1, qiten1, niten1, nrten1, ncten1, qcten1,  &
-#endif
-                       pfil1, pfll1) 
+                          ext_diag,                                        & 
+                          sedi_semi, decfl,                                &
+                          !vtsk1, txri1, txrc1,                            &
+                          prw_vcdc1, prw_vcde1,                            &
+                          tpri_inu1, tpri_ide1_d, tpri_ide1_s, tprs_ide1,  &
+                          tprs_sde1_d, tprs_sde1_s,                        &
+                          tprg_gde1_d, tprg_gde1_s, tpri_iha1, tpri_wfz1,  &
+                          tpri_rfz1, tprg_rfz1, tprs_scw1, tprg_scw1,      &
+                          tprg_rcs1, tprs_rcs1, tprr_rci1,                 &
+                          tprg_rcg1, tprw_vcd1_c,                          &
+                          tprw_vcd1_e, tprr_sml1, tprr_gml1, tprr_rcg1,    &
+                          tprr_rcs1, tprv_rev1,                            &
+                          tten1, qvten1, qrten1, qsten1,                   &
+                          qgten1, qiten1, niten1, nrten1, ncten1, qcten1,  &
+                          pfil1, pfll1) 
 
 #ifdef MPI
       use mpi
@@ -1950,7 +1880,7 @@
       implicit none
 
 !..Sub arguments
-      INTEGER, INTENT(IN):: kts, kte, ii!, jj
+      INTEGER, INTENT(IN):: kts, kte, ii, jj
       REAL, DIMENSION(kts:kte), INTENT(INOUT):: &
                           qv1d, qc1d, qi1d, qr1d, qs1d, qg1d, ni1d, &
                           nr1d, nc1d, nwfa1d, nifa1d, t1d
@@ -1964,7 +1894,6 @@
       LOGICAL, INTENT(IN) :: ext_diag
       LOGICAL, INTENT(IN) :: sedi_semi
       INTEGER, INTENT(IN) :: decfl
-#ifdef EXT_DIAG
       REAL, DIMENSION(:), INTENT(OUT):: &
                           !vtsk1, txri1, txrc1,                       &
                           prw_vcdc1,                                 &
@@ -1980,7 +1909,6 @@
                           tprr_rcs1, tprv_rev1, tten1, qvten1,       &
                           qrten1, qsten1, qgten1, qiten1, niten1,    &
                           nrten1, ncten1, qcten1
-#endif
 
 #if ( WRF_CHEM == 1 )
       REAL, DIMENSION(kts:kte), INTENT(INOUT):: &
@@ -2081,7 +2009,7 @@
       debug_flag = .false.
 !     if (ii.eq.901 .and. jj.eq.379) debug_flag = .true.
       if(debug_flag) then
-        write(*, *) 'DEBUG INFO, mp_thompson at i ', ii
+        write(*, *) 'DEBUG INFO, mp_thompson at (i,j) ', ii, ', ', jj
       endif
 
       no_micro = .true.
@@ -2202,7 +2130,6 @@
       enddo
 #endif
 
-#ifdef EXT_DIAG
 !Diagnostics
       if (ext_diag) then
          do k = kts, kte
@@ -2248,7 +2175,6 @@
             qcten1(k) = 0.
          enddo
       endif
-#endif
 
 !..Bug fix (2016Jun15), prevent use of uninitialized value(s) of snow moments.
       do k = kts, kte
@@ -2531,8 +2457,7 @@
 !> - Calculate y-intercept, slope values for graupel.
 !+---+-----------------------------------------------------------------+
       do k = kte, kts, -1
-!         ygra1 = alog10(max(1.E-9, rg(k)))
-         ygra1 = dlog10(max(1.E-9, rg(k)))
+         ygra1 = alog10(max(1.E-9, rg(k)))
          zans1 = 3.4 + 2./7.*(ygra1+8.) + rand1
          N0_exp = 10.**(zans1)
          N0_exp = MAX(DBLE(gonv_min), MIN(N0_exp, DBLE(gonv_max)))
@@ -2649,8 +2574,7 @@
 
 !>  - Cloud water lookup table index.
          if (rc(k).gt. r_c(1)) then
-!          nic = NINT(ALOG10(rc(k)))
-          nic = NINT(DLOG10(rc(k)))
+          nic = NINT(ALOG10(rc(k)))
           do nn = nic-1, nic+1
              n = nn
              if ( (rc(k)/10.**nn).ge.1.0 .and. &
@@ -2669,8 +2593,7 @@
 
 !>  - Cloud ice lookup table indexes.
          if (ri(k).gt. r_i(1)) then
-!          nii = NINT(ALOG10(ri(k)))
-          nii = NINT(DLOG10(ri(k)))
+          nii = NINT(ALOG10(ri(k)))
           do nn = nii-1, nii+1
              n = nn
              if ( (ri(k)/10.**nn).ge.1.0 .and. &
@@ -2684,8 +2607,7 @@
          endif
 
          if (ni(k).gt. Nt_i(1)) then
-!          nii = NINT(ALOG10(ni(k)))
-          nii = NINT(DLOG10(ni(k)))
+          nii = NINT(ALOG10(ni(k)))
           do nn = nii-1, nii+1
              n = nn
              if ( (ni(k)/10.**nn).ge.1.0 .and. &
@@ -2700,8 +2622,7 @@
 
 !>  - Rain lookup table indexes.
          if (rr(k).gt. r_r(1)) then
-!          nir = NINT(ALOG10(rr(k)))
-          nir = NINT(DLOG10(rr(k)))
+          nir = NINT(ALOG10(rr(k)))
           do nn = nir-1, nir+1
              n = nn
              if ( (rr(k)/10.**nn).ge.1.0 .and. &
@@ -2730,8 +2651,7 @@
 
 !>  - Snow lookup table index.
          if (rs(k).gt. r_s(1)) then
-!          nis = NINT(ALOG10(rs(k)))
-          nis = NINT(DLOG10(rs(k)))
+          nis = NINT(ALOG10(rs(k)))
           do nn = nis-1, nis+1
              n = nn
              if ( (rs(k)/10.**nn).ge.1.0 .and. &
@@ -2746,8 +2666,7 @@
 
 !>  - Graupel lookup table index.
          if (rg(k).gt. r_g(1)) then
-!          nig = NINT(ALOG10(rg(k)))
-          nig = NINT(DLOG10(rg(k)))
+          nig = NINT(ALOG10(rg(k)))
           do nn = nig-1, nig+1
              n = nn
              if ( (rg(k)/10.**nn).ge.1.0 .and. &
@@ -2812,8 +2731,7 @@
            stoke_g = mvd_c(k)*mvd_c(k)*vtg*rho_w/(9.*visco(k)*xDg)
            if (xDg.gt. D0g) then
             if (stoke_g.ge.0.4 .and. stoke_g.le.10.) then
-!             Ef_gw = 0.55*ALOG10(2.51*stoke_g)
-             Ef_gw = 0.55*DLOG10(2.51*stoke_g)
+             Ef_gw = 0.55*ALOG10(2.51*stoke_g)
             elseif (stoke_g.lt.0.4) then
              Ef_gw = 0.0
             elseif (stoke_g.gt.10) then
@@ -2982,8 +2900,7 @@
 
 !>  - Ice nuclei lookup table index.
           if (xni.gt. Nt_IN(1)) then
-!           niin = NINT(ALOG10(xni))
-           niin = NINT(DLOG10(xni))
+           niin = NINT(ALOG10(xni))
            do nn = niin-1, niin+1
               n = nn
               if ( (xni/10.**nn).ge.1.0 .and. &
@@ -3619,8 +3536,7 @@
 !> - Calculate y-intercept, slope values for graupel.
 !+---+-----------------------------------------------------------------+
       do k = kte, kts, -1
-!         ygra1 = alog10(max(1.E-9, rg(k)))
-         ygra1 = dlog10(max(1.E-9, rg(k)))
+         ygra1 = alog10(max(1.E-9, rg(k)))
          zans1 = 3.4 + 2./7.*(ygra1+8.) + rand1
          N0_exp = 10.**(zans1)
          N0_exp = MAX(DBLE(gonv_min), MIN(N0_exp, DBLE(gonv_max)))
@@ -3708,8 +3624,7 @@
 
 !>  - Cloud water lookup table index.
             if (rc(k).gt. r_c(1)) then
-!             nic = NINT(ALOG10(rc(k)))
-             nic = NINT(DLOG10(rc(k)))
+             nic = NINT(ALOG10(rc(k)))
              do nn = nic-1, nic+1
                 n = nn
                 if ( (rc(k)/10.**nn).ge.1.0 .and. &
@@ -4113,11 +4028,11 @@
               vtr = rhof(k)*av_r*crg(6)*org3 * lamr**cre(3)           &
                  *((lamr+fv_r)**(-cre(6)))
               vtrk(k) = vtr
-! First below is technically correct:
-!         vtr = rhof(k)*av_r*crg(5)*org2 * lamr**cre(2)                &
-!                     *((lamr+fv_r)**(-cre(5)))
-! Test: make number fall faster (but still slower than mass)
-! Goal: less prominent size sorting
+ ! First below is technically correct:
+ !         vtr = rhof(k)*av_r*crg(5)*org2 * lamr**cre(2)                &
+ !                     *((lamr+fv_r)**(-cre(5)))
+ ! Test: make number fall faster (but still slower than mass)
+ ! Goal: less prominent size sorting
               vtr = rhof(k)*av_r*crg(7)/crg(12) * lamr**cre(12)       &
                    *((lamr+fv_r)**(-cre(7)))
               vtnrk(k) = vtr
@@ -4258,8 +4173,7 @@
           do k = kte, kts, -1
              vtg = 0.
              if (rg(k).gt. R1) then
-!              ygra1 = alog10(max(1.E-9, rg(k)))
-              ygra1 = dlog10(max(1.E-9, rg(k)))
+              ygra1 = alog10(max(1.E-9, rg(k)))
               zans1 = 3.4 + 2./7.*(ygra1+8.) + rand1
               N0_exp = 10.**(zans1)
               N0_exp = MAX(DBLE(gonv_min), MIN(N0_exp, DBLE(gonv_max)))
@@ -4384,7 +4298,6 @@
          if (qg1d(k) .le. R1) qg1d(k) = 0.0
       enddo
 
-#ifdef EXT_DIAG
 ! Diagnostics
       calculate_extended_diagnostics: if (ext_diag) then
          do k = kts, kte
@@ -4467,7 +4380,6 @@
             qcten1(k) = qcten(k)*DT
          enddo
       endif calculate_extended_diagnostics
-#endif
 
       end subroutine mp_thompson
 !>@}
@@ -4490,64 +4402,64 @@
       DOUBLE PRECISION, DIMENSION(nbr):: vr, N_r
       DOUBLE PRECISION:: N0_r, N0_g, lam_exp, lamg, lamr
       DOUBLE PRECISION:: massg, massr, dvg, dvr, t1, t2, z1, z2, y1, y2
-!      LOGICAL force_read_thompson, write_thompson_tables
-!      LOGICAL lexist,lopen
-!      INTEGER good,ierr
+      LOGICAL force_read_thompson, write_thompson_tables
+      LOGICAL lexist,lopen
+      INTEGER good,ierr
 
-!      force_read_thompson = .false.
-!      write_thompson_tables = .false.
+      force_read_thompson = .false.
+      write_thompson_tables = .false.
 !+---+
 
 
-!      good = 0
-!        INQUIRE(FILE=qr_acr_qg_file, EXIST=lexist)
-!#ifdef MPI
-!        call MPI_BARRIER(mpi_communicator,ierr)
-!#endif
-!        IF ( lexist ) THEN
-!          OPEN(63,file=qr_acr_qg_file,form="unformatted",err=1234)
-!!sms$serial begin
-!          READ(63,err=1234) tcg_racg
-!          READ(63,err=1234) tmr_racg
-!          READ(63,err=1234) tcr_gacr
-!          READ(63,err=1234) tmg_gacr
-!          READ(63,err=1234) tnr_racg
-!          READ(63,err=1234) tnr_gacr
-!!sms$serial end
-!          good = 1
-! 1234     CONTINUE
-!          IF ( good .NE. 1 ) THEN
-!            INQUIRE(63,opened=lopen)
-!            IF (lopen) THEN
-!              IF( force_read_thompson ) THEN
-!                write(0,*) "Error reading "//qr_acr_qg_file//" Aborting because force_read_thompson is .true."
-!                return
-!              ENDIF
-!              CLOSE(63)
-!            ELSE
-!              IF( force_read_thompson ) THEN
-!                write(0,*) "Error opening "//qr_acr_qg_file//" Aborting because force_read_thompson is .true."
-!                return
-!              ENDIF
-!            ENDIF
-!         ELSE
-!            INQUIRE(63,opened=lopen)
-!            IF (lopen) THEN
-!              CLOSE(63)
-!            ENDIF
-!          ENDIF
-!        ELSE
-!          IF( force_read_thompson ) THEN
-!            write(0,*) "Non-existent "//qr_acr_qg_file//" Aborting because force_read_thompson is .true."
-!            return
-!          ENDIF
-!        ENDIF
+      good = 0
+        INQUIRE(FILE=qr_acr_qg_file, EXIST=lexist)
+#ifdef MPI
+        call MPI_BARRIER(mpi_communicator,ierr)
+#endif
+        IF ( lexist ) THEN
+          OPEN(63,file=qr_acr_qg_file,form="unformatted",err=1234)
+!sms$serial begin
+          READ(63,err=1234) tcg_racg
+          READ(63,err=1234) tmr_racg
+          READ(63,err=1234) tcr_gacr
+          READ(63,err=1234) tmg_gacr
+          READ(63,err=1234) tnr_racg
+          READ(63,err=1234) tnr_gacr
+!sms$serial end
+          good = 1
+ 1234     CONTINUE
+          IF ( good .NE. 1 ) THEN
+            INQUIRE(63,opened=lopen)
+            IF (lopen) THEN
+              IF( force_read_thompson ) THEN
+                write(0,*) "Error reading "//qr_acr_qg_file//" Aborting because force_read_thompson is .true."
+                return
+              ENDIF
+              CLOSE(63)
+            ELSE
+              IF( force_read_thompson ) THEN
+                write(0,*) "Error opening "//qr_acr_qg_file//" Aborting because force_read_thompson is .true."
+                return
+              ENDIF
+            ENDIF
+         ELSE
+            INQUIRE(63,opened=lopen)
+            IF (lopen) THEN
+              CLOSE(63)
+            ENDIF
+          ENDIF
+        ELSE
+          IF( force_read_thompson ) THEN
+            write(0,*) "Non-existent "//qr_acr_qg_file//" Aborting because force_read_thompson is .true."
+            return
+          ENDIF
+        ENDIF
 
-!      IF (.NOT. good .EQ. 1 ) THEN
-!        if (thompson_table_writer) then
-!          write_thompson_tables = .true.
-!          write(0,*) "ThompMP: computing qr_acr_qg"
-!        endif
+      IF (.NOT. good .EQ. 1 ) THEN
+        if (thompson_table_writer) then
+          write_thompson_tables = .true.
+          write(0,*) "ThompMP: computing qr_acr_qg"
+        endif
         do n2 = 1, nbr
 !        vr(n2) = av_r*Dr(n2)**bv_r * DEXP(-fv_r*Dr(n2))
          vr(n2) = -0.1021 + 4.932E3*Dr(n2) - 0.9551E6*Dr(n2)*Dr(n2)     &
@@ -4628,22 +4540,22 @@
          enddo
         enddo
 
-!        IF ( write_thompson_tables ) THEN
-!          write(0,*) "Writing "//qr_acr_qg_file//" in Thompson MP init"
-!          OPEN(63,file=qr_acr_qg_file,form="unformatted",err=9234)
-!          WRITE(63,err=9234) tcg_racg
-!          WRITE(63,err=9234) tmr_racg
-!          WRITE(63,err=9234) tcr_gacr
-!          WRITE(63,err=9234) tmg_gacr
-!          WRITE(63,err=9234) tnr_racg
-!          WRITE(63,err=9234) tnr_gacr
-!          CLOSE(63)
-!          RETURN    ! ----- RETURN
-! 9234     CONTINUE
-!          write(0,*) "Error writing "//qr_acr_qg_file
-!          return
-!        ENDIF
-!      ENDIF
+        IF ( write_thompson_tables ) THEN
+          write(0,*) "Writing "//qr_acr_qg_file//" in Thompson MP init"
+          OPEN(63,file=qr_acr_qg_file,form="unformatted",err=9234)
+          WRITE(63,err=9234) tcg_racg
+          WRITE(63,err=9234) tmr_racg
+          WRITE(63,err=9234) tcr_gacr
+          WRITE(63,err=9234) tmg_gacr
+          WRITE(63,err=9234) tnr_racg
+          WRITE(63,err=9234) tnr_gacr
+          CLOSE(63)
+          RETURN    ! ----- RETURN
+ 9234     CONTINUE
+          write(0,*) "Error writing "//qr_acr_qg_file
+          return
+        ENDIF
+      ENDIF
 
       end subroutine qr_acr_qg
 !+---+-----------------------------------------------------------------+
@@ -4665,71 +4577,71 @@
       DOUBLE PRECISION:: dvs, dvr, masss, massr
       DOUBLE PRECISION:: t1, t2, t3, t4, z1, z2, z3, z4
       DOUBLE PRECISION:: y1, y2, y3, y4
-!      LOGICAL force_read_thompson, write_thompson_tables
-!      LOGICAL lexist,lopen
-!      INTEGER good,ierr
+      LOGICAL force_read_thompson, write_thompson_tables
+      LOGICAL lexist,lopen
+      INTEGER good,ierr
 
 !+---+
 
-!      force_read_thompson = .false.
-!      write_thompson_tables = .false.
+      force_read_thompson = .false.
+      write_thompson_tables = .false.
 
-!      good = 0
-!        INQUIRE(FILE=qr_acr_qs_file, EXIST=lexist)
-!#ifdef MPI
-!        call MPI_BARRIER(mpi_communicator,ierr)
-!#endif
-!        IF ( lexist ) THEN
-!          !write(0,*) "ThompMP: read "//qr_acr_qs_file//" instead of computing"
-!          OPEN(63,file=qr_acr_qs_file,form="unformatted",err=1234)
-!!sms$serial begin
-!          READ(63,err=1234)tcs_racs1
-!          READ(63,err=1234)tmr_racs1
-!          READ(63,err=1234)tcs_racs2
-!          READ(63,err=1234)tmr_racs2
-!          READ(63,err=1234)tcr_sacr1
-!          READ(63,err=1234)tms_sacr1
-!          READ(63,err=1234)tcr_sacr2
-!          READ(63,err=1234)tms_sacr2
-!          READ(63,err=1234)tnr_racs1
-!          READ(63,err=1234)tnr_racs2
-!          READ(63,err=1234)tnr_sacr1
-!          READ(63,err=1234)tnr_sacr2
-!!sms$serial end
-!          good = 1
-! 1234     CONTINUE
-!          IF ( good .NE. 1 ) THEN
-!            INQUIRE(63,opened=lopen)
-!            IF (lopen) THEN
-!              IF( force_read_thompson ) THEN
-!                write(0,*) "Error reading "//qr_acr_qs_file//" Aborting because force_read_thompson is .true."
-!                return
-!              ENDIF
-!              CLOSE(63)
-!            ELSE
-!              IF( force_read_thompson ) THEN
-!                write(0,*) "Error opening "//qr_acr_qs_file//" Aborting because force_read_thompson is .true."
-!                return
-!              ENDIF
-!            ENDIF
-!          ELSE
-!            INQUIRE(63,opened=lopen)
-!            IF (lopen) THEN
-!              CLOSE(63)
-!            ENDIF
-!          ENDIF
-!        ELSE
-!          IF( force_read_thompson ) THEN
-!            write(0,*) "Non-existent "//qr_acr_qs_file//" Aborting because force_read_thompson is .true."
-!            return
-!          ENDIF
-!        ENDIF
+      good = 0
+        INQUIRE(FILE=qr_acr_qs_file, EXIST=lexist)
+#ifdef MPI
+        call MPI_BARRIER(mpi_communicator,ierr)
+#endif
+        IF ( lexist ) THEN
+          !write(0,*) "ThompMP: read "//qr_acr_qs_file//" instead of computing"
+          OPEN(63,file=qr_acr_qs_file,form="unformatted",err=1234)
+!sms$serial begin
+          READ(63,err=1234)tcs_racs1
+          READ(63,err=1234)tmr_racs1
+          READ(63,err=1234)tcs_racs2
+          READ(63,err=1234)tmr_racs2
+          READ(63,err=1234)tcr_sacr1
+          READ(63,err=1234)tms_sacr1
+          READ(63,err=1234)tcr_sacr2
+          READ(63,err=1234)tms_sacr2
+          READ(63,err=1234)tnr_racs1
+          READ(63,err=1234)tnr_racs2
+          READ(63,err=1234)tnr_sacr1
+          READ(63,err=1234)tnr_sacr2
+!sms$serial end
+          good = 1
+ 1234     CONTINUE
+          IF ( good .NE. 1 ) THEN
+            INQUIRE(63,opened=lopen)
+            IF (lopen) THEN
+              IF( force_read_thompson ) THEN
+                write(0,*) "Error reading "//qr_acr_qs_file//" Aborting because force_read_thompson is .true."
+                return
+              ENDIF
+              CLOSE(63)
+            ELSE
+              IF( force_read_thompson ) THEN
+                write(0,*) "Error opening "//qr_acr_qs_file//" Aborting because force_read_thompson is .true."
+                return
+              ENDIF
+            ENDIF
+          ELSE
+            INQUIRE(63,opened=lopen)
+            IF (lopen) THEN
+              CLOSE(63)
+            ENDIF
+          ENDIF
+        ELSE
+          IF( force_read_thompson ) THEN
+            write(0,*) "Non-existent "//qr_acr_qs_file//" Aborting because force_read_thompson is .true."
+            return
+          ENDIF
+        ENDIF
 
-!      IF (.NOT. good .EQ. 1 ) THEN
-!        if (thompson_table_writer) then
-!          write_thompson_tables = .true.
-!          write(0,*) "ThompMP: computing qr_acr_qs"
-!        endif
+      IF (.NOT. good .EQ. 1 ) THEN
+        if (thompson_table_writer) then
+          write_thompson_tables = .true.
+          write(0,*) "ThompMP: computing qr_acr_qs"
+        endif
         do n2 = 1, nbr
 !        vr(n2) = av_r*Dr(n2)**bv_r * DEXP(-fv_r*Dr(n2))
          vr(n2) = -0.1021 + 4.932E3*Dr(n2) - 0.9551E6*Dr(n2)*Dr(n2)     &
@@ -4880,27 +4792,27 @@
          enddo
         enddo
 
-!        IF ( write_thompson_tables ) THEN
-!          write(0,*) "Writing "//qr_acr_qs_file//" in Thompson MP init"
-!          OPEN(63,file=qr_acr_qs_file,form="unformatted",err=9234)
-!          WRITE(63,err=9234)tcs_racs1
-!          WRITE(63,err=9234)tmr_racs1
-!          WRITE(63,err=9234)tcs_racs2
-!          WRITE(63,err=9234)tmr_racs2
-!          WRITE(63,err=9234)tcr_sacr1
-!          WRITE(63,err=9234)tms_sacr1
-!          WRITE(63,err=9234)tcr_sacr2
-!          WRITE(63,err=9234)tms_sacr2
-!          WRITE(63,err=9234)tnr_racs1
-!          WRITE(63,err=9234)tnr_racs2
-!          WRITE(63,err=9234)tnr_sacr1
-!          WRITE(63,err=9234)tnr_sacr2
-!          CLOSE(63)
-!          RETURN    ! ----- RETURN
-! 9234     CONTINUE
-!          write(0,*) "Error writing "//qr_acr_qs_file
-!        ENDIF
-!      ENDIF
+        IF ( write_thompson_tables ) THEN
+          write(0,*) "Writing "//qr_acr_qs_file//" in Thompson MP init"
+          OPEN(63,file=qr_acr_qs_file,form="unformatted",err=9234)
+          WRITE(63,err=9234)tcs_racs1
+          WRITE(63,err=9234)tmr_racs1
+          WRITE(63,err=9234)tcs_racs2
+          WRITE(63,err=9234)tmr_racs2
+          WRITE(63,err=9234)tcr_sacr1
+          WRITE(63,err=9234)tms_sacr1
+          WRITE(63,err=9234)tcr_sacr2
+          WRITE(63,err=9234)tms_sacr2
+          WRITE(63,err=9234)tnr_racs1
+          WRITE(63,err=9234)tnr_racs2
+          WRITE(63,err=9234)tnr_sacr1
+          WRITE(63,err=9234)tnr_sacr2
+          CLOSE(63)
+          RETURN    ! ----- RETURN
+ 9234     CONTINUE
+          write(0,*) "Error writing "//qr_acr_qs_file
+        ENDIF
+      ENDIF
 
       end subroutine qr_acr_qs
 !+---+-----------------------------------------------------------------+
@@ -4910,13 +4822,12 @@
 !! This is a literal adaptation of Bigg (1954) probability of drops of
 !! a particular volume freezing.  Given this probability, simply freeze
 !! the proportion of drops summing their masses.
-!      subroutine freezeH2O(threads)
-      subroutine freezeH2O
+      subroutine freezeH2O(threads)
 
       implicit none
 
 !..Interface variables
-!      INTEGER, INTENT(IN):: threads
+      INTEGER, INTENT(IN):: threads
 
 !..Local variables
       INTEGER:: i, j, k, m, n, n2
@@ -4928,64 +4839,64 @@
                          lam_exp, lamr, N0_r, lamc, N0_c, y
       INTEGER:: nu_c
       REAL:: T_adjust
-!      LOGICAL force_read_thompson, write_thompson_tables
-!      LOGICAL lexist,lopen
-!      INTEGER good,ierr
+      LOGICAL force_read_thompson, write_thompson_tables
+      LOGICAL lexist,lopen
+      INTEGER good,ierr
 
 !+---+
-!      force_read_thompson = .false.
-!      write_thompson_tables = .false.
+      force_read_thompson = .false.
+      write_thompson_tables = .false.
 
-!      good = 0
-!        INQUIRE(FILE=freeze_h2o_file,EXIST=lexist)
-!#ifdef MPI
-!        call MPI_BARRIER(mpi_communicator,ierr)
-!#endif
-!        IF ( lexist ) THEN
-!          !write(0,*) "ThompMP: read "//freeze_h2o_file//" instead of computing"
-!          OPEN(63,file=freeze_h2o_file,form="unformatted",err=1234)
-!!sms$serial begin
-!          READ(63,err=1234)tpi_qrfz
-!          READ(63,err=1234)tni_qrfz
-!          READ(63,err=1234)tpg_qrfz
-!          READ(63,err=1234)tnr_qrfz
-!          READ(63,err=1234)tpi_qcfz
-!          READ(63,err=1234)tni_qcfz
-!!sms$serial end
-!          good = 1
-! 1234     CONTINUE
-!          IF ( good .NE. 1 ) THEN
-!            INQUIRE(63,opened=lopen)
-!            IF (lopen) THEN
-!              IF( force_read_thompson ) THEN
-!                write(0,*) "Error reading "//freeze_h2o_file//" Aborting because force_read_thompson is .true."
-!                return
-!              ENDIF
-!              CLOSE(63)
-!            ELSE
-!              IF( force_read_thompson ) THEN
-!                write(0,*) "Error opening "//freeze_h2o_file//" Aborting because force_read_thompson is .true."
-!                return
-!              ENDIF
-!            ENDIF
-!          ELSE
-!            INQUIRE(63,opened=lopen)
-!            IF (lopen) THEN
-!              CLOSE(63)
-!            ENDIF
-!          ENDIF
-!        ELSE
-!          IF( force_read_thompson ) THEN
-!            write(0,*) "Non-existent "//freeze_h2o_file//" Aborting because force_read_thompson is .true."
-!            return
-!          ENDIF
-!        ENDIF
+      good = 0
+        INQUIRE(FILE=freeze_h2o_file,EXIST=lexist)
+#ifdef MPI
+        call MPI_BARRIER(mpi_communicator,ierr)
+#endif
+        IF ( lexist ) THEN
+          !write(0,*) "ThompMP: read "//freeze_h2o_file//" instead of computing"
+          OPEN(63,file=freeze_h2o_file,form="unformatted",err=1234)
+!sms$serial begin
+          READ(63,err=1234)tpi_qrfz
+          READ(63,err=1234)tni_qrfz
+          READ(63,err=1234)tpg_qrfz
+          READ(63,err=1234)tnr_qrfz
+          READ(63,err=1234)tpi_qcfz
+          READ(63,err=1234)tni_qcfz
+!sms$serial end
+          good = 1
+ 1234     CONTINUE
+          IF ( good .NE. 1 ) THEN
+            INQUIRE(63,opened=lopen)
+            IF (lopen) THEN
+              IF( force_read_thompson ) THEN
+                write(0,*) "Error reading "//freeze_h2o_file//" Aborting because force_read_thompson is .true."
+                return
+              ENDIF
+              CLOSE(63)
+            ELSE
+              IF( force_read_thompson ) THEN
+                write(0,*) "Error opening "//freeze_h2o_file//" Aborting because force_read_thompson is .true."
+                return
+              ENDIF
+            ENDIF
+          ELSE
+            INQUIRE(63,opened=lopen)
+            IF (lopen) THEN
+              CLOSE(63)
+            ENDIF
+          ENDIF
+        ELSE
+          IF( force_read_thompson ) THEN
+            write(0,*) "Non-existent "//freeze_h2o_file//" Aborting because force_read_thompson is .true."
+            return
+          ENDIF
+        ENDIF
 
-!      IF (.NOT. good .EQ. 1 ) THEN
-!        if (thompson_table_writer) then
-!          write_thompson_tables = .true.
-!          write(0,*) "ThompMP: computing freezeH2O"
-!        endif
+      IF (.NOT. good .EQ. 1 ) THEN
+        if (thompson_table_writer) then
+          write_thompson_tables = .true.
+          write(0,*) "ThompMP: computing freezeH2O"
+        endif
 
         orho_w = 1./rho_w
 
@@ -4998,13 +4909,12 @@
 
 !..Freeze water (smallest drops become cloud ice, otherwise graupel).
         do m = 1, ntb_IN
-!        T_adjust = MAX(-3.0, MIN(3.0 - ALOG10(Nt_IN(m)), 3.0))
-        T_adjust = MAX(-3.0, MIN(3.0 - DLOG10(Nt_IN(m)), 3.0))
+        T_adjust = MAX(-3.0, MIN(3.0 - ALOG10(Nt_IN(m)), 3.0))
         do k = 1, 45
 !         print*, ' Freezing water for temp = ', -k
          Texp = DEXP( DFLOAT(k) - T_adjust*1.0D0 ) - 1.0D0
-!!$OMP PARALLEL DO SCHEDULE(dynamic) num_threads(threads) &
-!!$OMP PRIVATE(j,i,lam_exp,lamr,N0_r,sum1,sum2,sumn1,sumn2,n2,N_r,vol,prob)
+!$OMP PARALLEL DO SCHEDULE(dynamic) num_threads(threads) &
+!$OMP PRIVATE(j,i,lam_exp,lamr,N0_r,sum1,sum2,sumn1,sumn2,n2,N_r,vol,prob)
          do j = 1, ntb_r1
             do i = 1, ntb_r
                lam_exp = (N0r_exp(j)*am_r*crg(1)/r_r(i))**ore1
@@ -5033,10 +4943,10 @@
                tnr_qrfz(i,j,k,m) = sumn2
             enddo
          enddo
-!!$OMP END PARALLEL DO
+!$OMP END PARALLEL DO
 
-!!$OMP PARALLEL DO SCHEDULE(dynamic) num_threads(threads) &
-!!$OMP PRIVATE(j,i,nu_c,lamc,N0_c,sum1,sumn2,vol,prob,N_c)
+!$OMP PARALLEL DO SCHEDULE(dynamic) num_threads(threads) &
+!$OMP PRIVATE(j,i,nu_c,lamc,N0_c,sum1,sumn2,vol,prob,N_c)
          do j = 1, nbc
             nu_c = MIN(15, NINT(1000.E6/t_Nc(j)) + 2)
             do i = 1, ntb_c
@@ -5056,26 +4966,26 @@
                tni_qcfz(i,j,k,m) = sumn2
             enddo
          enddo
-!!$OMP END PARALLEL DO
+!$OMP END PARALLEL DO
         enddo
         enddo
 
-!        IF ( write_thompson_tables ) THEN
-!          write(0,*) "Writing "//freeze_h2o_file//" in Thompson MP init"
-!          OPEN(63,file=freeze_h2o_file,form="unformatted",err=9234)
-!          WRITE(63,err=9234)tpi_qrfz
-!          WRITE(63,err=9234)tni_qrfz
-!          WRITE(63,err=9234)tpg_qrfz
-!          WRITE(63,err=9234)tnr_qrfz
-!          WRITE(63,err=9234)tpi_qcfz
-!          WRITE(63,err=9234)tni_qcfz
-!          CLOSE(63)
-!          RETURN    ! ----- RETURN
-! 9234     CONTINUE
-!          write(0,*) "Error writing "//freeze_h2o_file
-!          return
-!        ENDIF
-!      ENDIF
+        IF ( write_thompson_tables ) THEN
+          write(0,*) "Writing "//freeze_h2o_file//" in Thompson MP init"
+          OPEN(63,file=freeze_h2o_file,form="unformatted",err=9234)
+          WRITE(63,err=9234)tpi_qrfz
+          WRITE(63,err=9234)tni_qrfz
+          WRITE(63,err=9234)tpg_qrfz
+          WRITE(63,err=9234)tnr_qrfz
+          WRITE(63,err=9234)tpi_qcfz
+          WRITE(63,err=9234)tni_qcfz
+          CLOSE(63)
+          RETURN    ! ----- RETURN
+ 9234     CONTINUE
+          write(0,*) "Error writing "//freeze_h2o_file
+          return
+        ENDIF
+      ENDIF
 
       end subroutine freezeH2O
 
@@ -5413,11 +5323,11 @@
  2010   CONTINUE
       IF ( iunit_mp_th1 < 0 ) THEN
         write(0,*) 'module_mp_thompson: table_ccnAct: '//   &
-             'Can not find unused fortran unit to read in lookup table.'
+                   'Can not find unused fortran unit to read in lookup table.'
         return
       ENDIF
 
-!        WRITE(*, '(A,I2)') 'module_mp_thompson: opening CCN_ACTIVATE.BIN on unit ',iunit_mp_th1
+        !WRITE(*, '(A,I2)') 'module_mp_thompson: opening CCN_ACTIVATE.BIN on unit ',iunit_mp_th1
         OPEN(iunit_mp_th1,FILE='CCN_ACTIVATE.BIN',                      &
              FORM='UNFORMATTED',STATUS='OLD',CONVERT='BIG_ENDIAN',ERR=9009)
 
@@ -5427,13 +5337,11 @@
 
       RETURN
  9009 CONTINUE
-      WRITE( errmess , '(A,I2)' ) &
-        'module_mp_thompson: error opening CCN_ACTIVATE.BIN on unit ',  &
-        iunit_mp_th1
+      WRITE( errmess , '(A,I2)' ) 'module_mp_thompson: error opening CCN_ACTIVATE.BIN on unit ',iunit_mp_th1
       errflag = 1
       RETURN
  9010 CONTINUE
-!      WRITE( errmess , '(A,I2)' ) 'module_mp_thompson: error reading CCN_ACTIVATE.BIN on unit ',iunit_mp_th1
+      WRITE( errmess , '(A,I2)' ) 'module_mp_thompson: error reading CCN_ACTIVATE.BIN on unit ',iunit_mp_th1
       errflag = 1
       RETURN
 
@@ -5812,8 +5720,7 @@
       xni = 0.0
       satw = qv/qvs
       mu_diff    = 210368.0 + (131.438*temp) - (3.32373E6/temp)         &
-!     &           - (41729.1*alog(temp))
-     &           - (41729.1*dlog(temp))
+     &           - (41729.1*alog(temp))
       a_w_i      = exp(mu_diff/(R_uni*temp))
       delta_aw   = satw - a_w_i
       log_J_rate = -906.7 + (8502.0*delta_aw)                           &
@@ -5999,14 +5906,14 @@
 !! of frozen species remaining from what initially existed at the
 !! melting level interface.
 
-      subroutine calc_refl10cm (qv1d, qc1d, qr1d, nr1d, qs1d, qg1d,     &
-               t1d, p1d, dBZ, rand1, kts, kte, ii, melti,               &
+      subroutine calc_refl10cm (qv1d, qc1d, qr1d, nr1d, qs1d, qg1d, &
+               t1d, p1d, dBZ, rand1, kts, kte, ii, jj, melti,       &
                vt_dBZ, first_time_step)
 
       IMPLICIT NONE
 
 !..Sub arguments
-      INTEGER, INTENT(IN):: kts, kte, ii!, jj
+      INTEGER, INTENT(IN):: kts, kte, ii, jj
       REAL, INTENT(IN):: rand1
       REAL, DIMENSION(kts:kte), INTENT(IN)::                            &
                           qv1d, qc1d, qr1d, nr1d, qs1d, qg1d, t1d, p1d
@@ -6169,8 +6076,7 @@
 
       if (ANY(L_qg .eqv. .true.)) then
       do k = kte, kts, -1
-!         ygra1 = alog10(max(1.E-9, rg(k)))
-         ygra1 = dlog10(max(1.E-9, rg(k)))
+         ygra1 = alog10(max(1.E-9, rg(k)))
          zans1 = 3.4 + 2./7.*(ygra1+8.) + rand1
          N0_exp = 10.**(zans1)
          N0_exp = MAX(DBLE(gonv_min), MIN(N0_exp, DBLE(gonv_max)))
@@ -6556,484 +6462,6 @@
       END SUBROUTINE semi_lagrange_sedim
 
 !+---+-----------------------------------------------------------------+
-
-
 !+---+-----------------------------------------------------------------+
-!> Cloud fraction scheme by G. Thompson (NCAR-RAL), not intended for
-!! combining with any cumulus or shallow cumulus parameterization
-!! scheme cloud fractions.  This is intended as a stand-alone for
-!! cloud fraction and is relatively good at getting widespread stratus
-!! and stratoCu without caring whether any deep/shallow Cu param schemes
-!! is making sub-grid-spacing clouds/precip.  Under the hood, this
-!! scheme follows Mocko and Cotton (1995) in application of the
-!! Sundqvist et al (1989) scheme but using a grid-scale dependent
-!! RH threshold, one each for land v. ocean points based on
-!! experiences with HWRF testing.
-      SUBROUTINE cal_cldfra3 ( ims, ime, its, ite, kms, kme, kts, kte,  &
-     &                 cldfra, qv, qc, qi, qs, dz,                      &
-     &                 p, t, XLAND, gridkm,                             &
-     &                 modify_qvapor, max_relh, debug_flag )
-!
-!      USE module_mp_thompson_new   , ONLY : rsif, rslf
-      IMPLICIT NONE
-!
-      INTEGER, INTENT(IN):: ims, ime
-      INTEGER, INTENT(IN):: its, ite
-      INTEGER, INTENT(IN):: kms, kme
-      INTEGER, INTENT(IN):: kts, kte
-      LOGICAL, INTENT(IN):: modify_qvapor
-      REAL, DIMENSION(ims:ime,kms:kme), INTENT(INOUT):: qv, qc, qi, cldfra
-      REAL, DIMENSION(ims:ime,kms:kme), INTENT(IN):: p, t, dz, qs
-      REAL, DIMENSION(ims:ime), INTENT(IN):: gridkm, XLAND!, max_relh
-      REAL, INTENT(IN) :: max_relh
-      LOGICAL, INTENT(IN):: debug_flag
-
-!..Local vars.
-      REAL:: RH_00L, RH_00O, RH_00
-      REAL:: entrmnt=0.5
-      INTEGER:: i,k
-      REAL:: TC, qvsi, qvsw, RHUM, delz, var_temp
-      REAL, DIMENSION(kts:kte):: qvs, rh, rhoa
-      REAL, DIMENSION(kts:kte):: cldfra1d, t1d, p1d, dz1d,              &
-                                 qc1d, qi1d, qs1d
-      integer:: ndebug = 0
-
-      character*512 dbg_msg
-
-!+---+
-
-!..Initialize cloud fraction, compute RH, and rho-air.
-
-      DO i = its,ite
-         DO k = kts,kte
-            cldfra1d(k) = 0.0
-
-            qvsw = rslf(P(i,k), t(i,k))
-            qvsi = rsif(P(i,k), t(i,k))
-
-            tc = t(i,k) - 273.15
-            if (tc .ge. -12.0) then
-               qvs(k) = qvsw
-            elseif (tc .lt. -35.0) then
-               qvs(k) = qvsi
-            else
-               qvs(k) = qvsw - (qvsw-qvsi)*(-12.0-tc)/(-12.0+35.)
-            endif
-
-            if (modify_qvapor) then
-               if (qc(i,k).gt.1.E-8) then
-                  qv(i,k) = MAX(qv(i,k), qvsw)
-                  qvs(k) = qvsw
-               endif
-               if (qc(i,k).le.1.E-8 .and. qi(i,k).ge.1.E-9) then
-                  qv(i,k) = MAX(qv(i,k), qvsi*1.005)    !..To ensure a tiny bit ice supersaturated
-                  qvs(k) = qvsi
-               endif
-            endif
-
-            rh(k) = MAX(0.01, qv(i,k)/qvs(k))
-            rhoa(k) = p(i,k)/(287.0*t(i,k))
-
-         ENDDO
-
-
-!..First cut scale-aware. Higher resolution should require closer to
-!.. saturated grid box for higher cloud fraction.  Simple functions
-!.. chosen based on Mocko and Cotton (1995) starting point and desire
-!.. to get near 100% RH as grid spacing moves toward 1.0km, but higher
-!.. RH over ocean required as compared to over land.
-
-         DO k = kts,kte
-
-           delz = MAX(100., dz(i,k))
-           RH_00L = 0.77 + MIN(0.22,&
-                    SQRT(1./(50.0+gridkm(i)*gridkm(i)*delz*0.01)))
-           RH_00O = 0.85 + MIN(0.14,&
-                    SQRT(1./(50.0+gridkm(i)*gridkm(i)*delz*0.01)))
-           RHUM = rh(k)
-
-           if (qc(i,k).ge.1.E-6 .or. qi(i,k).ge.1.E-7                     &
-     &                .or. (qs(i,k).gt.1.E-6 .and. t(i,k).lt.273.)) then
-             cldfra1d(K) = 1.0
-           elseif (((qc(i,k)+qi(i,k)).gt.1.E-10) .and.                    &
-     &             ((qc(i,k)+qi(i,k)).lt.1.E-6)) then
-             var_temp = MIN(0.99, 0.1*(11.0 + log10(qc(i,k)+qi(i,k))))
-             cldfra1d(K) = var_temp*var_temp
-           else
-
-             IF ((XLAND(i)-1.5).GT.0.) THEN                                  !--- Ocean
-               RH_00 = RH_00O
-             ELSE                                                         !--- Land
-               RH_00 = RH_00L
-             ENDIF
-
-             tc = MAX(-80.0, t(i,k) - 273.15)
-             if (tc .lt. -24.0) RH_00 = RH_00L
-
-             if (tc .gt. 20.0) then
-               cldfra1d(K) = 0.0
-             elseif (tc .ge. -24.0) then
-               RHUM = MIN(rh(k), 1.0)
-               var_temp = SQRT(SQRT((1.001-RHUM)/(1.001-RH_00)))
-               cldfra1d(K) = MAX(0., 1.0-var_temp)
-             else
-               if (max_relh.gt.1.12 .or. (.NOT.(modify_qvapor)) ) then
-!..For HRRR model, the following look OK.
-                  RHUM = MIN(rh(k), 1.45)
-                  RH_00 = RH_00 + (1.45-RH_00)*(-24.0-tc)/(-24.0+85.)
-                  var_temp = SQRT(SQRT((1.46-RHUM)/(1.46-RH_00)))
-                  cldfra1d(K) = MAX(0., 1.0-var_temp)
-               else
-!..but for the GFS model, RH is way lower.
-                  RHUM = MIN(rh(k), 1.05)
-                  RH_00 = RH_00 + (1.05-RH_00)*(-24.0-tc)/(-24.0+85.)
-                  var_temp = SQRT(SQRT((1.06-RHUM)/(1.06-RH_00)))
-                  cldfra1d(K) = MAX(0., 1.0-var_temp)
-               endif
-             endif
-             if (cldfra1d(K).gt.0.) cldfra1d(K)=MAX(0.01,MIN(cldfra1d(K),0.99))
-
-           endif
-           if (cldfra1d(k).gt.0.0 .and. p(i,k).lt.7000.0) cldfra1d(K) = 0.0
-           t1d(k)  = t(i,k)
-           p1d(k)  = p(i,k)
-           dz1d(k) = dz(i,k)
-           qc1d(k) = qc(i,k)
-           qi1d(k) = qi(i,k)
-           qs1d(k) = qs(i,k)
-
-         ENDDO
-
-         call find_cloudLayers(qvs, cldfra1d, t1d, p1d, dz1d, entrmnt,  &
-     &                      debug_flag, qc1d, qi1d, qs1d, kts,kte)
-
-!..Do a final total column adjustment since we may have added more than 1 mm
-!.. LWP/IWP for multiple cloud decks.
-
-         call adjust_cloudFinal(cldfra1d, qc1d, qi1d, rhoa, dz1d,       &
-                            kts,kte)
-
-!..Intended for cold start model runs, we use modify_qvapor to ensure that cloudy
-!.. areas are actually saturated such that the inserted clouds do not evaporate a
-!.. timestep later.
-
-         if (modify_qvapor) then
-           DO k = kts,kte
-             if (cldfra1d(k).gt.0.2 .and. cldfra1d(k).lt.1.0) then
-               qv(i,k) = MAX(qv(i,k),qvs(k))
-             endif
-           ENDDO
-         endif
-
-         DO k = kts,kte
-           qc(i,k) = qc1d(k)
-           qi(i,k) = qi1d(k)
-           if ( cldfra1d(k) .lt. 0. ) then
-             cldfra(i,k) = 0.
-           elseif ( cldfra1d(k) .gt. 1. ) then
-             cldfra(i,k) = 1.
-           else
-             cldfra(i,k) = cldfra1d(k)
-           endif
-         ENDDO
-
-      ENDDO !end of do i=its,ite
-
-!...................................                                    !
-      END SUBROUTINE cal_cldfra3
-!-----------------------------------                                    !
-
-
-!-----------------------------------                                    !
-!>From cloud fraction array, find clouds of multi-level depth and compute
-!! a reasonable value of LWP or IWP that might be contained in that depth,
-!! unless existing LWC/IWC is already there.
-      SUBROUTINE find_cloudLayers(qvs1d, cfr1d, T1d, P1d, Dz1d, entrmnt,&
-     &                            debugfl, qc1d, qi1d, qs1d, kts,kte)
-!
-      IMPLICIT NONE
-!
-      INTEGER, INTENT(IN):: kts, kte
-      LOGICAL, INTENT(IN):: debugfl
-      REAL, INTENT(IN):: entrmnt
-      REAL, DIMENSION(kts:kte), INTENT(IN):: qs1d,qvs1d,T1d,P1d,Dz1d
-      REAL, DIMENSION(kts:kte), INTENT(INOUT):: cfr1d, qc1d, qi1d
-
-!..Local vars.
-      REAL, DIMENSION(kts:kte):: theta
-      REAL:: theta1, theta2, delz
-      INTEGER:: k, k2, k_tropo, k_m12C, k_cldb, k_cldt, kbot, k_p200
-      LOGICAL:: in_cloud
-      character*512 dbg_msg
-
-!+---+
-
-      k_m12C = 0
-      k_p200 = 0
-      DO k = kte, kts, -1
-         theta(k) = T1d(k)*((100000.0/P1d(k))**(287.05/1004.))
-         if (T1d(k)-273.16 .gt. -12.0 .and. P1d(k).gt.10100.0)          &
-     &                   k_m12C = MAX(k_m12C, k)
-         if (P1d(k).gt.19999.0 .and. k_p200.eq.0) k_p200 = k
-      ENDDO
-      if (k_m12C .le. kts) k_m12C = kts
-
-!..Find tropopause height, best surrogate, because we would not really
-!.. wish to put fake clouds into the stratosphere.  The 10/1500 ratio
-!.. d(Theta)/d(Z) approximates a vertical line on typical SkewT chart
-!.. near typical (mid-latitude) tropopause height.  Since messy data
-!.. could give us a false signal of such a transition, do the check over 
-!.. three K-level change, not just a level-to-level check.  This method
-!.. has potential failure in arctic-like conditions with extremely low
-!.. tropopause height, as would any other diagnostic, so ensure resulting
-!.. k_tropo level is above 700hPa.
-
-      if ( (kte-k_p200) .lt. 3) k_p200 = kte-3
-      DO k = k_p200-2, kts, -1
-         theta1 = theta(k)
-         theta2 = theta(k+2)
-         delz = 0.5*dz1d(k) + dz1d(k+1) + 0.5*dz1d(k+2)
-         if ( (((theta2-theta1)/delz).lt.10./1500.) .OR.                &
-     &                       P1d(k).gt.70000.) EXIT
-      ENDDO
-      k_tropo = MAX(kts+2, MIN(k+2, kte-1))
-
-      if (k_tropo .gt. k_p200) then
-         DO k = kte-3, k_p200-2, -1
-            theta1 = theta(k)
-            theta2 = theta(k+2)
-            delz = 0.5*dz1d(k) + dz1d(k+1) + 0.5*dz1d(k+2)
-            if ( (((theta2-theta1)/delz).lt.10./1500.) .AND.            &
-     &                                    P1d(k).gt.9000.) EXIT
-         ENDDO
-         k_tropo = MAX(k_p200-1, MIN(k+2, kte-1))
-      endif
-
-!..Eliminate possible fractional clouds above supposed tropopause.
-      DO k = k_tropo+1, kte
-         if (cfr1d(k).gt.0.0 .and. cfr1d(k).lt.1.0) then
-            cfr1d(k) = 0.
-         endif
-      ENDDO
-
-!..Be a bit more conservative with lower cloud fraction in scenario with
-!.. well-mixed convective boundary layer below LCL.
-
-      kbot = kts+1
-      DO k = kbot, k_m12C
-         if ( (theta(k)-theta(k-1)) .gt. 0.010E-3*Dz1d(k)) EXIT
-      ENDDO
-      kbot = MAX(kts+1, k-2)
-      DO k = kts, kbot
-         if (cfr1d(k).gt.0.0 .and. cfr1d(k).lt.1.0)                     &
-     &              cfr1d(k) = MAX(0.01,0.33*cfr1d(k))
-      ENDDO
-      DO k = kts,k_tropo
-         if (cfr1d(k).gt.0.0) kbot = MIN(k,kbot)
-      ENDDO
-
-!..Starting below tropo height, if cloud fraction greater than 1 percent,
-!.. compute an approximate total layer depth of cloud, determine a total 
-!.. liquid water/ice path (LWP/IWP), then reduce that amount with tuning 
-!.. parameter to represent entrainment factor, then divide up LWP/IWP
-!.. into delta-Z weighted amounts for individual levels per cloud layer. 
-
-      k_cldb = k_tropo
-      in_cloud = .false.
-      k = k_tropo
-      DO WHILE (.not. in_cloud .AND. k.gt.k_m12C+1)
-         k_cldt = 0
-         if (cfr1d(k).ge.0.01) then
-            in_cloud = .true.
-            k_cldt = MAX(k_cldt, k)
-         endif
-         if (in_cloud) then
-            DO k2 = k_cldt-1, k_m12C, -1
-               if (cfr1d(k2).lt.0.01 .or. k2.eq.k_m12C) then
-                  k_cldb = k2+1
-                  goto 87
-               endif
-            ENDDO
- 87         continue
-            in_cloud = .false.
-         endif
-         if ((k_cldt - k_cldb + 1) .ge. 2) then
-            call adjust_cloudIce(cfr1d, qi1d, qs1d, qvs1d, T1d, Dz1d,   &
-     &                           entrmnt, k_cldb,k_cldt,kts,kte)
-            k = k_cldb
-         elseif ((k_cldt - k_cldb + 1) .eq. 1) then
-            if (cfr1d(k_cldb).gt.0.and.cfr1d(k_cldb).lt.1.)             &
-     &        qi1d(k_cldb)=qi1d(k_cldb)+0.05*qvs1d(k_cldb)*cfr1d(k_cldb)
-            k = k_cldb
-         endif
-         k = k - 1
-      ENDDO
-
-      k_cldb = k_m12C + 3
-      in_cloud = .false.
-      k = k_m12C + 2
-      DO WHILE (.not. in_cloud .AND. k.gt.kbot)
-         k_cldt = 0
-         if (cfr1d(k).ge.0.01) then
-            in_cloud = .true.
-            k_cldt = MAX(k_cldt, k)
-         endif
-         if (in_cloud) then
-            DO k2 = k_cldt-1, kbot, -1
-               if (cfr1d(k2).lt.0.01 .or. k2.eq.kbot) then
-                  k_cldb = k2+1
-                  goto 88
-               endif
-            ENDDO
- 88         continue
-            in_cloud = .false.
-         endif
-         if ((k_cldt - k_cldb + 1) .ge. 2) then
-            call adjust_cloudH2O(cfr1d, qc1d, qvs1d, T1d, Dz1d,         &
-     &                           entrmnt, k_cldb,k_cldt,kts,kte)
-            k = k_cldb
-         elseif ((k_cldt - k_cldb + 1) .eq. 1) then
-            if (cfr1d(k_cldb).gt.0.and.cfr1d(k_cldb).lt.1.)             &
-     &        qc1d(k_cldb)=qc1d(k_cldb)+0.05*qvs1d(k_cldb)*cfr1d(k_cldb)
-            k = k_cldb
-         endif
-         k = k - 1
-      ENDDO
-
-
-      END SUBROUTINE find_cloudLayers
-
-
-!+---+-----------------------------------------------------------------+
-
-!>
-      SUBROUTINE adjust_cloudIce(cfr,qi,qs,qvs,T,dz,entr, k1,k2,kts,kte)
-!
-      IMPLICIT NONE
-!
-      INTEGER, INTENT(IN):: k1,k2, kts,kte
-      REAL, INTENT(IN):: entr
-      REAL, DIMENSION(kts:kte), INTENT(IN):: cfr, qs, qvs, T, dz
-      REAL, DIMENSION(kts:kte), INTENT(INOUT):: qi
-      REAL:: iwc, max_iwc, tdz, this_iwc, this_dz
-      INTEGER:: k
-
-      tdz = 0.
-      do k = k1, k2
-         tdz = tdz + dz(k)
-      enddo
-!     max_iwc = ABS(qvs(k2)-qvs(k1))
-      max_iwc = MAX(0.0, qvs(k1)-qvs(k2))
-
-      do k = k1, k2
-         max_iwc = MAX(1.E-6, max_iwc - (qi(k)+qs(k)))
-      enddo
-      max_iwc = MIN(1.E-4, max_iwc)
-
-      this_dz = 0.0
-      do k = k1, k2
-         if (k.eq.k1) then
-            this_dz = this_dz + 0.5*dz(k)
-         else
-            this_dz = this_dz + dz(k)
-         endif
-         this_iwc = max_iwc*this_dz/tdz
-         iwc = MAX(1.E-6, this_iwc*(1.-entr))
-         if (cfr(k).gt.0.0.and.cfr(k).lt.1.0.and.T(k).ge.203.16) then
-            qi(k) = qi(k) + cfr(k)*cfr(k)*iwc
-         endif
-      enddo
-
-      END SUBROUTINE adjust_cloudIce
-
-!+---+-----------------------------------------------------------------+
-
-!>
-      SUBROUTINE adjust_cloudH2O(cfr, qc, qvs,T,dz,entr, k1,k2,kts,kte)
-!
-      IMPLICIT NONE
-!
-      INTEGER, INTENT(IN):: k1,k2, kts,kte
-      REAL, INTENT(IN):: entr
-      REAL, DIMENSION(kts:kte), INTENT(IN):: cfr, qvs, T, dz
-      REAL, DIMENSION(kts:kte), INTENT(INOUT):: qc
-      REAL:: lwc, max_lwc, tdz, this_lwc, this_dz
-      INTEGER:: k
-
-      tdz = 0.
-      do k = k1, k2
-         tdz = tdz + dz(k)
-      enddo
-!     max_lwc = ABS(qvs(k2)-qvs(k1))
-      max_lwc = MAX(0.0, qvs(k1)-qvs(k2))
-!     print*, ' max_lwc = ', max_lwc, ' over DZ=',tdz
-
-      do k = k1, k2
-         max_lwc = MAX(1.E-6, max_lwc - qc(k))
-      enddo
-      max_lwc = MIN(1.E-4, max_lwc)
-
-      this_dz = 0.0
-      do k = k1, k2
-         if (k.eq.k1) then
-            this_dz = this_dz + 0.5*dz(k)
-         else
-            this_dz = this_dz + dz(k)
-         endif
-         this_lwc = max_lwc*this_dz/tdz
-         lwc = MAX(1.E-6, this_lwc*(1.-entr))
-         if (cfr(k).gt.0.0.and.cfr(k).lt.1.0.and.T(k).ge.258.16) then
-            qc(k) = qc(k) + cfr(k)*cfr(k)*lwc
-         endif
-      enddo
-
-      END SUBROUTINE adjust_cloudH2O
-
-!+---+-----------------------------------------------------------------+
-
-!> Do not alter any grid-explicitly resolved hydrometeors, rather only
-!! the supposed amounts due to the cloud fraction scheme.
-      SUBROUTINE adjust_cloudFinal(cfr, qc, qi, Rho,dz, kts,kte)
-!
-      IMPLICIT NONE
-!
-      INTEGER, INTENT(IN):: kts,kte
-      REAL, DIMENSION(kts:kte), INTENT(IN):: cfr, Rho, dz
-      REAL, DIMENSION(kts:kte), INTENT(INOUT):: qc, qi
-      REAL:: lwp, iwp, xfac
-      INTEGER:: k
-
-      lwp = 0.
-      iwp = 0.
-      do k = kts, kte
-         if (cfr(k).gt.0.0 .and. cfr(k).lt.1.0) then
-            lwp = lwp + qc(k)*Rho(k)*dz(k)
-            iwp = iwp + qi(k)*Rho(k)*dz(k)
-         endif
-      enddo
-
-      if (lwp .gt. 1.0) then
-         xfac = 1.0/lwp
-         do k = kts, kte
-            if (cfr(k).gt.0.0 .and. cfr(k).lt.1.0) then
-               qc(k) = qc(k)*xfac
-            endif
-         enddo
-      endif
-
-      if (iwp .gt. 1.0) then
-         xfac = 1.0/iwp
-         do k = kts, kte
-            if (cfr(k).gt.0.0 .and. cfr(k).lt.1.0) then
-               qi(k) = qi(k)*xfac
-            endif
-         enddo
-      endif
-
-      END SUBROUTINE adjust_cloudFinal
-!+---+-----------------------------------------------------------------+
-
-
-!+---+-----------------------------------------------------------------+
-      END MODULE module_mp_thompson_new
+      END MODULE module_mp_thompson
 !+---+-----------------------------------------------------------------+

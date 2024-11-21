@@ -780,7 +780,7 @@
                            p, dz
       REAL, DIMENSION(ims:ime, kms:kme+1), INTENT(IN):: phii
       INTEGER, DIMENSION(ims:ime), INTENT(IN):: islmsk !      land and ocean 
-      REAL, DIMENSION(its:ite), INTENT(INOUT):: &
+      REAL, DIMENSION(ims:ime), INTENT(INOUT):: &
                           RAINNCV, SR
       REAL, DIMENSION(ims:ime, kms:kme), INTENT(INOUT)::                        &    
                           refl_10cm
