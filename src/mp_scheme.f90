@@ -10,10 +10,10 @@
 ! for WSM6
       use module_mp_wsm6,     only : wsm6init
 ! for Thompson
-      use module_mp_thompson, only : thompson_init => thompson_init
+      use module_mp_thompson, only : thompson_init
 ! for 2M Thompson
       use module_mp_thompson_new,                                       &
-                              only : new_thompson_init => thompson_init
+                              only : new_thompson_init
 ! for GFDL MP v1
       use module_mp_gfdl,     only : gfdl_cloud_microphys_init
 ! for GFDL MP v2

@@ -445,7 +445,7 @@
 !! lookup tables in Thomspson scheme.
 !>\section gen_thompson_init thompson_init General Algorithm
 !> @{
-      SUBROUTINE thompson_init(is_aerosol_aware_in,                     &
+      SUBROUTINE new_thompson_init(is_aerosol_aware_in,                     &
                                merra2_aerosol_aware_in,                 &
                                mpirank, mpiroot, errmsg, errflg)
 !                               mpicomm, mpirank, mpiroot)
@@ -1005,7 +1005,7 @@
 
       endif if_micro_init
 
-      END SUBROUTINE thompson_init
+      END SUBROUTINE new_thompson_init
 !> @}
 
 !>\ingroup aathompson
