@@ -2303,7 +2303,7 @@
                   (nmmiph, nxp, nxjp(j), lev, ncld, plt(1, 1, jj), ptop, &
                    dsigma, phii(1, 1, jj), islimsk(1, jj), q0(1, 1, jj), kdt, tpi, me, dta, area(jj), jj, &
                    itimestep, sgeo(1, jj), phi(1, 1, jj), rhc_mp(1, 1, jj), pk(1, 1, jj), &
-                   snr(1, jj), &
+                   snr(1, jj), xlat(j), sdec, ivegtyp(1,jj),             &
                    !  ---  inputs/outputs:
                    ttc(1, 1, jj), qt(1, 1, jj), clds(1, 1, jj), &
                    utc(1, 1, jj), vtc(1, 1, jj), vvel(1, 1, jj), &
