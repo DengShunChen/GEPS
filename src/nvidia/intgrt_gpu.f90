@@ -1255,41 +1255,41 @@ subroutine intgrt_gpu
       !$acc& plnow, pltemp, plten, um, vm, qm, &
       !$acc& vornow, divnow, temnow) async(async_id)
       !$acc wait(async_id)
-      qp(:, :, :) = qt(:, :, :)
-      call diabat(fwd, docup, dodry, dolsp, dopbl, dorad, doshl, dograv, tofd &
-                  , nx, my, my_max, lev, ncld, nmcup, nmpbl, nmland, nmshl, cgw &
-                  , idg, jdg, ldiag, dtx, tau, hours, year &
-                  , frad, ozon, njump, itypbl, ktcup, ktpbl, ktshl, grav &
-                  , rgas, cp, stbo, s0, evaprh, hltm, ptop, sigma, dsigma, il, ib &
-                  , cof, xlat, xlon, sgeo, z0, alb, land, ocean, ice &
-                  , snr, tg, tgclim, curate, plcl, cumtop, totalp, raintot, raincu &
-                  , rainlp, raincu6, rainlp6, raincu3, rainlp3, raincu1, rainlp1 &
-                  , hflux, qflux, ustar, tstar, qstar, e &
-                  , eps, o3l, dtrad, ss, rs, plt, pk, pk2 &
-                  , ptp, up, vp, ttp, qm &
-                  , pt, ut, vt, tt, qt &
-                  , gwclim, tice, hice, qgini, thdai, tengi &
-                  , acld, std, asol, olr, drag, ugws, vgws &
-                  , sdpbl, t2, q2, rh2, rh10, u10, v10, gfx &
-                  , fm, fh, fm10, fh2, srflag &
-                  , rld, km_soil, smc, stc, canopy, runoff &
-                  , sigmaf, istyp, ivegtyp, wltsmc, refsmc, maxsmc, dfkt, xktk, dfk &
-                  , ftp, fqp, fpsp, ftp1, fqp1, fpsp1, deltaq, cnvwr, cnvcr, pdot &
-                  , shdmax, shdmin, snoalb &
-                  , slopetyp, sld, slc, zice, cice, xtice, sncover, sndepth &
-                  , ctot, chig, cmid, clow, hpbl, asl, atl, cosz &
-                  , nmgwor, nmgwcv, hprime_b, mtnvar, docgrav, nmmiph &
-                  !--------------------------------------------------------------------------------
-                  , fusl, fdsl, fuir, fdir &
-                  , fuslr, fdslr, fuirr, fdirr &
-                  , asl_clr, atl_clr, clds &
-                  , ss_clr, rs_clr, asol_clr, olr_clr, sld_clr, rld_clr &
-                  , alvsf, alvwf, alnsf, alnwf, facsf, facwf &
-                  , idtg, doo3l, nfxr, sfalb, sfemis, isot, ivegsrc &
-                  , itimestep, lrun_sitvdiff, ic_sit &
-                  !xb110>
-                  !byl                      , rmr,smr,flash)
-                  , flash, tsflw, vvel, totallp)
+      ! qp(:, :, :) = qt(:, :, :)
+      call diabat_gpu(fwd, docup, dodry, dolsp, dopbl, dorad, doshl, dograv, tofd &
+                      , nx, my, my_max, lev, ncld, nmcup, nmpbl, nmland, nmshl, cgw &
+                      , idg, jdg, ldiag, dtx, tau, hours, year &
+                      , frad, ozon, njump, itypbl, ktcup, ktpbl, ktshl, grav &
+                      , rgas, cp, stbo, s0, evaprh, hltm, ptop, sigma, dsigma, il, ib &
+                      , cof, xlat, xlon, sgeo, z0, alb, land, ocean, ice &
+                      , snr, tg, tgclim, curate, plcl, cumtop, totalp, raintot, raincu &
+                      , rainlp, raincu6, rainlp6, raincu3, rainlp3, raincu1, rainlp1 &
+                      , hflux, qflux, ustar, tstar, qstar, e &
+                      , eps, o3l, dtrad, ss, rs, plt, pk, pk2 &
+                      , ptp, up, vp, ttp, qm &
+                      , pt, ut, vt, tt, qt &
+                      , gwclim, tice, hice, qgini, thdai, tengi &
+                      , acld, std, asol, olr, drag, ugws, vgws &
+                      , sdpbl, t2, q2, rh2, rh10, u10, v10, gfx &
+                      , fm, fh, fm10, fh2, srflag &
+                      , rld, km_soil, smc, stc, canopy, runoff &
+                      , sigmaf, istyp, ivegtyp, wltsmc, refsmc, maxsmc, dfkt, xktk, dfk &
+                      , ftp, fqp, fpsp, ftp1, fqp1, fpsp1, deltaq, cnvwr, cnvcr, pdot &
+                      , shdmax, shdmin, snoalb &
+                      , slopetyp, sld, slc, zice, cice, xtice, sncover, sndepth &
+                      , ctot, chig, cmid, clow, hpbl, asl, atl, cosz &
+                      , nmgwor, nmgwcv, hprime_b, mtnvar, docgrav, nmmiph &
+                      !--------------------------------------------------------------------------------
+                      , fusl, fdsl, fuir, fdir &
+                      , fuslr, fdslr, fuirr, fdirr &
+                      , asl_clr, atl_clr, clds &
+                      , ss_clr, rs_clr, asol_clr, olr_clr, sld_clr, rld_clr &
+                      , alvsf, alvwf, alnsf, alnwf, facsf, facwf &
+                      , idtg, doo3l, nfxr, sfalb, sfemis, isot, ivegsrc &
+                      , itimestep, lrun_sitvdiff, ic_sit &
+                      !xb110>
+                      !byl                      , rmr,smr,flash)
+                      , flash, tsflw, vvel, totallp)
 !xb110<
 !--------------------------------------------------------------------------------
 !
@@ -1298,9 +1298,11 @@ subroutine intgrt_gpu
       call rayleifr(nx, my, my_max, lev, rad, cosl, dt, ut, vt)
 
       if (two_loop) then
-         ! adjustmen of surface pressure, virtual potential
-         ! temperature and all tracers
-         if (mass_dp) call adjptq(dta, plnow, pltemp)
+         if (mass_dp) then
+            call mpe2d_unify_nx(ww1, pt)
+            call tranrs1(jtrun, jtmax, nx, my, my_max, poly, weight, ww1 &
+                         , plnow, nsizey)
+         end if
          call joinrs(cc, tt, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
          call tranrs(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc &
                      , temnow, 1, nsizey)
@@ -1310,9 +1312,11 @@ subroutine intgrt_gpu
          call trandv(jtrun, jtmax, nx, my, my_max, lev, ut, vt, weight, cim &
                      , onocos, poly, dpoly, vornow, divnow, nsizey)
       else
-         ! adjustmen of surface pressure, virtual potential
-         ! temperature and all tracers for one loop
-         if (mass_dp) call adjptq(dta, pltemp, plten)
+         if (mass_dp) then
+            call mpe2d_unify_nx(ww1, ptp)
+            call tranrs1(jtrun, jtmax, nx, my, my_max, poly, weight, ww1 &
+                         , plten, nsizey)
+         end if
 
       end if ! two_loop
       !$acc update device(plt, pk, pk2, &
