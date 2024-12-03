@@ -1,3 +1,5 @@
+#define advh_gather4GPU advh_gather4GPU_nccl
+#define advh_scatter4GPU advh_scatter4GPU_nccl
 module mod_ndslfv_monoadv_gpu
    use const, only: RTYPE
    use cudafor
@@ -140,14 +142,23 @@ contains
          dxf = two_pi/nx
          hfdxf = 0.5*dxf
          sc_advy = gglati(my*2 + 1) - gglati(1)
+
+         !! !$acc enter data &
+         !! !$acc& copyin(&
+         !! !$acc& nx,my,lev,ncld,nxp,nsizex,batch_size, &
+         !! !$acc& gglati(:my*2+1), fa1(:my*2), fa2(:my*2), &
+         !! !$acc& fa3(:my*2), fa4(:my*2), &
+         !! !$acc& cosl(:my), &
+         !! !$acc& jlist2_2d(:nsizex,:nx), nxjlen_all(:nsizex,:nx), &
+         !! !$acc& nxdef(:my), imflst(:my), &
+         !! !$acc& nydef_loc(:nx), &
+         !! !$acc& pi, two_pi, dxf, hfdxf, sc_advy) &
+         !! !$acc& create(vvlat(:my*2,:nx/2,:lev))
+
          !$acc enter data &
          !$acc& copyin(&
-         !$acc& nx,my,lev,ncld,nxp,nsizex,batch_size, &
-         !$acc& gglati(:my*2+1), fa1(:my*2), fa2(:my*2), &
-         !$acc& fa3(:my*2), fa4(:my*2), &
-         !$acc& cosl(:my), &
-         !$acc& jlist2_2d(:nsizex,:nx), nxjlen_all(:nsizex,:nx), &
-         !$acc& nxdef(:my), imflst(:my), &
+         !$acc& batch_size, &
+         !$acc& imflst(:my), &
          !$acc& nydef_loc(:nx), &
          !$acc& pi, two_pi, dxf, hfdxf, sc_advy) &
          !$acc& create(vvlat(:my*2,:nx/2,:lev))
@@ -157,38 +168,29 @@ contains
    end subroutine allocate_ndslfv_array_gpu
    ! ============================================================
    subroutine deallocate_ndslfv_array_gpu
-      use param
-      use index, only: nsizex, jlist2_2d, nxjlen_all, nxdef
-      use grid, only: nxp, ndslhvar, &
-                      gglati, fa1, fa2, fa3, fa4
-      use rank, only: myrank, nsize
-      use const, only: cosl
+      use rank, only: myrank
       implicit none
 
-      deallocate (cudaST, cudaEV)
-      deallocate (nydef_loc, imflst, wndmdf_all, wndmdf)
-      deallocate (umwrk, vmwrk, advhwrk)
-
       if (myrank < use_gpu_num) then
-         deallocate (vvlat, qq_3df)
-
          call acc_unmap_data(umwrk)
          call acc_unmap_data(vmwrk)
-         deallocate (umwrk_d, vmwrk_d, qpwrk_d, ainp_d, aout_d)
 
          !$acc exit data &
          !$acc& delete( &
-         !$acc& nx,my,lev,ncld,nxp,nsizex,batch_size, &
-         !$acc& gglati, fa1, fa2, &
-         !$acc& fa3, fa4, &
-         !$acc& cosl, &
-         !$acc& jlist2_2d, nxjlen_all, &
-         !$acc& nxdef, imflst, &
+         !$acc& batch_size, &
+         !$acc& imflst, &
          !$acc& nydef_loc, &
          !$acc& pi, two_pi, dxf, hfdxf, sc_advy, &
          !$acc& vvlat &
          !$acc& )
+
+         deallocate (umwrk_d, vmwrk_d, qpwrk_d, ainp_d, aout_d)
+         deallocate (vvlat, qq_3df)
       end if
+
+      deallocate (cudaST, cudaEV)
+      deallocate (nydef_loc, imflst, wndmdf_all, wndmdf)
+      deallocate (umwrk, vmwrk, advhwrk)
 
    end subroutine deallocate_ndslfv_array_gpu
    ! ============================================================
@@ -228,14 +230,14 @@ contains
       firstcomp = .true.
       ! ----------------------------------------
       !$acc host_data use_device(um, vm, ut, vt, tt, qm)
-      call advh_gather4GPU_dev(umwrk_d, um, 1, 0)
-      call advh_gather4GPU_dev(vmwrk_d, vm, 1, 0)
+      call advh_gather4GPU(umwrk_d, um, 1, 0)
+      call advh_gather4GPU(vmwrk_d, vm, 1, 0)
       ! u v t at n-1
-      call advh_gather4GPU_dev(ainp_d(1, 1, 1), ut, 1, 0)
-      call advh_gather4GPU_dev(ainp_d(1, 1, 2), vt, 1, 0)
-      call advh_gather4GPU_dev(ainp_d(1, 1, 3), tt, 1, 0)
+      call advh_gather4GPU(ainp_d(1, 1, 1), ut, 1, 0)
+      call advh_gather4GPU(ainp_d(1, 1, 2), vt, 1, 0)
+      call advh_gather4GPU(ainp_d(1, 1, 3), tt, 1, 0)
       ! rq at n-1
-      call advh_gather4GPU_dev(qpwrk_d, qm, ncld, 0)
+      call advh_gather4GPU(qpwrk_d, qm, ncld, 0)
       !$acc end host_data
       ! ----------------------------------------
       if (myrank .eq. 0) then
@@ -351,11 +353,11 @@ contains
       ! ----------------------------------------
       ! u v t at n
       !$acc host_data use_device(ut, vt, tt, qt)
-      call advh_scatter4GPU_dev(ut, aout_d(1, 1, 1), 1, 0)
-      call advh_scatter4GPU_dev(vt, aout_d(1, 1, 2), 1, 0)
-      call advh_scatter4GPU_dev(tt, aout_d(1, 1, 3), 1, 0)
+      call advh_scatter4GPU(ut, aout_d(1, 1, 1), 1, 0)
+      call advh_scatter4GPU(vt, aout_d(1, 1, 2), 1, 0)
+      call advh_scatter4GPU(tt, aout_d(1, 1, 3), 1, 0)
       ! rq at n
-      call advh_scatter4GPU_dev(qt, qpwrk_d, ncld, 0)
+      call advh_scatter4GPU(qt, qpwrk_d, ncld, 0)
       !$acc end host_data
       ! ----------------------------------------
 
@@ -399,12 +401,12 @@ contains
       firstcomp = .true.
       ! ----------------------------------------
       !$acc host_data use_device(um, vm, ut, vt, tt)
-      call advh_gather4GPU_dev(umwrk_d, um, 1, 0)
-      call advh_gather4GPU_dev(vmwrk_d, vm, 1, 0)
+      call advh_gather4GPU(umwrk_d, um, 1, 0)
+      call advh_gather4GPU(vmwrk_d, vm, 1, 0)
       ! u v t at n-1
-      call advh_gather4GPU_dev(ainp_d(1, 1, 1), ut, 1, 0)
-      call advh_gather4GPU_dev(ainp_d(1, 1, 2), vt, 1, 0)
-      call advh_gather4GPU_dev(ainp_d(1, 1, 3), tt, 1, 0)
+      call advh_gather4GPU(ainp_d(1, 1, 1), ut, 1, 0)
+      call advh_gather4GPU(ainp_d(1, 1, 2), vt, 1, 0)
+      call advh_gather4GPU(ainp_d(1, 1, 3), tt, 1, 0)
       !$acc end host_data
       ! ----------------------------------------
       if (myrank .eq. 0) then
@@ -478,9 +480,9 @@ contains
       ! ----------------------------------------
       ! u v t at n
       !$acc host_data use_device(vdzonl, vdmerd, ddtemp)
-      call advh_scatter4GPU_dev(vdzonl, aout_d(1, 1, 1), 1, 0)
-      call advh_scatter4GPU_dev(vdmerd, aout_d(1, 1, 2), 1, 0)
-      call advh_scatter4GPU_dev(ddtemp, aout_d(1, 1, 3), 1, 0)
+      call advh_scatter4GPU(vdzonl, aout_d(1, 1, 1), 1, 0)
+      call advh_scatter4GPU(vdmerd, aout_d(1, 1, 2), 1, 0)
+      call advh_scatter4GPU(ddtemp, aout_d(1, 1, 3), 1, 0)
       !$acc end host_data
       ! ----------------------------------------
 
@@ -501,7 +503,7 @@ contains
       use openacc
       use cudafor
       use param
-      use grid, only: latpart, ndslvvar
+      use grid, only: latpart, ndslvvar, lonfull
       use index, only: jlistnum, jlist1, nxp, nxjp_acc, nxjp, nxptot
       use rank
       use const
@@ -533,7 +535,7 @@ contains
       !
       stream = acc_get_cuda_stream(async_id)
       !$acc host_data use_device(plev)
-      istat = cudaMemsetAsync(plev, 0., size(plev), stream)
+      istat = cudaMemsetAsync(plev, real(0.0, RTYPE), size(plev), stream)
       !$acc end host_data
 
       !$acc parallel loop async(async_id) &
@@ -551,25 +553,41 @@ contains
                                    + dsigma(kk, 1)*pt(i, j) + dsigma(kk, 2)
             end do
          end do
-         ! d z t at n+1*
-         !$acc loop vector collapse(2) independent &
-         !$acc& private(kk)
+      end do
+
+      ! d z t at n+1*
+      !$acc parallel loop collapse(3) async(async_id) &
+      !$acc& private(lat,lons_lat,istr,kk)
+      do j = 1, jlistnum
          do k = 1, lev
-            do i = 1, lons_lat
-               kk = lev - k + 1
-               qqlon(k, 1, istr + i) = vdzonl(i, kk, j)
-               qqlon(k, 2, istr + i) = vdmerd(i, kk, j)
-               qqlon(k, 3, istr + i) = ddtemp(i, kk, j)
+            do i = 1, nxp
+               lat = jlist1(j)
+               lons_lat = lonsperlat(lat)
+               if (i .le. lons_lat) then
+                  istr = nxjp_acc(j) - 1
+                  kk = lev - k + 1
+                  qqlon(kk, 1, istr + i) = vdzonl(i, k, j)
+                  qqlon(kk, 2, istr + i) = vdmerd(i, k, j)
+                  qqlon(kk, 3, istr + i) = ddtemp(i, k, j)
+               end if
             end do
          end do
-         ! rq at n+1*
-         !$acc loop vector collapse(3) independent &
-         !$acc& private(kk)
+      end do
+
+      ! rq at n+1*
+      !$acc parallel loop collapse(4) async(async_id) &
+      !$acc& private(lat,lons_lat,istr,kk)
+      do j = 1, jlistnum
          do n = 1, ncld
             do k = 1, lev
-               do i = 1, lons_lat
-                  kk = lev - k + 1
-                  qqlon(k, n + 3, istr + i) = qvadv(i, kk, n, j)
+               do i = 1, nxp
+                  lat = jlist1(j)
+                  lons_lat = lonsperlat(lat)
+                  if (i .le. lons_lat) then
+                     istr = nxjp_acc(j) - 1
+                     kk = lev - k + 1
+                     qqlon(kk, n + 3, istr + i) = qvadv(i, k, n, j)
+                  end if
                end do
             end do
          end do
@@ -580,38 +598,43 @@ contains
                                     deltim, plev, pdot, &
                                     qqlon, mass, forward, async_id)
 
-      !$acc parallel loop independent async(async_id)&
-      !$acc& private(lat,lons_lat,istr)
+      ! u v t tendency at n
+      !$acc parallel loop collapse(3) independent async(async_id)&
+      !$acc& private(lat,lons_lat,istr,kk)
       do j = 1, jlistnum
-         lat = jlist1(j)
-         lons_lat = lonsperlat(lat)
-         istr = nxjp_acc(j) - 1
-
-         ! u v t tendency at n
-         !$acc loop vector collapse(2) independent &
-         !$acc& private(kk)
-         do i = 1, lons_lat
+         do i = 1, nxp
             do k = 1, lev
-               kk = lev - k + 1
-               vdzonl(i, kk, j) = qqlon(k, 1, istr + i)
-               vdmerd(i, kk, j) = qqlon(k, 2, istr + i)
-               ddtemp(i, kk, j) = qqlon(k, 3, istr + i)
+               lat = jlist1(j)
+               lons_lat = lonsperlat(lat)
+               if (i .le. lons_lat) then
+                  istr = nxjp_acc(j) - 1
+                  kk = lev - k + 1
+                  vdzonl(i, kk, j) = qqlon(k, 1, istr + i)
+                  vdmerd(i, kk, j) = qqlon(k, 2, istr + i)
+                  ddtemp(i, kk, j) = qqlon(k, 3, istr + i)
+               end if
             end do
          end do
+      end do
 
-         ! rq tendency at n
-         !$acc loop vector collapse(3) independent &
-         !$acc& private(kk)
-         do i = 1, lons_lat
+      ! rq tendency at n
+      !$acc parallel loop collapse(4) independent async(async_id)&
+      !$acc& private(lat,lons_lat,istr,kk)
+      do j = 1, jlistnum
+         do i = 1, nxp
             do n = 1, ncld
                do k = 1, lev
-                  kk = lev - k + 1
-                  qvadv(i, kk, n, j) = qqlon(k, n + 3, istr + i)
+                  lat = jlist1(j)
+                  lons_lat = lonsperlat(lat)
+                  if (i .le. lons_lat) then
+                     istr = nxjp_acc(j) - 1
+                     kk = lev - k + 1
+                     qvadv(i, kk, n, j) = qqlon(k, n + 3, istr + i)
+                  end if
                end do
             end do
          end do
       end do
-      !$acc end parallel loop
       !$acc end data
 
       return
@@ -663,7 +686,7 @@ contains
       !
       stream = acc_get_cuda_stream(async_id)
       !$acc host_data use_device(plev)
-      istat = cudaMemsetAsync(plev, 0., size(plev), stream)
+      istat = cudaMemsetAsync(plev, real(0.0, RTYPE), size(plev), stream)
       !$acc end host_data
 
       !$acc parallel loop async(async_id) &
@@ -2229,7 +2252,7 @@ contains
       !$acc& step, nstep)
 
       !$acc host_data use_device(dd)
-      istat = cudaMemsetAsync(dd, 0., size(dd), stream)
+      istat = cudaMemsetAsync(dd, real(0.0, RTYPE), size(dd), stream)
       !$acc end host_data
 
       !$acc kernels async(async_id)
@@ -2240,15 +2263,17 @@ contains
       end do
       !$acc end kernels
 
-      !$acc parallel loop independent async(async_id)&
+      !$acc parallel loop collapse(3) async(async_id)&
       !$acc& private(lat,nxj,istr)
       do j = 1, jlistnum
-         lat = jlist1(j)
-         nxj = nxjp(lat)
-         istr = nxjp_acc(j) - 1
          do k = 2, levs
-            do i = 1, nxj
-               dd(k, istr + i) = wwi(i, k, j)*deltim
+            do i = 1, nxp
+               lat = jlist1(j)
+               nxj = nxjp(lat)
+               if (i .le. nxj) then
+                  istr = nxjp_acc(j) - 1
+                  dd(k, istr + i) = wwi(i, k, j)*deltim
+               end if
             end do
          end do
       end do
@@ -2367,7 +2392,8 @@ contains
                          tl, tl2, tl3, tlp, tlm, tlc, &
                          th(levs + 1, nxy), th2, th3, thp, &
                          thm, thc, &
-                         dpp, dqq, c1, c2
+                         dpp, dqq, c1, c2, qq_t, qmi_t, qpi_t, &
+                         hhm, hhc, hhp, dqmono_pre, dqmono_cur
 
       integer i, k, kl, kh, kk, kkl, kkh, n
       integer kklist(levs + 1, nxy), left, right, mid
@@ -2386,14 +2412,13 @@ contains
       do i = 1, nxy
          if ((pp(1, i) .ne. pn(1, i)) .or. &
              (pp(levs + 1, i) .ne. pn(levs + 1, i))) then
-            print *, ' Error in vertical_cell_ppm_intp for domain values '
-            print *, "i pp1 pn1", i, pp(1, i), pn(1, i)
-            print *, "i ppt pnt", i, pp(levs + 1, i), pn(levs + 1, i)
+            ! print *, ' Error in vertical_cell_ppm_intp for domain values '
+            ! print *, "i pp1 pn1", i, pp(1, i), pn(1, i)
+            ! print *, "i ppt pnt", i, pp(levs + 1, i), pn(levs + 1, i)
             istat = istat + 1
          end if
       end do
       !$acc end parallel
-      !$acc wait(async_id)
       if (istat .ne. 0) then
          print *, "istat=", istat
          call exit(2)
@@ -2405,9 +2430,10 @@ contains
       !    call abort
       ! end if
 
-      !$acc host_data use_device(th,dqlist)
-      istat = cudaMemsetAsync(th, 0., size(th), stream)
-      istat = cudaMemsetAsync(dqlist, 0., size(dqlist), stream)
+      !$acc host_data use_device(th,dqlist,kklist)
+      istat = cudaMemsetAsync(th, real(0.0, RTYPE), size(th), stream)
+      istat = cudaMemsetAsync(dqlist, real(0.0, RTYPE), size(dqlist), stream)
+      istat = cudaMemsetAsync(kklist, 1, size(kklist), stream)
       !$acc end host_data
       ! ****************************************
       ! prepare thickness for grid
@@ -2423,11 +2449,9 @@ contains
       ! ****************************************
       ! find kkh
       ! ****************************************
-      !$acc parallel loop async(async_id) &
+      !$acc parallel loop collapse(2) async(async_id) &
       !$acc& private(left,right,mid)
       do i = 1, nxy
-         kklist(1, i) = 1
-         !$acc loop
          do k = 1, levs
             left = 1
             right = levs + 1
@@ -2447,55 +2471,64 @@ contains
       ! prepare location with monotonic concerns
       ! ************************************************************
       !$acc parallel loop collapse(2) async(async_id)&
-      !$acc& private(massbot,masstop,massm,massc,massp,dqi,dqimax,dqimin) &
       !$acc& create(dqmono)
       do i = 1, nxy
          do n = 1, nvars
-            massbot = (3.*hh(1, i) + hh(2, i))*qq(1, n, i) - 2.*hh(1, i)*qq(2, n, i)
-            massm = massbot/(hh(1, i) + hh(2, i))
-            massc = qq(1, n, i)
-            massp = qq(1 + 1, n, i)
-            dqi = 0.25*(massp - massm)
-            dqimax = max(massm, massc, massp) - massc
-            dqimin = massc - min(massm, massc, massp)
-            dqmono(1, n, i) = sign(min(abs(dqi), dqimin, dqimax), dqi)
-            !$acc loop vector
-            do k = 2, levs - 1
-               massp = qq(k + 1, n, i)
+            !$acc loop vector private(massbot, masstop, massm, massc, massp, dqi, dqimax, dqimin, hhm, hhc, hhp, dqmono_cur, dqmono_pre)
+            do k = 1, levs
+               hhc = hh(k, i)
                massc = qq(k, n, i)
-               massm = qq(k - 1, n, i)
+               if (k .eq. 1) then
+                  hhp = hh(k + 1, i)
+                  massp = qq(k + 1, n, i)
+
+                  massbot = (3.*hhc + hhp)*massc &
+                            - 2.*hhc*massp
+                  massm = massbot/(hhc + hhp)
+               else if (k .eq. levs) then
+                  hhm = hh(k - 1, i)
+                  massm = qq(k - 1, n, i)
+
+                  masstop = (3.*hhc + hhm)*massc &
+                            - 2.*hhc*massm
+                  massp = masstop/(hhc + hhm)
+               else
+                  massm = qq(k - 1, n, i)
+                  massp = qq(k + 1, n, i)
+               end if
                dqi = 0.25*(massp - massm)
                dqimax = max(massm, massc, massp) - massc
                dqimin = massc - min(massm, massc, massp)
                dqmono(k, n, i) = sign(min(abs(dqi), dqimin, dqimax), dqi)
             end do
 
-            masstop = (3.*hh(levs, i) + hh(levs - 1, i))*qq(levs, n, i) &
-                      - 2.*hh(levs, i)*qq(levs - 1, n, i)
-            massp = masstop/(hh(levs, i) + hh(levs - 1, i))
-            massc = qq(levs, n, i)
-            massm = qq(levs - 1, n, i)
-            dqi = 0.25*(massp - massm)
-            dqimax = max(massm, massc, massp) - massc
-            dqimin = massc - min(massm, massc, massp)
-            dqmono(levs, n, i) = sign(min(abs(dqi), dqimin, dqimax), dqi)
             ! ************************************************************
             ! compute value at interface with momotone
             ! ************************************************************
-            !$acc loop vector
-            do k = 2, levs
-               qmi(k, n, i) = (qq(k - 1, n, i)*hh(k, i) + qq(k, n, i)*hh(k - 1, i)) &
-                              /(hh(k, i) + hh(k - 1, i)) &
-                              + (dqmono(k - 1, n, i) - dqmono(k, n, i))/3.0
+            !$acc loop vector private(massc, massm, hhc, hhm, dqmono_cur, dqmono_pre)
+            do k = 1, levs
+               massc = qq(k, n, i)
+               if (k .eq. 1) then
+                  qmi(k, n, i) = massc
+               else
+                  massm = qq(k - 1, n, i)
+                  hhc = hh(k, i)
+                  hhm = hh(k - 1, i)
+                  dqmono_cur = dqmono(k, n, i)
+                  dqmono_pre = dqmono(k - 1, n, i)
+                  qmi(k, n, i) = (massm*hhc + massc*hhm)/(hhc + hhm) &
+                                 + (dqmono_pre - dqmono_cur)/3.0
+                  qpi(k - 1, n, i) = qmi(k, n, i)
+               end if
+
+               if (k .eq. levs) then
+                  qmi(k, n, i) = massc
+                  qpi(k, n, i) = massc
+               end if
+               if (k .eq. 2) then
+                  qpi(k - 1, n, i) = massm
+               end if
             end do
-            !$acc loop vector
-            do k = 1, levs - 1
-               qpi(k, n, i) = qmi(k + 1, n, i)
-            end do
-            qmi(1, n, i) = qq(1, n, i)
-            qpi(1, n, i) = qq(1, n, i)
-            qmi(levs, n, i) = qq(levs, n, i)
-            qpi(levs, n, i) = qq(levs, n, i)
          end do
       end do
       !$acc end parallel loop
@@ -2504,29 +2537,32 @@ contains
       ! do monotonicity
       ! ****************************************
       if (mono .eq. 1) then
-         !$acc parallel loop collapse(2) async(async_id)&
-         !$acc private(c1,c2)
+         !$acc parallel loop collapse(3) async(async_id)&
+         !$acc private(c1, c2, qq_t, qmi_t, qpi_t)
          do i = 1, nxy
             do n = 1, nvars
-
                do k = 1, levs
-                  c1 = qpi(k, n, i) - qq(k, n, i)
-                  c2 = qq(k, n, i) - qmi(k, n, i)
+                  qq_t = qq(k, n, i)
+                  qmi_t = qmi(k, n, i)
+                  qpi_t = qpi(k, n, i)
+
+                  c1 = qpi_t - qq_t
+                  c2 = qq_t - qmi_t
                   if (c1*c2 .le. 0.0) then
-                     qmi(k, n, i) = qq(k, n, i)
-                     qpi(k, n, i) = qq(k, n, i)
+                     qmi_t = qq_t
+                     qpi_t = qq_t
                   end if
-               end do
 
-               do k = 1, levs
-                  c1 = (qpi(k, n, i) - qmi(k, n, i)) &
-                       *(qq(k, n, i) - 0.5*(qpi(k, n, i) + qmi(k, n, i)))
-                  c2 = (qpi(k, n, i) - qmi(k, n, i))*(qpi(k, n, i) - qmi(k, n, i))/6.
+                  c1 = (qpi_t - qmi_t) &
+                       *(qq_t - 0.5*(qpi_t + qmi_t))
+                  c2 = (qpi_t - qmi_t)*(qpi_t - qmi_t)/6.
                   if (c1 .gt. c2) then
-                     qmi(k, n, i) = 3.*qq(k, n, i) - 2.*qpi(k, n, i)
+                     qmi_t = 3.*qq_t - 2.*qpi_t
                   else if (c1 .lt. -c2) then
-                     qpi(k, n, i) = 3.*qq(k, n, i) - 2.*qmi(k, n, i)
+                     qpi_t = 3.*qq_t - 2.*qmi_t
                   end if
+                  qmi(k, n, i) = qmi_t
+                  qpi(k, n, i) = qpi_t
                end do
             end do
          end do
@@ -2538,7 +2574,6 @@ contains
       ! ************************************************************
       !$acc parallel loop async(async_id) &
       !$acc& private(th2,th3,kkh,thp,thm,thc)
-      !! !$acc& create(thp,thm,thc)
       do i = 1, nxy
          !$acc loop vector
          do kh = 2, levs + 1
@@ -2565,11 +2600,10 @@ contains
       end do
       !$acc end parallel loop
 
-      !$acc parallel loop collapse(2) gang async(async_id) &
-      !$acc& private(k,kl,kh,kkh,kkl,tl,dqh,dql,dpp,dqq)
+      !$acc parallel loop collapse(3) gang async(async_id) &
+      !$acc& private(k,kl,kh,kkh,kkl,tl,dqh,dql,dpp,dqq,kk)
       do i = 1, nxy
          do n = 1, nvars
-            !$acc loop vector independent
             do k = 1, levs
                kl = k
                kh = k + 1
@@ -2598,10 +2632,10 @@ contains
                      dqq = dqq + qq(kk, n, i)*hh(kk, i)
                   end do
                   qn(k, n, i) = dqq/dpp
-               else
-                  print *, ' Error in vertical_cell_ppm_intp for lev messed up '
-                  print *, ' pn ', (pn(kk, i), kk=1, levs + 1)
-                  print *, ' pp ', (pp(kk, i), kk=1, levs + 1)
+                  ! else
+                  !    print *, ' Error in vertical_cell_ppm_intp for lev messed up '
+                  !    print *, ' pn ', (pn(kk, i), kk=1, levs + 1)
+                  !    print *, ' pp ', (pp(kk, i), kk=1, levs + 1)
                end if
             end do     ! end of k loop
          end do
@@ -2910,6 +2944,7 @@ contains
       real(kind=RTYPE) qpi(lons + 1, lats, levs, nv)
       integer kklist(lons + 1, lats, levs)
       integer kstr(lats, levs), kend(lats, levs)
+
       !
       integer im_inp(lats), im_out(lats), jm
       integer lons, lonn, lonp, lats, levs, nv
@@ -2980,6 +3015,7 @@ contains
                   qmi(i, j, k, n) = mass(kkl - 1, j, k, n)*fm(kkl, j, k) &
                                     + mass(kkl, j, k, n)*fn(kkl, j, k) &
                                     + (dqmono(kkl - 1) - dqmono(kkl))*r3
+
                   qpi(i, j, k, n) = mass(kkl, j, k, n)*fm(kkl + 1, j, k) &
                                     + mass(kkl + 1, j, k, n)*fn(kkl + 1, j, k) &
                                     + (dqmono(kkl) - dqmono(kkl + 1))*r3
@@ -3271,7 +3307,6 @@ contains
          check_max = max(check_max, loc_max)
       end do
       !$acc end kernels
-      !$acc wait(async_id)
 
       if (check_max .ge. check_point) then
          nstep = int(check_max/safe_step) + 1

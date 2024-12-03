@@ -1,3 +1,5 @@
+#define NCCLCHECK(ierr) call nccl_check_helper(ierr, __FILE__, __LINE__)
+
 subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
                       , rad, cosl, ut, vt, vornow, divnow, temnow, eps4 &
                       , trefs)
@@ -54,24 +56,22 @@ subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
    !$acc parallel loop gang async(async_id) private(wt)
    do k = 1, lev
       wt = 0.0
-      !$acc loop worker reduction(max:wt)
+      !$acc loop vector collapse(2) reduction(max:wt) private(j,nxj,xx)
       do jj = 1, jlistnum
-         j = jlist1(jj)
-         nxj = nxdef_2d(j)
-         xx = rad/cosl(j)
-         !$acc loop vector
-         do i = 1, nxj
-            wt = max(wt, xx*sqrt(ut(i, k, jj)**2 + vt(i, k, jj)**2))
+         do i = 1, nxp
+            j = jlist1(jj)
+            nxj = nxdef_2d(j)
+            if (i .le. nxj) then
+               xx = rad/cosl(j)
+               wt = max(wt, xx*sqrt(ut(i, k, jj)**2 + vt(i, k, jj)**2))
+            end if
          end do
       end do
       wmax(k) = wt
    end do
 
-   !$acc wait(async_id)
-
    !$acc host_data use_device(wmax, wmax_buf)
-   call MPI_ALLREDUCE(wmax, wmax_buf, lev, MPI_REAL8, &
-                      MPI_MAX, MPI_COMM_gfs, IERR)
+   NCCLCHECK(ncclAllReduce(wmax, wmax_buf, lev, ncclFloat64, ncclMax, nccl_comm_gfs, stream))
    !$acc end host_data
 
    !$acc parallel loop async(async_id)
@@ -88,7 +88,7 @@ subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
       hfilt = hfilt/dta
    end if
 
-   !$acc parallel loop gang async(async_id) private(KL, kfac, dect, dec, facd, facv, fact)
+   !$acc parallel loop gang private(KL, kfac, dect, dec, facd, facv, fact) async(async_id)
    do k = 1, levp
       KL = Llist(k)
       kfac = min(coefu*max(float(hdk2(1) - KL), 0.), factop)
@@ -151,7 +151,6 @@ subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
       ! Present on device: temnow, vornow, divnow, Llist, mlist
       call filter_top_gpu(jtrun, jtmax, levp, hdk1, ncld, temnow, vornow, divnow)
    end if
-   !$acc wait(async_id)
 !--------------------------------------------------------------------
    return
 end
@@ -168,7 +167,6 @@ subroutine whdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
    use param, only: octahedral
    use openacc
    use cudafor
-   use mpi
 
    implicit none
 
@@ -200,25 +198,24 @@ subroutine whdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
    !$acc parallel loop gang async(async_id) private(wt)
    do k = 1, lev
       wt = 0.0
-      !$acc loop worker reduction(max:wt) private(j, nxj, xx)
+      !$acc loop vector collapse(2) reduction(max:wt) private(j, nxj, xx)
       do jj = 1, jlistnum
-         j = jlist1(jj)
-         nxj = nxdef_2d(j)
-         xx = rad/cosl(j)
-         !$acc loop vector
-         do i = 1, nxj
-            wt = max(wt, xx*sqrt(ut(i, k, jj)**2 + vt(i, k, jj)**2))
+         do i = 1, nxp
+            j = jlist1(jj)
+            nxj = nxdef_2d(j)
+            if (i .le. nxj) then
+               xx = rad/cosl(j)
+               wt = max(wt, xx*sqrt(ut(i, k, jj)**2 + vt(i, k, jj)**2))
+            end if
          end do
       end do
       wmax(k) = wt
    end do
 
-   !$acc wait(async_id)
-
    !$acc host_data use_device(wmax, wmax_buf)
-   call MPI_ALLREDUCE(wmax, wmax_buf, lev, MPI_REAL8, &
-                      MPI_MAX, MPI_COMM_gfs, IERR)
+   NCCLCHECK(ncclAllReduce(wmax, wmax_buf, lev, ncclFloat64, ncclMax, nccl_comm_gfs, stream))
    !$acc end host_data
+
    !$acc parallel loop async(async_id)
    do i = 1, lev
       wmax(i) = wmax_buf(i)
@@ -250,20 +247,22 @@ subroutine whdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
       facd = max(1., kfac)*amp
       facv = max(1., kfac)*amp
       fact = max(1., kfac)*amp
-      !$acc loop worker private(mf)
+      !$acc loop worker private(mf, c1, c2, c3)
       do m = 1, mlistnum
          mf = mlist(m)
-         !$acc loop vector private(c1, c2, c3)
-         do n = mf, jtrun
-            c1 = 1.+dta*facv*hfilt*eps4(n, m)**powd
-            c2 = 1.+dta*facd*hfilt*eps4(n, m)**powd
-            c3 = 1.+dta*fact*hfilt*eps4(n, m)**powd
-            vornow(k, 1, n, m) = vornow(k, 1, n, m)/c1
-            vornow(k, 2, n, m) = vornow(k, 2, n, m)/c1
-            divnow(k, 1, n, m) = divnow(k, 1, n, m)/c2
-            divnow(k, 2, n, m) = divnow(k, 2, n, m)/c2
-            temnow(k, 1, n, m) = (temnow(k, 1, n, m) + (c3 - 1.)*trefs(k, 1, n, m))/c3
-            temnow(k, 2, n, m) = (temnow(k, 2, n, m) + (c3 - 1.)*trefs(k, 2, n, m))/c3
+         !$acc loop vector
+         do n = 1, jtrun
+            if (n .ge. mf) then
+               c1 = 1.+dta*facv*hfilt*eps4(n, m)**powd
+               c2 = 1.+dta*facd*hfilt*eps4(n, m)**powd
+               c3 = 1.+dta*fact*hfilt*eps4(n, m)**powd
+               vornow(k, 1, n, m) = vornow(k, 1, n, m)/c1
+               vornow(k, 2, n, m) = vornow(k, 2, n, m)/c1
+               divnow(k, 1, n, m) = divnow(k, 1, n, m)/c2
+               divnow(k, 2, n, m) = divnow(k, 2, n, m)/c2
+               temnow(k, 1, n, m) = (temnow(k, 1, n, m) + (c3 - 1.)*trefs(k, 1, n, m))/c3
+               temnow(k, 2, n, m) = (temnow(k, 2, n, m) + (c3 - 1.)*trefs(k, 2, n, m))/c3
+            end if
          end do
       end do
    end do
@@ -273,9 +272,10 @@ subroutine whdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
    do k = 1, hdk1
       if (wmax(k) .gt. windmax3) windchk = .true.
    end do
-   if (windchk) &
+   if (windchk) then
       ! Present on device: temnow, vornow, divnow, Llist, mlist
       call filter_top_gpu(jtrun, jtmax, levp, hdk1, ncld, temnow, vornow, divnow)
+   end if
    return
 end
 
@@ -302,7 +302,7 @@ subroutine filter_top_gpu(jtrun, jtmax, lev, ktop, ncld, temnow &
 
    real wvn_top(ktop + 1), djt
 
-   integer k, mode, m, mf, n, nflt, IERR, KL
+   integer k, mode, m, mf, n, nflt, KL
    real pi, flt, fac
    integer async_id, istat, ierr
    integer(kind=cuda_stream_kind) :: stream

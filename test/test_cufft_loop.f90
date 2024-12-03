@@ -9,10 +9,12 @@ program test_cufft_loop
 end program test_cufft_loop
 
 subroutine cufft_loop_unit(jlistnum, my_max, jump, m, isign)
+   use const, only: RTYPE
+
    integer :: jlistnum, my_max, jump, m, isign
-   real(8), dimension(jump, m, my_max) :: cc
-   real(8), dimension(jump, m, my_max) :: cc_cufft
-   real(8), dimension(jump, m, my_max) :: work
+   real(kind=RTYPE), dimension(jump, m, my_max) :: cc
+   real(kind=RTYPE), dimension(jump, m, my_max) :: cc_cufft
+   real(kind=RTYPE), dimension(jump, m, my_max) :: work
    real, dimension(4096, 2560) :: trigsj
    real, dimension(19, 2560) :: ifaxj
    integer, dimension(2560) :: jlist1
@@ -34,7 +36,11 @@ subroutine cufft_loop_unit(jlistnum, my_max, jump, m, isign)
    do jj = 1, jlistnum
       j = jlist1(jj)
       nxj = nxdef(j)
+#ifdef SP
+      call rfftmlt_sp(cc(1, 1, jj), work(1, 1, jj), trigsj(1, j), ifaxj(1, j), 1, jump, nxj, m, isign)
+#else
       call rfftmlt(cc(1, 1, jj), work(1, 1, jj), trigsj(1, j), ifaxj(1, j), 1, jump, nxj, m, isign)
+#endif
    end do
 
    !$acc enter data copyin(cc_cufft) create(work) async(1)
@@ -42,12 +48,12 @@ subroutine cufft_loop_unit(jlistnum, my_max, jump, m, isign)
    !$acc exit data copyout(cc_cufft) delete(work) async(1)
    !$acc wait(1)
 
-   if (all(abs(cc - cc_cufft) <= 1e-10)) then
-      PRINT *, "test_cufft_loop passed."
-   else
-      PRINT *, "test_cufft_loop failed."
-      call exit(1)
-   end if
+#ifdef SP
+   call assert_allclose(cc_cufft, size(cc_cufft), cc, size(cc), 1e-4_4, 1e-4_4, "Array cc")
+#else
+   call assert_allclose(cc_cufft, size(cc_cufft), cc, size(cc), 1e-10_8, 1e-10_8, "Array cc")
+#endif
+
 end subroutine cufft_loop_unit
 
 subroutine cufft_plan_cache_unit(inc, jump, n, m, isign)

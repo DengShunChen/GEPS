@@ -1,8 +1,3 @@
-#ifdef USE_CUDA
-#define ndslfv_monoadvv ndslfv_monoadvv_gpu
-#define ndslfv_monoadvv_fgnl ndslfv_monoadvv_fgnl_gpu
-#define ndslfv_update  ndslfv_update_gpu
-#endif
        subroutine intgrt
 !
 !***********************************************************************
@@ -29,12 +24,6 @@
           use mod_typhoon
           use noah
           use namelist_soilveg
-#ifdef USE_CUDA
-          use mod_ndslfv_monoadv_gpu, only: ndslfv_monoadvh_fgnl_gpu, &
-                                            ndslfv_monoadvh_gpu, &
-                                            ndslfv_monoadvv_gpu, ndslfv_monoadvv_fgnl_gpu, &
-                                            ndslfv_update_gpu
-#endif
 !-----------------------------------------------------------------------
           USE mod_sitgrid
           USE mod_sit_vdiff, ONLY: sit_vdiff_end, cal_ratioBlending
@@ -127,11 +116,9 @@
 !
 !   restart  : write(7) work array
 !
-          real, dimension(:), allocatable :: work_io
           integer itauezz
           real dtauzz, tautv
           character cmdxx*256
-          integer len1, len2
 !-------------------------------------------------------------------
           integer i, j, k, m, n, jj, kk, mf, kw, nxj, nml, lmax, leng, nxmy, &
              jlim, mlst, mlmax2, itaui, itaue, itauo, itaup, &
@@ -196,10 +183,6 @@
           tm_1 = mpi_wtime()
           tm_2 = mpi_wtime()
 #endif
-          ! ------------------------------------------------------------
-          ! << openacc allocate data >>
-          !$acc enter data create(um,vm)
-          ! ------------------------------------------------------------
 !      fsit=-99.             !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
           !default fsit<=0., turn on sit_vdiff every tau
           ic_sit = -99             !if fsit>0., store now tau is the ic_sit times when sit_vidff is turn on
@@ -243,7 +226,7 @@
 !                    , ut,vt,tt,qt,phi,rdiv                                       &
 !                    , km_soil,smc,slc,stc,canopy,zice,ggdef,gmdef )
 
-          raintot = 0.
+!          raintot = 0.
           raincu = 0.
           rainlp = 0.
           raincu6 = 0.
@@ -256,6 +239,7 @@
           if (.not. restrt) then
              rld = 0.
              sld = 0.
+             raintot = 0.
           end if
           recn = 1
           rdivm = 0.
@@ -380,7 +364,7 @@
                 rainlp3(i, jj) = 0.
                 raincu1(i, jj) = 0.
                 rainlp1(i, jj) = 0.
-                raintot(i, jj) = 0.
+!                raintot(i, jj) = 0.
                 runoff(i, jj) = 0.  ! soil
                 tmax(i, jj) = 0.
                 tmin(i, jj) = 0.
@@ -461,7 +445,7 @@
           dtx_tau = dtx/3600.
 
           if (myrank .eq. 0) then
-             print *, 'forcast begin tau=', itaui, ' to tau=', itaue
+             print *, 'forecast begin tau=', itaui, ' to tau=', itaue
 
 !     ! for io quilting
 !      if(io_quilting)then
@@ -598,13 +582,6 @@
 !
 !     advet grid non-linear forcing from t-dt/2 to t+dt/2 via NDSL advection
 !
-#ifdef USE_CUDA
-             !$acc update device(ut, vt, tt, um, vm)
-             !$acc data copyout(vdzonl,vdmerd,ddtemp)
-             call ndslfv_monoadvh_fgnl_gpu(vdzonl, vdmerd, ddtemp, &
-                                           ut, vt, tt, um, vm, dtahi, xy, 3, forward)
-             !$acc end data
-#else
              call mpe2d_transpose_ndsl_p2f(um, ut_sl, &
                                            nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, row_comm)
              call mpe2d_transpose_ndsl_p2f(vm, vt_sl, &
@@ -628,7 +605,6 @@
                                            nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, row_comm)
              call mpe2d_transpose_ndsl_f2p(ttm_sl, ddtemp, &
                                            nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, row_comm)
-#endif
 !
 !     calculate vertical velocity at mid-point
 !
@@ -662,43 +638,6 @@
              call trngra3(jtrun, jtmax, nx, levp, my, my_max, cim, poly, dpoly &
                           , hldten, dlphi, dtphi, nsizey)
              !
-#ifdef USE_CUDA
-             !$acc data async(async_id) &
-             !$acc& present_or_copyin(jlistnum, jlist1, nxdef_2d, nxjp, &
-             !$acc& nxjp_acc, lev, nxptot, dsigma, &
-             !$acc& dtahi, onocos, radsq) &
-             !$acc& create(vdzonl, vdmerd, ddtemp, &
-             !$acc& vdmerdg, vdzonlg, &
-             !$acc& vdzonlrp, vdmerdrp, &
-             !$acc& dtphi, dlphi, pdot, ptm)
-
-             !$acc update device(vdzonl, vdmerd, ddtemp) async(async_id)
-             !$acc update device(pdot, ptm) async(async_id)
-             !$acc update device(vdzonlg, vdmerdg) async(async_id)
-             !$acc update device(dtphi, dlphi) async(async_id)
-
-             !$acc parallel loop collapse(2) async(async_id) &
-             !$acc& private(j,nxj)
-             do jj = 1, jlistnum
-                do k = 1, lev
-                   j = jlist1(jj)
-                   nxj = nxdef_2d(j)
-                   !$acc loop vector
-                   do i = 1, nxj
-                      vdmerdrp(i, k, jj) = vdmerdg(i, k, jj) - dtphi(i, k, jj)/radsq/onocos(j)
-                      vdzonlrp(i, k, jj) = vdzonlg(i, k, jj) - dlphi(i, k, jj)/radsq
-                   end do
-                end do
-             end do !jj = 1,jlistnum
-
-             call ndslfv_update(nxjp, vdzonl, vdmerd, vdzonlrp, vdmerdrp, dtahi, forward)
-
-             call ndslfv_monoadvv_fgnl(vdzonl, vdmerd, ddtemp, pdot, ptm &
-                                       , nxjp, dtahi, 3, forward)
-             !$acc update self(vdzonl,vdmerd,ddtemp) async(async_id)
-             !$acc end data
-             !$acc wait(async_id)
-#else
              do jj = 1, jlistnum
                 j = jlist1(jj)
                 nxj = nxdef_2d(j)
@@ -717,7 +656,6 @@
              call ndslfv_monoadvv_fgnl(vdzonl, vdmerd, ddtemp, pdot, ptm &
                                        , nxjp, dtahi, 3, forward)
              !      enddo
-#endif
 
 !CWB2021 ndsl single precision test
 
@@ -885,52 +823,6 @@
                       , hldten, 1, nsizey)
           call trngra3(jtrun, jtmax, nx, levp, my, my_max, cim, poly, dpoly &
                        , hldten, dlphi, dtphi, nsizey)
-
-#ifdef USE_CUDA
-          !$acc data present_or_copyin(jlistnum,jlist1,nxdef_2d, nxjp, &
-          !$acc& nxjp_acc, ncld, lev, nxptot, ndslvvar, dsigma,  &
-          !$acc& dtah, onocos,radsq &
-          !$acc& )&
-          !$acc& create(vdmerdg, vdzonlg, pdot, ptm) &
-          !$acc& async(async_id)
-
-          !$acc update device(tt, ut, vt, qm, um, vm) async(async_id)
-          !$acc update device(dtphi, dlphi) async(async_id)
-          !$acc update device(vdmerdg, vdzonlg) async(async_id)
-          !$acc update device(ptm, pdot) async(async_id)
-
-          !$acc parallel loop collapse(2) async(async_id) &
-          !$acc& private(j,nxj)
-          do jj = 1, jlistnum
-             do k = 1, lev
-                j = jlist1(jj)
-                nxj = nxdef_2d(j)
-                !$acc loop vector
-                do i = 1, nxj
-                   vdmerdg(i, k, jj) = vdmerdg(i, k, jj) - dtphi(i, k, jj)/radsq/onocos(j)
-                   vdzonlg(i, k, jj) = vdzonlg(i, k, jj) - dlphi(i, k, jj)/radsq
-                end do
-             end do
-          end do !jj = 1,jlistnum
-          !$acc wait(async_id)
-          ! ****************************************
-          ! Semi-Lagrangian
-          !       Horizontal Advection
-          ! ****************************************
-          call ndslfv_monoadvh_gpu(tt, pten, ut, vt, qt, qm, &
-                                   um, vm, dtah, xy, forward)
-          ! ****************************************
-          !       update all horizontal informations
-          ! ****************************************
-          call ndslfv_update(nxjp, ut, vt, vdzonlg, vdmerdg, dtah, forward)
-          ! ****************************************
-          !       Vertical Advection
-          ! ****************************************
-          call ndslfv_monoadvv(tt, qt, ut, vt, pdot, ptm, nxjp, dtah, forward)
-          !$acc update self(tt,ut,vt,qt) async(async_id)
-          !$acc end data
-          !$acc wait(async_id)
-#else
 !
           do jj = 1, jlistnum
              j = jlist1(jj)
@@ -1014,7 +906,7 @@
 !      do itt = 1,itter
           call ndslfv_monoadvv(tt, qt, ut, vt, pdot, ptm, nxjp, dtah, forward)
 !      enddo
-#endif
+
 !CWB2021 ndsl single precision test
 
           call mpe2d_unify_nx(ww1, deldm)
@@ -1173,7 +1065,7 @@
 
 
           if (yesdia) then
-             qp(:, :, :) = qt(:, :, :)
+!             qp(:, :, :) = qt(:, :, :)
              call diabat(fwd, docup, dodry, dolsp, dopbl, dorad, doshl, dograv, tofd &
                          , nx, my, my_max, lev, ncld, nmcup, nmpbl, nmland, nmshl, cgw &
 !                         , idg, jdg, ldiag, dtx, tau, hours, julian, year, yrd &
@@ -1217,9 +1109,11 @@
              call rayleifr(nx, my, my_max, lev, rad, cosl, dt, ut, vt)
 
              if (two_loop) then
-                ! adjustmen of surface pressure, virtual potential
-                ! temperature and all tracers
-                if (mass_dp) call adjptq(dta, plnow, pltemp)
+                if (mass_dp) then
+                  call mpe2d_unify_nx(ww1,pt)
+                  call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1 &
+                              ,plnow,nsizey)
+                endif
                 call joinrs(cc, tt, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
                 call tranrs(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc &
                             , temnow, 1, nsizey)
@@ -1229,10 +1123,11 @@
                 call trandv(jtrun, jtmax, nx, my, my_max, lev, ut, vt, weight, cim &
                             , onocos, poly, dpoly, vornow, divnow, nsizey)
              else
-                ! adjustmen of surface pressure, virtual potential
-                ! temperature and all tracers for one loop
-                if (mass_dp) call adjptq(dta, pltemp, plten)
-
+                if (mass_dp) then
+                  call mpe2d_unify_nx(ww1,ptp)
+                  call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1 &
+                              ,plten,nsizey)
+                endif
              end if ! two_loop
 
           end if    ! end of (yesdia)
@@ -1521,7 +1416,7 @@
 
         if(myrank==0) call system_clock(toutsrt)
             if(io_quilting)then
-              write( keydoit,'(A6,I4.4,A4,I12.12,A8)') &
+              write( keydoit,'(A6,I4.4,A4,I12.12,A8)')    &
               "OPEN..",itau,"....",idtg,"H...DOIT"
               ntag=ntag+1
               call mpe_send_key(keydoit,ntag,istat)
@@ -1531,7 +1426,8 @@
              if (histim .or. ltrack) then
                 !itau = tau + 0.1
                 itau = NINT(tau)
-                if (myrank .eq. 0) print *, ' history file written at tau= ', itau
+                if (myrank .eq. 0) print *,               &
+                   ' history file written at tau= ', itau
 !
 ! output gwr or gwet
 ! in new soil model, gwr did not exist
@@ -1550,7 +1446,8 @@
                       if (istyp(i, jj) .ne. 0) then
                          www = smc(i, 1, jj)*0.2 + smc(i, 2, jj)*0.8
                          gwet(i, jj) = (www - wltsmc(istyp(i, jj)))/ &
-                                       (refsmc(istyp(i, jj)) - wltsmc(istyp(i, jj)))
+                                       (refsmc(istyp(i, jj)) -       &
+                                        wltsmc(istyp(i, jj)))
                       else
                          gwet(i, jj) = 1.0
                       end if
@@ -1568,42 +1465,23 @@
 800                   format(i7.7)
                       write (ccore, '(i4.4)') myrank
 !
-                      rfile = trim(cwbout)//'cwbout_'//ctau
+                      cmdxx =' '
+                      cmdxx = 'mkdir -p '//trim(cwbout)//'cwbout_'//ctau
+                      call system(trim(cmdxx))
+                      rfile = trim(cwbout)//'cwbout_'//ctau//'/'//ccore
+                      i = 200 + myrank
+                      open (i, file=rfile, form='unformatted')
+                      write(i) vornow
+                      write(i) divnow
+                      write(i) temnow
+                      write(i) vorold
+                      write(i) divold
+                      write(i) temold
+                      write(i) trefs
+                      write(i) plnow
+                      write(i) plold
+                      close(i)
 !
-                      if (myrank .eq. 0) open (unit=7, file=rfile, form='unformatted')
-                      len1 = 2*levp*jtrun*jtmax*nsize
-                      len2 = 2*jtrun*jtmax*nsize
-                      allocate (work_io(len1))
-                      call mpe_gather_io(work_io, vornow, len1/nsize, nsize)
-                      if (myrank == 0) write (7) work_io
-                      call mpe_gather_io(work_io, divnow, len1/nsize, nsize)
-                      if (myrank == 0) write (7) work_io
-                      call mpe_gather_io(work_io, temnow, len1/nsize, nsize)
-                      if (myrank == 0) write (7) work_io
-                      call mpe_gather_io(work_io, vorold, len1/nsize, nsize)
-                      if (myrank == 0) write (7) work_io
-                      call mpe_gather_io(work_io, divold, len1/nsize, nsize)
-                      if (myrank == 0) write (7) work_io
-                      call mpe_gather_io(work_io, temold, len1/nsize, nsize)
-                      if (myrank == 0) write (7) work_io
-                      call mpe_gather_io(work_io, trefs, len1/nsize, nsize)
-                      if (myrank == 0) then
-                         write (7) work_io
-                         call flush (7)
-                      end if
-                      deallocate (work_io)
-                      allocate (work_io(len2))
-                      call mpe_gather_io(work_io, plnow, len2/nsize, nsize)
-                      if (myrank == 0) write (7) work_io
-                      call mpe_gather_io(work_io, plold, len2/nsize, nsize)
-                      if (myrank == 0) write (7) work_io
-!           call mpe_gather_io(work_io,dsqgeo,len2/nsize,nsize)
-!           call mpe_gather_io(work_io,spgeo,len2/nsize,nsize)
-                      deallocate (work_io)
-                      if (myrank == 0) then
-                         call flush (7)
-                         close (7)
-                      end if
                       cmdxx = 'mkdir -p '//trim(phyout)//'phyout_'//ctau
                       call system(trim(cmdxx))
                       rfile = trim(phyout)//'phyout_'//ctau//'/'//ccore
@@ -1627,6 +1505,7 @@
                       write (i) raincu
                       write (i) rainlp
                       write (i) totalp
+                      write (i) raintot
                       write (i) curate
                       write (i) plcl
                       write (i) cumtop
@@ -2019,11 +1898,6 @@
           else if (istat .eq. 1) then
              if (myrank .eq. 0) then
                 print *, ' finished integration '
-                ! ------------------------------------------------------------
-                ! << openacc deallocate data >>
-                !$acc exit data delete(um,vm)
-                ! ------------------------------------------------------------
-
                 ! for io quilting
                 if (io_quilting) then
 !         ntag=ntag+1

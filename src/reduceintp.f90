@@ -14,7 +14,8 @@
 !
       real(kind=RTYPE) old(lonf),new(lonf)
       real(kind=RTYPE) xpast(lonf+1),xnext(lonf+1)
-      real      two_pi,dxp,dxf,hfdxp,hfdxf,sc,pi
+      real(kind=RTYPE) sc
+      real      two_pi,dxp,dxf,hfdxp,hfdxf,pi
 !
 
 ! ..................................

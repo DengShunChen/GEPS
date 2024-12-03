@@ -1,3 +1,8 @@
+!#define SL_sedi
+!#define new_saturation
+!#define sat_predict
+!#define use_declination
+!#define use_cpm
 !WRF:MODEL_LAYER:PHYSICS
 !
 
@@ -98,6 +103,9 @@ MODULE module_mp_gsfcgce_3ice_nuwrf
    REAL,    PRIVATE, DIMENSION( 31 ) ::    BergCon1,  BergCon2,       &
                                            BergCon3,  BergCon4
 
+   ! critical q of hydrometeor characteristics (eg. fall speed, radius)
+   REAL,    PRIVATE :: cwmin, cimin, crmin, csmin, cgmin
+
 !
    REAL,    PRIVATE, DIMENSION( 31 )  ::      aa1,  aa2
    DATA aa1/.7939e-7, .7841e-6, .3369e-5, .4336e-5, .5285e-5,         &
@@ -115,6 +123,32 @@ MODULE module_mp_gsfcgce_3ice_nuwrf
            .4483, .4460, .4433, .4413, .4382,                         &
            .4361/
 
+   real, dimension(0:120) :: itble       ! deposition growth coefficients
+   data itble /1.000000,0.979490,0.959401,0.939723,0.920450,          &
+               0.899498,0.879023,0.857038,0.833681,0.810961,          &
+               0.783430,0.755092,0.703072,0.537032,0.467735,          &
+               0.524807,0.630957,0.812831,1.096478,1.479108,          &
+               1.905461,2.089296,2.290868,2.398833,2.454709,          &
+               2.426610,2.371374,2.290868,2.137962,1.995262,          &
+               1.862087,1.737801,1.621810,1.513561,1.396368,          &
+               1.288250,1.188502,1.096478,1.000000,0.922571,          &
+               0.851138,0.785236,0.724436,0.668344,0.616595,          &
+               0.575440,0.537032,0.501187,0.467735,0.436516,          &
+               0.407380,0.380189,0.354813,0.331131,0.316228,          &
+               0.301995,0.291743,0.285102,0.281838,0.278612,          &
+               0.275423,0.278612,0.281838,0.285102,0.291743,          &
+               0.298538,0.309030,0.319890,0.331131,0.346737,          &
+               0.367282,0.393550,0.426580,0.457088,0.489779,          &
+               0.524807,0.562341,0.609537,0.660693,0.716143,          &
+               0.785236,0.860994,0.954993,1.047129,1.148154,          &
+               1.258925,1.380384,1.496236,1.603245,1.698244,          &
+               1.778279,1.840772,1.883649,1.905461,1.905461,          &
+               1.883649,1.862087,1.840772,1.798871,1.737801,          &
+               1.698244,1.640590,1.584893,1.548817,1.513561,          &
+               1.475707,1.452112,1.428894,1.412538,1.393157,          &
+               1.377209,1.361445,1.348963,1.336596,1.327394,          &
+               1.318257,1.309182,1.303167,1.294196,1.288250,1.279381/
+   real, private, parameter :: thrd = 1./3.
 !JJS 1/3/2008     ^^^^^
 
 !+---+-----------------------------------------------------------------+
@@ -124,6 +158,7 @@ MODULE module_mp_gsfcgce_3ice_nuwrf
 !.. more difficult to integreate with the radar code.
 !.. Values will be defined in subroutine all_flux --- JJS 20140116
       REAL ::     xnor, xnos, xnoh, xnog  
+      REAL ::     rhowater, rhosnow
       REAL ::     rhohail, rhograul
 !      REAL    , PARAMETER ::     xnor = 8.0e6
 !      REAL    , PARAMETER ::     xnos = 1.6e7
@@ -132,6 +167,10 @@ MODULE module_mp_gsfcgce_3ice_nuwrf
 !      REAL    , PARAMETER ::     rhohail = 917.
 !      REAL    , PARAMETER ::     rhograul = 400.
 !+---+-----------------------------------------------------------------+
+
+!.. for terminal velocity and fall_flux :
+      real, private :: consta, constb, constc, constd, o6, cdrag, &
+                       abar, bbar, rhoe_s
 
 CONTAINS
 
@@ -149,8 +188,8 @@ CONTAINS
 !                      ,qsold                                      &
                       ,rho, pii, p, dt_in, z                       &
                       ,ht, dz8w, grav, w                           &
-                      ,rhowater, rhosnow                           &
-                      ,itimestep, xland                            &
+!                      ,rhowater, rhosnow                           &
+                      ,itimestep, xlat, sdec, xland                &
 !                      ,ids,ide, jds,jde, kds,kde                   & ! domain dims
                       ,ims,ime, jms,jme, kms,kme                   & ! memory dims
                       ,its,ite, jts,jte, kts,kte                   & ! tile   dims
@@ -163,8 +202,9 @@ CONTAINS
                       ,ihail, ice2                                 &
 !NUWRF BEGIN
 #ifdef EXT_DIAG
-                      ,physc, physe, physd, physs, physm, physf    &
-                      ,acphysc, acphyse, acphysd, acphyss, acphysm, acphysf &
+!                      ,physc, physe, physd, physs, physm, physf    &
+!                      ,acphysc, acphyse, acphysd, acphyss, acphysm, acphysf &
+                      ,preci3d, precs3d, precg3d, precr3d          &
 #endif
                       ,refc, refr, refi, refs, refg                & ! cloud effective radius
 #if ( WRF_CHEM == 1)
@@ -278,10 +318,11 @@ CONTAINS
   REAL , DIMENSION( ims:ime , jms:jme ) , INTENT(IN) ::       ht
 
   REAL, INTENT(IN   ) ::                                   dt_in, &
-                                                            grav, &
-                                                        rhowater, &
-                                                         rhosnow
-
+                                                            grav
+!                                                        rhowater, &
+!                                                         rhosnow
+  REAL, INTENT(IN   ) :: xlat
+  REAL, INTENT(IN   ) :: sdec  ! sine of solar declination angle
   LOGICAL, INTENT(IN), OPTIONAL :: F_QG
 
 !  LOCAL VAR
@@ -297,6 +338,26 @@ CONTAINS
   REAL    :: dth, dqv, dqrest, dqall, dqall1, rhotot, a1, a2 
  
   LOGICAL :: flag_qg
+
+#ifdef EXT_DIAG
+  REAL, DIMENSION( ims:ime , kms:kme , jms:jme ),                 &
+        INTENT(INOUT) ::                                          &
+!             physc, physe, physd, physs, physm, physf,                  &
+!             acphysc, acphyse, acphysd, acphyss, acphysm, acphysf,      &
+             preci3d, precs3d, precg3d, precr3d
+#else
+  REAL, DIMENSION( ims:ime , kms:kme , jms:jme ) ::                     &
+!             physc, physe, physd, physs, physm, physf,                  &
+!             acphysc, acphyse, acphysd, acphyss, acphysm, acphysf,      &
+             preci3d, precs3d, precg3d, precr3d
+#endif
+ 
+  ! for the conversion of q :
+  real, dimension(its:ite,kts:kte,jts:jte) :: qtot
+
+  ! for sub-cycle time steps :
+  integer :: n, ntimes
+  real :: mp_time, dts
 
 !NUWRF BEGIN
 #if ( WRF_CHEM == 1)
@@ -404,18 +465,46 @@ CONTAINS
 ! JJS 20110525 ^^^^^
 #endif
 
-!c  set up constants used internally in GCE
+   ! convert specific values of q to mixing ratios :
+   qtot = 0.
+   do j = jts, jte
+   do i = its, ite
+   do k = kts, kte
+     qtot(i,k,j) = qv(i,k,j) + ql(i,k,j) + qr(i,k,j)             &
+                   + qi(i,k,j) + qs(i,k,j) + qg(i,k,j)
+     qv(i,k,j) = qv(i,k,j)/(1.-qtot(i,k,j))
+     ql(i,k,j) = ql(i,k,j)/(1.-qtot(i,k,j))
+     qr(i,k,j) = qr(i,k,j)/(1.-qtot(i,k,j))
+     qi(i,k,j) = qi(i,k,j)/(1.-qtot(i,k,j))
+     qs(i,k,j) = qs(i,k,j)/(1.-qtot(i,k,j))
+     qg(i,k,j) = qg(i,k,j)/(1.-qtot(i,k,j))
 
+     ! qtot must be saved as "mixing ratio" :
+     qtot(i,k,j) = qv(i,k,j) + ql(i,k,j) + qr(i,k,j)             &
+                   + qi(i,k,j) + qs(i,k,j) + qg(i,k,j)
+   enddo
+   enddo
+   enddo
+
+   ! set up constants used internally in GCE
    call consat_s (ihail, itaobraun, improve)
-!NUWRF END
 
-! calculte fallflux and precipiation in MKS system
+   ! set sub-cycle time step :
+   mp_time = 300.                !standard sub-cycle time step
+   ntimes = 1                    !number of sub-cycles
+   ntimes = max (ntimes, int (dt_in / min(dt_in, mp_time)))
+   dts = dt_in / real (ntimes)   !real sub-cycle time step
 
-   call fall_flux(    dt_in, qr, qi, qs, qg, p,               &
+   do n = 1, ntimes
+
+   ! calculte fallflux and precipiation in MKS system
+   call fall_flux(    dts, qv, qr, qi, qs, qg, p,             &
                       rho, th, pii, z, dz8w, ht, rainnc,      &
                       rainncv, grav,itimestep,                &
                       snownc, snowncv, sr,                    &
                       graupelnc, graupelncv,                  &
+                      preci3d, precs3d, precg3d, precr3d,     &
+                      xland,                                  &
                       ihail, ice2, improve,                   &
                       ims,ime, jms,jme, kms,kme,              & ! memory dims
                       its,ite, jts,jte, kts,kte               ) ! tile   dims
@@ -495,44 +584,52 @@ CONTAINS
 !!      print *,'no neg correction in mp at timestep=',itimestep
 !   endif ! iskip
 
-!c microphysics in GCE
 
-   call SATICEL_S( dt_in, IHAIL, itaobraun, ICE2, istatmin,      &
-                   new_ice_sat, id, improve,                     &
-!                   th, th_old, qv, ql, qr,                      &
+   ! microphysics in GCE
+   call SATICEL_S( dts, IHAIL, itaobraun, ICE2, istatmin,        &
+                   new_ice_sat, id, improve, xlat, sdec,         &
                    th, qv, ql, qr,                               &
                    qi, qs, qg,                                   &
-!                   qvold, qlold, qrold,                         &
-!                   qiold, qsold, qgold,                         &
                    rho, pii, p, w,                               &
                    itimestep, xland,                             & 
-                   refl_10cm, diagflag, do_radar_ref,           & ! GT added for reflectivity calcs
+                   refl_10cm, diagflag, do_radar_ref,            & ! GT added for reflectivity calcs
                    refc, refr, refi, refs, refg,                 & ! cloud effective radius
-!                   ids,ide, jds,jde, kds,kde,                    & ! domain dims
                    ims,ime, jms,jme, kms,kme,                    & ! memory dims
                    its,ite, jts,jte, kts,kte,                    & ! tile   dims
-!NUWRF BEGIN
                    physc, physe, physd, physs, physm, physf,     &
                    acphysc, acphyse, acphysd, acphyss, acphysm, acphysf &
 
 #if ( WRF_CHEM == 1)
-!JJS 20110525     vvvvv
-                   ,aero, icn_diag, nc_diag, gid,                 &
-!JJS 20110525     ^^^^^
-!EMK
+                   ,aero, icn_diag, nc_diag, gid,                &
                    chem_opt,                                     &
                    gsfcgce_gocart_coupling                       &
 #endif
                    )
-!NUWRF END
+   enddo  !end of do n=1,ntimes
+
+   ! convert mixing values of q back to specific values :
+   do j = jts, jte
+   do i = its, ite
+   do k = kts, kte
+     qv(i,k,j) = qv(i,k,j)/(1.+qtot(i,k,j))
+     ql(i,k,j) = ql(i,k,j)/(1.+qtot(i,k,j))
+     qr(i,k,j) = qr(i,k,j)/(1.+qtot(i,k,j))
+     qi(i,k,j) = qi(i,k,j)/(1.+qtot(i,k,j))
+     qs(i,k,j) = qs(i,k,j)/(1.+qtot(i,k,j))
+     qg(i,k,j) = qg(i,k,j)/(1.+qtot(i,k,j))
+   enddo
+   enddo
+   enddo
 
   END SUBROUTINE gsfcgce_3ice_nuwrf
 
-  SUBROUTINE fall_flux ( dt, qr, qi, qs, qg, p,               &
+  SUBROUTINE fall_flux ( dt, qv, qr, qi, qs, qg, p,           &
                       rho, th, pi_mks, z, dz8w, topo, rainnc, &
                       rainncv, grav, itimestep,               &
                       snownc, snowncv, sr,                    &
                       graupelnc, graupelncv,                  &
+                      preci3d, precs3d, precg3d, precr3d,     &
+                      xland,                                  &
                       ihail, ice2, improve,                   &
                       ims,ime, jms,jme, kms,kme,              & ! memory dims
                       its,ite, jts,jte, kts,kte               ) ! tile   dims
@@ -549,7 +646,7 @@ CONTAINS
                                           its,ite, jts,jte, kts,kte 
   INTEGER, INTENT(IN   )               :: itimestep
   REAL,    DIMENSION( ims:ime , kms:kme , jms:jme ),                  &
-           INTENT(INOUT)               :: qr, qi, qs, qg      
+           INTENT(INOUT)               :: qv, qr, qi, qs, qg      
   REAL,    DIMENSION( ims:ime , kms:kme , jms:jme ),                  &
            INTENT(IN)                  :: th, pi_mks      
 
@@ -564,7 +661,10 @@ CONTAINS
 
 
   REAL,    DIMENSION( ims:ime , jms:jme ),                            &
-           INTENT(IN   )               :: topo   
+           INTENT(IN   )               :: topo, xland
+
+  REAL,    DIMENSION( ims:ime , kms:kme , jms:jme ),                  &
+           INTENT(OUT)                 :: preci3d, precs3d, precg3d, precr3d
 
 ! temperary vars
  
@@ -572,18 +672,18 @@ CONTAINS
   REAL                                    :: tmp1, term0
   REAL                                :: pptrain, pptsnow,        &
                                          pptgraul, pptice
-  REAL,    DIMENSION( kts:kte )       :: qrz, qiz, qsz, qgz,      &
+  REAL,    DIMENSION( kts:kte )       :: qvz, qrz, qiz, qsz, qgz, &
                                          zz, dzw, prez, rhoz,     &
                                          orhoz
-  REAL,    DIMENSION( kts:kte )       :: thz, piz
+  REAL,    DIMENSION( kts:kte )       :: rsed, ised, ssed, gsed
+  REAL,    DIMENSION( kts:kte )       :: thz, piz, tz
 
    INTEGER                    :: k, i, j
 !
 
   REAL, DIMENSION( kts:kte )    :: vtr, vts, vtg, vti
 
-  REAL                          :: dtb, pi, consta, constc, gambp4,    &
-                                   gamdp4, gam4pt5, gam4bbar
+  REAL                          :: dtb, pi, gambp4, gamdp4, gam4pt5, gam4bbar
 
 !NUWRF BEGIN
 ! New local variable
@@ -604,30 +704,20 @@ CONTAINS
   DATA igce/0/ 
   DATA ftns/1./, ftng/1./
 
-
-!JJS 20140116  These variables are declared in the beginning of the module.
-!JJS 20140116  No need to declared again here. 
-!  will be defined later using consat values 
-   REAL     ::     rhowater 
-   REAL     ::     rhosnow 
-!   REAL     ::     xnor, xnoh, rhohail   !define in the begining of the module
-!   REAL     ::     xnos, xnog, rhograul  !define in the begining of the module
-!
 !NUWRF END
 
-   REAL    , PARAMETER ::                              &
-!             constb = 0.8, constd = 0.25, o6 = 1./6.,           &
-             constb = 0.8, constd = 0.11, o6 = 1./6.,            &
-             cdrag = 0.6
-
-  REAL    , PARAMETER ::     abar = 19.3, bbar = 0.37,           &
-                                      p0 = 1.0e5
-  REAL    , PARAMETER ::     rhoe_s = 1.29
+  REAL    , PARAMETER :: p0 = 1.0e5
 
 ! for terminal velocity flux
   INTEGER                       :: min_q, max_q
   REAL                          :: t_del_tv, del_tv, flux, fluxin, fluxout ,tmpqrz
   LOGICAL                       :: notlast
+#ifdef SL_sedi
+  integer                       :: n,ntimes
+  real                          :: dtcfl,precip
+  real , dimension(kts:kte)     :: qden
+#endif
+  real , dimension(its:ite,kts:kte,jts:jte) :: vtr3d,vts3d,vtg3d,vti3d
 
   if (improve.eq.3) igce=1
 
@@ -655,27 +745,9 @@ CONTAINS
    dtb=dt
    pi=acos(-1.)
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      xnor = tnw*1.0e8
-      rhowater = roqr*1000.
-      xnos = tns*1.0e8             ! Consistent with ConSat
-      rhosnow = roqs*1000.
-
-! tng and roqg are assigned with hail numbers in consat if (ihail.eq.1)
-      xnog = tng*1.0e8
-      rhograul = roqg*1000.
-      if (ihail.eq.1) then
-         xnoh = xnog      
-         rhohail = rhograul
-      endif
-
-   consta=2115.0*0.01**(1-constb)
-!   constc=152.93*0.01**(1-constd)
-   constc=78.63*0.01**(1-constd)
-
 !  Gamma function
-   gambp4=gammagce(constb+4.)
-   gamdp4=gammagce(constd+4.)
+   gambp4=gammagce(constb+4.)   !ga4b
+   gamdp4=gammagce(constd+4.)   !ga4d
    gam4pt5=gammagce(4.5)
    gam4bbar=gammagce(4.+bbar)
 !
@@ -691,6 +763,21 @@ CONTAINS
  j_loop:  do j = jts, jte
  i_loop:  do i = its, ite
 
+   do k = kts, kte
+      preci3d(i,k,j)=0.
+      precs3d(i,k,j)=0.
+      precg3d(i,k,j)=0.
+      precr3d(i,k,j)=0.
+      ised(k)=0.
+      ssed(k)=0.
+      gsed(k)=0.
+      rsed(k)=0.
+      vtr3d(i,k,j)=0.
+      vts3d(i,k,j)=0.
+      vtg3d(i,k,j)=0.
+      vti3d(i,k,j)=0.
+   end do
+
    pptrain = 0.
    pptsnow = 0.
    pptgraul = 0.
@@ -698,9 +785,10 @@ CONTAINS
 
    ! in MKS system
    do k = kts, kte
+      qvz(k)=qv(i,k,j)
       qrz(k)=qr(i,k,j)
-        qiz(k)=qi(i,k,j)
-        qsz(k)=qs(i,k,j)
+      qiz(k)=qi(i,k,j)
+      qsz(k)=qs(i,k,j)
       rhoz(k)=rho(i,k,j)
       thz(k)=th(i,k,j)
       piz(k)=pi_mks(i,k,j)
@@ -710,6 +798,7 @@ CONTAINS
 !      fv(k)=sqrt(rho(i,1,j)/rhoz(k))
       zz(k)=z(i,k,j)
       dzw(k)=dz8w(i,k,j)
+      tz(k)=thz(k)*piz(k)
    enddo !k
 
    IF (ice2.eq.0 .or. ice2.eq.2) THEN
@@ -726,6 +815,22 @@ CONTAINS
 !
 !-- rain
 !
+#ifdef SL_sedi
+    ntimes = 1
+    dtcfl = dtb/real(ntimes)
+
+    do n = 1 , ntimes
+       vtr(:) = 0.
+       precip = 0.
+       call semi_sedi('qr',ihail,improve,1,kte,dzw,rhoz,qrz,qvz,prez,tz,xland(i,j),vtr,precip,dtcfl)
+       pptrain = pptrain + precip
+    enddo
+
+    do k = kts , kte
+       qr(i,k,j) = qrz(k)
+       vtr3d(i,k,j) = vtr(k)
+    enddo
+#else
     t_del_tv=0.
     del_tv=dtb
     notlast=.true.
@@ -740,41 +845,18 @@ CONTAINS
 
          vtr(k)=0.
 
-         if (qrz(k) .gt. cmin) then
+         if (qrz(k) .gt. crmin) then
             min_q=min0(min_q,k)
             max_q=max0(max_q,k)
 
-          igce = 1
-          if (igce.ne.1) then
-! old codes from Chern's in MKS
-!            min_q=min0(min_q,k)
-!            max_q=max0(max_q,k)
-            tmp1=sqrt(pi*rhowater*xnor/rhoz(k)/qrz(k))
-            tmp1=sqrt(tmp1)
-            vtr(k)=consta*gambp4*fv(k)/tmp1**constb
-            vtr(k)=vtr(k)/6.
-          else
-! new codes from Steve's in cgs
-            y1=rhoz(k)*0.001*qrz(k)  ! rhoz(k) need to be in CGS
-            vs=sqrt( y1 )
-            vg=sqrt( vs )
-            vr=vrc0+vrc1*vg+vrc2*vs+vrc3*vg*vs
-            vtr(k)=max(fv(k)*vr, 0.0)
-              !vrc0, vrc1, vrc2, vrc3 are dfined in new consat_s
-            vtr(k)=vtr(k) * 0.01  ! convert back to MKS 
-           endif 
-
-           if (.not. vtr(k) .gt. 0.0) cycle ! EMK NUWRF Bug fix
+           call vtr_mks(rhoz(k),qrz(k),vtr(k))
+!           if (.not. vtr(k) .gt. 0.0) cycle ! EMK NUWRF Bug fix
 
             if (k .eq. 1) then
-!               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtr(k))
                del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vtr(k))
             else
-!               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtr(k))
                del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vtr(k))
             endif
-!         else
-!            vtr(k)=0.
           endif
       enddo
 
@@ -800,10 +882,10 @@ CONTAINS
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
 !            tmpqrz=qrz(k)
             qrz(k)=qrz(k)+del_tv*flux
-!            qrz(k)=amax1(0.,qrz(k))
             qrz(k)=dmax1(0.,qrz(k))
             qr(i,k,j)=qrz(k)
             fluxin=fluxout
+            rsed(k)=rsed(k)+fluxin
          enddo
          if (min_q .eq. 1) then
             pptrain=pptrain+fluxin*del_tv
@@ -817,10 +899,27 @@ CONTAINS
          notlast=.false.
       endif
     ENDDO
+#endif
 
 !
 !-- snow
 !
+#ifdef SL_sedi
+    ntimes = 1
+    dtcfl = dtb/real(ntimes)
+
+    do n = 1 , ntimes
+       vts(:) = 0.
+       precip = 0.
+       call semi_sedi('qs',ihail,improve,1,kte,dzw,rhoz,qsz,qvz,prez,tz,xland(i,j),vts,precip,dtcfl)
+       pptsnow = pptsnow + precip
+    enddo
+
+    do k = kts , kte
+       qs(i,k,j) = qsz(k)
+       vts3d(i,k,j) = vts(k)
+    enddo
+#else
     t_del_tv=0.
     del_tv=dtb
     notlast=.true.
@@ -834,43 +933,15 @@ CONTAINS
       do k=kts,kte-1
          vts(k)=0.
 
-         if (qsz(k) .gt. cmin) then
+         if (qsz(k) .gt. csmin) then
             min_q=min0(min_q,k)
             max_q=max0(max_q,k)
 
-           igce = 1
-           if (igce.ne.1) then
-! old codes from Chern's in MKS
-            tmp1=sqrt(pi*rhosnow*xnos/rhoz(k)/qsz(k))
-            tmp1=sqrt(tmp1)
-            vts(k)=constc*gamdp4*fv(k)/tmp1**constd
-            vts(k)=vts(k)/6.
-
-           else
-! new codes from Steve's in cgs
-!            y1 = rhoz(k) * 0.001 *qsz(k)             ! rhoz(k) need to be in CGS
-            y1 = qsz(k)             
-            r00= rhoz(k) * 0.001   ! rhoz(k) need to be in CGS
-            vscf=vsc*fv(k)
-
-               ftns=1.
-               ftns0=1.
-               if (improve.eq.3)then
-                 tair=thz(k)*piz(k)
-                 tairc=tair-t0
-                 call sgmap(1,y1,r00,tairc,ftns0)
-                 ftns=ftns0**bsq
-               endif
-               vts(k)=max(vscf*(r00*y1)**bsq/ftns, 0.0)
-                      ! bs, bsq, vscf are defined in new consat_s
-               vts(k)=vts(k) * 0.01  ! convert back to MKS  
-            endif
+            call vts_mks(improve,rhoz(k),qsz(k),tz(k),vts(k))
 
             if (k .eq. 1) then
-!               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vts(k))
                del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vts(k))
             else
-!               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vts(k))
                del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vts(k))
             endif
          endif
@@ -898,10 +969,10 @@ CONTAINS
             fluxout=rhoz(k)*vts(k)*qsz(k)
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
             qsz(k)=qsz(k)+del_tv*flux
-!            qsz(k)=amax1(0.,qsz(k))
             qsz(k)=dmax1(0.,qsz(k))
             qs(i,k,j)=qsz(k)
             fluxin=fluxout
+            ssed(k)=ssed(k)+fluxin
          enddo
          if (min_q .eq. 1) then
             pptsnow=pptsnow+fluxin*del_tv
@@ -916,6 +987,7 @@ CONTAINS
       endif
 
     ENDDO
+#endif
 
 !
 !   ice2=0 --- with hail/graupel 
@@ -931,6 +1003,22 @@ CONTAINS
 !       rhograul = rhohail
 !    endif
 
+#ifdef SL_sedi
+    ntimes = 1
+    dtcfl = dtb/real(ntimes)
+
+    do n = 1 , ntimes
+       vtg(:) = 0.
+       precip = 0.
+       call semi_sedi('qg',ihail,improve,1,kte,dzw,rhoz,qgz,qvz,prez,tz,xland(i,j),vtg,precip,dtcfl)
+       pptgraul = pptgraul + precip
+    enddo
+
+    do k = kts , kte
+       qg(i,k,j) = qgz(k)
+       vtg3d(i,k,j) = vtg(k)
+    enddo
+#else
     t_del_tv=0.
     del_tv=dtb
     notlast=.true.
@@ -943,57 +1031,15 @@ CONTAINS
       do k=kts,kte-1
           vtg(k)=0.
 
-         if (qgz(k) .gt. cmin) then
+         if (qgz(k) .gt. cgmin) then
             min_q=min0(min_q,k)
             max_q=max0(max_q,k)
 
-            if (ihail .eq. 1) then
-!  for hail, based on Lin et al (1983)
-              tmp1=sqrt(pi*rhohail*xnoh/rhoz(k)/qgz(k))
-              tmp1=sqrt(tmp1)
-              term0=sqrt(4.*grav*rhohail/3./rhoz(k)/cdrag)
-              vtg(k)=gam4pt5*term0*sqrt(1./tmp1)
-              vtg(k)=vtg(k)/6.
-            else
-! for graupel, based on RH (1984)
-
-              igce = 1
-              if (igce.ne.1) then
-! old codes from Chern's in MKS
-                 tmp1=sqrt(pi*rhograul*xnog/rhoz(k)/qgz(k))
-                 tmp1=sqrt(tmp1)
-                 tmp1=tmp1**bbar
-                 tmp1=1./tmp1
-                 term0=abar*gam4bbar/6.
-                 vtg(k)=term0*tmp1*(p0/prez(k))**0.4
-
-              else
-! new codes from Steve's in cgs
-!                 y1=rhoz(k) * 0.001 * qgz(k)    ! rhoz(k) need to be in CGS
-                 y1 = qgz(k)             
-                 r00= rhoz(k) * 0.001      ! rhoz(k) need to be in CGS
-                 vgcr=vgc*fv(k)
-                 ftng=1.
-                 ftng0=1.
-                 if (improve.gt.2) then
-                    tair=thz(k)*piz(k)
-                    tairc=tair-t0
-                    call sgmap(2,y1,r00,tairc,ftng0)
-                    ftng=ftng0**bgq
-                 endif
-!                 vtg(k)=amax1(vgcr*(r00*y1)**bgq/ftng, 0.0)
-                 vtg(k)=dmax1(vgcr*(r00*y1)**bgq/ftng, 0.0)
-                                       ! bg, vgcr, bgq are defined in new consat_s
-                 vtg(k)=vtg(k) * 0.01  ! convert back to MKS
-     
-               endif  !igce
-            endif !ihail
+            call vtg_mks(ihail,improve,rhoz(k),qgz(k),tz(k),vtg(k))
 
             if (k .eq. 1) then
-!               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtg(k))
                del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vtg(k))
             else
-!               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtg(k))
                del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vtg(k))
             endif 
 !
@@ -1022,10 +1068,10 @@ CONTAINS
             fluxout=rhoz(k)*vtg(k)*qgz(k)
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
             qgz(k)=qgz(k)+del_tv*flux
-!            qgz(k)=amax1(0.,qgz(k))
             qgz(k)=dmax1(0.,qgz(k))
             qg(i,k,j)=qgz(k)
             fluxin=fluxout
+            gsed(k)=gsed(k)+fluxin
          enddo
          if (min_q .eq. 1) then
             pptgraul=pptgraul+fluxin*del_tv
@@ -1040,11 +1086,28 @@ CONTAINS
       endif
 !
     ENDDO
+#endif
  ENDIF !ice2
 !
 !-- cloud ice  (03/21/02) follow Vaughan T.J. Phillips at GFDL
 !
 
+#ifdef SL_sedi
+    ntimes = 1
+    dtcfl = dtb/real(ntimes)
+
+    do n = 1 , ntimes
+       vti(:) = 0.
+       precip = 0.
+       call semi_sedi('qi',ihail,improve,0,kte,dzw,rhoz,qiz,qvz,prez,tz,xland(i,j),vti,precip,dtcfl)
+       pptice = pptice + precip
+    enddo
+
+    do k = kts , kte
+       qi(i,k,j) = qiz(k)
+       vti3d(i,k,j) = vti(k)
+    enddo
+#else
     t_del_tv=0.
     del_tv=dtb
     notlast=.true.
@@ -1058,64 +1121,20 @@ CONTAINS
           
          vti(k)=0.
 
-         if (qiz(k) .gt. cmin) then
+         if (qiz(k) .gt. cimin) then
             min_q=min0(min_q,k)
             max_q=max0(max_q,k)
 
-          igce = 1
-          if (igce.ne.1) then
+            call vti_mks(improve,rhoz(k),tz(k),qiz(k),qvz(k),prez(k),xland(i,j),vti(k))
 
-! old codes from Chern's in MKS
-            vti(k)= 3.29 * (rhoz(k)* qiz(k))** 0.16  ! Heymsfield and Donner
-
-          else
-
-! new codes from Steve's in cgs.
-            vti(k)=0.
-            y1=rhoz(k) * 1000. * qiz(k)    ! y1 in g/m**3
-
-            if (y1 .lt. 1.e-6) then
-               vti(k)=0.
-            else
-              if (improve.eq.3)then                     !from Hong et al. (2004)
-               const_vt=1.49e4      
-               const_d=11.9
-               const_m=1./5.38e7
-               y1=y1*1.e-3                              !   y1 in g/cm**3
-               bb1=const_m*y1**0.25
-               bb2=const_d*bb1**0.5
-               vti(k)=max(const_vt*bb2**1.31, 0.0)
-               vti(k)=vti(k)*100.                       !cm/s
-!               if (vti(k) .gt. 20.) vti(k)=20.          ! lang et al
-!vvvvvvvvvvvvvv Tao 20110722 vvvvvvvvvvvvvvvvvv
-               if (vti(k) .gt. 50.) vti(k)=50.          ! lang et al
-!^^^^^^^^^^^^^^ Tao 20110722 ^^^^^^^^^^^^^^^^^^
-              else                                      !from Starr & Cox
-               do ic=1,6
-                 if (y1.gt.aice(ic) .and. y1.le.aice(ic+1)) then
-                    vti(k)=vice(ic)+(vice(ic+1)-vice(ic))*         &
-                      (y1-aice(ic))/(aice(ic+1)-aice(ic))
-!                    if (vti(k) .le. 0.0) vti(k)=0.
-                    if (vti(k) .lt. 0.0) vti(k)=0. ! EMK per 20110816 code
-                 endif
-                enddo
-               endif  !improve
-             endif   !y1
-             vti(k)=vti(k) * 0.01                       ! convert back to MKS
-          endif  ! igce
-
-          ! EMK:  Avoid division by zero
-          if ((vti(k) .gt. 1.0e-20)) then
-            if (k .eq. 1) then
-!               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vti(k))
-               del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vti(k))
-            else
-!               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vti(k))
-               del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vti(k))
+            ! EMK:  Avoid division by zero
+            if ((vti(k) .gt. 1.0e-20)) then
+               if (k .eq. 1) then
+                  del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vti(k))
+               else
+                  del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vti(k))
+               endif
             endif
-         end if
-!         else
-!            vti(k)=0.
          endif
       enddo
 
@@ -1142,10 +1161,10 @@ CONTAINS
             fluxout=rhoz(k)*vti(k)*qiz(k)
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
             qiz(k)=qiz(k)+del_tv*flux
-!            qiz(k)=amax1(0.,qiz(k))
             qiz(k)=dmax1(0.,qiz(k))
             qi(i,k,j)=qiz(k)
             fluxin=fluxout
+            ised(k)=ised(k)+fluxin
          enddo
          if (min_q .eq. 1) then
             pptice=pptice+fluxin*del_tv
@@ -1160,6 +1179,14 @@ CONTAINS
       endif
 !
    ENDDO !notlast
+#endif
+
+   do k = kts, kte
+            preci3d(i,k,j)=ised(k)
+            precs3d(i,k,j)=ssed(k)
+            precg3d(i,k,j)=gsed(k)
+            precr3d(i,k,j)=rsed(k)
+   end do
 
 !   prnc(i,j)=prnc(i,j)+pptrain
 !   psnowc(i,j)=psnowc(i,j)+pptsnow
@@ -1192,7 +1219,7 @@ CONTAINS
 !        enddo
 !     enddo
 !  endif
- 
+
   RETURN
   END SUBROUTINE fall_flux
 
@@ -1731,6 +1758,39 @@ CONTAINS
 !         print *,'rn34, cpi2, esc, amc, as, roqs, tns, ga6d = ', rn34, cpi2, esc, amc, as, roqs, tns, ga6d 
          rn35=alv*alv/(cp*rw)
       endif
+
+!----- for teminal velocity and fall_flux --------
+      constb = 0.8
+!      constd = 0.25
+      constd = 0.11
+      consta = 2115.0*0.01**(1-constb)   ! =841.9967
+!      constc=152.93*0.01**(1-constd)
+      constc=78.63*0.01**(1-constd)      ! =11.72
+
+      o6 = 1./6.
+      cdrag = 0.6
+      abar = 19.3
+      bbar = 0.37
+      rhoe_s = 1.29           !surface air density (km/m^3)
+
+      xnor = tnw*1.0e8        !intercept parameter of rain (m^-4)
+      xnos = tns*1.0e8        !intercept parameter of snow (m^-4)
+      xnog = tng*1.0e8        !intercept parameter of graupel (m^-4)
+      rhowater = roqr*1000.   !density of rain (kg/m^3)
+      rhosnow = roqs*1000.    !density of snow (kg/m^3)
+      rhograul = roqg*1000.   !density of graupel (kg/m^3)
+      if (ihail.eq.1) then
+         xnoh = xnog          !intercept parameter of hail (m^-4)
+         rhohail = rhograul   !density of hail (kg/m^3)
+      endif
+
+      ! critical q of hydrometeor characteristics (eg. fall speed, radius)
+      cwmin = 1.e-12
+      cimin = 1.e-12
+      crmin = 1.e-10
+      csmin = 1.e-10
+      cgmin = 1.e-10
+
     return
   END SUBROUTINE consat_s 
 
@@ -1954,29 +2014,23 @@ CONTAINS
   end subroutine vqrqi
 
   SUBROUTINE saticel_s (dt, ihail, itaobraun, ice2, istatmin,          &
-                       new_ice_sat, id, improve,                       &
+                       new_ice_sat, id, improve, xlat, sdec,           &
                        ptwrf, qvwrf, qlwrf, qrwrf,                     &
                        qiwrf, qswrf, qgwrf,                            &
                        rho_mks, pi_mks, p0_mks, w_mks,                 &
                        itimestep, xland,                               &
-                       refl_10cm, diagflag, do_radar_ref,           & ! GT added for reflectivity calcs
+                       refl_10cm, diagflag, do_radar_ref,              & ! GT added for reflectivity calcs
                        refc, refr, refi, refs, refg,                   & ! cloud effective radius
-!                       ids,ide, jds,jde, kds,kde,                      &
                        ims,ime, jms,jme, kms,kme,                      &
                        its,ite, jts,jte, kts,kte,                      &
-!NUWRF BEGIN
                        physc, physe, physd, physs, physm, physf,       &   
                        acphysc, acphyse, acphysd, acphyss, acphysm, acphysf &   
 #if ( WRF_CHEM == 1)
-!JJS 20110525 vvvvv
-                       ,aero, icn_diag, nc_diag, gid,                   &
-!JJS 20110525 ^^^^^
-! EMK
+                       ,aero, icn_diag, nc_diag, gid,                  &
                        chem_opt,                                       &
-                       gsfcgce_gocart_coupling                        &
+                       gsfcgce_gocart_coupling                         &
 #endif
                        )
-!NUWRF END
 !-----------------------------------------------------------------------
 !  USE module_dm
   IMPLICIT NONE
@@ -2319,8 +2373,10 @@ CONTAINS
 !JJS 20140226  variables for the calculation of effective radius of cloud species
   REAL , DIMENSION( ims:ime , jms:jme ) , INTENT(IN)   :: XLAND
   real, parameter :: roqi = 0.9179    ! ice density
-  real, parameter :: ccn_over_land = 1500  ! [#/cm3] climatological value
-  real, parameter :: ccn_over_water = 150  ! [#/cm3] climatological value
+!  real, parameter :: ccn_over_land = 1500  ! [#/cm3] climatological value
+!  real, parameter :: ccn_over_water = 150  ! [#/cm3] climatological value
+  real, parameter :: ccn_over_land = 159  ! [#/cm3] climatological value (from MERRA2)
+  real, parameter :: ccn_over_water = 66  ! [#/cm3] climatological value (from MERRA2)
   real :: L_cloud    ! cloud water [g/cm3] !
   real :: I_cloud    ! cloud water [g/cm3] !
   real :: mu, ccn_ref, lambda
@@ -2363,6 +2419,57 @@ CONTAINS
       LOGICAL, OPTIONAL, INTENT(IN) :: diagflag
       INTEGER, OPTIONAL, INTENT(IN) :: do_radar_ref
 !+---+-----------------------------------------------------------------+
+      integer, parameter :: rewflag = 2
+      ! 1 : default
+      ! 2 : mapping spectrum, different over land and ocean
+      real :: mdc1,mdc2,mdc3,mdc4,mdc5,mdc6,mvdc
+      real :: efd1,efd2,efd3,efd4,efd5,efd6,efdc
+      real :: ltk,ltk2
+      real :: lqc,lqc2
+
+      integer, parameter :: reiflag = 5
+      ! 1 : default
+      ! 2 : Wyser 1998
+      ! 3 : Heymsfild et al. 2014
+      ! 4 : Mitchell et al. 2011
+      ! 5 : mapping spectrum, different over land and ocean
+      real :: reimin, reimax
+      real :: iwc_0, bw98
+      real :: md22, bd22, sigma, cd22, xd22
+      real :: lqi,lqi2,efdi
+
+      ! calculate allowable ice supersautration :
+      real, intent(in) :: xlat
+      real :: d2r, arg
+
+      ! calculate solar declination angle :
+      real, intent(in) :: sdec
+
+#ifdef sat_predict
+      ! saturation prediction scheme :
+      integer :: hid
+      real :: rhoair, xlv, xls, xlf, cpm1, dv1, abw, abi
+      real :: taui, tauc, taur, tau, atem
+      real :: C1, K1, ncloud, nact, qcmax, mvrc
+      real :: qimax, nice, inhgr, rhoi, mvdi, mvri
+      real :: lqr, lqr2, mvdr, efdr, kmin, kmax, kdxr, afar,  &
+              tnr, lzr, bvr, avr, mur, rhoaj, gr2, gbr25
+      real :: cnd1, cnd2, dep1, dep2, fez1, fez2, latr, ern1, ern2
+      real, dimension (its:ite,jts:jte) :: pact, fez
+
+      ! transition zone :
+      real :: dltd, nbd, sbd, nbd1, nbd2, sbd1, sbd2, latint
+      real :: fxlat
+#endif
+
+      !cp=1.004e7
+      !alv=2.5e10 ; alf=3.336e9 ; als=2.8336e10
+      !rw=4.615e6 ; cw=4.187e7 ; ci=2.093e7
+      !avcp=alv/cp*pir
+      real, parameter :: cvap = 1.846e+7    !specific heat capacity of vapor (in CGS)
+      real, parameter :: cliq = 4.218e+7    !specific heat capacity of liquid (in CGS)
+      real, parameter :: cice = 2.106e+7    !specific heat capacity of ice (in CGS)
+      real :: cpm, hlv, hls, hlf
 !
 !JJS20090623      save  
 
@@ -2472,9 +2579,19 @@ CONTAINS
       ucog=687.97*roqg**0.25/tng**0.75
       uwet=4.464**0.95
 
-      xssi=0.10  ! maximum allowable ice supersaturation
-
       CPI=4.*ATAN(1.)
+
+   ! maximum allowable ice supersaturation :
+!      xssi = 0.10   !default
+      xssi = 0.05
+
+   ! xssi can be varied with latitude  :
+   !  for abs(xlat)<=30  : cos(arg)=0 , xssi=0.10
+   !  for abs(xlat)>=60  : cos(arg)=1 , xssi=0.05
+!      d2r = CPI/180.0
+!      arg = max( min( abs(xlat),60.0 ),30.0 )
+!      arg = (60.0 - arg) * 3.0 * d2r
+!      xssi = 0.10 - 0.05 * ( cos(arg) )**2.0
 
 !   ??????????
       tslopes=0.10539656   ! increase tns by 40 from -5 to -40C
@@ -2820,7 +2937,9 @@ CONTAINS
                    zr(i,j)=zrc/y1(i,j)
                 endif
 
-                call vqrqi(1,improve,r00,fv0,qr(i,j),vr(i,j))
+!                call vqrqi(1,improve,r00,fv0,qr(i,j),vr(i,j))
+                call vtr_mks(rho_mks(i,k,j),qr(i,j),vr(i,j))  !in MKS
+                vr(i,j) = vr(i,j) * 100.  !in CGS
 
 !* 21 * PRAUT   AUTOCONVERSION OF QC TO QR                        **21**
 !* 22 * PRACW : ACCRETION OF QC BY QR                             **22**
@@ -2920,48 +3039,54 @@ CONTAINS
 	            y1(i,j)=sqrt(dd(i,j))
 	            y2(i,j)=sqrt(y1(i,j))
 	            zr(i,j)=zrc/y2(i,j)
-               if (improve.gt.2) then
-                  call vqrqi(1,improve,r00,fv0,qr(i,j),vr(i,j))
-               else
-                  vr(i,j)=max(vrcf*dd(i,j)**bwq, 0.)
-               endif
+!               if (improve.gt.2) then
+!                  call vqrqi(1,improve,r00,fv0,qr(i,j),vr(i,j))
+!               else
+!                  vr(i,j)=max(vrcf*dd(i,j)**bwq, 0.)
+!               endif
+               call vtr_mks(rho_mks(i,k,j),qr(i,j),vr(i,j))  !in MKS
+               vr(i,j) = vr(i,j) * 100.  !in CGS
             endif
 
-            ftns(i,j)=1.
-            ftns0(i,j)=1.
-             if (improve.gt.2) call sgmap(1,qs(i,j),r00,tairc(i,j),ftns0(i,j))
-
-	    if (qs(i,j) .gt. cmin) then
-	       dd(i,j)=r00*qs(i,j)
-	       y1(i,j)=dd(i,j)**.25
+            if (qs(i,j) .gt. cmin) then
+               dd(i,j)=r00*qs(i,j)
+               y1(i,j)=dd(i,j)**.25
                ftns(i,j)=1.
-               if (improve.gt.2) ftns(i,j)=ftns0(i,j)**0.25
-               ZS(I,J)=ZSC/Y1(I,J)*ftns(i,j)
-               if (improve.gt.2) ftns(i,j)=ftns0(i,j)**bsq
-               VS(I,J)=MAX(VSCF*DD(I,J)**BSQ/ftns(i,j), 0.)
-         endif
+               if (improve.gt.2) then
+                  call sgmap(1,qs(i,j),r00,tairc(i,j),ftns0(i,j))
+                  ftns(i,j)=ftns0(i,j)**0.25
+               endif
+               zs(i,j)=zsc/y1(i,j)*ftns(i,j)
+!               if (improve.gt.2) ftns(i,j)=ftns0(i,j)**bsq
+!               vs(I,J)=MAX(vscf*dd(I,J)**bsq/ftns(i,j), 0.)
+               call vts_mks(improve,rho_mks(i,k,j),qs(i,j),tair(i,j),vs(i,j))  !in MKS
+               vs(i,j) = vs(i,j) * 100.  !in CGS
+            endif
 
-            ftng(i,j)=1.
-            ftng0(i,j)=1.
-            if (improve.gt.2) call sgmap(2,qg(i,j),r00,tairc(i,j),ftng0(i,j))
-
-	    if (qg(i,j) .gt. cmin) then
-	       dd(i,j)=r00*qg(i,j)
-	       y1(i,j)=dd(i,j)**.25
-              if (ihail .eq. 1) vgcf=vgcr	         
+            if (qg(i,j) .gt. cmin) then
+               dd(i,j)=r00*qg(i,j)
+               y1(i,j)=dd(i,j)**.25
+               if (ihail .eq. 1) vgcf=vgcr
                ftng(i,j)=1.
-               if (improve.gt.2) ftng(i,j)=ftng0(i,j)**0.25
+               if (improve.gt.2) then
+                  call sgmap(2,qg(i,j),r00,tairc(i,j),ftng0(i,j))
+                  ftng(i,j)=ftng0(i,j)**0.25
+               endif
                zg(i,j)=zgc/y1(i,j)*ftng(i,j)
-               if (improve.gt.2)ftng(i,j)=ftng0(i,j)**bgq
-	       vg(i,j)=max(vgcf*dd(i,j)**bgq/ftng(i,j), 0.0)
-	    endif
+!               if (improve.gt.2)ftng(i,j)=ftng0(i,j)**bgq
+!               vg(i,j)=max(vgcf*dd(i,j)**bgq/ftng(i,j), 0.0)
+               call vtg_mks(ihail,improve,rho_mks(i,k,j),qg(i,j),tair(i,j),vg(i,j))  !in MKS
+               vg(i,j) = vg(i,j) * 100.  !in CGS
+            endif
 
-            call vqrqi(2,improve,r00,fv0,qi(i,j),vi(i,j))
+!            call vqrqi(2,improve,r00,fv0,qi(i,j),vi(i,j))
+            call vti_mks(improve,rho_mks(i,k,j),tair(i,j),qi(i,j),qv(i,j),p0_mks(i,k,j),xland(i,j),vi(i,j))  !in MKS
+            vi(i,j) = vi(i,j) * 100.  !in CGS
 
-            if (qr(i,j) .le. cmin1) vr(i,j)=0.0
-            if (qs(i,j) .le. cmin1) vs(i,j)=0.0
-            if (qg(i,j) .le. cmin1) vg(i,j)=0.0
-	       if (qi(i,j) .le. cmin1) vi(i,j)=0.0
+            if (qr(i,j) .le. crmin) vr(i,j)=0.0
+            if (qs(i,j) .le. csmin) vs(i,j)=0.0
+            if (qg(i,j) .le. cgmin) vg(i,j)=0.0
+            if (qi(i,j) .le. cimin) vi(i,j)=0.0
 
 !     ******************************************************************
 !     ***   Y1 : DYNAMIC VISCOSITY OF AIR (U)
@@ -3020,6 +3145,12 @@ CONTAINS
 !
           if (tair(i,j).lt.t0) then
 
+#ifdef sat_predict
+             rn1s=1.e-3
+             bnd1=1.e-4
+             esi(i,j)=exp(0.025*tairc(i,j))
+             psaut(i,j)=r2is*max(rn1s*esi(i,j)*(qi(i,j)-bnd1*fv0*fv0) ,0.0)
+#else
 !             y1(i,j)=rdt*(qi(i,j)-r1r*exp(beta*tairc(i,j)))
 !             psaut(i,j)=max(y1(i,j),0.0)
              rn1s=1.e-3
@@ -3027,6 +3158,7 @@ CONTAINS
              esi(i,j)=exp(.025*tairc(i,j))
              if (improve.gt.2) esi(i,j)=0.15
              psaut(i,j)=r2is*max(rn1s*esi(i,j)*(qi(i,j)-bnd1*fv0*fv0) ,0.0) 
+#endif
 	     esi(i,j)=1.0 
              dmicrons=(r00*qs(i,j)/roqs/cpi/(tns*ftns(i,j)))**.25*1.e4
              if (improve.gt.2) esi(i,j)=min(1.,(dmicrons/1500.)**4.) ! f(dmicrons)
@@ -3145,6 +3277,8 @@ CONTAINS
 
           pidep(i,j)=0.0
 
+#ifndef sat_predict
+!>>> Note that Bergeron processes are concerned in saturation prediction scheme
          if (improve.eq.3) then
 !        if (improve1.eq.3) then
                                      ! Steve's new improvement 9/21/2009
@@ -3162,6 +3296,15 @@ CONTAINS
                y5(i,j)=1./(tair(i,j)-c76)
                qsw(i,j)=rp0*exp(c172-c409*y4(i,j))
                qsi(i,j)=rp0*exp(c218-c580*y5(i,j))
+#ifdef new_saturation
+               esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+               esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+               if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
+               qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+               qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+               esw(i,j) = esw(i,j)*10.  !in CGS
+               esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
                ! EMK...Prevent division by zero
 !               hfact=(qv(i,j)+qb0-qsi(i,j))/(qsw(i,j)-qsi(i,j))
                hfact=(qv(i,j)+qb0-qsi(i,j))/(qsw(i,j)-qsi(i,j)+cmin1)
@@ -3238,6 +3381,11 @@ CONTAINS
                y2(i,j)=exp(c218-c580*rtair(i,j))
                qsi(i,j)=rp0*y2(i,j)
                esi(i,j)=c610*y2(i,j)
+#ifdef new_saturation
+               esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+               qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+               esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
                ssi(i,j)=(qv(i,j)+qb0)/qsi(i,j)-1.
                r_nci=min(1.e-6*exp(-.46*tairc(i,j)),1.)
 !               R_NCI=min(1.e-8*EXP(-.6*TAIRC(I,J)),1.) ! use Tao's
@@ -3273,6 +3421,8 @@ CONTAINS
             endif !tair(i,j)
 !        
           endif                                 ! for Processes 12 & 13
+!<<< end of ifndef sat_predict
+#endif
 
 !TTT***** QG=QG+MIN(PGDRY,PGWET)
 !*  9 * PGACS : ACCRETION OF QS BY QG (DGACS,WGACS: DRY AND WET)  ***9**
@@ -3635,6 +3785,16 @@ CONTAINS
 !vvvvvvvvvvvvvvv Tao 20110722 vvvvvvvvvvvvvvv
       if (improve .eq. 3 .or. improve .eq. -1) then
 !^^^^^^^^^^^^^^^ Tao 20110722 ^^^^^^^^^^^^^^^ 
+#ifdef use_cpm
+          cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                cice*(qi(i,j)+qs(i,j)+qg(i,j))
+          hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+          hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+          hls = hlv + hlf
+          avcp = hlv/cpm*pir
+          ascp = hls/cpm*pir
+          afcp = hlf/cpm*pir
+#endif
          y1(i,j)=qr(i,j)/d2t
           piacr(i,j)=min(y1(i,j), piacr(i,j))
           dgacr(i,j)=min(y1(i,j), dgacr(i,j))
@@ -3811,6 +3971,16 @@ CONTAINS
              pgmlt(i,j)=r2ig*max(0.0, min(dd1(i,j), qg(i,j)))
           endif  !improve
 
+#ifdef use_cpm
+          cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                cice*(qi(i,j)+qs(i,j)+qg(i,j))
+          hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+          hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+          hls = hlv + hlf
+          avcp = hlv/cpm*pir
+          ascp = hls/cpm*pir
+          afcp = hlf/cpm*pir
+#endif
           pt(i,j)=pt(i,j)-afcp*(psmlt(i,j)+pgmlt(i,j))
           qr(i,j)=qr(i,j)+psmlt(i,j)+pgmlt(i,j)
           qs(i,j)=qs(i,j)-psmlt(i,j)
@@ -3867,6 +4037,15 @@ CONTAINS
                 rtair(i,j)=1./(tair(i,j)-c76)
                 y5(i,j)=exp(c218-c580*rtair(i,j))
                 qsi(i,j)=rp0*y5(i,j)
+#ifdef new_saturation
+                esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+                esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+                if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
+                qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+                qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+                esw(i,j) = esw(i,j)*10.  !in CGS
+                esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
                 SSI(i,j)=(qv(i,j)+qb0)/qsi(i,j)-1.
                 fssi=min(xssi,max(.0,xssi*(tairc(i,j)+44.)/(44.0-38.0))) !max ssi f(tair)
                 fssi=min(ssi(i,j),fssi)
@@ -3910,6 +4089,11 @@ CONTAINS
              if (qc(i,j) .gt. 0.0) then
                 y4(i,j) = 1./(tair(i,j)-c358)
                 qsw(i,j)=rp0*exp(c172-c409*y4(i,j))
+#ifdef new_saturation
+                esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+                qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+                esw(i,j) = esw(i,j)*10.  !in CGS
+#endif
                 xncld=qc(i,j)/4.e-9                         !cloud number
                 esat=0.6112*exp(17.67*tairc(i,j)/(tairc(i,j)+243.5))*10.
                 rv=0.622*esat/(p0(i,j,k)/1000.-esat)
@@ -3955,12 +4139,32 @@ CONTAINS
             pcfr(i,j)=pcfr(i,j)*y2(i,j)
          endif  !y1
 
+#ifdef use_cpm
+         cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+               cice*(qi(i,j)+qs(i,j)+qg(i,j))
+         hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+         hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+         hls = hlv + hlf
+         avcp = hlv/cpm*pir
+         ascp = hls/cpm*pir
+         afcp = hlf/cpm*pir
+#endif
          pt(i,j)=pt(i,j)+afcp*y1(i,j)
          qc(i,j)=qc(i,j)-y1(i,j)
          qi(i,j)=qi(i,j)+y1(i,j)
 
       else                                  ! below is 2007 saticel_s
 
+#ifdef use_cpm
+         cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+               cice*(qi(i,j)+qs(i,j)+qg(i,j))
+         hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+         hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+         hls = hlv + hlf
+         avcp = hlv/cpm*pir
+         ascp = hls/cpm*pir
+         afcp = hlf/cpm*pir
+#endif
          if (tair(i,j).lt.t0 .and. tair(i,j).gt.t00) then
             tairc(i,j)=tair(i,j)-t0
             y1(i,j)=max( min(tairc(i,j), -1.), -31.)
@@ -3980,6 +4184,428 @@ CONTAINS
 
       endif  ! pocesses 24, 25 & 26 
 
+#ifdef sat_predict
+      ! --------------------------------------------------------------------------------
+      ! saturation prediction from TCWA 1-moment scheme (Morrison and Milbrandt 2015) :
+      !  (in MKS system)
+      ! --------------------------------------------------------------------------------
+
+      pact(i,j) = 0.0
+      pint(i,j) = 0.0
+      cnd(i,j) = 0.0
+      dep(i,j) = 0.0
+      fez(i,j) = 0.0
+      ern(i,j) = 0.0
+
+      ! -------------
+      ! pact : cloud water activation
+      ! -------------
+
+      tair(i,j)  = (pt(i,j)+tb0)*pi0
+      tairc(i,j) = tair(i,j)-t0
+      rhoair = rho_mks(i,k,j)
+#ifdef use_cpm
+      cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+            cice*(qi(i,j)+qs(i,j)+qg(i,j))      ! specific heat capacity (in CGS)
+      cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
+      hlv = alv - (cliq-cvap)*(tair(i,j)-t0)    ! latent heat of vaporization (in CGS)
+      xlv = hlv*1.e-4                           ! latent heat of vaporization (in MKS)
+#else
+      cpm1 = 1005.46*(1.+0.887*qv(i,j))         ! specific heat capacity (in MKS)
+      xlv  = 3.1484E6-2370.*tair(i,j)           ! latent heat of vaporization (in MKS)
+#endif
+#ifdef new_saturation
+      esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+      qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+#else
+      y1(i,j) = 1./(tair(i,j)-c358)
+      qsw(i,j) = rp0*exp(c172-c409*y1(i,j))
+#endif
+      abw = 1.+xlv**2.*qsw(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)  ! abw=1+dqsdT*(Lv/Cp)
+
+      if ( qv(i,j).gt.qsw(i,j) .and. ww1(i,j,k).gt.1.e-3 ) then
+        ! C1 and K1 over land and ocean (Roger and Yau)
+        if ( xland(i,j) .eq. 1. ) then  !land
+          C1 = 1000. ; K1 = 0.5
+        else
+          C1 = 120.  ; K1 = 0.4         !ocean
+        endif
+        ncloud = min(1.E9,1.E6*0.88*C1**(2./(K1+2.))*          &
+                 (7.E-2*ww1(i,j,k)**1.5)**(K1/(K1+2.)))
+        nact = max(0.,ncloud-qc(i,j)/5.236E-13)             ! CONVERT FROM CM-3 TO M-3 and 5 microm in radius
+        qcmax = max((qv(i,j)-qsw(i,j)),0.)/abw
+        pact(i,j) = min(max(nact*1.414E-14,0.),qcmax)       ! 1.5 micron in radius
+        tair(i,j) = tair(i,j)+pact(i,j)*xlv/cpm1
+        tairc(i,j) = tair(i,j)-t0
+        qv(i,j) = max(0.,qv(i,j)-pact(i,j))
+        qc(i,j) = max(0.,qc(i,j)+pact(i,j))
+      endif
+
+      ! -------------
+      ! pint : cloud ice initialization
+      ! -------------
+
+#ifdef use_cpm
+      cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+            cice*(qi(i,j)+qs(i,j)+qg(i,j))      ! specific heat capacity (in CGS)
+      cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
+      hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+      hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+      hls = hlv + hlf                           ! latent heat of sublimation (in CGS)
+      xls = hls*1.e-4                           ! latent heat of sublimation (in MKS)
+#else
+      cpm1  = 1005.46*(1.+0.887*qv(i,j))        ! specific heat capacity (in MKS)
+      xls   = 3.15E6-2370.*tair(i,j)+0.3337E6   ! latent heat of sublimation  (in MKS)
+#endif
+#ifdef new_saturation
+      esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+      esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+      if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
+      qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+      qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+#else
+      y1(i,j) = 1./(tair(i,j)-c358)
+      qsw(i,j) = rp0*exp(c172-c409*y1(i,j))
+      y2(i,j) = 1./(tair(i,j)-c76)
+      qsi(i,j) = rp0*exp(c218-c580*y2(i,j))
+#endif
+      abi = 1.+xls**2.*qsi(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)  ! abi=1+dqidT*(Ls/Cp)
+
+      if ( qv(i,j).gt.qsi(i,j) .and. tair(i,j).lt.t0 ) then
+        ssi(i,j) = qv(i,j)/qsi(i,j)-1.
+        nice = 1.e3*exp(1.296E+1*ssi(i,j)-6.39E-1)
+        r_nci = max(0.,nice-qi(i,j)/4.19E-10)               ! RHOI = 800; DI = 1.E-4
+        qimax = max((qv(i,j)-qsi(i,j)),0.)/abi
+        pint(i,j) = min(max(0.,r_nci*1.02e-13),qimax)
+        tair(i,j) = tair(i,j)+pint(i,j)*xls/cpm1
+        tairc(i,j) = tair(i,j)-t0
+        qv(i,j) = max(0.,qv(i,j)-pint(i,j))
+        qi(i,j) = max(0.,qi(i,j)+pint(i,j))
+      endif
+
+      ! -------------
+      ! cnd : condensation of qv to qc
+      ! dep : deposition of qv to qi
+      ! fez : freezing of qc to qi
+      ! ern : evaporation of qr
+      ! -------------
+
+#ifdef use_cpm
+      cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+            cice*(qi(i,j)+qs(i,j)+qg(i,j))      ! specific heat capacity (in CGS)
+      cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
+      hlv = alv - (cliq-cvap)*(tair(i,j)-t0)    ! latent heat of vaporization (in CGS)
+      xlv = hlv*1.e-4                           ! latent heat of vaporization (in MKS)
+      hlf = alf - (cice-cliq)*(tair(i,j)-t0)    ! latent heat of fusion (in CGS)
+      xlf = hlf*1.e-4                           ! latent heat of fusion (in MKS)
+      hls = hlv + hlf                           ! latent heat of sublimation (in CGS)
+      xls = hls*1.e-4                           ! latent heat of sublimation (in MKS)
+#else
+      cpm1  = 1005.46*(1.+0.887*qv(i,j))        ! specific heat capacity (in MKS)
+      cpm   = 1.00546e+7*(1.+0.887*qv(i,j))     ! specific heat capacity (in CGS)
+      xlv   = 3.1484E6-2370.*tair(i,j)          ! latent heat of vaporization (in MKS)
+      xls   = 3.15E6-2370.*tair(i,j)+0.3337E6   ! latent heat of sublimation  (in MKS)
+      xlf   = alf*1.e-4                         ! latent heat of fusion (in MKS)
+#endif
+#ifdef new_saturation
+      esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+      esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+      if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
+      qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+      qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+#else
+      y1(i,j) = 1./(tair(i,j)-c358)
+      qsw(i,j) = rp0*exp(c172-c409*y1(i,j))
+      y2(i,j) = 1./(tair(i,j)-c76)
+      qsi(i,j) = rp0*exp(c218-c580*y2(i,j))
+#endif
+      dv1 = 8.794E-4*pr0*tair(i,j)**1.81
+
+      ! psychrometric correction to condensation/evaporation, abw=1+dqsdT*(Lv/Cp) ; dqsdT=Lv*qsw/Rv/T^2
+      abw = 1.+xlv**2.*qsw(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)
+      ! psychrometric correction to deposition/sublimation,   abi=1+dqidT*(Ls/Cp) ; dqidT=Ls*qsi/Rv/T^2
+      abi = 1.+xls**2.*qsi(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)
+
+      ! tauc : supersaturation relaxation timescale of cloud water
+      if ( qc(i,j) .ge. cwmin ) then
+        ltk  = log(tair(i,j))
+        lqc  = -1.*log(qc(i,j)*rhoair)
+        ltk2 = ltk*ltk
+        lqc2 = lqc*lqc
+        if ( xland(i,j) .eq. 1. ) then
+          mvdc = exp(5.8936819 - 7.013013*ltk                  &
+                     + 1.3178721*lqc + 1.1741987*ltk2          &
+                     + 2.6110916E-3*lqc2 - 0.26646396*ltk*lqc)
+        else
+          mvdc = exp(173.57305 - 64.370929*ltk                 &
+                     + 0.36833626*lqc + 6.1389254*ltk2         &
+                     + 5.5915321E-3*lqc2 - 0.12488698*ltk*lqc)
+        endif
+        mvrc = max(5.e-7,min(5.e-5,mvdc/2.e+6))             ! diameter of cloud water
+        ncloud = 3.*qc(i,j)*rhoair/(4.*cpi*1000.*mvrc**3.)  ! concentration of cloud water
+        ncloud = min(1.e+9,max(0.1,ncloud))
+        tauc = 1./(4.*cpi*dv1*ncloud*mvrc)                  ! tauc=1/(4*pi*Dv*Nc*rc)
+      else
+        tauc = 1.e+10
+      endif
+
+      ! taui : supersaturation relaxation timescale of cloud ice
+      if ( qi(i,j) .ge. cimin ) then
+        ltk  = log(tair(i,j))
+        lqi  = -1.*log(qi(i,j)*rhoair)
+        ltk2 = ltk*ltk
+        lqi2 = lqi*lqi
+        if ( xland(i,j) .eq. 1. ) then
+          mvdi = exp(154.88767 - 0.25772005*lqi                &
+                     + 3.75543E-4*lqi2 - 54.560357*ltk         &
+                     + 5.1248879*ltk2 )
+        else
+          mvdi = exp(155.33396 - 0.25772005*lqi                &
+                     + 3.75543E-4*lqi2 - 54.560357*ltk         &
+                     + 5.1248879*ltk2 )
+        endif
+        mvri = min(5.e-4,max(3.e-6,mvdi/2.e+7))
+        if ( tairc(i,j) .ge. -40.0 ) then
+          hid = max(min(nint(abs(tairc(i,j))/0.25),120),0)
+          inhgr = itble(hid)
+          rhoi = 900.*exp(-3.*max((qv(i,j)-qsi(i,j))-5.e-5,0.) &
+                 /inhgr)
+        else
+          inhgr = 5.
+          ssi(i,j) = qv(i,j)/qsi(i,j)-1.
+          if ( ssi(i,j) .gt. 0.267 ) then
+            rhoi = -1027.456*ssi(i,j)+1185.834
+          else
+            rhoi = -32.332*ssi(i,j)+900.
+          endif
+        endif
+        rhoi = min(max(rhoi,50.),900.)
+        nice = 3.*qi(i,j)*rhoair/(4.*cpi*rhoi*mvri**3.)
+        nice = min(1.e+7,max(0.1,nice))
+        taui = 1./(4.*cpi*dv1*nice*mvri)                    ! taui=1/(4*pi*Dv*Ni*ri)
+      else
+        taui = 1.e+10
+      endif
+
+      ! taur : supersaturation relaxation timescale of rain
+      if ( qr(i,j) .ge. crmin ) then
+        ltk = log(tair(i,j))
+        lqr = -1.*log(qr(i,j)*rhoair)
+        ltk2 = ltk*ltk
+        lqr2 = lqr*lqr
+        kmin = 0.2222
+        kmax = 0.8396
+        mvdr = exp(33.999045 - 13.813047*ltk                   &
+                   + 0.29834969*lqr + 1.6622025*ltk2           &
+                   + 1.2480129E-3*lqr2 - 0.104641*ltk*lqr)
+        efdr = exp(1.6855156 + 0.84147302*log(mvdr)            &
+                   - 0.46783369*log(1.e+3)                     &
+                   + 1.005305E-2*(log(mvdr))**2.               &
+                   + 3.4833332E-2*(log(1.e+3))**2.             &
+                   + 1.4727223E-2*log(mvdr)*log(1.e+3))
+        efdr = max(min(efdr,mvdr/kmin**thrd),mvdr/kmax**thrd)
+        kdxr = max(kmin,min(kmax,(mvdr/efdr)**3.))
+        afar = max(0.,(6.*kdxr-3.+sqrt(8.*kdxr+1.))/(2.-2.*kdxr))
+!        zr = (afar+3.)/efdr*1.e+6
+        lzr = log((afar+3.)/efdr*1.e+6)
+        tnr = log(6.*qr(i,j)*rhoair/cpi/1.e+3)                 & ! slope parameter for rain
+              +(4.+afar)*lzr-lgamma(afar+4.)
+        avr = exp(7.6004532 - 0.7990953*ltk                    & ! coefficient ... for rain (?)
+                  + 1.0281818*lqr - 0.16595505*lqr2            &
+                  + 1.110037E-2*lqr*lqr2                       &
+                  - 2.0925743E-4*lqr2*lqr2)
+        bvr = max(0.5,min(2., 1.2218728 - 0.1281004*ltk        & ! exponent ... for rain (?)
+              + 2.6088596E-2*lqr - 7.4467639E-3*lqr2           &
+              + 7.7592532E-4*lqr*lqr2                          &
+              - 1.7056075E-5*lqr2*lqr2))
+        mur = 1.496E-6*tair(i,j)**1.5/(tair(i,j)+120.)           ! shape parameter for rain
+        rhoaj = sqrt(1.29/rhoair)
+        gr2 = lgamma(afar+2.)
+        gbr25 = lgamma(bvr*0.5+afar+2.5)
+        taur = 1./(2.*cpi*dv1*(0.78*exp(tnr+gr2-(afar+2.)      &
+               *lzr)+0.31*sqrt(avr*rhoaj/mur)*(mur/dv1)        &
+               **thrd*exp(tnr+gbr25-(bvr*0.5+afar+2.5)         &
+               *lzr)))
+      else
+        taur = 1.e+10
+      endif
+
+      cnd1 = 0. ; cnd2 = 0. ; dep1 = 0. ; dep2 = 0.
+      fez1 = 0. ; fez2 = 0. ; ern1 = 0. ; ern2 = 0.
+      latr = 0.
+
+!>>> TGFS_modify
+      ! increase condensation at lower-level tropics :
+!      if ( abs(xlat) .le. 23.5 ) then
+!        if ( p0(i,j,k).ge.9.1e+5 .and.                         &
+!             p0(i,j,k).lt.9.4e+5 .and.                         &
+!             ww1(i,j,k).gt.1.e-3 ) then
+!          if ( qv(i,j) .gt. qsw(i,j) ) then
+!            tauc = 1.
+!          elseif ( qv(i,j) .lt. qsw(i,j)) then
+!            tauc = 1.e+10
+!          endif
+!        elseif ( p0(i,j,k) .ge. 9.5e+5 ) then
+!          if ( qv(i,j) .gt. qsw(i,j) ) then
+!            tauc = 1.e+10
+!          elseif ( qv(i,j) .lt. qsw(i,j) ) then
+!            tauc = 1.
+!          endif
+!        endif
+!      endif
+!<<< TGFS_modify
+ 
+      ! tau : multiphase supersaturation relaxation time scale defined by
+      ! 1/tau = 1/tauc + 1/taur + (1+Ls/Cp*dqsl/dT)/(1+Ls/Cp*dqsi/dT)/taui
+      tau = 1./(1./tauc+1./taur+1./taui*(1.+qsw(i,j)*          &
+            xls*xlv/cpm1/(4.61495E+2*tair(i,j)**2.))/abi)
+
+      ! atem : change in supersaturation due to Bergeron process
+      atem = (qsi(i,j)-qsw(i,j))/taui*(1.+qsw(i,j)*xls*xlv     &
+             /cpm1/(4.61495E+2*tair(i,j)**2.))/abi
+
+      ! decide values at lower latitude :
+      cnd1 = max(-qc(i,j),(atem*dt*tau/tauc+(qv(i,j)           &
+             -qsw(i,j)-atem*tau)*(1.-exp(-dt/tau))*tau         &
+             /tauc)/abw)
+      dep1 = MAX(-qi(i,j),(atem*dt*tau/taui+(qv(i,j)           &
+             -qsw(i,j)-atem*tau)*(1.-exp(-dt/tau))*tau         &
+             /taui+(qsw(i,j)-qsi(i,j))*dt/taui)/abi)
+      ern1 = MAX(-qr(i,j),(atem*dt*tau/taur+(qv(i,j)           &
+             -qsw(i,j)-atem*tau)*(1.-exp(-dt/tau))*tau         &
+             /taur)/abw)
+      fez1 = 0.
+
+#ifdef use_declination
+      ! decide values at polar regions :
+      ern2 = ern1
+      if ( tair(i,j) .ge. 253.16 ) then
+        ! T>=-20     : all ice melt; all excess vapor (over ice) condense; no deposition
+        cnd2 = max(-qc(i,j),(qv(i,j)-qsi(i,j))/abi)
+        fez2 = -qi(i,j)
+        dep2 = 0.
+      elseif ( tair(i,j).lt.253.16 .and. tair(i,j).ge.t00 ) then
+        ! -40<=T<-20 : all water freeze; all excess vapor (over water) deposite; no condensation
+        dep2 = max(-qi(i,j),(qv(i,j)-qsw(i,j))/abw)
+        fez2 = qc(i,j)
+        cnd2 = 0.
+      else
+        ! T<-40      : all water freeze; all excess vapor (over ice) deposite; no condensation
+        dep2 = max(-qi(i,j),(qv(i,j)-qsi(i,j))/abi)
+        fez2 = qc(i,j)
+        cnd2 = 0.
+      endif
+
+      ! create transition zones :
+      dltd = asin(sdec)*180.0/cpi      ! solar declination angle (in degree latitude)
+!      latint = 23.5*2.0                ! width of the transition zone (in degree latitude)
+      latint = 23.5                    ! width of the transition zone (in degree latitude)
+      sbd = dltd-90.0                  ! southern boundary of sun (in degree latitude)
+      nbd = dltd+90.0                  ! northern boundary of sun (in degree latitude)
+      sbd1 = sbd+latint/2.0            ! southern boundary of southern transition zone
+      sbd2 = sbd-latint/2.0            ! northern boundary of southern transition zone
+      nbd1 = nbd-latint/2.0            ! southern boundary of northern transition zone
+      nbd2 = nbd+latint/2.0            ! northern boundary of northern transition zone
+
+      if ( xlat.gt.sbd1 .and. xlat.lt.nbd1 ) then       ! low-latitude
+        fxlat = 0.
+      elseif ( xlat.lt.sbd2 .or. xlat.gt.nbd2 ) then    ! polar region
+        fxlat = 1.
+      elseif ( xlat.ge.sbd2 .and. xlat.le.sbd1 ) then   ! southern transition zone
+        fxlat = sin(abs(max((xlat-sbd1)*90.0/latint,-90.0)*cpi/180.0))
+      elseif ( xlat.ge.nbd1 .and. xlat.le.nbd2 ) then   ! northern transition zone
+        fxlat = sin(min((xlat-nbd1)*90.0/latint,90.0)*cpi/180.0)
+      endif
+
+      cnd(i,j) = cnd1*(1.0-fxlat) + cnd2*fxlat
+      dep(i,j) = dep1*(1.0-fxlat) + dep2*fxlat
+      fez(i,j) = fez1*(1.0-fxlat) + fez2*fxlat
+      ern(i,j) = ern1*(1.0-fxlat) + ern2*fxlat
+
+#else
+!      ! (TGFS_modify) decide values at polar regions :
+!      if ( abs(xlat) .ge. 66.0 ) then
+!        ern2 = ern1
+!        if ( tair(i,j) .ge. 253.16 ) then
+!          ! T>=-20     : all ice melt; all excess vapor (over ice) condense; no deposition
+!          cnd2 = max(-qc(i,j),(qv(i,j)-qsi(i,j))/abi)
+!          fez2 = -qi(i,j)
+!          dep2 = 0.
+!        elseif ( tair(i,j).lt.253.16 .and. tair(i,j).ge.t00 ) then
+!          ! -40<=T<-20 : all water freeze; all excess vapor (over water) deposite; no condensation
+!          dep2 = max(-qi(i,j),(qv(i,j)-qsw(i,j))/abw)
+!          fez2 = qc(i,j)
+!          cnd2 = 0.
+!        else
+!          ! T<-40      : all water freeze; all excess vapor (over ice) deposite; no condensation
+!          dep2 = max(-qi(i,j),(qv(i,j)-qsi(i,j))/abi)
+!          fez2 = qc(i,j)
+!          cnd2 = 0.
+!        endif
+!      endif
+!
+!      ! create a transition zone at 60~67 degree :
+!      if ( abs(xlat) .lt. 66.0 ) then
+!        cnd(i,j) = cnd1
+!        dep(i,j) = dep1
+!        fez(i,j) = 0.
+!        ern(i,j) = ern1
+!      elseif ( abs(xlat).ge.66.0 .and. abs(xlat).lt.67.0 ) then
+!        latr = min(1.,max(0.,abs(xlat)-66.0))
+!        cnd(i,j) = cnd1*(1.-latr)+cnd2*latr
+!        dep(i,j) = dep1*(1.-latr)+dep2*latr
+!        fez(i,j) = fez1*(1.-latr)+fez2*latr
+!        ern(i,j) = ern1*(1.-latr)+ern2*latr
+!      else
+!        cnd(i,j) = cnd2
+!        dep(i,j) = dep2
+!        fez(i,j) = fez2
+!        ern(i,j) = ern2
+!      endif
+      cnd(i,j) = cnd1
+      dep(i,j) = dep1
+      fez(i,j) = fez1
+      ern(i,j) = ern1
+#endif
+
+      ! update tair, qv, qc, qi, qr :
+!      tair(i,j) = tair(i,j) + (ern(i,j)+cnd(i,j))*xlv/cpm1     &
+!                  + dep(i,j)*xls/cpm1 + fez(i,j)*alf/cpm
+      tair(i,j) = tair(i,j) + (ern(i,j)+cnd(i,j))*xlv/cpm1     &
+                  + dep(i,j)*xls/cpm1 + fez(i,j)*xlf/cpm1
+      qv(i,j) = max(0.,qv(i,j)-cnd(i,j)-dep(i,j)-ern(i,j))
+      qc(i,j) = max(0.,qc(i,j)+cnd(i,j)-fez(i,j))
+      qi(i,j) = max(0.,qi(i,j)+dep(i,j)+fez(i,j))
+      qr(i,j) = max(0.,qr(i,j)+ern(i,j))
+
+!>>> TGFS_modify
+      ! refreeze at mid-level polar regions :
+!      if ( abs(xlat).ge.66.0 .and.                             &
+!           p0(i,j,k).ge.8.e+5 .and.                            &
+!           qc(i,j).ge.cwmin ) then
+!        latr = min(1.,max(0.,abs(xlat)-66.0))
+!        fez(i,j) = qc(i,j)*latr
+!        tair(i,j) = tair(i,j) + fez(i,j)*alf/cpm
+!        qi(i,j) = max(0.,qi(i,j)+fez(i,j))
+!        qc(i,j) = max(0.,qc(i,j)-fez(i,j))
+!      endif
+
+      ! small cloud water all refreeze at polar regions, 
+      ! in order to make the distribution more continuous :
+!      if ( abs(xlat).ge.66.5 .and. qc(i,j).lt.1.e-4 ) then
+!        tair(i,j) = tair(i,j)+qc(i,j)*alf/cpm
+!        qi(i,j) = max(0.,qi(i,j)+qc(i,j))
+!        qc(i,j) = 0.
+!      endif
+!>>> TGFS_modify
+
+      ! update pt :
+      pt(i,j) = tair(i,j)/pi0-tb0   !tair=(pt(i,j)+tb0)*pi0
+      tairc(i,j) = tair(i,j)-t0
+
+#else
+!>>> if not define sat_predict, use saturation adjustment scheme :
+
 !* 31 * pint  : initiation of qi                                  **31**
 !* 32 * pidep : deposition of qi                                  **32**
 !
@@ -3997,6 +4623,16 @@ CONTAINS
         
       if (improve .eq. 3) then
          tair(i,j)=(pt(i,j)+tb0)*pi0
+#ifdef use_cpm
+         cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+               cice*(qi(i,j)+qs(i,j)+qg(i,j))
+         hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+         hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+         hls = hlv + hlf
+         avcp = hlv/cpm*pir
+         ascp = hls/cpm*pir
+         afcp = hlf/cpm*pir
+#endif
          if (tair(i,j) .lt. t0) then
             if (qi(i,j) .le. cmin) qi(i,j)=0.
 !             if (qi(i,j) .le. cmin2) qi(i,j)=0.
@@ -4005,6 +4641,11 @@ CONTAINS
             y2(i,j)=exp(c218-c580*rtair(i,j))
             qsi(i,j)=rp0*y2(i,j)
             esi(i,j)=c610*y2(i,j)
+#ifdef new_saturation
+            esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+            qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+            esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
             ssi(i,j)=(qv(i,j)+qb0)/qsi(i,j)-1.
             y1(i,j)=1./tair(i,j)
             y3(i,j)=SQRT(qi(i,j))
@@ -4057,6 +4698,16 @@ CONTAINS
 !
           if ( itaobraun.eq.0 ) then
              tair(i,j)=(pt(i,j)+tb0)*pi0
+#ifdef use_cpm
+            cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                  cice*(qi(i,j)+qs(i,j)+qg(i,j))
+            hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+            hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+            hls = hlv + hlf
+            avcp = hlv/cpm*pir
+            ascp = hls/cpm*pir
+            afcp = hlf/cpm*pir
+#endif
              if (tair(i,j) .lt. t0) then
                 if (qi(i,j) .le. cmin1) qi(i,j)=0.
                 tairc(i,j)=tair(i,j)-t0
@@ -4065,6 +4716,11 @@ CONTAINS
                 y2(i,j)=exp(c218-c580*rtair(i,j))
                 qsi(i,j)=rp0*y2(i,j)
                 esi(i,j)=c610*y2(i,j)
+#ifdef new_saturation
+                esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+                qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+                esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
                 ssi(i,j)=(qv(i,j)+qb0)/qsi(i,j)-1.
                 dm(i,j)=max( (qv(i,j)+qb0-qsi(i,j)), 0.)
                 rsub1(i,j)=cs580*qsi(i,j)*rtair(i,j)*rtair(i,j)
@@ -4088,6 +4744,16 @@ CONTAINS
 
           if ( itaobraun.eq.1 .and. improve .lt. 2) then
              tair(i,j)=(pt(i,j)+tb0)*pi0
+#ifdef use_cpm
+             cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                   cice*(qi(i,j)+qs(i,j)+qg(i,j))
+             hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+             hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+             hls = hlv + hlf
+             avcp = hlv/cpm*pir
+             ascp = hls/cpm*pir
+             afcp = hlf/cpm*pir
+#endif
              if (tair(i,j) .lt. t0) then
                 if (qi(i,j) .le. cmin) qi(i,j)=0.
                 tairc(i,j)=tair(i,j)-t0
@@ -4095,6 +4761,11 @@ CONTAINS
                 y2(i,j)=exp(c218-c580*rtair(i,j))
                 qsi(i,j)=rp0*y2(i,j)
                 esi(i,j)=c610*y2(i,j)
+#ifdef new_saturation
+                esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+                qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+                esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
                 ssi(i,j)=(qv(i,j)+qb0)/qsi(i,j)-1.
                 ami20=3.76e-8
                 y1(i,j)=1./tair(i,j)
@@ -4130,12 +4801,31 @@ CONTAINS
          if (new_ice_sat .eq. 0) then
 
                tair(i,j)=(pt(i,j)+tb0)*pi0
+#ifdef use_cpm
+               cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                     cice*(qi(i,j)+qs(i,j)+qg(i,j))
+               hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+               hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+               hls = hlv + hlf
+               avcp = hlv/cpm*pir
+               ascp = hls/cpm*pir
+               afcp = hlf/cpm*pir
+#endif
                cnd(i,j)=rt0*(tair(i,j)-t00)
                dep(i,j)=rt0*(t0-tair(i,j))
                y1(i,j)=1./(tair(i,j)-c358)
                y2(i,j)=1./(tair(i,j)-c76)
                qsw(i,j)=rp0*exp(c172-c409*y1(i,j))
                qsi(i,j)=rp0*exp(c218-c580*y2(i,j))
+#ifdef new_saturation
+               esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+               esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+               if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
+               qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+               qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+               esw(i,j) = esw(i,j)*10.  !in CGS
+               esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
                dd(i,j)=cp409*y1(i,j)*y1(i,j)
                dd1(i,j)=cp580*y2(i,j)*y2(i,j)
                if (qc(i,j).le.cmin) qc(i,j)=cmin
@@ -4182,12 +4872,31 @@ CONTAINS
          if (new_ice_sat .eq. 1) then
 
                tair(i,j)=(pt(i,j)+tb0)*pi0
+#ifdef use_cpm
+               cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                     cice*(qi(i,j)+qs(i,j)+qg(i,j))
+               hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+               hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+               hls = hlv + hlf
+               avcp = hlv/cpm*pir
+               ascp = hls/cpm*pir
+               afcp = hlf/cpm*pir
+#endif
                cnd(i,j)=rt0*(tair(i,j)-t00)
                dep(i,j)=rt0*(t0-tair(i,j))
                y1(i,j)=1./(tair(i,j)-c358)
                y2(i,j)=1./(tair(i,j)-c76)
                qsw(i,j)=rp0*exp(c172-c409*y1(i,j))
                qsi(i,j)=rp0*exp(c218-c580*y2(i,j))
+#ifdef new_saturation
+               esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+               esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+               if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
+               qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+               qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+               esw(i,j) = esw(i,j)*10.  !in CGS
+               esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
                dd(i,j)=cp409*y1(i,j)*y1(i,j)
                dd1(i,j)=cp580*y2(i,j)*y2(i,j)
                y5(i,j)=avcp*cnd(i,j)+ascp*dep(i,j)
@@ -4245,9 +4954,24 @@ CONTAINS
           dep(i,j)=0.0
           cnd(i,j)=0.0
           tair(i,j)=(pt(i,j)+tb0)*pi0
+#ifdef use_cpm
+          cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                cice*(qi(i,j)+qs(i,j)+qg(i,j))
+          hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+          hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+          hls = hlv + hlf
+          avcp = hlv/cpm*pir
+          ascp = hls/cpm*pir
+          afcp = hlf/cpm*pir
+#endif
           if (tair(i,j) .ge. 253.16) then
               y1(i,j)=1./(tair(i,j)-c358)
               qsw(i,j)=rp0*exp(c172-c409*y1(i,j))
+#ifdef new_saturation
+              esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+              qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+              esw(i,j) = esw(i,j)*10.  !in CGS
+#endif
               dd(i,j)=cp409*y1(i,j)*y1(i,j)
               dm(i,j)=qv(i,j)+qb0-qsw(i,j)
               cnd(i,j)=dm(i,j)/(1.+avcp*dd(i,j)*qsw(i,j))
@@ -4261,6 +4985,11 @@ CONTAINS
 !c             cnd(i,j)=0.0
              y2(i,j)=1./(tair(i,j)-c76)
              qsi(i,j)=rp0*exp(c218-c580*y2(i,j))
+#ifdef new_saturation
+             esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+             qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+             esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
              dd1(i,j)=cp580*y2(i,j)*y2(i,j)
              dep(i,j)=(qv(i,j)+qb0-qsi(i,j))/(1.+ascp*dd1(i,j)*qsi(i,j))
 !c    ******   deposition or sublimation of qi    ******
@@ -4281,9 +5010,24 @@ CONTAINS
          dep(i,j)=0.0
          cnd(i,j)=0.0
          tair(i,j)=(pt(i,j)+tb0)*pi0
+#ifdef use_cpm
+         cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+               cice*(qi(i,j)+qs(i,j)+qg(i,j))
+         hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+         hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+         hls = hlv + hlf
+         avcp = hlv/cpm*pir
+         ascp = hls/cpm*pir
+         afcp = hlf/cpm*pir
+#endif
          if (tair(i,j).ge.t00) THEN
             y1(i,j)=1./(tair(i,j)-c358)
             qsw(i,j)=rp0*exp(c172-c409*y1(i,j))
+#ifdef new_saturation
+            esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+            qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+            esw(i,j) = esw(i,j)*10.  !in CGS
+#endif
             dd(i,j)=cp409*y1(i,j)*y1(i,j)
             dm(i,j)=qv(i,j)+qb0-qsw(i,j)
             cnd(i,j)=dm(i,j)/(1.+avcp*dd(i,j)*qsw(i,j))
@@ -4293,12 +5037,32 @@ CONTAINS
             qv(i,j)=qv(i,j)-cnd(i,j)
             qc(i,j)=qc(i,j)+cnd(i,j)
          endif
+         tair(i,j)=(pt(i,j)+tb0)*pi0
+#ifdef use_cpm
+         cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+               cice*(qi(i,j)+qs(i,j)+qg(i,j))
+         hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+         hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+         hls = hlv + hlf
+         avcp = hlv/cpm*pir
+         ascp = hls/cpm*pir
+         afcp = hlf/cpm*pir
+#endif
          if (tair(i,j).le.273.16) THEN
 !c    ******   deposition or sublimation of qi    ******
             y1(i,j)=1./(tair(i,j)-c358)
             qsw(i,j)=rp0*exp(c172-c409*y1(i,j))
             y2(i,j)=1./(tair(i,j)-c76)
             qsi(i,j)=rp0*exp(c218-c580*y2(i,j))
+#ifdef new_saturation
+            esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+            esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+            if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
+            qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+            qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+            esw(i,j) = esw(i,j)*10.  !in CGS
+            esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
 
 !            fssi=min(0.20,max(0.,0.20*(tair(i,j)-t0+44.0)/(44.0-38.0)))
 !vvvvvvvvvvvvv Tao 20110722 vvvvvvvvvvvvvv
@@ -4325,6 +5089,8 @@ CONTAINS
     
     endif                                        ! if (new_ice_sat = 3)
 
+!<<< end of ifdef sat_predict
+#endif
 
 !* 10 * PSDEP : DEPOSITION OR SUBLIMATION OF QS                   **10**
 !* 20 * PGSUB : SUBLIMATION OF QG                                 **20**
@@ -4402,10 +5168,25 @@ CONTAINS
 
            if (tair(i,j) .lt. t0) then 
 
+#ifdef use_cpm
+              cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                    cice*(qi(i,j)+qs(i,j)+qg(i,j))
+              hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+              hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+              hls = hlv + hlf
+              avcp = hlv/cpm*pir
+              ascp = hls/cpm*pir
+              afcp = hlf/cpm*pir
+#endif
               rtair(i,j)=1./(tair(i,j)-c76)
               y2(i,j)=exp(c218-c580*rtair(i,j))
               qsi(i,j)=rp0*y2(i,j)
               esi(i,j)=c610*y2(i,j)
+#ifdef new_saturation
+              esi(i,j)=min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+              qsi(i,j)=0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+              esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
 
               SSI(I,J)=(QV(I,J)+QB0)/QSI(I,J)-1.
               IF (DLT1(I,J).EQ.1.) SSI(I,J)=max(SSI(I,J),0.)
@@ -4474,16 +5255,34 @@ CONTAINS
 
 !!!  end of Processes 10 and 20
 
+#ifndef sat_predict
+!>>> Note that ern is already calculated in saturation prediction scheme.
+
 !* 23 * ERN : EVAPORATION OF QR (SUBSATURATION)                   **23**
 ! Steve did not make any improvement on this process
 
        if (qr(i,j) .gt. 0.0) then
           tair(i,j)=(pt(i,j)+tb0)*pi0
           rtair(i,j)=1./(tair(i,j)-c358)
+#ifdef use_cpm
+          cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                cice*(qi(i,j)+qs(i,j)+qg(i,j))
+          hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+          hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+          hls = hlv + hlf
+          avcp = hlv/cpm*pir
+          ascp = hls/cpm*pir
+          afcp = hlf/cpm*pir
+#endif
           if (improve.eq.3) then
 	     y2(i,j)=exp( c172-c409*rtair(i,j) )
 	     esw(i,j)=c610*y2(i,j)
              qsw(i,j)=rp0*y2(i,j)
+#ifdef new_saturation
+             esw(i,j)=min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+             qsw(i,j)=0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+             esw(i,j) = esw(i,j)*10.  !in CGS
+#endif
              ssw(i,j)=(qv(i,j)+qb0)/qsw(i,j)-1.
              dm(i,j)=qv(i,j)+qb0-qsw(i,j)
              rsub1(i,j)=cv409*qsw(i,j)*rtair(i,j)*rtair(i,j)
@@ -4498,6 +5297,11 @@ CONTAINS
 !               tair(i,j)=(pt(i,j)+tb0)*pi0
 !               rtair(i,j)=1./(tair(i,j)-c358)
              qsw(i,j)=rp0*exp(c172-c409*rtair(i,j))
+#ifdef new_saturation
+             esw(i,j)=min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+             qsw(i,j)=0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+             esw(i,j) = esw(i,j)*10.  !in CGS
+#endif
              ssw(i,j)=(qv(i,j)+qb0)/qsw(i,j)-1.0
              dm(i,j)=qv(i,j)+qb0-qsw(i,j)
              rsub1(i,j)=cv409*qsw(i,j)*rtair(i,j)*rtair(i,j)
@@ -4522,6 +5326,8 @@ CONTAINS
               qv(i,j)=qv(i,j)+ern(i,j)
               qr(i,j)=qr(i,j)-ern(i,j)
         endif
+!>>> end of ifndef sat_predict
+#endif
 
 !!!!
 !!  add processes 30 & 33 fpr pmltg and pmlts
@@ -4535,6 +5341,16 @@ CONTAINS
           pmltg(i,j)=0.0
 	     tair(i,j)=(pt(i,j)+tb0)*pi0
           tairc(i,j)=tair(i,j)-t0
+#ifdef use_cpm
+          cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                cice*(qi(i,j)+qs(i,j)+qg(i,j))
+          hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+          hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+          hls = hlv + hlf
+          avcp = hlv/cpm*pir
+          ascp = hls/cpm*pir
+          afcp = hlf/cpm*pir
+#endif
 
             ftns0(i,j)=1.
             ftng0(i,j)=1.
@@ -4553,6 +5369,11 @@ CONTAINS
              y2(i,j)=exp( c172-c409*rtair(i,j) )
              esw(i,j)=c610*y2(i,j)
              qsw(i,j)=rp0*y2(i,j)
+#ifdef new_saturation
+             esw(i,j)=min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+             qsw(i,j)=0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+             esw(i,j) = esw(i,j)*10.  !in CGS
+#endif
              ssw(i,j)=1.-(qv(i,j)+qb0)/qsw(i,j)
              dm(i,j)=qsw(i,j)-qv(i,j)-qb0
              rsub1(i,j)=cv409*qsw(i,j)*rtair(i,j)*rtair(i,j)
@@ -4625,9 +5446,7 @@ CONTAINS
 !!!!!!!!!!!DDDDDDDDDDDDDD double check by Lang 02/23/2016
               sccc=cnd(i,j)
               seee=dd(i,j) + ern(i,j)
-!              sddd=dep(i,j) + amax1(pint(i,j),0.0) + psdep(i,j) + pgdep(i,j)
               sddd=dep(i,j) + dmax1(pint(i,j),0.0) + psdep(i,j) + pgdep(i,j)
-!              ssss=dd1(i,j) - amin1(pint(i,j),0.0) + pssub(i,j) + pgsub(i,j) + pmlts(i,j) + pmltg(i,j)
               ssss=dd1(i,j) - dmin1(pint(i,j),0.0) + pssub(i,j) + pgsub(i,j) + pmlts(i,j) + pmltg(i,j)
               smmm=psmlt(i,j) + pgmlt(i,j) + pimlt(i,j) + qracs(i,j) 
               sfff=psacw(i,j)*d2t + piacr(i,j)*d2t + psfw(i,j)*d2t + pgfr(i,j)*d2t   &
@@ -4784,19 +5603,19 @@ CONTAINS
 !   eff_rad is a function of the slope parameter (Lambda)
         
     ! rain
-      if (qrn(i,j,k) .lt. cmin) then   
+      if (qrn(i,j,k) .lt. crmin) then
          refr(i,k,j) = 0.e0  
       else 
          refr(i,k,j) = eff_rad(zr(i,j))    
       endif  
     ! snow
-      if (qcs(i,j,k) .lt. cmin) then   
+      if (qcs(i,j,k) .lt. csmin) then
          refs(i,k,j) = 0.e0 
       else 
          refs(i,k,j) = eff_rad(zs(i,j))    
       endif  
     ! graupel/hail
-      if (qcg(i,j,k) .lt. cmin) then   
+      if (qcg(i,j,k) .lt. cgmin) then
          refg(i,k,j) = 0.e0  
       else 
          refg(i,k,j) = eff_rad(zg(i,j))    
@@ -4804,7 +5623,9 @@ CONTAINS
 
 ! for cloud water
 
-   if (qcl(i,j,k) .lt. cmin) then   
+   if ( rewflag .eq. 1 ) then
+   ! default
+   if (qcl(i,j,k) .lt. cmin) then
       refc(i,k,j) = 0.e0
    else
       L_cloud = qcl(i,j,k) * rho(i,j,k)             ! cloud water [g/cm3]
@@ -4862,10 +5683,52 @@ CONTAINS
                    refc(i,k,j) = 1.e0/lambda * gamfac3 * 1.e4  !effective radius [micron]
 #endif
    endif ! qcl(i,j,k) < cmin test
+   endif
+
+   if ( rewflag .eq. 2 ) then
+      ! mapping spectrum, different over land and ocean
+      if (qcl(i,j,k) .ge. cwmin) then
+         if ( xland(i,j) .eq. 1. ) then
+            mdc1 = 5.8936819
+            mdc2 = -7.013013
+            mdc3 = 1.3178721
+            mdc4 = 1.1741987
+            mdc5 = 2.6110916E-3
+            mdc6 = -0.26646396
+         else
+            mdc1 = 173.57305
+            mdc2 = -64.370929
+            mdc3 = 0.36833626
+            mdc4 = 6.1389254
+            mdc5 = 5.5915321E-3
+            mdc6 = -0.12488698
+         endif
+         efd1 = 1.6855156
+         efd2 = 0.84147302
+         efd3 = -0.46783369
+         efd4 = 1.005305E-2
+         efd5 = 3.4833332E-2
+         efd6 = 1.4727223E-2
+
+         ltk  = log(tair(i,j))
+         lqc  = -1.*log(qcl(i,j,k)*rho_mks(i,k,j))
+         ltk2 = ltk*ltk
+         lqc2 = lqc*lqc
+         mvdc = exp(mdc1 + mdc2*ltk + mdc3*lqc + mdc4*ltk2     &
+                + mdc5*lqc2 + mdc6*ltk*lqc)
+         efdc = exp(efd1 + efd2*log(mvdc) + efd3*log(1000.)    &
+                + efd4*log(mvdc)**2. + efd5*log(1000.)**2.     &
+                + efd6*log(mvdc)*log(1000.))
+         refc(i,k,j) = min(max(efdc/2.,0.5),50)
+      else
+         refc(i,k,j) = 0.5  !test
+      endif
+   endif
 
 ! for cloud ice
-
-   if (qci(i,j,k) .lt. cmin) then   
+   if ( reiflag .eq. 1 ) then
+!   if (qci(i,j,k) .lt. cmin) then
+   if (qci(i,j,k) .lt. cimin) then
       refi(i,k,j) = 0.e0
    else
 #if ( WRF_CHEM == 1)
@@ -4905,7 +5768,74 @@ CONTAINS
       if (tair(i,j) .lt. 223.16) refi(i,k,j) = 25.e0
 #endif
    endif ! qci(i,j,k) < cmin test
+   endif
 
+   if ( reiflag .eq. 2 ) then
+      ! Wyser 1998 , equation 15 and 35:
+      reimin = 10.0
+      if ( qci(i,j,k) .ge. cimin ) then
+         iwc_0 = 50.e-6  ! note that rho here is in CGS
+                         ! IWC_0 (50 g/m^-3) must be converted to g/cm^3
+         bw98 = - 2. + 1.e-3 * log10(rho(i,j,k)*qci(i,j,k)/iwc_0)*max(0.0,-tairc(i,j))**1.5
+         refi(i,k,j) = 377.4 + bw98 * (203.3 + bw98 * (37.91 + 2.3696 * bw98))
+         refi(i,k,j) = max (reimin, refi(i,k,j))
+      else
+         refi(i,k,j) = 0.0
+      endif
+   endif
+
+   if ( reiflag .eq. 3 ) then
+      ! Heymsfield et al. 2014 , equation 9e :
+      reimin = 10.0
+      if ( qci(i,j,k) .ge. cimin ) then
+         if ( tairc(i,j) >= -56.0 .and. tairc(i,j) < 0.0 ) then
+            refi(i,k,j) = 308.4 * exp ( 0.0152 * tairc(i,j) )      ! 131.657 ~ 308.4 micron
+         elseif ( tairc(i,j) >= -71.0 .and. tairc(i,j) < -56.0 ) then
+            refi(i,k,j) = 9.1744e+4 * exp ( 0.117 * tairc(i,j) )   ! 22.641 ~ 130.942 micron
+         elseif ( tairc(i,j) < -71.0 ) then
+            refi(i,k,j) = 83.3 * exp ( 0.0184 * tairc(i,j) )       ! 10 ~ 22.557 micron
+         endif
+         refi(i,k,j) = max (reimin, refi(i,k,j))
+      else
+         refi(i,k,j) = 0.0
+      endif
+   endif
+
+   if ( reiflag .eq. 4 ) then
+      reimin = 0.0
+      ! Mitchell et al. 2011, equation 9
+      ! IWC in mg/m^3, T in oC, rei in micron
+      if ( qci(i,j,k) .ge. cimin ) then
+         refi(i,k,j) = 132.23 + 1.2433 * tairc(i,j) + &
+                       8.6629 * (6. + log10(rho(i,j,k) * qci(i,j,k)))
+         refi(i,k,j) = max (reimin, refi(i,k,j))
+      else
+         refi(i,k,j) = 0.0
+      endif
+   endif
+
+   if ( reiflag .eq. 5 ) then
+      ! mapping spectrum, different over land and ocean
+      if ( qci(i,j,k) .ge. cimin ) then
+         ltk  = log(tair(i,j))
+         lqi  = -1.*log(qci(i,j,k)*rho_mks(i,k,j))
+         ltk2 = ltk*ltk
+         lqi2 = lqi*lqi
+         if ( xland(i,j) .eq. 1.0 ) then
+            ! over land
+            efdi = exp(161.47584 - 0.26232591*lqi + 4.3393883E-4*lqi2 &
+                   - 57.057846*ltk + 5.3668153*ltk2)/10.
+         else
+            ! over ocean
+            efdi = exp(161.92213 - 0.26232591*lqi + 4.3393883E-4*lqi2 &
+                   - 57.057846*ltk + 5.3668153*ltk2)/10.
+         endif
+         refi(i,k,j) = efdi/2.
+         refi(i,k,j) = min( max (refi(i,k,j),1.5),500.)
+      else
+         refi(i,k,j) = 1.5  !test
+      endif
+   endif
 !JJS 20140305 ^^^^^  Calculate effective radius for all cloud species
 
  2000 continue
@@ -5450,5 +6380,718 @@ CONTAINS
    return
    end function eff_rad
 
+!-------------------------------------------------------------------
+      subroutine vti_mks(improve,rhoz,tz,qiz,qvz,p,xland,vti)
+      implicit none
+      integer, intent(in) :: improve
+      real, intent(in) :: rhoz  !air density (kg/m^3)
+      real, intent(in) :: qiz   !mixing ratio of cloud ice (kg/kg)
+      real, intent(in) :: qvz   !specific humidity (kg/kg)
+      real, intent(in) :: p     !pressure (Pa)
+      real, intent(in) :: tz    !air temperature (K)
+      real, intent(in) :: xland !land-sea mask
+      real, intent(out):: vti   !terminal velocity (m/s)
+
+      integer, parameter :: vtiflag = 7
+      ! 1 : Starr and Cox (1985)        , igce = 1
+      ! 2 : Heymsfield and Donner (1990), igce!= 1
+      ! 3 : Hong et al. (2004)          , igce = 1 , improve = 3
+      ! 4 : Deng and Mace (2008)
+      ! 5 : Mitchell et al. (2011)
+      ! 6 : assume rhoi=300 kg/m^3
+      ! 7 : TCWA1 semi-theoretical approach, different over land and ocean
+
+      real, parameter :: vimax = 0.5     ! max fall speed for cloud ice (m/s)
+      real, parameter :: vimin = 0.      ! min fall speed for cloud ice (m/s)
+
+      !local variables
+      integer :: ic
+      integer :: igce
+      real    :: y1
+      real    :: const_vt, const_d, const_m, bb1, bb2
+      real, dimension(7) ::  aice, vice
+      data aice/1.e-6, 1.e-5, 1.e-4, 1.e-3, 0.01, 0.1, 1./
+      data vice/5,15,30,35,40,45,50/
+      ! for Deng and Mace (2008)
+      real, parameter :: aa = - 4.14122e-5
+      real, parameter :: bb = - 0.00538922
+      real, parameter :: cc = - 0.0516344
+      real, parameter :: dd = 0.00216078
+      real, parameter :: ee = 1.9714
+      real    :: tc
+      real    :: h1, h2
+      ! for TCWA1 semi-theoretical approach
+      integer :: hid
+      real    :: qsi,sqrhoz,rhoi,adagr,inhgr,ltk,lqi,ltk2,lqi2,zeta,vishp,viroi,ssi,lroi
+#ifdef new_saturation
+      real    :: esi
+#endif
+      real, parameter :: di0 = 6.e-6
+
+      if ( qiz .ge. cimin ) then
+         if ( vtiflag .eq. 1 ) then
+            ! Starr and Cox 1985 :
+            y1 = rhoz * 1000. * qiz           ! y1 in g/m^3
+            if ( y1 .lt. 1.e-6 ) then
+               vti = 0.
+            else
+               do ic = 1 , 6
+                  if ( y1.gt.aice(ic) .and. y1.le.aice(ic+1) ) then
+                     vti = vice(ic) + ( vice(ic+1) - vice(ic) ) *         &
+                             ( y1 - aice(ic) ) / ( aice(ic+1) - aice(ic) )
+                     if (vti .lt. 0.0) vti = 0. ! EMK per 20110816 code
+                  endif
+                  vti = vti * 0.01  ! convert back to MKS
+               enddo
+            endif
+
+         elseif ( vtiflag .eq. 2 ) then
+            ! Heymsfield and Donner 1990 :
+            vti= 3.29 * ( rhoz * qiz ) ** 0.16
+
+         elseif ( vtiflag .eq. 3 ) then
+            ! Hong et al. 2004, same as HD90 (in a*D**b form)
+            y1 = rhoz * 1000. * qiz                  ! y1 in g/m^3
+            if ( y1 .lt. 1.e-6 ) then
+               vti = 0.
+            else
+               ! fallspeed     (m/s)  : V=1.49e4*D**1.31
+               ! diameter      (m)    : D=11.9*M**0.5
+               ! concentration (m^-3) : N=5.38e7*(rho*q)**0.75
+               ! mass          (kg)   : M=rho*q/N
+               !                         =1/5.38e7*(rho*q)**0.25
+               const_vt = 1.49e4
+               const_d = 11.9
+               const_m = 1./5.38e7
+               y1 = y1 * 1.e-3                       ! y1 in kg/m^3
+               bb1 = const_m * y1**0.25
+               bb2 = const_d * bb1**0.5
+               vti = max(const_vt*bb2**1.31, 0.0)    ! vti in m/s
+            endif
+
+         elseif ( vtiflag .eq. 4 ) then
+            ! Deng and Mace 2008 :
+            ! IWC in g/m^3 , tc in oC , and vti in cm/s
+            tc = tz - t0
+            vti = (3. + log10(qiz * rhoz)) * &
+                  (tc * (aa * tc + bb) + cc) + dd * tc + ee
+            vti = exp(log(10.) * vti)
+            vti = vti * 0.01    ! convert back to MKS
+
+         elseif ( vtiflag .eq. 5 ) then
+            ! Mitchell et al. 2011 , equation 10 :
+            ! IWC in mg/m^3 , T in oC , and vti in cm/s
+            vti = 82.082 + 1.0121 * tc + &
+                  6.6303 * (6. + log10(qiz * rhoz))
+            vti = vti * 0.01    ! convert back to MKS
+
+         elseif ( vtiflag .eq. 6 ) then
+            ! assume constant density (rhoi=300 kg/m^3) :
+            tc = tz - t0
+            sqrhoz = sqrt(rhoe_s/rhoz)
+
+            ! shape parameter :
+            hid   = max(min(nint(abs(tc)/0.25),120),0)
+            adagr = itble(hid)
+            zeta  = (adagr-1.)/(adagr+2.)
+            if ( zeta .gt. 0. ) then
+               vishp = di0**(zeta/2.)
+            elseif ( zeta .lt. 0. ) then
+               vishp = di0**(-zeta)
+            else
+               vishp = 1.
+            endif
+
+            ltk   = log(tz)
+            ltk2  = ltk*ltk
+            lqi   = -1.*log(rhoz*qiz)
+            lqi2  = lqi*lqi
+            vti = exp(-1.1100279E-2 + 0.47727519*lqi              &
+                  - 8.8757389E-2*lqi2 + 3.6732918E-3*lqi*lqi2     &
+                  - 4.5748034E-5*lqi2*lqi2 + 1.3864255*ltk)       &
+                  /1.e+3*vishp*sqrhoz
+
+         elseif ( vtiflag .eq. 7 ) then
+            ! TCWA1 adopted semi-theoretical approach from NTU 4ICE-3M scheme
+            ! with prescribed ice properties(shape and density) :
+            tc = tz - t0
+            qsi = f_qsi(tz,p)
+#ifdef new_saturation
+            esi = min(0.99*p,esi_mks(tz))
+            qsi = 0.622*esi/(p-esi)
+#endif
+
+            ! deposition density :
+            if ( tc .ge. -40. ) then
+               ! Chen and Lamb 1994a ; Chen and Tsai 2016
+               hid = max(min(nint(abs(tc)/0.25),120),0)
+               inhgr = itble(hid)  !inherent growth ratio
+               rhoi = 900.*exp(-3.*max(qvz-qsi-5.e-5,0.)/inhgr)
+            else
+               ! Pokrifka et al. 2023, equation 18
+               inhgr = 3.          !inherent growth ratio (FIG. 16)
+               ssi = qvz/qsi-1.
+               if ( ssi .gt. 0.267 ) then
+                  rhoi = -1027.456*ssi+1185.834
+               else
+                  rhoi = -32.332*ssi+900.
+               endif
+            endif
+
+            ! shape parameter (ice aspect ratio) :
+!            adagr = inhgr**thrd
+! >>> reduce upper-level vti :
+            if ( tc .ge. -40. ) then
+              adagr = inhgr**thrd
+            else
+#ifdef sat_predict
+              adagr = inhgr**thrd
+#else
+              adagr = inhgr**0.9
+#endif
+            endif
+! <<<
+            ltk   = log(tz)
+            ltk2  = ltk*ltk
+            lqi   = -1.*log(rhoz*qiz)
+            lqi2  = lqi*lqi
+            lroi  = log(min(max(rhoi,50.),900.))
+            zeta  = (adagr-1.)/(adagr+2.)
+            if ( zeta .gt. 0. ) then
+               vishp = di0**(zeta/2.)
+            elseif ( zeta .lt. 0. ) then
+               vishp = di0**(-zeta)
+            else
+               vishp = 1.
+            endif
+
+            ! density parameter :
+            viroi = 2.6795546 - 0.010732829*lqi - 1.176491*lroi         &
+                    + 3.2512268E-4*lqi2 + 0.13920371*lroi**2.           &
+                    - 5.6243169E-4*lqi*lroi
+            viroi = min(1.,viroi)
+
+            ! the divide between land and ocean :
+            if ( xland .eq. 1. ) then   ! land
+               vti = exp(265.16805 - 0.28802545*lqi - 3.754874E-3*lqi2  &
+                     - 93.843132*ltk + 8.8315122*ltk2)                  &
+                     /1.e+6*vishp*viroi*(1.0837/rhoz)**0.35
+            else                        ! ocean
+               vti = exp(252.86312 - 0.23844613*lqi - 4.6185936E-3*lqi2 &
+                     - 89.119066*ltk + 8.3851678*ltk2)                  &
+                     /1.e+6*vishp*viroi*(1.0837/rhoz)**0.35
+            endif
+         endif
+
+         vti = min ( vimax , max ( vimin , vti ) )
+      else
+         vti = vimin
+      endif  !end of if qiz
+
+      return
+      end subroutine vti_mks
+!-------------------------------------------------------------------
+
+!-------------------------------------------------------------------
+      subroutine vtr_mks(rhoz,qrz,vtr)
+      implicit none
+      real, intent(in) :: rhoz  !air density (kg/m^3)
+      real, intent(in) :: qrz   !mixing ratio (kg/kg)
+      real, intent(out):: vtr   !terminal velocity (m/s)
+
+      real, parameter :: vrmax = 12.0    !(m/s)
+      real, parameter :: vrmin = 0.0     !(m/s)
+
+      !local variables
+      integer :: igce
+      real    :: pi, gambp4
+      real    :: y1, tmp1, vs, vg, vr, fv
+
+      pi = acos(-1.)
+      gambp4 = gammagce(constb+4.)
+
+      if ( qrz .ge. crmin ) then
+         fv = sqrt( rhoe_s/rhoz )
+         igce = 1
+         if ( igce .ne. 1 ) then
+            ! old codes from Chern's in MKS
+            tmp1 = sqrt(pi*rhowater*xnor/rhoz/qrz)
+            tmp1 = sqrt(tmp1)
+            vtr = consta*gambp4*fv/tmp1**constb
+            vtr = vtr/6.
+         else
+            ! new codes from Steve's in CGS :
+            y1 = rhoz*qrz*0.001  !in CGS
+            vs = sqrt( y1 )
+            vg = sqrt( vs )
+!            vr=vr0+vr1*vg+vr2*vs+vr3*vg*vs
+            vr = vrc0+vrc1*vg+vrc2*vs+vrc3*vg*vs
+            vtr = max(fv*vr, 0.e0)
+            vtr = vtr*0.01  !convert back to MKS
+         endif  !end of if igce
+         vtr = min ( vrmax , max ( vrmin , vtr ) )
+      else
+         vtr = vrmin
+      endif  !end of if qrz
+
+      return
+      end subroutine vtr_mks
+!-------------------------------------------------------------------
+
+!-------------------------------------------------------------------
+      subroutine vts_mks(improve,rhoz,qsz,tz,vts)
+      implicit none
+      integer, intent(in) :: improve
+      real, intent(in) :: rhoz  !air density (kg/m^3)
+      real, intent(in) :: qsz   !mixing ratio (kg/kg)
+      real, intent(in) :: tz    !temperature (K)
+      real, intent(out):: vts   !terminal velocity (m/s)
+
+      real, parameter :: vsmax = 5.0     !(m/s)
+      real, parameter :: vsmin = 0.0     !(m/s)
+
+      !local variables
+      integer :: igce
+
+      real    :: y1, fv, r00, ftns, ftns0, tzc, vscf
+      real    :: tmp1, pi, gamdp4
+
+      pi = acos(-1.)
+      gamdp4 = gammagce(constd+4.)
+
+      if ( qsz .ge. csmin ) then
+         y1 = rhoz*qsz*0.001  !in CGS
+         fv = sqrt( rhoe_s/rhoz )
+         igce = 1
+         if ( igce .ne. 1 ) then
+            ! old codes from Chern's in MKS
+            tmp1 = sqrt(pi*rhosnow*xnos/rhoz/qsz)
+            tmp1 = sqrt(tmp1)
+            vts = constc*gamdp4*fv/tmp1**constd
+            vts = vts/6.
+         else
+            ! new codes from Steve's in cgs
+!            y1 = rhoz * 0.001 *qsz             ! rhoz need to be in CGS
+            y1 = qsz
+            r00 = rhoz * 0.001   ! rhoz need to be in CGS
+            vscf = vsc*fv
+
+            ftns = 1.
+            ftns0 = 1.
+            if ( improve .eq. 3 )then
+               tzc = tz - t0
+               call sgmap(1,y1,r00,tzc,ftns0)
+               ftns = ftns0**bsq
+            endif
+            vts = max(vscf*(r00*y1)**bsq/ftns, 0.0)
+            vts = vts * 0.01  ! convert back to MKS
+         endif  !end of if igce
+         vts = min ( vsmax , max ( vsmin , vts ) )
+      else
+         vts = vsmin
+      endif  !end of if qsz
+
+      return
+      end subroutine vts_mks
+!-------------------------------------------------------------------
+
+!-------------------------------------------------------------------
+      subroutine vtg_mks(ihail,improve,rhoz,qgz,tz,vtg)
+      implicit none
+      integer, intent(in) :: ihail, improve
+      real, intent(in) :: rhoz  !air density (kg/m^3)
+      real, intent(in) :: qgz   !mixing ratio (kg/kg)
+      real, intent(in) :: tz    !temperature (K)
+      real, intent(out):: vtg   !terminal velocity (m/s)
+
+      real, parameter :: vgmax = 8.0     !(m/s)
+      real, parameter :: vgmin = 0.0     !(m/s)
+
+      !local variables
+      integer :: igce
+      real    :: tmp1, pi, gam4pt5, term0, grav, r00, vgcr
+      real    :: y1, fv, ftng, ftng0, tzc
+
+      pi = acos(-1.)
+      grav = 9.80665e+0
+      gam4pt5 = gammagce(4.5)
+
+      if ( qgz .ge. cgmin ) then
+         if (ihail .eq. 1) then
+            ! for hail, based on Lin et al (1983)
+            tmp1 = sqrt(pi*rhohail*xnoh/rhoz/qgz)
+            tmp1 = sqrt(tmp1)
+            term0 = sqrt(4.*grav*rhohail/3./rhoz/cdrag)
+            vtg = gam4pt5*term0*sqrt(1./tmp1)
+            vtg = vtg/6.
+         else
+            ! for graupel, based on RH (1984)
+            igce = 1
+!            if ( igce .ne. 1 ) then
+!               ! old codes from Chern's in MKS; prez(:) needed.
+!               tmp1=sqrt(pi*rhograul*xnog/rhoz/qgz)
+!               tmp1=sqrt(tmp1)
+!               tmp1=tmp1**bbar
+!               tmp1=1./tmp1
+!               term0=abar*gam4bbar/6.
+!               vtg=term0*tmp1*(p0/prez)**0.4
+!            else
+               ! new codes from Steve's in CGS
+               y1 = qgz
+               r00 = rhoz*0.001  !in CGS
+               fv = sqrt( rhoe_s/rhoz )
+               vgcr = vgc*fv
+               ftng = 1.
+               ftng0 = 1.
+               if ( improve .gt. 2 ) then
+                  tzc = tz - t0
+                  call sgmap(2,y1,r00,tzc,ftng0)
+                  ftng = ftng0**bgq
+               endif
+               vtg = dmax1(vgcr*(r00*y1)**bgq/ftng, 0.0)
+               vtg = vtg * 0.01  !convert back to MKS
+
+!               !>>> from GFDL MP :
+!!               vcong = 87.2382675
+!!               rhof = sqrt(min(10.,1.2/rhoz))
+!!               normg = 5026548245.74367
+!!               vtg = vcong * rhof * sqrt(sqrt(sqrt(qgz*rhoz/normg)))
+!               vtg = 87.2382675 * sqrt(min(10.,rhoe_s/rhoz)) * &
+!                     sqrt(sqrt(sqrt(qgz*rhoz/5026548245.74367)))
+!               !<<<
+!            endif  !end of if igce
+            vtg = min ( vgmax , max ( vgmin , vtg ) )
+         endif  !end of if ihail
+      else
+         vtg = vgmin
+      endif   !end of if qgz
+
+      return
+      end subroutine vtg_mks
+!-------------------------------------------------------------------
+
+!-------------------------------------------------------------------
+      SUBROUTINE semi_sedi(qvar,ihail,improve,iter,km,dzl,rho,qc,qv,p,tz,xland,ww,precip,dt)
+!-------------------------------------------------------------------
+!
+! This routine is a semi-Lagrangain forward advection for hydrometeors
+! with mass conservation and positive definite advection
+! 2nd order interpolation with monotonic piecewise parabolic method is used.
+! This routine is under assumption of decfl < 1 for semi_Lagrangian
+!
+! dzl    depth of model layer (m)
+! rho    dry air density (kg/m^3)
+! qc     dry mixing ratio of condensate (kg/kg)
+! qv     specific humidity (kg/kg)
+! p      pressure (Pa)
+! tz     air temperature (K)
+! ww     terminal velocity (m/s)
+! precip total precipitation at surface (mm)
+! dt     time step (sec)
+! iter   how many time to guess mean terminal velocity: 0 pure forward.
+!        0 : use departure wind for advection
+!        1 : use mean wind for advection
+!        > 1 : use mean wind after iter-1 iterations
+!
+! author: hann-ming henry juang <henry.juang@noaa.gov>
+!         implemented by song-you hong
+! reference: Juang, H.-M., and S.-Y. Hong, 2010: Forward semi-Lagrangian advection
+!         with mass conservation and positive definiteness for falling
+!         hydrometeors. *Mon.  Wea. Rev.*, *138*, 1778-1791
+!
+      implicit none
+
+      character(len=2) :: qvar
+      integer, intent(in) :: ihail, improve, km, iter
+      real, intent(in) ::  dt
+      real, intent(in) :: dzl(km), rho(km), tz(km), qv(km), p(km)
+      real, intent(in) :: xland
+      real, intent(out) :: ww(km)
+      real, intent(out) :: precip
+      real, intent(inout) :: qc(km)
+      integer  k,m,kk,kb,kt,n
+      real  tl,tl2,qql,dql,qqd
+      real  th,th2,qqh,dqh
+      real  zsum,qsum,dim,dip,con1,fa1,fa2
+      real  allold, decfl
+      real  dz(km), qq(km)
+      real  wi(km+1), zi(km+1), za(km+2)
+      real  qn(km)
+      real  dza(km+1), qa(km+1), qmi(km+1), qpi(km+1)
+      real  wd(km),wa(km),was(km)
+!
+      precip = 0.0
+      qa(:) = 0.0
+      qq(:) = 0.0
+      ww(:) = 0.0
+      wa(:) = 0.0
+      was(:) = 0.0
+      dz(:) = dzl(:)
+      do k = 1,km
+        if ( qvar .eq. 'qr' ) call vtr_mks(rho(k),qc(k),ww(k))
+        if ( qvar .eq. 'qs' ) call vts_mks(improve,rho(k),qc(k),tz(k),ww(k))
+        if ( qvar .eq. 'qg' ) call vtg_mks(ihail,improve,rho(k),qc(k),tz(k),ww(k))
+        if ( qvar .eq. 'qi' ) call vti_mks(improve,rho(k),tz(k),qc(k),qv(k),p(k),xland,ww(k))
+      enddo
+      do k = 1,km
+        qq(k) = qc(k)*rho(k)
+      enddo
+
+! skip for no precipitation for all layers
+      allold = 0.0
+      do k = 1,km
+        allold = allold + qq(k)
+      enddo
+      if ( allold .le. 0.0 ) then
+         return 
+      endif
+!
+! compute interface values
+      zi(1) = 0.0
+      do k = 1,km
+        zi(k+1) = zi(k)+dz(k)
+      enddo
+!====================================
+! save departure wind
+      wd(:) = ww(:)
+      n = 1
+ 100  continue
+! plm is 2nd order, we can use 2nd order wi or 3rd order wi
+! 2nd order interpolation to get wi
+      wi(1) = ww(1)
+      wi(km+1) = ww(km)
+      do k = 2,km
+        wi(k) = (ww(k)*dz(k-1)+ww(k-1)*dz(k))/(dz(k-1)+dz(k))
+      enddo
+! 3rd order interpolation to get wi
+      fa1 = 9./16.
+      fa2 = 1./16.
+      wi(1) = ww(1)
+      wi(2) = 0.5*(ww(2)+ww(1))
+      do k = 3,km-1
+        wi(k) = fa1*(ww(k)+ww(k-1))-fa2*(ww(k+1)+ww(k-2))
+      enddo
+      wi(km) = 0.5*(ww(km)+ww(km-1))
+      wi(km+1) = ww(km)
+
+! terminate of top of raingroup
+      do k = 2,km
+        if( ww(k).eq.0.0 ) wi(k) = ww(k-1)
+      enddo
+
+! diffusivity of wi
+      con1 = 0.05
+      do k = km,1,-1
+        decfl = (wi(k+1)-wi(k))*dt/dz(k)
+        if( decfl .gt. con1 ) then
+          wi(k) = wi(k+1) - con1*dz(k)/dt
+        endif
+      enddo
+! compute arrival point
+      do k = 1,km+1
+        za(k) = zi(k) - wi(k)*dt
+      enddo
+      za(km+2) = zi(km+1)
+
+      do k = 1,km+1
+        dza(k) = za(k+1) - za(k)
+      enddo
+
+! computer deformation at arrival point
+      do k = 1,km
+        qa(k) = qq(k)*dz(k)/dza(k)
+        qc(k) = qa(k)/rho(k)
+      enddo
+      qa(km+1) = 0.0
+
+! compute arrival terminal velocity, and estimate mean terminal velocity
+! then back to use mean terminal velocity
+      if ( n.le.iter ) then
+        do k = 1,km
+          if ( qvar .eq. 'qr' ) call vtr_mks(rho(k),qc(k),wa(k))
+          if ( qvar .eq. 'qs' ) call vts_mks(improve,rho(k),qc(k),tz(k),wa(k))
+          if ( qvar .eq. 'qg' ) call vtg_mks(ihail,improve,rho(k),qc(k),tz(k),wa(k))
+          if ( qvar .eq. 'qi' ) call vti_mks(improve,rho(k),tz(k),qc(k),qv(k),p(k),xland,wa(k))
+        enddo
+
+        do k = 1,km
+           if ( n.ge.2 ) wa(k) = 0.5*(wa(k)+was(k))
+           ! mean wind is average of departure and new arrival winds
+           ww(k) = 0.5*(wd(k)+wa(k))
+        enddo
+        was(:) = wa(:)
+        n = n + 1
+        go to 100
+      endif
+!====================================
+! estimate values at arrival cell interface with monotone
+      do k = 2,km
+        dip = (qa(k+1)-qa(k))/(dza(k+1)+dza(k))
+        dim = (qa(k)-qa(k-1))/(dza(k-1)+dza(k))
+        if ( dip*dim.le.0.0 ) then
+          qmi(k) = qa(k)
+          qpi(k) = qa(k)
+        else
+          qpi(k) = qa(k)+0.5*(dip+dim)*dza(k)
+          qmi(k) = 2.0*qa(k)-qpi(k)
+          if ( qpi(k).lt.0.0 .or. qmi(k).lt.0.0 ) then
+            qpi(k) = qa(k)
+            qmi(k) = qa(k)
+          endif
+        endif
+      enddo
+      qpi(1) = qa(1)
+      qmi(1) = qa(1)
+      qmi(km+1) = qa(km+1)
+      qpi(km+1) = qa(km+1)
+
+! interpolation to regular point
+      qn = 0.0
+      kb = 1
+      kt = 1
+      intp : do k = 1,km
+             kb = max(kb-1,1)
+             kt = max(kt-1,1)
+! find kb and kt
+             if ( zi(k).ge.za(km+1) ) then
+               exit intp
+             else
+               find_kb : do kk = kb,km
+                         if ( zi(k).le.za(kk+1) ) then
+                           kb = kk
+                           exit find_kb
+                         else
+                           cycle find_kb
+                         endif
+               enddo find_kb
+               find_kt : do kk = kt,km+2
+                         if( zi(k+1).le.za(kk) ) then
+                           kt = kk
+                           exit find_kt
+                         else
+                           cycle find_kt
+                         endif
+               enddo find_kt
+               kt = kt - 1
+! compute q with piecewise constant method
+               if ( kt.eq.kb ) then
+                 tl = (zi(k)-za(kb))/dza(kb)
+                 th = (zi(k+1)-za(kb))/dza(kb)
+                 tl2 = tl*tl
+                 th2 = th*th
+                 qqd = 0.5*(qpi(kb)-qmi(kb))
+                 qqh = qqd*th2+qmi(kb)*th
+                 qql = qqd*tl2+qmi(kb)*tl
+                 qn(k) = (qqh-qql)/(th-tl)
+               else if ( kt.gt.kb ) then
+                 tl = (zi(k)-za(kb))/dza(kb)
+                 tl2 = tl*tl
+                 qqd = 0.5*(qpi(kb)-qmi(kb))
+                 qql = qqd*tl2+qmi(kb)*tl
+                 dql = qa(kb)-qql
+                 zsum  = (1.-tl)*dza(kb)
+                 qsum  = dql*dza(kb)
+                 if ( kt-kb.gt.1 ) then
+                   do m = kb+1,kt-1
+                     zsum = zsum + dza(m)
+                     qsum = qsum + qa(m) * dza(m)
+                   enddo
+                 endif
+                 th = (zi(k+1)-za(kt))/dza(kt)
+                 th2 = th*th
+                 qqd = 0.5*(qpi(kt)-qmi(kt))
+                 dqh = qqd*th2+qmi(kt)*th
+                 zsum  = zsum + th*dza(kt)
+                 qsum  = qsum + dqh*dza(kt)
+                 qn(k) = qsum/zsum
+               endif
+               cycle intp
+             endif
+       enddo intp
+
+! rain out (unit:kg/m^2=mm)
+       sum_precip: do k = 1,km
+          if ( za(k).lt.0.0 .and. za(k+1).le.0.0 ) then
+             precip = precip + qa(k)*dza(k)
+             cycle sum_precip
+          else if ( za(k).lt.0.0 .and. za(k+1).gt.0.0 ) then
+             ! from Thompson MP :
+             th = (0.0-za(k))/dza(k)
+             th2 = th*th
+             qqd = 0.5*(qpi(k)-qmi(k))
+             qqh = qqd*th2+qmi(k)*th
+             precip = precip + qqh*dza(k)
+!             ! from WSM6 MP : 
+!             precip = precip + qa(k)*(0.-za(k))
+             exit sum_precip
+          endif
+          exit sum_precip
+       enddo sum_precip
+
+! replace the new values
+       do k = 1,km
+          qc(k) = qn(k)/rho(k)
+       enddo
+
+       END SUBROUTINE semi_sedi
+
+       REAL FUNCTION f_qsi(tair,p0)
+       IMPLICIT NONE
+       REAL :: tair   !real temperature (K)
+       REAL :: p0     !pressure (Pa)
+       REAL :: rp0
+
+       rp0 = 3.799052e3 / (p0 * 10.)
+       f_qsi = rp0 * exp(c218 - c580 / (tair - c76) )
+
+       END FUNCTION f_qsi
+
+#ifdef new_saturation
+       REAL FUNCTION esi_mks(tair)
+       IMPLICIT NONE
+       REAL :: tair   !real temperature (K)
+!
+!  COMPUTE SATURATION VAPOR PRESSURE POLYSVP RETURNED IN UNITS OF PA. T IS INPUT IN UNITS OF K.
+!  REPLACE GOFF-GRATCH WITH FASTER FORMULATION FROM FLATAU ET AL. 1992, TABLE 4 (RIGHT-HAND COLUMN)
+       REAL :: DT
+       REAL :: a0i,a1i,a2i,a3i,a4i,a5i,a6i,a7i,a8i
+       DATA a0i,a1i,a2i,a3i,a4i,a5i,a6i,a7i,a8i /6.11147274,0.503160820, &
+            0.188439774E-1,0.420895665E-3,0.615021634E-5,0.602588177E-7, &
+            0.385852041E-9,0.146898966E-11,0.252751365E-14/
+
+       DT = MAX(-80.,tair - 273.16)
+       esi_mks = a0i + DT*(a1i + DT*(a2i + DT*(a3i + DT*(a4i + DT*(a5i + &
+                 DT*(a6i + DT*(a7i + a8i*DT)))))))
+       esi_mks = esi_mks*100.  !convert to Pa
+!  
+!  Goff-Gratch equation (Goff and Gratch 1945)
+!       esi_mks = c610 * exp( c218 - c580 / (tair - c76) )
+!       esi_mks = esi_mks / 10.  !convert to Pa
+
+       END FUNCTION esi_mks
+
+       REAL FUNCTION esw_mks(tair)
+       IMPLICIT NONE
+       REAL :: tair   !real temperature (K)
+!
+!  COMPUTE SATURATION VAPOR PRESSURE POLYSVP RETURNED IN UNITS OF PA. T IS INPUT IN UNITS OF K.
+!  REPLACE GOFF-GRATCH WITH FASTER FORMULATION FROM FLATAU ET AL. 1992, TABLE 4 (RIGHT-HAND COLUMN)
+       REAL :: DT
+       REAL :: a0,a1,a2,a3,a4,a5,a6,a7,a8
+       DATA a0,a1,a2,a3,a4,a5,a6,a7,a8 /6.11239921,0.443987641,          &
+            0.142986287E-1,0.264847430E-3,0.302950461E-5,0.206739458E-7, &
+            0.640689451E-10,-0.952447341E-13,-0.976195544E-15/
+
+       DT = MAX(-80.,tair - 273.16)
+       esw_mks = a0 + DT*(a1 + DT*(a2 + DT*(a3 + DT*(a4 + DT*(a5 + DT*   &
+                 (a6 + DT*(a7 + a8*DT)))))))
+       esw_mks = esw_mks*100.  !convert to Pa
+!
+!  Goff-Gratch equation (Goff and Gratch 1945)
+!       esw_mks = c610 * exp( c172 - c409 / (tair - c358) )
+!       esw_mks = esw_mks / 10.   !convert to Pa
+
+       END FUNCTION esw_mks
+#endif
 END MODULE  module_mp_gsfcgce_3ice_nuwrf
 

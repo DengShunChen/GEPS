@@ -52,6 +52,9 @@
 !
       integer   k,j,ier,jj,i,l
       real      capa,capap1,at,det
+#ifdef USE_CUDA
+      real evecin_fp64(lev, lev), a_fp64(lev, lev), eigval_fp64(lev), b_fp64(lev, lev), enorm_fp64(lev)
+#endif
 !
       capa= 1.0/3.5
       capap1= 1.0+capa
@@ -140,8 +143,22 @@
 !  1/9/2004
 !err  call rg (lev,lev,evecin,a,eigval,1,b,evectr,enorm,ier)
 #ifdef SP
-!sigle precision version in fujitsu
+#ifdef USE_CUDA
+      evecin_fp64 = evecin
+      a_fp64 = a
+      eigval_fp64 = eigval
+      b_fp64 = b
+      enorm_fp64 = enorm
+      call rg (lev,lev,evecin_fp64,a_fp64,eigval_fp64,1,b_fp64,iwk,enorm_fp64,ier)
+      evecin = evecin_fp64
+      a = a_fp64
+      eigval = eigval_fp64
+      b = b_fp64
+      enorm = enorm_fp64
+#else
+      !sigle precision version in fujitsu
       call eig1(evecin,lev,lev,0,a,eigval,b,enorm,ier)
+#endif
 #else
       call rg (lev,lev,evecin,a,eigval,1,b,iwk,enorm,ier)
 #endif

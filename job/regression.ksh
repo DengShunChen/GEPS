@@ -137,11 +137,6 @@ elif [ $JCAP = 383  ] ; then
   MODEL_BASIC='nco=384,'
 fi
 
-if [ $machine = a100 ] ; then
-  MODEL_BASIC=${MODEL_BASIC}' ncld=3,'
-  MODLST_PHY='nmmiph=2,'
-fi
-
 cat > ${GFSWRK}/namlsts << EOF
  &model_param
   nco=640,
@@ -224,6 +219,11 @@ EOF
 	FCT_MODEL=$MDIR/build_${machine}/bin/tcogfs.x
  else
 	FCT_MODEL=$MDIR/src/$EXEC
+ fi
+
+ if [ ${machine} = a100 ]; then
+  export NVCOMPILER_ACC_CUDA_MEMALLOCASYNC="1"
+  export NVCOMPILER_ACC_CUDA_MEMALLOCASYNC_POOLSIZE="40G"
  fi
  /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} -Wl,-T
 

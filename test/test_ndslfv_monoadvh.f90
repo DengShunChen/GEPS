@@ -18,10 +18,11 @@ end program test_ndslfv_monoadvh
 subroutine ndslfv_monoadvh_unit(xy)
    use const, only: RTYPE, dt, cosl
    use rank, only: myrank
-   use param, only: nx, my_max, lev, ncld
+   use param, only: nx, my, my_max, lev, ncld
    use index, only: nxp, levp, levf, myf, jlistnum, jlen, nsizex, row_comm, &
-                    nxdef, jlist1
-   use grid, only: ut, vt, tt, qm, qt, ut_sl, vt_sl
+                    nxdef, jlist1, jlist2_2d, nxjlen_all, nxdef
+   use grid, only: ut, vt, tt, qm, qt, ut_sl, vt_sl, &
+                   gglati, fa1, fa2, fa3, fa4
    use mod_ndslfv_monoadv_gpu, only: ndslfv_monoadvh_gpu
    use mpe
    implicit none
@@ -100,8 +101,11 @@ subroutine ndslfv_monoadvh_unit(xy)
       write (*, '(A, 1pe15.7)'), "vmamax=", vmmax
    end if
 
+   !$acc enter data copyin(nx, my, lev, ncld, nxp, nsizex, &
+   !$acc& gglati, fa1, fa2, fa3, fa4, jlist2_2d, nxjlen_all, cosl, nxdef)
+
    !$acc data create(tt_gpu, ut_gpu, vt_gpu, qt_gpu, &
-   !$acc& um, vm)
+   !$acc& um, vm, qm)
    do i = 1, steps
       if (myrank .eq. 0) write (*, '("<< ", i3, " >>")') i
 
@@ -153,6 +157,9 @@ subroutine ndslfv_monoadvh_unit(xy)
       !$acc update self(tt_gpu, ut_gpu, vt_gpu, qt_gpu)
    end do
    !$acc end data
+
+   !$acc exit data delete(nx, my, lev, ncld, nxp, nsizex, &
+   !$acc& gglati, fa1, fa2, fa3, fa4, jlist2_2d, nxjlen_all, cosl, nxdef)
 
    call Varerr(err_arr(1, 1), tt_gpu, nxp, tt_cpu, nxp, lev, 1)
    call Varerr(err_arr(1, 2), ut_gpu, nxp, ut_cpu, nxp, lev, 1)
@@ -239,7 +246,7 @@ subroutine VarErr(Err, a, lda, b, ldb, lev, nvar)
                                   B(ldb, lev*nvar, my_max)
 
    integer i, j, k, nxj, jj, pts
-   real(kind=RTYPE) tmp, vamax, sum, pi
+   real(kind=RTYPE) tmp, vamax, sum_local, pi
    if (octahedral) then
       pts = (20 + nx)*my*lev
    elseif (numreduce == -99) then
@@ -250,20 +257,20 @@ subroutine VarErr(Err, a, lda, b, ldb, lev, nvar)
    do jj = 1, jlistnum
       j = jlist1(jj)
       nxj = nxdef(j)
-      sum = 0.
+      sum_local = 0.
       do k = 1, lev*nvar
          do i = 1, nxj
             tmp = A(i, k, jj) - B(i, k, jj)
             Err(1) = max(Err(1), abs(tmp))
-            sum = sum + tmp**2
+            sum_local = sum_local + tmp**2
          end do
       end do
-      Err(2) = Err(2) + sum*(2.*pi/nxj)/(lev*nvar)*weight(j)
-      Err(3) = Err(3) + sum
+      Err(2) = Err(2) + sum_local*(2.*pi/nxj)/(lev*nvar)*weight(j)
+      Err(3) = Err(3) + sum_local
    end do
 
    call mpe_global_max(Err(1), 1, RTYPE)
-   call mpe_global_sum_r8(Err(2), 2, RTYPE)
+   call mpe_global_sum(Err(2), 2, RTYPE)
    Err(2) = sqrt(Err(2))
    Err(3) = sqrt(Err(3)/pts/nvar)
    err(4) = vamax(a, lda, lev)

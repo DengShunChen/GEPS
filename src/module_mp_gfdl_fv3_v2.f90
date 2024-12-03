@@ -602,6 +602,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
     real, dimension (ks:ke) :: ccn, cin, c_praut, m1_rain, m1_sol, m1
     real, dimension (ks:ke) :: u0, v0, u1, v1, w1
     real, dimension (ks:ke) :: rhcz
+    real, dimension (is:ie, ks:ke) :: qtot
     
     real (kind = r8), dimension (is:ie, ks:ke) :: te_beg, te_end, tw_beg, tw_end
     real (kind = r8), dimension (is:ie, ks:ke) :: te_beg_0, te_end_0, tw_beg_0, tw_end_0
@@ -709,6 +710,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
             qiz (k) = qiz (k) * con_r8
             qsz (k) = qsz (k) * con_r8
             qgz (k) = qgz (k) * con_r8
+            qtot (i, k) = qvz (k) + qlz (k) + qrz (k) + qiz (k) + qsz (k) + qgz (k)
             
             den (k) = - dp1 (k) / (grav * dz1 (k)) ! density of dry air
             p1 (k) = den (k) * rdgas * tz (k) ! dry air pressure
@@ -1042,7 +1044,8 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
         
         do k = ks, ke
             ! total mass changed due to sedimentation !!!
-            con_r8 = one_r8 + qvz (k) + qlz (k) + qrz (k) + qiz (k) + qsz (k) + qgz (k)
+!            con_r8 = one_r8 + qvz (k) + qlz (k) + qrz (k) + qiz (k) + qsz (k) + qgz (k)
+            con_r8 = one_r8 + qtot (i, k)  ! isobaric assumption
             delp (i, k) = dp1 (k) * con_r8
             ! convert back to moist mixing ratios
             con_r8 = one_r8 / con_r8

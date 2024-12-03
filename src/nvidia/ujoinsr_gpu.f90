@@ -22,6 +22,7 @@ subroutine ujoin1sr_gpu(cc, r1, nx, my_max, lev, jnum, ncld)
 
    use index
    use const, only: RTYPE
+   use param, only: npex
    use openacc
    use cudafor
 
@@ -38,43 +39,63 @@ subroutine ujoin1sr_gpu(cc, r1, nx, my_max, lev, jnum, ncld)
    async_id = 1
    stream = acc_get_cuda_stream(async_id)
 
-   !$acc enter data create(bufA, bufB) async(async_id)
-
-   !$acc host_data use_device(bufA, bufB, r1)
-   istat = cudaMemSetAsync(bufA, 0.0, size(bufA), stream)
-   istat = cudaMemSetAsync(bufB, 0.0, size(bufB), stream)
-   istat = cudaMemSetAsync(r1, 0.0, size(r1), stream)
+   !$acc host_data use_device(r1)
+   istat = cudaMemSetAsync(r1, real(0.0, RTYPE), size(r1), stream)
    !$acc end host_data
-
-   !$acc parallel loop collapse(4) async(async_id)
-   do jj = 1, jlistnum
-   do n = 1, ncld
-   do k = 1, levp
-   do i = 1, nx
-      bufA(i, k, n, jj) = cc(i, k, n, jj)
-   end do
-   end do
-   end do
-   end do
-
-   ! Present on device: jlist1, bufA, bufB
-   call mpe2d_transpose_nx_levp_gpu(bufA, bufB, nxp, nx, lev, levp, ncld, myf, my_max, jlistnum, jlen, nsizex, row_comm)
-
-   !$acc parallel loop gang collapse(2) async(async_id)
-   do jj = 1, jlistnum
-   do n = 1, ncld
-      nk = (n - 1)*lev
-      !$acc loop worker
-      do k = 1, lev
-         kk = nk + k
-         !$acc loop vector
-         do i = 1, nxp
-            r1(i, kk, jj) = bufB(i, k, n, jj)
+   if (npex .eq. 1) then
+      !$acc parallel loop gang collapse(4) private(j, nxj, kk) async(async_id)
+      do jj = 1, jlistnum
+         do n = 1, ncld
+            do k = 1, lev
+               do i = 1, nxp
+                  j = jlist1(jj)
+                  nxj = nxdef(j)
+                  if (i .le. nxj) then
+                     kk = (n - 1)*lev + k
+                     r1(i, kk, jj) = cc(i, k, n, jj)
+                  end if
+               end do
+            end do
          end do
       end do
-   end do
-   end do
-   !$acc exit data delete(bufA, bufB) async(async_id)
+   else
+      !$acc enter data create(bufA, bufB) async(async_id)
+
+      !$acc host_data use_device(bufA, bufB, r1)
+      istat = cudaMemSetAsync(bufA, real(0.0, RTYPE), size(bufA), stream)
+      istat = cudaMemSetAsync(bufB, real(0.0, RTYPE), size(bufB), stream)
+      !$acc end host_data
+
+      !$acc parallel loop collapse(4) async(async_id)
+      do jj = 1, jlistnum
+      do n = 1, ncld
+      do k = 1, levp
+      do i = 1, nx
+         bufA(i, k, n, jj) = cc(i, k, n, jj)
+      end do
+      end do
+      end do
+      end do
+
+      ! Present on device: jlist1, bufA, bufB
+      call mpe2d_transpose_nx_levp_gpu(bufA, bufB, nxp, nx, lev, levp, ncld, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+
+      !$acc parallel loop gang collapse(2) async(async_id)
+      do jj = 1, jlistnum
+      do n = 1, ncld
+         nk = (n - 1)*lev
+         !$acc loop worker
+         do k = 1, lev
+            kk = nk + k
+            !$acc loop vector
+            do i = 1, nxp
+               r1(i, kk, jj) = bufB(i, k, n, jj)
+            end do
+         end do
+      end do
+      end do
+      !$acc exit data delete(bufA, bufB) async(async_id)
+   end if
 
    return
 end
@@ -83,6 +104,7 @@ subroutine ujoin2sr_gpu(cc, r1, r2, nx, my_max, lev, jnum, ncld)
 
    use index
    use const, only: RTYPE
+   use param, only: npex
    use openacc
    use cudafor
 
@@ -100,54 +122,88 @@ subroutine ujoin2sr_gpu(cc, r1, r2, nx, my_max, lev, jnum, ncld)
    async_id = 1
    stream = acc_get_cuda_stream(async_id)
 
-   !$acc enter data create(bufA, bufB) async(async_id)
-
-   !$acc host_data use_device(bufA, bufB, r1, r2)
-   istat = cudaMemSetAsync(bufA, 0.0, size(bufA), stream)
-   istat = cudaMemSetAsync(bufB, 0.0, size(bufB), stream)
-   istat = cudaMemSetAsync(r1, 0.0, size(r1), stream)
-   istat = cudaMemSetAsync(r2, 0.0, size(r2), stream)
+   !$acc host_data use_device(r1, r2)
+   istat = cudaMemSetAsync(r1, real(0.0, RTYPE), size(r1), stream)
+   istat = cudaMemSetAsync(r2, real(0.0, RTYPE), size(r2), stream)
    !$acc end host_data
 
-   !$acc parallel loop collapse(4) async(async_id)
-   do jj = 1, jlistnum
-   do n = 1, 1 + ncld
-   do k = 1, levp
-   do i = 1, nx
-      bufA(i, k, n, jj) = cc(i, k, n, jj)
-   end do
-   end do
-   end do
-   end do
-
-   ! Present on device: bufA, bufB, jlist1
-   call mpe2d_transpose_nx_levp_gpu(bufA, bufB, nxp, nx, lev, levp, 1 + ncld, myf, my_max, jlistnum, jlen, nsizex, row_comm)
-
-   !$acc parallel loop collapse(3) async(async_id)
-   do jj = 1, jlistnum
-   do k = 1, lev
-   do i = 1, nxp
-      r1(i, k, jj) = bufB(i, k, 1, jj)
-   end do
-   end do
-   end do
-
-   !$acc parallel loop collapse(2) gang async(async_id)
-   do jj = 1, jlistnum
-   do n = 1, ncld
-      nk = (n - 1)*lev
-      !$acc loop worker
-      do k = 1, lev
-         kk = nk + k
-         !$acc loop vector
-         do i = 1, nxp
-            r2(i, kk, jj) = bufB(i, k, 1 + n, jj)
+   if (npex .eq. 1) then
+      !$acc parallel loop collapse(3) private(j, nxj) async(async_id)
+      do jj = 1, jlistnum
+         do k = 1, lev
+            do i = 1, nxp
+               j = jlist1(jj)
+               nxj = nxdef(j)
+               if (i .le. nxj) then
+                  r1(i, k, jj) = cc(i, k, 1, jj)
+               end if
+            end do
          end do
       end do
-   end do
-   end do
-   !$acc exit data delete(bufA, bufB) async(async_id)
 
+      !$acc parallel loop collapse(4) private(j, nxj, kk) async(async_id)
+      do jj = 1, jlistnum
+         do n = 1, ncld
+            do k = 1, lev
+               do i = 1, nxp
+                  j = jlist1(jj)
+                  nxj = nxdef(j)
+                  if (i .le. nxj) then
+                     kk = (n - 1)*lev + k
+                     r2(i, kk, jj) = cc(i, k, 1 + n, jj)
+                  end if
+               end do
+            end do
+         end do
+      end do
+   else
+      !$acc enter data create(bufA, bufB) async(async_id)
+
+      !$acc host_data use_device(bufA, bufB)
+      istat = cudaMemSetAsync(bufA, real(0.0, RTYPE), size(bufA), stream)
+      istat = cudaMemSetAsync(bufB, real(0.0, RTYPE), size(bufB), stream)
+      !$acc end host_data
+
+      !$acc parallel loop collapse(4) async(async_id)
+      do jj = 1, jlistnum
+         do n = 1, 1 + ncld
+            do k = 1, levp
+               do i = 1, nx
+                  bufA(i, k, n, jj) = cc(i, k, n, jj)
+               end do
+            end do
+         end do
+      end do
+
+      ! Present on device: bufA, bufB, jlist1
+      call mpe2d_transpose_nx_levp_gpu(bufA, bufB, nxp, nx, lev, levp, 1 + ncld, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+
+      !$acc parallel loop collapse(3) async(async_id)
+      do jj = 1, jlistnum
+         do k = 1, lev
+            do i = 1, nxp
+               r1(i, k, jj) = bufB(i, k, 1, jj)
+            end do
+         end do
+      end do
+
+      !$acc parallel loop collapse(2) gang async(async_id)
+      do jj = 1, jlistnum
+         do n = 1, ncld
+            nk = (n - 1)*lev
+            !$acc loop worker
+            do k = 1, lev
+               kk = nk + k
+               !$acc loop vector
+               do i = 1, nxp
+                  r2(i, kk, jj) = bufB(i, k, 1 + n, jj)
+               end do
+            end do
+         end do
+      end do
+      !$acc exit data delete(bufA, bufB) async(async_id)
+
+   end if
    return
 end
 
@@ -176,9 +232,9 @@ subroutine ujoin3sr_gpu(cc, r1, r2, r3, nx, my_max, lev, jnum, ncld)
    !$acc enter data create(bufA, bufB) async(async_id)
 
    !$acc host_data use_device(bufA, bufB, r1)
-   istat = cudaMemSetAsync(bufA, 0.0, size(bufA), stream)
-   istat = cudaMemSetAsync(bufB, 0.0, size(bufB), stream)
-   istat = cudaMemSetAsync(r1, 0.0, size(r1), stream)
+   istat = cudaMemSetAsync(bufA, real(0.0, RTYPE), size(bufA), stream)
+   istat = cudaMemSetAsync(bufB, real(0.0, RTYPE), size(bufB), stream)
+   istat = cudaMemSetAsync(r1, real(0.0, RTYPE), size(r1), stream)
    !$acc end host_data
 
    !$acc parallel loop collapse(4) async(async_id)
@@ -192,7 +248,7 @@ subroutine ujoin3sr_gpu(cc, r1, r2, r3, nx, my_max, lev, jnum, ncld)
    end do
    end do
 
-   call mpe2d_transpose_nx_levp_gpu(bufA, bufB, nxp, nx, lev, levp, 2 + ncld, myf, my_max, jlistnum, jlen, nsizex, row_comm)
+   call mpe2d_transpose_nx_levp_gpu(bufA, bufB, nxp, nx, lev, levp, 2 + ncld, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
 
    !$acc parallel loop collapse(3) async(async_id)
    do jj = 1, jlistnum
@@ -254,7 +310,7 @@ subroutine ujoin4sr_gpu(cc, r1, r2, r3, r4, nx, my_max, lev, jnum, ncld)
    end do
    end do
 
-   call mpe2d_transpose_nx_levp_gpu(bufA, bufB, nxp, nx, lev, levp, 3 + ncld, myf, my_max, jlistnum, jlen, nsizex, row_comm)
+   call mpe2d_transpose_nx_levp_gpu(bufA, bufB, nxp, nx, lev, levp, 3 + ncld, myf, my_max, jlistnum, jlen, nsizex, nccl_row_comm)
 
    !$acc parallel loop collapse(3) async(async_id)
    do jj = 1, jlistnum

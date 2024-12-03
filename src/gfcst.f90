@@ -1,14 +1,17 @@
-      program gfcst
+program gfcst
 !
 ! main program of CWBGFS
 ! modify to f90 bt C-H Lee and sort by River Chen in 2015
 !
-      use param
-      use const
+   use param
+   use const
+#ifdef USE_CUDA
+   use cudafor
+#endif
 !
-      implicit none
+   implicit none
 
-      integer  no
+   integer no
 !
 !  logical io units:
 !
@@ -19,47 +22,48 @@
 !  output model history for diabatic variables='phyout'
 !  input file of path/file names='filist'
 !
-
-      call mpe_init
+   call mpe_init
 !
 !     get model constants
 !
-      call cons
+   call cons
 !
 !  read in initial data and prepare for initialization/forecast
 !
-      call getrdy
+   call getrdy
 !
 !  initialization would be done here, taking initial spectral fields
 !  out of 'getrdy' and preparing them for 'intgrt'.  for identification
 !  purposes only, initialization history file data is assigned
 !  "tau"=1.0.
 !
-      if (donnmi.and.taui.lt.1.0) then
-         no=2*((jtrun+1)/2)+(jtrun/2)+10
-         call initial(no,jtrun,jtmax,lev,nx,my,my_max,mlmax)
-      endif
+   if (donnmi .and. taui .lt. 1.0) then
+      no = 2*((jtrun + 1)/2) + (jtrun/2) + 10
+      call initial(no, jtrun, jtmax, lev, nx, my, my_max, mlmax)
+   end if
 !
 !  recompute eigen value for semi-implicit scheme
 !
-      call matrix_hybrid_cwb ( cp,sigma,dsigma,ptop,ptmeans,tmeans,spalm   &
-                  , eigval,evecin,evectr,arrhyd,arsddt,pmcor,tmcor )
+   call matrix_hybrid_cwb(cp, sigma, dsigma, ptop, ptmeans, tmeans, spalm &
+                          , eigval, evecin, evectr, arrhyd, arsddt, pmcor, tmcor)
 !
 !  time integration
 !
-      if ( ttl ) then
+   if (ttl) then
 #ifdef USE_CUDA
-        call intgrt_gpu
+      call cudaProfilerStart
+      call intgrt_gpu
+      call cudaProfilerStop
 #else
-        call intgrt
+      call intgrt
 #endif
-      else
-        call intgrt_3tl
-      endif
+   else
+      call intgrt_3tl
+   end if
 
 !
-      call mpe_finalize
-      call dmsexit(0)
+   call mpe_finalize
+   call dmsexit(0)
 !
-      stop
-      end
+   stop
+end program gfcst

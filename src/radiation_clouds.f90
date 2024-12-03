@@ -2927,7 +2927,7 @@
       integer,               dimension(:,:),   intent(out) :: mtop,mbot
 !  ---  local variables:
       real (kind=kind_phys), dimension(IX,NLAY) :: cldtot, cldcnv,      &
-     &       cwp, cip, crp, csp, rew, rei, res, rer, qsum
+     &       cwp, cip, crp, csp, rew, rei, res, rer, clwf
       real (kind=kind_phys), dimension(IX,NLAY) :: dz, delp
       real (kind=kind_phys), dimension(NLAY) :: cldfra1d, qv1d,         &
      &                                 qc1d, qi1d, qs1d, dz1d, p1d, t1d,&
@@ -2955,7 +2955,7 @@
           rei   (i,k) = re_ice(i,k)
           rer   (i,k) = rrain_def            ! default rain radius to 1000 micron
           res   (i,k) = re_snow(i,K)
-          qsum  (i,k) = clw(i,k,ntcw) + clw(i,k,ntiw) + clw(i,k,ntsw)
+          clwf  (i,k) = clw(i,k,ntcw) + clw(i,k,ntiw) + clw(i,k,ntsw)
         enddo
       enddo
 !> - Compute cloud liquid/ice condensate path in \f$ g/m^2 \f$ .
@@ -3012,7 +3012,7 @@
 !!   include these fake clouds into anything other than radiation.
       if ( cfflag_thom .eq. 1 ) then
         call cloud_fraction_XuRandall                                   &
-               ( IX, NLAY, plyr, qsum, rhly, qstl,                      &
+               ( IX, NLAY, plyr, clwf, rhly, qstl,                      &
                  lmfshal, lmfdeep2, cldtot )
       elseif ( cfflag_thom .eq. 2 ) then
 !        do i = 1, IX
@@ -3274,7 +3274,7 @@
 
 !  ---  local variables:
       real (kind=kind_phys), dimension(IX,NLAY) :: cldcnv,              &
-     &       cwp, cip, crp, csp, rew, rei, res, rer, delp, tem2d, qsum
+     &       cwp, cip, crp, csp, rew, rei, res, rer, delp, tem2d, clwf
 
       real (kind=kind_phys) :: ptop1(IX,NK_CLDS+1)
 
@@ -3315,8 +3315,9 @@
           endif
           tem2d (i,k) = min( 1.0, max( 0.0, (con_ttp-tlyr(i,k))*0.05 ) )
           cldcov(i,k) = 0.0
-          qsum  (i,k) = clw(i,k,ntcw)+clw(i,k,ntiw)+clw(i,k,ntrw)+      &
-                        clw(i,k,ntsw)+clw(i,k,ntgl)+clw(i,k,nthl)
+!          clwf  (i,k) = clw(i,k,ntcw)+clw(i,k,ntiw)+clw(i,k,ntrw)+      &
+!                        clw(i,k,ntsw)+clw(i,k,ntgl)+clw(i,k,nthl)
+          clwf  (i,k) = clw(i,k,ntcw)+clw(i,k,ntiw)+clw(i,k,ntsw)
         enddo
       enddo
 
@@ -3344,8 +3345,10 @@
             cwp(i,k) = max(0.0, clw(i,k,ntcw) * gfac * delp(i,k))
             cip(i,k) = max(0.0, clw(i,k,ntiw) * gfac * delp(i,k))
             crp(i,k) = max(0.0, clw(i,k,ntrw) * gfac * delp(i,k))
-            csp(i,k) = max(0.0, ( clw(i,k,ntsw)+clw(i,k,ntgl)+          &
-     &                 clw(i,k,nthl) ) * gfac * delp(i,k))
+!            csp(i,k) = max(0.0, ( clw(i,k,ntsw)+clw(i,k,ntgl)+          &
+!     &                 clw(i,k,nthl) ) * gfac * delp(i,k))
+            csp(i,k) = max(0.0, ( clw(i,k,ntsw)+clw(i,k,ntgl) )         &
+     &                  * gfac * delp(i,k))
           enddo
         enddo
       else                             ! input data from sfc to toa
@@ -3355,15 +3358,15 @@
             cwp(i,k) = max(0.0, clw(i,k,ntcw) * gfac * delp(i,k))
             cip(i,k) = max(0.0, clw(i,k,ntiw) * gfac * delp(i,k))
             crp(i,k) = max(0.0, clw(i,k,ntrw) * gfac * delp(i,k))
-            csp(i,k) = max(0.0, ( clw(i,k,ntsw)+clw(i,k,ntgl)+          &
-     &                 clw(i,k,nthl) ) * gfac * delp(i,k))
+            csp(i,k) = max(0.0, ( clw(i,k,ntsw)+clw(i,k,ntgl) )         &
+     &                  * gfac * delp(i,k))
           enddo
         enddo
       endif                            ! end_if_ivflip
 
 !  --- calculate cloud fraction :
       call cloud_fraction_XuRandall                                     &
-               ( IX, NLAY, plyr, qsum, rhly, qstl,                      &
+               ( IX, NLAY, plyr, clwf, rhly, qstl,                      &
                  lmfshal, lmfdeep2, cldcov )
 
 !  ---  find top pressure for each cloud domain for given latitude

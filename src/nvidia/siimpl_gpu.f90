@@ -2,7 +2,7 @@ subroutine siimpl_gpu(jtrun, jtmax, lev, dta, ptmean, dsigma, spalm, eps4 &
                       , eigval, evecin, evectr, arrhyd, arsddt, temold, divold, plold &
                       , temnow, divnow, plnow, temten, divten, plten, alpha)
 ! Present on device: plten, plnow, plold, temold, temnow, temten, divold, divnow, divten,
-! Present on device: jtwvp, spalm, arrhyd, eps4L, evecin, eigval, evectr, arsddt, dsigma
+! Present on device: jtwvp, spalm, arrhyd, eps4L, evecin, eigval, evectr, arsddt, dsigma, mlist
 !
 !
 !  computes corrections to explicit tendencies to convert model to a
@@ -92,22 +92,22 @@ subroutine siimpl_gpu(jtrun, jtmax, lev, dta, ptmean, dsigma, spalm, eps4 &
 
    call mpe2d_transpose_siimpl_gpu(temold, &
                                    wrk1, &
-                                   levp, jtrun, jtmax, lev, jtp, jtf, mlistnum, mlist, nsizex, row_comm)
+                                   levp, jtrun, jtmax, lev, jtp, jtf, mlistnum, mlist, nsizex, nccl_row_comm)
    call mpe2d_transpose_siimpl_gpu(temnow, &
                                    wrk2, &
-                                   levp, jtrun, jtmax, lev, jtp, jtf, mlistnum, mlist, nsizex, row_comm)
+                                   levp, jtrun, jtmax, lev, jtp, jtf, mlistnum, mlist, nsizex, nccl_row_comm)
    call mpe2d_transpose_siimpl_gpu(temten, &
                                    wrk3, &
-                                   levp, jtrun, jtmax, lev, jtp, jtf, mlistnum, mlist, nsizex, row_comm)
+                                   levp, jtrun, jtmax, lev, jtp, jtf, mlistnum, mlist, nsizex, nccl_row_comm)
    call mpe2d_transpose_siimpl_gpu(divold, &
                                    wrk4, &
-                                   levp, jtrun, jtmax, lev, jtp, jtf, mlistnum, mlist, nsizex, row_comm)
+                                   levp, jtrun, jtmax, lev, jtp, jtf, mlistnum, mlist, nsizex, nccl_row_comm)
    call mpe2d_transpose_siimpl_gpu(divnow, &
                                    wrk5, &
-                                   levp, jtrun, jtmax, lev, jtp, jtf, mlistnum, mlist, nsizex, row_comm)
+                                   levp, jtrun, jtmax, lev, jtp, jtf, mlistnum, mlist, nsizex, nccl_row_comm)
    call mpe2d_transpose_siimpl_gpu(divten, &
                                    wrk6, &
-                                   levp, jtrun, jtmax, lev, jtp, jtf, mlistnum, mlist, nsizex, row_comm)
+                                   levp, jtrun, jtmax, lev, jtp, jtf, mlistnum, mlist, nsizex, nccl_row_comm)
 
    !$acc parallel loop collapse(3) private(n) async(async_id)
    do m = 1, jtlen
@@ -128,6 +128,7 @@ subroutine siimpl_gpu(jtrun, jtmax, lev, dta, ptmean, dsigma, spalm, eps4 &
             n = jtwvp(m)
             if (n .ne. 1) then
                s = spalm(k)*(ploldL(m, i) + dd*pltenL(m, i) - plnowL(m, i))
+               !$acc loop seq
                do L = 1, lev
                   s = s + arrhyd(k, L)*divavg(L, i, m)
                end do
@@ -149,6 +150,7 @@ subroutine siimpl_gpu(jtrun, jtmax, lev, dta, ptmean, dsigma, spalm, eps4 &
             n = jtwvp(m)
             if (n .ne. 1) then
                d = 0.0
+               !$acc loop seq
                do L = 1, lev
                   d = d + evecin(k, L)*wrk6(L, i, m)
                end do
@@ -168,6 +170,7 @@ subroutine siimpl_gpu(jtrun, jtmax, lev, dta, ptmean, dsigma, spalm, eps4 &
             s = 0.0
             if (n .ne. 1) then
                s = 0.0
+               !$acc loop seq
                do L = 1, lev
                   s = s + evectr(k, L)*divavg(L, i, m)
                end do
@@ -187,6 +190,7 @@ subroutine siimpl_gpu(jtrun, jtmax, lev, dta, ptmean, dsigma, spalm, eps4 &
             n = jtwvp(m)
             if (n .ne. 1) then
                s = wrk3(k, i, m)
+               !$acc loop seq
                do L = 1, lev
                   s = s - arsddt(k, L)*wrk6(L, i, m)
                end do
@@ -228,8 +232,8 @@ subroutine siimpl_gpu(jtrun, jtmax, lev, dta, ptmean, dsigma, spalm, eps4 &
 
    call mpe2d_reshape_pl_back_gpu(pltenL, plten)
 
-   call mpe2d_transpose_siimpl_back_gpu(wrk3, temten, levp, jtrun, jtmax, lev, jtp, jtf, mlistnum, mlist, nsizex, row_comm)
-   call mpe2d_transpose_siimpl_back_gpu(wrk6, divten, levp, jtrun, jtmax, lev, jtp, jtf, mlistnum, mlist, nsizex, row_comm)
+   call mpe2d_transpose_siimpl_back_gpu(wrk3, temten, levp, jtrun, jtmax, lev, jtp, jtf, mlistnum, mlist, nsizex, nccl_row_comm)
+   call mpe2d_transpose_siimpl_back_gpu(wrk6, divten, levp, jtrun, jtmax, lev, jtp, jtf, mlistnum, mlist, nsizex, nccl_row_comm)
 
    !$acc exit data async(async_id) &
    !$acc& delete(pltenL, plnowL, ploldL, wrk1, wrk2, wrk3, wrk4, wrk5, wrk6, divavg)

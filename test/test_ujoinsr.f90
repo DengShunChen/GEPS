@@ -51,9 +51,9 @@ subroutine ujoinsr_unit
       !$acc wait(async_id)
    end do
    if (all(abs(r1 - r1_gpu) <= 1e-10)) then
-      PRINT *, "test_ujoinsr passed."
+      PRINT *, "(all close) test_ujoinsr passed."
    else
-      PRINT *, "test_ujoinsr failed."
+      PRINT *, "(all close) test_ujoinsr failed."
       call exit(1)
    end if
 

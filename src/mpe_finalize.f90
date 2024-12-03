@@ -16,9 +16,9 @@
       use radn
       use ozne_def
       use raddiag
-#ifdef USE_CUDA
-      use mod_ndslfv_monoadv_gpu, only: deallocate_ndslfv_array_gpu
-#endif
+! #ifdef USE_CUDA
+!       use mod_ndslfv_monoadv_gpu, only: deallocate_ndslfv_array_gpu
+! #endif
 
       implicit none
       integer  ierr
@@ -34,8 +34,9 @@
 
 ! deallocate dynamic arrays
 #ifdef USE_CUDA
-      call deallocate_ndslfv_array_gpu
+      ! call deallocate_ndslfv_array_gpu
       call fft_destroy_plan
+      call nccl_destroy
 #endif
       call deallocate_grid_array
       call deallocate_phygrid_array
@@ -55,7 +56,7 @@
 
 ! deallocate dynamic arrays
 #ifdef USE_CUDA
-      call deallocate_ndslfv_array_gpu
+      ! call deallocate_ndslfv_array_gpu
 #endif
       call deallocate_grid_array
       call deallocate_phygrid_array
