@@ -327,7 +327,7 @@ subroutine cyclic_cell_massadvy_mylonlen_gpu(latfull, levs, nvars, deltim, vv, q
    !$acc end kernels
    !$acc parallel loop async(async_id)
    do lon = 1, mylonlen
-      ds_dup(:, lon) = ds
+      ds_dup(1:latfull, lon) = ds
    end do
    call def_cfl_step_two_loops_gpu(outer_index_def, mylonlen, levs, dist, ds_dup, step, nstep, max_nstep, 'advy', latfull)
    do nst = 1, max_nstep
