@@ -226,8 +226,8 @@ subroutine gfs_cpl_recv4gocn(compid, mask_lnd, mask_ice, tgfs, ssufs, ssvfs)
       
     do i = 1, nxj
 !jwhwu 20241007
-     if(.not.mask_lnd(i,jj).and.sst_glb(ii,j).gt.271.0 .and. .not.mask_ice(i,jj) ) then
-!      if(.not.mask_lnd(i,jj).and. .not.mask_ice(i,jj)) then
+!     if(.not.mask_lnd(i,jj).and.sst_glb(ii,j).gt.271.0) then
+      if(.not.mask_lnd(i,jj).and.sst_glb(ii,j).gt.271.0 .and. .not.mask_ice(i,jj)) then
 !jwhwu
         tgfs(i,jj)  = sst_glb(ii,j) 
         ssufs(i,jj) = ssu_glb(ii,j)
