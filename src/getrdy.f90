@@ -976,7 +976,31 @@
           endif
         enddo
       enddo
-
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do ii=1,nxj
+          i=nxjstart(j)+ii-1
+!          sitlat(ii)      = xlat(j)
+!          IF(xlon(i,jj) .LT. 0.) then
+!            sitlon(ii,jj)=xlon(i,jj)+360.
+!          ELSE
+!            sitlon(ii,jj)=xlon(i,jj)
+!          ENDIF
+          if(myrank .eq. 152 .and. jj .eq. 12) then
+            if (ii .ge. 76 .and. ii .le. 83 ) then
+              print *,'myrank=',myrank,',ii=',ii &
+                   ,',jj=',jj,',xlon=',xlon(i,jj) &
+                   ,',xlat=',xlat(j)
+            endif
+          endif
+          if(i .eq. 144 .and. j .eq. 567) then
+            print *,'myrank=',myrank,',ii=',ii &
+                   ,',jj=',jj,',xlon=',xlon(i,jj) &
+                   ,',xlat=',xlat(j)
+          endif 
+        enddo
+      enddo
 !---------------------------------
 ! read forecast sst
 !---------------------------------

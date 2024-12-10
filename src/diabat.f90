@@ -2388,8 +2388,21 @@
       if (doshum) then
         do k=1,lev
           do i=1,nxj
-            ru=shum3d(i,k,jj)*0.1
+            ru=shum3d(i,k,jj)
             qnew = qt(i,k,jj)*(1.+ru)
+            if(myrank .eq. 152 .and. jj .eq. 12 .and. k .eq. 72) then
+              if (i .ge. 76 .and. i .le. 83 ) then
+                print *,'myrank=',myrank,',i=',i &
+                     ,',jj=',jj,',ru=',shum3d(i,k,jj) &
+                     ,',qt=',qt(i,k,jj),',qnew=',qnew
+              endif
+              if (i .eq. 144 ) then
+                print *,'myrank=',myrank,',i=',i &
+                     ,',jj=',jj,',ru=',shum3d(i,k,jj) &
+                     ,',qt=',qt(i,k,jj),',qnew=',qnew
+              endif
+            endif
+
             if ( qnew .ge. qmin ) then
               shum3d_dq(i,k,jj)=qnew-qt(i,k,jj)
               qt(i,k,jj) = qnew
