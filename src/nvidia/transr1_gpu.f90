@@ -199,7 +199,7 @@ subroutine transr1_gpu_old(jtrun, jtmax, nx, my, my_max, poly, s, r, nsize, cc, 
          CUDACHECK(cudaGraphLaunch(fft_cg%graph_exec, stream))
       else
          call rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, 1, 1, fft_cg%graph)
-         CUDACHECK(cudaGraphInstantiate(fft_cg%graph_exec, fft_cg%graph, fft_cg%error_node, fft_cg%buffer, fft_cg%buffer_len))
+         CUDACHECK(cudaGraphInstantiate(fft_cg%graph_exec, fft_cg%graph, 0))
          fft_cg%created = .true.
          CUDACHECK(cudaGraphLaunch(fft_cg%graph_exec, stream))
       end if
@@ -330,7 +330,7 @@ subroutine transr1_gpu(jtrun, jtmax, nx, my, my_max, poly, s, r, nsize, cc, gwk1
    else
       if (.not. (fft_cg%created)) then
          call rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, 1, 1, fft_cg%graph)
-         CUDACHECK(cudaGraphInstantiate(fft_cg%graph_exec, fft_cg%graph, fft_cg%error_node, fft_cg%buffer, fft_cg%buffer_len))
+         CUDACHECK(cudaGraphInstantiate(fft_cg%graph_exec, fft_cg%graph, 0))
          fft_cg%created = .true.
       end if
       CUDACHECK(cudaGraphLaunch(fft_cg%graph_exec, stream))
@@ -478,7 +478,7 @@ subroutine transr1_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, poly, s, r, nsiz
          end do
       end do
       CUDACHECK(cudaStreamEndCapture(stream, lt_cg%graph))
-      CUDACHECK(cudaGraphInstantiate(lt_cg%graph_exec, lt_cg%graph, lt_cg%error_node, lt_cg%buffer, lt_cg%buffer_len))
+      CUDACHECK(cudaGraphInstantiate(lt_cg%graph_exec, lt_cg%graph, 0))
       lt_cg%created = .true.
       istat = cudaEventDestroy(spread_event)
       istat = cudaEventDestroy(pack_event)
@@ -512,7 +512,7 @@ subroutine transr1_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, poly, s, r, nsiz
    else
       if (.not. (fft_cg%created)) then
          call rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, 1, 1, fft_cg%graph)
-         CUDACHECK(cudaGraphInstantiate(fft_cg%graph_exec, fft_cg%graph, fft_cg%error_node, fft_cg%buffer, fft_cg%buffer_len))
+         CUDACHECK(cudaGraphInstantiate(fft_cg%graph_exec, fft_cg%graph, 0))
          fft_cg%created = .true.
       end if
       CUDACHECK(cudaGraphLaunch(fft_cg%graph_exec, stream))

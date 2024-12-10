@@ -81,7 +81,8 @@ subroutine gridnl_hybrid_ndsl_gpu_refactor(nxjp, nxp, lev, ncld, cp, radsq, &
    integer k, i, kbgn, kk, kkp1, jj, j, nxj
    real px, px_pbl
    !
-   integer async_id, stream, istat
+   integer async_id, istat
+   integer(kind=cuda_stream_kind) stream
    async_id = 1
    stream = acc_get_cuda_stream(async_id)
    !$acc enter data create(spal, cg, flag) async(async_id)
