@@ -9,7 +9,7 @@ subroutine rstrandz_gpu(jtrun, jtmax, nx, my, my_max, lev &
    use index
    use paramt
    use fftcom
-   use fft_cuda_graph
+   use spec_cuda_graph, only: fft_cg => rstrandz_fft_cg
    use openacc
    use cudafor
 
@@ -77,13 +77,13 @@ subroutine rstrandz_gpu(jtrun, jtmax, nx, my, my_max, lev &
    if (length_fft .eq. 0 .and. lreduce .eq. 0) then
       call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, lev*jlistnum*2, -1)
    else
-      if (rstrandz_graph_created) then
-         CUDACHECK(cudaGraphLaunch(rstrandz_graph_exec, stream))
+      if (fft_cg%created) then
+         CUDACHECK(cudaGraphLaunch(fft_cg%graph_exec, stream))
       else
-         call rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, lev*2, -1, rstrandz_graph)
-     CUDACHECK(cudaGraphInstantiate(rstrandz_graph_exec, rstrandz_graph, rstrandz_error_node, rstrandz_buffer, rstrandz_buffer_len))
-         rstrandz_graph_created = .true.
-         CUDACHECK(cudaGraphLaunch(rstrandz_graph_exec, stream))
+         call rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, lev*2, -1, fft_cg%graph)
+         CUDACHECK(cudaGraphInstantiate(fft_cg%graph_exec, fft_cg%graph, fft_cg%error_node, fft_cg%buffer, fft_cg%buffer_len))
+         fft_cg%created = .true.
+         CUDACHECK(cudaGraphLaunch(fft_cg%graph_exec, stream))
       end if
    end if
 
@@ -134,14 +134,16 @@ subroutine rstrandz_gpu(jtrun, jtmax, nx, my, my_max, lev &
          if (mf .le. mtrundef(j)) then
             !$acc loop vector
             do k = 1, lev
-
+               ! +V
                wcc2(k, 1, 1, j) = +(wcc_fk(k, 1, 1, m, j1) - wcc_fk(k, 1, 1, m, j2))
                wcc2(k, 2, 1, j) = +(wcc_fk(k, 2, 1, m, j1) - wcc_fk(k, 2, 1, m, j2))
+               ! -U
                wcc2(k, 1, 2, j) = -(wcc_fk(k, 1, 2, m, j1) - wcc_fk(k, 1, 2, m, j2))
                wcc2(k, 2, 2, j) = -(wcc_fk(k, 2, 2, m, j1) - wcc_fk(k, 2, 2, m, j2))
-
+               ! \sqrt{-i} x U
                wcc3(k, 1, 1, j) = -(wcc_fk(k, 2, 2, m, j1) + wcc_fk(k, 2, 2, m, j2))
                wcc3(k, 2, 1, j) = +(wcc_fk(k, 1, 2, m, j1) + wcc_fk(k, 1, 2, m, j2))
+               ! \sqrt{-i} x V
                wcc3(k, 1, 2, j) = -(wcc_fk(k, 2, 1, m, j1) + wcc_fk(k, 2, 1, m, j2))
                wcc3(k, 2, 2, j) = +(wcc_fk(k, 1, 1, m, j1) + wcc_fk(k, 1, 1, m, j2))
 
@@ -278,4 +280,225 @@ subroutine rstrandz_gpu(jtrun, jtmax, nx, my, my_max, lev &
    end do
    !$acc exit data delete(wcc_fk, wcc2, wcc3, wcc4, wcc5, wd, wp, wss, jlist_fj, fj_wss23, fj_wss45, fj_wcc2, fj_wcc3, fj_wcc4, fj_wcc5, fj_wd2, fj_wp3, fj_wd4, fj_wp5) async(async_id)
    return
-end
+end subroutine rstrandz_gpu
+! ============================================================
+subroutine rstrandz_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, lev, &
+                                   vdmer, vdzon, w, cim, onocos, poly, dpoly, &
+                                   hldten, vorten, nsize, &
+                                   cc, gwk1, wss, wc1, wc2, wcc_fk, fj_wp, fj_wd)
+   ! Present on device: vdmer, vdzon, w, cim, onocos, poly, dpoly, hldten, vorten
+   ! Present on device: nlist, jlist2, mtrundef, jlist1, nxjlen, nxjlen_all, nxdef
+   ! Presnet on device: cc, gwk1, wss, wc1, wc2, wcc_fk, fj_wp, fj_wd
+   ! Presnet on device: tcolt_jlist, poly_mlist
+   use const, only: RTYPE
+   use index
+   use paramt
+   use fftcom
+   use spec_cuda_graph, only: fft_cg => rstrandz_fft_cg, lt_cg => rstrandz_lt_cg
+   use openacc
+   use cudafor
+   use cublas
+
+   implicit none
+
+   integer jtrun, jtmax, nx, my, my_max, lev, nsize
+   ! << output >>
+   real(kind=RTYPE), dimension(lev, 2, jtrun, jtmax):: hldten, vorten
+   ! << input >>
+   real(kind=RTYPE), dimension(nxp, levf, my_max)::vdmer, vdzon
+   ! << const >>
+   real(kind=RTYPE), dimension(jtmax):: cim
+   real(kind=RTYPE), dimension(my):: onocos, w
+   real, dimension((jtrun + nsize)*my/2*jtmax):: poly, dpoly
+   ! << buffer >>
+   real(kind=RTYPE), dimension(nx + 2, lev, 2, my_max):: cc, gwk1
+   real, dimension(lev, 2, 2, jtrun, jtmax):: wss
+   real, dimension(lev, 2, 2, my, jtmax):: wc1, wc2
+   real(kind=RTYPE), dimension(lev, 2, 2, jtmax, my_max*nsize):: wcc_fk
+   real, dimension((jtrun + nsize)*my/2*jtmax):: fj_wd, fj_wp
+   ! << local >>
+   real(kind=RTYPE), dimension(lev, 2, 2, jtmax*nsize, my_max):: twcc_fk
+   real(kind=RTYPE) dummy
+
+   integer myhalf, lev2, jj, j, k, i, m, mm, mp, mlst, mf, j2, j1, l
+   integer jlistnum_fj, llistnum_fj, jtrunj, j_str, m_str, ind
+
+   integer async_id, istat
+   integer(kind=cuda_stream_kind):: stream, lt_cg_stream(jtmax)
+   type(cudaEvent):: spread_event, pack_event
+   type(cublashandle):: handle
+
+   async_id = 1
+   stream = acc_get_cuda_stream(async_id)
+   myhalf = my/2
+   lev2 = lev*2
+
+   !$acc enter data create(twcc_fk) async(async_id)
+
+   !$acc host_data use_device(twcc_fk, gwk1)
+   istat = cudaMemSetAsync(twcc_fk, 0.0, size(twcc_fk), stream)
+   istat = cudaMemSetAsync(gwk1, 0.0, size(gwk1), stream)
+   !$acc end host_data
+
+   ! Present on device: cc, vdmer, vdzon, jlist1, nxjlen, nxjlen_all
+   call joinrs_gpu(cc, vdmer, vdzon, dummy, dummy, nx, my_max, levf, jlistnum, 2, 1)
+
+#ifdef SP
+   print *, "Symbol SP is not supported."
+   call exit(1)
+#endif
+
+   if (length_fft .eq. 0 .and. lreduce .eq. 0) then
+      call rfftmlt(cc, gwk1, trigs, ifax, 1, nx + 2, nx, lev*jlistnum*2, -1)
+   else
+      if (fft_cg%created) then
+         CUDACHECK(cudaGraphLaunch(fft_cg%graph_exec, stream))
+      else
+         call rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, lev*2, -1, fft_cg%graph)
+         CUDACHECK(cudaGraphInstantiate(fft_cg%graph_exec, fft_cg%graph, fft_cg%error_node, fft_cg%buffer, fft_cg%buffer_len))
+         fft_cg%created = .true.
+         CUDACHECK(cudaGraphLaunch(fft_cg%graph_exec, stream))
+      end if
+   end if
+
+   !$acc parallel loop collapse(3) private(mm, mp, mlst) async(async_id)
+   do j = 1, jlistnum
+      do m = 1, jtrun
+         ! jj = jlist1(j)
+         ! jtrunj = mtrundef(jj)
+         ! if (m .le. jtrunj) then
+         do k = 1, lev
+            mm = 2*m - 1
+            mp = mm + 1
+            mlst = nlist(m)
+            ! V
+            twcc_fk(k, 1, 1, mlst, j) = cc(mm, k, 1, j)
+            twcc_fk(k, 1, 2, mlst, j) = cc(mp, k, 1, j)
+            ! U
+            twcc_fk(k, 2, 1, mlst, j) = cc(mm, k, 2, j)
+            twcc_fk(k, 2, 2, mlst, j) = cc(mp, k, 2, j)
+         end do
+         ! end if
+      end do
+   end do
+
+#ifdef SP
+   call mpe_transpose_rs_sp_gpu(twcc_fk, wcc_fk, lev*2*2, jtmax, my_max, nsize, col_comm)
+#else
+   ! Present on device: twcc_fk, wcc_fk
+   call mpe_transpose_rs_gpu(twcc_fk, wcc_fk, lev*2*2, jtmax, my_max, nsize, nccl_col_comm)
+#endif
+   !$acc exit data delete(twcc_fk) async(async_id)
+
+   !$acc parallel loop collapse(3) private(jlistnum_fj, j1, j2) async(async_id)
+   do j = 1, my
+      do m = 1, mlistnum
+         do k = 1, lev
+            jlistnum_fj = tcolt_jlist(1, m)*2
+            if (j .le. jlistnum_fj) then
+               j1 = tcolt_jlist(2, m) + j - 1
+               j2 = jlist2(j1)
+               ! +V
+               wc1(k, 1, 1, j, m) = wcc_fk(k, 1, 1, m, j2)
+               wc1(k, 1, 2, j, m) = wcc_fk(k, 1, 2, m, j2)
+               ! +U
+               wc1(k, 2, 1, j, m) = wcc_fk(k, 2, 1, m, j2)
+               wc1(k, 2, 2, j, m) = wcc_fk(k, 2, 2, m, j2)
+               ! \sqrt{-1} x U
+               wc2(k, 1, 1, j, m) = -wcc_fk(k, 2, 2, m, j2)
+               wc2(k, 1, 2, j, m) = +wcc_fk(k, 2, 1, m, j2)
+               ! -\sqrt{-1} x V
+               wc2(k, 2, 1, j, m) = +wcc_fk(k, 1, 2, m, j2)
+               wc2(k, 2, 2, j, m) = -wcc_fk(k, 1, 1, m, j2)
+            end if
+         end do
+      end do
+   end do
+
+   if (.not. (lt_cg%created)) then
+      istat = cudaEventCreate(spread_event)
+      istat = cudaEventCreate(pack_event)
+      handle = cublasGetHandle()
+      do m = 1, mlistnum
+         lt_cg_stream(m) = acc_get_cuda_stream(m + 1)
+      end do
+
+      CUDACHECK(cudaStreamBeginCapture(stream, cudaStreamCaptureModeGlobal))
+
+      !$acc parallel loop collapse(3) &
+      !$acc& private(mf, jlistnum_fj, llistnum_fj, j_str, m_str, ind, jj) async(async_id)
+      do m = 1, mlistnum
+         do j = 1, myhalf
+            do l = 1, jtrun
+               mf = mlist(m)
+               jlistnum_fj = tcolt_jlist(1, m)
+               llistnum_fj = jtrun - mf + 1
+               if ((j .le. jlistnum_fj) .AND. (l .le. llistnum_fj)) then
+                  j_str = tcolt_jlist(2, m)
+                  m_str = poly_mlist(m)
+
+                  ind = l + (j - 1)*llistnum_fj + m_str - 1
+                  jj = j_str + j - 1
+                  fj_wd(ind) = w(jj)*dpoly(ind)
+                  fj_wp(ind) = w(jj)*onocos(jj)*cim(m)*poly(ind)
+
+                  ind = ind + jlistnum_fj*llistnum_fj
+                  jj = myhalf - j + 1
+                  fj_wd(ind) = w(jj)*dpoly(ind)
+                  fj_wp(ind) = w(jj)*onocos(jj)*cim(m)*poly(ind)
+               end if
+            end do
+         end do
+      end do
+
+      istat = cudaEventRecord(spread_event, stream)
+      do m = 1, mlistnum
+         istat = cudaStreamWaitEvent(lt_cg_stream(m), spread_event, 0)
+
+         mf = mlist(m)
+         llistnum_fj = jtrun - mf + 1
+         jlistnum_fj = tcolt_jlist(1, m)*2
+         m_str = poly_mlist(m)
+
+         !$acc host_data use_device(fj_wp, fj_wd, wc1, wc2, wss)
+         istat = cublasSetStream(handle, lt_cg_stream(m))
+         call dgemm('n', 't', lev*4, llistnum_fj, jlistnum_fj, &
+                    1.0, wc1(1, 1, 1, 1, m), lev*4, &
+                    fj_wd(m_str), llistnum_fj, &
+                    0.0, wss(1, 1, 1, mf, m), lev*4)
+
+         call dgemm('n', 't', lev*4, llistnum_fj, jlistnum_fj, &
+                    1.0, wc2(1, 1, 1, 1, m), lev*4, &
+                    fj_wp(m_str), llistnum_fj, &
+                    1.0, wss(1, 1, 1, mf, m), lev*4)
+         !$acc end host_data
+         istat = cudaEventRecord(pack_event, lt_cg_stream(m))
+         istat = cudaStreamWaitEvent(stream, pack_event, 0)
+      end do
+
+      CUDACHECK(cudaStreamEndCapture(stream, lt_cg%graph))
+      CUDACHECK(cudaGraphInstantiate(lt_cg%graph_exec, lt_cg%graph, lt_cg%error_node, lt_cg%buffer, lt_cg%buffer_len))
+      lt_cg%created = .true.
+      istat = cudaEventDestroy(spread_event)
+      istat = cudaEventDestroy(pack_event)
+   end if
+   CUDACHECK(cudaGraphLaunch(lt_cg%graph_exec, stream))
+
+   !$acc parallel loop collapse(3) private(mf) async(async_id)
+   do m = 1, mlistnum
+      do L = 1, jtrun
+         do k = 1, lev
+            mf = mlist(m)
+            if (L .ge. mf) then
+               hldten(k, 1, L, m) = wss(k, 1, 1, L, m)
+               hldten(k, 2, L, m) = wss(k, 1, 2, L, m)
+
+               vorten(k, 1, L, m) = wss(k, 2, 1, L, m)
+               vorten(k, 2, L, m) = wss(k, 2, 2, L, m)
+            end if
+         end do
+      end do
+   end do
+
+   return
+end subroutine rstrandz_gpu_cuda_graph

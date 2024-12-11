@@ -1,32 +1,47 @@
 program test_ndslfv_monoadvh
    implicit none
    integer xy
+   logical fgnl, forward
 
    call mpe_init
    call cons
 
-   ! << advh2_xy >>
    xy = 1
-   call ndslfv_monoadvh_unit(xy)
-   ! << advh2_yx >>
+   fgnl = .false.
+   forward = .false.
+   call ndslfv_monoadvh_unit(xy, fgnl, forward)
    xy = -1
-   call ndslfv_monoadvh_unit(xy)
+   call ndslfv_monoadvh_unit(xy, fgnl, forward)
+   ! ----------------------------------------
+   xy = 1
+   fgnl = .true.
+   forward = .true.
+   call ndslfv_monoadvh_unit(xy, fgnl, forward)
+   xy = -1
+   call ndslfv_monoadvh_unit(xy, fgnl, forward)
+   ! ----------------------------------------
+   xy = 1
+   fgnl = .true.
+   forward = .false.
+   call ndslfv_monoadvh_unit(xy, fgnl, forward)
+   xy = -1
+   call ndslfv_monoadvh_unit(xy, fgnl, forward)
 
    call mpe_finalize
 end program test_ndslfv_monoadvh
 ! ============================================================
-subroutine ndslfv_monoadvh_unit(xy)
-   use const, only: RTYPE, dt, cosl
+subroutine ndslfv_monoadvh_unit(xy, fgnl, forward)
+   use const, only: RTYPE, dt, cosl, itter
    use rank
    use param
    use index
    use grid
-   use mod_ndslfv_monoadv_gpu, only: ndslfv_monoadvh_gpu
    use mpe
    implicit none
    integer, intent(in):: xy
-   integer, parameter:: steps = 1
-   integer, parameter:: nvar = 4
+   logical, intent(in):: fgnl, forward
+   integer, parameter:: steps = 3
+   integer, parameter:: max_nvar = 4
 
    real(kind=RTYPE):: um(nxp, lev, my_max), &
                       vm(nxp, lev, my_max), &
@@ -48,26 +63,31 @@ subroutine ndslfv_monoadvh_unit(xy)
                       tt_gpu(nxp, lev, my_max), &
                       qt_gpu(nxp, lev*ncld, my_max)
 
-   real(kind=RTYPE) dtah, irma, irm2a
-   logical forward
+   real(kind=RTYPE) dtah, dtahi, irma, irm2a
    integer i, k, j, jj, nxj, async_id
 
-   real(kind=RTYPE):: err_arr(4, nvar), vamax, ummax, vmmax
-   character(len=6):: name(nvar)
+   real(kind=RTYPE):: err_arr(4, max_nvar), vamax, ummax, vmmax, nvar
+   character(len=6):: name(max_nvar)
 
    async_id = 1
 
    name = (/'t', 'u', 'v', 'q'/)
+   if (fgnl) then
+      nvar = 3
+   else
+      nvar = 4
+   end if
+
    dtah = 0.5*dt
-   forward = .false.
+   dtahi = dtah/float(itter)
 
    if (myrank .eq. 0) then
       print *, "========================================"
-      if (xy .gt. 0.5) then
-         print *, "    start test ndslfv_monoadvh_xy"
-      elseif (xy .le. -0.5) then
-         print *, "    start test ndslfv_monoadvh_yx"
-      end if
+      write (*, '(4X, A, 1X, A, i2, 2(1X,A,L))'), &
+         "start test ndslfv_monoadvh", &
+         "xy=", xy, &
+         "fgnl=", fgnl, &
+         "forward=", forward
       print *, "========================================"
       write (*, '(1X, A5, 1X, f15.2)') "dt=", dt
       write (*, '(1X, A5, 1X, f15.2)') "dtah=", dtah
@@ -78,13 +98,13 @@ subroutine ndslfv_monoadvh_unit(xy)
    call random_number(vm)
    call random_number(ut)
    call random_number(vt)
-   call random_number(qm)
+   if (not(fgnl)) call random_number(qm)
 
    call gen_cosinebell(tt, 0., 1.)
 
    do jj = 1, jlistnum
       j = jlist1(jj)
-      nxj = nxdef(j)
+      nxj = nxdef_2d(j)
       irma = cosl(j)
       irm2a = cosl(j)/irma
       do k = 1, lev
@@ -120,12 +140,22 @@ subroutine ndslfv_monoadvh_unit(xy)
       call mpe2d_transpose_ndsl_p2f(tt, ttm_sl, &
                                     nxp, nx, levf, levp, 1, myf, &
                                     my_max, jlistnum, jlen, nsizex, row_comm)
-      call mpe2d_transpose_ndsl_p2f(qm, qm_sl, &
-                                    nxp, nx, levf, levp, ncld, myf, &
-                                    my_max, jlistnum, jlen, nsizex, row_comm)
+      if (fgnl) then
+         call ndslfv_monoadvh_fgnl(uum_sl, vvm_sl, ttm_sl, &
+                                   nxdef, dtahi, xy, levp, 3, forward)
 
-      call ndslfv_monoadvh(ttm_sl, qm_sl, pten_sl, uum_sl, vvm_sl, &
-                           nxdef, dtah, xy, levp)
+      else
+         call mpe2d_transpose_ndsl_p2f(qm, qm_sl, &
+                                       nxp, nx, levf, levp, ncld, myf, &
+                                       my_max, jlistnum, jlen, nsizex, row_comm)
+
+         call ndslfv_monoadvh(ttm_sl, qm_sl, pten_sl, uum_sl, vvm_sl, &
+                              nxdef, dtah, xy, levp)
+
+         call mpe2d_transpose_ndsl_f2p(qm_sl, qt_cpu, &
+                                       nxp, nx, levf, levp, ncld, myf, &
+                                       my_max, jlistnum, jlen, nsizex, row_comm)
+      end if
 
       call mpe2d_transpose_ndsl_f2p(ttm_sl, tt_cpu, &
                                     nxp, nx, levf, levp, 1, myf, &
@@ -136,14 +166,8 @@ subroutine ndslfv_monoadvh_unit(xy)
       call mpe2d_transpose_ndsl_f2p(vvm_sl, vt_cpu, &
                                     nxp, nx, levf, levp, 1, myf, &
                                     my_max, jlistnum, jlen, nsizex, row_comm)
-      call mpe2d_transpose_ndsl_f2p(qm_sl, qt_cpu, &
-                                    nxp, nx, levf, levp, ncld, myf, &
-                                    my_max, jlistnum, jlen, nsizex, row_comm)
 
       ! << GPU >>
-      call vcopy(tt_gpu, tt, 1)
-      call vcopy(ut_gpu, ut, 1)
-      call vcopy(vt_gpu, vt, 1)
       !$acc enter data copyin(um, ut_sl, vm, vt_sl, ut, uum_sl, vt, vvm_sl, tt, ttm_sl, qm, qm_sl, &
       !$acc& jlist1, nxjlen, nxjlen_all, pten_sl, cosl, nxdef, lonlen, lonstr, latlen, jlist1_sl, gglati, fa1, fa2, fa3, fa4, &
       !$acc& tt_gpu, ut_gpu, vt_gpu, qt_gpu, nxjp) async(async_id)
@@ -162,11 +186,20 @@ subroutine ndslfv_monoadvh_unit(xy)
       call mpe2d_transpose_ndsl_p2f_gpu(tt, ttm_sl, &
                                         nxp, nx, levf, levp, 1, myf, &
                                         my_max, jlistnum, jlen, nsizex, nccl_row_comm)
-      call mpe2d_transpose_ndsl_p2f_gpu(qm, qm_sl, &
-                                        nxp, nx, levf, levp, ncld, myf, &
-                                        my_max, jlistnum, jlen, nsizex, nccl_row_comm)
-      call ndslfv_monoadvh_gpu_refactor(ttm_sl, qm_sl, pten_sl, uum_sl, vvm_sl, &
-                                        nxdef, dtah, xy, levp)
+      if (fgnl) then
+         call ndslfv_monoadvh_fgnl_gpu_refactor(uum_sl, vvm_sl, ttm_sl, &
+                                                nxdef, dtahi, xy, levp, 3, forward)
+      else
+         call mpe2d_transpose_ndsl_p2f_gpu(qm, qm_sl, &
+                                           nxp, nx, levf, levp, ncld, myf, &
+                                           my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+         call ndslfv_monoadvh_gpu_refactor(ttm_sl, qm_sl, pten_sl, uum_sl, vvm_sl, &
+                                           nxdef, dtah, xy, levp)
+
+         call mpe2d_transpose_ndsl_f2p_gpu(qm_sl, qt_gpu, &
+                                           nxp, nx, levf, levp, ncld, myf, &
+                                           my_max, jlistnum, jlen, nsizex, nccl_row_comm)
+      end if
 
       call mpe2d_transpose_ndsl_f2p_gpu(ttm_sl, tt_gpu, &
                                         nxp, nx, levf, levp, 1, myf, &
@@ -177,9 +210,6 @@ subroutine ndslfv_monoadvh_unit(xy)
       call mpe2d_transpose_ndsl_f2p_gpu(vvm_sl, vt_gpu, &
                                         nxp, nx, levf, levp, 1, myf, &
                                         my_max, jlistnum, jlen, nsizex, nccl_row_comm)
-      call mpe2d_transpose_ndsl_f2p_gpu(qm_sl, qt_gpu, &
-                                        nxp, nx, levf, levp, ncld, myf, &
-                                        my_max, jlistnum, jlen, nsizex, nccl_row_comm)
       !$acc exit data copyout(um, ut_sl, vm, vt_sl, ut, uum_sl, vt, vvm_sl, tt, ttm_sl, qm, qm_sl, &
       !$acc& jlist1, nxjlen, nxjlen_all, pten_sl, cosl, nxdef, lonlen, lonstr, latlen, jlist1_sl, gglati, fa1, fa2, fa3, fa4, &
       !$acc& tt_gpu, ut_gpu, vt_gpu, qt_gpu, nxjp) async(async_id)
@@ -189,7 +219,8 @@ subroutine ndslfv_monoadvh_unit(xy)
    call Varerr(err_arr(1, 1), tt_gpu, nxp, tt_cpu, nxp, lev, 1)
    call Varerr(err_arr(1, 2), ut_gpu, nxp, ut_cpu, nxp, lev, 1)
    call Varerr(err_arr(1, 3), vt_gpu, nxp, vt_cpu, nxp, lev, 1)
-   call Varerr(err_arr(1, 4), qt_gpu, nxp, qt_cpu, nxp, lev, ncld)
+   if (not(fgnl)) &
+      call Varerr(err_arr(1, 4), qt_gpu, nxp, qt_cpu, nxp, lev, ncld)
 
    if (myrank .eq. 0) then
       do k = 1, nvar
@@ -199,11 +230,19 @@ subroutine ndslfv_monoadvh_unit(xy)
    end if
 
    if (all(err_arr(1, 1:nvar) < 1e-10)) then
-      if (myrank .eq. 0) write (*, '(A,i3,A)') &
-         "test_ndslfv_monoadvh (xy=", xy, ") passed."
+      if (myrank .eq. 0) &
+         write (*, '(4X, A, 1X, A, i2, 2(1X,A,L)), A'), &
+         "test_ndslfv_monoadvh", &
+         "xy=", xy, &
+         "fgnl=", fgnl, &
+         "forward=", forward, " passed."
    else
-      if (myrank .eq. 0) write (*, '(A,i3,A)') &
-         "test_ndslfv_monoadvh (xy=", xy, ") failed."
+      if (myrank .eq. 0) &
+         write (*, '(4X, A, 1X, A, i2, 2(1X,A,L)), A'), &
+         "test_ndslfv_monoadvh", &
+         "xy=", xy, &
+         "fgnl=", fgnl, &
+         "forward=", forward, " failed."
       call exit(1)
    end if
 end subroutine ndslfv_monoadvh_unit
@@ -211,7 +250,7 @@ end subroutine ndslfv_monoadvh_unit
 subroutine gen_cosinebell(dat, tim, u0)
    use const, only: RTYPE, sinl, cosl
    use param, only: nx, my_max, my, lev
-   use index, only: nxp, nxdef, jlist1, jlistnum
+   use index, only: nxp, nxdef, jlist1, jlistnum, nxdef_2d, nxjstart
    implicit none
 
    real(kind=RTYPE), intent(out):: dat(nxp, lev, my_max)
@@ -234,17 +273,17 @@ subroutine gen_cosinebell(dat, tim, u0)
 
    do jj = 1, jlistnum
       j = jlist1(jj)
-      nxj = nxdef(j)
+      nxj = nxdef_2d(j)
+      dx = 2.*pi/nxdef(j)
       do i = 1, nxj
-         dx = 2.*pi/nxj
-         xlon(i, jj) = (i - 1)*dx
+         xlon(i, jj) = (nxjstart(j) + i - 2)*dx
       end do
    end do
 
    dat = 0.
    do jj = 1, jlistnum
       j = jlist1(jj)
-      nxj = nxdef(j)
+      nxj = nxdef_2d(j)
       do k = 1, lev
          do i = 1, nxj
             dist = acos(cosl(j)*cos(xlon(i, jj) - u0*tim &
@@ -261,7 +300,7 @@ end subroutine gen_cosinebell
 subroutine VarErr(Err, a, lda, b, ldb, lev, nvar)
    use const, only: RTYPE, numreduce, weight
    use param, only: nx, my_max, my, octahedral
-   use index, only: nxdef, jlist1, jlistnum
+   use index, only: nxdef, jlist1, jlistnum, nxdef_2d
    use rank, only: myrank
    use mpe
    implicit none
@@ -273,7 +312,7 @@ subroutine VarErr(Err, a, lda, b, ldb, lev, nvar)
    integer i, j, k, nxj, jj, pts
    real(kind=RTYPE) tmp, vamax, sum_local, pi
    if (octahedral) then
-      pts = (20 + nx)*my*lev
+      pts = .5*(20 + nx)*my*lev
    elseif (numreduce == -99) then
       pts = nx*my*lev
    end if
@@ -281,7 +320,7 @@ subroutine VarErr(Err, a, lda, b, ldb, lev, nvar)
    Err = 0.
    do jj = 1, jlistnum
       j = jlist1(jj)
-      nxj = nxdef(j)
+      nxj = nxdef_2d(j)
       sum_local = 0.
       do k = 1, lev*nvar
          do i = 1, nxj
@@ -306,7 +345,7 @@ end subroutine VarErr
 real(kind=8) function Vamax(a, lda, lev)
    use const, only: RTYPE
    use param, only: nx, my_max, my
-   use index, only: nxdef, jlist1, jlistnum, levp
+   use index, only: nxdef, jlist1, jlistnum, levp, nxdef_2d
    use rank, only: myrank
    use mpe
    implicit none
@@ -318,7 +357,7 @@ real(kind=8) function Vamax(a, lda, lev)
    vamax = 0.
    do jj = 1, jlistnum
       j = jlist1(jj)
-      nxj = nxdef(j)
+      nxj = nxdef_2d(j)
       do k = 1, lev
          do i = 1, nxj
             vamax = max(abs(A(i, k, jj)), vamax)
@@ -334,7 +373,7 @@ end function Vamax
 subroutine vcopy(out, inp, n)
    use const, only: RTYPE
    use param, only: nx, my_max, lev
-   use index, only: nxp, nxdef, jlist1, jlistnum
+   use index, only: nxp, nxdef, jlist1, jlistnum, nxdef_2d
    implicit none
    integer, intent(in):: n
    real(kind=RTYPE), intent(out):: out(nxp, lev*n, my_max)
@@ -344,7 +383,7 @@ subroutine vcopy(out, inp, n)
 
    do jj = 1, jlistnum
       j = jlist1(jj)
-      nxj = nxdef(j)
+      nxj = nxdef_2d(j)
       do k = 1, lev*n
          do i = 1, nxj
             out(i, k, jj) = inp(i, k, jj)

@@ -32,11 +32,14 @@ subroutine joinrs_unit
    integer :: i
    integer :: async_id
 
+   integer j, k, n, jj, kk, nk, nxj
+
    async_id = 1
 
    call random_seed()
    call random_number(r1)
    call random_number(r2)
+
    cc = 0.
    cc_gpu = 0.
 
@@ -50,10 +53,12 @@ subroutine joinrs_unit
    !$acc exit data delete(r1, r2, jlist1, nxjlen, nxjlen_all) copyout(cc_gpu) async(async_id)
    !$acc wait(async_id)
 
+   ! call assert_realspace_close(cc_gpu, cc, nx+2, levp, ncld+1, &
+   !      1.e-10, 1.e-10, "joinsr1_sr")
    if (all(abs(cc - cc_gpu) <= 1e-10)) then
-      print *, "test_joinrs passed."
+      print *, "(all close) test_joinrs passed."
    else
-      print *, "test_joinrs failed."
+      print *, "(all close) test_joinrs failed."
       call exit(1)
    end if
 

@@ -63,7 +63,6 @@
 !byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
 
       character rfile*255,ctau*7,topostd*4,topohgt*4,ccore*4
-      integer len1,len2
 !helio>
       character f71*50
 !helio<
@@ -72,10 +71,6 @@
       integer idtgrsm
 #endif
 !
-! restart  : read(7) work array
-!
-      real, dimension(:), allocatable :: work_io
-!
 ! add for sfcuvt
       real    tx(nxp), qx(nxp),ux(nxp),vx(nxp),  &
               qs(nxp),tsx(nxp),hs(nxp),ps(nxp),  &
@@ -83,7 +78,6 @@
       logical flg, snow
 !
 ! add for soil
-      real, dimension(:,:,:), allocatable :: temp1,temp2,temp3
 !     integer   ls(nxp,my_max),icex(nx,my)
       integer   ls(nxp,my_max)
       logical   ncepsnow,ncepice
@@ -170,9 +164,11 @@
 
       call dtgfix12(idtg,idtg2,itaui)
         if(mod(taui,24.) /= 0.) then
-          if(myrank.eq.0) print*,'update climatology data, for restart in julian day= ',julian,' tau=',taui
+          if(myrank.eq.0) print*,'update climatology data,'       &
+                                  ,'for restart in julian day= ',  &
+                                  julian,' tau=',taui
 
-          call readclx( nx,my,my_max,julian,land,ocean,ice,tgclim,gwclim      &
+          call readclx( nx,my,my_max,julian,land,ocean,ice,tgclim,gwclim   &
                        ,z0,alb,sst,sigmaf,istyp,ivegtyp,ls            &
                        ,shdmax,shdmin,slopetyp,snoalb,ggdef,isot,ivegsrc )
 !---------------------------------------------------------------------
@@ -191,172 +187,141 @@
   800   format(i7.7)
 !
         write(ccore,'(i4.4)') myrank
-        rfile = trim(cwbout)//'cwbout_'//ctau
+        rfile = trim(cwbout)//'cwbout_'//ctau//'/'//ccore
 !
         if(myrank .eq. 0) then
           print*, ' restart at tau, rfile = ', taui, trim(rfile)
         endif
         flg=.false.
-        if(myrank .eq. 0) then
-          open (unit=7,file=trim(rfile),form='unformatted',status='old' &
-               ,iostat=ios)
+        i=200+myrank
+        open (i,file=trim(rfile),form='unformatted',status='old' &
+             ,iostat=ios)
+!
+        if(ios .ne.0) then
+          print *,'getrdt : mpe_broadcast error !! , rfile=',trim(rfile)
+          call mpe_finalize
+          stop
         endif
-!
-        call mpe_bcast(ios,1,0,mpe_integer)
-!
-          if (ios .eq. 0) then
-              if(myrank .eq. 0) &
-              print *,'getrdy : open rfile ok!! , rfile=',trim(rfile)
-          else
-              if(myrank .eq. 0) &
-                print *,'getrdy : open rfile error !! , rfile=',trim(rfile)
-              call mpe_finalize
-          endif
-  !
-          call mpe_broadcast(ios,1,flg,mpe_integer)
-          if(ios .ne.0) then
-            if(myrank .eq. 0) &
-              print *,'getrdt : mpe_broadcast error !! , rfile=',trim(rfile)
-            call mpe_finalize
-            stop
-          endif
-          len1=2*levp*jtrun*jtmax*nsize
-          len2=2*jtrun*jtmax*nsize
-          allocate(work_io(len1))
-          if(myrank==0) read(7) work_io
-          call mpe_scatter_io(work_io,vornow,len1/nsize,nsize)
-          if(myrank==0) read(7) work_io
-          call mpe_scatter_io(work_io,divnow,len1/nsize,nsize)
-          if(myrank==0) read(7) work_io
-          call mpe_scatter_io(work_io,temnow,len1/nsize,nsize)
-          if(myrank==0) read(7) work_io
-          call mpe_scatter_io(work_io,vorold,len1/nsize,nsize)
-          if(myrank==0) read(7) work_io
-          call mpe_scatter_io(work_io,divold,len1/nsize,nsize)
-          if(myrank==0) read(7) work_io
-          call mpe_scatter_io(work_io,temold,len1/nsize,nsize)
-          if(myrank==0) read(7) work_io
-          call mpe_scatter_io(work_io,trefs,len1/nsize,nsize)
-          deallocate(work_io)
+
+        read(i) vornow
+        read(i) divnow
+        read(i) temnow
+        read(i) vorold
+        read(i) divold
+        read(i) temold
+        read(i) trefs
+        read(i) plnow
+        read(i) plold
+        close(i)
   !
   ! Transfer Spectral to Gridpoint for u,v,t,q,ps at n-1
   !
-         call tranuv(jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac    &
-                    ,poly,dpoly,vorold,divold,up,vp,nsizey)
-         call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divold,cc,1,nsizey)
-         call ujoinsr(cc,rdivm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-         call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temold,cc,1,nsizey)
-         call ujoinsr(cc,ttp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+        call tranuv(jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac    &
+                   ,poly,dpoly,vorold,divold,up,vp,nsizey)
+        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divold,cc,1,nsizey)
+        call ujoinsr(cc,rdivm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temold,cc,1,nsizey)
+        call ujoinsr(cc,ttp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
   !
-          allocate(work_io(len2))
-          if(myrank==0) read(7) work_io
-          call mpe_scatter_io(work_io,plnow,len2/nsize,nsize)
-          if(myrank==0) read(7) work_io
-          call mpe_scatter_io(work_io,plold,len2/nsize,nsize)
-          deallocate(work_io)
-          if(myrank==0) close(7)
 
-          rfile = trim(phyout)//'phyout_'//ctau//'/'//ccore
+        rfile = trim(phyout)//'phyout_'//ctau//'/'//ccore
 
-          i=200+myrank
-          open (i,file=trim(rfile),form='unformatted',status='old',iostat=ios)
-          if (ios .eq. 0) then
-            if(myrank==0) &
-              print *,'getrdy : open rfile ok!! , rfile=',trim(rfile)
-          else
-            if(myrank .eq. 0) &
-                print *,'getrdy : open rfile error !! , rfile=',trim(rfile)
-            call mpe_finalize
-            stop
-          endif
+        i=200+myrank
+        open (i,file=trim(rfile),form='unformatted',status='old',iostat=ios)
+        if (ios .ne. 0) then
+          print *,'getrdy : open rfile error !! , rfile=',trim(rfile)
+          call mpe_finalize
+          stop
+        endif
   !
-          read(i) land
-          read(i) ocean
-          read(i) ice
-          read(i) alb
-          read(i) z0
-          read(i) tgclim
-          read(i) gwclim
-          read(i) sgeo
-          read(i) canopy
-          read(i) ustar
-          read(i) tstar
-          read(i) qstar
-          read(i) raincu
-          read(i) rainlp
-          read(i) totalp
-          read(i) curate
-          read(i) plcl
-          read(i) cumtop
-          read(i) snr
-          read(i) sncover
-          read(i) sndepth
-          read(i) tg
-          read(i) gwr
-          read(i) gwet
-          read(i) cice
-          read(i) xtice
-          read(i) zice
-          read(i) fpsp
-          read(i) fpsp1
+        read(i) land
+        read(i) ocean
+        read(i) ice
+        read(i) alb
+        read(i) z0
+        read(i) tgclim
+        read(i) gwclim
+        read(i) sgeo
+        read(i) canopy
+        read(i) ustar
+        read(i) tstar
+        read(i) qstar
+        read(i) raincu
+        read(i) rainlp
+        read(i) totalp
+        read(i) raintot
+        read(i) curate
+        read(i) plcl
+        read(i) cumtop
+        read(i) snr
+        read(i) sncover
+        read(i) sndepth
+        read(i) tg
+        read(i) gwr
+        read(i) gwet
+        read(i) cice
+        read(i) xtice
+        read(i) zice
+        read(i) fpsp
+        read(i) fpsp1
   !
-          read(i) hflux
-          read(i) qflux
-          read(i) ss
-          read(i) rs
-          read(i) asol
-          read(i) olr
-          read(i) sld
-          read(i) rld
-          read(i) asold
+        read(i) hflux
+        read(i) qflux
+        read(i) ss
+        read(i) rs
+        read(i) asol
+        read(i) olr
+        read(i) sld
+        read(i) rld
+        read(i) asold
   !jwhwu 202003
-          read(i) sfemis
-          read(i) sfalb
-          read(i) std
+        read(i) sfemis
+        read(i) sfalb
+        read(i) std
   !jwhwu
-          read(i) ctot
-          read(i) clds
-          read(i) pdiff
-          read(i) tsave
+        read(i) ctot
+        read(i) clds
+        read(i) pdiff
+        read(i) tsave
   !jwhwu 201702 | add
-          read(i) tsflw
+        read(i) tsflw
   !jwhwu 201702 | add
-          read(i) cosz
-          read(i) slag,sdec,cdec,solcon,solhr,rsolhr, &
+        read(i) cosz
+        read(i) slag,sdec,cdec,solcon,solhr,rsolhr, &
   ! overcome round off problem in restart
                tau,hours,itimestep,xy
 
-          read(i) o3l
-          read(i) ftp
-          read(i) fqp
-          read(i) ftp1
-          read(i) fqp1
+        read(i) o3l
+        read(i) ftp
+        read(i) fqp
+        read(i) ftp1
+        read(i) fqp1
   !jwhwu 201702 ! add
-          read(i) asl
-          read(i) atl
-          read(i) dtrad
+        read(i) asl
+        read(i) atl
+        read(i) dtrad
   !jwhwu 201910 ! add
-          read(i) deltaq
-          read(i) cnvwr
-          read(i) cnvcr
+        read(i) deltaq
+        read(i) cnvwr
+        read(i) cnvcr
   !jwhwu 202208 ! add
-          read(i) dtcup
-          read(i) ducup
-          read(i) dvcup
-          read(i) dtshl
-          read(i) dushl
-          read(i) dvshl
-          read(i) dtlsp
-          read(i) hfiltx
-          read(i) alphax
-          read(i) pdryi
+        read(i) dtcup
+        read(i) ducup
+        read(i) dvcup
+        read(i) dtshl
+        read(i) dushl
+        read(i) dvshl
+        read(i) dtlsp
+        read(i) hfiltx
+        read(i) alphax
+        read(i) pdryi
   !
-          read(i) qt
+        read(i) qt
   !       read(i) qp   ! not need
-          read(i) smc
-          read(i) stc
-          read(i) slc
-          close(i)
+        read(i) smc
+        read(i) stc
+        read(i) slc
+        close(i)
 !
       endif     ! end of (restrt=true)
 
@@ -976,31 +941,31 @@
           endif
         enddo
       enddo
-      do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        do ii=1,nxj
-          i=nxjstart(j)+ii-1
-!          sitlat(ii)      = xlat(j)
-!          IF(xlon(i,jj) .LT. 0.) then
-!            sitlon(ii,jj)=xlon(i,jj)+360.
-!          ELSE
-!            sitlon(ii,jj)=xlon(i,jj)
-!          ENDIF
-          if(myrank .eq. 152 .and. jj .eq. 12) then
-            if (ii .ge. 76 .and. ii .le. 83 ) then
-              print *,'myrank=',myrank,',ii=',ii &
-                   ,',jj=',jj,',xlon=',xlon(i,jj) &
-                   ,',xlat=',xlat(j)
-            endif
-          endif
-          if(i .eq. 144 .and. j .eq. 567) then
-            print *,'myrank=',myrank,',ii=',ii &
-                   ,',jj=',jj,',xlon=',xlon(i,jj) &
-                   ,',xlat=',xlat(j)
-          endif 
-        enddo
-      enddo
+!      do jj = 1, jlistnum
+!        j=jlist1(jj)
+!        nxj=nxdef_2d(j)
+!        do ii=1,nxj
+!          i=nxjstart(j)+ii-1
+!!          sitlat(ii)      = xlat(j)
+!!          IF(xlon(i,jj) .LT. 0.) then
+!!            sitlon(ii,jj)=xlon(i,jj)+360.
+!!          ELSE
+!!            sitlon(ii,jj)=xlon(i,jj)
+!!          ENDIF
+!          if(myrank .eq. 152 .and. jj .eq. 12) then
+!            if (ii .ge. 76 .and. ii .le. 83 ) then
+!              print *,'myrank=',myrank,',ii=',ii &
+!                   ,',jj=',jj,',xlon=',xlon(i,jj) &
+!                   ,',xlat=',xlat(j)
+!            endif
+!          endif
+!          if(i .eq. 144 .and. j .eq. 567) then
+!            print *,'myrank=',myrank,',ii=',ii &
+!                   ,',jj=',jj,',xlon=',xlon(i,jj) &
+!                   ,',xlat=',xlat(j)
+!          endif 
+!        enddo
+!      enddo
 !---------------------------------
 ! read forecast sst
 !---------------------------------

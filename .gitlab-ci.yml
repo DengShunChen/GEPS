@@ -16,8 +16,6 @@ arm-build:
     paths:
       - build_fx1000/bin/tcogfs.x
     expire_in: 1 day
-  tags:
-    - h6ln19
 
 arm-deploy:
   stage: deploy
@@ -26,8 +24,6 @@ arm-deploy:
     - cicd
   script:
     - echo "arm deploy"
-  tags:
-    - h6ln19
 
 arm-test:
   stage: test
@@ -36,11 +32,9 @@ arm-test:
     - cicd
   script:
     - echo "arm testing"
+    - chmod 755 job/run_rt.sh
     - cd job
-    - chmod 755 ./run_rt.sh
     - ./run_rt.sh
-  tags:
-    - h6ln19
 
 gpu-build:
   stage: build
@@ -55,8 +49,6 @@ gpu-build:
     paths:
       - build_a100/bin/tcogfs.x
     expire_in: 1 day
-  tags:
-    - h6ln19
 
 gpu-deploy:
   stage: deploy
@@ -65,8 +57,6 @@ gpu-deploy:
     - cicd
   script:
     - echo "gpu deploy"
-  tags:
-    - h6ln19
 
 gpu-test:
   stage: test
@@ -75,11 +65,9 @@ gpu-test:
     - cicd
   script:
     - echo "gpu testing"
+    - chmod 755 job/run_rt.sh
     - cd job
-    - chmod 755 ./run_rt.sh 
     - ./run_rt.sh a100
-  tags:
-    - h6ln19
 
 stg-build:
   stage: build
@@ -109,4 +97,16 @@ merge_request:
     - merge_requests
   script:
     - ./compile fx1000
+    - echo "cpu regression test"
+    - chmod 755 job/run_rt.sh
+    - cd job
+    - ./run_rt.sh fx1000
+    - cd ..
     - ./compile a100
+    - echo "gpu unit test"
+    - ./job/unit_test.sh
+    - echo "gpu regression test"
+    - chmod 755 job/run_rt.sh
+    - cd job
+    - ./run_rt.sh a100
+    
