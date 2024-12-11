@@ -190,8 +190,8 @@
       real, dimension(nxp, my_max) :: tocn_cpl, uocn_cpl, vocn_cpl, &
                             u10m_cpl, v10m_cpl, t02m_cpl, q02m_cpl, &
                             pslv_cpl, swup_cpl, swdn_cpl, lwdn_cpl, &
-                            rain_cpl, snow_cpl, tgfs_cpl
-      real :: dt_cpl
+                            rain_cpl, snow_cpl, tgfs_cpl, tg_ocn, tg_diff
+      real :: dt_cpl, tgwf, cplf
       logical :: cpl_send_init
       integer :: compid
 #endif
@@ -283,6 +283,9 @@
       snow_cpl = 0.
         dt_cpl = 0.
       cpl_send_init = .true.
+         tg_ocn= 0.
+        tg_diff=0.
+           cplf=2.0 !cpl frequency
 #endif
 !
 !
@@ -480,15 +483,33 @@
           end if   !end lopgsst
 !
 #ifdef TIMCOMCPL
-      call gfs_cpl_recv4gocn(compid, land, ice, tg, ssu, ssv)
+      call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv)
 !      if(myrank .eq. 0) then
-!        write(*,*) 'ssstg(max)=', maxval(tg)
-!        write(*,*) 'ssstg(min)=', minval(tg)
+!      write(*,*) "no replace the tg at first step"
+!        do i = 1,100
+!        do j = 1,100
+!        write(*,*) 'tg_ocn=', tg_ocn(2,7) !, "i=", i, "j=", j
+!        write(*,*) 'tg=', tg(2,7) !, "i=", i, "j=", j
 !        write(*,*) 'sssssu(max)=', maxval(ssu) ,'rank=', myrank
 !        write(*,*) 'sssssu(min)=', minval(ssu) ,'rank=', myrank
 !        write(*,*) 'sssssv(max)=', maxval(ssv)
 !        write(*,*) 'sssssv(min)=', minval(ssv)
-!      endif 
+!       enddo
+!       enddo
+        tgwf=1.0/(86400.0/dta/(24.0/cplf)-1.0)
+        do i = 1,nxp
+         do j = 1,my_max
+          if(tg_ocn(i,j).eq.0.0) then
+            tg_diff(i,j)=0.0
+          else 
+            tg_diff(i,j)=(tg_ocn(i,j)-tg(i,j))*tgwf
+          end if
+         end do
+        end do
+      if(myrank .eq. 0) then
+            write(*,*) '1loop tg_diff=',tg_diff(2,7)
+      endif
+
 #endif 
 
  10   continue
@@ -1952,11 +1973,11 @@
         cpl_send_init = .false.
       endif
 
-      dtaup = mod(tau+0.001, 2.0)
+      dtaup = mod(tau+0.001, cplf)
       if( dtaup .lt. dtx_tau ) then
         if(myrank .eq. 0) write(*,*) "TCo time to coupler", tau
 
-        call gfs_cpl_recv4gocn(compid, land, ice, tg, ssu, ssv)
+        call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv)
         u10m_cpl = u10m_cpl/dt_cpl
         v10m_cpl = v10m_cpl/dt_cpl
         t02m_cpl = t02m_cpl/dt_cpl
@@ -1983,7 +2004,35 @@
         rain_cpl = 0.
         snow_cpl = 0.
         dt_cpl   = 0.
+
+        tgwf=1.0/(86400.0/dta/(24.0/cplf))
+
+        do i = 1,nxp
+         do j = 1,my_max
+          if(tg_ocn(i,j).eq.0.0) then
+            tg_diff(i,j)=0.0
+          else
+            tg_diff(i,j)=(tg_ocn(i,j)-tg(i,j))*tgwf
+          end if
+         end do
+        end do
+        if(myrank .eq. 0) then
+            write(*,*) '2 loop tg_diff=',tg_diff(2,7)
+        end if
       end if
+
+      if(myrank .eq. 0) then
+        write(*,*) 'tg_ocn=', tg_ocn(2,7) !, "i=", i, "j=", j
+        write(*,*) 'tg=', tg(2,7) !, "i=", i, "j=", j
+        write(*,*) 'tg_atm=', tg(2,1) !, "i=", i, "j=", j
+      end if
+        tg=tg_diff+tg
+      if(myrank .eq. 0) then
+        write(*,*) '------after-------'
+        write(*,*) 'tg=', tg(2,7)
+        write(*,*) 'tg_atm=', tg(2,1) !, "i=", i, "j=", j
+      end if
+
 #endif
 
       itau=tau+0.001
