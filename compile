@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 set -e
 
 #MACHINE="a100"
@@ -28,11 +28,9 @@ cmake -B${BLD_DIR} -S. \
   -DCMAKE_BUILD_TYPE=Release \
   -DUSE_RSM=OFF \
   -DUSE_CUDA=ON \
-  -DUSE_ACC=ON
+  -DUSE_ACC=ON \
+  -DUSE_PAR=OFF
 \time --verbose cmake --build ${BLD_DIR} --verbose -j $((`nproc`/2))
 else
   echo "[ERROR] Fatal error unknow MACHINE !" ; exit -1
 fi
-
-
-

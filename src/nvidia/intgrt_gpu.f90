@@ -223,7 +223,7 @@ subroutine intgrt_gpu
    !$acc& nxjstart, nxjend, lonlen, lonstr, latlen, jlist1_sl, &
    !$acc& gglati, fa1, fa2, fa3, fa4) async(async_id)
    !! << const >>
-   !$acc enter data copyin(cp, rad, radsq, sinl, cosl, &
+   !$acc enter data copyin(grav, rgas, cp, rad, radsq, sinl, cosl, &
    !$acc& onocos, cor, sigma, dsigma, ptop, hdk1, hdk2) async(async_id)
    !$acc enter data copyin(poly, dpoly, polyf, dpolyf, weight, cim, wcfac, wdfac) async(async_id)
    !$acc enter data copyin(ptmeans, spalm, eps4L, eps4, eigval, evecin ,evectr, &
@@ -797,7 +797,7 @@ subroutine intgrt_gpu
                   nxj = nxdef_2d(j)
                   if (i .le. nxj) then
                      vdzonl(i, k, jj) = (vdzonl(i, k, jj) - um(i, k, jj))/dtahi
-                     vdmerd(i, k, jj) = (vm(i, k, jj) - vdmerd(i, k, jj))/dtahi
+                     vdmerd(i, k, jj) = (vdmerd(i, k, jj) - vm(i, k, jj))/dtahi
                      ddtemp(i, k, jj) = (ddtemp(i, k, jj) - tm(i, k, jj))/dtahi
                   end if
                end do
@@ -812,7 +812,7 @@ subroutine intgrt_gpu
                   nxj = nxdef_2d(j)
                   if (i .le. nxj) then
                      vdzonl(i, k, jj) = (vdzonl(i, k, jj) - ut(i, k, jj))/dtah
-                     vdmerd(i, k, jj) = (vt(i, k, jj) - vdmerd(i, k, jj))/dtah
+                     vdmerd(i, k, jj) = (vdmerd(i, k, jj) - vt(i, k, jj))/dtah
                      ddtemp(i, k, jj) = (ddtemp(i, k, jj) - tt(i, k, jj))/dtah
                   end if
                end do
@@ -825,10 +825,14 @@ subroutine intgrt_gpu
       call tranrs_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, polyf, weight, &
                                  cc_cg, temten, 1, nsizey, &
                                  gwk1_cg, ws_cg, wc_cg, wcc_fk_cg, fj_weight_cg)
-      call rstrandz_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, vdmerd, vdzonl, &
-                                   weight, cim, onocos, polyf, dpolyf, divten, vorten, nsizey, &
-                                   cc_cg, gwk1_cg, ws_cg, wc_cg(1, 1), wc_cg(1, 2), &
-                                   wcc_fk_cg, fj_weight_cg(1, 1), fj_weight_cg(1, 2))
+      ! call rstrandz_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, vdmerd, vdzonl, &
+      !                              weight, cim, onocos, polyf, dpolyf, divten, vorten, nsizey, &
+      !                              cc_cg, gwk1_cg, ws_cg, wc_cg(1, 1), wc_cg(1, 2), &
+      !                              wcc_fk_cg, fj_weight_cg(1, 1), fj_weight_cg(1, 2))
+      call trandv_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, vdzonl, vdmerd, &
+                                 weight, cim, onocos, polyf, dpolyf, vorten, divten, nsizey, &
+                                 cc_cg, gwk1_cg, ws_cg, wc_cg(1, 1), wc_cg(1, 2), &
+                                 wcc_fk_cg, fj_weight_cg(1, 1), fj_weight_cg(1, 2))
 
       if (forward) then
          if (lsimpl) &
@@ -1071,7 +1075,7 @@ subroutine intgrt_gpu
                nxj = nxdef_2d(j)
                if (i .le. nxj) then
                   vdzonl(i, k, jj) = (ut(i, k, jj) - up(i, k, jj))/dta
-                  vdmerd(i, k, jj) = (vp(i, k, jj) - vt(i, k, jj))/dta
+                  vdmerd(i, k, jj) = (vt(i, k, jj) - vp(i, k, jj))/dta
                   ddtemp(i, k, jj) = (tt(i, k, jj) - ttp(i, k, jj))/dta
                end if
             end do
@@ -1082,10 +1086,15 @@ subroutine intgrt_gpu
       call tranrs_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, polyf, weight, &
                                  cc_cg, temten, 1, nsizey, &
                                  gwk1_cg, ws_cg, wc_cg, wcc_fk_cg, fj_weight_cg)
-      call rstrandz_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, vdmerd, vdzonl, &
-                                   weight, cim, onocos, poly, dpoly, divten, vorten, nsizey, &
-                                   cc_cg, gwk1_cg, ws_cg, wc_cg(1, 1), wc_cg(1, 2), &
-                                   wcc_fk_cg, fj_weight_cg(1, 1), fj_weight_cg(1, 2))
+      ! call rstrandz_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, vdmerd, vdzonl, &
+      !                              weight, cim, onocos, poly, dpoly, divten, vorten, nsizey, &
+      !                              cc_cg, gwk1_cg, ws_cg, wc_cg(1, 1), wc_cg(1, 2), &
+      !                              wcc_fk_cg, fj_weight_cg(1, 1), fj_weight_cg(1, 2))
+
+      call trandv_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, vdzonl, vdmerd, &
+                                 weight, cim, onocos, poly, dpoly, vorten, divten, nsizey, &
+                                 cc_cg, gwk1_cg, ws_cg, wc_cg(1, 1), wc_cg(1, 2), &
+                                 wcc_fk_cg, fj_weight_cg(1, 1), fj_weight_cg(1, 2))
 
 !        if ( mass_dp ) then
       ! sureface pressure global mean correction
@@ -1291,66 +1300,53 @@ subroutine intgrt_gpu
                       !byl                      , rmr,smr,flash)
                       , flash, tsflw, vvel, totallp)
 !xb110<
+      !$acc update device(plt, pk2, &
+      !$acc& ptp, up, vp, ttp, &
+      !$acc& pt, &
+      !$acc& pdot, vvel, sdpbl, &
+      !$acc& pltemp, plten, um, vm, qm, &
+      !$acc& plnow) async(async_id)
+      !$acc wait(async_id)
 !--------------------------------------------------------------------------------
 !
 ! add reynolds stress
 !
-      call rayleifr(nx, my, my_max, lev, rad, cosl, dt, ut, vt)
+      call rayleifr_gpu(nx, my, my_max, lev, rad, cosl, dt, ut, vt)
 
       if (two_loop) then
          if (mass_dp) then
-            call mpe2d_unify_nx(ww1, pt)
-            call tranrs1(jtrun, jtmax, nx, my, my_max, poly, weight, ww1 &
-                         , plnow, nsizey)
+            call mpe2d_unify_nx_gpu(ww1, pt)
+            call tranrs1_gpu(jtrun, jtmax, nx, my, my_max, polyf, weight, ww1, &
+                             plnow, nsizey, cc_cg, gwk1_cg)
          end if
-         call joinrs(cc, tt, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
-         call tranrs(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc &
-                     , temnow, 1, nsizey)
-         ! SKEB process
-         if (doskeb) call skebest(um, vm)
+         call joinrs_gpu(cc_cg, tt, dummy, dummy, dummy, &
+                         nx, my_max, lev, jlistnum, 1, 1)
+         call tranrs_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, &
+                                    polyf, weight, cc_cg, temnow, 1, nsizey, &
+                                    gwk1_cg, ws_cg, wc_cg, wcc_fk_cg, fj_weight_cg)
 
-         call trandv(jtrun, jtmax, nx, my, my_max, lev, ut, vt, weight, cim &
-                     , onocos, poly, dpoly, vornow, divnow, nsizey)
+         ! SKEB process
+         if (doskeb) then
+            print *, "not doskeb entry"
+            !$acc update self(um, vm) async(async_id)
+            !$acc wait(async_id)
+            call skebest(um, vm)
+            !$acc update device(um, vm, ut, vt) async(async_id)
+         end if
+
+         call trandv_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, &
+                                    ut, vt, weight, cim, onocos, &
+                                    polyf, dpolyf, vornow, divnow, nsizey, &
+                                    cc_cg, gwk1_cg, ws_cg, wc_cg(1, 1), wc_cg(1, 2), &
+                                    wcc_fk_cg, fj_weight_cg(1, 1), fj_weight_cg(1, 2))
       else
          if (mass_dp) then
-            call mpe2d_unify_nx(ww1, ptp)
-            call tranrs1(jtrun, jtmax, nx, my, my_max, poly, weight, ww1 &
-                         , plten, nsizey)
+            call mpe2d_unify_nx_gpu(ww1, ptp)
+            call tranrs1_gpu(jtrun, jtmax, nx, my, my_max, polyf, weight, ww1, &
+                             plten, nsizey)
          end if
 
       end if ! two_loop
-      !$acc update device(plt, pk, pk2, &
-      !$acc& ptp, up, vp, ttp, &
-      !$acc& pt, ut, vt, tt, qt, &
-      !$acc& pdot, vvel, sdpbl, &
-      !$acc& plnow, pltemp, plten, um, vm, qm, &
-      !$acc& vornow, divnow, temnow) async(async_id)
-      !$acc wait(async_id)
-
-      !! !$acc update device(up, vp, ttp, rdiv, ptp) async(async_id)
-      !! !$acc update device(pdot, vdmerd, vdzonl, vdmerdr, vdzonlr, &
-      !! !$acc& vdmerdrp, vdzonlrp, ddtemp, pten, deldm) async(async_id)
-      !! !$acc update device(ut, vt, tt, um, vm, dtahi) async(async_id)
-      !! !$acc update device(nxjp, sigma, ptm, pk, pk2, plt, &
-      !! !$acc& rdivm, tm, qt, phi, dtpl, dlpl, sinl, &
-      !! !$acc& dsigma, onocos, cor, diveng, vdmerdg, vdzonlg, &
-      !! !$acc& sdpbl, sd, vvel, sgeo) async(async_id)
-      !! !$acc update device(cc, jlist1, nxjlen, nxjlen_all, &
-      !! !$acc& nlist, jlist2, poly, weight, hldten, &
-      !! !$acc& mtrundef, mlist, cim, dpoly, dlphi, dtphi) async(async_id)
-      !! !$acc exit data delete(nxdef_2d, nxjp_acc, nxptot) async(async_id)
-      !! !$acc update device(ww1, plten) async(async_id)
-      !! !$acc update device(temten, divten, vorten) async(async_id)
-      !! !$acc update device(plmid, temmid, divmid, temnow, divnow, plnow, &
-      !! !$acc& jtwvp, spalm, arrhyd, eps4L, evecin, eigval, evectr, arsddt) async(async_id)
-      !! !$acc update device(vormid, cosl, eps4, trefs, Llist, hdk2, vornow) async(async_id)
-      !! !$acc update device(wcfac, wdfac, nxjstart, nxjend) async(async_id)
-      !! !$acc update device(qm, nxdef, pltemp, pt) async(async_id)
-      !! !$acc update device(ptend, wkmf, vorold, divold, temold, plold) async(async_id)
-      !! !$acc update device(ut_sl, vt_sl, uum_sl, vvm_sl, ttm_sl, &
-      !! !$acc& lonlen, lonstr, latlen, jlist1_sl, gglati, fa1, fa2, fa3, fa4) async(async_id)
-      !! !$acc update device(qm_sl, pten_sl, cc_cg, gwk1_cg) async(async_id)
-      !! !$acc wait(async_id)
    end if    ! end of (yesdia)
 
 !CWB2021
@@ -1371,7 +1367,7 @@ subroutine intgrt_gpu
                nxj = nxdef_2d(j)
                if (i .le. nxj) then
                   vdzonl(i, k, jj) = (ut(i, k, jj) - up(i, k, jj))/dta
-                  vdmerd(i, k, jj) = (vp(i, k, jj) - vt(i, k, jj))/dta
+                  vdmerd(i, k, jj) = (vt(i, k, jj) - vp(i, k, jj))/dta
                   ddtemp(i, k, jj) = (tt(i, k, jj) - ttp(i, k, jj))/dta
                end if
             end do
@@ -1383,11 +1379,16 @@ subroutine intgrt_gpu
       call tranrs_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, polyf, weight, &
                                  cc_cg, temten, 1, nsizey, &
                                  gwk1_cg, ws_cg, wc_cg, wcc_fk_cg, fj_weight_cg)
-      call rstrandz_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, &
-                                   vdmerd, vdzonl, weight, cim, onocos, &
-                                   polyf, dpolyf, divten, vorten, nsizey, &
-                                   cc_cg, gwk1_cg, ws_cg, wc_cg(1, 1), wc_cg(1, 2), &
-                                   wcc_fk_cg, fj_weight_cg(1, 1), fj_weight_cg(1, 2))
+      ! call rstrandz_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, &
+      !                              vdmerd, vdzonl, weight, cim, onocos, &
+      !                              polyf, dpolyf, divten, vorten, nsizey, &
+      !                              cc_cg, gwk1_cg, ws_cg, wc_cg(1, 1), wc_cg(1, 2), &
+      !                              wcc_fk_cg, fj_weight_cg(1, 1), fj_weight_cg(1, 2))
+      call trandv_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, &
+                                 vdzonl, vdmerd, weight, cim, onocos, &
+                                 polyf, dpolyf, vorten, divten, nsizey, &
+                                 cc_cg, gwk1_cg, ws_cg, wc_cg(1, 1), wc_cg(1, 2), &
+                                 wcc_fk_cg, fj_weight_cg(1, 1), fj_weight_cg(1, 2))
 
 !        if ( mass_dp ) then
       ! sureface pressure global mean correction
