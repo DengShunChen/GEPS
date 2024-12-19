@@ -254,7 +254,7 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl_w ('x00340',idtg,itau,ggdef)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
-      ptp0=(/0,5,5,2,8,0,0,-999,-999/)
+      ptp0=(/0,5,4,2,8,0,0,-999,-999/)
       call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
       go to 30
       endif

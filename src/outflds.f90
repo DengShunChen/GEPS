@@ -614,6 +614,9 @@
 !!clouds output
       labx='cld   '
       call whtrec (labx,ntau,taudir,whtlev,num)
+      !for debug
+      !num=12
+      !whtlev(1:12)=(/100.,150.,200.,250.,300.,400.,500.,600.,700.,850.,925.,1000./)
       if(num.gt.0) then
         tmp=0.
         do jj = 1, jlistnum
@@ -684,10 +687,10 @@
         j=jlist1(jj)
         nxj=nxdef_2d(j)
         do i=1,nxj
-          wk_xy(i,jj,6) = ctot(i,jj)
-          wk_xy(i,jj,7) = chig(i,jj)
-          wk_xy(i,jj,8) = cmid(i,jj)
-          wk_xy(i,jj,9) = clow(i,jj)
+          wk_xy(i,jj,6) = ctot(i,jj) * 100.0 !>> for grib2 unit
+          wk_xy(i,jj,7) = chig(i,jj) * 100.0 !   cloud fraction
+          wk_xy(i,jj,8) = cmid(i,jj) * 100.0
+          wk_xy(i,jj,9) = clow(i,jj) * 100.0 !<<
           wk_xy(i,jj,10) = hpbl(i,jj)
           wk_xy(i,jj,11) = qt(i,1,jj)
           wk_xy(i,jj,12) = qt(i,lev,jj)

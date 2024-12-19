@@ -614,9 +614,6 @@ contains
       lenc= nx*my
       ncnt= 0
 !
-      !for debug
-      !num=12
-      !whtlev(1:12)=(/100.,150.,200.,250.,300.,400.,500.,600.,700.,850.,925.,1000./)
       do 30 n=1,num
       do 10 k=1,lpout
 !
@@ -626,7 +623,7 @@ contains
       j=jlist1(jj)
       nxj=nxdef_2d(j)
       do 11 i=1,nxj
-       tmp(i,jj)= cldfc(i,jj,k)
+       tmp(i,jj)= cldfc(i,jj,k) * 100.0
    11 continue
       call unify_reduceintp(nx,my,my_max,tmp,glob)
 !

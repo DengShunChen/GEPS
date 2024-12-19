@@ -89,7 +89,7 @@
           mfcout(i,jj,10)= ( TdBeta * TdGamma / ( TdAlpha - TdGamma ) ) + 273.15
           mfcout(i,jj,11)=rld (i,jj)
           mfcout(i,jj,12)=sld (i,jj)
-          mfcout(i,jj,13)=ctot(i,jj) ! total cloud cover
+          mfcout(i,jj,13)=ctot(i,jj) * 100.0 ! total cloud cover
         enddo
       enddo
 
