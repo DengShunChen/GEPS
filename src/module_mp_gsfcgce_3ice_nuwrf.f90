@@ -57,6 +57,8 @@ MODULE module_mp_gsfcgce_3ice_nuwrf
                                 vrc0, vrc1, vrc2, vrc3,            &
                              	 vgc,  vsc
 
+   REAL,    PRIVATE ::         draimax
+
 !  common /bsnw/
 !   REAL,    PRIVATE ::          alv,  alf,  als,   t0,   t00,     &
 !                                avc,  afc,  asc,  rn1,  bnd1,     &
@@ -849,7 +851,7 @@ CONTAINS
             min_q=min0(min_q,k)
             max_q=max0(max_q,k)
 
-           call vtr_mks(rhoz(k),qrz(k),vtr(k))
+           call vtr_mks(rhoz(k),qrz(k),tz(k),vtr(k))
 !           if (.not. vtr(k) .gt. 0.0) cycle ! EMK NUWRF Bug fix
 
             if (k .eq. 1) then
@@ -1783,6 +1785,9 @@ CONTAINS
          xnoh = xnog          !intercept parameter of hail (m^-4)
          rhohail = rhograul   !density of hail (kg/m^3)
       endif
+
+      draimax=0.0500       !maximum rain diameter (cm)
+      draimax=draimax**4.*roqr*cpi
 
       ! critical q of hydrometeor characteristics (eg. fall speed, radius)
       cwmin = 1.e-12
@@ -2938,7 +2943,7 @@ CONTAINS
                 endif
 
 !                call vqrqi(1,improve,r00,fv0,qr(i,j),vr(i,j))
-                call vtr_mks(rho_mks(i,k,j),qr(i,j),vr(i,j))  !in MKS
+                call vtr_mks(rho_mks(i,k,j),qr(i,j),tair(i,j),vr(i,j))  !in MKS
                 vr(i,j) = vr(i,j) * 100.  !in CGS
 
 !* 21 * PRAUT   AUTOCONVERSION OF QC TO QR                        **21**
@@ -3044,7 +3049,7 @@ CONTAINS
 !               else
 !                  vr(i,j)=max(vrcf*dd(i,j)**bwq, 0.)
 !               endif
-               call vtr_mks(rho_mks(i,k,j),qr(i,j),vr(i,j))  !in MKS
+               call vtr_mks(rho_mks(i,k,j),qr(i,j),tair(i,j),vr(i,j))  !in MKS
                vr(i,j) = vr(i,j) * 100.  !in CGS
             endif
 
@@ -6593,41 +6598,69 @@ CONTAINS
 !-------------------------------------------------------------------
 
 !-------------------------------------------------------------------
-      subroutine vtr_mks(rhoz,qrz,vtr)
+      subroutine vtr_mks(rhoz,qrz,tz,vtr)
       implicit none
       real, intent(in) :: rhoz  !air density (kg/m^3)
       real, intent(in) :: qrz   !mixing ratio (kg/kg)
+      real, intent(in) :: tz    !temperature (K)
       real, intent(out):: vtr   !terminal velocity (m/s)
 
       real, parameter :: vrmax = 12.0    !(m/s)
       real, parameter :: vrmin = 0.0     !(m/s)
 
+      integer, parameter :: vtrflag = 2
+      ! 1 : Lin et al. (1983)   ( igce != 1 )
+      ! 2 : Steve's             ( igce = 1 )
+      ! 3 : Lang et al. (2014) , Steve's with bin rain evaporation correction
+
       !local variables
-      integer :: igce
+!      integer :: igce
       real    :: pi, gambp4
-      real    :: y1, tmp1, vs, vg, vr, fv
+      real    :: y1, tmp1, vs, vg, vr, fv, zr
+      real    :: ftnw, bin_factor, ftnwmin
 
       pi = acos(-1.)
       gambp4 = gammagce(constb+4.)
 
       if ( qrz .ge. crmin ) then
          fv = sqrt( rhoe_s/rhoz )
-         igce = 1
-         if ( igce .ne. 1 ) then
-            ! old codes from Chern's in MKS
-            tmp1 = sqrt(pi*rhowater*xnor/rhoz/qrz)
-            tmp1 = sqrt(tmp1)
-            vtr = consta*gambp4*fv/tmp1**constb
-            vtr = vtr/6.
-         else
+!         igce = 1
+         if ( vtrflag .eq. 1 ) then !if igce .ne. 1
+            ! Lin et al. (1983) ; in MKS
+            ! rhowater=1000., consta=0.8, constb=841.9967
+!            tmp1 = sqrt(pi*rhowater*xnor/rhoz/qrz)
+!            tmp1 = sqrt(tmp1)
+!            vtr = consta*gambp4*fv/tmp1**constb
+!            vtr = vtr/6.
+            zr = (pi*rhowater*xnor/(rhoz*qrz))**0.25   !slope parameter of rain (in MKS)
+            gambp4 = gammagce(constb+4.)
+            vtr = consta*gambp4/(6.*zr**constb)*fv
+
+         elseif ( vtrflag .eq. 2 ) then !if igce=1
             ! new codes from Steve's in CGS :
             y1 = rhoz*qrz*0.001  !in CGS
             vs = sqrt( y1 )
             vg = sqrt( vs )
-!            vr=vr0+vr1*vg+vr2*vs+vr3*vg*vs
             vr = vrc0+vrc1*vg+vrc2*vs+vrc3*vg*vs
             vtr = max(fv*vr, 0.e0)
             vtr = vtr*0.01  !convert back to MKS
+
+         elseif ( vtrflag .eq. 3 ) then
+            ! same as Steve's, but with bin rain evaporation correction (Lang et al. 2014)
+            ! (in CGS)
+            ftnw = 1.
+            if ( tz .gt. t0 ) then
+               bin_factor = 0.11*(1000.*qrz)**(-1.27) + 0.98
+               bin_factor = min(bin_factor,1.30)
+               ftnw = 1./bin_factor**3.35
+               ftnwmin = rhoz*0.001*qrz/draimax
+               if ( qrz .le. 0.001 ) ftnw = max(ftnw,ftnwmin/tnw)
+            endif
+            zr = (pi*roqr*tnw/(rhoz*0.001*qrz))**0.25   !slope parameter of rain (in CGS)
+            zr = zr/ftnw
+            vtr = (-26.7 + 2.06e+4/zr - 2.045e+5/zr**2. + 9.06e+5/zr**3.)*fv
+            vtr = vtr*0.01  !convert back to MKS
+
          endif  !end of if igce
          vtr = min ( vrmax , max ( vrmin , vtr ) )
       else
@@ -6828,7 +6861,7 @@ CONTAINS
       was(:) = 0.0
       dz(:) = dzl(:)
       do k = 1,km
-        if ( qvar .eq. 'qr' ) call vtr_mks(rho(k),qc(k),ww(k))
+        if ( qvar .eq. 'qr' ) call vtr_mks(rho(k),qc(k),tz(k),ww(k))
         if ( qvar .eq. 'qs' ) call vts_mks(improve,rho(k),qc(k),tz(k),ww(k))
         if ( qvar .eq. 'qg' ) call vtg_mks(ihail,improve,rho(k),qc(k),tz(k),ww(k))
         if ( qvar .eq. 'qi' ) call vti_mks(improve,rho(k),tz(k),qc(k),qv(k),p(k),xland,ww(k))
@@ -6908,7 +6941,7 @@ CONTAINS
 ! then back to use mean terminal velocity
       if ( n.le.iter ) then
         do k = 1,km
-          if ( qvar .eq. 'qr' ) call vtr_mks(rho(k),qc(k),wa(k))
+          if ( qvar .eq. 'qr' ) call vtr_mks(rho(k),qc(k),tz(k),wa(k))
           if ( qvar .eq. 'qs' ) call vts_mks(improve,rho(k),qc(k),tz(k),wa(k))
           if ( qvar .eq. 'qg' ) call vtg_mks(ihail,improve,rho(k),qc(k),tz(k),wa(k))
           if ( qvar .eq. 'qi' ) call vti_mks(improve,rho(k),tz(k),qc(k),qv(k),p(k),xland,wa(k))
