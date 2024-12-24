@@ -45,7 +45,7 @@ set(GPU_ARCHS
     "80"
     CACHE STRING "GPU architecture(V100=70;A100=80)")
 set(CUDA_RUNTIME_VERSION
-    "12.3"
+    "12.6"
     CACHE STRING "CUDA runtime version")
 # set(TCO_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/src" CACHE STRING "TCO destination")
 

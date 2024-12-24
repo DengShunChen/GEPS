@@ -1,36 +1,44 @@
 #!/bin/bash
 set -e
 
-#MACHINE="a100"
+# Set the machine type, default is "fx1000"
 MACHINE=${1:-"fx1000"}
 
+# Initialize the Modules system
 . /usr/share/Modules/init/bash
 
-# Loading fujitsu TCS library and cmake
+# Clear and reload the required modules
 module purge
 
-# Loading gfs modules
+# Load the GFS modules
 module use modulefiles
 module load modulefile.tcogfs.${MACHINE}
 module unuse modulefiles
 
+# Set the build directory
 BLD_DIR=build_${MACHINE}
 [[ -e ${BLD_DIR} ]] && rm -rf ${BLD_DIR}
+
+# Compile based on the selected MACHINE
 if [[ ${MACHINE} == 'fx1000' ]] ; then
-# Compilation
-cmake -B${BLD_DIR} -S. \
-	-DCMAKE_BUILD_TYPE=Release \
-	-DUSE_RSM=OFF
-\time --verbose cmake --build ${BLD_DIR} --verbose -j $((`nproc`/2))
+    # Build settings for the fx1000 machine
+    cmake -B${BLD_DIR} -S. \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DUSE_RSM=OFF
+    cmake --build ${BLD_DIR} -j $(($(nproc)/2))
+
 elif [[ ${MACHINE} == 'a100' ]] ; then
-# Compilation
-cmake -B${BLD_DIR} -S. \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DUSE_RSM=OFF \
-  -DUSE_CUDA=ON \
-  -DUSE_ACC=ON \
-  -DUSE_PAR=OFF
-\time --verbose cmake --build ${BLD_DIR} --verbose -j $((`nproc`/2))
+    # Build settings for the a100 machine
+    cmake -B${BLD_DIR} -S. \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DUSE_RSM=OFF \
+        -DUSE_CUDA=ON \
+        -DUSE_ACC=ON \
+        -DUSE_PAR=OFF \
+        -DUSE_SP=OFF
+    cmake --build ${BLD_DIR} -j $(($(nproc)/2))
+
 else
-  echo "[ERROR] Fatal error unknow MACHINE !" ; exit -1
+    echo "[ERROR] Fatal error: unknown MACHINE!"
+    exit 1
 fi
