@@ -9,10 +9,10 @@ module-whatis "TCoGFS Modules for NVIDIA HPC SDK"
 set ver v1.0.0
 set machine a100
 
-# Load NVIDIA HPC SDK 24.3
-module use /package/x86_64/nvidia/hpc_sdk/24.3/modulefiles
-module load nvhpc-hpcx-cuda12/24.3
-module unuse /package/x86_64/nvidia/hpc_sdk/24.3/modulefiles
+# Load NVIDIA HPC SDK 24.11
+module use /package/x86_64/nvidia/hpc_sdk/modulefiles
+module load nvhpc-hpcx-cuda12/24.11
+module unuse /package/x86_64/nvidia/hpc_sdk/modulefiles
 setenv COMP_MP "mpif90"
 setenv CXX_COMP_MP "mpic++"
 setenv C_COMP_MP "mpicc"
