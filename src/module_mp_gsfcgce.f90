@@ -104,10 +104,11 @@ CONTAINS
 !                       ids,ide, jds,jde, kds,kde,                  & ! domain dims
                        ims,ime, jms,jme, kms,kme,                  & ! memory dims
                        its,ite, jts,jte, kts,kte,                  & ! tile   dims
-                       rainnc, rainncv,                            &
-                       snownc, snowncv, sr,                        &
-                       graupelnc, graupelncv,                      &
+                       rainnc, snownc, graupelnc, sr,              &
+!                       rainncv, snowncv, graupelncv,               &
+#ifdef EXT_DIAG
                        refl_10cm, diagflag, do_radar_ref,          &
+#endif
 #ifdef EffectRad_GCE3
                        xland,                                      &
                        re_cloud_gsfc, re_rain_gsfc, re_ice_gsfc,   &
@@ -155,13 +156,9 @@ CONTAINS
                                                                z
 
   REAL, DIMENSION( ims:ime , jms:jme ),                           &
-        INTENT(INOUT) ::                               rainnc,    &
-                                                       rainncv,   &
-                                                       snownc,    &   
-                                                       snowncv,   &
-                                                       sr,        &
-                                                       graupelnc, &
-                                                       graupelncv 
+        INTENT(INOUT) :: rainnc, snownc, graupelnc, sr
+!  REAL, DIMENSION( ims:ime , jms:jme ),                           &
+!        INTENT(INOUT) :: rainncv, snowncv, graupelncv
 
 #ifdef EffectRad_GCE3
 !JJS 20140225   for calculation of effective radius of cloud species
@@ -172,10 +169,12 @@ CONTAINS
 !JJS 20140225  ^^^^^
 #endif
 !+---+-----------------------------------------------------------------+
+#ifdef EXT_DIAG
   REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT)::           &  ! GT
                                                        refl_10cm
   LOGICAL, OPTIONAL, INTENT(IN) :: diagflag
   INTEGER, OPTIONAL, INTENT(IN) :: do_radar_ref
+#endif
 !+---+-----------------------------------------------------------------+
 
   REAL , DIMENSION( ims:ime , jms:jme ) , INTENT(IN) ::       ht
@@ -320,11 +319,10 @@ CONTAINS
 #ifdef vti_DM08
                       tt,                                     &
 #endif
-                      rho, z, dz8w, ht, rainnc,               &
-                      rainncv, grav,itimestep,                &
-                      rhowater, rhosnow,                      &
-                      snownc, snowncv, sr,                    &
-                      graupelnc, graupelncv,                  &
+                      grav, itimestep, rhowater, rhosnow,     &
+                      rho, z, dz8w, ht,                       &
+                      rainnc, snownc, graupelnc, sr,          &
+!                      rainncv, snowncv, graupelncv,           &
                       ihail, ice2,                            &
                       ims,ime, jms,jme, kms,kme,              & ! memory dims
                       its,ite, jts,jte, kts,kte               ) ! tile   dims
@@ -372,7 +370,9 @@ CONTAINS
 !                   qvold, qlold, qrold,                         &
 !                   qiold, qsold, qgold,                         &
                    rho, pii, p, itimestep,                      & 
+#ifdef EXT_DIAG
                    refl_10cm, diagflag, do_radar_ref,           & ! GT added for reflectivity calcs
+#endif
 !                   ids,ide, jds,jde, kds,kde,                   & ! domain dims
                    ims,ime, jms,jme, kms,kme,                   & ! memory dims
                    its,ite, jts,jte, kts,kte                    & ! tile   dims
@@ -391,11 +391,10 @@ CONTAINS
 #ifdef vti_DM08
                       tt,                                     &
 #endif
-                      rho, z, dz8w, topo, rainnc,             &
-                      rainncv, grav, itimestep,               &
-                      rhowater, rhosnow,                      &
-                      snownc, snowncv, sr,                    &
-                      graupelnc, graupelncv,                  &
+                      grav, itimestep, rhowater, rhosnow,     &
+                      rho, z, dz8w, topo,                     &
+                      rainnc, snownc, graupelnc, sr,          &
+!                      rainncv, snowncv, graupelncv,           &
                       ihail, ice2,                            &
                       ims,ime, jms,jme, kms,kme,              & ! memory dims
                       its,ite, jts,jte, kts,kte               ) ! tile   dims
@@ -412,9 +411,10 @@ CONTAINS
   REAL,    DIMENSION( ims:ime , kms:kme , jms:jme ),                  &
            INTENT(INOUT)               :: qr, qi, qs, qg       
   REAL,    DIMENSION( ims:ime , jms:jme ),                            &
-           INTENT(INOUT)               :: rainnc, rainncv,            &
-                                          snownc, snowncv, sr,        &
-                                          graupelnc, graupelncv
+           INTENT(INOUT)               :: rainnc, snownc, graupelnc,  &
+                                          sr
+!  REAL,    DIMENSION( ims:ime , jms:jme ),                            &
+!           INTENT(INOUT)               :: rainncv, snowncv, graupelncv
   REAL,    DIMENSION( ims:ime , kms:kme , jms:jme ),                  &
            INTENT(IN   )               :: rho, z, dz8w, p
 #ifdef vti_DM08
@@ -433,7 +433,7 @@ CONTAINS
   REAL,    DIMENSION( kts:kte )           :: sqrhoz
   REAL                                    :: tmp1, term0
   REAL                                :: pptrain, pptsnow,        &
-                                         pptgraul, pptice
+                                         pptgraul, pptice, pptall
   REAL,    DIMENSION( kts:kte )       :: qrz, qiz, qsz, qgz,      &
                                          zz, dzw, prez, rhoz,     &
                                          orhoz
@@ -896,14 +896,15 @@ CONTAINS
 !   write(6,*) 'i=',i,' j=',j,'   ', pptrain, pptsnow, pptgraul, pptice
 !   flush(6)
 
-   snowncv(i,j) = pptsnow
+!   snowncv(i,j) = pptsnow
    snownc(i,j) = snownc(i,j) + pptsnow
-   graupelncv(i,j) = pptgraul
+!   graupelncv(i,j) = pptgraul
    graupelnc(i,j) = graupelnc(i,j) + pptgraul 
-   RAINNCV(i,j) = pptrain + pptsnow + pptgraul + pptice                 
-   RAINNC(i,j)  = RAINNC(i,j) + pptrain + pptsnow + pptgraul + pptice
+!   RAINNCV(i,j) = pptrain + pptsnow + pptgraul + pptice                 
+   pptall = pptrain + pptsnow + pptgraul + pptice
+   RAINNC(i,j)  = RAINNC(i,j) + pptall
    sr(i,j) = 0.
-   if (RAINNCV(i,j) .gt. 0.) sr(i,j) = (pptsnow + pptgraul + pptice) / RAINNCV(i,j) 
+   if ( pptall .gt. 0. ) sr(i,j) = (pptsnow + pptgraul + pptice) / pptall
 
   ENDDO i_loop
   ENDDO j_loop
@@ -1318,7 +1319,9 @@ CONTAINS
                        ptwrf, qvwrf, qlwrf, qrwrf, &
                        qiwrf, qswrf, qgwrf, &
                        rho_mks, pi_mks, p0_mks,itimestep, &
+#ifdef EXT_DIAG
                        refl_10cm, diagflag, do_radar_ref,           & ! GT added for reflectivity calcs
+#endif
 !                       ids,ide, jds,jde, kds,kde, &
                        ims,ime, jms,jme, kms,kme, &
                        its,ite, jts,jte, kts,kte  &
@@ -1604,12 +1607,14 @@ CONTAINS
 !JJS 20140226  ^^^^^
 #endif
 !+---+-----------------------------------------------------------------+
-  REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT):: refl_10cm  ! GT
+#ifdef EXT_DIAG
+      REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT):: refl_10cm  ! GT
+      LOGICAL, OPTIONAL, INTENT(IN) :: diagflag
+      INTEGER, OPTIONAL, INTENT(IN) :: do_radar_ref
+#endif
 
 
       REAL, DIMENSION(kts:kte):: qv1d, t1d, p1d, qr1d, qs1d, qg1d, dBZ
-      LOGICAL, OPTIONAL, INTENT(IN) :: diagflag
-      INTEGER, OPTIONAL, INTENT(IN) :: do_radar_ref
 !+---+-----------------------------------------------------------------+
 !
 !jm 20090220      save
@@ -3032,6 +3037,7 @@ CONTAINS
 !     ****************************************************************
 
 !+---+-----------------------------------------------------------------+
+#ifdef EXT_DIAG
          IF ( PRESENT (diagflag) ) THEN
          if (diagflag .and. do_radar_ref == 1) then
             do j=jts,jte
@@ -3071,6 +3077,7 @@ CONTAINS
             enddo
          endif
          ENDIF
+#endif
 !+---+-----------------------------------------------------------------+
 
       return

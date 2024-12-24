@@ -228,7 +228,7 @@
       real    mp_time,dts
       real    rhowater,rhosnow,dx
       real,dimension(:,:),allocatable ::                                &
-              ht,hail2d,rainnc2d,snownc2d,graupelnc2d,hailnc2d,sr2d
+              ht,hail2d,sr2d
       real,dimension(:,:,:),allocatable ::                              &
               th3d,qh3d,rho3d,pii3d,p3d,z3d,rew3d,rer3d,rei3d,res3d,    &
               reg3d,reh3d,refl_10cm
@@ -946,20 +946,19 @@
          ( th3d(nx,lev,1),qv3d(nx,lev,1),qc3d(nx,lev,1),qr3d(nx,lev,1), &
            qi3d(nx,lev,1),qs3d(nx,lev,1),qg3d(nx,lev,1),rho3d(nx,lev,1),&
            pii3d(nx,lev,1),p3d(nx,lev,1),z3d(nx,lev,1),dz3d(nx,lev,1),  &
-           rainnc2d(nx,1),snownc2d(nx,1),graupelnc2d(nx,1),             &
            rain2d(nx,1),snow2d(nx,1),graupel2d(nx,1),sr2d(nx,1),        &
-           refl_10cm(nx,lev,1),ht(nx,1),land2d(nx,1),w3d(nx,lev,1) )
+           ht(nx,1),land2d(nx,1),w3d(nx,lev,1) )
         allocate                                                        &
          ( rew3d(nx,lev,1),rer3d(nx,lev,1),rei3d(nx,lev,1),             &
            res3d(nx,lev,1),reg3d(nx,lev,1) )
 #ifdef EXT_DIAG
         allocate                                                        &
          ( preci3d(nx,lev,1),precs3d(nx,lev,1),precg3d(nx,lev,1),       &
-           precr3d(nx,lev,1),prech3d(nx,lev,1) )
+           precr3d(nx,lev,1),prech3d(nx,lev,1),refl_10cm(nx,lev,1) )
 #endif
 
         if ( nmmiph.eq.16 ) allocate                                    &
-         ( qh3d(nx,lev,1),hailnc2d(nx,1),hail2d(nx,1),reh3d(nx,lev,1) )
+         ( qh3d(nx,lev,1),hail2d(nx,1),reh3d(nx,lev,1) )
 
         th3d = 0.
         qv3d = 0.
@@ -977,11 +976,7 @@
         rain2d = 0.
         snow2d = 0.
         graupel2d = 0.
-        rainnc2d = 0.
-        snownc2d = 0.
-        graupelnc2d = 0.
         sr2d = 0.
-        refl_10cm = 0.
         land2d = 0.
         rew3d = 0.
         rer3d = 0.
@@ -996,12 +991,12 @@
         precg3d = 0.
         precr3d = 0.
         prech3d = 0.
+        refl_10cm = 0.
 #endif
 
         if ( nmmiph .eq. 16 ) then
           qh3d = 0.
           hail2d = 0.
-          hailnc2d = 0.
           reh3d = 0.
         endif
 
@@ -1060,13 +1055,11 @@
                    itimestep, xlat, sdec, land2d,                       &
                    1, nx , 1, 1, 1, lev,                                & ! memory dims
                    1, nxj, 1, 1, 1, lev,                                & ! tile   dims
-                   rainnc2d, rain2d,                                    &
-                   snownc2d, snow2d, sr2d,                              &
-                   graupelnc2d, graupel2d,                              &
-                   refl_10cm, diagflag, do_radar_ref,                   &
+                   rain2d, snow2d, graupel2d, sr2d,                     &
                    .false., qg3d,                                       &
                    ihail, ice2,                                         &
 #ifdef EXT_DIAG
+                   refl_10cm, diagflag, do_radar_ref,                   &
                    preci3d, precs3d, precg3d, precr3d,                  &
 #endif
                    rew3d, rer3d, rei3d, res3d, reg3d )
@@ -1080,10 +1073,10 @@
                    itimestep,                                           &
                    1, nx , 1, 1, 1, lev,                                & ! memory dims
                    1, nxj, 1, 1, 1, lev,                                & ! tile   dims
-                   rainnc2d, rain2d,                                    &
-                   snownc2d, snow2d, sr2d,                              &
-                   graupelnc2d, graupel2d,                              &
+                   rain2d, snow2d, graupel2d, sr2d,                     &
+#ifdef EXT_DIAG
                    refl_10cm, diagflag, do_radar_ref,                   &
+#endif
 #ifdef EffectRad_GCE3
                    land2d,                                              &
                    rew3d, rer3d, rei3d,                                 &
@@ -1114,14 +1107,11 @@
                    itimestep, land2d, dx,                               &
                    1, nx , 1, 1, 1, lev,                                & ! memory dims
                    1, nxj, 1, 1, 1, lev,                                & ! tile   dims
-                   rainnc2d, rain2d,                                    &
-                   snownc2d, snow2d, sr2d,                              &
-                   graupelnc2d, graupel2d,                              &
-                   hailnc2d, hail2d,                                    &
-                   refl_10cm, diagflag, do_radar_ref,                   &
+                   rain2d, snow2d, graupel2d, hail2d, sr2d,             &
                    rew3d, rer3d, rei3d,                                 &
                    res3d, reg3d, reh3d,                                 &
 #ifdef EXT_DIAG
+                   refl_10cm, diagflag, do_radar_ref,                   &
                    physc, physe, physd, physs, physm, physf,            & !simultaneous diabatic heating rate
                    acphysc, acphyse, acphysd, acphyss, acphysm,acphysf, & !accumulated diabatic heating rate
                    preci3d, precs3d, precg3d, prech3d, precr3d,         & !precitation
@@ -1165,20 +1155,20 @@
           enddo
         enddo
         do i = 1, nxj
-          rlsp(i) = rainnc2d(i,1)  !total large scale precipitation (kg/m^2=mm)
+          rlsp(i) = rain2d(i,1)  !total large scale precipitation (kg/m^2=mm)
           sr(i)   = sr2d(i,1)
         enddo
 
         deallocate                                                      &
          ( th3d,qv3d,qc3d,qr3d,qs3d,qi3d,qg3d,pii3d,p3d,z3d,dz3d,rho3d, &
-           rainnc2d,snownc2d,graupelnc2d,rain2d,snow2d,graupel2d,       &
-           ht,sr2d,refl_10cm,land2d,w3d,rew3d,rer3d,rei3d,res3d,reg3d )
+           rain2d,snow2d,graupel2d,                                     &
+           ht,sr2d,land2d,w3d,rew3d,rer3d,rei3d,res3d,reg3d )
 #ifdef EXT_DIAG
         deallocate                                                      &
-         ( preci3d,precs3d,precg3d,precr3d,prech3d )
+         ( preci3d,precs3d,precg3d,precr3d,prech3d,refl_10cm )
 #endif
         if ( nmmiph .eq. 16 ) deallocate                                &
-         ( qh3d,hailnc2d,hail2d,reh3d )
+         ( qh3d,hail2d,reh3d )
 
       endif  !end of if nmmiph=15 .or. nmmiph=16
 
