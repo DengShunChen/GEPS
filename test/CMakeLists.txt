@@ -95,5 +95,7 @@ if(${USE_CUDA})
   subroutine_mpi_test(test_gwdps)
   #subroutine_mpi_test(test_gwdps_cpus)
   subroutine_mpi_test(test_rozphys)
+  subroutine_mpi_test(test_get_phi)
+  subroutine_mpi_test(test_rayleifr)
 
 endif()
