@@ -485,6 +485,7 @@ CONTAINS
                       ims,ime, jms,jme, kms,kme,              & ! memory dims
                       its,ite, jts,jte, kts,kte               ) ! tile   dims
 
+#ifdef EXT_DIAG
       ! EMK NUWRF...Moved this WRF radar reflectivity initialization to after
       ! fall_flux, as the rhohail and rhograul variables are set in that
       ! subroutine. 
@@ -532,6 +533,7 @@ CONTAINS
          call radar_init
          NCALL = 1
       ENDIF
+#endif
 
 !c Negative values correction
 
@@ -5411,6 +5413,7 @@ CONTAINS
             qcs(i,j,k)=qs(i,j)
             qcg(i,j,k)=qg(i,j)
 
+#ifdef EXT_DIAG
          scc=0.
          see=0.
 
@@ -5451,7 +5454,6 @@ CONTAINS
                   +pidw(i,j)+pimm(i,j) + pcfr(i,j) + pihms(i,j)*d2t + pihmg(i,j)*d2t
 
 
-#ifdef EXT_DIAG
 ! Snapshot values (K/s), consistent with declared units in Registry
            physc(i,k,j) = avcp * sccc / d2t
            physe(i,k,j) = avcp * seee / d2t
@@ -5467,7 +5469,6 @@ CONTAINS
            acphysf(i,k,j) = acphysf(i,k,j) + afcp * sfff 
            acphysm(i,k,j) = acphysm(i,k,j) + afcp * smmm 
 !JJS modified by JJS on 5/1/2007  ^^^^^
-#endif
 
 !JJS   2010/10/19  vvvvv
 !      radar reflectivity calculation
@@ -5581,6 +5582,7 @@ CONTAINS
          endif
 
       endif  !improve
+#endif
 
 !   endif
 
