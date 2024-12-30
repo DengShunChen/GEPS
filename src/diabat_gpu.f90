@@ -168,6 +168,7 @@
          use mpe
          use rank
          use index
+         use ozne_def
          use const, ONLY: do_sit, ldailyFCTsst, dailyClm_option, &
                           pdfcloud, cmbk, cgwd, fsit, dosppt, doshum, dossst, &
                           use_zmtnblck, ldailyFCTicesndpt, dSITdt_intv, &
@@ -1110,12 +1111,12 @@
                   end do
                end if
             else
-               do jj = 1, jlistnum
-                  j = jlist1(jj)
-                  nxj = nxdef_2d(j)
-                  call rozphys(nxjp(j), nxp, lev, dta, iter, xlat(j), julian, o3l(1, 1, jj), &
-                               tt(1, 1, jj), plt(1, 1, jj), ps(1, jj), myrank)
-               end do
+               !$acc enter data copyin(ozplin, pl_lat, pl_pres ,pl_time) async(async_id)
+               call rozphys_gpu(nxjp, nxp, lev, dta, iter, xlat, julian, o3l, &
+                        tt, plt, ps, myrank)
+               !$acc exit data delete(ozplin, pl_lat, pl_pres ,pl_time) async(async_id)
+               !$acc update host(o3l) async(async_id)
+               !$acc wait(async_id)
             end if ! for ntoz
          end if ! for doo3l
 !=======================================================================
@@ -1338,34 +1339,30 @@
             end do
          end if
          if (dopbl .and. (nmland .eq. 2)) then
-            do jj = 1, jlistnum
-               j = jlist1(jj)
-               nxj = nxdef_2d(j)
-               call pbl_noah(nxjp(j), nxp, lev, ktpbl, dta, grav, rgas, cp, xkapa, hltm, ptop, &
-                             tice, hice, tg(1, jj), z0(1, jj), land(1, jj), &
-                             sgeo(1, jj), phi(1, 1, jj), phii(1, 1, jj), pst(1, jj), upp(1, 1, jj), vpp(1, 1, jj), &
-                             ttpp(1, 1, jj), qp(1, 1, jj), ut(1, 1, jj), vt(1, 1, jj), &
-                             tt(1, 1, jj), qt(1, 1, jj), pk(1, 1, jj), pk2(1, 1, jj), &
-                             ustar(1, jj), tstar(1, jj), qstar(1, jj), e(1, 1, jj), &
-                             eps(1, 1, jj), hflux(1, jj), qflux(1, jj), itimestep, &
-                             gwclim(1, jj), tgclim(1, jj), ocean(1, jj), ice(1, jj), &
+               call pbl_noah_gpu(nxjp, nxp, lev, ktpbl, dta, grav, rgas, cp, xkapa, hltm, ptop, &
+                             tice, hice, tg, z0, land, &
+                             sgeo, phi, phii, pst, upp, vpp, &
+                             ttpp, qp, ut, vt, &
+                             tt, qt, pk, pk2, &
+                             ustar, tstar, qstar, e, &
+                             eps, hflux, qflux, itimestep, &
+                             gwclim, tgclim, ocean, ice, &
                              !                     , snr(1,jj),totalp(1,jj),ss_adj(1,jj),rs(1,jj),albx(1,jj)      , &
-                             snr(1, jj), totalp(1, jj), ss_adj(1, jj), rs(1, jj), sfalb(1, jj), &
-                             ipblmx(1, j), xkmx(1, j), ijdg(j), xkmd, itypbl, &
-                             t2(1, jj), q2(1, jj), rh2(1, jj), rh10(1, jj), u10(1, jj), &
-                             v10(1, jj), fm(1, jj), fh(1, jj), fm10(1, jj), fh2(1, jj), &
-                             srflag(1, jj), rld_adj(1, jj), stbo, &
-                             km_soil, smc(1, 1, jj), stc(1, 1, jj), canopy(1, jj), &
-                             runoff(1, jj), sigmaf(1, jj), istyp(1, jj), ivegtyp(1, jj), &
+                             snr, totalp, ss_adj, rs, sfalb, &
+                             ipblmx, xkmx, ijdg, xkmd, itypbl, &
+                             t2, q2, rh2, rh10, u10, &
+                             v10, fm, fh, fm10, fh2, &
+                             srflag, rld_adj, stbo, &
+                             km_soil, smc, stc, canopy, &
+                             runoff, sigmaf, istyp, ivegtyp, &
                              ncld, dsigma, &
-                             slopetyp(1, jj), &
-                             slc(1, 1, jj), sncover(1, jj), sndepth(1, jj), &
-                             shdmax(1, jj), shdmin(1, jj), snoalb(1, jj), albedo2(1, jj), &
-                             sld_adj(1, jj), zice(1, jj), cice(1, jj), xtice(1, jj), &
-                             hpbl(1, jj), asl(1, 1, jj), atl(1, 1, jj), xmu(1, jj), gfx(1, jj), &
-                             kpbl(1, jj), nmpbl, nmmiph, j, isot, ivegsrc, sfemis(1, jj), &
-                             dudtc(1, 1, jj), dvdtc(1, 1, jj), dtdtc(1, 1, jj), dqdtc(1, 1, jj))
-            end do
+                             slopetyp, &
+                             slc, sncover, sndepth, &
+                             shdmax, shdmin, snoalb, albedo2, &
+                             sld_adj, zice, cice, xtice, &
+                             hpbl, asl, atl, xmu, gfx, &
+                             kpbl, nmpbl, nmmiph, isot, ivegsrc, sfemis, &
+                             dudtc, dvdtc, dtdtc, dqdtc)
          end if
 !
          !$acc update device(pk, pk2, tt, ut, vt, qt, dtdtc, dudtc, dvdtc, dqdtc) async(async_id)
@@ -1499,27 +1496,24 @@
                   end do
                end do
             end do
-            !$acc update self(prsl, prslk, prsi, del, phil, &
-            !$acc& ttc, utc, vtc, qtc, dtdtc, dudtc, dvdtc, dqdtc) &
-            !$acc& async(async_id)
 
-            do jj = 1, jlistnum
-               j = jlist1(jj)
-               nxj = nxdef_2d(j)
-               call gwdps(nxjp(j), nxp, nxp, lev, &
-                          dvdtc(1, 1, jj), dudtc(1, 1, jj), dtdtc(1, 1, jj), &
-                          utc(1, 1, jj), vtc(1, 1, jj), ttc(1, 1, jj), qtc(1, 1, jj), &
-                          kpbl(1, jj), prsi(1, 1, jj), del(1, 1, jj), prsl(1, 1, jj), prslk(1, 1, jj), &
-                          phii(1, 1, jj), phil(1, 1, jj), dta, &
-                          kdt, hprime(1, jj), oc(1, jj), oa4(1, 1, jj), clx(1, 1, jj), &
-                          !               theta(1,jj),sigmaog(1,jj),gamma(1,jj),elvmax(1,jj),dusfcg, dvsfcg,          &
-                          theta(1, jj), sigmaog(1, jj), gamma(1, jj), elvmax(1, jj), ugws(1, jj), vgws(1, jj), &
-                          grav, cp, con_rd, con_rv, nx, mtnvar, cdmbgwd, &
-                          !              me,zmtnblck)
-                          me, zmtnblck(1, jj), garea(1, jj), hpbl(1, jj), tofd)
-            end do
-
-            !$acc update device(ttc, utc, vtc, qtc, dtdtc, dudtc, dvdtc, dqdtc) async(async_id)
+            !$acc enter data copyin(ugws,vgws,elvmax,zmtnblck,hprime,sigmaog,gamma,theta,kpbl, &
+            !$acc&       oc,clx,oa4) async(async_id)
+            call gwdps_gpu(nxjp, nxp, nxp, lev, &
+                       dvdtc, dudtc, dtdtc, &
+                       utc, vtc, ttc, qtc, &
+                       kpbl, prsi, del, prsl, prslk, &
+                       phii, phil, dta, &
+                       kdt, hprime, oc, oa4, clx, &
+                       !               theta(1,jj),sigmaog(1,jj),gamma(1,jj),elvmax(1,jj),dusfcg, dvsfcg,          &
+                       theta, sigmaog, gamma, elvmax, ugws, vgws, &
+                       grav, cp, con_rd, con_rv, nx, mtnvar, cdmbgwd, &
+                       !              me,zmtnblck)
+                       me, zmtnblck, garea, hpbl, tofd)
+            !$acc exit data copyout(elvmax,zmtnblck,ugws,vgws) async(async_id)
+            !$acc exit data delete(hprime,sigmaog,gamma,theta,kpbl, &
+            !$acc&       oc,clx,oa4) async(async_id)
+            
             !$acc parallel loop collapse(3) private(j, nxj, kc) async(async_id)
             do jj = 1, jlistnum
                do k = 1, lev
