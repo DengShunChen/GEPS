@@ -31,28 +31,27 @@ subroutine assert_real(actual, n_actual, desired, n_desired, rtol, err_msg)
    equal = .true.
    rel_diff = 0.0
    abs_diff = 0.0
-   
+
    rel_diff = maxval(abs((actual - desired)/(desired + eps)))
    abs_diff = maxval(abs(actual - desired))
    !if (abs_diff > atol) equal = .false.
    if (rel_diff > rtol) equal = .false.
-   
 
    if (.not. equal) then
       print *, "Arrays are not close within tolerance rtol =", rtol
       print *, "Max relative difference = ", rel_diff
       !print *, "Max absolute difference = ", abs_diff
       if (present(err_msg)) print *, err_msg
-      !call exit(1)
+      call exit(1)
    end if
 
 end subroutine assert_real
 
 subroutine tridi2_unit
-   use index, only: nxjp, nxp, jlistnum, jlist1
+   use index, only: nxjp, nxp, jlistnum, jlist1, nxptot, nxjp_acc
    use param, only: lev, my_max, my, ncld
-   use machine, only : kind_phys
-   use const, only : RTYPE
+   use machine, only: kind_phys
+   use const, only: RTYPE
    use rank, only: myrank
    use cusparse
    use cudafor
@@ -60,206 +59,172 @@ subroutine tridi2_unit
    !USE, INTRINSIC :: IEEE_ARITHMETIC
    implicit none
 
-   real(kind=kind_phys) au(nxp,lev,my_max),         au_gpu(nxp,lev,my_max)
-   real(kind=kind_phys) a1(nxp,lev,my_max),         a1_gpu(nxp,lev,my_max)
-   real(kind=kind_phys) a2(nxp,lev,my_max),         a2_gpu(nxp,lev,my_max)
-   real(kind=kind_phys) al(nxp,lev,my_max),         ad(nxp,lev,my_max)
-   integer :: ntrac, myim(my_max), accu_im(my_max), ix, km
-   integer :: i,ii, j, jj, async_id, n, k, kk, im, j1, istat,total_im,accui
-   integer,dimension(34) :: seed
+   real(kind=kind_phys) au(nxp, lev - 1, my_max), au_gpu(nxp, lev - 1, my_max)
+   real(kind=kind_phys) a1(nxp, lev, my_max), a1_gpu(nxp, lev, my_max)
+   real(kind=kind_phys) a2(nxp, lev, my_max), a2_gpu(nxp, lev, my_max)
+   real(kind=kind_phys) al(nxp, lev - 1, my_max), ad(nxp, lev, my_max)
+   integer :: ntrac, myim(my_max), ix, km
+   integer :: i, ii, j, jj, async_id, n, k, kk, im, j1, istat, accui
+   integer, dimension(34) :: seed
    real(kind=kind_phys) dt2, num
-   real(kind=kind_phys),allocatable,dimension(:,:) :: alc, adc, auc, a1c, a2c
-   real(kind=kind_phys),allocatable,dimension(:,:) :: alg, adg, aug, a1g, a2g
-   type(cusparseHandle) :: handle 
-   integer(8),value :: buffer_size
-   character(1),allocatable :: pbuffer(:)
+   real(kind=kind_phys), allocatable, dimension(:, :) :: alc, adc, auc, a1c, a2c
+   real(kind=kind_phys) :: alg(nxptot, lev), adg(nxptot, lev), &
+                           aug(nxptot, lev), a1g(nxptot, lev), &
+                           a2g(nxptot, lev)
+   type(cusparseHandle) :: handle
+   integer(8), value :: buffer_size
+   character(1), allocatable :: pbuffer(:)
    integer(kind=cuda_stream_kind) stream
-   real :: time1, time2, ct, gt, diff,tt1,tt2
+   real :: time1, time2, ct, gt, diff, tt1, tt2
    ix = nxp
    km = lev
 
    async_id = -1
    stream = acc_get_cuda_stream(async_id)
-   seed = (/10006,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,&
-           &25,26,27,28,29,30,31,32,33/)
+   seed = (/10006, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,&
+           &25, 26, 27, 28, 29, 30, 31, 32, 33/)
    call random_seed()
    !call random_seed(put=seed)
    call random_number(a1)
    call random_number(a2)
-  
-   if (.true.) then 
-   !al = al*0.3 - 0.15
-   !ad = ad*0.6 + 1.
-   !au = au*1. - 1.
-   al = 0.25
-   ad = 1.2
-   au = 0.4
-   a1 = a1*100. - 30.
-   a2 = a2*100. - 50.
-   endif
-   
+
+   if (.true.) then
+      al = al*0.1 + 0.25
+      ad = ad*0.1 + 1.2
+      au = au*0.1 + 0.4
+      !al = 0.25
+      !ad = 1.2
+      !au = 0.4
+      a1 = a1*100.-30.
+      a2 = a2*100.-50.
+   end if
+
    au_gpu = au
    a1_gpu = a1
-   a2_gpu = a2   
+   a2_gpu = a2
 
    ct = 0.
    gt = 0.
-   do ii = 1,2
-     do jj = 1,jlistnum
-       j = jlist1(jj)
-       im = nxjp(j)
-       allocate(alc(im,lev-1))
-       allocate(adc(im,lev))
-       allocate(auc(im,lev-1))
-       allocate(a1c(im,lev))
-       allocate(a2c(im,lev))
+   do ii = 1, 2
+      do jj = 1, jlistnum
+         j = jlist1(jj)
+         im = nxjp(j)
+         allocate (alc(im, lev - 1))
+         allocate (adc(im, lev))
+         allocate (auc(im, lev - 1))
+         allocate (a1c(im, lev))
+         allocate (a2c(im, lev))
 
-       do i = 1, im
-         do k = 1, lev
-           adc(i,k) = ad(i,k,jj)
-           a1c(i,k) = a1(i,k,jj)
-           a2c(i,k) = a2(i,k,jj)
-         enddo
-         do k = 2, lev
-           alc(i,k-1) = al(i,k,jj)
-         enddo
-         do k = 1, lev-1
-           auc(i,k) = au(i,k,jj)
-         enddo
-         
-       enddo
-
-     call cpu_time(time1)
-     call tridi2(im,lev,alc,adc,auc,a1c,a2c,auc,a1c,a2c)
-     call cpu_time(time2)
-       
-       do k = 1, lev
          do i = 1, im
-           a1(i,k,jj) = a1c(i,k)
-           a2(i,k,jj) = a2c(i,k)
-         enddo
-       enddo
+            do k = 1, lev
+               adc(i, k) = ad(i, k, jj)
+               a1c(i, k) = a1(i, k, jj)
+               a2c(i, k) = a2(i, k, jj)
+            end do
+            do k = 1, lev - 1
+               alc(i, k) = al(i, k, jj)
+               auc(i, k) = au(i, k, jj)
+            end do
 
-       deallocate(alc)
-       deallocate(adc)
-       deallocate(auc)
-       deallocate(a1c)
-       deallocate(a2c)
+         end do
 
-     if (ii .ne. 1) ct = ct + time2 - time1
-     enddo
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     istat = cusparseCreate(handle)
-     !$acc enter data copyin(ad,al,au_gpu,a1_gpu,a2_gpu,jlist1,nxjp)
-     !$acc enter data create(myim,accu_im)
-     call cpu_time(time1)
-     total_im = 0
-     !$acc enter data copyin(total_im)
-     !$acc parallel loop private(jj,j1)
-     do jj = 1, jlistnum
-       j1 = jlist1(jj)
-       myim(jj) = nxjp(j1)
-     enddo
-     !$acc parallel loop seq
-     do jj = 1,jlistnum
-       total_im = total_im + myim(jj)
-     enddo
-     !$acc host_data use_device(accu_im)
-     istat = cudaMemsetAsync(accu_im, 0, size(accu_im), stream)
-     !$acc end host_data
-     
-     !$acc parallel loop private(jj,j)
-     do jj = 1, jlistnum
-       !$acc loop seq
-       do j = 1, jj-1
-         accu_im(jj) = accu_im(jj) + myim(j)
-       enddo
-     enddo
-     
-     !$acc update self(total_im)
-     allocate(alg(total_im,lev))
-     allocate(adg(total_im,lev))
-     allocate(aug(total_im,lev))
-     allocate(a1g(total_im,lev))
-     allocate(a2g(total_im,lev))
-     !$acc enter data create(alg,adg,aug,a1g,a2g)
-     
-     call set_tridiagonal(al,ad,au_gpu,a1_gpu,alg,adg,aug,a1g)
-     call cusparseDgtsvInterleavedBatch_async(handle,0,lev,alg,adg,aug,a1g,total_im,-1)
-     call set_tridiagonal(al,ad,au_gpu,a2_gpu,alg,adg,aug,a2g)
-     call cusparseDgtsvInterleavedBatch_async(handle,0,lev,alg,adg,aug,a2g,total_im,-1)
-     !$acc wait
+         call cpu_time(time1)
+         call tridi2(im, lev, alc, adc, auc, a1c, a2c, auc, a1c, a2c)
+         call cpu_time(time2)
 
-     !$acc parallel loop gang collapse(3) private(jj,k,i,accui)
-     do jj = 1,jlistnum
-       do k = 1, lev
-         do i = 1, nxp
-           if (i .le. myim(jj)) then
-             accui = accu_im(jj)
-             a1_gpu(i,k,jj) = a1g(accui+i,k)
-             a2_gpu(i,k,jj) = a2g(accui+i,k)
-           endif
-         enddo
-       enddo
-     enddo
-
-     
-     !$acc exit data delete(alg,adg,aug,a1g,a2g)
-     deallocate(alg)
-     deallocate(adg)
-     deallocate(aug)
-     deallocate(a1g)
-     deallocate(a2g)
-     call cpu_time(time2)
-     !$acc exit data copyout(a1_gpu,a2_gpu) &
-     !$acc&          delete(au_gpu,al,ad,accu_im,myim,jlist1,nxjp,total_im)
-     istat = cusparseDestroy(handle)
-     if (ii .ne. 1) gt = gt + time2 - time1
-     enddo
-
-
-
-
-     call assert_real(a1_gpu, size(a1_gpu), a1, size(a1),&
-                          1e-8, "Array a1")
-     call assert_real(a2_gpu, size(a2_gpu), a2, size(a2),&
-                          1e-8, "Array a2")
-   !write(*,*) 'Timing for CPU & GPU: ', ct, gt
-   !write(*,*) 'speeding ratio: ', ct/gt, myrank
-   
-   contains
-     subroutine set_tridiagonal(dli,di,dui,bi,dl,d,du,b)
-       real(kind=kind_phys) :: dl(total_im,km),d(total_im,km), &
-                               du(total_im,km),b(total_im,km)
-       real(kind=kind_phys) :: dli(ix,km,my_max),di(ix,km,my_max), &
-                               dui(ix,km,my_max),bi(ix,km,my_max)
-       integer :: accui, jj, k, i
-       
-       !$acc parallel loop gang vector collapse(3) private(jj,i,k,accui)
-       do jj = 1,jlistnum
          do k = 1, lev
-           do i = 1, nxp
-             if (i .le. myim(jj)) then
-               accui = accu_im(jj)
-               d(accui+i,k) = di(i,k,jj)
-               b(accui+i,k) = bi(i,k,jj)
-               if (k .eq. 1) then
-                 dl(accui+i,k) = 0.
-               else
-                 dl(accui+i,k) = dli(i,k,jj)
-               endif
-               if (k .eq. lev) then
-                 du(accui+i,k) = 0.
-               else
-                 du(accui+i,k) = dui(i,k,jj)
-               endif
-             endif
-           enddo
-         enddo
-       enddo
-       end subroutine set_tridiagonal
-   
-   
+            do i = 1, im
+               a1(i, k, jj) = a1c(i, k)
+               a2(i, k, jj) = a2c(i, k)
+            end do
+         end do
+
+         deallocate (alc)
+         deallocate (adc)
+         deallocate (auc)
+         deallocate (a1c)
+         deallocate (a2c)
+
+         if (ii .ne. 1) ct = ct + time2 - time1
+      end do
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      istat = cusparseCreate(handle)
+      !$acc enter data copyin(ad,al,au_gpu,a1_gpu,a2_gpu,jlist1,nxjp,nxjp_acc)
+      !$acc enter data create(myim)
+      !$acc enter data create(alg,adg,aug,a1g,a2g)
+      call cpu_time(time1)
+      !$acc parallel loop private(jj,j1)
+      do jj = 1, jlistnum
+         j1 = jlist1(jj)
+         myim(jj) = nxjp(j1)
+      end do
+
+      call set_tridiagonal(al, ad, au_gpu, a1_gpu, alg, adg, aug, a1g)
+      call cusparseDgtsvInterleavedBatch_async(handle, 0, lev, alg, adg, aug, a1g, nxptot, -1)
+      !$acc wait(1)
+      call set_tridiagonal(al, ad, au_gpu, a2_gpu, alg, adg, aug, a2g)
+      call cusparseDgtsvInterleavedBatch_async(handle, 0, lev, alg, adg, aug, a2g, nxptot, -1)
+      !$acc wait(1)
+
+      !$acc parallel loop gang collapse(3) private(jj,k,i,accui)
+      do jj = 1, jlistnum
+         do k = 1, lev
+            do i = 1, nxp
+               if (i .le. myim(jj)) then
+                  accui = nxjp_acc(jj) - 1
+                  a1_gpu(i, k, jj) = a1g(accui + i, k)
+                  a2_gpu(i, k, jj) = a2g(accui + i, k)
+               end if
+            end do
+         end do
+      end do
+
+      call cpu_time(time2)
+      !$acc exit data delete(alg,adg,aug,a1g,a2g)
+      !$acc exit data copyout(a1_gpu,a2_gpu) &
+      !$acc&          delete(au_gpu,al,ad,myim,jlist1,nxjp,nxjp_acc)
+      istat = cusparseDestroy(handle)
+      if (ii .ne. 1) gt = gt + time2 - time1
+   end do
+
+   call assert_real(a1_gpu, size(a1_gpu), a1, size(a1), &
+                    1e-8, "Array a1")
+   call assert_real(a2_gpu, size(a2_gpu), a2, size(a2), &
+                    1e-8, "Array a2")
+   write (*, *) 'Timing for CPU & GPU: ', ct, gt
+   write (*, *) 'speedup ratio: ', ct/gt, myrank
+
+contains
+   subroutine set_tridiagonal(dli, di, dui, bi, dl, d, du, b)
+      real(kind=kind_phys) :: dl(nxptot, km), d(nxptot, km), &
+                              du(nxptot, km), b(nxptot, km)
+      real(kind=kind_phys) :: dli(ix, km - 1, my_max), di(ix, km, my_max), &
+                              dui(ix, km - 1, my_max), bi(ix, km, my_max)
+      integer :: accui, jj, k, i
+
+      !$acc parallel loop gang vector collapse(3) private(jj,i,k,accui)
+      do jj = 1, jlistnum
+         do k = 1, lev
+            do i = 1, nxp
+               if (i .le. myim(jj)) then
+                  accui = nxjp_acc(jj) - 1
+                  d(accui + i, k) = di(i, k, jj)
+                  b(accui + i, k) = bi(i, k, jj)
+                  if (k .eq. 1) then
+                     dl(accui + i, k) = 0.
+                  else
+                     dl(accui + i, k) = dli(i, k - 1, jj)
+                  end if
+                  if (k .eq. lev) then
+                     du(accui + i, k) = 0.
+                  else
+                     du(accui + i, k) = dui(i, k, jj)
+                  end if
+               end if
+            end do
+         end do
+      end do
+   end subroutine set_tridiagonal
 
 end subroutine tridi2_unit
 
