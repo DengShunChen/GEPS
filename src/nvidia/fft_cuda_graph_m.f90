@@ -14,6 +14,7 @@ module spec_cuda_graph
    type(spec_cg) trngra3_fft_cg, trngra3_lt_cg, trngra_fft_cg, &
       transr_fft_cg, transr_lt_cg, transr1_fft_cg, transr1_lt_cg, &
       tranrs_fft_cg, tranrs_lt_cg, tranrs1_fft_cg, &
-      tranuv_fft_cg, tranuv_lt_cg, rstrandz_fft_cg, rstrandz_lt_cg
+      tranuv_fft_cg, tranuv_lt_cg, rstrandz_fft_cg, rstrandz_lt_cg, &
+      trandv_fft_cg, trandv_lt_cg
 
 end module spec_cuda_graph

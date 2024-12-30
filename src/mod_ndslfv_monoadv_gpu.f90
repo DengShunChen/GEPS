@@ -2408,17 +2408,19 @@ contains
 
       istat = 0
       !$acc parallel loop async(async_id) &
-      !$acc& copy(istat) reduction(+:istat)
+      !$acc& copy(istat)
       do i = 1, nxy
          if ((pp(1, i) .ne. pn(1, i)) .or. &
              (pp(levs + 1, i) .ne. pn(levs + 1, i))) then
             ! print *, ' Error in vertical_cell_ppm_intp for domain values '
             ! print *, "i pp1 pn1", i, pp(1, i), pn(1, i)
             ! print *, "i ppt pnt", i, pp(levs + 1, i), pn(levs + 1, i)
+            !$acc atomic
             istat = istat + 1
          end if
       end do
       !$acc end parallel
+      !$acc wait(async_id)
       if (istat .ne. 0) then
          print *, "istat=", istat
          call exit(2)
@@ -3293,8 +3295,7 @@ contains
       !$acc& copyin(loc_max, check_point,safe_step)
       !--------------------
       !$acc loop &
-      !$acc& private(i,check,loc_max) &
-      !$acc& reduction(max:check_max)
+      !$acc& private(i,check,loc_max)
       do j = 1, len
          loc_max = 0.
          !$acc loop seq
@@ -3304,6 +3305,7 @@ contains
                loc_max = check
             end if
          end do
+         !$acc atomic
          check_max = max(check_max, loc_max)
       end do
       !$acc end kernels

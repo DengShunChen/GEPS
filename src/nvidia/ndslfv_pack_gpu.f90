@@ -327,7 +327,7 @@ subroutine cyclic_cell_massadvy_mylonlen_gpu(latfull, levs, nvars, deltim, vv, q
    !$acc end kernels
    !$acc parallel loop async(async_id)
    do lon = 1, mylonlen
-      ds_dup(:, lon) = ds
+      ds_dup(1:latfull, lon) = ds
    end do
    call def_cfl_step_two_loops_gpu(outer_index_def, mylonlen, levs, dist, ds_dup, step, nstep, max_nstep, 'advy', latfull)
    do nst = 1, max_nstep
@@ -400,7 +400,7 @@ subroutine def_cfl_step_two_loops_gpu(outer_index, outer_size, inner_size, dist,
    real(kind=RTYPE) :: dist(lonn + 1, inner_size, outer_size)
    real(kind=RTYPE) :: ds(lonn + 1, outer_size)
    real(kind=RTYPE) :: step(10, inner_size, outer_size)
-   integer :: nstep(inner_size, outer_size), max_nstep
+   integer :: nstep(inner_size, outer_size), max_nstep, max_nstep_loc
    character*4 :: job
    integer :: outer, inner, im, n, k, nchk(inner_size, outer_size), nchk_local, nstep_loc
    real(kind=RTYPE) :: rstep, check, check_max(inner_size, outer_size), &
@@ -441,9 +441,10 @@ subroutine def_cfl_step_two_loops_gpu(outer_index, outer_size, inner_size, dist,
          check_max(inner, outer) = check_local
       end do
    end do
-   !$acc parallel loop collapse(2) private(rstep, last_step, nstep_loc) &
-   !$acc& reduction(max: max_nstep) copy(max_nstep) async(async_id)
+   !$acc parallel loop gang private(max_nstep_loc) copy(max_nstep) async(async_id)
    do outer = 1, outer_size
+      max_nstep_loc = 0
+      !$acc loop vector private(nstep_loc, rstep, last_step) reduction(max:max_nstep_loc)
       do inner = 1, inner_size
          nstep_loc = 1
          if (check_max(inner, outer) .ge. check_point) then
@@ -468,8 +469,10 @@ subroutine def_cfl_step_two_loops_gpu(outer_index, outer_size, inner_size, dist,
             last_step = 1.-(nstep_loc - 1)*rstep
             step(nstep_loc, inner, outer) = last_step
          end if
-         max_nstep = max(max_nstep, nstep_loc)
+         max_nstep_loc = max(max_nstep_loc, nstep_loc)
       end do
+      !$acc atomic
+      max_nstep = max(max_nstep, max_nstep_loc)
    end do
    !$acc wait (async_id)
    if (max_nstep .ne. 1) then

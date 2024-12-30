@@ -147,7 +147,7 @@ subroutine trngra3_gpu(jtrun, jtmax, nx, lev, my, my_max, cim, poly, dpoly, s, d
    else
       if (.not. (fft_cg%created)) then
          call rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, lev*2, 1, fft_cg%graph)
-         CUDACHECK(cudaGraphInstantiate(fft_cg%graph_exec, fft_cg%graph, fft_cg%error_node, fft_cg%buffer, fft_cg%buffer_len))
+         CUDACHECK(cudaGraphInstantiate(fft_cg%graph_exec, fft_cg%graph, 0))
          fft_cg%created = .true.
       end if
       CUDACHECK(cudaGraphLaunch(fft_cg%graph_exec, stream))
@@ -313,7 +313,7 @@ subroutine trngra3_gpu_cuda_graph(jtrun, jtmax, nx, lev, my, my_max, &
       end do
 
       CUDACHECK(cudaStreamEndCapture(stream, lt_cg%graph))
-      CUDACHECK(cudaGraphInstantiate(lt_cg%graph_exec, lt_cg%graph, lt_cg%error_node, lt_cg%buffer, lt_cg%buffer_len))
+      CUDACHECK(cudaGraphInstantiate(lt_cg%graph_exec, lt_cg%graph, 0))
       lt_cg%created = .true.
       istat = cudaEventDestroy(spread_event)
       istat = cudaEventDestroy(pack_event)
@@ -351,7 +351,7 @@ subroutine trngra3_gpu_cuda_graph(jtrun, jtmax, nx, lev, my, my_max, &
    else
       if (.not. (fft_cg%created)) then
          call rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, lev*2, 1, fft_cg%graph)
-         CUDACHECK(cudaGraphInstantiate(fft_cg%graph_exec, fft_cg%graph, fft_cg%error_node, fft_cg%buffer, fft_cg%buffer_len))
+         CUDACHECK(cudaGraphInstantiate(fft_cg%graph_exec, fft_cg%graph, 0))
          fft_cg%created = .true.
       end if
       CUDACHECK(cudaGraphLaunch(fft_cg%graph_exec, stream))

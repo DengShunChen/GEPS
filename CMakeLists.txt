@@ -45,7 +45,7 @@ set(GPU_ARCHS
     "80"
     CACHE STRING "GPU architecture(V100=70;A100=80)")
 set(CUDA_RUNTIME_VERSION
-    "11.8"
+    "12.6"
     CACHE STRING "CUDA runtime version")
 # set(TCO_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/src" CACHE STRING "TCO destination")
 
@@ -73,6 +73,7 @@ message(STATUS "USE_MPMD:     ${USE_MPMD}")
 message(STATUS "USE_PCAST:    ${USE_PCAST}")
 message(STATUS "USE_SP:       ${USE_SP}")
 message(STATUS "GPU_ARCHS:    ${GPU_ARCHS}")
+message(STATUS "CUDA_RUNTIME_VERSION: ${CUDA_RUNTIME_VERSION}")
 message(STATUS "Output path:  ${TCO_OUTPUT_PATH}")
 message(STATUS "Install path: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "BUILD_TYPE : ${CMAKE_BUILD_TYPE}")
