@@ -96,7 +96,7 @@
              tt,qt,qa,ut,vt,vvel,pst,                                  &
 !  ---  outputs:
              re_cloud,re_ice,re_snow,re_rain,                          &
-             rlsp,sr )
+             rlsp,rlspi,rlsps,rlspg,sr )
 
       use rank
       use radn,                only: ntcw,ntiw,ntrw,ntsw,ntgl,nthl,     &
@@ -164,6 +164,7 @@
       real,     intent(inout)   :: re_cloud(nx,lev),re_ice(nx,lev),   &
                                    re_snow(nx,lev),re_rain(nx,lev)
       real,     intent(inout)   :: rlsp(nx),sr(nx)
+      real,     intent(inout)   :: rlspi(nx),rlsps(nx),rlspg(nx)
 !  ---  local arrays:
       integer   kc,k,i,n
       real      prsl(nx,lev),del(nx,lev)
@@ -309,6 +310,9 @@
 !
         do i=1,nxj
           rlsp(i) = rainncv(i) + snowncv(i) + graupelncv(i)
+          rlspi(i) = 0.   !ice not precipitating
+          rlsps(i) = snowncv(i)
+          rlspg(i) = graupelncv(i)
         enddo
 !
         do k=1,lev
@@ -563,6 +567,9 @@
         enddo
         do i = 1, nxj
           rlsp(i) = rainncv(i)  !total large scale precipitation (kg/m^2=mm)
+          rlspi(i) = icencv(i)      !not sure
+          rlsps(i) = snowncv(i)     !not sure
+          rlspg(i) = graupelncv(i)  !not sure
         enddo
 
         deallocate                                                      &
@@ -716,6 +723,9 @@
           if ( graupel2d(i,1) .lt. rainmin ) graupel2d(i,1) = 0.0
 
           rlsp(i) = rain2d(i,1)+snow2d(i,1)+ice2d(i,1)+graupel2d(i,1)  !total large scale precipitation (mm)
+          rlspi(i) = ice2d(i,1)
+          rlsps(i) = snow2d(i,1)
+          rlspg(i) = graupel2d(i,1)
           if ( rlsp(i) .gt. rainmin ) then
             sr(i) = (snow2d(i,1)+ice2d(i,1)+graupel2d(i,1))             &
                    /(rain2d(i,1)+snow2d(i,1)+ice2d(i,1)+graupel2d(i,1))  !snow ratio
@@ -919,6 +929,9 @@
 
         do i = 1, nxj
           rlsp(i) = water1d(i)+rain1d(i)+snow1d(i)+ice1d(i)+graupel1d(i)     !total large scale precipitation (mm)
+          rlspi(i) = ice1d(i)
+          rlsps(i) = snow1d(i)
+          rlspg(i) = graupel1d(i)
           if ( rlsp(i) .gt. rainmin ) then
             sr(i) = (snow1d(i)+ice1d(i)+graupel1d(i))                   &
                     /(water1d(i)+rain1d(i)+snow1d(i)+ice1d(i)+graupel1d(i))  !snow ratio
@@ -1156,6 +1169,10 @@
         enddo
         do i = 1, nxj
           rlsp(i) = rain2d(i,1)  !total large scale precipitation (kg/m^2=mm)
+          rlspi(i) = ice2d(i,1)
+          rlsps(i) = snow2d(i,1)
+          rlspg(i) = graupel2d(i,1)
+          if ( nmmiph .eq. 16 ) rlspg(i) = rlspg(i) + hail2d(i,1)
           sr(i)   = sr2d(i,1)
         enddo
 
