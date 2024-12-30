@@ -195,7 +195,7 @@ CONTAINS
 !                      ,ids,ide, jds,jde, kds,kde                   & ! domain dims
                       ,ims,ime, jms,jme, kms,kme                   & ! memory dims
                       ,its,ite, jts,jte, kts,kte                   & ! tile   dims
-                      ,rainnc, snownc, graupelnc, sr               &
+                      ,rainnc, icenc, snownc, graupelnc, sr        &
 !                      ,rainncv, snowncv, graupelncv                &
 !                      ,f_qg, qg, pgold                            &
                       ,f_qg, qg                                    &
@@ -271,7 +271,7 @@ CONTAINS
                                                                w
 
   REAL, DIMENSION( ims:ime , jms:jme ),                           &
-        INTENT(INOUT) ::           rainnc, snownc, graupelnc, sr
+        INTENT(INOUT) ::    rainnc, icenc, snownc, graupelnc, sr
 !  REAL, DIMENSION( ims:ime , jms:jme ),                           &
 !        INTENT(INOUT) ::           rainncv, snowncv, graupelncv
 
@@ -475,7 +475,7 @@ CONTAINS
    call fall_flux(    dts, qv, qr, qi, qs, qg, p,             &
                       rho, th, pii, z, dz8w, ht,              &
                       grav, itimestep,                        &
-                      rainnc, snownc, graupelnc, sr,          &
+                      rainnc, icenc, snownc, graupelnc, sr,   &
 !                      rainncv, snowncv, graupelncv,           &
 #ifdef EXT_DIAG
                       preci3d, precs3d, precg3d, precr3d,     &
@@ -605,7 +605,7 @@ CONTAINS
   SUBROUTINE fall_flux ( dt, qv, qr, qi, qs, qg, p,           &
                       rho, th, pi_mks, z, dz8w, topo,         &
                       grav, itimestep,                        &
-                      rainnc, snownc, graupelnc, sr,          &
+                      rainnc, icenc, snownc, graupelnc, sr,   &
 !                      rainncv, snowncv, graupelncv,           &
 #ifdef EXT_DIAG
                       preci3d, precs3d, precg3d, precr3d,     &
@@ -632,7 +632,7 @@ CONTAINS
            INTENT(IN)                  :: th, pi_mks      
 
   REAL,    DIMENSION( ims:ime , jms:jme ),                            &
-           INTENT(INOUT)               :: rainnc, snownc, graupelnc, sr
+           INTENT(INOUT) :: rainnc, icenc, snownc, graupelnc, sr
 !  REAL,    DIMENSION( ims:ime , jms:jme ),                            &
 !           INTENT(INOUT)               :: rainncv, snowncv, graupelncv
   REAL,    DIMENSION( ims:ime , kms:kme , jms:jme ),                  &
@@ -1184,6 +1184,7 @@ CONTAINS
 !   write(6,*) 'i=',i,' j=',j,'   ', pptrain, pptsnow, pptgraul, pptice
 !   call flush(6)
 
+   icenc(i,j) = icenc(i,j) + pptice
 !   snowncv(i,j) = pptsnow
    snownc(i,j) = snownc(i,j) + pptsnow
 !   graupelncv(i,j) = pptgraul

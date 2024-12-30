@@ -960,7 +960,7 @@
            qi3d(nx,lev,1),qs3d(nx,lev,1),qg3d(nx,lev,1),rho3d(nx,lev,1),&
            pii3d(nx,lev,1),p3d(nx,lev,1),z3d(nx,lev,1),dz3d(nx,lev,1),  &
            rain2d(nx,1),snow2d(nx,1),graupel2d(nx,1),sr2d(nx,1),        &
-           ht(nx,1),land2d(nx,1),w3d(nx,lev,1) )
+           ice2d(nx,1),ht(nx,1),land2d(nx,1),w3d(nx,lev,1) )
         allocate                                                        &
          ( rew3d(nx,lev,1),rer3d(nx,lev,1),rei3d(nx,lev,1),             &
            res3d(nx,lev,1),reg3d(nx,lev,1) )
@@ -987,6 +987,7 @@
         ht = 0.
         dz3d = 0.
         rain2d = 0.
+        ice2d = 0.
         snow2d = 0.
         graupel2d = 0.
         sr2d = 0.
@@ -1068,7 +1069,7 @@
                    itimestep, xlat, sdec, land2d,                       &
                    1, nx , 1, 1, 1, lev,                                & ! memory dims
                    1, nxj, 1, 1, 1, lev,                                & ! tile   dims
-                   rain2d, snow2d, graupel2d, sr2d,                     &
+                   rain2d, ice2d, snow2d, graupel2d, sr2d,              &
                    .false., qg3d,                                       &
                    ihail, ice2,                                         &
 #ifdef EXT_DIAG
@@ -1178,7 +1179,7 @@
 
         deallocate                                                      &
          ( th3d,qv3d,qc3d,qr3d,qs3d,qi3d,qg3d,pii3d,p3d,z3d,dz3d,rho3d, &
-           rain2d,snow2d,graupel2d,                                     &
+           rain2d,ice2d,snow2d,graupel2d,                               &
            ht,sr2d,land2d,w3d,rew3d,rer3d,rei3d,res3d,reg3d )
 #ifdef EXT_DIAG
         deallocate                                                      &
