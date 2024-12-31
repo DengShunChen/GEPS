@@ -1955,14 +1955,6 @@
              rlspg(1,jj), & !graupel precipitation(include hail for GCE 4ICE)
              sr(1,jj) )
 !
-#ifdef update_dp
-      if ( nmmiph.eq.12 .or. nmmiph.eq.13 ) then
-        ! compute new time step pk, pk2, and plt
-        call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pst(1,jj), &
-                            pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
-      endif
-#endif
-!    
         do k = 1, lev
           do i = 1, nxj
             dttmp = ttc(i,k)-tt(i,k,jj)

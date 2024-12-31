@@ -1,5 +1,4 @@
 #define EffectRad_GCE3
-!#define update_dp
 !--------------------------
       subroutine mp_init                                               &
 !--------------------------
@@ -155,11 +154,7 @@
       real(kind=RTYPE), intent(inout) :: vvel(nx,lev) !mb/s
       real, intent(inout) :: ut(nx,lev),vt(nx,lev)
       real(kind=RTYPE), intent(inout) :: qt(nx,lev*ncld)
-#ifdef update_dp
-      real(kind=RTYPE), intent(inout) :: pst(nx)
-#else
       real(kind=RTYPE), intent(in   ) :: pst(nx)
-#endif
 !  ---  outputs:
       real,     intent(inout)   :: re_cloud(nx,lev),re_ice(nx,lev),   &
                                    re_snow(nx,lev),re_rain(nx,lev)
@@ -916,16 +911,6 @@
             enddo
           enddo
         endif
-
-#ifdef update_dp
-        ! calculate new terrain pressure pst (hPa)
-        do i = 1, nxj
-          pst(i) = ptop
-          do k = 1, lev
-            pst(i) = pst(i) + dp2d(i,k)/100.
-          enddo
-        enddo
-#endif
 
         do i = 1, nxj
           rlsp(i) = water1d(i)+rain1d(i)+snow1d(i)+ice1d(i)+graupel1d(i)     !total large scale precipitation (mm)

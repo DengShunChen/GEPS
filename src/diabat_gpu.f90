@@ -2364,19 +2364,6 @@
                    sr(1, jj))
             end do
 !
-#ifdef update_dp
-            if (myrank .eq. 0) print *, "Not support this entry. (update_dp)"
-            if (nmmiph .eq. 12 .or. nmmiph .eq. 13) then
-               do jj = 1, jlistnum
-                  j = jlist1(jj)
-                  nxj = nxdef_2d(j)
-                  ! compute new time step pk, pk2, and plt
-                  call prexp_hybrid_cwb(nxjp(j), nxp, lev, ptop, sigma, pst(1, jj), &
-                                        pk(1, 1, jj), pk2(1, 1, jj), plt(1, 1, jj))
-               end do
-            end if
-#endif
-!
             do jj = 1, jlistnum
                j = jlist1(jj)
                nxj = nxdef_2d(j)
