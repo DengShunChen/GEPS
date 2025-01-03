@@ -57,6 +57,8 @@ MODULE module_mp_gsfcgce_3ice_nuwrf
                                 vrc0, vrc1, vrc2, vrc3,            &
                              	 vgc,  vsc
 
+   REAL,    PRIVATE ::         draimax
+
 !  common /bsnw/
 !   REAL,    PRIVATE ::          alv,  alf,  als,   t0,   t00,     &
 !                                avc,  afc,  asc,  rn1,  bnd1,     &
@@ -193,15 +195,14 @@ CONTAINS
 !                      ,ids,ide, jds,jde, kds,kde                   & ! domain dims
                       ,ims,ime, jms,jme, kms,kme                   & ! memory dims
                       ,its,ite, jts,jte, kts,kte                   & ! tile   dims
-                      ,rainnc, rainncv                             &
-                      ,snownc, snowncv, sr                         &
-                      ,graupelnc, graupelncv                       &
-                      ,refl_10cm, diagflag, do_radar_ref           &
+                      ,rainnc, icenc, snownc, graupelnc, sr        &
+!                      ,rainncv, snowncv, graupelncv                &
 !                      ,f_qg, qg, pgold                            &
                       ,f_qg, qg                                    &
                       ,ihail, ice2                                 &
 !NUWRF BEGIN
 #ifdef EXT_DIAG
+                      ,refl_10cm, diagflag, do_radar_ref           &
 !                      ,physc, physe, physd, physs, physm, physf    &
 !                      ,acphysc, acphyse, acphysd, acphyss, acphysm, acphysf &
                       ,preci3d, precs3d, precg3d, precr3d          &
@@ -269,34 +270,10 @@ CONTAINS
                                                                z, &
                                                                w
 
-  REAL, DIMENSION( ims:ime , kms:kme , jms:jme )                  &
-#ifdef EXT_DIAG
-        , INTENT(INOUT) ::                                        &
-#else
-        ::                                                        &
-#endif
-                                                           physc, &
-                                                           physe, &
-                                                           physd, &
-                                                           physs, &
-                                                           physm, &
-                                                           physf, &
-                                                           acphysc, &
-                                                           acphyse, &
-                                                           acphysd, &
-                                                           acphyss, &
-                                                           acphysm, &
-                                                           acphysf
-
-
   REAL, DIMENSION( ims:ime , jms:jme ),                           &
-        INTENT(INOUT) ::                               rainnc,    &
-                                                       rainncv,   &
-                                                       snownc,    &   
-                                                       snowncv,   &
-                                                       sr,        &
-                                                       graupelnc, &
-                                                       graupelncv 
+        INTENT(INOUT) ::    rainnc, icenc, snownc, graupelnc, sr
+!  REAL, DIMENSION( ims:ime , jms:jme ),                           &
+!        INTENT(INOUT) ::           rainncv, snowncv, graupelncv
 
 !JJS 20140225   for calculation of effective radius of cloud species
   REAL , DIMENSION( ims:ime , jms:jme ) , INTENT(IN)   :: XLAND
@@ -309,10 +286,12 @@ CONTAINS
 !JJS 20140225  ^^^^^
 
 !+---+-----------------------------------------------------------------+
+#ifdef EXT_DIAG
   REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT)::           &  ! GT
                                                        refl_10cm
   LOGICAL, OPTIONAL, INTENT(IN) :: diagflag
   INTEGER, OPTIONAL, INTENT(IN) :: do_radar_ref
+#endif
 !+---+-----------------------------------------------------------------+
 
   REAL , DIMENSION( ims:ime , jms:jme ) , INTENT(IN) ::       ht
@@ -342,11 +321,6 @@ CONTAINS
 #ifdef EXT_DIAG
   REAL, DIMENSION( ims:ime , kms:kme , jms:jme ),                 &
         INTENT(INOUT) ::                                          &
-!             physc, physe, physd, physs, physm, physf,                  &
-!             acphysc, acphyse, acphysd, acphyss, acphysm, acphysf,      &
-             preci3d, precs3d, precg3d, precr3d
-#else
-  REAL, DIMENSION( ims:ime , kms:kme , jms:jme ) ::                     &
 !             physc, physe, physd, physs, physm, physf,                  &
 !             acphysc, acphyse, acphysd, acphyss, acphysm, acphysf,      &
              preci3d, precs3d, precg3d, precr3d
@@ -499,16 +473,19 @@ CONTAINS
 
    ! calculte fallflux and precipiation in MKS system
    call fall_flux(    dts, qv, qr, qi, qs, qg, p,             &
-                      rho, th, pii, z, dz8w, ht, rainnc,      &
-                      rainncv, grav,itimestep,                &
-                      snownc, snowncv, sr,                    &
-                      graupelnc, graupelncv,                  &
+                      rho, th, pii, z, dz8w, ht,              &
+                      grav, itimestep,                        &
+                      rainnc, icenc, snownc, graupelnc, sr,   &
+!                      rainncv, snowncv, graupelncv,           &
+#ifdef EXT_DIAG
                       preci3d, precs3d, precg3d, precr3d,     &
+#endif
                       xland,                                  &
                       ihail, ice2, improve,                   &
                       ims,ime, jms,jme, kms,kme,              & ! memory dims
                       its,ite, jts,jte, kts,kte               ) ! tile   dims
 
+#ifdef EXT_DIAG
       ! EMK NUWRF...Moved this WRF radar reflectivity initialization to after
       ! fall_flux, as the rhohail and rhograul variables are set in that
       ! subroutine. 
@@ -556,6 +533,7 @@ CONTAINS
          call radar_init
          NCALL = 1
       ENDIF
+#endif
 
 !c Negative values correction
 
@@ -592,13 +570,14 @@ CONTAINS
                    qi, qs, qg,                                   &
                    rho, pii, p, w,                               &
                    itimestep, xland,                             & 
-                   refl_10cm, diagflag, do_radar_ref,            & ! GT added for reflectivity calcs
                    refc, refr, refi, refs, refg,                 & ! cloud effective radius
                    ims,ime, jms,jme, kms,kme,                    & ! memory dims
-                   its,ite, jts,jte, kts,kte,                    & ! tile   dims
+                   its,ite, jts,jte, kts,kte                     & ! tile   dims
+#ifdef EXT_DIAG
+                   ,refl_10cm, diagflag, do_radar_ref,           & ! GT added for reflectivity calcs
                    physc, physe, physd, physs, physm, physf,     &
                    acphysc, acphyse, acphysd, acphyss, acphysm, acphysf &
-
+#endif
 #if ( WRF_CHEM == 1)
                    ,aero, icn_diag, nc_diag, gid,                &
                    chem_opt,                                     &
@@ -624,11 +603,13 @@ CONTAINS
   END SUBROUTINE gsfcgce_3ice_nuwrf
 
   SUBROUTINE fall_flux ( dt, qv, qr, qi, qs, qg, p,           &
-                      rho, th, pi_mks, z, dz8w, topo, rainnc, &
-                      rainncv, grav, itimestep,               &
-                      snownc, snowncv, sr,                    &
-                      graupelnc, graupelncv,                  &
+                      rho, th, pi_mks, z, dz8w, topo,         &
+                      grav, itimestep,                        &
+                      rainnc, icenc, snownc, graupelnc, sr,   &
+!                      rainncv, snowncv, graupelncv,           &
+#ifdef EXT_DIAG
                       preci3d, precs3d, precg3d, precr3d,     &
+#endif
                       xland,                                  &
                       ihail, ice2, improve,                   &
                       ims,ime, jms,jme, kms,kme,              & ! memory dims
@@ -651,9 +632,9 @@ CONTAINS
            INTENT(IN)                  :: th, pi_mks      
 
   REAL,    DIMENSION( ims:ime , jms:jme ),                            &
-           INTENT(INOUT)               :: rainnc, rainncv,            &
-                                          snownc, snowncv, sr,        &
-                                          graupelnc, graupelncv
+           INTENT(INOUT) :: rainnc, icenc, snownc, graupelnc, sr
+!  REAL,    DIMENSION( ims:ime , jms:jme ),                            &
+!           INTENT(INOUT)               :: rainncv, snowncv, graupelncv
   REAL,    DIMENSION( ims:ime , kms:kme , jms:jme ),                  &
            INTENT(IN   )               :: rho, z, dz8w, p
 
@@ -663,15 +644,17 @@ CONTAINS
   REAL,    DIMENSION( ims:ime , jms:jme ),                            &
            INTENT(IN   )               :: topo, xland
 
+#ifdef EXT_DIAG
   REAL,    DIMENSION( ims:ime , kms:kme , jms:jme ),                  &
            INTENT(OUT)                 :: preci3d, precs3d, precg3d, precr3d
+#endif
 
 ! temperary vars
  
   REAL,    DIMENSION( kts:kte )           :: fv
   REAL                                    :: tmp1, term0
   REAL                                :: pptrain, pptsnow,        &
-                                         pptgraul, pptice
+                                         pptgraul, pptice, pptall
   REAL,    DIMENSION( kts:kte )       :: qvz, qrz, qiz, qsz, qgz, &
                                          zz, dzw, prez, rhoz,     &
                                          orhoz
@@ -764,10 +747,12 @@ CONTAINS
  i_loop:  do i = its, ite
 
    do k = kts, kte
+#ifdef EXT_DIAG
       preci3d(i,k,j)=0.
       precs3d(i,k,j)=0.
       precg3d(i,k,j)=0.
       precr3d(i,k,j)=0.
+#endif
       ised(k)=0.
       ssed(k)=0.
       gsed(k)=0.
@@ -849,7 +834,7 @@ CONTAINS
             min_q=min0(min_q,k)
             max_q=max0(max_q,k)
 
-           call vtr_mks(rhoz(k),qrz(k),vtr(k))
+           call vtr_mks(rhoz(k),qrz(k),tz(k),vtr(k))
 !           if (.not. vtr(k) .gt. 0.0) cycle ! EMK NUWRF Bug fix
 
             if (k .eq. 1) then
@@ -1181,12 +1166,14 @@ CONTAINS
    ENDDO !notlast
 #endif
 
+#ifdef EXT_DIAG
    do k = kts, kte
             preci3d(i,k,j)=ised(k)
             precs3d(i,k,j)=ssed(k)
             precg3d(i,k,j)=gsed(k)
             precr3d(i,k,j)=rsed(k)
    end do
+#endif
 
 !   prnc(i,j)=prnc(i,j)+pptrain
 !   psnowc(i,j)=psnowc(i,j)+pptsnow
@@ -1197,14 +1184,16 @@ CONTAINS
 !   write(6,*) 'i=',i,' j=',j,'   ', pptrain, pptsnow, pptgraul, pptice
 !   call flush(6)
 
-   snowncv(i,j) = pptsnow
+   icenc(i,j) = icenc(i,j) + pptice
+!   snowncv(i,j) = pptsnow
    snownc(i,j) = snownc(i,j) + pptsnow
-   graupelncv(i,j) = pptgraul
+!   graupelncv(i,j) = pptgraul
    graupelnc(i,j) = graupelnc(i,j) + pptgraul 
-   RAINNCV(i,j) = pptrain + pptsnow + pptgraul + pptice                 
+!   RAINNCV(i,j) = pptrain + pptsnow + pptgraul + pptice
    RAINNC(i,j)  = RAINNC(i,j) + pptrain + pptsnow + pptgraul + pptice
+   pptall = pptrain + pptsnow + pptgraul + pptice
    sr(i,j) = 0.
-   if (RAINNCV(i,j) .gt. 0.) sr(i,j) = (pptsnow + pptgraul + pptice) / RAINNCV(i,j) 
+   if ( pptall.gt.0. ) sr(i,j) = (pptsnow + pptgraul + pptice) / pptall
 
   ENDDO i_loop
   ENDDO j_loop
@@ -1784,6 +1773,9 @@ CONTAINS
          rhohail = rhograul   !density of hail (kg/m^3)
       endif
 
+      draimax=0.0500       !maximum rain diameter (cm)
+      draimax=draimax**4.*roqr*cpi
+
       ! critical q of hydrometeor characteristics (eg. fall speed, radius)
       cwmin = 1.e-12
       cimin = 1.e-12
@@ -2019,12 +2011,14 @@ CONTAINS
                        qiwrf, qswrf, qgwrf,                            &
                        rho_mks, pi_mks, p0_mks, w_mks,                 &
                        itimestep, xland,                               &
-                       refl_10cm, diagflag, do_radar_ref,              & ! GT added for reflectivity calcs
                        refc, refr, refi, refs, refg,                   & ! cloud effective radius
                        ims,ime, jms,jme, kms,kme,                      &
-                       its,ite, jts,jte, kts,kte,                      &
+                       its,ite, jts,jte, kts,kte                       &
+#ifdef EXT_DIAG
+                       ,refl_10cm, diagflag, do_radar_ref,             & ! GT added for reflectivity calcs
                        physc, physe, physd, physs, physm, physf,       &   
                        acphysc, acphyse, acphysd, acphyss, acphysm, acphysf &   
+#endif
 #if ( WRF_CHEM == 1)
                        ,aero, icn_diag, nc_diag, gid,                  &
                        chem_opt,                                       &
@@ -2289,11 +2283,13 @@ CONTAINS
 
 !JJS      COMMON/MICRO/
 !NUWRF BEGIN
+#ifdef EXT_DIAG
   real, dimension (ims:ime,kms:kme,jms:jme)  ::     &
           physc,   physe,   physd,                  &
           physs,   physm,   physf,                  &
           acphysc,   acphyse,   acphysd,            &
           acphyss,   acphysm,   acphysf
+#endif
 
 
 ! EMK NUWRF...Treat this as local
@@ -2410,6 +2406,7 @@ CONTAINS
 !JJS 1/3/2008  ^^^^^
 
 !+---+-----------------------------------------------------------------+
+#ifdef EXT_DIAG
   REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT):: refl_10cm  ! GT
 ! TYPE (WRFU_Clock):: grid_clock
 ! TYPE (WRFU_Alarm), POINTER:: grid_alarms(:)
@@ -2418,6 +2415,7 @@ CONTAINS
 !      REAL, DIMENSION(kts:kte):: qv1d, t1d, p1d, qr1d, qs1d, qg1d, dBZ_GT
       LOGICAL, OPTIONAL, INTENT(IN) :: diagflag
       INTEGER, OPTIONAL, INTENT(IN) :: do_radar_ref
+#endif
 !+---+-----------------------------------------------------------------+
       integer, parameter :: rewflag = 2
       ! 1 : default
@@ -2475,6 +2473,7 @@ CONTAINS
 
 !    i24h=nint(86400./dt)
 !    if (mod(itimestep,i24h).eq.1) then
+#ifdef EXT_DIAG
     if (itimestep.eq.1) then
        do k = kts, kte
           do j = jts, jte
@@ -2499,6 +2498,7 @@ CONTAINS
 !       print *,'improve, new_ice_sat = ', improve, new_ice_sat
 !       print *,'c610 = ', c610
     endif
+#endif
 
 !JJS  convert from mks to cgs, and move from WRF grid to GCE grid
       do k=kts,kte
@@ -2938,7 +2938,7 @@ CONTAINS
                 endif
 
 !                call vqrqi(1,improve,r00,fv0,qr(i,j),vr(i,j))
-                call vtr_mks(rho_mks(i,k,j),qr(i,j),vr(i,j))  !in MKS
+                call vtr_mks(rho_mks(i,k,j),qr(i,j),tair(i,j),vr(i,j))  !in MKS
                 vr(i,j) = vr(i,j) * 100.  !in CGS
 
 !* 21 * PRAUT   AUTOCONVERSION OF QC TO QR                        **21**
@@ -3044,7 +3044,7 @@ CONTAINS
 !               else
 !                  vr(i,j)=max(vrcf*dd(i,j)**bwq, 0.)
 !               endif
-               call vtr_mks(rho_mks(i,k,j),qr(i,j),vr(i,j))  !in MKS
+               call vtr_mks(rho_mks(i,k,j),qr(i,j),tair(i,j),vr(i,j))  !in MKS
                vr(i,j) = vr(i,j) * 100.  !in CGS
             endif
 
@@ -5414,6 +5414,7 @@ CONTAINS
             qcs(i,j,k)=qs(i,j)
             qcg(i,j,k)=qg(i,j)
 
+#ifdef EXT_DIAG
          scc=0.
          see=0.
 
@@ -5582,6 +5583,7 @@ CONTAINS
          endif
 
       endif  !improve
+#endif
 
 !   endif
 
@@ -5873,6 +5875,7 @@ CONTAINS
 !     ****************************************************************
 
 !+---+-----------------------------------------------------------------+
+#ifdef EXT_DIAG
 ! EMK NUWRF...Replace Greg Thompson's dBZ calculations with values calculated
 ! above.
          IF ( PRESENT (diagflag) ) THEN
@@ -5921,6 +5924,7 @@ CONTAINS
 !             enddo
          endif
          ENDIF
+#endif
 !+---+-----------------------------------------------------------------+
 
       return
@@ -6593,41 +6597,69 @@ CONTAINS
 !-------------------------------------------------------------------
 
 !-------------------------------------------------------------------
-      subroutine vtr_mks(rhoz,qrz,vtr)
+      subroutine vtr_mks(rhoz,qrz,tz,vtr)
       implicit none
       real, intent(in) :: rhoz  !air density (kg/m^3)
       real, intent(in) :: qrz   !mixing ratio (kg/kg)
+      real, intent(in) :: tz    !temperature (K)
       real, intent(out):: vtr   !terminal velocity (m/s)
 
       real, parameter :: vrmax = 12.0    !(m/s)
       real, parameter :: vrmin = 0.0     !(m/s)
 
+      integer, parameter :: vtrflag = 2
+      ! 1 : Lin et al. (1983)   ( igce != 1 )
+      ! 2 : Steve's             ( igce = 1 )
+      ! 3 : Lang et al. (2014) , Steve's with bin rain evaporation correction
+
       !local variables
-      integer :: igce
+!      integer :: igce
       real    :: pi, gambp4
-      real    :: y1, tmp1, vs, vg, vr, fv
+      real    :: y1, tmp1, vs, vg, vr, fv, zr
+      real    :: ftnw, bin_factor, ftnwmin
 
       pi = acos(-1.)
       gambp4 = gammagce(constb+4.)
 
       if ( qrz .ge. crmin ) then
          fv = sqrt( rhoe_s/rhoz )
-         igce = 1
-         if ( igce .ne. 1 ) then
-            ! old codes from Chern's in MKS
-            tmp1 = sqrt(pi*rhowater*xnor/rhoz/qrz)
-            tmp1 = sqrt(tmp1)
-            vtr = consta*gambp4*fv/tmp1**constb
-            vtr = vtr/6.
-         else
+!         igce = 1
+         if ( vtrflag .eq. 1 ) then !if igce .ne. 1
+            ! Lin et al. (1983) ; in MKS
+            ! rhowater=1000., consta=0.8, constb=841.9967
+!            tmp1 = sqrt(pi*rhowater*xnor/rhoz/qrz)
+!            tmp1 = sqrt(tmp1)
+!            vtr = consta*gambp4*fv/tmp1**constb
+!            vtr = vtr/6.
+            zr = (pi*rhowater*xnor/(rhoz*qrz))**0.25   !slope parameter of rain (in MKS)
+            gambp4 = gammagce(constb+4.)
+            vtr = consta*gambp4/(6.*zr**constb)*fv
+
+         elseif ( vtrflag .eq. 2 ) then !if igce=1
             ! new codes from Steve's in CGS :
             y1 = rhoz*qrz*0.001  !in CGS
             vs = sqrt( y1 )
             vg = sqrt( vs )
-!            vr=vr0+vr1*vg+vr2*vs+vr3*vg*vs
             vr = vrc0+vrc1*vg+vrc2*vs+vrc3*vg*vs
             vtr = max(fv*vr, 0.e0)
             vtr = vtr*0.01  !convert back to MKS
+
+         elseif ( vtrflag .eq. 3 ) then
+            ! same as Steve's, but with bin rain evaporation correction (Lang et al. 2014)
+            ! (in CGS)
+            ftnw = 1.
+            if ( tz .gt. t0 ) then
+               bin_factor = 0.11*(1000.*qrz)**(-1.27) + 0.98
+               bin_factor = min(bin_factor,1.30)
+               ftnw = 1./bin_factor**3.35
+               ftnwmin = rhoz*0.001*qrz/draimax
+               if ( qrz .le. 0.001 ) ftnw = max(ftnw,ftnwmin/tnw)
+            endif
+            zr = (pi*roqr*tnw/(rhoz*0.001*qrz))**0.25   !slope parameter of rain (in CGS)
+            zr = zr/ftnw
+            vtr = (-26.7 + 2.06e+4/zr - 2.045e+5/zr**2. + 9.06e+5/zr**3.)*fv
+            vtr = vtr*0.01  !convert back to MKS
+
          endif  !end of if igce
          vtr = min ( vrmax , max ( vrmin , vtr ) )
       else
@@ -6828,7 +6860,7 @@ CONTAINS
       was(:) = 0.0
       dz(:) = dzl(:)
       do k = 1,km
-        if ( qvar .eq. 'qr' ) call vtr_mks(rho(k),qc(k),ww(k))
+        if ( qvar .eq. 'qr' ) call vtr_mks(rho(k),qc(k),tz(k),ww(k))
         if ( qvar .eq. 'qs' ) call vts_mks(improve,rho(k),qc(k),tz(k),ww(k))
         if ( qvar .eq. 'qg' ) call vtg_mks(ihail,improve,rho(k),qc(k),tz(k),ww(k))
         if ( qvar .eq. 'qi' ) call vti_mks(improve,rho(k),tz(k),qc(k),qv(k),p(k),xland,ww(k))
@@ -6908,7 +6940,7 @@ CONTAINS
 ! then back to use mean terminal velocity
       if ( n.le.iter ) then
         do k = 1,km
-          if ( qvar .eq. 'qr' ) call vtr_mks(rho(k),qc(k),wa(k))
+          if ( qvar .eq. 'qr' ) call vtr_mks(rho(k),qc(k),tz(k),wa(k))
           if ( qvar .eq. 'qs' ) call vts_mks(improve,rho(k),qc(k),tz(k),wa(k))
           if ( qvar .eq. 'qg' ) call vtg_mks(ihail,improve,rho(k),qc(k),tz(k),wa(k))
           if ( qvar .eq. 'qi' ) call vti_mks(improve,rho(k),tz(k),qc(k),qv(k),p(k),xland,wa(k))

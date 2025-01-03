@@ -391,6 +391,7 @@
 
          real cosl(my), sinl(my), cosz(nxp, my_max), &
             rcup(nxp, my_max), rlsp(nxp, my_max), &
+            rlspi(nxp, my_max), rlsps(nxp, my_max), rlspg(nxp, my_max), &
             asr(lev, my), alr(lev, my), xsr(lev, my), xlr(lev, my), &
             aflxd(lev + 2, my), aflxu(lev + 2, my), &
             dtcupx(my), dtcupz(lev, my), dqcupz(lev, my), dtcupd(lev), &
@@ -800,6 +801,9 @@
             do i = 1, nxp
                rcup(i, jj) = 0.0
                rlsp(i, jj) = 0.0
+               rlspi(i, jj) = 0.0
+               rlsps(i, jj) = 0.0
+               rlspg(i, jj) = 0.0
 !       cldwrk(i,k) = 0.0
                cldwrk(i, jj) = 0.0
 !      cosz(i,jj)  = 0.0
@@ -2353,21 +2357,12 @@
                    pst(1, jj), &
                    !  ---  outputs:
                    ftp(1, 1, jj), ftp1(1, 1, jj), fqp(1, 1, jj), fqp1(1, 1, jj), &
-                   rlsp(1, jj), sr(1, jj))
+                   rlsp(1, jj),  & !total precipitation(rain+ice+snow+graupel,may include cloud water)
+                   rlspi(1, jj), & !ice precipitation
+                   rlsps(1, jj), & !snow precipitation
+                   rlspg(1, jj), & !graupel precipitation(include hail for GCE 4ICE)
+                   sr(1, jj))
             end do
-!
-#ifdef update_dp
-            if (myrank .eq. 0) print *, "Not support this entry. (update_dp)"
-            if (nmmiph .eq. 12 .or. nmmiph .eq. 13) then
-               do jj = 1, jlistnum
-                  j = jlist1(jj)
-                  nxj = nxdef_2d(j)
-                  ! compute new time step pk, pk2, and plt
-                  call prexp_hybrid_cwb(nxjp(j), nxp, lev, ptop, sigma, pst(1, jj), &
-                                        pk(1, 1, jj), pk2(1, 1, jj), plt(1, 1, jj))
-               end do
-            end if
-#endif
 !
             do jj = 1, jlistnum
                j = jlist1(jj)
