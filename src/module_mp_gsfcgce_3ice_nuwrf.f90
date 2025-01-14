@@ -4027,6 +4027,8 @@ CONTAINS
 !      if (improve1.eq.3) then
           if (tair(i,j) .lt. t0 .and. tair(i,j) .gt. t00) then
              tairc(i,j) = tair(i,j)-t0
+#ifndef sat_predict
+!>>> pidw may be already calculated in saturation prediction scheme.
              y1(i,j) = max( min(tairc(i,j), -1.), -31.)
              it(i,j) = int(abs(y1(i,j)))
              y2(i,j)=aa1(it(i,j))
@@ -4083,6 +4085,8 @@ CONTAINS
                 dd(i,j)=(r00*qi(i,j)/r_nci)**y3(i,j)                  !meyers
                 PIDW(i,j)=min(RR0*D2T*y2(i,j)*r_nci*dd(i,j), qc(i,j)) !meyers
              endif  !tairc
+!<<< end of ifndef sat_predict
+#endif
              pimm(i,j)=0.0
              pcfr(i,j)=0.0
 
