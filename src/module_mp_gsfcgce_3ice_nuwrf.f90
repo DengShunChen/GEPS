@@ -3,85 +3,43 @@
 !#define sat_predict
 !#define use_declination
 !#define use_cpm
-!WRF:MODEL_LAYER:PHYSICS
-!
 
 MODULE module_mp_gsfcgce_3ice_nuwrf
 
 
-!   USE     module_wrf_error
-!NUWRF BEGIN
-!   USE     module_dm
 #if ( WRF_CHEM == 1)
-!JJS 20110525     vvvvv
-! for inline Gocart coupling
    USE     module_gocart_coupling
-!JJS 20110525     ^^^^^
 #endif
-!NUWRF END
-!   USE module_utility, ONLY: WRFU_Clock, WRFU_Alarm
-!   USE module_domain, ONLY : HISTORY_ALARM, Is_alarm_tstep
    USE module_mp_radar
 
-!   LOGICAL, EXTERNAL :: wrf_dm_on_monitor
-
-!JJS 20140117 vvvvv
    PRIVATE   ! privatize all variables/subroutines in this module excepting public parameter below
    PUBLIC :: gsfcgce_3ice_nuwrf
-!JJS 20140117 ^^^^^
 
-!JJS 1/3/2008     vvvvv
-
-!  common /bt/
    REAL,    PRIVATE ::          rd1,  rd2,   al,   cp
 
-!  common /cont/
    REAL,    PRIVATE ::          c38, c358, c610, c149,             &
                                c879, c172, c409,  c76,             &
                                c218, c580, c141
-!  common /b3cs/
    REAL,    PRIVATE ::           ag,   bg,   as,   bs,             &
                                  aw,   bw,  bgh,  bgq,             &
                                 bsh,  bsq,  bwh,  bwq
 
-!  common /size/
    REAL,    PRIVATE ::          tnw,  tns,  tng,                   &
                                roqs, roqg, roqr
 
-!  common /bterv/
-!   REAL,    PRIVATE ::           zrc,  zgc,  zsc,                 &
-!                                 vrc,  vgc,  vsc
-
-!  common /rterv/
    REAL,    PRIVATE ::           zrc,  zgc,  zsc, vrc,             &  
                                 vrc0, vrc1, vrc2, vrc3,            &
-                             	 vgc,  vsc
+                                 vgc,  vsc
 
    REAL,    PRIVATE ::         draimax
 
-!  common /bsnw/
-!   REAL,    PRIVATE ::          alv,  alf,  als,   t0,   t00,     &
-!                                avc,  afc,  asc,  rn1,  bnd1,     &
-!                                rn2, bnd2,  rn3,  rn4,   rn5,     &
-!                                rn6,  rn7,  rn8,  rn9,  rn10,     &
-!                              rn101,rn10a, rn11,rn11a,  rn12
-!
-!   REAL,    PRIVATE ::         rn14, rn15,rn15a, rn16,  rn17,     &
-!                              rn17a,rn17b,rn17c, rn18, rn18a,     &
-!                               rn19,rn19a,rn19b, rn20, rn20a,     &
-!                              rn20b, bnd3, rn21, rn22,  rn23,     &
-!                              rn23a,rn23b, rn25,rn30a, rn30b,     &
-!                              rn30c, rn31, beta, rn32
-
-!  common /bsnw/
    REAL,    PRIVATE ::             bnd1, rn11a
 
    REAL,    PRIVATE ::          rn17, rn19b,                       &
-                               	bnd3, rn23a,                   &
+                                bnd3, rn23a,                       &
                                rn23b, rn30b,                       &
                                rn30c 
 
-!  common /rsnw/
     REAL,    PRIVATE ::          alv,   alf,   als,    t0,   t00,     &
                                  avc,   afc,   asc,   rn1,   rn2,     &
                                 bnd2,   rn3,   rn4,   rn5,  rn50,     &
@@ -108,7 +66,6 @@ MODULE module_mp_gsfcgce_3ice_nuwrf
    ! critical q of hydrometeor characteristics (eg. fall speed, radius)
    REAL,    PRIVATE :: cwmin, cimin, crmin, csmin, cgmin
 
-!
    REAL,    PRIVATE, DIMENSION( 31 )  ::      aa1,  aa2
    DATA aa1/.7939e-7, .7841e-6, .3369e-5, .4336e-5, .5285e-5,         &
            .3728e-5, .1852e-5, .2991e-6, .4248e-6, .7434e-6,          &
@@ -151,7 +108,6 @@ MODULE module_mp_gsfcgce_3ice_nuwrf
                1.377209,1.361445,1.348963,1.336596,1.327394,          &
                1.318257,1.309182,1.303167,1.294196,1.288250,1.279381/
    real, private, parameter :: thrd = 1./3.
-!JJS 1/3/2008     ^^^^^
 
 !+---+-----------------------------------------------------------------+
 !..The following 6 variables moved here to facilitate reflectivity
@@ -180,14 +136,10 @@ CONTAINS
 !  NASA/GSFC GCE
 !  Tao et al, 2001, Meteo. & Atmos. Phy., 97-137
 !-------------------------------------------------------------------
-!  SUBROUTINE gsfcgce(  th, th_old,                                &
   SUBROUTINE gsfcgce_3ice_nuwrf( th                                &
                       ,qv, ql                                      &
                       ,qr, qi                                      &
                       ,qs                                          &
-!                      ,qvold, qlold                               &
-!                      ,qrold, qiold                               &
-!                      ,qsold                                      &
                       ,rho, pii, p, dt_in, z                       &
                       ,ht, dz8w, grav, w                           &
 !                      ,rhowater, rhosnow                           &
@@ -197,10 +149,8 @@ CONTAINS
                       ,its,ite, jts,jte, kts,kte                   & ! tile   dims
                       ,rainnc, icenc, snownc, graupelnc, sr        &
 !                      ,rainncv, snowncv, graupelncv                &
-!                      ,f_qg, qg, pgold                            &
                       ,f_qg, qg                                    &
                       ,ihail, ice2                                 &
-!NUWRF BEGIN
 #ifdef EXT_DIAG
                       ,refl_10cm, diagflag, do_radar_ref           &
 !                      ,physc, physe, physd, physs, physm, physf    &
@@ -209,23 +159,15 @@ CONTAINS
 #endif
                       ,refc, refr, refi, refs, refg                & ! cloud effective radius
 #if ( WRF_CHEM == 1)
-!JJS 20110525     vvvvv
                       ,aero, icn_diag, nc_diag, gid                &
-!JJS 20110525     ^^^^^
-! EMK
                       ,chem_opt                                    &
                       ,gsfcgce_gocart_coupling                     &
 #endif 
-!NUWRF END
                                                                    )
 
 !-------------------------------------------------------------------
   IMPLICIT NONE
 !-------------------------------------------------------------------
-!
-! JJS 2/15/2005
-!
-!  INTEGER,      INTENT(IN   )    ::   ids,ide, jds,jde, kds,kde
   INTEGER,      INTENT(IN   )    ::   ims,ime, jms,jme, kms,kme , &
                                       its,ite, jts,jte, kts,kte 
   INTEGER,      INTENT(IN   )    ::   itimestep, ihail, ice2
@@ -240,29 +182,17 @@ CONTAINS
                                                               qs, &
                                                               qg
 
-!NUWRF BEGIN
 #if ( WRF_CHEM == 1)
-! JJS 20110525 vvvvv
-! for inline Gocart coupling
   INTEGER, PARAMETER :: num_go = 14  ! number of the gocart aerosol species
   REAL, DIMENSION( ims:ime, kms:kme, jms:jme, num_go), intent(in) :: aero
   REAL, DIMENSION( ims:ime, kms:kme, jms:jme), intent(out) :: icn_diag, nc_diag
   INTEGER,      INTENT(IN   )    ::   gid
-! JJS 20110525 ^^^^^
   integer,intent(in) :: chem_opt ! EMK
   integer,intent(in) :: gsfcgce_gocart_coupling ! EMK
 #endif
-!NUWRF END
 !
   REAL, DIMENSION( ims:ime , kms:kme , jms:jme ),                 &
         INTENT(IN   ) ::                                          &
-!                                                         th_old, &
-!                                                          qvold, &
-!                                                          qlold, &
-!                                                          qrold, &
-!                                                          qiold, &
-!                                                          qsold, &
-!                                                          qgold, &
                                                              rho, &
                                                              pii, &
                                                                p, &
@@ -283,7 +213,6 @@ CONTAINS
                                                        refi,      &
                                                        refs,      &
                                                        refg
-!JJS 20140225  ^^^^^
 
 !+---+-----------------------------------------------------------------+
 #ifdef EXT_DIAG
@@ -305,8 +234,6 @@ CONTAINS
   LOGICAL, INTENT(IN), OPTIONAL :: F_QG
 
 !  LOCAL VAR
-
-!
   INTEGER ::  itaobraun, istatmin, new_ice_sat, id
   INTEGER ::  improve
 
@@ -333,12 +260,9 @@ CONTAINS
   integer :: n, ntimes
   real :: mp_time, dts
 
-!NUWRF BEGIN
 #if ( WRF_CHEM == 1)
-! EMK 2011/08/25
   logical,save :: first_makelut = .true. ! Initial value, changed later.
 #endif
-!NUWRF END
 
 !+---+-----------------------------------------------------------------+
 
@@ -369,38 +293,10 @@ CONTAINS
 !  if (ice2 .eq. 2) ihail = 0
 
   i24h=nint(86400./dt_in)
-  if (mod(itimestep,i24h).eq.1) then
-!     write(6,*) 'ihail=',ihail,'  ice2=',ice2
-     if (ice2.eq.0) then
-!        write(6,*) 'Running 3-ice scheme in GSFCGCE with'
-        if (ihail.eq.0) then 
-!           write(6,*) '     ice, snow and graupel'
-        else if (ihail.eq.1) then
-!                write(6,*) '     ice, snow and hail'
-        else
-!             write(6,*) 'ihail has to be either 1 or 0'
-!             call wrf_error_fatal ('gsfcgce_2ice in namelist.input has to be either 1 or 0')
-             stop
-        endif !ihail
-     else if (ice2.eq.1) then
-!             write(6,*) 'Running 2-ice scheme in GSFCGCE with'
-!             write(6,*) '     ice and snow'
-     else if (ice2.eq.2) then
-!             write(6,*) 'Running 2-ice scheme in GSFCGCE with'
-!             write(6,*) '     ice and graupel'
-     else if (ice2.eq.3) then
-!             write(6,*) 'Running warm rain only scheme in GSFCGCE without any ice'
-     else
-!             write(6,*) 'gsfcgce_2ice in namelist.input has to be 0, 1, 2, or 3'
-!             call wrf_error_fatal ('gsfcgce_2ice in namelist.input has to be 0, 1, 2, or 3')
-             stop
-     endif !ice2
-  endif !itimestep
 
 !c  new_ice_sat = 0, 1, 2, or 3 
     new_ice_sat = 3 ! Set to 3 in NUWRF
 
-!c istatmin
     istatmin = 180
 
 !c id = 0  without in-line staticstics
@@ -411,25 +307,17 @@ CONTAINS
 !c ibud = 1 yes
     ibud = 0
 
-!NUWRF BEGIN
 #if ( WRF_CHEM == 1)
-! JJS 20110525 vvvvv
 ! Create CCN and IN candidate look-up table. Only need to run once at the first timestep of each run
-!    if (itimestep .eq. 1) call makelut_ccn_icn
-! EMK 2011/08/25
-      if (mod(itimestep,i24h).eq.1)   &
-!         print *, 'in mp_gsfcgce_3ice_nuwrf, chem_opt, gsfcgce_gocart_coupling  = ', chem_opt, gsfcgce_gocart_coupling
       if (first_makelut) then
          ! EMK...Only execute when GOCART and coupling turned on.
          if ( (chem_opt == 300 .or. chem_opt == 301 .or. &
                chem_opt == 302 .or. chem_opt == 303) .and. &
                (gsfcgce_gocart_coupling == 1)) then
-!            if ( wrf_dm_on_monitor() ) print *,'Goddard MP coupled with Gocart Aerosol'
             call makelut_ccn_icn
             first_makelut = .false. ! This value is saved for subsequent calls.
          end if
       end if
-! JJS 20110525 ^^^^^
 #endif
 
    ! convert specific values of q to mixing ratios :
@@ -646,7 +534,6 @@ CONTAINS
   REAL                          :: ftns0, ftng0
 
   DATA tslopes/0./, tslopeg/0./
-!  DATA const_vt//, const_d//, const_m//
   DATA aice/1.e-6, 1.e-5, 1.e-4, 1.e-3, 0.01, 0.1, 1./  ! g/m**3
   DATA vice/5.,15.,30.,35.,40.,45.,50./  ! cm/s
   DATA igce/0/ 
@@ -743,7 +630,6 @@ CONTAINS
          qgz(k)=0.
       ENDDO
    ENDIF
-
 
 !
 !-- rain
@@ -931,11 +817,6 @@ CONTAINS
 !-- If IHAIL=1, use hail.
 !-- If IHAIL=0, use graupel.
 !
-!    if (ihail .eq. 1) then
-!       xnog = xnoh
-!       rhograul = rhohail
-!    endif
-
 #ifdef SL_sedi
     ntimes = 1
     dtcfl = dtb/real(ntimes)
@@ -1160,7 +1041,6 @@ CONTAINS
   integer, INTENT(IN   ) ::                           itimestep, ics 
 
 !c Local variables
-!  REAL, DIMENSION( kts:kte ) ::  Y1, Y2
   REAL   ::   A0, A1, A2
 
   A1=0.
@@ -1174,13 +1054,6 @@ CONTAINS
      enddo
   enddo
 
-!  A1=0.0
-!  A2=0.0
-!  do k=kts,kte
-!     A1=A1+Y1(k)
-!     A2=A2+Y2(k)
-!  enddo
-
   A0=0.0
 
   if (A1.NE.0.0.and.A1.GT.A2) then 
@@ -1189,7 +1062,6 @@ CONTAINS
      do k=kts,kte
         do j=jts,jte
            do i=its,ite
-!           X(i,k,j)=A0*AMAX1(X(i,k,j), 0.0)
            X(i,k,j)=A0*DMAX1(X(i,k,j), 0.0)
            enddo
         enddo
@@ -1927,36 +1799,6 @@ CONTAINS
   real     ::   tairccri, cn0, dt
 !cc
 
-!JJS      common/bxyz/ n,isec,nran,kt1,kt2
-!JJS      common/option/ lipps,ijkadv,istatmin,iwater,itoga,imlifting,lin,
-!JJS     1   irf,iadvh,irfg,ismg,id
-
-!JJS      common/timestat/ ndt_stat,idq
-!JJS      common/iice/ new_ice_sat
-!JJS      common/bt/ dt,d2t,rijl2,dts,f5,rd1,rd2,bound,al,cp,ra,ck,ce,eps,
-!JJS     1    psfc,fcor,sec,aminut,rdt
-
-!JJS   the following common blocks have been moved to the top of 
-!JJS   module_mp_gsfcgce_driver_instat.F
-
-!      common/bt/ rd1,rd2,al,cp
-!
-!
-!      common/bterv/ zrc,zgc,zsc,vrc,vgc,vsc
-!      common/size/ tnw,tns,tng,roqs,roqg,roqr
-!      common/cont/ c38,c358,c610,c149,c879,c172,c409,c76,c218,c580,c141
-!        common/b3cs/ ag,bg,as,bs,aw,bw,bgh,bgq,bsh,bsq,bwh,bwq
-!      common/bsnw/ alv,alf,als,t0,t00,avc,afc,asc,rn1,bnd1,rn2,bnd2,     &
-!         rn3,rn4,rn5,rn6,rn7,rn8,rn9,rn10,rn101,rn10a,rn11,rn11a, &
-!         rn12,rn12a(31),rn12b(31),rn13(31),rn14,rn15,rn15a,rn16,rn17,    &
-!         rn17a,rn17b,rn17c,rn18,rn18a,rn19,rn19a,rn19b,rn20,rn20a,rn20b, &
-!         bnd3,rn21,rn22,rn23,rn23a,rn23b,rn25,rn25a(31),rn30a,rn30b,     &
-!         rn30c,rn31,beta,rn32
-!      common/rsnw1/ rn10b,rn10c,rnn191,rnn192,rn30,rnn30a,rn33,rn331,    &
-!                    rn332
-!JJS
-
-!JJS 20090623 vvvvv
 !  integer ids,ide,jds,jde,kds,kde                                  
   integer ims,ime,jms,jme,kms,kme                                  
   integer its,ite,jts,jte,kts,kte                                  
@@ -1982,40 +1824,28 @@ CONTAINS
   real :: a_1, a_2, a_3
   real :: a_11, a_22, a_33, a_44
   real :: zdry, zwet
-!JJS 20090623 ^^^^^
 
-!JJS 20090708 vvvvv
   real :: fact_fit
-!JJS 20090708 ^^^^^
 
   real, dimension (its:ite,jts:jte,kts:kte) ::  fv
   real, dimension (its:ite,jts:jte,kts:kte) ::  dpt, dqv
   real, dimension (its:ite,jts:jte,kts:kte) ::  qcl, qrn,             &
                                                 qci, qcs, qcg
-!JJS
 
   real, dimension (ims:ime, kms:kme, jms:jme) ::  ptwrf, qvwrf 
   real, dimension (ims:ime, kms:kme, jms:jme) ::  qlwrf, qrwrf,        &
                                                   qiwrf, qswrf, qgwrf
 
-!JJS in MKS
   real, dimension (ims:ime, kms:kme, jms:jme) ::  rho_mks
   real, dimension (ims:ime, kms:kme, jms:jme) ::  pi_mks
   real, dimension (ims:ime, kms:kme, jms:jme) ::  p0_mks
   real, dimension (ims:ime, kms:kme, jms:jme) ::  w_mks
-!JJS
 
-!JJS 20140225
   real, dimension (ims:ime, kms:kme, jms:jme) , INTENT(OUT   )         &
                                               ::  refc, refr,         &
                                                   refi, refs,         &
                                                   refg 
 
-!  real, dimension (its:ite,jts:jte,kts:kte) ::  ww1
-!  real, dimension (its:ite,jts:jte,kts:kte) ::  rsw
-!  real, dimension (its:ite,jts:jte,kts:kte) ::  rlw
-
-!JJS      COMMON /BADV/
   real, dimension (its:ite,jts:jte) ::                                  &              
            vg,      zg,       &
            ps,      pg,       &
@@ -2032,9 +1862,7 @@ CONTAINS
         qsacw,   praci,       &
         pmlts,   pmltg,       &
         asss,       y1,    y2
-!JJS       Y2(its:ite,jts:jte),    DDE(NB)
 
-!JJS      COMMON/BSAT/
   real, dimension (its:ite,jts:jte) ::        &
         praut,   pracw,       &
          psfw,    psfi,       &
@@ -2053,7 +1881,6 @@ CONTAINS
           egs,      y3,       &
            y4,     ddb
 
-!JJS      COMMON/BSAT1/
   real, dimension (its:ite,jts:jte) ::        &
            pt,      qv,       &
            qc,      qr,       &
@@ -2072,7 +1899,6 @@ CONTAINS
         pssub,   pgsub,       &
           dda
 
-!JJS      COMMON/B5/
   real, dimension (its:ite,jts:jte,kts:kte) ::  rho
   real, dimension (kts:kte) ::                 & 
            tb,      qb,    rho1,               &
@@ -2082,7 +1908,6 @@ CONTAINS
            wb,     ub1,     vb1,    rrho,      &
         rrho1,     wbx
 
-!JJS      COMMON/B6/
   real, dimension (its:ite,jts:jte,kts:kte) ::  p0, pi, f0, ww1
   real, dimension (kts:kte) ::    & 
            fd,      fe,           &
@@ -2090,7 +1915,6 @@ CONTAINS
            sq,      sc,           &
            se,     sqa
 
-!JJS      COMMON/BRH1/
   real, dimension (kts:kte) ::             & 
          srro,    qrro,    sqc,    sqr,    &
           sqi,     sqs,    sqg,   stqc,    &
@@ -2098,13 +1922,9 @@ CONTAINS
   real, dimension (nt) ::                  & 
           tqc,     tqr,    tqi,    tqs,    tqg
 
-!JJS     common/bls/ y0(nx,ny),ts0new(nx,ny),qss0new(nx,ny)
-
-!JJS      COMMON/BLS/
   real, dimension (ims:ime,jms:jme) ::     &
            y0,     ts0,   qss0
 
-!JJS      COMMON/BI/ IT(its:ite,jts:jte), ICS(its:ite,jts:jte,4)
   integer, dimension (its:ite,jts:jte) ::        it  
   integer, dimension (its:ite,jts:jte, 4) ::    ics 
 
@@ -2113,8 +1933,6 @@ CONTAINS
   real :: r2is, r2ig
   
 
-!JJS      COMMON/MICRO/
-!NUWRF BEGIN
 #ifdef EXT_DIAG
   real, dimension (ims:ime,kms:kme,jms:jme)  ::     &
           physc,   physe,   physd,                  &
@@ -2123,13 +1941,8 @@ CONTAINS
           acphyss,   acphysm,   acphysf
 #endif
 
-
-! EMK NUWRF...Treat this as local
   real, dimension(its:ite,kts:kte,jts:jte) :: dbz
 
-!JJS  9/30/2009 for Steve's new improvement
-
-!  LOGICAL, EXTERNAL :: wrf_dm_on_monitor
   integer  ::  ihalmos
   real     ::  tslopes, tslopeg
   real     ::  xnsplnt, xmsplnt
@@ -2153,7 +1966,6 @@ CONTAINS
   integer  :: improve1
   data improve1/-20/
 
-
   real     ::  tairc5, hfact, sfact, yy1
   real     ::  xncld, esat, rv, rlapse_m
   real     ::  delT, bhi, cpi
@@ -2169,7 +1981,6 @@ CONTAINS
   real     :: ami20
 
 #if ( WRF_CHEM == 1)
-! JJS 20110525 vvvvv
 ! for inline Gocart coupling
   INTEGER,      INTENT(IN   )    ::   gid
   INTEGER, PARAMETER :: num_go = 14  ! number of the gocart aerosol species
@@ -2194,11 +2005,8 @@ CONTAINS
   real :: P_liu_daum  ! autoconversion rate [g/cm3 s-1]    !
   real :: re_liu_daum ! effective radius of cloud [micron]   !
   real,parameter :: min_icn = 0.01 !minimum # conc of IN [#/Litre]
-
-! JJS 20110525 ^^^^^
 #endif
 
-!JJS 20140226  variables for the calculation of effective radius of cloud species
   REAL , DIMENSION( ims:ime , jms:jme ) , INTENT(IN)   :: XLAND
   real, parameter :: roqi = 0.9179    ! ice density
 !  real, parameter :: ccn_over_land = 1500  ! [#/cm3] climatological value
@@ -2209,8 +2017,6 @@ CONTAINS
   real :: I_cloud    ! cloud water [g/cm3] !
   real :: mu, ccn_ref, lambda
   real :: gamfac1, gamfac3
-!JJS 20140226  ^^^^^
-!NUWRF END
 
 !23456789012345678901234567890123456789012345678901234567890123456789012
 
@@ -2239,12 +2045,7 @@ CONTAINS
 
 !+---+-----------------------------------------------------------------+
 #ifdef EXT_DIAG
-  REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT):: refl_10cm  ! GT
-! TYPE (WRFU_Clock):: grid_clock
-! TYPE (WRFU_Alarm), POINTER:: grid_alarms(:)
-
-
-!      REAL, DIMENSION(kts:kte):: qv1d, t1d, p1d, qr1d, qs1d, qg1d, dBZ_GT
+      REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT):: refl_10cm  ! GT
       LOGICAL, OPTIONAL, INTENT(IN) :: diagflag
       INTEGER, OPTIONAL, INTENT(IN) :: do_radar_ref
 #endif
@@ -2300,11 +2101,7 @@ CONTAINS
       real, parameter :: cliq = 4.218e+7    !specific heat capacity of liquid (in CGS)
       real, parameter :: cice = 2.106e+7    !specific heat capacity of ice (in CGS)
       real :: cpm, hlv, hls, hlf
-!
-!JJS20090623      save  
 
-!    i24h=nint(86400./dt)
-!    if (mod(itimestep,i24h).eq.1) then
 #ifdef EXT_DIAG
     if (itimestep.eq.1) then
        do k = kts, kte
@@ -2525,7 +2322,6 @@ CONTAINS
      do 2000 j=jts,jte
      do 2000 i=its,ite
 
-! EMK BUG FIX...Initialize variable
 #if ( WRF_CHEM == 1)
         ccn_out = 0.e0 
         icn_out = 0.e0 
@@ -2540,7 +2336,6 @@ CONTAINS
         end if
 
 #endif
-! EMK END
 
          rp0=3.799052e3/p0(i,j,k)
          pi0=pi(i,j,k)
@@ -2746,9 +2541,8 @@ CONTAINS
         tca(i,j)=c141*y1(i,j)
         scv(i,j)=1./((rr0*y1(i,j))**.1666667*dwv(i,j)**.3333333)
 
-!JJS 10/7/2008     vvvvv
         IF (IWARM .EQ. 1) THEN
-!JJS   for calculating processes related to warm rain only
+            ! for calculating processes related to warm rain only
             qi(i,j)=0.0
             qs(i,j)=0.0
             qg(i,j)=0.0
@@ -2823,17 +2617,14 @@ CONTAINS
                y1(i,j)=.78/zr(i,j)**2+r23af*scv(i,j)/zr(i,j)**bwh5
                y2(i,j)=r23br/(tca(i,j)*tair(i,j)**2)+1./(dwv(i,j) &
                        *qsw(i,j))
-!cccc
                ern(i,j)=r23t*ssw(i,j)*y1(i,j)/y2(i,j)
                ern(i,j)=min(dd1(i,j),qr(i,j),max(ern(i,j),0.))
  
-!JJS 20090708 vvvvv
-! xli - reducing evaporation rate according to fitq
+               ! reducing evaporation rate according to fitq
                if (qr(i,j) .gt. 1.e-6 ) then
                   fact_fit=0.11*(qr(i,j)*1.e3)**(-1.27)+0.98
                   ern(i,j)=ern(i,j)/fact_fit
                endif
-!JJS 20090708 ^^^^^
 
                pt(i,j)=pt(i,j)-avcp*ern(i,j)
                qv(i,j)=qv(i,j)+ern(i,j)
@@ -2841,7 +2632,6 @@ CONTAINS
             endif
 
         ELSE       ! part of if (iwarm.eq.1) then
-!JJS 10/7/2008     ^^^^^
 
 !JJS   for calculating processes related to both ice and warm rain
 
@@ -2978,7 +2768,6 @@ CONTAINS
 !* 22 * PRACW : ACCRETION OF QC BY QR                             **22**
 
 #if ( WRF_CHEM == 1)
-!JJS 20110602 vvvvv
              ! EMK...Only execute when GOCART and coupling are selected
             if ( (chem_opt == 300 .or. chem_opt == 301 .or. &
                    chem_opt == 302 .or. chem_opt == 303) .and. &
@@ -3018,7 +2807,6 @@ CONTAINS
             end if ! if (gsfcgce_gocart_coupling == 1)
 #else
             praut(i,j)=max(rn21*(qc(i,j)-bnd21),0.0)
-!JJS 20110602 ^^^^^
 #endif
 
             y1(i,j)=1./zr(i,j)
@@ -3031,13 +2819,10 @@ CONTAINS
 !* 12 * PSFW : BERGERON PROCESSES FOR QS (KOENING, 1971)          **12**
 !* 13 * PSFI : BERGERON PROCESSES FOR QS                          **13**
 
-          pidep(i,j)=0.0
+            pidep(i,j)=0.0
 
 #ifndef sat_predict
 !>>> Note that Bergeron processes are concerned in saturation prediction scheme
-         if (improve.eq.3) then
-!        if (improve1.eq.3) then
-                                     ! Steve's new improvement 9/21/2009
             if (tair(i,j) .lt. t0) then
                y1(i,j)=max( min(tairc(i,j), -1.), -31.)
                it(i,j)=int(abs(y1(i,j)))
@@ -3075,7 +2860,7 @@ CONTAINS
 !  STEVE : PLEASE CHECK
 !                 xssi=min(ssi(i,j), fssi)
 !                  xssi=min(ssi(i,j), 0.20)
-               r_nci=min(1.e-3*exp(-.639+12.96*fssi), 1.)  !meyers et al. 
+               r_nci=min(1.e-3*exp(-.639+12.96*fssi), 1.)  !meyers et al. 1992 (cm^-3)
 !  STEVE : PLEASE CHECK
                if (tairc(i,j).le.-5.) then                         !meyers
                   r_nci=max(1.e-3*exp(-.639+12.96*fssi),0.528e-3)  !meyers et al. 
@@ -3090,7 +2875,6 @@ CONTAINS
                if ( (chem_opt == 300 .or. chem_opt == 301 .or. &
                      chem_opt == 302 .or. chem_opt == 303) .and. &
                      (gsfcgce_gocart_coupling == 1) ) then
-                  !JJS 20110602 vvvvv
                   ! Conversion rate of cloud water to ice in the Bergeron porcess based on Meyer + DeMott formulae
                   !
                   ! convert gocart aerosol mass conc to IN
@@ -3098,8 +2882,6 @@ CONTAINS
                   !                call mass2icn(p0(i,j,k)*0.001,tair(i,j),aero(i,k,j,:), icn_out)
                   call mass2icn(p0(i,j,k)*0.001,tair(i,j),aero(i,k,j,:), icn_out,i,j,k)
                   icn_out = min(1.e3, max(0.01e0 ,  icn_out) )
-!                  if ( wrf_dm_on_monitor() .and. itimestep.eq.1 ) &
-!                       print *,'mass2icn is called'
                   !                icn_cgs(i,j,k) = max(min_icn, icn_out) * 1.e-3   !IN conc [#/cm3] <-- [#/Litter]
                   !                icn_cgs(i,j,k) = icn_out * 1.e-3 !IN conc [#/cm3]
                   !                if (rh_rad .ge. 100.) then
@@ -3110,7 +2892,6 @@ CONTAINS
                   !                endif
                   !                r_nci = icn_cgs(i,j,k)  !DeMotto's formuale
                   r_nci = icn_out * 1.e-3  !DeMotto's formuale
-                  !JJS 20110602 ^^^^^
                end if ! if (gsfcgce_gocart_coupling == 1)
 #endif
 
@@ -3124,59 +2905,6 @@ CONTAINS
                   psfi(i,j)=0.
                endif
             endif   !tair(i,j)
-            
-         else                               ! below is 2007 saticel_s
-
-            if (tair(i,j).lt.t0.and.qi(i,j).gt.cmin) then
-               y1(i,j)=max( min(tairc(i,j), -1.), -31.)
-               it(i,j)=int(abs(y1(i,j)))
-               y1(i,j)=rn12a(it(i,j))
-               y2(i,j)=rn12b(it(i,j))  	
-               psfw(i,j)=r2is*max(d2t*y1(i,j)*(y2(i,j)+r12r*qc(i,j))*qi(i,j),0.0)
-               rtair(i,j)=1./(tair(i,j)-c76)
-               y2(i,j)=exp(c218-c580*rtair(i,j))
-               qsi(i,j)=rp0*y2(i,j)
-               esi(i,j)=c610*y2(i,j)
-#ifdef new_saturation
-               esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
-               qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
-               esi(i,j) = esi(i,j)*10.  !in CGS
-#endif
-               ssi(i,j)=(qv(i,j)+qb0)/qsi(i,j)-1.
-               r_nci=min(1.e-6*exp(-.46*tairc(i,j)),1.)
-!               R_NCI=min(1.e-8*EXP(-.6*TAIRC(I,J)),1.) ! use Tao's
-               dm(i,j)=max( (qv(i,j)+qb0-qsi(i,j)), 0.)
-               rsub1(i,j)=cs580*qsi(i,j)*rtair(i,j)*rtair(i,j)
-               y3(i,j)=1./tair(i,j)
-               dd(i,j)=y3(i,j)*(rn30a*y3(i,j)-rn30b)+rn30c*tair(i,j)/esi(i,j)
-               y1(i,j)=206.18*ssi(i,j)/dd(i,j)
-               pidep(i,j)=y1(i,j)*sqrt(r_nci*qi(i,j)/r00)
-               dep(i,j)=dm(i,j)/(1.+rsub1(i,j))/d2t
-
-               if (dm(i,j).gt.cmin2) then
-                  a2=1.
-                  if (pidep(i,j).gt.dep(i,j).and.pidep(i,j).gt.cmin2) then
-                     a2=dep(i,j)/pidep(i,j)
-                     pidep(i,j)=dep(i,j)
-                  endif
-!                  psfi(i,j)=r2is*a2*.5*qi(i,j)*y1(i,j)/(sqrt(ami100) &
-                  psfi(i,j)=r2is*a2*qi(i,j)*y1(i,j)/(sqrt(ami100) &
-                          -sqrt(ami40))
-               else if (dm(i,j).lt.-cmin2) then
-!
-!        SUBLIMATION TERMS USED ONLY WHEN SATURATION ADJUSTMENT FOR ICE
-!        IS TURNED OFF
-!
-                        pidep(i,j)=0.
-                        psfi(i,j)=0.
-                    else
-                        pidep(i,j)=0.
-                        psfi(i,j)=0.
-               endif  !dm(i,j)
-!
-            endif !tair(i,j)
-!        
-          endif                                 ! for Processes 12 & 13
 !<<< end of ifndef sat_predict
 #endif
 
@@ -3190,124 +2918,55 @@ CONTAINS
 !*  Steve turned off PGWET, set PGWET = 0.
 !*  Steve turned off wgaci, set wgaci = 0.                           
 
-      if (improve .eq. 3) then
+            y1(i,j)=abs( vg(i,j)-vs(i,j) )
+            y2(i,j)=zs(i,j)*zg(i,j)
+            y3(i,j)=5./y2(i,j)
+            y4(i,j)=.08*y3(i,j)*y3(i,j)
+            y5(i,j)=.05*y3(i,j)*y4(i,j)
+            y2(i,j)=y1(i,j)*(y3(i,j)/zs(i,j)**5+y4(i,j)/zs(i,j)**3        &
+                            +y5(i,j)/zs(i,j))
 
-         y1(i,j)=abs( vg(i,j)-vs(i,j) )
-         y2(i,j)=zs(i,j)*zg(i,j)
-         y3(i,j)=5./y2(i,j)
-         y4(i,j)=.08*y3(i,j)*y3(i,j)
-         y5(i,j)=.05*y3(i,j)*y4(i,j)
-         y2(i,j)=y1(i,j)*(y3(i,j)/zs(i,j)**5+y4(i,j)/zs(i,j)**3        &
-                         +y5(i,j)/zs(i,j))
+            pgacs(i,j)=r2ig*r2is*r9rf*y2(i,j)*ftns(i,j)*ftng(i,j)
+!            dgacs(i,j)=pgacs(i,j)
+            dgacs(i,j)=0.0             !Lang et al. 2007
+            wgacs(i,j)=0.0
+            y1(i,j)=1./zg(i,j)**bg3
+            esi(i,j)=1.0 !egc constant in consatrh via r14f/rn14; use esi( ) to make f(T)/f(q)
 
-         pgacs(i,j)=r2ig*r2is*r9rf*y2(i,j)*ftns(i,j)*ftng(i,j)
-!         dgacs(i,j)=pgacs(i,j)
-         dgacs(i,j)=0.0             !Lang et al. 2007
-!crh     wgacs(i,j)=10.*r9rf*y2(i,j)
-         wgacs(i,j)=0.0
-         y1(i,j)=1./zg(i,j)**bg3
-         esi(i,j)=1.0 !egc constant in consatrh via r14f/rn14; use esi( ) to make f(T)/f(q)
+            dmicrong=(r00*qg(i,j)/roqg/cpi/(tng*ftng(i,j)))**.25*1.e4
+            esi(i,j)=min(1.,(dmicrong/500.)**1.1)       ! f(dmicrons)
 
-         dmicrong=(r00*qg(i,j)/roqg/cpi/(tng*ftng(i,j)))**.25*1.e4
-         esi(i,j)=min(1.,(dmicrong/500.)**1.1)       ! f(dmicrons)
-
-         dgacw(i,j)= r2ig*esi(i,j)*r14f*qc(i,j)*y1(i,j)*ftng(i,j)
-!         dgacw(i,j)=r2ig*r14f*qc(i,j)*y1(i,j)*ftng(i,j)
-         y2(i,j)=0.
-         if ((tairc(i,j).le.hmtemp1).and.(tairc(i,j).ge.hmtemp4))  &
-                                                    y2(i,j)=0.5
-!         if ((tairc(i,j).ge.hmtemp2).and.(tairc(i,j).le.hmtemp3))  &
-!vvvvvvvvvv Tao 20110722 vvvvvvvvvvvvv
-         if ((tairc(i,j).le.hmtemp2).and.(tairc(i,j).ge.hmtemp3))  &
-!^^^^^^^^^^ Tao 20110722 ^^^^^^^^^^^^^
-                                                    y2(i,j)=1.
-         pihmg(i,j)=r2ig*dgacw(i,j)*y2(i,j)*xnsplnt*1000.*xmsplnt
-         dgacw(i,j)=r2ig*dgacw(i,j)-pihmg(i,j)
-         qgacw(i,j)=r2ig*dgacw(i,j)
-         y5(i,j)=1.0
-         if (vg(i,j).gt.0.) y5(i,j)=abs((vg(i,j)-vi(i,j))/vg(i,j))
-         dgaci(i,j)= r2ig*y5(i,j)*r15f*qi(i,j)*y1(i,j)*ftng(i,j)
-!         dgaci(i,j)=r2ig*r15f*qi(i,j)*y1(i,j)*ftng(i,j)
-         dgaci(i,j)=0.0
-!crh     wgaci(i,j)=r15af*qi(i,j)*y1(i,j)
-         wgaci(i,j)=0.0
-
-         y1(i,j)=abs( vg(i,j)-vr(i,j) )
-         y2(i,j)=zr(i,j)*zg(i,j)
-         y3(i,j)=5./y2(i,j)
-         y4(i,j)=.08*y3(i,j)*y3(i,j)
-         y5(i,j)=.05*y3(i,j)*y4(i,j)
-         dd(i,j)=r16rf*y1(i,j)*(y3(i,j)/zr(i,j)**5+y4(i,j)/zr(i,j)**3 &
-                 +y5(i,j)/zr(i,j))*ftng(i,j)
-         dgacr(i,j)=r2ig*max(dd(i,j),0.0)
-         qgacr(i,j)=dgacr(i,j)
-
-         if (tair(i,j) .ge. t0) then
-            dgacs(i,j)=0.0
-!crh            wgacs(i,j)=0.0
-            dgacw(i,j)=0.0
+            dgacw(i,j)= r2ig*esi(i,j)*r14f*qc(i,j)*y1(i,j)*ftng(i,j)
+!            dgacw(i,j)=r2ig*r14f*qc(i,j)*y1(i,j)*ftng(i,j)
+            y2(i,j)=0.
+            if ((tairc(i,j).le.hmtemp1).and.(tairc(i,j).ge.hmtemp4))  &
+                                                       y2(i,j)=0.5
+            if ((tairc(i,j).le.hmtemp2).and.(tairc(i,j).ge.hmtemp3))  &
+                                                       y2(i,j)=1.
+            pihmg(i,j)=r2ig*dgacw(i,j)*y2(i,j)*xnsplnt*1000.*xmsplnt
+            dgacw(i,j)=r2ig*dgacw(i,j)-pihmg(i,j)
+            qgacw(i,j)=r2ig*dgacw(i,j)
+            y5(i,j)=1.0
+            if (vg(i,j).gt.0.) y5(i,j)=abs((vg(i,j)-vi(i,j))/vg(i,j))
+            dgaci(i,j)= r2ig*y5(i,j)*r15f*qi(i,j)*y1(i,j)*ftng(i,j)
+!            dgaci(i,j)=r2ig*r15f*qi(i,j)*y1(i,j)*ftng(i,j)
             dgaci(i,j)=0.0
-!crh            wgaci(i,j)=0.0
-            dgacr(i,j)=0.0
-         else
-            pgacs(i,j)=0.0
-            qgacw(i,j)=0.0
-            qgacr(i,j)=0.0
-         endif
+            wgaci(i,j)=0.0
 
-         pgwet(i,j)=0.0
-
-      else                           ! below is 2007 saticel_s
-
-         if (qc(i,j)+qr(i,j).lt.1.e-4) then
-            ee1=.01
-         else
-            ee1=1.
-         endif
-         ee2=0.09
-         egs(i,j)=ee1*exp(ee2*tairc(i,j))
-!            EGS(I,J)=0.1 ! 6/15/02 tao's
-         if (tair(i,j).ge.t0) egs(i,j)=1.0
-         y1(i,j)=abs(vg(i,j)-vs(i,j))
-         y2(i,j)=zs(i,j)*zg(i,j)
-         y3(i,j)=5./y2(i,j)
-         y4(i,j)=.08*y3(i,j)*y3(i,j)
-         y5(i,j)=.05*y3(i,j)*y4(i,j)
-         dd(i,j)=y1(i,j)*(y3(i,j)/zs(i,j)**5+y4(i,j)/zs(i,j)**3 &
-                   +y5(i,j)/zs(i,j))
-         pgacs(i,j)=r2ig*r2is*r9r*egs(i,j)*dd(i,j)
-!
-         if (ihail.eq.1) then
-            dgacs(i,j)=pgacs(i,j)
-         else
-            dgacs(i,j)=0.
-         endif
-!
-         wgacs(i,j)=r2ig*r2is*r9r*dd(i,j)
-         y1(i,j)=1./zg(i,j)**bg3
-
-         if (ihail .eq. 1) then
-            dgacw(i,j)=r2ig*max(r14r*qc(i,j)*y1(i,j), 0.0)
-
-         else
-            dgacw(i,j)=r2ig*max(r14f*qc(i,j)*y1(i,j), 0.0)
-         endif
-
-            qgacw(i,j)=dgacw(i,j)
-            y1(i,j)=abs(vg(i,j)-vr(i,j))
+            y1(i,j)=abs( vg(i,j)-vr(i,j) )
             y2(i,j)=zr(i,j)*zg(i,j)
             y3(i,j)=5./y2(i,j)
             y4(i,j)=.08*y3(i,j)*y3(i,j)
             y5(i,j)=.05*y3(i,j)*y4(i,j)
-            dd(i,j)=r16r*y1(i,j)*(y3(i,j)/zr(i,j)**5+y4(i,j)/zr(i,j)**3 &
-                    +y5(i,j)/zr(i,j))
-            dgacr(i,j)=r2ig*max(dd(i,j), 0.0)
+            dd(i,j)=r16rf*y1(i,j)*(y3(i,j)/zr(i,j)**5+y4(i,j)/zr(i,j)**3 &
+                    +y5(i,j)/zr(i,j))*ftng(i,j)
+            dgacr(i,j)=r2ig*max(dd(i,j),0.0)
             qgacr(i,j)=dgacr(i,j)
 
-            if (tair(i,j).ge.t0) then
+            if (tair(i,j) .ge. t0) then
                dgacs(i,j)=0.0
-               wgacs(i,j)=0.0
                dgacw(i,j)=0.0
+               dgaci(i,j)=0.0
                dgacr(i,j)=0.0
             else
                pgacs(i,j)=0.0
@@ -3315,129 +2974,88 @@ CONTAINS
                qgacr(i,j)=0.0
             endif
 
-            dgaci(i,j)=0.0
-            wgaci(i,j)=0.0
             pgwet(i,j)=0.0
 
-            if (tair(i,j).lt.t0) then
-               y1(i,j)=qi(i,j)/zg(i,j)**bg3
-               if (ihail.eq.1) then
-                  dgaci(i,j)=r2ig*r15r*y1(i,j)
-                  wgaci(i,j)=r2ig*r15ar*y1(i,j)
-               else
-!                   DGACI(I,J)=r2ig*R15F*Y1(I,J)
-                  dgaci(i,j)=0.
-                  wgaci(i,j)=r2ig*r15af*y1(i,j)
-!                   WGACI(I,J)=0.  ! 6/15/02 tao's
-               endif  !ihail
-!
-               if (tairc(i,j).ge.-50.) then
-                  if (alf+rn17c*tairc(i,j) .eq. 0.)  &
-                    write(91,*) itimestep, i,j,k, alf, rn17c, tairc(i,j)
-                  y1(i,j)=1./(alf+rn17c*tairc(i,j))
-                  if (ihail.eq.1) then
-                     y3(i,j)=.78/zg(i,j)**2+r17aq*scv(i,j)/zg(i,j)**bgh5
-                  else
-                     y3(i,j)=.78/zg(i,j)**2+r17as*scv(i,j)/zg(i,j)**bgh5
-                  endif
-                  y4(i,j)=alvr*dwv(i,j)*(rp0-(qv(i,j)+qb0)) &
-                          -tca(i,j)*tairc(i,j)
-                  dd(i,j)=y1(i,j)*(r17r*y4(i,j)*y3(i,j) &
-                        +(wgaci(i,j)+wgacs(i,j))*(alf+rn17b*tairc(i,j)))
-                  pgwet(i,j)=r2ig*max(dd(i,j), 0.0)
-               endif !tairc
-            endif !tair
-
-      endif                         ! for Processes 9, 14, 15, 16 & 17
 
  !********   HANDLING THE NEGATIVE CLOUD WATER (QC)    ******************
 
-        y1(i,j)=qc(i,j)/d2t
-        psacw(i,j)=min(y1(i,j), psacw(i,j))
-        praut(i,j)=min(y1(i,j), praut(i,j))
-        pracw(i,j)=min(y1(i,j), pracw(i,j))
-        psfw(i,j)= min(y1(i,j), psfw(i,j))
-        dgacw(i,j)=min(y1(i,j), dgacw(i,j))
-        qsacw(i,j)=min(y1(i,j), qsacw(i,j))
-        qgacw(i,j)=min(y1(i,j), qgacw(i,j))
-        pihms(i,j)=min(y1(i,j), pihms(i,j))
-        pihmg(i,j)=min(y1(i,j), pihmg(i,j))
+            y1(i,j)=qc(i,j)/d2t
+            psacw(i,j)=min(y1(i,j), psacw(i,j))
+            praut(i,j)=min(y1(i,j), praut(i,j))
+            pracw(i,j)=min(y1(i,j), pracw(i,j))
+            psfw(i,j)= min(y1(i,j), psfw(i,j))
+            dgacw(i,j)=min(y1(i,j), dgacw(i,j))
+            qsacw(i,j)=min(y1(i,j), qsacw(i,j))
+            qgacw(i,j)=min(y1(i,j), qgacw(i,j))
+            pihms(i,j)=min(y1(i,j), pihms(i,j))
+            pihmg(i,j)=min(y1(i,j), pihmg(i,j))
 
-        y1(i,j)=d2t*(psacw(i,j)+praut(i,j)+pracw(i,j)+psfw(i,j)       &
-           +dgacw(i,j)+qsacw(i,j)+qgacw(i,j)+pihms(i,j)+pihmg(i,j))
+            y1(i,j)=d2t*(psacw(i,j)+praut(i,j)+pracw(i,j)+psfw(i,j)       &
+               +dgacw(i,j)+qsacw(i,j)+qgacw(i,j)+pihms(i,j)+pihmg(i,j))
 
-        qc(i,j)=qc(i,j)-y1(i,j)
+            qc(i,j)=qc(i,j)-y1(i,j)
 !
-        if (qc(i,j) .lt. 0.0) then
-           y2(i,j)=1.
-           if (y1(i,j) .ne. 0.) y2(i,j)=qc(i,j)/y1(i,j)+1.
-           psacw(i,j)=psacw(i,j)*y2(i,j)
-           praut(i,j)=praut(i,j)*y2(i,j)
-           pracw(i,j)=pracw(i,j)*y2(i,j)
-           psfw(i,j)=psfw(i,j)*y2(i,j)
-           dgacw(i,j)=dgacw(i,j)*y2(i,j)
-           qsacw(i,j)=qsacw(i,j)*y2(i,j)
-           qgacw(i,j)=qgacw(i,j)*y2(i,j)
-           pihms(i,j)=pihms(i,j)*y2(i,j)
-           pihmg(i,j)=pihmg(i,j)*y2(i,j)
-           qc(i,j)=0.0
-        endif
-!        wgacr(i,j)=0.
-
-!        if (improve .lt. 2) then
-!vvvvvvvvvv Tao 20110722 vvvvvvvvvvvvvvvvvv
-          if (improve .eq.3 .or. improve .eq. -1) then
-             wgacr(i,j)= qgacr(i,j)+qgacw(i,j)
-          else
-!^^^^^^^^^^ Tao 20110722 ^^^^^^^^^^^^^^^^^^
+            if (qc(i,j) .lt. 0.0) then
+               y2(i,j)=1.
+               if (y1(i,j) .ne. 0.) y2(i,j)=qc(i,j)/y1(i,j)+1.
+               psacw(i,j)=psacw(i,j)*y2(i,j)
+               praut(i,j)=praut(i,j)*y2(i,j)
+               pracw(i,j)=pracw(i,j)*y2(i,j)
+               psfw(i,j)=psfw(i,j)*y2(i,j)
+               dgacw(i,j)=dgacw(i,j)*y2(i,j)
+               qsacw(i,j)=qsacw(i,j)*y2(i,j)
+               qgacw(i,j)=qgacw(i,j)*y2(i,j)
+               pihms(i,j)=pihms(i,j)*y2(i,j)
+               pihmg(i,j)=pihmg(i,j)*y2(i,j)
+               qc(i,j)=0.0
+            endif
+!            wgacr(i,j)=0.
+            wgacr(i,j)= qgacr(i,j)+qgacw(i,j)
 
 !******** SHED PROCESS (WGACR=PGWET-DGACW-WGACI-WGACS)
 !c
-            wgacr(i,j)=pgwet(i,j)-dgacw(i,j)-wgaci(i,j)-wgacs(i,j)
-            y2(i,j)=dgacw(i,j)+dgaci(i,j)+dgacr(i,j)+dgacs(i,j)
-
-            if (pgwet(i,j).ge.y2(i,j)) then
-               wgacr(i,j)=0.0
-               wgaci(i,j)=0.0
-               wgacs(i,j)=0.0
-            else
-               dgacr(i,j)=0.0
-               dgaci(i,j)=0.0
-               dgacs(i,j)=0.0
-            endif
-        endif
+!            wgacr(i,j)=pgwet(i,j)-dgacw(i,j)-wgaci(i,j)-wgacs(i,j)
+!            y2(i,j)=dgacw(i,j)+dgaci(i,j)+dgacr(i,j)+dgacs(i,j)
+!
+!            if (pgwet(i,j).ge.y2(i,j)) then
+!               wgacr(i,j)=0.0
+!               wgaci(i,j)=0.0
+!               wgacs(i,j)=0.0
+!            else
+!               dgacr(i,j)=0.0
+!               dgaci(i,j)=0.0
+!               dgacs(i,j)=0.0
+!            endif
 
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !********   HANDLING THE NEGATIVE CLOUD ICE (QI)      ******************
-        y1(i,j)=qi(i,j)/d2t
-        psaut(i,j)=min(y1(i,j), psaut(i,j))
-        psaci(i,j)=min(y1(i,j), psaci(i,j))
-        praci(i,j)=min(y1(i,j), praci(i,j))
-        psfi(i,j)= min(y1(i,j), psfi(i,j))
-        dgaci(i,j)=min(y1(i,j), dgaci(i,j))
-        wgaci(i,j)=min(y1(i,j), wgaci(i,j))
+            y1(i,j)=qi(i,j)/d2t
+            psaut(i,j)=min(y1(i,j), psaut(i,j))
+            psaci(i,j)=min(y1(i,j), psaci(i,j))
+            praci(i,j)=min(y1(i,j), praci(i,j))
+            psfi(i,j)= min(y1(i,j), psfi(i,j))
+            dgaci(i,j)=min(y1(i,j), dgaci(i,j))
+            wgaci(i,j)=min(y1(i,j), wgaci(i,j))
 
 !       Steve: Please check
 
-        y1(i,j)=d2t*(psaut(i,j)+psaci(i,j)+praci(i,j)+psfi(i,j)       &
-                    +dgaci(i,j)+wgaci(i,j)-pihms(i,j)-pihmg(i,j))
+            y1(i,j)=d2t*(psaut(i,j)+psaci(i,j)+praci(i,j)+psfi(i,j)       &
+                        +dgaci(i,j)+wgaci(i,j)-pihms(i,j)-pihmg(i,j))
 
-        qi(i,j)=qi(i,j)-y1(i,j)
-!
-        if (qi(i,j) .lt. 0.0) then
-           y2(i,j)=1.
-           if (y1(i,j) .ne. 0.0) y2(i,j)=qi(i,j)/y1(i,j)+1.
-           psaut(i,j)=psaut(i,j)*y2(i,j)
-           psaci(i,j)=psaci(i,j)*y2(i,j)
-           praci(i,j)=praci(i,j)*y2(i,j)
-           psfi(i,j)=psfi(i,j)*y2(i,j)
-           dgaci(i,j)=dgaci(i,j)*y2(i,j)
-           wgaci(i,j)=wgaci(i,j)*y2(i,j)
-           qi(i,j)=0.0
-        endif
+            qi(i,j)=qi(i,j)-y1(i,j)
 
-!
-        if (improve .eq. 3) then
+            if (qi(i,j) .lt. 0.0) then
+               y2(i,j)=1.
+               if (y1(i,j) .ne. 0.0) y2(i,j)=qi(i,j)/y1(i,j)+1.
+               psaut(i,j)=psaut(i,j)*y2(i,j)
+               psaci(i,j)=psaci(i,j)*y2(i,j)
+               praci(i,j)=praci(i,j)*y2(i,j)
+               psfi(i,j)=psfi(i,j)*y2(i,j)
+               dgaci(i,j)=dgaci(i,j)*y2(i,j)
+               wgaci(i,j)=wgaci(i,j)*y2(i,j)
+               qi(i,j)=0.0
+            endif
+
 !            qi(i,j)=qi(i,j)+d2t*(pihms(i,j)+pihmg(i,j))
             wgacr(i,j)=qgacr(i,j)+qgacw(i,j)
             dlt3(i,j)=0.0
@@ -3446,7 +3064,7 @@ CONTAINS
 !              if (qc(i,j) .gt. 5.e-4) dlt4(i,j)=0.0
 !              if (qs(i,j) .le. 1.e-4) dlt4(i,j)=1.
             if (qc(i,j) .gt. 1.e-3) dlt4(i,j)=0.0
-	       if (qs(i,j) .le. 1.e-4) dlt4(i,j)=1.
+            if (qs(i,j) .le. 1.e-4) dlt4(i,j)=1.
 
             if (tair(i,j) .ge. t0) then
                dlt3(i,j)=0.0
@@ -3458,291 +3076,153 @@ CONTAINS
                    +psfw(i,j)+psfi(i,j)+dlt3(i,j)*praci(i,j))
             pg(i,j)=d2t*((1.-dlt3(i,j))*praci(i,j)+dgaci(i,j)          &
                    +wgaci(i,j)+dgacw(i,j)+(1.-dlt4(i,j))*psacw(i,j))
-!
-         else
-            dlt3(i,j)=0.0
-            dlt2(i,j)=0.0
-!
-!            DLT4(I,J)=1.0
-!            if(qc(i,j) .gt. 5.e-4) dlt4(i,j)=0.0
-!            if(qs(i,j) .le. 1.e-4) dlt4(i,j)=1.0
-!
-!            IF (TAIR(I,J).ge.T0) THEN
-!               DLT4(I,J)=0.0
-!            ENDIF
-
-             if (tair(i,j).lt.t0) then
-                if (qr(i,j).lt.1.e-4) then
-                   dlt3(i,j)=1.0
-                   dlt2(i,j)=1.0
-                endif
-                if (qs(i,j).ge.1.e-4) then
-                   dlt2(i,j)=0.0
-                endif
-             endif
-            
-             if (ice2 .eq. 1) then
-                dlt3(i,j)=1.0
-                dlt2(i,j)=1.0
-             endif
-
-            pr(i,j)=(qsacw(i,j)+praut(i,j)+pracw(i,j)+qgacw(i,j))*d2t
-            ps(i,j)=(psaut(i,j)+psaci(i,j)+psacw(i,j)+psfw(i,j) &
-                    +psfi(i,j)+dlt3(i,j)*praci(i,j))*d2t
-            pg(i,j)=((1.-dlt3(i,j))*praci(i,j)+dgaci(i,j)+wgaci(i,j) &
-                    +dgacw(i,j))*d2t
-         endif
 
 !*  7 * PRACS : ACCRETION OF QS BY QR                             ***7**
 !*  8 * PSACR : ACCRETION OF QR BY QS (QSACR FOR PSMLT)           ***8**
 !*  2 * PGAUT : AUTOCONVERSION OF QS TO QG                        ***2**
 !* 18 * PGFR : FREEZING OF QR TO QG                               **18**
 
-       qracs(i,j)=0.0
-       y1(i,j)=abs(vr(i,j)-vs(i,j))
-       y2(i,j)=zr(i,j)*zs(i,j)
-       y3(i,j)=5./y2(i,j)
-       y4(i,j)=.08*y3(i,j)*y3(i,j)
-       y5(i,j)=.05*y3(i,j)*y4(i,j)
-       pracs(i,j)=r2ig*r2is*r7r*y1(i,j)*(y3(i,j)/zs(i,j)**5 &
-                  +y4(i,j)/zs(i,j)**3+y5(i,j)/zs(i,j))*ftns(i,j)
-       psacr(i,j)=r2is*r8r*y1(i,j)*(y3(i,j)/zr(i,j)**5 &
-                  +y4(i,j)/zr(i,j)**3+y5(i,j)/zr(i,j))*ftns(i,j)
-       qsacr(i,j)=psacr(i,j)
-!       if (improve.eq.3) qracs(i,j)=min(d2t*pracs(i,j), qs(i,j))
-!vvvvvvvvvvvvv Tao 20110722 vvvvvvvvvvvvvvvvvv
-       if (improve.eq.3 .or.improve .eq. -1) qracs(i,j)=min(d2t*pracs(i,j), qs(i,j))
-!^^^^^^^^^^^^^ Tao 20110722 ^^^^^^^^^^^^^^^^^^
+            qracs(i,j)=0.0
+            y1(i,j)=abs(vr(i,j)-vs(i,j))
+            y2(i,j)=zr(i,j)*zs(i,j)
+            y3(i,j)=5./y2(i,j)
+            y4(i,j)=.08*y3(i,j)*y3(i,j)
+            y5(i,j)=.05*y3(i,j)*y4(i,j)
+            pracs(i,j)=r2ig*r2is*r7r*y1(i,j)*(y3(i,j)/zs(i,j)**5 &
+                       +y4(i,j)/zs(i,j)**3+y5(i,j)/zs(i,j))*ftns(i,j)
+            psacr(i,j)=r2is*r8r*y1(i,j)*(y3(i,j)/zr(i,j)**5 &
+                       +y4(i,j)/zr(i,j)**3+y5(i,j)/zr(i,j))*ftns(i,j)
+            qsacr(i,j)=psacr(i,j)
+            qracs(i,j)=min(d2t*pracs(i,j), qs(i,j))
 
-!
-          pgaut(i,j)=0.0
-          pgfr(i,j)=0.0
-       if (tair(i,j) .lt. t0) then
-            y2(i,j)=exp(rn18a*(t0-tair(i,j)))
-            temp = 1./zr(i,j)
-            temp = temp*temp*temp*temp*temp*temp*temp
-         pgfr(i,j)=r2ig*max(r18r*(y2(i,j)-1.)*temp, 0.0)
-       endif
+            pgaut(i,j)=0.0
+            pgfr(i,j)=0.0
+            if (tair(i,j) .lt. t0) then
+               y2(i,j)=exp(rn18a*(t0-tair(i,j)))
+               temp = 1./zr(i,j)
+               temp = temp*temp*temp*temp*temp*temp*temp
+               pgfr(i,j)=r2ig*max(r18r*(y2(i,j)-1.)*temp, 0.0)
+            endif
 
-       if (tair(i,j).ge.t0) then
-           pracs(i,j)=0.0
-           psacr(i,j)=0.0
-       else
-           qsacr(i,j)=0.0
-           qracs(i,j)=0.0
-       endif
-!!
-!     endif  ! for Processes 2, 7, 8, & 18
+            if (tair(i,j).ge.t0) then
+               pracs(i,j)=0.0
+               psacr(i,j)=0.0
+            else
+               qsacr(i,j)=0.0
+               qracs(i,j)=0.0
+            endif
 
 !********   HANDLING THE NEGATIVE RAIN WATER (QR)    *******************
 !********   HANDLING THE NEGATIVE SNOW (QS)          *******************
 
-!      if (improve .eq. 3) then
-!vvvvvvvvvvvvvvv Tao 20110722 vvvvvvvvvvvvvvv
-      if (improve .eq. 3 .or. improve .eq. -1) then
-!^^^^^^^^^^^^^^^ Tao 20110722 ^^^^^^^^^^^^^^^ 
 #ifdef use_cpm
-          cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
-                cice*(qi(i,j)+qs(i,j)+qg(i,j))
-          hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
-          hlf = alf - (cice-cliq)*(tair(i,j)-t0)
-          hls = hlv + hlf
-          avcp = hlv/cpm*pir
-          ascp = hls/cpm*pir
-          afcp = hlf/cpm*pir
+            cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                  cice*(qi(i,j)+qs(i,j)+qg(i,j))
+            hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+            hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+            hls = hlv + hlf
+            avcp = hlv/cpm*pir
+            ascp = hls/cpm*pir
+            afcp = hlf/cpm*pir
 #endif
-         y1(i,j)=qr(i,j)/d2t
-          piacr(i,j)=min(y1(i,j), piacr(i,j))
-          dgacr(i,j)=min(y1(i,j), dgacr(i,j))
-          psacr(i,j)=min(y1(i,j), psacr(i,j))
-          pgfr(i,j)= min(y1(i,j), pgfr(i,j))
-          y1(i,j)=(piacr(i,j)+dgacr(i,j)+psacr(i,j)+pgfr(i,j))*d2t
-          qr(i,j)=qr(i,j)+pr(i,j)+qracs(i,j)-y1(i,j)
-          if (qr(i,j) .lt. 0.0) then
-             y2(i,j)=1.
-             if (y1(i,j) .ne. 0.0) y2(i,j)=qr(i,j)/y1(i,j)+1.
-             piacr(i,j)=piacr(i,j)*y2(i,j)
-             dgacr(i,j)=dgacr(i,j)*y2(i,j)
-             pgfr(i,j)=pgfr(i,j)*y2(i,j)
-             psacr(i,j)=psacr(i,j)*y2(i,j)
-             qr(i,j)=0.0
-          endif
-          dlt2(i,j)=1.
-          if (qr(i,j) .gt. 1.e-4) dlt2(i,j)=0.
-          if (qs(i,j) .le. 1.e-4) dlt2(i,j)=1.
-          if (tair(i,j) .ge. t0) dlt2(i,j)=0.
-          y1(i,j)=qs(i,j)/d2t
-          pgacs(i,j)=min(y1(i,j), pgacs(i,j))
-          dgacs(i,j)=min(y1(i,j), dgacs(i,j))
-          wgacs(i,j)=min(y1(i,j), wgacs(i,j))
-          pgaut(i,j)=min(y1(i,j), pgaut(i,j))
-          pracs(i,j)=min(y1(i,j), pracs(i,j))
-          pwacs(i,j)=min(y1(i,j), pwacs(i,j))
-          prn(i,j)=d2t*((1.-dlt3(i,j))*piacr(i,j)+dgacr(i,j)+pgfr(i,j) &
-                      +(1.-dlt2(i,j))*psacr(i,j))
-          ps(i,j)=ps(i,j)+d2t*(dlt3(i,j)*piacr(i,j)+dlt2(i,j)*psacr(i,j))
-          pracs(i,j)=(1.-dlt2(i,j))*pracs(i,j)
-          pwacs(i,j)=(1.-dlt4(i,j))*pwacs(i,j)
+            y1(i,j)=qr(i,j)/d2t
+            piacr(i,j)=min(y1(i,j), piacr(i,j))
+            dgacr(i,j)=min(y1(i,j), dgacr(i,j))
+            psacr(i,j)=min(y1(i,j), psacr(i,j))
+            pgfr(i,j)= min(y1(i,j), pgfr(i,j))
+            y1(i,j)=(piacr(i,j)+dgacr(i,j)+psacr(i,j)+pgfr(i,j))*d2t
+            qr(i,j)=qr(i,j)+pr(i,j)+qracs(i,j)-y1(i,j)
+            if (qr(i,j) .lt. 0.0) then
+               y2(i,j)=1.
+               if (y1(i,j) .ne. 0.0) y2(i,j)=qr(i,j)/y1(i,j)+1.
+               piacr(i,j)=piacr(i,j)*y2(i,j)
+               dgacr(i,j)=dgacr(i,j)*y2(i,j)
+               pgfr(i,j)=pgfr(i,j)*y2(i,j)
+               psacr(i,j)=psacr(i,j)*y2(i,j)
+               qr(i,j)=0.0
+            endif
+            dlt2(i,j)=1.
+            if (qr(i,j) .gt. 1.e-4) dlt2(i,j)=0.
+            if (qs(i,j) .le. 1.e-4) dlt2(i,j)=1.
+            if (tair(i,j) .ge. t0) dlt2(i,j)=0.
+            y1(i,j)=qs(i,j)/d2t
+            pgacs(i,j)=min(y1(i,j), pgacs(i,j))
+            dgacs(i,j)=min(y1(i,j), dgacs(i,j))
+            wgacs(i,j)=min(y1(i,j), wgacs(i,j))
+            pgaut(i,j)=min(y1(i,j), pgaut(i,j))
+            pracs(i,j)=min(y1(i,j), pracs(i,j))
+            pwacs(i,j)=min(y1(i,j), pwacs(i,j))
+            prn(i,j)=d2t*((1.-dlt3(i,j))*piacr(i,j)+dgacr(i,j)+pgfr(i,j) &
+                        +(1.-dlt2(i,j))*psacr(i,j))
+            ps(i,j)=ps(i,j)+d2t*(dlt3(i,j)*piacr(i,j)+dlt2(i,j)*psacr(i,j))
+            pracs(i,j)=(1.-dlt2(i,j))*pracs(i,j)
+            pwacs(i,j)=(1.-dlt4(i,j))*pwacs(i,j)
  
-          psn(i,j)=d2t*(pgacs(i,j)+dgacs(i,j)+wgacs(i,j)+pgaut(i,j)    &
-                   +pracs(i,j)+pwacs(i,j))
+            psn(i,j)=d2t*(pgacs(i,j)+dgacs(i,j)+wgacs(i,j)+pgaut(i,j)    &
+                     +pracs(i,j)+pwacs(i,j))
  
-          qs(i,j)=qs(i,j)+ps(i,j)-qracs(i,j)-psn(i,j)
-          if (qs(i,j) .lt. 0.0) then
-             y2(i,j)=1.
-             if (psn(i,j) .ne. 0.) y2(i,j)=qs(i,j)/psn(i,j)+1.
-             pgacs(i,j)=pgacs(i,j)*y2(i,j)
-             dgacs(i,j)=dgacs(i,j)*y2(i,j)
-             wgacs(i,j)=wgacs(i,j)*y2(i,j)
-             pgaut(i,j)=pgaut(i,j)*y2(i,j)
-             pracs(i,j)=pracs(i,j)*y2(i,j)
-             pwacs(i,j)=pwacs(i,j)*y2(i,j)
-             qs(i,j)=0.0
-          endif
-          psn(i,j)=d2t*(pgacs(i,j)+dgacs(i,j)+wgacs(i,j)+pgaut(i,j)    &
-                    +pracs(i,j)+pwacs(i,j))
-          qg(i,j)=qg(i,j)+pg(i,j)+prn(i,j)+psn(i,j)
-          y1(i,j)=d2t*(psacw(i,j)+psfw(i,j)+dgacw(i,j)+piacr(i,j)      &
-               +dgacr(i,j)+psacr(i,j)+pgfr(i,j)+pihms(i,j)+pihmg(i,j)) &
-               -qracs(i,j)
-          pt(i,j)=pt(i,j)+afcp*y1(i,j)
-!
-       else                                    ! below is 2007 saticel_s
-!
-          y1(i,j)=qr(i,j)/d2t
-          y2(i,j)=-qg(i,j)/d2t
-          piacr(i,j)=min(y1(i,j), piacr(i,j))
-          dgacr(i,j)=min(y1(i,j), dgacr(i,j))
-          wgacr(i,j)=min(y1(i,j), wgacr(i,j))
-          wgacr(i,j)=max(y2(i,j), wgacr(i,j))
-          psacr(i,j)=min(y1(i,j), psacr(i,j))
-          pgfr(i,j)= min(y1(i,j), pgfr(i,j))
-          del=0.
-          if (wgacr(i,j) .lt. 0.) del=1.
-          y1(i,j)=(piacr(i,j)+dgacr(i,j)+(1.-del)*wgacr(i,j) &
-                  +psacr(i,j)+pgfr(i,j))*d2t
-          qr(i,j)=qr(i,j)+pr(i,j)-y1(i,j)-del*wgacr(i,j)*d2t
-          if (qr(i,j) .lt. 0.0) then
-             a1=1.
-             if (y1(i,j) .ne. 0.) a1=qr(i,j)/y1(i,j)+1.
-             piacr(i,j)=piacr(i,j)*a1
-             dgacr(i,j)=dgacr(i,j)*a1
-             if (wgacr(i,j).gt.0.) wgacr(i,j)=wgacr(i,j)*a1
-             pgfr(i,j)=pgfr(i,j)*a1
-             psacr(i,j)=psacr(i,j)*a1
-             qr(i,j)=0.0
-          endif
-!
-          prn(i,j)=d2t*((1.-dlt3(i,j))*piacr(i,j)+dgacr(i,j) &
-                   +wgacr(i,j)+(1.-dlt2(i,j))*psacr(i,j)+pgfr(i,j))
-          ps(i,j)=ps(i,j)+d2t*(dlt3(i,j)*piacr(i,j) &
-                  +dlt2(i,j)*psacr(i,j))
-          pracs(i,j)=(1.-dlt2(i,j))*pracs(i,j)
-          y1(i,j)=qs(i,j)/d2t
-          pgacs(i,j)=min(y1(i,j), pgacs(i,j))
-          dgacs(i,j)=min(y1(i,j), dgacs(i,j))
-          wgacs(i,j)=min(y1(i,j), wgacs(i,j))
-          pgaut(i,j)=min(y1(i,j), pgaut(i,j))
-          pracs(i,j)=min(y1(i,j), pracs(i,j))
-          psn(i,j)=d2t*(pgacs(i,j)+dgacs(i,j)+wgacs(i,j) &
-                   +pgaut(i,j)+pracs(i,j))
-          qs(i,j)=qs(i,j)+ps(i,j)-psn(i,j)
-!
-          if (qs(i,j).lt.0.0) then
-             a2=1.
-             if (psn(i,j) .ne. 0.0) a2=qs(i,j)/psn(i,j)+1.
-             pgacs(i,j)=pgacs(i,j)*a2
-             dgacs(i,j)=dgacs(i,j)*a2
-             wgacs(i,j)=wgacs(i,j)*a2
-             pgaut(i,j)=pgaut(i,j)*a2
-             pracs(i,j)=pracs(i,j)*a2
-             psn(i,j)=psn(i,j)*a2
-             qs(i,j)=0.0
-          endif
-!!
-!!C           PSN(I,J)=D2T*(PGACS(I,J)+DGACS(I,J)+WGACS(I,J)
-!!c                    +PGAUT(I,J)+PRACS(I,J))
-          y2(i,j)=d2t*(psacw(i,j)+psfw(i,j)+dgacw(i,j)+piacr(i,j) &
-                  +dgacr(i,j)+wgacr(i,j)+psacr(i,j)+pgfr(i,j))
-          pt(i,j)=pt(i,j)+afcp*y2(i,j)
-          qg(i,j)=qg(i,j)+pg(i,j)+prn(i,j)+psn(i,j)
-!
-       endif                       ! for handling the nagtive Qr and Qs
-
+            qs(i,j)=qs(i,j)+ps(i,j)-qracs(i,j)-psn(i,j)
+            if (qs(i,j) .lt. 0.0) then
+               y2(i,j)=1.
+               if (psn(i,j) .ne. 0.) y2(i,j)=qs(i,j)/psn(i,j)+1.
+               pgacs(i,j)=pgacs(i,j)*y2(i,j)
+               dgacs(i,j)=dgacs(i,j)*y2(i,j)
+               wgacs(i,j)=wgacs(i,j)*y2(i,j)
+               pgaut(i,j)=pgaut(i,j)*y2(i,j)
+               pracs(i,j)=pracs(i,j)*y2(i,j)
+               pwacs(i,j)=pwacs(i,j)*y2(i,j)
+               qs(i,j)=0.0
+            endif
+            psn(i,j)=d2t*(pgacs(i,j)+dgacs(i,j)+wgacs(i,j)+pgaut(i,j)    &
+                      +pracs(i,j)+pwacs(i,j))
+            qg(i,j)=qg(i,j)+pg(i,j)+prn(i,j)+psn(i,j)
+            y1(i,j)=d2t*(psacw(i,j)+psfw(i,j)+dgacw(i,j)+piacr(i,j)      &
+                 +dgacr(i,j)+psacr(i,j)+pgfr(i,j)+pihms(i,j)+pihmg(i,j)) &
+                 -qracs(i,j)
+            pt(i,j)=pt(i,j)+afcp*y1(i,j)
 
 !* 11 * PSMLT : MELTING OF QS                                     **11**
 !* 19 * PGMLT : MELTING OF QG TO QR                               **19**
 
-       psmlt(i,j)=0.0
-       pgmlt(i,j)=0.0
-       tair(i,j)=(pt(i,j)+tb0)*pi0
-       tairc(i,j)=tair(i,j)-t0
+            psmlt(i,j)=0.0
+            pgmlt(i,j)=0.0
+            tair(i,j)=(pt(i,j)+tb0)*pi0
+            tairc(i,j)=tair(i,j)-t0
 
-       ftns(i,j)=1.
-       ftng(i,j)=1.
-       ftns0(i,j)=1.
-       ftng0(i,j)=1.
+            ftns(i,j)=1.
+            ftng(i,j)=1.
+            ftns0(i,j)=1.
+            ftng0(i,j)=1.
+            call sgmap(1,qs(i,j),r00,tairc(i,j),ftns0(i,j))
+            call sgmap(2,qg(i,j),r00,tairc(i,j),ftng0(i,j))
 
-       if (improve.gt.2) then
-          call sgmap(1,qs(i,j),r00,tairc(i,j),ftns0(i,j))
-          call sgmap(2,qg(i,j),r00,tairc(i,j),ftng0(i,j))
-       endif 
+            if (tair(i,j).ge.t0) then
+               tairc(i,j)=tair(i,j)-t0
 
-       if (tair(i,j).ge.t0) then
-          tairc(i,j)=tair(i,j)-t0
-
-          if (improve .eq. 3) then
-             dd(i,j)=r11t*tairc(i,j)*(r101r/zs(i,j)**2+r102rf  &
-                               /zs(i,j)**bsh5)*ftns0(i,j)
-             psmlt(i,j)=r2is*min(qs(i,j),max(dd(i,j),0.0))
-!             y2(i,j)=r191r/zg(i,j)**2+r192rf/zg(i,j)**bgh5
-!vvvvvvvvvvvvv Tao vvvvvvvvvvvvvvvvvvv
-             y2(i,j)=(r191r/zg(i,j)**2+r192rf/zg(i,j)**bgh5)*ftng0(i,j)
-
-!^^^^^^^^^^^^^ Tao ^^^^^^^^^^^^^^^^^^^
-
-!             dd1(i,j)=tairc(i,j)*(r19t*y2(i,j)+r19at*(qgacw(i,j) &
+               dd(i,j)=r11t*tairc(i,j)*(r101r/zs(i,j)**2+r102rf  &
+                                 /zs(i,j)**bsh5)*ftns0(i,j)
+               psmlt(i,j)=r2is*min(qs(i,j),max(dd(i,j),0.0))
+               y2(i,j)=(r191r/zg(i,j)**2+r192rf/zg(i,j)**bgh5)*ftng0(i,j)
+!               dd1(i,j)=tairc(i,j)*(r19t*y2(i,j)+r19at*(qgacw(i,j) &
 !                                             +qgacr(i,j)))*ftng0(i,j)
-!vvvvvvvvvvvvv Tao vvvvvvvvvvvvvvvvvvv
-             dd1(i,j)=tairc(i,j)*(r19t*y2(i,j)+r19at*(qgacw(i,j) &
-                                             +qgacr(i,j)))
-!^^^^^^^^^^^^^ Tao ^^^^^^^^^^^^^^^^^^^
-             pgmlt(i,j)=r2ig*min(qg(i,j),max(dd1(i,j),0.0))
-          else                                ! below is 2007 saticel_s
-             y1(i,j)=tca(i,j)*tairc(i,j)-alvr*dwv(i,j) &
-                               *(rp0-(qv(i,j)+qb0))
-             y2(i,j)=.78/zs(i,j)**2+r101f*scv(i,j)/zs(i,j)**bsh5
-             dd(i,j)=r11rt*y1(i,j)*y2(i,j)+r11at*tairc(i,j) &
-                       *(qsacw(i,j)+qsacr(i,j))
-             psmlt(i,j)=r2is*max(0.0, min(dd(i,j), qs(i,j)))
-
-             if (ihail.eq.1) then
-                y3(i,j)=.78/zg(i,j)**2+r19aq*scv(i,j)/zg(i,j)**bgh5
-             else
-                y3(i,j)=.78/zg(i,j)**2+r19as*scv(i,j)/zg(i,j)**bgh5
-             endif
-
-             dd1(i,j)=r19rt*y1(i,j)*y3(i,j)+r19bt*tairc(i,j) &
-                        *(qgacw(i,j)+qgacr(i,j))
-             pgmlt(i,j)=r2ig*max(0.0, min(dd1(i,j), qg(i,j)))
-          endif  !improve
-
+               dd1(i,j)=tairc(i,j)*(r19t*y2(i,j)+r19at*(qgacw(i,j) &
+                                               +qgacr(i,j)))
+               pgmlt(i,j)=r2ig*min(qg(i,j),max(dd1(i,j),0.0))
 #ifdef use_cpm
-          cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
-                cice*(qi(i,j)+qs(i,j)+qg(i,j))
-          hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
-          hlf = alf - (cice-cliq)*(tair(i,j)-t0)
-          hls = hlv + hlf
-          avcp = hlv/cpm*pir
-          ascp = hls/cpm*pir
-          afcp = hlf/cpm*pir
+               cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                     cice*(qi(i,j)+qs(i,j)+qg(i,j))
+               hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+               hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+               hls = hlv + hlf
+               avcp = hlv/cpm*pir
+               ascp = hls/cpm*pir
+               afcp = hlf/cpm*pir
 #endif
-          pt(i,j)=pt(i,j)-afcp*(psmlt(i,j)+pgmlt(i,j))
-          qr(i,j)=qr(i,j)+psmlt(i,j)+pgmlt(i,j)
-          qs(i,j)=qs(i,j)-psmlt(i,j)
-          qg(i,j)=qg(i,j)-pgmlt(i,j)
-
-       endif   ! processes 11 & 19
+               pt(i,j)=pt(i,j)-afcp*(psmlt(i,j)+pgmlt(i,j))
+               qr(i,j)=qr(i,j)+psmlt(i,j)+pgmlt(i,j)
+               qs(i,j)=qs(i,j)-psmlt(i,j)
+               qg(i,j)=qg(i,j)-pgmlt(i,j)
+            endif   ! processes 11 & 19
 ! 
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !* 24 * PIHOM : HOMOGENEOUS FREEZING OF QC TO QI (T < T00)        **24**
@@ -3751,450 +3231,412 @@ CONTAINS
 !****** PIMM  : IMMERSION FREEZING OF QC TO QI (T < T0)           ******
 !****** PCFR  : CONTACT NUCLEATION OF QC TO QI (T < T0)           ******
 
+            if (qc(i,j).le.cmin1) qc(i,j)=0.0
+            if (qi(i,j).le.cmin1) qi(i,j)=0.0
+            tair(i,j)=(pt(i,j)+tb0)*pi0
+            tairc(i,j) = tair(i,j)-t0
 
-       if (qc(i,j).le.cmin1) qc(i,j)=0.0
-       if (qi(i,j).le.cmin1) qi(i,j)=0.0
-       tair(i,j)=(pt(i,j)+tb0)*pi0
-       tairc(i,j) = tair(i,j)-t0
+            ftns(i,j)=1.
+            ftng(i,j)=1.
+            ftns0(i,j)=1.
+            ftng0(i,j)=1.
+            call sgmap(1,qs(i,j),r00,tairc(i,j),ftns0(i,j))
+            call sgmap(2,qg(i,j),r00,tairc(i,j),ftng0(i,j))
 
-       ftns(i,j)=1.
-       ftng(i,j)=1.
-       ftns0(i,j)=1.
-       ftng0(i,j)=1.
-
-       if (improve.gt.2) then
-          call sgmap(1,qs(i,j),r00,tairc(i,j),ftns0(i,j))
-          call sgmap(2,qg(i,j),r00,tairc(i,j),ftng0(i,j))
-       endif 
-
-       if (tair(i,j).le.t00) then
-          pihom(i,j)=qc(i,j)
-       else
-          pihom(i,j)=0.0
-       endif 
-       if (tair(i,j).ge.t0) then
-          pimlt(i,j)=qi(i,j)
-       else
-          pimlt(i,j)=0.0
-       endif
-       pidw(i,j)=0.0
+            if (tair(i,j).le.t00) then
+               pihom(i,j)=qc(i,j)
+            else
+               pihom(i,j)=0.0
+            endif 
+            if (tair(i,j).ge.t0) then
+               pimlt(i,j)=qi(i,j)
+            else
+               pimlt(i,j)=0.0
+            endif
+            pidw(i,j)=0.0
            
-       if (improve .eq. 3) then
-!      if (improve1.eq.3) then
-          if (tair(i,j) .lt. t0 .and. tair(i,j) .gt. t00) then
-             tairc(i,j) = tair(i,j)-t0
+            if (tair(i,j) .lt. t0 .and. tair(i,j) .gt. t00) then
+               tairc(i,j) = tair(i,j)-t0
 #ifndef sat_predict
 !>>> pidw may be already calculated in saturation prediction scheme.
-             y1(i,j) = max( min(tairc(i,j), -1.), -31.)
-             it(i,j) = int(abs(y1(i,j)))
-             y2(i,j)=aa1(it(i,j))
-             y3(i,j) = aa2(it(i,j))
-             if (tairc(i,j).le.-5.)then                       !  meyers
-                y4(i,j) = 1./(tair(i,j)-c358)
-                qsw(i,j)=rp0*exp(c172-c409*y4(i,j))
-                rtair(i,j)=1./(tair(i,j)-c76)
-                y5(i,j)=exp(c218-c580*rtair(i,j))
-                qsi(i,j)=rp0*y5(i,j)
+               y1(i,j) = max( min(tairc(i,j), -1.), -31.)
+               it(i,j) = int(abs(y1(i,j)))
+               y2(i,j)=aa1(it(i,j))
+               y3(i,j) = aa2(it(i,j))
+               if (tairc(i,j).le.-5.)then                       !  meyers
+                  y4(i,j) = 1./(tair(i,j)-c358)
+                  qsw(i,j)=rp0*exp(c172-c409*y4(i,j))
+                  rtair(i,j)=1./(tair(i,j)-c76)
+                  y5(i,j)=exp(c218-c580*rtair(i,j))
+                  qsi(i,j)=rp0*y5(i,j)
 #ifdef new_saturation
-                esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
-                esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
-                if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
-                qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
-                qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
-                esw(i,j) = esw(i,j)*10.  !in CGS
-                esi(i,j) = esi(i,j)*10.  !in CGS
+                  esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+                  esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+                  if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
+                  qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+                  qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+                  esw(i,j) = esw(i,j)*10.  !in CGS
+                  esi(i,j) = esi(i,j)*10.  !in CGS
 #endif
-                SSI(i,j)=(qv(i,j)+qb0)/qsi(i,j)-1.
-                fssi=min(xssi,max(.0,xssi*(tairc(i,j)+44.)/(44.0-38.0))) !max ssi f(tair)
-                fssi=min(ssi(i,j),fssi)
+                  SSI(i,j)=(qv(i,j)+qb0)/qsi(i,j)-1.
+                  fssi=min(xssi,max(.0,xssi*(tairc(i,j)+44.)/(44.0-38.0))) !max ssi f(tair)
+                  fssi=min(ssi(i,j),fssi)
 
-!                r_nci=min(1.e-3*exp(-.639+12.96*fssi), 0.528e-3)      ! meyers et al.
-!              bug fix by JJS 20120429
-                r_nci=max(1.e-3*exp(-.639+12.96*fssi), 0.528e-3)      ! meyers et al.
-                if (r_nci.gt.15.) r_nci=15.                          !cap at 15000/liter
+                  r_nci=max(1.e-3*exp(-.639+12.96*fssi), 0.528e-3)  ! Meyers et al. 1992 (cm^-3)
+                  if (r_nci.gt.15.) r_nci=15.                       ! cap at 15000/liter
 
 #if ( WRF_CHEM == 1)
-                ! EMK...Only execute if GOCART and coupling is on
-                if ( (chem_opt == 300 .or. chem_opt == 301 .or. &
-                      chem_opt == 302 .or. chem_opt == 303) .and. &
-                      (gsfcgce_gocart_coupling == 1) ) then
-                   !JJS 20110602 vvvvv
-                   ! Conversion rate of cloud water to ice in the Bergeron porcess based on Meyer + DeMott formulae
-                   !        
-                   ! convert gocart aerosol mass conc to IN
-                   !      p0 need to be converted from g*cm/s2/cm2 to mb (hPa)
-                   !                call mass2icn(p0(i,j,k)*0.001,tair(i,j),aero(i,k,j,:), icn_out)
-                   !                icn_cgs(i,j,k) = max(min_icn, icn_out) * 1.e-3   !IN conc [#/cm3] <-- [#/Litter]
-                   !                icn_cgs(i,j,k) = icn_out * 1.e-3 !IN conc [#/cm3]      
-                   !                if (rh_rad .ge. 100.) then
-                   !                   print 1080, 'i', 'j', 'k', 'p0', 'tair', 'icn_cgs'
-                   !                1080 format(3a4, 4a12)
-                   !                   print 1081, i,j,k, p0(i,j,k)*0.001,tair(i,j), icn_cgs(i,j,k)
-                   !                1081 format(3i4, 3e12.4) 
-                   !                endif
-                   !                r_nci = icn_cgs(i,j,k)  !DeMotto's formuale
-                   r_nci = icn_out * 1.e-3  !DeMotto's formuale
-                   !JJS 20110602 ^^^^^
-                end if
+                  ! EMK...Only execute if GOCART and coupling is on
+                  if ( (chem_opt == 300 .or. chem_opt == 301 .or. &
+                        chem_opt == 302 .or. chem_opt == 303) .and. &
+                        (gsfcgce_gocart_coupling == 1) ) then
+                     ! Conversion rate of cloud water to ice in the Bergeron porcess based on Meyer + DeMott formulae
+                     !        
+                     ! convert gocart aerosol mass conc to IN
+                     !      p0 need to be converted from g*cm/s2/cm2 to mb (hPa)
+                     !                call mass2icn(p0(i,j,k)*0.001,tair(i,j),aero(i,k,j,:), icn_out)
+                     !                icn_cgs(i,j,k) = max(min_icn, icn_out) * 1.e-3   !IN conc [#/cm3] <-- [#/Litter]
+                     !                icn_cgs(i,j,k) = icn_out * 1.e-3 !IN conc [#/cm3]      
+                     !                if (rh_rad .ge. 100.) then
+                     !                   print 1080, 'i', 'j', 'k', 'p0', 'tair', 'icn_cgs'
+                     !                1080 format(3a4, 4a12)
+                     !                   print 1081, i,j,k, p0(i,j,k)*0.001,tair(i,j), icn_cgs(i,j,k)
+                     !                1081 format(3i4, 3e12.4) 
+                     !                endif
+                     !                r_nci = icn_cgs(i,j,k)  !DeMotto's formuale
+                     r_nci = icn_out * 1.e-3  !DeMotto's formuale
+                  end if
 #endif
                    
-                dd(i,j)=(r00*qi(i,j)/r_nci)**y3(i,j)                  !meyers
-                PIDW(i,j)=min(RR0*D2T*y2(i,j)*r_nci*dd(i,j), qc(i,j)) !meyers
-             endif  !tairc
+                  dd(i,j)=(r00*qi(i,j)/r_nci)**y3(i,j)                  !meyers
+                  PIDW(i,j)=min(RR0*D2T*y2(i,j)*r_nci*dd(i,j), qc(i,j)) !meyers
+               endif  !tairc
 !<<< end of ifndef sat_predict
 #endif
-             pimm(i,j)=0.0
-             pcfr(i,j)=0.0
+               pimm(i,j)=0.0
+               pcfr(i,j)=0.0
 
-             if (qc(i,j) .gt. 0.0) then
-                y4(i,j) = 1./(tair(i,j)-c358)
-                qsw(i,j)=rp0*exp(c172-c409*y4(i,j))
+               if (qc(i,j) .gt. 0.0) then
+                  y4(i,j) = 1./(tair(i,j)-c358)
+                  qsw(i,j)=rp0*exp(c172-c409*y4(i,j))
 #ifdef new_saturation
-                esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
-                qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
-                esw(i,j) = esw(i,j)*10.  !in CGS
+                  esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+                  qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+                  esw(i,j) = esw(i,j)*10.  !in CGS
 #endif
-                xncld=qc(i,j)/4.e-9                         !cloud number
-                esat=0.6112*exp(17.67*tairc(i,j)/(tairc(i,j)+243.5))*10.
-                rv=0.622*esat/(p0(i,j,k)/1000.-esat)
-                rlapse_m=980.616*(1.+2.5e6*rv/287./tair(i,j))/          &     
-                       (1004.67+2.5e6*2.5e6*rv*0.622/(287.*tair(i,j)*tair(i,j)))
-                delT=rlapse_m*0.5*(ww1(i,j,k)+ww1(i,j,k+1))
-                if (delT.lt.0.) delT=0.
+                  xncld=qc(i,j)/4.e-9                         !cloud number
+                  esat=0.6112*exp(17.67*tairc(i,j)/(tairc(i,j)+243.5))*10.
+                  rv=0.622*esat/(p0(i,j,k)/1000.-esat)
+                  rlapse_m=980.616*(1.+2.5e6*rv/287./tair(i,j))/          &     
+                           (1004.67+2.5e6*2.5e6*rv*0.622/(287.*tair(i,j)*tair(i,j)))
+                  delT=rlapse_m*0.5*(ww1(i,j,k)+ww1(i,j,k+1))
+                  if (delT.lt.0.) delT=0.
 !  STEVE: PLAESE CHECK (2 4.e-9)
-!               pimm(i,j)=xncld*Bhi*4.e-9*exp(-tairc(i,j))*delT*d2t*4.e-9
-                pimm(i,j)=xncld*Bhi*4.e-9*exp(-tairc(i,j))*delT*d2t*4.e-9
+!                  pimm(i,j)=xncld*Bhi*4.e-9*exp(-tairc(i,j))*delT*d2t*4.e-9
+                  pimm(i,j)=xncld*Bhi*4.e-9*exp(-tairc(i,j))*delT*d2t*4.e-9
  
-                xccld=xncld*r00                           !cloud number concentration
-                Xknud=7.37*tair(i,j)/(288.*Ra*p0(i,j,k))  ! Knudsen number
-                alpha=1.257+0.400*exp(-1.10/Xknud)     ! Cunningham correction (P&Klett)
+                  xccld=xncld*r00                           !cloud number concentration
+                  Xknud=7.37*tair(i,j)/(288.*Ra*p0(i,j,k))  ! Knudsen number
+                  alpha=1.257+0.400*exp(-1.10/Xknud)     ! Cunningham correction (P&Klett)
  
-                cunnF=1.+alpha*Xknud                   ! Cunningham correction (P&Klett)
+                  cunnF=1.+alpha*Xknud                   ! Cunningham correction (P&Klett)
 
-                if (tairc(i,j).ge.0.) then
-                    dvair=(1.718+0.0049*tairc(i,j))*1.e-4   
+                  if (tairc(i,j).ge.0.) then
+                     dvair=(1.718+0.0049*tairc(i,j))*1.e-4   
                        !dynamic visc air (Prupp&Klett)
-                else 
-                    dvair=(1.718+0.0049*tairc(i,j)-1.2e-5*tairc(i,j)**2)*1.e-4  
+                  else 
+                     dvair=(1.718+0.0049*tairc(i,j)-1.2e-5*tairc(i,j)**2)*1.e-4  
                        !dynamic visc air (Prupp&Klett)
-                endif
-                DIFFar=1.3804e-16*tair(i,j)/6./cpi/dvair/Ra*cunnF     !aerosol diffusion via P&Klett
-                if (qv(i,j)+qb0-qsw(i,j).lt.0.) then                  !only when cloud evaporating
-                   pcfr(i,j)=4.e-9*4.*cpi*Rc*DIFFar*xccld*Cna*rr0*d2t    !Brownian part only via Cotton
-                endif
-             endif  !qc
-          endif  !tair
+                  endif
+                  DIFFar=1.3804e-16*tair(i,j)/6./cpi/dvair/Ra*cunnF     !aerosol diffusion via P&Klett
+                  if (qv(i,j)+qb0-qsw(i,j).lt.0.) then                  !only when cloud evaporating
+                     pcfr(i,j)=4.e-9*4.*cpi*Rc*DIFFar*xccld*Cna*rr0*d2t    !Brownian part only via Cotton
+                  endif
+               endif  !qc
+            endif  !tair
 
 !      STEVE: PLEASE CHECK
-       y1(i,j)=pihom(i,j)+pidw(i,j)+pimm(i,j)+pcfr(i,j)-pimlt(i,j)
+            y1(i,j)=pihom(i,j)+pidw(i,j)+pimm(i,j)+pcfr(i,j)-pimlt(i,j)
 
-         if (y1(i,j).gt.qc(i,j)) then
-            y1(i,j)=qc(i,j)
-            y2(i,j)=1.
-            y3(i,j)=pihom(i,j)+pidw(i,j)+pimm(i,j)+pcfr(i,j)
-            if(y3(i,j).ne.0.) y2(i,j)=(qc(i,j)+pimlt(i,j))/y3(i,j)
-            pihom(i,j)=pihom(i,j)*y2(i,j)
-            pidw(i,j)=pidw(i,j)*y2(i,j)
-            pimm(i,j)=pimm(i,j)*y2(i,j)
-            pcfr(i,j)=pcfr(i,j)*y2(i,j)
-         endif  !y1
-
-#ifdef use_cpm
-         cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
-               cice*(qi(i,j)+qs(i,j)+qg(i,j))
-         hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
-         hlf = alf - (cice-cliq)*(tair(i,j)-t0)
-         hls = hlv + hlf
-         avcp = hlv/cpm*pir
-         ascp = hls/cpm*pir
-         afcp = hlf/cpm*pir
-#endif
-         pt(i,j)=pt(i,j)+afcp*y1(i,j)
-         qc(i,j)=qc(i,j)-y1(i,j)
-         qi(i,j)=qi(i,j)+y1(i,j)
-
-      else                                  ! below is 2007 saticel_s
+            if (y1(i,j).gt.qc(i,j)) then
+               y1(i,j)=qc(i,j)
+               y2(i,j)=1.
+               y3(i,j)=pihom(i,j)+pidw(i,j)+pimm(i,j)+pcfr(i,j)
+               if(y3(i,j).ne.0.) y2(i,j)=(qc(i,j)+pimlt(i,j))/y3(i,j)
+               pihom(i,j)=pihom(i,j)*y2(i,j)
+               pidw(i,j)=pidw(i,j)*y2(i,j)
+               pimm(i,j)=pimm(i,j)*y2(i,j)
+               pcfr(i,j)=pcfr(i,j)*y2(i,j)
+            endif  !y1
 
 #ifdef use_cpm
-         cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
-               cice*(qi(i,j)+qs(i,j)+qg(i,j))
-         hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
-         hlf = alf - (cice-cliq)*(tair(i,j)-t0)
-         hls = hlv + hlf
-         avcp = hlv/cpm*pir
-         ascp = hls/cpm*pir
-         afcp = hlf/cpm*pir
+            cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                  cice*(qi(i,j)+qs(i,j)+qg(i,j))
+            hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+            hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+            hls = hlv + hlf
+            avcp = hlv/cpm*pir
+            ascp = hls/cpm*pir
+            afcp = hlf/cpm*pir
 #endif
-         if (tair(i,j).lt.t0 .and. tair(i,j).gt.t00) then
-            tairc(i,j)=tair(i,j)-t0
-            y1(i,j)=max( min(tairc(i,j), -1.), -31.)
-            it(i,j)=int(abs(y1(i,j)))
-            y2(i,j)=aa1(it(i,j))
-            y3(i,j)=aa2(it(i,j))
-            y4(i,j)=exp(abs(beta*tairc(i,j)))
-            y5(i,j)=(r00*qi(i,j)/(r25a*y4(i,j)))**y3(i,j)
-            pidw(i,j)=min(r25rt*y2(i,j)*y4(i,j)*y5(i,j), qc(i,j))
-         endif  !tair
-
-         y1(i,j)=pihom(i,j)-pimlt(i,j)+pidw(i,j)
-         pt(i,j)=pt(i,j)+afcp*y1(i,j)+ascp*(pidep(i,j))*d2t
-         qv(i,j)=qv(i,j)-(pidep(i,j))*d2t
-         qc(i,j)=qc(i,j)-y1(i,j)
-         qi(i,j)=qi(i,j)+y1(i,j)
-
-      endif  ! pocesses 24, 25 & 26 
+            pt(i,j)=pt(i,j)+afcp*y1(i,j)
+            qc(i,j)=qc(i,j)-y1(i,j)
+            qi(i,j)=qi(i,j)+y1(i,j)
 
 #ifdef sat_predict
-      ! --------------------------------------------------------------------------------
-      ! saturation prediction from TCWA 1-moment scheme (Morrison and Milbrandt 2015) :
-      !  (in MKS system)
-      ! --------------------------------------------------------------------------------
+            ! --------------------------------------------------------------------------------
+            ! saturation prediction from TCWA 1-moment scheme (Morrison and Milbrandt 2015) :
+            !  (in MKS system)
+            ! --------------------------------------------------------------------------------
 
-      pact(i,j) = 0.0
-      pint(i,j) = 0.0
-      cnd(i,j) = 0.0
-      dep(i,j) = 0.0
-      fez(i,j) = 0.0
-      ern(i,j) = 0.0
+            pact(i,j) = 0.0
+            pint(i,j) = 0.0
+            cnd(i,j) = 0.0
+            dep(i,j) = 0.0
+            fez(i,j) = 0.0
+            ern(i,j) = 0.0
 
-      ! -------------
-      ! pact : cloud water activation
-      ! -------------
+           ! -------------
+           ! pact : cloud water activation
+           ! -------------
 
-      tair(i,j)  = (pt(i,j)+tb0)*pi0
-      tairc(i,j) = tair(i,j)-t0
-      rhoair = rho_mks(i,k,j)
+           tair(i,j)  = (pt(i,j)+tb0)*pi0
+           tairc(i,j) = tair(i,j)-t0
+           rhoair = rho_mks(i,k,j)
 #ifdef use_cpm
-      cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
-            cice*(qi(i,j)+qs(i,j)+qg(i,j))      ! specific heat capacity (in CGS)
-      cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
-      hlv = alv - (cliq-cvap)*(tair(i,j)-t0)    ! latent heat of vaporization (in CGS)
-      xlv = hlv*1.e-4                           ! latent heat of vaporization (in MKS)
+           cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                 cice*(qi(i,j)+qs(i,j)+qg(i,j))      ! specific heat capacity (in CGS)
+           cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
+           hlv = alv - (cliq-cvap)*(tair(i,j)-t0)    ! latent heat of vaporization (in CGS)
+           xlv = hlv*1.e-4                           ! latent heat of vaporization (in MKS)
 #else
-      cpm1 = 1005.46*(1.+0.887*qv(i,j))         ! specific heat capacity (in MKS)
-      xlv  = 3.1484E6-2370.*tair(i,j)           ! latent heat of vaporization (in MKS)
+           cpm1 = 1005.46*(1.+0.887*qv(i,j))         ! specific heat capacity (in MKS)
+           xlv  = 3.1484E6-2370.*tair(i,j)           ! latent heat of vaporization (in MKS)
 #endif
 #ifdef new_saturation
-      esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
-      qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+           esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+           qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
 #else
-      y1(i,j) = 1./(tair(i,j)-c358)
-      qsw(i,j) = rp0*exp(c172-c409*y1(i,j))
+           y1(i,j) = 1./(tair(i,j)-c358)
+           qsw(i,j) = rp0*exp(c172-c409*y1(i,j))
 #endif
-      abw = 1.+xlv**2.*qsw(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)  ! abw=1+dqsdT*(Lv/Cp)
+           abw = 1.+xlv**2.*qsw(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)  ! abw=1+dqsdT*(Lv/Cp)
 
-      if ( qv(i,j).gt.qsw(i,j) .and. ww1(i,j,k).gt.1.e-3 ) then
-        ! C1 and K1 over land and ocean (Roger and Yau)
-        if ( xland(i,j) .eq. 1. ) then  !land
-          C1 = 1000. ; K1 = 0.5
-        else
-          C1 = 120.  ; K1 = 0.4         !ocean
-        endif
-        ncloud = min(1.E9,1.E6*0.88*C1**(2./(K1+2.))*          &
-                 (7.E-2*ww1(i,j,k)**1.5)**(K1/(K1+2.)))
-        nact = max(0.,ncloud-qc(i,j)/5.236E-13)             ! CONVERT FROM CM-3 TO M-3 and 5 microm in radius
-        qcmax = max((qv(i,j)-qsw(i,j)),0.)/abw
-        pact(i,j) = min(max(nact*1.414E-14,0.),qcmax)       ! 1.5 micron in radius
-        tair(i,j) = tair(i,j)+pact(i,j)*xlv/cpm1
-        tairc(i,j) = tair(i,j)-t0
-        qv(i,j) = max(0.,qv(i,j)-pact(i,j))
-        qc(i,j) = max(0.,qc(i,j)+pact(i,j))
-      endif
+           if ( qv(i,j).gt.qsw(i,j) .and. ww1(i,j,k).gt.1.e-3 ) then
+              ! C1 and K1 over land and ocean (Roger and Yau)
+              if ( xland(i,j) .eq. 1. ) then  !land
+                 C1 = 1000. ; K1 = 0.5
+              else
+                 C1 = 120.  ; K1 = 0.4         !ocean
+              endif
+              ncloud = min(1.E9,1.E6*0.88*C1**(2./(K1+2.))*          &
+                      (7.E-2*ww1(i,j,k)**1.5)**(K1/(K1+2.)))
+              nact = max(0.,ncloud-qc(i,j)/5.236E-13)             ! CONVERT FROM CM-3 TO M-3 and 5 microm in radius
+              qcmax = max((qv(i,j)-qsw(i,j)),0.)/abw
+              pact(i,j) = min(max(nact*1.414E-14,0.),qcmax)       ! 1.5 micron in radius
+              tair(i,j) = tair(i,j)+pact(i,j)*xlv/cpm1
+              tairc(i,j) = tair(i,j)-t0
+              qv(i,j) = max(0.,qv(i,j)-pact(i,j))
+              qc(i,j) = max(0.,qc(i,j)+pact(i,j))
+           endif
 
-      ! -------------
-      ! pint : cloud ice initialization
-      ! -------------
+           ! -------------
+           ! pint : cloud ice initialization
+           ! -------------
 
 #ifdef use_cpm
-      cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
-            cice*(qi(i,j)+qs(i,j)+qg(i,j))      ! specific heat capacity (in CGS)
-      cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
-      hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
-      hlf = alf - (cice-cliq)*(tair(i,j)-t0)
-      hls = hlv + hlf                           ! latent heat of sublimation (in CGS)
-      xls = hls*1.e-4                           ! latent heat of sublimation (in MKS)
+           cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                 cice*(qi(i,j)+qs(i,j)+qg(i,j))      ! specific heat capacity (in CGS)
+           cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
+           hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+           hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+           hls = hlv + hlf                           ! latent heat of sublimation (in CGS)
+           xls = hls*1.e-4                           ! latent heat of sublimation (in MKS)
 #else
-      cpm1  = 1005.46*(1.+0.887*qv(i,j))        ! specific heat capacity (in MKS)
-      xls   = 3.15E6-2370.*tair(i,j)+0.3337E6   ! latent heat of sublimation  (in MKS)
+           cpm1 = 1005.46*(1.+0.887*qv(i,j))         ! specific heat capacity (in MKS)
+           xls  = 3.15E6-2370.*tair(i,j)+0.3337E6    ! latent heat of sublimation  (in MKS)
 #endif
 #ifdef new_saturation
-      esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
-      esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
-      if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
-      qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
-      qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+           esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+           esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+           if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
+           qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+           qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
 #else
-      y1(i,j) = 1./(tair(i,j)-c358)
-      qsw(i,j) = rp0*exp(c172-c409*y1(i,j))
-      y2(i,j) = 1./(tair(i,j)-c76)
-      qsi(i,j) = rp0*exp(c218-c580*y2(i,j))
+           y1(i,j) = 1./(tair(i,j)-c358)
+           qsw(i,j) = rp0*exp(c172-c409*y1(i,j))
+           y2(i,j) = 1./(tair(i,j)-c76)
+           qsi(i,j) = rp0*exp(c218-c580*y2(i,j))
 #endif
-      abi = 1.+xls**2.*qsi(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)  ! abi=1+dqidT*(Ls/Cp)
+           abi = 1.+xls**2.*qsi(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)  ! abi=1+dqidT*(Ls/Cp)
 
-      if ( qv(i,j).gt.qsi(i,j) .and. tair(i,j).lt.t0 ) then
-        ssi(i,j) = qv(i,j)/qsi(i,j)-1.
-        nice = 1.e3*exp(1.296E+1*ssi(i,j)-6.39E-1)
-        r_nci = max(0.,nice-qi(i,j)/4.19E-10)               ! RHOI = 800; DI = 1.E-4
-        qimax = max((qv(i,j)-qsi(i,j)),0.)/abi
-        pint(i,j) = min(max(0.,r_nci*1.02e-13),qimax)
-        tair(i,j) = tair(i,j)+pint(i,j)*xls/cpm1
-        tairc(i,j) = tair(i,j)-t0
-        qv(i,j) = max(0.,qv(i,j)-pint(i,j))
-        qi(i,j) = max(0.,qi(i,j)+pint(i,j))
-      endif
+           if ( qv(i,j).gt.qsi(i,j) .and. tair(i,j).lt.t0 ) then
+              ssi(i,j) = qv(i,j)/qsi(i,j)-1.
+              nice = 1.e3*exp(1.296E+1*ssi(i,j)-6.39E-1)  ! Meyers et al. 1992 (m^-3)
+              r_nci = max(0.,nice-qi(i,j)/4.19E-10)                ! RHOI = 800; DI = 1.E-4
+!              if ( xland(i,j) .eq. 1. ) then  !land
+!                 r_nci = max(0.,nice/rhoair-qi(i,j)/2.28E-10)      ! RHOI = 850; DI = 8.E-5
+!              else
+!                 r_nci = max(0.,nice/rhoair-qi(i,j)/4.19E-10)      ! RHOI = 800; DI = 1.E-4
+!              endif
+              qimax = max((qv(i,j)-qsi(i,j)),0.)/abi
+              pint(i,j) = min(max(0.,r_nci*1.02e-13),qimax)
+              tair(i,j) = tair(i,j)+pint(i,j)*xls/cpm1
+              tairc(i,j) = tair(i,j)-t0
+              qv(i,j) = max(0.,qv(i,j)-pint(i,j))
+              qi(i,j) = max(0.,qi(i,j)+pint(i,j))
+           endif
 
-      ! -------------
-      ! cnd : condensation of qv to qc
-      ! dep : deposition of qv to qi
-      ! fez : freezing of qc to qi
-      ! ern : evaporation of qr
-      ! -------------
+           ! -------------
+           ! cnd : condensation of qv to qc
+           ! dep : deposition of qv to qi
+           ! fez : freezing of qc to qi
+           ! ern : evaporation of qr
+           ! -------------
 
 #ifdef use_cpm
-      cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
-            cice*(qi(i,j)+qs(i,j)+qg(i,j))      ! specific heat capacity (in CGS)
-      cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
-      hlv = alv - (cliq-cvap)*(tair(i,j)-t0)    ! latent heat of vaporization (in CGS)
-      xlv = hlv*1.e-4                           ! latent heat of vaporization (in MKS)
-      hlf = alf - (cice-cliq)*(tair(i,j)-t0)    ! latent heat of fusion (in CGS)
-      xlf = hlf*1.e-4                           ! latent heat of fusion (in MKS)
-      hls = hlv + hlf                           ! latent heat of sublimation (in CGS)
-      xls = hls*1.e-4                           ! latent heat of sublimation (in MKS)
+           cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                 cice*(qi(i,j)+qs(i,j)+qg(i,j))      ! specific heat capacity (in CGS)
+           cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
+           hlv = alv - (cliq-cvap)*(tair(i,j)-t0)    ! latent heat of vaporization (in CGS)
+           xlv = hlv*1.e-4                           ! latent heat of vaporization (in MKS)
+           hlf = alf - (cice-cliq)*(tair(i,j)-t0)    ! latent heat of fusion (in CGS)
+           xlf = hlf*1.e-4                           ! latent heat of fusion (in MKS)
+           hls = hlv + hlf                           ! latent heat of sublimation (in CGS)
+           xls = hls*1.e-4                           ! latent heat of sublimation (in MKS)
 #else
-      cpm1  = 1005.46*(1.+0.887*qv(i,j))        ! specific heat capacity (in MKS)
-      cpm   = 1.00546e+7*(1.+0.887*qv(i,j))     ! specific heat capacity (in CGS)
-      xlv   = 3.1484E6-2370.*tair(i,j)          ! latent heat of vaporization (in MKS)
-      xls   = 3.15E6-2370.*tair(i,j)+0.3337E6   ! latent heat of sublimation  (in MKS)
-      xlf   = alf*1.e-4                         ! latent heat of fusion (in MKS)
+           cpm1  = 1005.46*(1.+0.887*qv(i,j))        ! specific heat capacity (in MKS)
+           cpm   = 1.00546e+7*(1.+0.887*qv(i,j))     ! specific heat capacity (in CGS)
+           xlv   = 3.1484E6-2370.*tair(i,j)          ! latent heat of vaporization (in MKS)
+           xls   = 3.15E6-2370.*tair(i,j)+0.3337E6   ! latent heat of sublimation  (in MKS)
+           xlf   = alf*1.e-4                         ! latent heat of fusion (in MKS)
 #endif
 #ifdef new_saturation
-      esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
-      esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
-      if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
-      qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
-      qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+           esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+           esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+           if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
+           qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+           qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
 #else
-      y1(i,j) = 1./(tair(i,j)-c358)
-      qsw(i,j) = rp0*exp(c172-c409*y1(i,j))
-      y2(i,j) = 1./(tair(i,j)-c76)
-      qsi(i,j) = rp0*exp(c218-c580*y2(i,j))
+           y1(i,j) = 1./(tair(i,j)-c358)
+           qsw(i,j) = rp0*exp(c172-c409*y1(i,j))
+           y2(i,j) = 1./(tair(i,j)-c76)
+           qsi(i,j) = rp0*exp(c218-c580*y2(i,j))
 #endif
-      dv1 = 8.794E-4*pr0*tair(i,j)**1.81
+           dv1 = 8.794E-4*pr0*tair(i,j)**1.81
 
-      ! psychrometric correction to condensation/evaporation, abw=1+dqsdT*(Lv/Cp) ; dqsdT=Lv*qsw/Rv/T^2
-      abw = 1.+xlv**2.*qsw(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)
-      ! psychrometric correction to deposition/sublimation,   abi=1+dqidT*(Ls/Cp) ; dqidT=Ls*qsi/Rv/T^2
-      abi = 1.+xls**2.*qsi(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)
+           ! psychrometric correction to condensation/evaporation, abw=1+dqsdT*(Lv/Cp) ; dqsdT=Lv*qsw/Rv/T^2
+           abw = 1.+xlv**2.*qsw(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)
+           ! psychrometric correction to deposition/sublimation,   abi=1+dqidT*(Ls/Cp) ; dqidT=Ls*qsi/Rv/T^2
+           abi = 1.+xls**2.*qsi(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)
 
-      ! tauc : supersaturation relaxation timescale of cloud water
-      if ( qc(i,j) .ge. cwmin ) then
-        ltk  = log(tair(i,j))
-        lqc  = -1.*log(qc(i,j)*rhoair)
-        ltk2 = ltk*ltk
-        lqc2 = lqc*lqc
-        if ( xland(i,j) .eq. 1. ) then
-          mvdc = exp(5.8936819 - 7.013013*ltk                  &
-                     + 1.3178721*lqc + 1.1741987*ltk2          &
-                     + 2.6110916E-3*lqc2 - 0.26646396*ltk*lqc)
-        else
-          mvdc = exp(173.57305 - 64.370929*ltk                 &
-                     + 0.36833626*lqc + 6.1389254*ltk2         &
-                     + 5.5915321E-3*lqc2 - 0.12488698*ltk*lqc)
-        endif
-        mvrc = max(5.e-7,min(5.e-5,mvdc/2.e+6))             ! diameter of cloud water
-        ncloud = 3.*qc(i,j)*rhoair/(4.*cpi*1000.*mvrc**3.)  ! concentration of cloud water
-        ncloud = min(1.e+9,max(0.1,ncloud))
-        tauc = 1./(4.*cpi*dv1*ncloud*mvrc)                  ! tauc=1/(4*pi*Dv*Nc*rc)
-      else
-        tauc = 1.e+10
-      endif
+           ! tauc : supersaturation relaxation timescale of cloud water
+           if ( qc(i,j) .ge. cwmin ) then
+              ltk  = log(tair(i,j))
+              lqc  = -1.*log(qc(i,j)*rhoair)
+              ltk2 = ltk*ltk
+              lqc2 = lqc*lqc
+              if ( xland(i,j) .eq. 1. ) then
+                 mvdc = exp(5.8936819 - 7.013013*ltk                  &
+                            + 1.3178721*lqc + 1.1741987*ltk2          &
+                            + 2.6110916E-3*lqc2 - 0.26646396*ltk*lqc)
+              else
+                 mvdc = exp(173.57305 - 64.370929*ltk                 &
+                            + 0.36833626*lqc + 6.1389254*ltk2         &
+                            + 5.5915321E-3*lqc2 - 0.12488698*ltk*lqc)
+              endif
+              mvrc = max(5.e-7,min(5.e-5,mvdc/2.e+6))             ! diameter of cloud water
+              ncloud = 3.*qc(i,j)*rhoair/(4.*cpi*1000.*mvrc**3.)  ! concentration of cloud water
+              ncloud = min(1.e+9,max(0.1,ncloud))
+              tauc = 1./(4.*cpi*dv1*ncloud*mvrc)                  ! tauc=1/(4*pi*Dv*Nc*rc)
+           else
+              tauc = 1.e+10
+           endif
 
-      ! taui : supersaturation relaxation timescale of cloud ice
-      if ( qi(i,j) .ge. cimin ) then
-        ltk  = log(tair(i,j))
-        lqi  = -1.*log(qi(i,j)*rhoair)
-        ltk2 = ltk*ltk
-        lqi2 = lqi*lqi
-        if ( xland(i,j) .eq. 1. ) then
-          mvdi = exp(154.88767 - 0.25772005*lqi                &
-                     + 3.75543E-4*lqi2 - 54.560357*ltk         &
-                     + 5.1248879*ltk2 )
-        else
-          mvdi = exp(155.33396 - 0.25772005*lqi                &
-                     + 3.75543E-4*lqi2 - 54.560357*ltk         &
-                     + 5.1248879*ltk2 )
-        endif
-        mvri = min(5.e-4,max(3.e-6,mvdi/2.e+7))
-        if ( tairc(i,j) .ge. -40.0 ) then
-          hid = max(min(nint(abs(tairc(i,j))/0.25),120),0)
-          inhgr = itble(hid)
-          rhoi = 900.*exp(-3.*max((qv(i,j)-qsi(i,j))-5.e-5,0.) &
-                 /inhgr)
-        else
-          inhgr = 5.
-          ssi(i,j) = qv(i,j)/qsi(i,j)-1.
-          if ( ssi(i,j) .gt. 0.267 ) then
-            rhoi = -1027.456*ssi(i,j)+1185.834
-          else
-            rhoi = -32.332*ssi(i,j)+900.
-          endif
-        endif
-        rhoi = min(max(rhoi,50.),900.)
-        nice = 3.*qi(i,j)*rhoair/(4.*cpi*rhoi*mvri**3.)
-        nice = min(1.e+7,max(0.1,nice))
-        taui = 1./(4.*cpi*dv1*nice*mvri)                    ! taui=1/(4*pi*Dv*Ni*ri)
-      else
-        taui = 1.e+10
-      endif
+           ! taui : supersaturation relaxation timescale of cloud ice
+           if ( qi(i,j) .ge. cimin ) then
+              ltk  = log(tair(i,j))
+              lqi  = -1.*log(qi(i,j)*rhoair)
+              ltk2 = ltk*ltk
+              lqi2 = lqi*lqi
+              if ( xland(i,j) .eq. 1. ) then
+                 mvdi = exp(154.88767 - 0.25772005*lqi                &
+                            + 3.75543E-4*lqi2 - 54.560357*ltk         &
+                            + 5.1248879*ltk2 )
+              else
+                 mvdi = exp(155.33396 - 0.25772005*lqi                &
+                            + 3.75543E-4*lqi2 - 54.560357*ltk         &
+                            + 5.1248879*ltk2 )
+              endif
+              mvri = min(5.e-4,max(3.e-6,mvdi/2.e+7))
+              if ( tairc(i,j) .ge. -40.0 ) then
+                 hid = max(min(nint(abs(tairc(i,j))/0.25),120),0)
+                 inhgr = itble(hid)
+                 rhoi = 900.*exp(-3.*max((qv(i,j)-qsi(i,j))-5.e-5,0.) &
+                       /inhgr)
+              else
+                 inhgr = 5.
+                 ssi(i,j) = qv(i,j)/qsi(i,j)-1.
+                 if ( ssi(i,j) .gt. 0.267 ) then
+                    rhoi = -1027.456*ssi(i,j)+1185.834
+                 else
+                    rhoi = -32.332*ssi(i,j)+900.
+              endif
+              endif
+              rhoi = min(max(rhoi,50.),900.)
+              nice = 3.*qi(i,j)*rhoair/(4.*cpi*rhoi*mvri**3.)
+              nice = min(1.e+7,max(0.1,nice))
+              taui = 1./(4.*cpi*dv1*nice*mvri)                    ! taui=1/(4*pi*Dv*Ni*ri)
+           else
+              taui = 1.e+10
+           endif
 
-      ! taur : supersaturation relaxation timescale of rain
-      if ( qr(i,j) .ge. crmin ) then
-        ltk = log(tair(i,j))
-        lqr = -1.*log(qr(i,j)*rhoair)
-        ltk2 = ltk*ltk
-        lqr2 = lqr*lqr
-        kmin = 0.2222
-        kmax = 0.8396
-        mvdr = exp(33.999045 - 13.813047*ltk                   &
-                   + 0.29834969*lqr + 1.6622025*ltk2           &
-                   + 1.2480129E-3*lqr2 - 0.104641*ltk*lqr)
-        efdr = exp(1.6855156 + 0.84147302*log(mvdr)            &
-                   - 0.46783369*log(1.e+3)                     &
-                   + 1.005305E-2*(log(mvdr))**2.               &
-                   + 3.4833332E-2*(log(1.e+3))**2.             &
-                   + 1.4727223E-2*log(mvdr)*log(1.e+3))
-        efdr = max(min(efdr,mvdr/kmin**thrd),mvdr/kmax**thrd)
-        kdxr = max(kmin,min(kmax,(mvdr/efdr)**3.))
-        afar = max(0.,(6.*kdxr-3.+sqrt(8.*kdxr+1.))/(2.-2.*kdxr))
-!        zr = (afar+3.)/efdr*1.e+6
-        lzr = log((afar+3.)/efdr*1.e+6)
-        tnr = log(6.*qr(i,j)*rhoair/cpi/1.e+3)                 & ! slope parameter for rain
-              +(4.+afar)*lzr-lgamma(afar+4.)
-        avr = exp(7.6004532 - 0.7990953*ltk                    & ! coefficient ... for rain (?)
-                  + 1.0281818*lqr - 0.16595505*lqr2            &
-                  + 1.110037E-2*lqr*lqr2                       &
-                  - 2.0925743E-4*lqr2*lqr2)
-        bvr = max(0.5,min(2., 1.2218728 - 0.1281004*ltk        & ! exponent ... for rain (?)
-              + 2.6088596E-2*lqr - 7.4467639E-3*lqr2           &
-              + 7.7592532E-4*lqr*lqr2                          &
-              - 1.7056075E-5*lqr2*lqr2))
-        mur = 1.496E-6*tair(i,j)**1.5/(tair(i,j)+120.)           ! shape parameter for rain
-        rhoaj = sqrt(1.29/rhoair)
-        gr2 = lgamma(afar+2.)
-        gbr25 = lgamma(bvr*0.5+afar+2.5)
-        taur = 1./(2.*cpi*dv1*(0.78*exp(tnr+gr2-(afar+2.)      &
-               *lzr)+0.31*sqrt(avr*rhoaj/mur)*(mur/dv1)        &
-               **thrd*exp(tnr+gbr25-(bvr*0.5+afar+2.5)         &
-               *lzr)))
-      else
-        taur = 1.e+10
-      endif
+           ! taur : supersaturation relaxation timescale of rain
+           if ( qr(i,j) .ge. crmin ) then
+              ltk = log(tair(i,j))
+              lqr = -1.*log(qr(i,j)*rhoair)
+              ltk2 = ltk*ltk
+              lqr2 = lqr*lqr
+              kmin = 0.2222
+              kmax = 0.8396
+              mvdr = exp(33.999045 - 13.813047*ltk                   &
+                         + 0.29834969*lqr + 1.6622025*ltk2           &
+                         + 1.2480129E-3*lqr2 - 0.104641*ltk*lqr)
+              efdr = exp(1.6855156 + 0.84147302*log(mvdr)            &
+                         - 0.46783369*log(1.e+3)                     &
+                         + 1.005305E-2*(log(mvdr))**2.               &
+                         + 3.4833332E-2*(log(1.e+3))**2.             &
+                         + 1.4727223E-2*log(mvdr)*log(1.e+3))
+              efdr = max(min(efdr,mvdr/kmin**thrd),mvdr/kmax**thrd)
+              kdxr = max(kmin,min(kmax,(mvdr/efdr)**3.))
+              afar = max(0.,(6.*kdxr-3.+sqrt(8.*kdxr+1.))/(2.-2.*kdxr))
+              lzr = log((afar+3.)/efdr*1.e+6)
+              tnr = log(6.*qr(i,j)*rhoair/cpi/1.e+3)                 & ! slope parameter for rain
+                    +(4.+afar)*lzr-lgamma(afar+4.)
+              avr = exp(7.6004532 - 0.7990953*ltk                    & ! coefficient ... for rain (?)
+                        + 1.0281818*lqr - 0.16595505*lqr2            &
+                        + 1.110037E-2*lqr*lqr2                       &
+                        - 2.0925743E-4*lqr2*lqr2)
+              bvr = max(0.5,min(2., 1.2218728 - 0.1281004*ltk        & ! exponent ... for rain (?)
+                    + 2.6088596E-2*lqr - 7.4467639E-3*lqr2           &
+                    + 7.7592532E-4*lqr*lqr2                          &
+                    - 1.7056075E-5*lqr2*lqr2))
+              mur = 1.496E-6*tair(i,j)**1.5/(tair(i,j)+120.)           ! shape parameter for rain
+              rhoaj = sqrt(1.29/rhoair)
+              gr2 = lgamma(afar+2.)
+              gbr25 = lgamma(bvr*0.5+afar+2.5)
+              taur = 1./(2.*cpi*dv1*(0.78*exp(tnr+gr2-(afar+2.)      &
+                     *lzr)+0.31*sqrt(avr*rhoaj/mur)*(mur/dv1)        &
+                     **thrd*exp(tnr+gbr25-(bvr*0.5+afar+2.5)         &
+                     *lzr)))
+           else
+              taur = 1.e+10
+           endif
 
-      cnd1 = 0. ; cnd2 = 0. ; dep1 = 0. ; dep2 = 0.
-      fez1 = 0. ; fez2 = 0. ; ern1 = 0. ; ern2 = 0.
-      latr = 0.
+           cnd1 = 0. ; cnd2 = 0. ; dep1 = 0. ; dep2 = 0.
+           fez1 = 0. ; fez2 = 0. ; ern1 = 0. ; ern2 = 0.
+           latr = 0.
 
-!>>> TGFS_modify
       ! increase condensation at lower-level tropics :
 !      if ( abs(xlat) .le. 23.5 ) then
 !        if ( p0(i,j,k).ge.9.1e+5 .and.                         &
@@ -4213,155 +3655,110 @@ CONTAINS
 !          endif
 !        endif
 !      endif
-!<<< TGFS_modify
  
-      ! tau : multiphase supersaturation relaxation time scale defined by
-      ! 1/tau = 1/tauc + 1/taur + (1+Ls/Cp*dqsl/dT)/(1+Ls/Cp*dqsi/dT)/taui
-      tau = 1./(1./tauc+1./taur+1./taui*(1.+qsw(i,j)*          &
-            xls*xlv/cpm1/(4.61495E+2*tair(i,j)**2.))/abi)
+           ! tau : multiphase supersaturation relaxation time scale defined by
+           ! 1/tau = 1/tauc + 1/taur + (1+Ls/Cp*dqsl/dT)/(1+Ls/Cp*dqsi/dT)/taui
+           tau = 1./(1./tauc+1./taur+1./taui*(1.+qsw(i,j)*          &
+                 xls*xlv/cpm1/(4.61495E+2*tair(i,j)**2.))/abi)
 
-      ! atem : change in supersaturation due to Bergeron process
-      atem = (qsi(i,j)-qsw(i,j))/taui*(1.+qsw(i,j)*xls*xlv     &
-             /cpm1/(4.61495E+2*tair(i,j)**2.))/abi
+           ! atem : change in supersaturation due to Bergeron process
+           atem = (qsi(i,j)-qsw(i,j))/taui*(1.+qsw(i,j)*xls*xlv     &
+                  /cpm1/(4.61495E+2*tair(i,j)**2.))/abi
 
-      ! decide values at lower latitude :
-      cnd1 = max(-qc(i,j),(atem*dt*tau/tauc+(qv(i,j)           &
-             -qsw(i,j)-atem*tau)*(1.-exp(-dt/tau))*tau         &
-             /tauc)/abw)
-      dep1 = MAX(-qi(i,j),(atem*dt*tau/taui+(qv(i,j)           &
-             -qsw(i,j)-atem*tau)*(1.-exp(-dt/tau))*tau         &
-             /taui+(qsw(i,j)-qsi(i,j))*dt/taui)/abi)
-      ern1 = MAX(-qr(i,j),(atem*dt*tau/taur+(qv(i,j)           &
-             -qsw(i,j)-atem*tau)*(1.-exp(-dt/tau))*tau         &
-             /taur)/abw)
-      fez1 = 0.
+           ! decide values at lower latitude :
+           cnd1 = max(-qc(i,j),(atem*dt*tau/tauc+(qv(i,j)           &
+                  -qsw(i,j)-atem*tau)*(1.-exp(-dt/tau))*tau         &
+                  /tauc)/abw)
+           dep1 = MAX(-qi(i,j),(atem*dt*tau/taui+(qv(i,j)           &
+                  -qsw(i,j)-atem*tau)*(1.-exp(-dt/tau))*tau         &
+                  /taui+(qsw(i,j)-qsi(i,j))*dt/taui)/abi)
+           ern1 = MAX(-qr(i,j),(atem*dt*tau/taur+(qv(i,j)           &
+                  -qsw(i,j)-atem*tau)*(1.-exp(-dt/tau))*tau         &
+                  /taur)/abw)
+           fez1 = 0.
 
 #ifdef use_declination
-      ! decide values at polar regions :
-      ern2 = ern1
-      if ( tair(i,j) .ge. 253.16 ) then
-        ! T>=-20     : all ice melt; all excess vapor (over ice) condense; no deposition
-        cnd2 = max(-qc(i,j),(qv(i,j)-qsi(i,j))/abi)
-        fez2 = -qi(i,j)
-        dep2 = 0.
-      elseif ( tair(i,j).lt.253.16 .and. tair(i,j).ge.t00 ) then
-        ! -40<=T<-20 : all water freeze; all excess vapor (over water) deposite; no condensation
-        dep2 = max(-qi(i,j),(qv(i,j)-qsw(i,j))/abw)
-        fez2 = qc(i,j)
-        cnd2 = 0.
-      else
-        ! T<-40      : all water freeze; all excess vapor (over ice) deposite; no condensation
-        dep2 = max(-qi(i,j),(qv(i,j)-qsi(i,j))/abi)
-        fez2 = qc(i,j)
-        cnd2 = 0.
-      endif
+           ! decide values at polar regions :
+           ern2 = ern1
+           if ( tair(i,j) .ge. 253.16 ) then
+              ! T>=-20     : all ice melt; all excess vapor (over ice) condense; no deposition
+              cnd2 = max(-qc(i,j),(qv(i,j)-qsi(i,j))/abi)
+              fez2 = -qi(i,j)
+              dep2 = 0.
+           elseif ( tair(i,j).lt.253.16 .and. tair(i,j).ge.t00 ) then
+              ! -40<=T<-20 : all water freeze; all excess vapor (over water) deposite; no condensation
+              dep2 = max(-qi(i,j),(qv(i,j)-qsw(i,j))/abw)
+              fez2 = qc(i,j)
+              cnd2 = 0.
+           else
+              ! T<-40      : all water freeze; all excess vapor (over ice) deposite; no condensation
+              dep2 = max(-qi(i,j),(qv(i,j)-qsi(i,j))/abi)
+              fez2 = qc(i,j)
+              cnd2 = 0.
+           endif
 
-      ! create transition zones :
-      dltd = asin(sdec)*180.0/cpi      ! solar declination angle (in degree latitude)
-!      latint = 23.5*2.0                ! width of the transition zone (in degree latitude)
-      latint = 23.5                    ! width of the transition zone (in degree latitude)
-      sbd = dltd-90.0                  ! southern boundary of sun (in degree latitude)
-      nbd = dltd+90.0                  ! northern boundary of sun (in degree latitude)
-      sbd1 = sbd+latint/2.0            ! southern boundary of southern transition zone
-      sbd2 = sbd-latint/2.0            ! northern boundary of southern transition zone
-      nbd1 = nbd-latint/2.0            ! southern boundary of northern transition zone
-      nbd2 = nbd+latint/2.0            ! northern boundary of northern transition zone
+           ! create transition zones :
+           dltd = asin(sdec)*180.0/cpi      ! solar declination angle (in degree latitude)
+           latint = 23.5                    ! width of the transition zone (in degree latitude)
+           sbd = dltd-90.0                  ! southern boundary of sun (in degree latitude)
+           nbd = dltd+90.0                  ! northern boundary of sun (in degree latitude)
+           sbd1 = sbd+latint/2.0            ! southern boundary of southern transition zone
+           sbd2 = sbd-latint/2.0            ! northern boundary of southern transition zone
+           nbd1 = nbd-latint/2.0            ! southern boundary of northern transition zone
+           nbd2 = nbd+latint/2.0            ! northern boundary of northern transition zone
 
-      if ( xlat.gt.sbd1 .and. xlat.lt.nbd1 ) then       ! low-latitude
-        fxlat = 0.
-      elseif ( xlat.lt.sbd2 .or. xlat.gt.nbd2 ) then    ! polar region
-        fxlat = 1.
-      elseif ( xlat.ge.sbd2 .and. xlat.le.sbd1 ) then   ! southern transition zone
-        fxlat = sin(abs(max((xlat-sbd1)*90.0/latint,-90.0)*cpi/180.0))
-      elseif ( xlat.ge.nbd1 .and. xlat.le.nbd2 ) then   ! northern transition zone
-        fxlat = sin(min((xlat-nbd1)*90.0/latint,90.0)*cpi/180.0)
-      endif
+           if ( xlat.gt.sbd1 .and. xlat.lt.nbd1 ) then       ! low-latitude
+              fxlat = 0.
+           elseif ( xlat.lt.sbd2 .or. xlat.gt.nbd2 ) then    ! polar region
+              fxlat = 1.
+           elseif ( xlat.ge.sbd2 .and. xlat.le.sbd1 ) then   ! southern transition zone
+              fxlat = sin(abs(max((xlat-sbd1)*90.0/latint,-90.0)*cpi/180.0))
+           elseif ( xlat.ge.nbd1 .and. xlat.le.nbd2 ) then   ! northern transition zone
+              fxlat = sin(min((xlat-nbd1)*90.0/latint,90.0)*cpi/180.0)
+           endif
 
-      cnd(i,j) = cnd1*(1.0-fxlat) + cnd2*fxlat
-      dep(i,j) = dep1*(1.0-fxlat) + dep2*fxlat
-      fez(i,j) = fez1*(1.0-fxlat) + fez2*fxlat
-      ern(i,j) = ern1*(1.0-fxlat) + ern2*fxlat
+           cnd(i,j) = cnd1*(1.0-fxlat) + cnd2*fxlat
+           dep(i,j) = dep1*(1.0-fxlat) + dep2*fxlat
+           fez(i,j) = fez1*(1.0-fxlat) + fez2*fxlat
+           ern(i,j) = ern1*(1.0-fxlat) + ern2*fxlat
 
 #else
-!      ! (TGFS_modify) decide values at polar regions :
-!      if ( abs(xlat) .ge. 66.0 ) then
-!        ern2 = ern1
-!        if ( tair(i,j) .ge. 253.16 ) then
-!          ! T>=-20     : all ice melt; all excess vapor (over ice) condense; no deposition
-!          cnd2 = max(-qc(i,j),(qv(i,j)-qsi(i,j))/abi)
-!          fez2 = -qi(i,j)
-!          dep2 = 0.
-!        elseif ( tair(i,j).lt.253.16 .and. tair(i,j).ge.t00 ) then
-!          ! -40<=T<-20 : all water freeze; all excess vapor (over water) deposite; no condensation
-!          dep2 = max(-qi(i,j),(qv(i,j)-qsw(i,j))/abw)
-!          fez2 = qc(i,j)
-!          cnd2 = 0.
-!        else
-!          ! T<-40      : all water freeze; all excess vapor (over ice) deposite; no condensation
-!          dep2 = max(-qi(i,j),(qv(i,j)-qsi(i,j))/abi)
-!          fez2 = qc(i,j)
-!          cnd2 = 0.
-!        endif
-!      endif
-!
-!      ! create a transition zone at 60~67 degree :
-!      if ( abs(xlat) .lt. 66.0 ) then
-!        cnd(i,j) = cnd1
-!        dep(i,j) = dep1
-!        fez(i,j) = 0.
-!        ern(i,j) = ern1
-!      elseif ( abs(xlat).ge.66.0 .and. abs(xlat).lt.67.0 ) then
-!        latr = min(1.,max(0.,abs(xlat)-66.0))
-!        cnd(i,j) = cnd1*(1.-latr)+cnd2*latr
-!        dep(i,j) = dep1*(1.-latr)+dep2*latr
-!        fez(i,j) = fez1*(1.-latr)+fez2*latr
-!        ern(i,j) = ern1*(1.-latr)+ern2*latr
-!      else
-!        cnd(i,j) = cnd2
-!        dep(i,j) = dep2
-!        fez(i,j) = fez2
-!        ern(i,j) = ern2
-!      endif
-      cnd(i,j) = cnd1
-      dep(i,j) = dep1
-      fez(i,j) = fez1
-      ern(i,j) = ern1
+           cnd(i,j) = cnd1
+           dep(i,j) = dep1
+           fez(i,j) = fez1
+           ern(i,j) = ern1
 #endif
 
-      ! update tair, qv, qc, qi, qr :
-!      tair(i,j) = tair(i,j) + (ern(i,j)+cnd(i,j))*xlv/cpm1     &
-!                  + dep(i,j)*xls/cpm1 + fez(i,j)*alf/cpm
-      tair(i,j) = tair(i,j) + (ern(i,j)+cnd(i,j))*xlv/cpm1     &
-                  + dep(i,j)*xls/cpm1 + fez(i,j)*xlf/cpm1
-      qv(i,j) = max(0.,qv(i,j)-cnd(i,j)-dep(i,j)-ern(i,j))
-      qc(i,j) = max(0.,qc(i,j)+cnd(i,j)-fez(i,j))
-      qi(i,j) = max(0.,qi(i,j)+dep(i,j)+fez(i,j))
-      qr(i,j) = max(0.,qr(i,j)+ern(i,j))
+           ! update tair, qv, qc, qi, qr :
+           tair(i,j) = tair(i,j) + (ern(i,j)+cnd(i,j))*xlv/cpm1     &
+                       + dep(i,j)*xls/cpm1 + fez(i,j)*xlf/cpm1
+           qv(i,j) = max(0.,qv(i,j)-cnd(i,j)-dep(i,j)-ern(i,j))
+           qc(i,j) = max(0.,qc(i,j)+cnd(i,j)-fez(i,j))
+           qi(i,j) = max(0.,qi(i,j)+dep(i,j)+fez(i,j))
+           qr(i,j) = max(0.,qr(i,j)+ern(i,j))
 
-!>>> TGFS_modify
-      ! refreeze at mid-level polar regions :
-!      if ( abs(xlat).ge.66.0 .and.                             &
-!           p0(i,j,k).ge.8.e+5 .and.                            &
-!           qc(i,j).ge.cwmin ) then
-!        latr = min(1.,max(0.,abs(xlat)-66.0))
-!        fez(i,j) = qc(i,j)*latr
-!        tair(i,j) = tair(i,j) + fez(i,j)*alf/cpm
-!        qi(i,j) = max(0.,qi(i,j)+fez(i,j))
-!        qc(i,j) = max(0.,qc(i,j)-fez(i,j))
-!      endif
+           ! refreeze at mid-level polar regions :
+!           if ( abs(xlat).ge.66.0 .and.                             &
+!                p0(i,j,k).ge.8.e+5 .and.                            &
+!                qc(i,j).ge.cwmin ) then
+!              latr = min(1.,max(0.,abs(xlat)-66.0))
+!              fez(i,j) = qc(i,j)*latr
+!              tair(i,j) = tair(i,j) + fez(i,j)*alf/cpm
+!              qi(i,j) = max(0.,qi(i,j)+fez(i,j))
+!              qc(i,j) = max(0.,qc(i,j)-fez(i,j))
+!           endif
 
-      ! small cloud water all refreeze at polar regions, 
-      ! in order to make the distribution more continuous :
-!      if ( abs(xlat).ge.66.5 .and. qc(i,j).lt.1.e-4 ) then
-!        tair(i,j) = tair(i,j)+qc(i,j)*alf/cpm
-!        qi(i,j) = max(0.,qi(i,j)+qc(i,j))
-!        qc(i,j) = 0.
-!      endif
-!>>> TGFS_modify
+           ! small cloud water all refreeze at polar regions, 
+           ! in order to make the distribution more continuous :
+!           if ( abs(xlat).ge.66.5 .and. qc(i,j).lt.1.e-4 ) then
+!              tair(i,j) = tair(i,j)+qc(i,j)*alf/cpm
+!              qi(i,j) = max(0.,qi(i,j)+qc(i,j))
+!              qc(i,j) = 0.
+!           endif
 
-      ! update pt :
-      pt(i,j) = tair(i,j)/pi0-tb0   !tair=(pt(i,j)+tb0)*pi0
-      tairc(i,j) = tair(i,j)-t0
+           ! update pt :
+           pt(i,j) = tair(i,j)/pi0-tb0   !tair=(pt(i,j)+tb0)*pi0
+           tairc(i,j) = tair(i,j)-t0
 
 #else
 !>>> if not define sat_predict, use saturation adjustment scheme :
@@ -4373,181 +3770,83 @@ CONTAINS
 !     THE FLETCHER EQUATION. ALSO, ONLY INITIATE MORE ICE IF THE NEW NUMBER
 !     CONCENTRATION EXCEEDS THAT ALREADY PRESENT.
 
-      if ( itaobraun .eq. 0 ) then            !  tao's original
-         cn0=1.e-8
-         beta=-.6
-      else if ( itaobraun.eq.1 ) then         ! scott's
+           if ( itaobraun .eq. 0 ) then            !  tao's original
+              cn0=1.e-8
+              beta=-.6
+           else if ( itaobraun.eq.1 ) then         ! scott's
               cn0=1.e-6
               beta=-.46
-      endif
+           endif
         
-      if (improve .eq. 3) then
-         tair(i,j)=(pt(i,j)+tb0)*pi0
+           tair(i,j)=(pt(i,j)+tb0)*pi0
 #ifdef use_cpm
-         cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
-               cice*(qi(i,j)+qs(i,j)+qg(i,j))
-         hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
-         hlf = alf - (cice-cliq)*(tair(i,j)-t0)
-         hls = hlv + hlf
-         avcp = hlv/cpm*pir
-         ascp = hls/cpm*pir
-         afcp = hlf/cpm*pir
+           cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                 cice*(qi(i,j)+qs(i,j)+qg(i,j))
+           hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+           hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+           hls = hlv + hlf
+           avcp = hlv/cpm*pir
+           ascp = hls/cpm*pir
+           afcp = hlf/cpm*pir
 #endif
-         if (tair(i,j) .lt. t0) then
-            if (qi(i,j) .le. cmin) qi(i,j)=0.
-!             if (qi(i,j) .le. cmin2) qi(i,j)=0.
-            tairc(i,j)=tair(i,j)-t0
-            rtair(i,j)=1./(tair(i,j)-c76)
-            y2(i,j)=exp(c218-c580*rtair(i,j))
-            qsi(i,j)=rp0*y2(i,j)
-            esi(i,j)=c610*y2(i,j)
+           if (tair(i,j) .lt. t0) then
+              if (qi(i,j) .le. cmin) qi(i,j)=0.
+              tairc(i,j)=tair(i,j)-t0
+              rtair(i,j)=1./(tair(i,j)-c76)
+              y2(i,j)=exp(c218-c580*rtair(i,j))
+              qsi(i,j)=rp0*y2(i,j)
+              esi(i,j)=c610*y2(i,j)
 #ifdef new_saturation
-            esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
-            qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
-            esi(i,j) = esi(i,j)*10.  !in CGS
+              esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+              qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+              esi(i,j) = esi(i,j)*10.  !in CGS
 #endif
-            ssi(i,j)=(qv(i,j)+qb0)/qsi(i,j)-1.
-            y1(i,j)=1./tair(i,j)
-            y3(i,j)=SQRT(qi(i,j))
-            dd(i,j)=y1(i,j)*(RN10A*y1(i,j)-RN10B)+RN10C*tair(i,j)/   &
-                                                    esi(i,j)
-            dm(i,j)=max(qv(i,j)+qb0-qsi(i,j),0.0)
-            rsub1(i,j)=cs580*qsi(i,j)*rtair(i,j)*rtair(i,j)
-            dep(i,j)=dm(i,j)/(1.+rsub1(i,j))
-            if (tairc(i,j).le.-5.) then     
-                y4(i,j)=1./(tair(i,j)-c358)
-                qsw(i,j)=rp0*exp(c172-c409*y4(i,j))
-                fssi=min(xssi,max(.0,xssi*(tairc(i,j)+44.)/(44.-38.)))
-                fssi=min(ssi(i,j),fssi)
-!               r_nci=min(1.e-3*exp(-.639+12.96*fssi),1.) 
-                r_nci=max(1.e-3*exp(-.639+12.96*fssi),0.528e-3)
-       	        if (r_nci.gt.15.) r_nci=15.                         
+              ssi(i,j)=(qv(i,j)+qb0)/qsi(i,j)-1.
+              y1(i,j)=1./tair(i,j)
+              y3(i,j)=SQRT(qi(i,j))
+              dd(i,j)=y1(i,j)*(RN10A*y1(i,j)-RN10B)+RN10C*tair(i,j)/   &
+                                                      esi(i,j)
+              dm(i,j)=max(qv(i,j)+qb0-qsi(i,j),0.0)
+              rsub1(i,j)=cs580*qsi(i,j)*rtair(i,j)*rtair(i,j)
+              dep(i,j)=dm(i,j)/(1.+rsub1(i,j))
+              if (tairc(i,j).le.-5.) then     
+                 y4(i,j)=1./(tair(i,j)-c358)
+                 qsw(i,j)=rp0*exp(c172-c409*y4(i,j))
+                 fssi=min(xssi,max(.0,xssi*(tairc(i,j)+44.)/(44.-38.)))
+                 fssi=min(ssi(i,j),fssi)
+!                 r_nci=min(1.e-3*exp(-.639+12.96*fssi),1.) 
+                 r_nci=max(1.e-3*exp(-.639+12.96*fssi),0.528e-3)  ! Meyers et al. 1992 (cm^-3)
+                 if (r_nci.gt.15.) r_nci=15.                         
 
 #if ( WRF_CHEM == 1)
-                ! EMK...Only execute if GOCART and coupling is on
-                if ( (chem_opt == 300 .or. chem_opt == 301 .or. &
-                      chem_opt == 302 .or. chem_opt == 303) .and. &
-                      (gsfcgce_gocart_coupling == 1) ) then
-                   !JJS 20110602 vvvvv
-                   ! Conversion rate of cloud water to ice in the Bergeron porcess based on Meyer + DeMott formulae
-                   !        
-                   ! convert gocart aerosol mass conc to IN
-                   !      p0 need to be converted from g*cm/s2/cm2 to mb (hPa)
-                   !                call mass2icn(p0(i,j,k)*0.001,tair(i,j),aero(i,k,j,:), icn_out)
-                   !                icn_cgs(i,j,k) = max(min_icn, icn_out) * 1.e-3   !IN conc [#/cm3] <-- [#/Litter]
-                   !                call mass2icn(p0(i,j,k)*0.001,tair(i,j),aero(i,k,j,:), icn_out,i,j,k)
-                   !                icn_out = min(1.e3, max(0.01e0 ,  icn_out) )
-                   !                icn_cgs(i,j,k) = icn_out * 1.e-3 !IN conc [#/cm3]
-                   !                r_nci = icn_cgs(i,j,k)  !DeMotto's formuale
-                   r_nci = icn_out * 1.e-3  !DeMotto's formuale
-                   !JJS 20110602 ^^^^^
-                end if
+                 ! EMK...Only execute if GOCART and coupling is on
+                 if ( (chem_opt == 300 .or. chem_opt == 301 .or. &
+                       chem_opt == 302 .or. chem_opt == 303) .and. &
+                       (gsfcgce_gocart_coupling == 1) ) then
+                    ! Conversion rate of cloud water to ice in the Bergeron porcess based on Meyer + DeMott formulae
+                    !        
+                    ! convert gocart aerosol mass conc to IN
+                    !      p0 need to be converted from g*cm/s2/cm2 to mb (hPa)
+                    !                call mass2icn(p0(i,j,k)*0.001,tair(i,j),aero(i,k,j,:), icn_out)
+                    !                icn_cgs(i,j,k) = max(min_icn, icn_out) * 1.e-3   !IN conc [#/cm3] <-- [#/Litter]
+                    !                call mass2icn(p0(i,j,k)*0.001,tair(i,j),aero(i,k,j,:), icn_out,i,j,k)
+                    !                icn_out = min(1.e3, max(0.01e0 ,  icn_out) )
+                    !                icn_cgs(i,j,k) = icn_out * 1.e-3 !IN conc [#/cm3]
+                    !                r_nci = icn_cgs(i,j,k)  !DeMotto's formuale
+                    r_nci = icn_out * 1.e-3  !DeMotto's formuale
+                 end if
 #endif  
                    
-                pidep(i,j)=max(R32RT*1.e4*fssi*sqrt(r_nci)*y3(i,j)/dd(i,j), 0.)
-                dd(i,j)=max(1.e-9*r_nci/r00-qci(i,j,k)*1.e-9/ami50, 0.) 
-                pint(i,j)=max(min(dd(i,j),dm(i,j)),0.)
-                pint(i,j)=min(pint(i,j)+pidep(i,j), dep(i,j))
-                if (pint(i,j).le.cmin) pint(i,j)=0.
-                pt(i,j)=pt(i,j)+ascp*pint(i,j)
-                qv(i,j)=qv(i,j)-pint(i,j)
-                qi(i,j)=qi(i,j)+pint(i,j)
-             endif  !taric
-          endif  !tair                  
-      endif  !improve    
-!
-          if ( itaobraun.eq.0 ) then
-             tair(i,j)=(pt(i,j)+tb0)*pi0
-#ifdef use_cpm
-            cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
-                  cice*(qi(i,j)+qs(i,j)+qg(i,j))
-            hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
-            hlf = alf - (cice-cliq)*(tair(i,j)-t0)
-            hls = hlv + hlf
-            avcp = hlv/cpm*pir
-            ascp = hls/cpm*pir
-            afcp = hlf/cpm*pir
-#endif
-             if (tair(i,j) .lt. t0) then
-                if (qi(i,j) .le. cmin1) qi(i,j)=0.
-                tairc(i,j)=tair(i,j)-t0
-                dd(i,j)=r31r*exp(beta*tairc(i,j))
-                rtair(i,j)=1./(tair(i,j)-c76)
-                y2(i,j)=exp(c218-c580*rtair(i,j))
-                qsi(i,j)=rp0*y2(i,j)
-                esi(i,j)=c610*y2(i,j)
-#ifdef new_saturation
-                esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
-                qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
-                esi(i,j) = esi(i,j)*10.  !in CGS
-#endif
-                ssi(i,j)=(qv(i,j)+qb0)/qsi(i,j)-1.
-                dm(i,j)=max( (qv(i,j)+qb0-qsi(i,j)), 0.)
-                rsub1(i,j)=cs580*qsi(i,j)*rtair(i,j)*rtair(i,j)
-                dep(i,j)=dm(i,j)/(1.+rsub1(i,j))
-                pint(i,j)=max(min(dd(i,j), dm(i,j)), 0.)
-                y1(i,j)=1./tair(i,j)
-                y2(i,j)=exp(betah*tairc(i,j))
-                y3(i,j)=sqrt(qi(i,j))
-                dd(i,j)=y1(i,j)*(rn10a*y1(i,j)-rn10b) &
-                     +rn10c*tair(i,j)/esi(i,j)
-                pidep(i,j)=max(r32rt*ssi(i,j)*y2(i,j)*y3(i,j)/dd(i,j), 0.)
-                pint(i,j)=pint(i,j)+pidep(i,j)
-
-                pint(i,j)=min(pint(i,j),dep(i,j))
-!c               if (pint(i,j) .le. cmin2) pint(i,j)=0.
-                pt(i,j)=pt(i,j)+ascp*pint(i,j)
-                qv(i,j)=qv(i,j)-pint(i,j)
-                qi(i,j)=qi(i,j)+pint(i,j)
-             endif  !tair
-          endif  !if ( itaobraun.eq.0 )
-
-          if ( itaobraun.eq.1 .and. improve .lt. 2) then
-             tair(i,j)=(pt(i,j)+tb0)*pi0
-#ifdef use_cpm
-             cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
-                   cice*(qi(i,j)+qs(i,j)+qg(i,j))
-             hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
-             hlf = alf - (cice-cliq)*(tair(i,j)-t0)
-             hls = hlv + hlf
-             avcp = hlv/cpm*pir
-             ascp = hls/cpm*pir
-             afcp = hlf/cpm*pir
-#endif
-             if (tair(i,j) .lt. t0) then
-                if (qi(i,j) .le. cmin) qi(i,j)=0.
-                tairc(i,j)=tair(i,j)-t0
-                rtair(i,j)=1./(tair(i,j)-c76)
-                y2(i,j)=exp(c218-c580*rtair(i,j))
-                qsi(i,j)=rp0*y2(i,j)
-                esi(i,j)=c610*y2(i,j)
-#ifdef new_saturation
-                esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
-                qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
-                esi(i,j) = esi(i,j)*10.  !in CGS
-#endif
-                ssi(i,j)=(qv(i,j)+qb0)/qsi(i,j)-1.
-                ami20=3.76e-8
-                y1(i,j)=1./tair(i,j)
-                tairccri=tairc(i,j)          ! in degree c
-                if (tairccri.le.-30.) tairccri=-30.
-                y2(i,j)=exp(betah*tairccri)
-                y3(i,j)=sqrt(qi(i,j))
-                dd(i,j)=y1(i,j)*(rn10a*y1(i,j)-rn10b)+rn10c*tair(i,j)/esi(i,j)
-                pidep(i,j)=max(10.*r32rt*ssi(i,j)*y2(i,j)*y3(i,j)/dd(i,j),0.e0)  !fixed SEL
-                r_nci=min(rn25*exp(beta*tairc(i,j)),1.)
-                dd(i,j)=max(1.e-9*r_nci/r00-qi(i,j)*1.e-9/ami20, 0.)
-                dm(i,j)=max( (qv(i,j)+qb0-qsi(i,j)), 0.0)
-                rsub1(i,j)=cs580*qsi(i,j)*rtair(i,j)*rtair(i,j)
-                dep(i,j)=dm(i,j)/(1.+rsub1(i,j))
-                pint(i,j)=max(min(dd(i,j), dm(i,j)), 0.)
-                pint(i,j)=min(pint(i,j)+pidep(i,j), dep(i,j))
-                if (pint(i,j) .le. cmin) pint(i,j)=0.
-                pt(i,j)=pt(i,j)+ascp*pint(i,j)
-                qv(i,j)=qv(i,j)-pint(i,j)
-                qi(i,j)=qi(i,j)+pint(i,j)
-             endif  !tair
-          endif  ! if ( itaobraun.eq.1 ) ! scott's
+                 pidep(i,j)=max(R32RT*1.e4*fssi*sqrt(r_nci)*y3(i,j)/dd(i,j), 0.)
+                 dd(i,j)=max(1.e-9*r_nci/r00-qci(i,j,k)*1.e-9/ami50, 0.) 
+                 pint(i,j)=max(min(dd(i,j),dm(i,j)),0.)
+                 pint(i,j)=min(pint(i,j)+pidep(i,j), dep(i,j))
+                 if (pint(i,j).le.cmin) pint(i,j)=0.
+                 pt(i,j)=pt(i,j)+ascp*pint(i,j)
+                 qv(i,j)=qv(i,j)-pint(i,j)
+                 qi(i,j)=qi(i,j)+pint(i,j)
+              endif  !taric
+           endif  !tair                  
 
 ! End of Process 31 & 32
 
@@ -4558,296 +3857,265 @@ CONTAINS
 
 !*****   TAO ET AL (1989) SATURATION TECHNIQUE  ***********************
 
-         if (new_ice_sat .eq. 0) then
+           if (new_ice_sat .eq. 0) then
 
-               tair(i,j)=(pt(i,j)+tb0)*pi0
+              tair(i,j)=(pt(i,j)+tb0)*pi0
 #ifdef use_cpm
-               cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
-                     cice*(qi(i,j)+qs(i,j)+qg(i,j))
-               hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
-               hlf = alf - (cice-cliq)*(tair(i,j)-t0)
-               hls = hlv + hlf
-               avcp = hlv/cpm*pir
-               ascp = hls/cpm*pir
-               afcp = hlf/cpm*pir
+              cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                    cice*(qi(i,j)+qs(i,j)+qg(i,j))
+              hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+              hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+              hls = hlv + hlf
+              avcp = hlv/cpm*pir
+              ascp = hls/cpm*pir
+              afcp = hlf/cpm*pir
 #endif
-               cnd(i,j)=rt0*(tair(i,j)-t00)
-               dep(i,j)=rt0*(t0-tair(i,j))
-               y1(i,j)=1./(tair(i,j)-c358)
-               y2(i,j)=1./(tair(i,j)-c76)
-               qsw(i,j)=rp0*exp(c172-c409*y1(i,j))
-               qsi(i,j)=rp0*exp(c218-c580*y2(i,j))
-#ifdef new_saturation
-               esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
-               esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
-               if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
-               qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
-               qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
-               esw(i,j) = esw(i,j)*10.  !in CGS
-               esi(i,j) = esi(i,j)*10.  !in CGS
-#endif
-               dd(i,j)=cp409*y1(i,j)*y1(i,j)
-               dd1(i,j)=cp580*y2(i,j)*y2(i,j)
-               if (qc(i,j).le.cmin) qc(i,j)=cmin
-               if (qi(i,j).le.cmin) qi(i,j)=cmin
-               if (tair(i,j).ge.t0) then
-                  dep(i,j)=0.0
-                  cnd(i,j)=1.
-                  qi(i,j)=0.0
-               endif
-
-               if (tair(i,j).lt.t00) then
-                  cnd(i,j)=0.0
-                  dep(i,j)=1.
-                  qc(i,j)=0.0
-               endif
-
-               y5(i,j)=avcp*cnd(i,j)+ascp*dep(i,j)
-!               if (qc(i,j) .ge. cmin .or. qi(i,j) .ge. cmin) then
-               y1(i,j)=qc(i,j)*qsw(i,j)/(qc(i,j)+qi(i,j))
-               y2(i,j)=qi(i,j)*qsi(i,j)/(qc(i,j)+qi(i,j))
-               y4(i,j)=dd(i,j)*y1(i,j)+dd1(i,j)*y2(i,j)
-               qvs(i,j)=y1(i,j)+y2(i,j)
-               rsub1(i,j)=(qv(i,j)+qb0-qvs(i,j))/(1.+y4(i,j)*y5(i,j))
-               cnd(i,j)=cnd(i,j)*rsub1(i,j)
-               dep(i,j)=dep(i,j)*rsub1(i,j)
-               if (qc(i,j).le.cmin) qc(i,j)=0.
-               if (qi(i,j).le.cmin) qi(i,j)=0.
-!ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-!c    ******   condensation or evaporation of qc  ******
-
-               cnd(i,j)=max(-qc(i,j),cnd(i,j))
-
-!c    ******   deposition or sublimation of qi    ******
-
-               dep(i,j)=max(-qi(i,j),dep(i,j))
-
-               pt(i,j)=pt(i,j)+avcp*cnd(i,j)+ascp*dep(i,j)
-               qv(i,j)=qv(i,j)-cnd(i,j)-dep(i,j)
-               qc(i,j)=qc(i,j)+cnd(i,j)
-               qi(i,j)=qi(i,j)+dep(i,j)
-
-         endif  !if (new_ice_sat .eq. 0)
-
-         if (new_ice_sat .eq. 1) then
-
-               tair(i,j)=(pt(i,j)+tb0)*pi0
-#ifdef use_cpm
-               cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
-                     cice*(qi(i,j)+qs(i,j)+qg(i,j))
-               hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
-               hlf = alf - (cice-cliq)*(tair(i,j)-t0)
-               hls = hlv + hlf
-               avcp = hlv/cpm*pir
-               ascp = hls/cpm*pir
-               afcp = hlf/cpm*pir
-#endif
-               cnd(i,j)=rt0*(tair(i,j)-t00)
-               dep(i,j)=rt0*(t0-tair(i,j))
-               y1(i,j)=1./(tair(i,j)-c358)
-               y2(i,j)=1./(tair(i,j)-c76)
-               qsw(i,j)=rp0*exp(c172-c409*y1(i,j))
-               qsi(i,j)=rp0*exp(c218-c580*y2(i,j))
-#ifdef new_saturation
-               esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
-               esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
-               if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
-               qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
-               qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
-               esw(i,j) = esw(i,j)*10.  !in CGS
-               esi(i,j) = esi(i,j)*10.  !in CGS
-#endif
-               dd(i,j)=cp409*y1(i,j)*y1(i,j)
-               dd1(i,j)=cp580*y2(i,j)*y2(i,j)
-               y5(i,j)=avcp*cnd(i,j)+ascp*dep(i,j)
-               y1(i,j)=rt0*(tair(i,j)-t00)*qsw(i,j)
-               y2(i,j)=rt0*(t0-tair(i,j))*qsi(i,j)
-!               IF (QC(I,J).LE.CMIN) QC(I,J)=CMIN
-!               IF (QI(I,J).LE.CMIN) QI(I,J)=CMIN
-
-               if (tair(i,j).ge.t0) then
-!                 QI(I,J)=0.0
-                  dep(i,j)=0.0
-                  cnd(i,j)=1.
-                  y2(i,j)=0.
-
-                  y1(i,j)=qsw(i,j)
-               endif
-               if (tair(i,j).lt.t00) then
-                  cnd(i,j)=0.0
-                  dep(i,j)=1.
-                  y2(i,j)=qsi(i,j)
-                  y1(i,j)=0.
-!                 QC(I,J)=0.0
-               endif
-
-!            Y1(I,J)=QC(I,J)*QSW(I,J)/(QC(I,J)+QI(I,J))
-!            Y2(I,J)=QI(I,J)*QSI(I,J)/(QC(I,J)+QI(I,J))
-
-               y4(i,j)=dd(i,j)*y1(i,j)+dd1(i,j)*y2(i,j)
-               qvs(i,j)=y1(i,j)+y2(i,j)
-               rsub1(i,j)=(qv(i,j)+qb0-qvs(i,j))/(1.+y4(i,j)*y5(i,j))
-               cnd(i,j)=cnd(i,j)*rsub1(i,j)
-               dep(i,j)=dep(i,j)*rsub1(i,j)
-!               IF (QC(I,J).LE.CMIN) QC(I,J)=0.
-!               IF (QI(I,J).LE.CMIN) QI(I,J)=0.
-
-!C    ******   CONDENSATION OR EVAPORATION OF QC  ******
-
-               cnd(i,j)=max(-qc(i,j),cnd(i,j))
-
-!C    ******   DEPOSITION OR SUBLIMATION OF QI    ******
-
-               dep(i,j)=max(-qi(i,j),dep(i,j))
-
-               pt(i,j)=pt(i,j)+avcp*cnd(i,j)+ascp*dep(i,j)
-               qv(i,j)=qv(i,j)-cnd(i,j)-dep(i,j)
-               qc(i,j)=qc(i,j)+cnd(i,j)
-               qi(i,j)=qi(i,j)+dep(i,j)
-
-         endif  ! if (new_ice_sat .eq. 1)
-
-!c
-!
-          if (new_ice_sat .eq. 2) then
-
-          dep(i,j)=0.0
-          cnd(i,j)=0.0
-          tair(i,j)=(pt(i,j)+tb0)*pi0
-#ifdef use_cpm
-          cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
-                cice*(qi(i,j)+qs(i,j)+qg(i,j))
-          hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
-          hlf = alf - (cice-cliq)*(tair(i,j)-t0)
-          hls = hlv + hlf
-          avcp = hlv/cpm*pir
-          ascp = hls/cpm*pir
-          afcp = hlf/cpm*pir
-#endif
-          if (tair(i,j) .ge. 253.16) then
+              cnd(i,j)=rt0*(tair(i,j)-t00)
+              dep(i,j)=rt0*(t0-tair(i,j))
               y1(i,j)=1./(tair(i,j)-c358)
+              y2(i,j)=1./(tair(i,j)-c76)
               qsw(i,j)=rp0*exp(c172-c409*y1(i,j))
+              qsi(i,j)=rp0*exp(c218-c580*y2(i,j))
 #ifdef new_saturation
               esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+              esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+              if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
               qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+              qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
               esw(i,j) = esw(i,j)*10.  !in CGS
+              esi(i,j) = esi(i,j)*10.  !in CGS
 #endif
               dd(i,j)=cp409*y1(i,j)*y1(i,j)
-              dm(i,j)=qv(i,j)+qb0-qsw(i,j)
-              cnd(i,j)=dm(i,j)/(1.+avcp*dd(i,j)*qsw(i,j))
-!c    ******   condensation or evaporation of qc  ******
-              cnd(i,j)=max(-qc(i,j), cnd(i,j))
-             pt(i,j)=pt(i,j)+avcp*cnd(i,j)
-             qv(i,j)=qv(i,j)-cnd(i,j)
-             qc(i,j)=qc(i,j)+cnd(i,j)
-         endif
-          if (tair(i,j) .le. 258.16) then
-!c             cnd(i,j)=0.0
-             y2(i,j)=1./(tair(i,j)-c76)
-             qsi(i,j)=rp0*exp(c218-c580*y2(i,j))
-#ifdef new_saturation
-             esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
-             qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
-             esi(i,j) = esi(i,j)*10.  !in CGS
-#endif
-             dd1(i,j)=cp580*y2(i,j)*y2(i,j)
-             dep(i,j)=(qv(i,j)+qb0-qsi(i,j))/(1.+ascp*dd1(i,j)*qsi(i,j))
-!c    ******   deposition or sublimation of qi    ******
-             dep(i,j)=max(-qi(i,j),dep(i,j))
-             pt(i,j)=pt(i,j)+ascp*dep(i,j)
-             qv(i,j)=qv(i,j)-dep(i,j)
-             qi(i,j)=qi(i,j)+dep(i,j)
-          endif
+              dd1(i,j)=cp580*y2(i,j)*y2(i,j)
+              if (qc(i,j).le.cmin) qc(i,j)=cmin
+              if (qi(i,j).le.cmin) qi(i,j)=cmin
+              if (tair(i,j).ge.t0) then
+                 dep(i,j)=0.0
+                 cnd(i,j)=1.
+                 qi(i,j)=0.0
+              endif
 
-      endif                              ! if (new_ice_sat .eq. 2)
+              if (tair(i,j).lt.t00) then
+                 cnd(i,j)=0.0
+                 dep(i,j)=1.
+                 qc(i,j)=0.0
+              endif
 
-!!!!
-!!!   new_ice_sat option 3 from  Steve's satice
-!!!!
+              y5(i,j)=avcp*cnd(i,j)+ascp*dep(i,j)
+              y1(i,j)=qc(i,j)*qsw(i,j)/(qc(i,j)+qi(i,j))
+              y2(i,j)=qi(i,j)*qsi(i,j)/(qc(i,j)+qi(i,j))
+              y4(i,j)=dd(i,j)*y1(i,j)+dd1(i,j)*y2(i,j)
+              qvs(i,j)=y1(i,j)+y2(i,j)
+              rsub1(i,j)=(qv(i,j)+qb0-qvs(i,j))/(1.+y4(i,j)*y5(i,j))
+              cnd(i,j)=cnd(i,j)*rsub1(i,j)
+              dep(i,j)=dep(i,j)*rsub1(i,j)
+              if (qc(i,j).le.cmin) qc(i,j)=0.
+              if (qi(i,j).le.cmin) qi(i,j)=0.
 
-      if (new_ice_sat .eq. 3) then
+              cnd(i,j)=max(-qc(i,j),cnd(i,j))
+              dep(i,j)=max(-qi(i,j),dep(i,j))
 
-         dep(i,j)=0.0
-         cnd(i,j)=0.0
-         tair(i,j)=(pt(i,j)+tb0)*pi0
+              pt(i,j)=pt(i,j)+avcp*cnd(i,j)+ascp*dep(i,j)
+              qv(i,j)=qv(i,j)-cnd(i,j)-dep(i,j)
+              qc(i,j)=qc(i,j)+cnd(i,j)
+              qi(i,j)=qi(i,j)+dep(i,j)
+
+           endif  !if (new_ice_sat .eq. 0)
+
+           if (new_ice_sat .eq. 1) then
+
+              tair(i,j)=(pt(i,j)+tb0)*pi0
 #ifdef use_cpm
-         cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
-               cice*(qi(i,j)+qs(i,j)+qg(i,j))
-         hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
-         hlf = alf - (cice-cliq)*(tair(i,j)-t0)
-         hls = hlv + hlf
-         avcp = hlv/cpm*pir
-         ascp = hls/cpm*pir
-         afcp = hlf/cpm*pir
+              cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                    cice*(qi(i,j)+qs(i,j)+qg(i,j))
+              hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+              hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+              hls = hlv + hlf
+              avcp = hlv/cpm*pir
+              ascp = hls/cpm*pir
+              afcp = hlf/cpm*pir
 #endif
-         if (tair(i,j).ge.t00) THEN
-            y1(i,j)=1./(tair(i,j)-c358)
-            qsw(i,j)=rp0*exp(c172-c409*y1(i,j))
+              cnd(i,j)=rt0*(tair(i,j)-t00)
+              dep(i,j)=rt0*(t0-tair(i,j))
+              y1(i,j)=1./(tair(i,j)-c358)
+              y2(i,j)=1./(tair(i,j)-c76)
+              qsw(i,j)=rp0*exp(c172-c409*y1(i,j))
+              qsi(i,j)=rp0*exp(c218-c580*y2(i,j))
 #ifdef new_saturation
-            esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
-            qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
-            esw(i,j) = esw(i,j)*10.  !in CGS
+              esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+              esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+              if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
+              qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+              qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+              esw(i,j) = esw(i,j)*10.  !in CGS
+              esi(i,j) = esi(i,j)*10.  !in CGS
 #endif
-            dd(i,j)=cp409*y1(i,j)*y1(i,j)
-            dm(i,j)=qv(i,j)+qb0-qsw(i,j)
-            cnd(i,j)=dm(i,j)/(1.+avcp*dd(i,j)*qsw(i,j))
-!c    ******   condensation or evaporation of qc  ******
-            cnd(i,j)=max(-qc(i,j),cnd(i,j))
-            pt(i,j)=pt(i,j)+avcp*cnd(i,j)
-            qv(i,j)=qv(i,j)-cnd(i,j)
-            qc(i,j)=qc(i,j)+cnd(i,j)
-         endif
-         tair(i,j)=(pt(i,j)+tb0)*pi0
+              dd(i,j)=cp409*y1(i,j)*y1(i,j)
+              dd1(i,j)=cp580*y2(i,j)*y2(i,j)
+              y5(i,j)=avcp*cnd(i,j)+ascp*dep(i,j)
+              y1(i,j)=rt0*(tair(i,j)-t00)*qsw(i,j)
+              y2(i,j)=rt0*(t0-tair(i,j))*qsi(i,j)
+
+              if (tair(i,j).ge.t0) then
+                 dep(i,j)=0.0
+                 cnd(i,j)=1.
+                 y2(i,j)=0.
+                 y1(i,j)=qsw(i,j)
+              endif
+              if (tair(i,j).lt.t00) then
+                 cnd(i,j)=0.0
+                 dep(i,j)=1.
+                 y2(i,j)=qsi(i,j)
+                 y1(i,j)=0.
+              endif
+
+              y4(i,j)=dd(i,j)*y1(i,j)+dd1(i,j)*y2(i,j)
+              qvs(i,j)=y1(i,j)+y2(i,j)
+              rsub1(i,j)=(qv(i,j)+qb0-qvs(i,j))/(1.+y4(i,j)*y5(i,j))
+              cnd(i,j)=cnd(i,j)*rsub1(i,j)
+              dep(i,j)=dep(i,j)*rsub1(i,j)
+
+              cnd(i,j)=max(-qc(i,j),cnd(i,j))
+              dep(i,j)=max(-qi(i,j),dep(i,j))
+
+              pt(i,j)=pt(i,j)+avcp*cnd(i,j)+ascp*dep(i,j)
+              qv(i,j)=qv(i,j)-cnd(i,j)-dep(i,j)
+              qc(i,j)=qc(i,j)+cnd(i,j)
+              qi(i,j)=qi(i,j)+dep(i,j)
+
+           endif  ! if (new_ice_sat .eq. 1)
+
+           if (new_ice_sat .eq. 2) then
+
+              dep(i,j)=0.0
+              cnd(i,j)=0.0
+              tair(i,j)=(pt(i,j)+tb0)*pi0
 #ifdef use_cpm
-         cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
-               cice*(qi(i,j)+qs(i,j)+qg(i,j))
-         hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
-         hlf = alf - (cice-cliq)*(tair(i,j)-t0)
-         hls = hlv + hlf
-         avcp = hlv/cpm*pir
-         ascp = hls/cpm*pir
-         afcp = hlf/cpm*pir
+              cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                    cice*(qi(i,j)+qs(i,j)+qg(i,j))
+              hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+              hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+              hls = hlv + hlf
+              avcp = hlv/cpm*pir
+              ascp = hls/cpm*pir
+              afcp = hlf/cpm*pir
 #endif
-         if (tair(i,j).le.273.16) THEN
-!c    ******   deposition or sublimation of qi    ******
-            y1(i,j)=1./(tair(i,j)-c358)
-            qsw(i,j)=rp0*exp(c172-c409*y1(i,j))
-            y2(i,j)=1./(tair(i,j)-c76)
-            qsi(i,j)=rp0*exp(c218-c580*y2(i,j))
+              if (tair(i,j) .ge. 253.16) then
+                 y1(i,j)=1./(tair(i,j)-c358)
+                 qsw(i,j)=rp0*exp(c172-c409*y1(i,j))
 #ifdef new_saturation
-            esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
-            esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
-            if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
-            qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
-            qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
-            esw(i,j) = esw(i,j)*10.  !in CGS
-            esi(i,j) = esi(i,j)*10.  !in CGS
+                 esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+                 qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+                 esw(i,j) = esw(i,j)*10.  !in CGS
 #endif
+                 dd(i,j)=cp409*y1(i,j)*y1(i,j)
+                 dm(i,j)=qv(i,j)+qb0-qsw(i,j)
+                 cnd(i,j)=dm(i,j)/(1.+avcp*dd(i,j)*qsw(i,j))
 
-!            fssi=min(0.20,max(0.,0.20*(tair(i,j)-t0+44.0)/(44.0-38.0)))
-!vvvvvvvvvvvvv Tao 20110722 vvvvvvvvvvvvvv
-            fssi=min(xssi,max(0.,xssi*(tair(i,j)-t0+44.0)/(44.0-38.0)))
-!^^^^^^^^^^^^^ Tao 20110722 ^^^^^^^^^^^^^^
+                 cnd(i,j)=max(-qc(i,j), cnd(i,j))
 
-            ! max ssi f(tair)  ^^^^^
-            y3(i,j)=1.+min((qsw(i,j)-qsi(i,j))/qsi(i,j), fssi)
-            ! Lang 2007  ^^^^^
-            y4(i,j)=qsi(i,j)*y3(i,j)
-            if (tair(i,j).le.268.16.and.(qv(i,j)+qb0.gt.y4(i,j))) then
+                 pt(i,j)=pt(i,j)+avcp*cnd(i,j)
+                 qv(i,j)=qv(i,j)-cnd(i,j)
+                 qc(i,j)=qc(i,j)+cnd(i,j)
+              endif
+              if (tair(i,j) .le. 258.16) then
+                 y2(i,j)=1./(tair(i,j)-c76)
+                 qsi(i,j)=rp0*exp(c218-c580*y2(i,j))
+#ifdef new_saturation
+                 esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+                 qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+                 esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
+                 dd1(i,j)=cp580*y2(i,j)*y2(i,j)
+                 dep(i,j)=(qv(i,j)+qb0-qsi(i,j))/(1.+ascp*dd1(i,j)*qsi(i,j))
 
-               dd1(i,j)=cp580*y2(i,j)*y2(i,j)
-               dep(i,j)=(qv(i,j)+qb0-y4(i,j))/(1.+ascp*dd1(i,j)*y4(i,j))
-            else if (qv(i,j)+qb0.lt.qsi(i,j).and.qi(i,j).gt.cmin) then
-               dd1(i,j)=cp580*y2(i,j)*y2(i,j)
-               dep(i,j)=(qv(i,j)+qb0-qsi(i,j))/(1.+ascp*dd1(i,j)*qsi(i,j))
-               dep(i,j)=max(-qi(i,j),dep(i,j))
-            endif
-            pt(i,j)=pt(i,j)+ascp*dep(i,j)
-            qv(i,j)=qv(i,j)-dep(i,j)
-            qi(i,j)=qi(i,j)+dep(i,j)
-         endif
+                 dep(i,j)=max(-qi(i,j),dep(i,j))
+
+                 pt(i,j)=pt(i,j)+ascp*dep(i,j)
+                 qv(i,j)=qv(i,j)-dep(i,j)
+                 qi(i,j)=qi(i,j)+dep(i,j)
+              endif
+
+           endif                              ! if (new_ice_sat .eq. 2)
+
+           if (new_ice_sat .eq. 3) then
+
+              dep(i,j)=0.0
+              cnd(i,j)=0.0
+              tair(i,j)=(pt(i,j)+tb0)*pi0
+#ifdef use_cpm
+              cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                    cice*(qi(i,j)+qs(i,j)+qg(i,j))
+              hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+              hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+              hls = hlv + hlf
+              avcp = hlv/cpm*pir
+              ascp = hls/cpm*pir
+              afcp = hlf/cpm*pir
+#endif
+              if (tair(i,j).ge.t00) THEN
+                 y1(i,j)=1./(tair(i,j)-c358)
+                 qsw(i,j)=rp0*exp(c172-c409*y1(i,j))
+#ifdef new_saturation
+                 esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+                 qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+                 esw(i,j) = esw(i,j)*10.  !in CGS
+#endif
+                 dd(i,j)=cp409*y1(i,j)*y1(i,j)
+                 dm(i,j)=qv(i,j)+qb0-qsw(i,j)
+                 cnd(i,j)=dm(i,j)/(1.+avcp*dd(i,j)*qsw(i,j))
+
+                 cnd(i,j)=max(-qc(i,j),cnd(i,j))
+
+                 pt(i,j)=pt(i,j)+avcp*cnd(i,j)
+                 qv(i,j)=qv(i,j)-cnd(i,j)
+                 qc(i,j)=qc(i,j)+cnd(i,j)
+              endif
+              tair(i,j)=(pt(i,j)+tb0)*pi0
+#ifdef use_cpm
+              cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                    cice*(qi(i,j)+qs(i,j)+qg(i,j))
+              hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+              hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+              hls = hlv + hlf
+              avcp = hlv/cpm*pir
+              ascp = hls/cpm*pir
+              afcp = hlf/cpm*pir
+#endif
+              if (tair(i,j).le.273.16) THEN
+                 y1(i,j)=1./(tair(i,j)-c358)
+                 qsw(i,j)=rp0*exp(c172-c409*y1(i,j))
+                 y2(i,j)=1./(tair(i,j)-c76)
+                 qsi(i,j)=rp0*exp(c218-c580*y2(i,j))
+#ifdef new_saturation
+                 esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+                 esi(i,j) = min(0.99*p0_mks(i,k,j),esi_mks(tair(i,j)))
+                 if ( esi(i,j) .gt. esw(i,j) ) esi(i,j) = esw(i,j)
+                 qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+                 qsi(i,j) = 0.622*esi(i,j)/(p0_mks(i,k,j)-esi(i,j))
+                 esw(i,j) = esw(i,j)*10.  !in CGS
+                 esi(i,j) = esi(i,j)*10.  !in CGS
+#endif
+!                 fssi=min(0.20,max(0.,0.20*(tair(i,j)-t0+44.0)/(44.0-38.0)))
+                 fssi=min(xssi,max(0.,xssi*(tair(i,j)-t0+44.0)/(44.0-38.0)))
+
+                 y3(i,j)=1.+min((qsw(i,j)-qsi(i,j))/qsi(i,j), fssi)
+                 y4(i,j)=qsi(i,j)*y3(i,j)
+                 if (tair(i,j).le.268.16.and.(qv(i,j)+qb0.gt.y4(i,j))) then
+                    dd1(i,j)=cp580*y2(i,j)*y2(i,j)
+                    dep(i,j)=(qv(i,j)+qb0-y4(i,j))/(1.+ascp*dd1(i,j)*y4(i,j))
+                 elseif (qv(i,j)+qb0.lt.qsi(i,j).and.qi(i,j).gt.cmin) then
+                    dd1(i,j)=cp580*y2(i,j)*y2(i,j)
+                    dep(i,j)=(qv(i,j)+qb0-qsi(i,j))/(1.+ascp*dd1(i,j)*qsi(i,j))
+                    dep(i,j)=max(-qi(i,j),dep(i,j))
+                 endif
+
+                 pt(i,j)=pt(i,j)+ascp*dep(i,j)
+                 qv(i,j)=qv(i,j)-dep(i,j)
+                 qi(i,j)=qi(i,j)+dep(i,j)
+              endif
     
-    endif                                        ! if (new_ice_sat = 3)
+           endif                                        ! if (new_ice_sat = 3)
 
 !<<< end of ifdef sat_predict
 #endif
@@ -4855,79 +4123,24 @@ CONTAINS
 !* 10 * PSDEP : DEPOSITION OR SUBLIMATION OF QS                   **10**
 !* 20 * PGSUB : SUBLIMATION OF QG                                 **20**
 
-        psdep(i,j)=0.0
-        pgdep(i,j)=0.0
-        pssub(i,j)=0.0
-        pgsub(i,j)=0.0
-        tair(i,j)=(pt(i,j)+tb0)*pi0
-        tairc(I,j)=tair(I,j)-t0
+           psdep(i,j)=0.0
+           pgdep(i,j)=0.0
+           pssub(i,j)=0.0
+           pgsub(i,j)=0.0
+           tair(i,j)=(pt(i,j)+tb0)*pi0
+           tairc(I,j)=tair(I,j)-t0
+!           if (improve.gt.2) call sgmap(1,qs(i,j),r00,tairc(i,j),ftns0(i,j))
+!           if (improve.gt.2) call sgmap(2,qg(i,j),r00,tairc(i,j),ftng0(i,j))
 
-!        if (improve.gt.2) call sgmap(1,qs(i,j),r00,tairc(i,j),ftns0(i,j))
-!        if (improve.gt.2) call sgmap(2,qg(i,j),r00,tairc(i,j),ftng0(i,j))
-
-        if (qs(i,j).lt.cmin1) qs(i,j)=0.0
-        if (qg(i,j).lt.cmin1) qg(i,j)=0.0
-        if (qc(i,j)+qi(i,j).gt.1.e-5) then
-           dlt1(i,j)=1.
-        else    
-           dlt1(i,j)=0.
-        endif
-
-!        IF (IMPROVE .NE. 3) THEN ! below is 2007 WRF saticel_s
-!vvvvvvvvvvvv Tao 20110722 vvvvvvvvvvvvvvvvvvvv
-        IF (IMPROVE .NE. 3 .and. improve .ne. -1) THEN ! below is 2007 WRF saticel_s
-!^^^^^^^^^^^^ Tao 20110722 ^^^^^^^^^^^^^^^^^^^^
-
-           if (tair(i,j).lt.t0) then
-              rtair(i,j)=1./(tair(i,j)-c76)
-              qsi(i,j)=rp0*exp(c218-c580*rtair(i,j))
-              ssi(i,j)=(qv(i,j)+qb0)/qsi(i,j)-1.
-!
-              y1(i,j)=r10ar/(tca(i,j)*tair(i,j)**2)+1./(dwv(i,j) &
-                      *qsi(i,j))
-              y2(i,j)=.78/zs(i,j)**2+r101f*scv(i,j)/zs(i,j)**bsh5
-              psdep(i,j)=r10t*ssi(i,j)*y2(i,j)/y1(i,j)
-              pssub(i,j)=psdep(i,j)
-              psdep(i,j)=r2is*max(psdep(i,j), 0.)
-              pssub(i,j)=r2is*max(-qs(i,j), min(pssub(i,j), 0.))
-
-              if (ihail.eq.1) then
-                 y2(i,j)=.78/zg(i,j)**2+r20bq*scv(i,j)/zg(i,j)**bgh5
-              else
-                 y2(i,j)=.78/zg(i,j)**2+r20bs*scv(i,j)/zg(i,j)**bgh5
-              endif
-
-              pgsub(i,j)=r2ig*r20t*ssi(i,j)*y2(i,j)/y1(i,j)
-              dm(i,j)=qv(i,j)+qb0-qsi(i,j)
-              rsub1(i,j)=cs580*qsi(i,j)*rtair(i,j)*rtair(i,j)
-
-!     ********   DEPOSITION OR SUBLIMATION OF QS  **********************
-
-              y1(i,j)=dm(i,j)/(1.+rsub1(i,j))
-              psdep(i,j)=r2is*min(psdep(i,j),max(y1(i,j),0.))
-              y2(i,j)=min(y1(i,j),0.)
-              pssub(i,j)=r2is*max(pssub(i,j),y2(i,j))
-
-!     ********   SUBLIMATION OF QG   ***********************************
-
-              dd(i,j)=max((-y2(i,j)-qs(i,j)), 0.)
-              pgsub(i,j)=r2ig*min(dd(i,j), qg(i,j), max(pgsub(i,j),0.))
-
-              psdep(i,j)=dlt1(i,j)*psdep(i,j)
-              pssub(i,j)=(1.-dlt1(i,j))*pssub(i,j)
-              pgsub(i,j)=(1.-dlt1(i,j))*pgsub(i,j)
-
-              pt(i,j)=pt(i,j)+ascp*(psdep(i,j)+pssub(i,j)-pgsub(i,j))
-              qv(i,j)=qv(i,j)+pgsub(i,j)-pssub(i,j)-psdep(i,j)
-              qs(i,j)=qs(i,j)+psdep(i,j)+pssub(i,j)
-              qg(i,j)=qg(i,j)-pgsub(i,j)
-
-           endif ! tair
-
-        else   ! IF (IMPROVE .NE. 3)
+           if (qs(i,j).lt.cmin1) qs(i,j)=0.0
+           if (qg(i,j).lt.cmin1) qg(i,j)=0.0
+           if (qc(i,j)+qi(i,j).gt.1.e-5) then
+              dlt1(i,j)=1.
+           else    
+              dlt1(i,j)=0.
+           endif
 
            if (tair(i,j) .lt. t0) then 
-
 #ifdef use_cpm
               cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
                     cice*(qi(i,j)+qs(i,j)+qg(i,j))
@@ -4957,18 +4170,16 @@ CONTAINS
               Y3(I,J)=1./TAIR(I,J)
               DD(I,J)=Y3(I,J)*(RN10A*Y3(I,J)-RN10B)+RN10C*TAIR(I,J)/ESI(I,J)
               TAIRC(I,J)=TAIR(I,J)-T0
-!
-            ftns(i,j)=1.
-            ftng(i,j)=1.
-            ftns0(i,j)=1.
-            ftng0(i,j)=1.
-!            IF (IMPROVE .GE. 3) THEN
-            call sgmap(1,qs(i,j),r00,tairc(i,j),ftns0(i,j))
-            call sgmap(2,qg(i,j),r00,tairc(i,j),ftng0(i,j))
-            ftns(i,j)=ftns0(i,j)
-            ftng(i,j)=ftng0(i,j)
-!            ENDIF
-!
+
+              ftns(i,j)=1.
+              ftng(i,j)=1.
+              ftns0(i,j)=1.
+              ftng0(i,j)=1.
+              call sgmap(1,qs(i,j),r00,tairc(i,j),ftns0(i,j))
+              call sgmap(2,qg(i,j),r00,tairc(i,j),ftng0(i,j))
+              ftns(i,j)=ftns0(i,j)
+              ftng(i,j)=ftng0(i,j)
+
               Y4(I,J)=R10T*SSI(I,J)*(R101R/ZS(I,J)**2+R102RF/ZS(I,J)**BSH5)   &
                                 /DD(I,J)*ftns(i,j)
               PSDEP(I,J)=max(-QS(I,J), Y4(I,J))
@@ -4976,7 +4187,7 @@ CONTAINS
               Y2(I,J)=R191R/ZG(I,J)**2+R192RF/ZG(I,J)**BGH5
               PGDEP(I,J)=MAX(-qg(i,j), R20T*SSI(I,J)*Y2(I,J)/DD(I,J)          &
                                      *ftng(i,j))
-!      ******************************************************************
+
               Y5(I,J)=min(0.,DD1(I,J))
               DD1(I,J)=max(0.,DD1(I,J))
               IF (DLT1(I,J).EQ.1.) THEN
@@ -5011,601 +4222,492 @@ CONTAINS
 
            endif   ! if (tair(i,j) .lt. t0)
 
-        endif !  if (improve.ne.3)
-
 !!!  end of Processes 10 and 20
 
 #ifndef sat_predict
 !>>> Note that ern is already calculated in saturation prediction scheme.
 
 !* 23 * ERN : EVAPORATION OF QR (SUBSATURATION)                   **23**
-! Steve did not make any improvement on this process
 
-       if (qr(i,j) .gt. 0.0) then
-          tair(i,j)=(pt(i,j)+tb0)*pi0
-          rtair(i,j)=1./(tair(i,j)-c358)
+           if (qr(i,j) .gt. 0.0) then
+              tair(i,j)=(pt(i,j)+tb0)*pi0
+              rtair(i,j)=1./(tair(i,j)-c358)
 #ifdef use_cpm
-          cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
-                cice*(qi(i,j)+qs(i,j)+qg(i,j))
-          hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
-          hlf = alf - (cice-cliq)*(tair(i,j)-t0)
-          hls = hlv + hlf
-          avcp = hlv/cpm*pir
-          ascp = hls/cpm*pir
-          afcp = hlf/cpm*pir
+              cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                    cice*(qi(i,j)+qs(i,j)+qg(i,j))
+              hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+              hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+              hls = hlv + hlf
+              avcp = hlv/cpm*pir
+              ascp = hls/cpm*pir
+              afcp = hlf/cpm*pir
 #endif
-          if (improve.eq.3) then
-	     y2(i,j)=exp( c172-c409*rtair(i,j) )
-	     esw(i,j)=c610*y2(i,j)
-             qsw(i,j)=rp0*y2(i,j)
+              y2(i,j)=exp( c172-c409*rtair(i,j) )
+              esw(i,j)=c610*y2(i,j)
+              qsw(i,j)=rp0*y2(i,j)
 #ifdef new_saturation
-             esw(i,j)=min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
-             qsw(i,j)=0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
-             esw(i,j) = esw(i,j)*10.  !in CGS
+              esw(i,j)=min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+              qsw(i,j)=0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+              esw(i,j) = esw(i,j)*10.  !in CGS
 #endif
-             ssw(i,j)=(qv(i,j)+qb0)/qsw(i,j)-1.
-             dm(i,j)=qv(i,j)+qb0-qsw(i,j)
-             rsub1(i,j)=cv409*qsw(i,j)*rtair(i,j)*rtair(i,j)
-             dd1(i,j)=max(-dm(i,j)/(1.+rsub1(i,j)),0.0)
-             y3(i,j)=1./tair(i,j)
-             dd(i,j)=y3(i,j)*(rn30a*y3(i,j)-rn10b)+rn10c*tair(i,j)  &
-                             /esw(i,j)
-             y1(i,j)=-r23t*ssw(i,j)*(r231r/zr(i,j)**2+r232rf/       &
-                                      zr(i,j)**3)/dd(i,j)
-             ern(i,j)=min(dd1(i,j),qr(i,j),max(y1(i,j),0.0))
-          else
-!               tair(i,j)=(pt(i,j)+tb0)*pi0
-!               rtair(i,j)=1./(tair(i,j)-c358)
-             qsw(i,j)=rp0*exp(c172-c409*rtair(i,j))
-#ifdef new_saturation
-             esw(i,j)=min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
-             qsw(i,j)=0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
-             esw(i,j) = esw(i,j)*10.  !in CGS
-#endif
-             ssw(i,j)=(qv(i,j)+qb0)/qsw(i,j)-1.0
-             dm(i,j)=qv(i,j)+qb0-qsw(i,j)
-             rsub1(i,j)=cv409*qsw(i,j)*rtair(i,j)*rtair(i,j)
-             dd1(i,j)=max(-dm(i,j)/(1.+rsub1(i,j)), 0.0)
-             y1(i,j)=.78/zr(i,j)**2+r23af*scv(i,j)/zr(i,j)**bwh5
-             y2(i,j)=r23br/(tca(i,j)*tair(i,j)**2)+1./(dwv(i,j)   &
-                       *qsw(i,j))
-!cccc
-             ern(i,j)=r23t*ssw(i,j)*y1(i,j)/y2(i,j)
-             ern(i,j)=min(dd1(i,j),qr(i,j),max(ern(i,j),0.))
+              ssw(i,j)=(qv(i,j)+qb0)/qsw(i,j)-1.
+              dm(i,j)=qv(i,j)+qb0-qsw(i,j)
+              rsub1(i,j)=cv409*qsw(i,j)*rtair(i,j)*rtair(i,j)
+              dd1(i,j)=max(-dm(i,j)/(1.+rsub1(i,j)),0.0)
+              y3(i,j)=1./tair(i,j)
+              dd(i,j)=y3(i,j)*(rn30a*y3(i,j)-rn10b)+rn10c*tair(i,j)  &
+                              /esw(i,j)
+              y1(i,j)=-r23t*ssw(i,j)*(r231r/zr(i,j)**2+r232rf/       &
+                                       zr(i,j)**3)/dd(i,j)
+              ern(i,j)=min(dd1(i,j),qr(i,j),max(y1(i,j),0.0))
 
-!JJS 20090708 vvvvv
-! xli - reducing evaporation rate according to fitq
-!             if (ihail .eq. 1 .and. qr(i,j) .gt. 1.e-6 ) then
-              if (qr(i,j) .gt. 1.e-6 ) then  !Tao 20120224 apply to all options
-                fact_fit=0.11*(qr(i,j)*1.e3)**(-1.27)+0.98
-                ern(i,j)=ern(i,j)/fact_fit
-             endif
-!JJS 20090708 ^^^^^
-          endif
               pt(i,j)=pt(i,j)-avcp*ern(i,j)
               qv(i,j)=qv(i,j)+ern(i,j)
               qr(i,j)=qr(i,j)-ern(i,j)
-        endif
+           endif
 !>>> end of ifndef sat_predict
 #endif
-
-!!!!
-!!  add processes 30 & 33 fpr pmltg and pmlts
-!!
-!!!!
 
 !* 30 * pmltg : evaporation of melting qg                         **30**
 !* 33 * pmlts : evaporation of melting qs                         **33**
 
-          pmlts(i,j)=0.0
-          pmltg(i,j)=0.0
-	     tair(i,j)=(pt(i,j)+tb0)*pi0
-          tairc(i,j)=tair(i,j)-t0
+           pmlts(i,j)=0.0
+           pmltg(i,j)=0.0
+           tair(i,j)=(pt(i,j)+tb0)*pi0
+           tairc(i,j)=tair(i,j)-t0
 #ifdef use_cpm
-          cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
-                cice*(qi(i,j)+qs(i,j)+qg(i,j))
-          hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
-          hlf = alf - (cice-cliq)*(tair(i,j)-t0)
-          hls = hlv + hlf
-          avcp = hlv/cpm*pir
-          ascp = hls/cpm*pir
-          afcp = hlf/cpm*pir
+           cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
+                 cice*(qi(i,j)+qs(i,j)+qg(i,j))
+           hlv = alv - (cliq-cvap)*(tair(i,j)-t0)
+           hlf = alf - (cice-cliq)*(tair(i,j)-t0)
+           hls = hlv + hlf
+           avcp = hlv/cpm*pir
+           ascp = hls/cpm*pir
+           afcp = hlf/cpm*pir
 #endif
 
-            ftns0(i,j)=1.
-            ftng0(i,j)=1.
+           ftns0(i,j)=1.
+           ftng0(i,j)=1.
 
-          if (tair(i,j) .ge. t0) then
-             ftns(i,j)=1.
-             ftng(i,j)=1.
-             if (improve.gt.2) then
-                call sgmap(1,qs(i,j),r00,tairc(i,j),ftns0(i,j))
-                call sgmap(2,qg(i,j),r00,tairc(i,j),ftng0(i,j))
-                ftns(i,j)=ftns0(i,j)
-                ftng(i,j)=ftng0(i,j)
-             endif
-!             rtair(i,j)=1./(tair(i,j)-c358)
-             rtair(i,j)=1./(t0-c358)
-             y2(i,j)=exp( c172-c409*rtair(i,j) )
-             esw(i,j)=c610*y2(i,j)
-             qsw(i,j)=rp0*y2(i,j)
+           if (tair(i,j) .ge. t0) then
+              ftns(i,j)=1.
+              ftng(i,j)=1.
+              call sgmap(1,qs(i,j),r00,tairc(i,j),ftns0(i,j))
+              call sgmap(2,qg(i,j),r00,tairc(i,j),ftng0(i,j))
+              ftns(i,j)=ftns0(i,j)
+              ftng(i,j)=ftng0(i,j)
+
+!              rtair(i,j)=1./(tair(i,j)-c358)
+              rtair(i,j)=1./(t0-c358)
+              y2(i,j)=exp( c172-c409*rtair(i,j) )
+              esw(i,j)=c610*y2(i,j)
+              qsw(i,j)=rp0*y2(i,j)
 #ifdef new_saturation
-             esw(i,j)=min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
-             qsw(i,j)=0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
-             esw(i,j) = esw(i,j)*10.  !in CGS
+              esw(i,j)=min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j)))
+              qsw(i,j)=0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+              esw(i,j) = esw(i,j)*10.  !in CGS
 #endif
-             ssw(i,j)=1.-(qv(i,j)+qb0)/qsw(i,j)
-             dm(i,j)=qsw(i,j)-qv(i,j)-qb0
-             rsub1(i,j)=cv409*qsw(i,j)*rtair(i,j)*rtair(i,j)
-             dd1(i,j)=max(dm(i,j)/(1.+rsub1(i,j)),0.0)
-             y3(i,j)=1./tair(i,j)
-             dd(i,j)=y3(i,j)*(rn30a*y3(i,j)-rn10b)+rn10c*tair(i,j)       &
-                                             /esw(i,j)
-             y1(i,j)=ftng(i,j)*r30t*ssw(i,j)*(r191r/zg(i,j)**2+r192rf    &
-                   /zg(i,j)**bgh5)/dd(i,j)
-             pmltg(i,j)=min(qg(i,j),max(y1(i,j),0.0))
-             y1(i,j)=ftns(i,j)*r33t*ssw(i,j)*(r331r/zs(i,j)**2+r332rf    &
-                                           /zs(i,j)**bsh5)/dd(i,j)
-             pmlts(i,j)=min(qs(i,j),max(y1(i,j),0.0))
-             y1(i,j)=min(pmltg(i,j)+pmlts(i,j),dd1(i,j))
-             pmltg(i,j)=y1(i,j)-pmlts(i,j)
-             pt(i,j)=pt(i,j)-ascp*y1(i,j)
-             qv(i,j)=qv(i,j)+y1(i,j)
-             qs(i,j)=qs(i,j)-pmlts(i,j)
-             qg(i,j)=qg(i,j)-pmltg(i,j)
-          endif
+              ssw(i,j)=1.-(qv(i,j)+qb0)/qsw(i,j)
+              dm(i,j)=qsw(i,j)-qv(i,j)-qb0
+              rsub1(i,j)=cv409*qsw(i,j)*rtair(i,j)*rtair(i,j)
+              dd1(i,j)=max(dm(i,j)/(1.+rsub1(i,j)),0.0)
+              y3(i,j)=1./tair(i,j)
+              dd(i,j)=y3(i,j)*(rn30a*y3(i,j)-rn10b)+rn10c*tair(i,j)       &
+                                              /esw(i,j)
+              y1(i,j)=ftng(i,j)*r30t*ssw(i,j)*(r191r/zg(i,j)**2+r192rf    &
+                     /zg(i,j)**bgh5)/dd(i,j)
+              pmltg(i,j)=min(qg(i,j),max(y1(i,j),0.0))
+              y1(i,j)=ftns(i,j)*r33t*ssw(i,j)*(r331r/zs(i,j)**2+r332rf    &
+                                            /zs(i,j)**bsh5)/dd(i,j)
+              pmlts(i,j)=min(qs(i,j),max(y1(i,j),0.0))
+              y1(i,j)=min(pmltg(i,j)+pmlts(i,j),dd1(i,j))
+              pmltg(i,j)=y1(i,j)-pmlts(i,j)
+              pt(i,j)=pt(i,j)-ascp*y1(i,j)
+              qv(i,j)=qv(i,j)+y1(i,j)
+              qs(i,j)=qs(i,j)-pmlts(i,j)
+              qg(i,j)=qg(i,j)-pmltg(i,j)
+           endif
 ! end   Processes 30 and 33
   
-!JJS 10/7/2008     vvvvv
-    ENDIF    ! part of if (iwarm.eq.1) then
-!JJS 10/7/2008     ^^^^^
+        ENDIF    ! part of if (iwarm.eq.1) then
 
-!            IF (QV(I,J)+QB0 .LE. 0.) QV(I,J)=-QB0
-            if (qc(i,j) .le. cmin) qc(i,j)=0.
-            if (qr(i,j) .le. cmin) qr(i,j)=0.
-            if (qi(i,j) .le. cmin) qi(i,j)=0.
-            if (qs(i,j) .le. cmin) qs(i,j)=0.
-            if (qg(i,j) .le. cmin) qg(i,j)=0.
-            dpt(i,j,k)=pt(i,j)
-            dqv(i,j,k)=qv(i,j)
-            qcl(i,j,k)=qc(i,j)
-            qrn(i,j,k)=qr(i,j)
-            qci(i,j,k)=qi(i,j)
-            qcs(i,j,k)=qs(i,j)
-            qcg(i,j,k)=qg(i,j)
+!        IF (QV(I,J)+QB0 .LE. 0.) QV(I,J)=-QB0
+        if (qc(i,j) .le. cmin) qc(i,j)=0.
+        if (qr(i,j) .le. cmin) qr(i,j)=0.
+        if (qi(i,j) .le. cmin) qi(i,j)=0.
+        if (qs(i,j) .le. cmin) qs(i,j)=0.
+        if (qg(i,j) .le. cmin) qg(i,j)=0.
+        dpt(i,j,k)=pt(i,j)
+        dqv(i,j,k)=qv(i,j)
+        qcl(i,j,k)=qc(i,j)
+        qrn(i,j,k)=qr(i,j)
+        qci(i,j,k)=qi(i,j)
+        qcs(i,j,k)=qs(i,j)
+        qcg(i,j,k)=qg(i,j)
 
 #ifdef EXT_DIAG
-         scc=0.
-         see=0.
+        scc=0.
+        see=0.
 
-!            DD(I,J)=MAX(-CND(I,J), 0.)
-!            CND(I,J)=MAX(CND(I,J), 0.)
-!            DD1(I,J)=MAX(-DEP(I,J), 0.)
+        dd(i,j)=max(-cnd(i,j), 0.)
+        cnd(i,j)=max(cnd(i,j), 0.)
+!        dd1(i,j)=max(-dep(i,j), 0.)+pidep(i,j)*d2t
+        dd1(i,j)=max(-dep(i,j), 0.)  !bug fix by Di
+        dep(i,j)=max(dep(i,j), 0.)
 
-!ccshie 2/21/02 shie follow tao
-!CC for reference    QI(I,J)=QI(I,J)-Y2(I,J)+PIDEP(I,J)*D2T
-!CC for reference    QV(I,J)=QV(I,J)-(PIDEP(I,J))*D2T
+        sccc=cnd(i,j)
+        seee=dd(i,j) + ern(i,j)
+        sddd=dep(i,j) + dmax1(pint(i,j),0.0) + psdep(i,j) + pgdep(i,j)
+        ssss=dd1(i,j) - dmin1(pint(i,j),0.0) + pssub(i,j) + pgsub(i,j) + pmlts(i,j) + pmltg(i,j)
+        smmm=psmlt(i,j) + pgmlt(i,j) + pimlt(i,j) + qracs(i,j) 
+        sfff=psacw(i,j)*d2t + piacr(i,j)*d2t + psfw(i,j)*d2t + pgfr(i,j)*d2t   &
+             +dgacw(i,j)*d2t + dgacr(i,j)*d2t + psacr(i,j)*d2t + pihom(i,j)    &
+             +pidw(i,j)+pimm(i,j) + pcfr(i,j) + pihms(i,j)*d2t + pihmg(i,j)*d2t
 
-!c            DEP(I,J)=MAX(DEP(I,J), 0.)
-!            DEP(I,J)=MAX(DEP(I,J), 0.)+PIDEP(I,J)*D2T
-!            SCC=SCC+CND(I,J)
-!            SEE=SEE+DD(I,J)+ERN(I,J)
+        ! Snapshot values (K/s), consistent with declared units in Registry
+        physc(i,k,j) = avcp * sccc / d2t
+        physe(i,k,j) = avcp * seee / d2t
+        physd(i,k,j) = ascp * sddd / d2t
+        physs(i,k,j) = ascp * ssss / d2t
+        physf(i,k,j) = afcp * sfff / d2t
+        physm(i,k,j) = afcp * smmm / d2t
+        ! Accumulated values (K)
+        acphysc(i,k,j) = acphysc(i,k,j) + avcp * sccc 
+        acphyse(i,k,j) = acphyse(i,k,j) + avcp * seee 
+        acphysd(i,k,j) = acphysd(i,k,j) + ascp * sddd 
+        acphyss(i,k,j) = acphyss(i,k,j) + ascp * ssss 
+        acphysf(i,k,j) = acphysf(i,k,j) + afcp * sfff 
+        acphysm(i,k,j) = acphysm(i,k,j) + afcp * smmm 
 
-!         SC(K)=SCC+SC(K)
-!         SE(K)=SEE+SE(K)
-
-!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-!c     henry:  please take a look  (start)
-!JJS modified by JJS on 5/1/2007  vvvvv
-
-            dd(i,j)=max(-cnd(i,j), 0.)
-            cnd(i,j)=max(cnd(i,j), 0.)
-!            dd1(i,j)=max(-dep(i,j), 0.)+pidep(i,j)*d2t
-	    dd1(i,j)=max(-dep(i,j), 0.)  !bug fix by Di
-            dep(i,j)=max(dep(i,j), 0.)
-
-!!!!!!!!!!!DDDDDDDDDDDDDD double check by Lang 02/23/2016
-              sccc=cnd(i,j)
-              seee=dd(i,j) + ern(i,j)
-              sddd=dep(i,j) + dmax1(pint(i,j),0.0) + psdep(i,j) + pgdep(i,j)
-              ssss=dd1(i,j) - dmin1(pint(i,j),0.0) + pssub(i,j) + pgsub(i,j) + pmlts(i,j) + pmltg(i,j)
-              smmm=psmlt(i,j) + pgmlt(i,j) + pimlt(i,j) + qracs(i,j) 
-              sfff=psacw(i,j)*d2t + piacr(i,j)*d2t + psfw(i,j)*d2t + pgfr(i,j)*d2t   &
-                  +dgacw(i,j)*d2t + dgacr(i,j)*d2t + psacr(i,j)*d2t + pihom(i,j) &
-                  +pidw(i,j)+pimm(i,j) + pcfr(i,j) + pihms(i,j)*d2t + pihmg(i,j)*d2t
-
-
-! Snapshot values (K/s), consistent with declared units in Registry
-           physc(i,k,j) = avcp * sccc / d2t
-           physe(i,k,j) = avcp * seee / d2t
-           physd(i,k,j) = ascp * sddd / d2t
-           physs(i,k,j) = ascp * ssss / d2t
-           physf(i,k,j) = afcp * sfff / d2t
-           physm(i,k,j) = afcp * smmm / d2t
-! Accumulated values (K)
-           acphysc(i,k,j) = acphysc(i,k,j) + avcp * sccc 
-           acphyse(i,k,j) = acphyse(i,k,j) + avcp * seee 
-           acphysd(i,k,j) = acphysd(i,k,j) + ascp * sddd 
-           acphyss(i,k,j) = acphyss(i,k,j) + ascp * ssss 
-           acphysf(i,k,j) = acphysf(i,k,j) + afcp * sfff 
-           acphysm(i,k,j) = acphysm(i,k,j) + afcp * smmm 
-!JJS modified by JJS on 5/1/2007  ^^^^^
-
-!JJS   2010/10/19  vvvvv
-!      radar reflectivity calculation
-
+!        radar reflectivity calculation :
 !        dbz(i,k,j)=0.0
-
         a_1=1.e6*r00*qr(i,j)
         a_2=1.e6*r00*qs(i,j)
         a_3=1.e6*r00*qg(i,j)
+!        if (a_1+a_2+a_3 .ge. 1.e-8)  then
+        tair(i,j)=(pt(i,j)+tb0)*pi0
+        tairc(i,j)=tair(i,j) - t0
+        uwet=4.464**0.95
 
-!   if (a_1+a_2+a_3 .ge. 1.e-8)  then
-
-      tair(i,j)=(pt(i,j)+tb0)*pi0
-      tairc(i,j)=tair(i,j) - t0
-!vvvvvvvvvvvv 20110816 vvvvvvvvvvvvvvvvv
-      uwet=4.464**0.95
-!^^^^^^^^^^^^ 20110816 ^^^^^^^^^^^^^^^^^
-      if (improve .eq. 3) then      !using new dbz formula from Xiping
-            ftns(i,j)=1.
-            ftns0(i,j)=1.
-            ftng(i,j)=1.
-            ftng0(i,j)=1.
-            call sgmap(1,qs(i,j),r00,tairc(i,j),ftns0(i,j))
-            call sgmap(2,qg(i,j),r00,tairc(i,j),ftng0(i,j))
-         A_C = 49.6 * 1.E-6
-         A_I = 9.4 * 1.E-6
-         RE_C = 10.            ! UM
-         RE_I = 25.            ! UM
-         RE_S = 75.            ! UM
-!vvvvvvvvvvvvv Tao 20110722
-!         tairc5=min(0.,max(-35.,tairc(i,j)+5.0))
-!         fexp=-0.2-tairc5/100.
-!^^^^^^^^^^^^^ Tao 20110722 
-         ucor=3071.29/tnw**0.75
+        ftns(i,j)=1.
+        ftns0(i,j)=1.
+        ftng(i,j)=1.
+        ftng0(i,j)=1.
+        call sgmap(1,qs(i,j),r00,tairc(i,j),ftns0(i,j))
+        call sgmap(2,qg(i,j),r00,tairc(i,j),ftng0(i,j))
+        A_C = 49.6 * 1.E-6
+        A_I = 9.4 * 1.E-6
+        RE_C = 10.            ! UM
+        RE_I = 25.            ! UM
+        RE_S = 75.            ! UM
+!        tairc5=min(0.,max(-35.,tairc(i,j)+5.0))
+!        fexp=-0.2-tairc5/100.
+        ucor=3071.29/tnw**0.75
 
 ! Caculate temperature dependent ucog
-!         ftng(i,j)=1.
-!vvvvvvvvvvvvv Tao 20110722
-         ftng(i,j)=ftng0(i,j)**0.75
-!         ftng(i,j)=exp(-1.*tslopeg*tairc5)
-!         ftngQ=1.0
-!         if (qg(i,j).gt.cmin) ftngQ=(qg(i,j)/0.001)**fexp
-!         ftng(i,j)=ftng(i,j)*ftngQ
-!^^^^^^^^^^^^^ Tao 20110722
-
+!        ftng(i,j)=1.
+        ftng(i,j)=ftng0(i,j)**0.75
+!        ftng(i,j)=exp(-1.*tslopeg*tairc5)
+!        ftngQ=1.0
+!        if (qg(i,j).gt.cmin) ftngQ=(qg(i,j)/0.001)**fexp
+!        ftng(i,j)=ftng(i,j)*ftngQ
 ! Caculate temperature dependent ucos
-!         ftns(i,j)=1.
-!vvvvvvvvvvvvv Tao 20110722
-         ftns(i,j)=ftns0(i,j)**0.75
-!         ftns(i,j)=exp(-1.*tslopes*tairc5)
-!         ftnsQ=1.0
-!         if (qs(i,j).gt.cmin) ftnsQ=(qs(i,j)/0.001)**fexp
-!         ftns(i,j)=ftns(i,j)*ftnsQ
-!^^^^^^^^^^^^^ Tao 20110722
+!        ftns(i,j)=1.
+        ftns(i,j)=ftns0(i,j)**0.75
+!        ftns(i,j)=exp(-1.*tslopes*tairc5)
+!        ftnsQ=1.0
+!        if (qs(i,j).gt.cmin) ftnsQ=(qs(i,j)/0.001)**fexp
+!        ftns(i,j)=ftns(i,j)*ftnsQ
 !
-!vvvvvvvvvvvvvv 20110816 vvvvvvvvvvvvvvvvvvvvvvvv
-!          ucos=687.97*roqs**0.25/ftns(i,j)**0.75
-!          ucog=687.97*roqg**0.25/ftng(i,j)**0.75
-          ucos=687.97*roqs**0.25/tns**0.75/ftns(i,j)
-          ucog=687.97*roqg**0.25/tng**0.75/ftng(i,j)
-!^^^^^^^^^^^^^^ 20110816 ^^^^^^^^^^^^^^^^^^^^^^^^^
+!         ucos=687.97*roqs**0.25/ftns(i,j)**0.75
+!         ucog=687.97*roqg**0.25/ftng(i,j)**0.75
+         ucos=687.97*roqs**0.25/tns**0.75/ftns(i,j)
+         ucog=687.97*roqg**0.25/tng**0.75/ftng(i,j)
 
-          a_11=ucor*(max(1.e-12,a_1))**1.75
-!         a_22=ucos*(max(1.e-12,a_2))**1.75
-!         a_33=ucog*(max(1.e-12,a_3))**1.75
+         a_11=ucor*(max(1.e-12,a_1))**1.75
+!        a_22=ucos*(max(1.e-12,a_2))**1.75
+!        a_33=ucog*(max(1.e-12,a_3))**1.75
 
-!vvvvvvvvvvvvvv 20110816 vvvvvvvvvvvvvvvvvvvvvvvv 
-!         a_22=ucos*(max(1.e-12,a_2))**1.75/ftns(i,j)
-!         a_33=ucog*(max(1.e-12,a_3))**1.75/ftng(i,j)
-         a_22=ucos*(max(1.e-12,a_2))**1.75
-         a_33=ucog*(max(1.e-12,a_3))**1.75
-!vvvvvvvvvvvvvv 20110816 vvvvvvvvvvvvvvvvvvvvvvvv
+!        a_22=ucos*(max(1.e-12,a_2))**1.75/ftns(i,j)
+!        a_33=ucog*(max(1.e-12,a_3))**1.75/ftng(i,j)
+        a_22=ucos*(max(1.e-12,a_2))**1.75
+        a_33=ucog*(max(1.e-12,a_3))**1.75
 
-         W_C = r00 * QC(I,J) * 1000.   !LIQUID WATER CONTENT IN G/M^3
-         W_I = r00 * QI(I,J) * 1000.   !ICE WATER CONTENT IN G/M^3
-         W_S = r00 * QS(I,J) * 1000.   !ICE WATER CONTENT IN G/M^3
+        W_C = r00 * QC(I,J) * 1000.   !LIQUID WATER CONTENT IN G/M^3
+        W_I = r00 * QI(I,J) * 1000.   !ICE WATER CONTENT IN G/M^3
+        W_S = r00 * QS(I,J) * 1000.   !ICE WATER CONTENT IN G/M^3
 
 ! Xiping's formula
-!         ZE_CLD = A_C * W_C * RE_C**3 + A_I * W_I * RE_I**3   &  !ZE IN  mm^6/m^3
-!                 + A_I * W_S * RE_S**3  ! (as cloud particles NOT precipitation)
-         ZE_CLD = A_C * W_C * RE_C**3 + A_I * W_I * RE_I**3      !ZE IN  mm^6/m^3
+!        ZE_CLD = A_C * W_C * RE_C**3 + A_I * W_I * RE_I**3   &  !ZE IN  mm^6/m^3
+!                + A_I * W_S * RE_S**3  ! (as cloud particles NOT precipitation)
+        ZE_CLD = A_C * W_C * RE_C**3 + A_I * W_I * RE_I**3      !ZE IN  mm^6/m^3
                   ! (use a_22 and ucos instead)
-         IF (TAIR(I,J).LT.273.16) THEN
-!            ZDRY = MAX(1.e-4,A_11+A_33+ZE_CLD) ! Xiping's  !rain,snow,cloud ice,cloud water,graupel
-            ZDRY = MAX(1.e-4,A_11+A_22+A_33+ZE_CLD) !rain,snow,cloud ice,cloud water,graupel
-!            DBZ(I,K,J) = 10.*ALOG10(ZDRY)
-            DBZ(I,K,J) = 10.*DLOG10(ZDRY)
-         ELSE         
-!            A_44 = A_11+UWET*(A_22+A_33)**.95         ! old formula
-!            A_44 = A_11+UWET*A_33**.95+ZE_CLD         ! Xiping's
-            A_44 = A_11+UWET*(A_22+A_33)**.95+ZE_CLD
-            ZWET = MAX(1.e-4,A_44)
-!            DBZ(I,K,J) = 10.*ALOG10(ZWET)
-            DBZ(I,K,J) = 10.*DLOG10(ZWET)
-         ENDIF
-
-      else ! using old dbz formula from Tao
-         ucor=3071.29/tnw**0.75
-         ucos=687.97*roqs**0.25/tns**0.75
-         ucog=687.97*roqg**0.25/tng**0.75
-         uwet=4.464**0.95
-         a_11=ucor*(max(1.e-5,a_1))**1.75
-         a_22=ucos*(max(1.e-5,a_2))**1.75
-         a_33=ucog*(max(1.e-5,a_3))**1.75
-         zdry=max(1.e-20,a_11+a_22+a_33)
-         dbz(i,k,j)=10.*log10(zdry)
-         if (tair(i,j).ge.273.16) then
-            a_44=a_11+uwet*(a_22+a_33)**.95
-            zwet=max(1.e-20,a_44)
-            dbz(i,k,j)=10.*log10(zwet)
-         endif
-
-      endif  !improve
+        IF (TAIR(I,J).LT.273.16) THEN
+!           ZDRY = MAX(1.e-4,A_11+A_33+ZE_CLD) ! Xiping's  !rain,snow,cloud ice,cloud water,graupel
+           ZDRY = MAX(1.e-4,A_11+A_22+A_33+ZE_CLD) !rain,snow,cloud ice,cloud water,graupel
+!           DBZ(I,K,J) = 10.*ALOG10(ZDRY)
+           DBZ(I,K,J) = 10.*DLOG10(ZDRY)
+        ELSE         
+!           A_44 = A_11+UWET*(A_22+A_33)**.95         ! old formula
+!           A_44 = A_11+UWET*A_33**.95+ZE_CLD         ! Xiping's
+           A_44 = A_11+UWET*(A_22+A_33)**.95+ZE_CLD
+           ZWET = MAX(1.e-4,A_44)
+!           DBZ(I,K,J) = 10.*ALOG10(ZWET)
+           DBZ(I,K,J) = 10.*DLOG10(ZWET)
+        ENDIF
+!end of EXT_DIAG
 #endif
 
 !   endif
 
-!JJS   2010/10/19  ^^^^^
 #if ( WRF_CHEM == 1)
-      ! EMK...Nuclei only calculated when coupling
-      if ( (chem_opt == 300 .or. chem_opt == 301 .or. &
-            chem_opt == 302 .or. chem_opt == 303) .and. &
-            (gsfcgce_gocart_coupling == 1) ) then
-         icn_diag(i,k,j) = icn_out  ! #/Litre 
-         nc_diag(i,k,j) = ccn_out  ! #/cm3
-      else
-         icn_diag(i,k,j) = 0.
-         nc_diag(i,k,j) = 0.
-      end if         
+        ! EMK...Nuclei only calculated when coupling
+        if ( (chem_opt == 300 .or. chem_opt == 301 .or. &
+              chem_opt == 302 .or. chem_opt == 303) .and. &
+              (gsfcgce_gocart_coupling == 1) ) then
+           icn_diag(i,k,j) = icn_out  ! #/Litre 
+           nc_diag(i,k,j) = ccn_out  ! #/cm3
+        else
+           icn_diag(i,k,j) = 0.
+           nc_diag(i,k,j) = 0.
+        end if         
 #endif
 
-!JJS 20140305 vvvvv  Calculate effective radius for all cloud species
 !   eff_rad is a function of the slope parameter (Lambda)
         
-    ! rain
-      if (qrn(i,j,k) .lt. crmin) then
-         refr(i,k,j) = 0.e0  
-      else 
-         refr(i,k,j) = eff_rad(zr(i,j))    
-      endif  
-    ! snow
-      if (qcs(i,j,k) .lt. csmin) then
-         refs(i,k,j) = 0.e0 
-      else 
-         refs(i,k,j) = eff_rad(zs(i,j))    
-      endif  
-    ! graupel/hail
-      if (qcg(i,j,k) .lt. cgmin) then
-         refg(i,k,j) = 0.e0  
-      else 
-         refg(i,k,j) = eff_rad(zg(i,j))    
-      endif  
+        ! effective radii of rain :
+        if (qrn(i,j,k) .lt. crmin) then
+           refr(i,k,j) = 0.e0  
+        else 
+           refr(i,k,j) = eff_rad(zr(i,j))    
+        endif
 
-! for cloud water
+        ! effective radii of snow
+        if (qcs(i,j,k) .lt. csmin) then
+           refs(i,k,j) = 0.e0 
+        else 
+           refs(i,k,j) = eff_rad(zs(i,j))    
+        endif  
 
-   if ( rewflag .eq. 1 ) then
-   ! default
-   if (qcl(i,j,k) .lt. cmin) then
-      refc(i,k,j) = 0.e0
-   else
-      L_cloud = qcl(i,j,k) * rho(i,j,k)             ! cloud water [g/cm3]
+        ! effective radii of graupel/hail
+        if (qcg(i,j,k) .lt. cgmin) then
+           refg(i,k,j) = 0.e0  
+        else 
+           refg(i,k,j) = eff_rad(zg(i,j))    
+        endif  
+
+        ! effective radii of  cloud water
+        if ( rewflag .eq. 1 ) then
+           ! default
+           if (qcl(i,j,k) .lt. cmin) then
+              refc(i,k,j) = 0.e0
+           else
+              L_cloud = qcl(i,j,k) * rho(i,j,k)             ! cloud water [g/cm3]
 #if ( WRF_CHEM == 1)
-   ! when running with WRF_Chem and using aerosol coupling in Goddard MP
-           ! cpi: const_pi = 4.*atan(1.)         ~ 3.1415
-           ! roqr: 1.0 g/cm**3, liquid water density
-           ! roqi: 0.9179, ice density
-            if ( (chem_opt == 300 .or. chem_opt == 301 .or. &
-                   chem_opt == 302 .or. chem_opt == 303) .and. &
+              ! when running with WRF_Chem and using aerosol coupling in Goddard MP
+              ! cpi: const_pi = 4.*atan(1.)         ~ 3.1415
+              ! roqr: 1.0 g/cm**3, liquid water density
+              ! roqi: 0.9179, ice density
+              if ( (chem_opt == 300 .or. chem_opt == 301 .or. &
+                    chem_opt == 302 .or. chem_opt == 303) .and. &
                    (gsfcgce_gocart_coupling == 1) ) then
-              ! for cloud water, estimate lambda (slope of gamma distribution)
-                   mu = min(15.e0, (1000.E0/ccn_out + 2.e0))
-                   gamfac3 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+3.e0) )
-                   gamfac1 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+1.e0) )
-                   lambda = (4.e0/3.e0*cpi*roqr*ccn_out/L_cloud*   &
-                            gamfac1)**(1.e0/3.e0)  ! [1/cm]
-                   refc(i,k,j) = 1.e0/lambda * gamfac3 * 1.e4  !effective radius [micron]
-             else
-   ! when running with WRF_Chem but no aerosol coupling in Goddard MP
-               if (xland(i,j) .eq. 1.0) then
-                  ccn_ref = ccn_over_land
-               else if (xland(i,j) .eq. 2.0) then
-                  ccn_ref = ccn_over_water
-               else
-                  print *,' xland is not 1. or 2., run stopped'
-                  stop
-               endif
                  ! for cloud water, estimate lambda (slope of gamma distribution)
-                      mu = min(15.e0, (1000.E0/ccn_ref + 2.e0))
-                      gamfac3 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+3.e0) )
-                      gamfac1 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+1.e0) )
-                      lambda = (4.e0/3.e0*cpi*roqr*ccn_ref/L_cloud*   &
-                               gamfac1)**(1.e0/3.e0)  ! [1/cm]
-                      refc(i,k,j) = 1.e0/lambda * gamfac3 * 1.e4  !effective radius [micron]
-            endif ! chem_opt and gsfcgce_gocart_coupling
+                 mu = min(15.e0, (1000.E0/ccn_out + 2.e0))
+                 gamfac3 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+3.e0) )
+                 gamfac1 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+1.e0) )
+                 lambda = (4.e0/3.e0*cpi*roqr*ccn_out/L_cloud*   &
+                          gamfac1)**(1.e0/3.e0)  ! [1/cm]
+                 refc(i,k,j) = 1.e0/lambda * gamfac3 * 1.e4  !effective radius [micron]
+              else
+              ! when running with WRF_Chem but no aerosol coupling in Goddard MP
+                 if (xland(i,j) .eq. 1.0) then
+                    ccn_ref = ccn_over_land
+                 elseif (xland(i,j) .eq. 2.0) then
+                    ccn_ref = ccn_over_water
+                 else
+                    print *,' xland is not 1. or 2., run stopped'
+                    stop
+                 endif
+                 ! for cloud water, estimate lambda (slope of gamma distribution)
+                 mu = min(15.e0, (1000.E0/ccn_ref + 2.e0))
+                 gamfac3 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+3.e0) )
+                 gamfac1 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+1.e0) )
+                 lambda = (4.e0/3.e0*cpi*roqr*ccn_ref/L_cloud*   &
+                          gamfac1)**(1.e0/3.e0)  ! [1/cm]
+                 refc(i,k,j) = 1.e0/lambda * gamfac3 * 1.e4  !effective radius [micron]
+              endif ! chem_opt and gsfcgce_gocart_coupling
 #else
-  ! Not running with WRF_Chem
-            ! ccn_over_land = 1500  ! [#/cm3] climatological value
-            ! ccn_over_water = 150  ! [#/cm3] climatological value
-            if (xland(i,j) .eq. 1.0) then
-               ccn_ref = ccn_over_land
-            else if (xland(i,j) .eq. 2.0) then
-               ccn_ref = ccn_over_water
-            else
-               print *,' xland is not 1. or 2., run stopped'
-               stop
-            endif
-           ! for cloud water, estimate lambda (slope of gamma distribution)
-                   mu = min(15.e0, (1000.E0/ccn_ref + 2.e0))
-                   gamfac3 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+3.e0) )
-                   gamfac1 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+1.e0) )
-                   lambda = (4.e0/3.e0*cpi*roqr*ccn_ref/L_cloud*   &
-                            gamfac1)**(1.e0/3.e0)  ! [1/cm]
-                   refc(i,k,j) = 1.e0/lambda * gamfac3 * 1.e4  !effective radius [micron]
+              ! Not running with WRF_Chem
+              ! ccn_over_land = 1500  ! [#/cm3] climatological value
+              ! ccn_over_water = 150  ! [#/cm3] climatological value
+              if (xland(i,j) .eq. 1.0) then
+                 ccn_ref = ccn_over_land
+              elseif (xland(i,j) .eq. 2.0) then
+                 ccn_ref = ccn_over_water
+              else
+                 print *,' xland is not 1. or 2., run stopped'
+                 stop
+              endif
+              ! for cloud water, estimate lambda (slope of gamma distribution)
+              mu = min(15.e0, (1000.E0/ccn_ref + 2.e0))
+              gamfac3 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+3.e0) )
+              gamfac1 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+1.e0) )
+              lambda = (4.e0/3.e0*cpi*roqr*ccn_ref/L_cloud*   &
+                        gamfac1)**(1.e0/3.e0)  ! [1/cm]
+              refc(i,k,j) = 1.e0/lambda * gamfac3 * 1.e4  !effective radius [micron]
 #endif
-   endif ! qcl(i,j,k) < cmin test
-   endif
+           endif ! qcl(i,j,k) < cmin test
+        endif  !end of if rewflag=1
 
-   if ( rewflag .eq. 2 ) then
-      ! mapping spectrum, different over land and ocean
-      if (qcl(i,j,k) .ge. cwmin) then
-         if ( xland(i,j) .eq. 1. ) then
-            mdc1 = 5.8936819
-            mdc2 = -7.013013
-            mdc3 = 1.3178721
-            mdc4 = 1.1741987
-            mdc5 = 2.6110916E-3
-            mdc6 = -0.26646396
-         else
-            mdc1 = 173.57305
-            mdc2 = -64.370929
-            mdc3 = 0.36833626
-            mdc4 = 6.1389254
-            mdc5 = 5.5915321E-3
-            mdc6 = -0.12488698
-         endif
-         efd1 = 1.6855156
-         efd2 = 0.84147302
-         efd3 = -0.46783369
-         efd4 = 1.005305E-2
-         efd5 = 3.4833332E-2
-         efd6 = 1.4727223E-2
+        if ( rewflag .eq. 2 ) then
+           ! mapping spectrum, different over land and ocean
+           if (qcl(i,j,k) .ge. cwmin) then
+              if ( xland(i,j) .eq. 1. ) then
+                 mdc1 = 5.8936819
+                 mdc2 = -7.013013
+                 mdc3 = 1.3178721
+                 mdc4 = 1.1741987
+                 mdc5 = 2.6110916E-3
+                 mdc6 = -0.26646396
+              else
+                 mdc1 = 173.57305
+                 mdc2 = -64.370929
+                 mdc3 = 0.36833626
+                 mdc4 = 6.1389254
+                 mdc5 = 5.5915321E-3
+                 mdc6 = -0.12488698
+              endif
+              efd1 = 1.6855156
+              efd2 = 0.84147302
+              efd3 = -0.46783369
+              efd4 = 1.005305E-2
+              efd5 = 3.4833332E-2
+              efd6 = 1.4727223E-2
 
-         ltk  = log(tair(i,j))
-         lqc  = -1.*log(qcl(i,j,k)*rho_mks(i,k,j))
-         ltk2 = ltk*ltk
-         lqc2 = lqc*lqc
-         mvdc = exp(mdc1 + mdc2*ltk + mdc3*lqc + mdc4*ltk2     &
-                + mdc5*lqc2 + mdc6*ltk*lqc)
-         efdc = exp(efd1 + efd2*log(mvdc) + efd3*log(1000.)    &
-                + efd4*log(mvdc)**2. + efd5*log(1000.)**2.     &
-                + efd6*log(mvdc)*log(1000.))
-         refc(i,k,j) = min(max(efdc/2.,0.5),50)
-      else
-         refc(i,k,j) = 0.5  !test
-      endif
-   endif
+              ltk  = log(tair(i,j))
+              lqc  = -1.*log(qcl(i,j,k)*rho_mks(i,k,j))
+              ltk2 = ltk*ltk
+              lqc2 = lqc*lqc
+              mvdc = exp(mdc1 + mdc2*ltk + mdc3*lqc + mdc4*ltk2     &
+                     + mdc5*lqc2 + mdc6*ltk*lqc)
+              efdc = exp(efd1 + efd2*log(mvdc) + efd3*log(1000.)    &
+                     + efd4*log(mvdc)**2. + efd5*log(1000.)**2.     &
+                     + efd6*log(mvdc)*log(1000.))
+              refc(i,k,j) = min(max(efdc/2.,0.5),50)
+           else
+              refc(i,k,j) = 0.5  !test
+           endif  !end of if qcl>=cwmin
+        endif  !end of if rewflag=2
 
-! for cloud ice
-   if ( reiflag .eq. 1 ) then
-!   if (qci(i,j,k) .lt. cmin) then
-   if (qci(i,j,k) .lt. cimin) then
-      refi(i,k,j) = 0.e0
-   else
+       ! radiative radii of cloud ice :
+        if ( reiflag .eq. 1 ) then
+           if (qci(i,j,k) .lt. cimin) then
+              refi(i,k,j) = 0.e0
+           else
 #if ( WRF_CHEM == 1)
 !!! No arosol coupling for calaculating eff radius for ice for the time being 20141027 
-!  ! when running with WRF_Chem and using aerosol coupling in Goddard MP
-!      I_cloud = qci(i,j,k) * rho(i,j,k)             ! cloud ice [g/cm3]
-!      if ( (chem_opt == 300 .or. chem_opt == 301 .or. &
-!          chem_opt == 302 .or. chem_opt == 303) .and. &
-!          (gsfcgce_gocart_coupling == 1) ) then
-!        ! for cloud ice, estimate lambda (slope of gamma distribution)
-!         mu = min(15.e0, (1000.E0/(icn_out*1.e-3)  + 2.e0))
-!         gamfac3 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+3.e0) )
-!         gamfac1 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+1.e0) )
-!         lambda = (4.e0/3.e0*cpi*roqi*icn_out*1.e-3/I_cloud*  &
-!                  gamfac1)**(1.e0/3.e0)  ! [1/cm]
-!         refi(i,k,j) = 1.e0/lambda * gamfac3 * 1.e4  !effective radius [micron]
-!         if (mod(itimestep,i24h).eq.1) then
-!            if (refi(i,k,j) .gt. 500.) then
-!               print *,'i ,j ,k = ', i, j, k  
-!               print *,'I_cloud, qci, rho, icn_out = ', I_cloud, icn_out, qci(i,j,k), rho(i,j,k)
-!               print *,'mu, gamfac3, gamfac1 = ', mu, gamfac3, gamfac1
-!               print *,'lambda, refi = ', lambda, refi 
-!            endif
-!         endif 
-!      else
-  ! when running with WRF_Chem but no aerosol coupling in Goddard MP
-        ! for cloud ice effective radius depends on temperature profile, formula from GCE
-         refi(i,k,j) = 125.e0 +(tair(i,j)-243.16)*5.e0     ! [micron]
-         if (tair(i,j) .gt. 243.16) refi(i,k,j) = 125.e0
-         if (tair(i,j) .lt. 223.16) refi(i,k,j) = 25.e0
-!      endif ! chem_opt and gsfcgce_gocart_coupling
+!             ! when running with WRF_Chem and using aerosol coupling in Goddard MP
+!             I_cloud = qci(i,j,k) * rho(i,j,k)             ! cloud ice [g/cm3]
+!             if ( (chem_opt == 300 .or. chem_opt == 301 .or. &
+!                   chem_opt == 302 .or. chem_opt == 303) .and. &
+!                  (gsfcgce_gocart_coupling == 1) ) then
+!                ! for cloud ice, estimate lambda (slope of gamma distribution)
+!                 mu = min(15.e0, (1000.E0/(icn_out*1.e-3)  + 2.e0))
+!                 gamfac3 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+3.e0) )
+!                 gamfac1 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+1.e0) )
+!                 lambda = (4.e0/3.e0*cpi*roqi*icn_out*1.e-3/I_cloud*  &
+!                           gamfac1)**(1.e0/3.e0)  ! [1/cm]
+!                 refi(i,k,j) = 1.e0/lambda * gamfac3 * 1.e4  !effective radius [micron]
+!              endif 
+
+              ! when running with WRF_Chem but no aerosol coupling in Goddard MP
+              ! for cloud ice effective radius depends on temperature profile, formula from GCE
+              refi(i,k,j) = 125.e0 +(tair(i,j)-243.16)*5.e0     ! [micron]
+              if (tair(i,j) .gt. 243.16) refi(i,k,j) = 125.e0
+              if (tair(i,j) .lt. 223.16) refi(i,k,j) = 25.e0
 #else
-  ! Not running with WRF_Chem
-     ! for cloud ice effective radius depends on temperature profile, formula from GCE
-      refi(i,k,j) = 125.e0 +(tair(i,j)-243.16)*5.e0     ! [micron]
-      if (tair(i,j) .gt. 243.16) refi(i,k,j) = 125.e0
-      if (tair(i,j) .lt. 223.16) refi(i,k,j) = 25.e0
+              ! Not running with WRF_Chem
+              ! for cloud ice effective radius depends on temperature profile, formula from GCE
+              refi(i,k,j) = 125.e0 +(tair(i,j)-243.16)*5.e0     ! [micron]
+              if (tair(i,j) .gt. 243.16) refi(i,k,j) = 125.e0
+              if (tair(i,j) .lt. 223.16) refi(i,k,j) = 25.e0
 #endif
-   endif ! qci(i,j,k) < cmin test
-   endif
+           endif !end of if qci(i,j,k) < cimin
+        endif  !end of if reiflag=1
 
-   if ( reiflag .eq. 2 ) then
-      ! Wyser 1998 , equation 15 and 35:
-      reimin = 10.0
-      if ( qci(i,j,k) .ge. cimin ) then
-         iwc_0 = 50.e-6  ! note that rho here is in CGS
-                         ! IWC_0 (50 g/m^-3) must be converted to g/cm^3
-         bw98 = - 2. + 1.e-3 * log10(rho(i,j,k)*qci(i,j,k)/iwc_0)*max(0.0,-tairc(i,j))**1.5
-         refi(i,k,j) = 377.4 + bw98 * (203.3 + bw98 * (37.91 + 2.3696 * bw98))
-         refi(i,k,j) = max (reimin, refi(i,k,j))
-      else
-         refi(i,k,j) = 0.0
-      endif
-   endif
+        if ( reiflag .eq. 2 ) then
+           ! Wyser 1998 , equation 15 and 35:
+           reimin = 10.0
+           if ( qci(i,j,k) .ge. cimin ) then
+              iwc_0 = 50.e-6  ! note that rho here is in CGS
+                              ! IWC_0 (50 g/m^-3) must be converted to g/cm^3
+              bw98 = - 2. + 1.e-3 * log10(rho(i,j,k)*qci(i,j,k)/iwc_0)*max(0.0,-tairc(i,j))**1.5
+              refi(i,k,j) = 377.4 + bw98 * (203.3 + bw98 * (37.91 + 2.3696 * bw98))
+              refi(i,k,j) = max (reimin, refi(i,k,j))
+           else
+              refi(i,k,j) = 0.0
+           endif
+        endif  !end of if reiflag=2
 
-   if ( reiflag .eq. 3 ) then
-      ! Heymsfield et al. 2014 , equation 9e :
-      reimin = 10.0
-      if ( qci(i,j,k) .ge. cimin ) then
-         if ( tairc(i,j) >= -56.0 .and. tairc(i,j) < 0.0 ) then
-            refi(i,k,j) = 308.4 * exp ( 0.0152 * tairc(i,j) )      ! 131.657 ~ 308.4 micron
-         elseif ( tairc(i,j) >= -71.0 .and. tairc(i,j) < -56.0 ) then
-            refi(i,k,j) = 9.1744e+4 * exp ( 0.117 * tairc(i,j) )   ! 22.641 ~ 130.942 micron
-         elseif ( tairc(i,j) < -71.0 ) then
-            refi(i,k,j) = 83.3 * exp ( 0.0184 * tairc(i,j) )       ! 10 ~ 22.557 micron
-         endif
-         refi(i,k,j) = max (reimin, refi(i,k,j))
-      else
-         refi(i,k,j) = 0.0
-      endif
-   endif
+        if ( reiflag .eq. 3 ) then
+           ! Heymsfield et al. 2014 , equation 9e :
+           reimin = 10.0
+           if ( qci(i,j,k) .ge. cimin ) then
+              if ( tairc(i,j) >= -56.0 .and. tairc(i,j) < 0.0 ) then
+                 refi(i,k,j) = 308.4 * exp ( 0.0152 * tairc(i,j) )      ! 131.657 ~ 308.4 micron
+              elseif ( tairc(i,j) >= -71.0 .and. tairc(i,j) < -56.0 ) then
+                 refi(i,k,j) = 9.1744e+4 * exp ( 0.117 * tairc(i,j) )   ! 22.641 ~ 130.942 micron
+              elseif ( tairc(i,j) < -71.0 ) then
+                 refi(i,k,j) = 83.3 * exp ( 0.0184 * tairc(i,j) )       ! 10 ~ 22.557 micron
+              endif
+              refi(i,k,j) = max (reimin, refi(i,k,j))
+           else
+              refi(i,k,j) = 0.0
+           endif
+        endif  !end of if reiflag=3
 
-   if ( reiflag .eq. 4 ) then
-      reimin = 0.0
-      ! Mitchell et al. 2011, equation 9
-      ! IWC in mg/m^3, T in oC, rei in micron
-      if ( qci(i,j,k) .ge. cimin ) then
-         refi(i,k,j) = 132.23 + 1.2433 * tairc(i,j) + &
-                       8.6629 * (6. + log10(rho(i,j,k) * qci(i,j,k)))
-         refi(i,k,j) = max (reimin, refi(i,k,j))
-      else
-         refi(i,k,j) = 0.0
-      endif
-   endif
+        if ( reiflag .eq. 4 ) then
+           reimin = 0.0
+           ! Mitchell et al. 2011, equation 9
+           ! IWC in mg/m^3, T in oC, rei in micron
+           if ( qci(i,j,k) .ge. cimin ) then
+              refi(i,k,j) = 132.23 + 1.2433 * tairc(i,j) + &
+                            8.6629 * (6. + log10(rho(i,j,k) * qci(i,j,k)))
+              refi(i,k,j) = max (reimin, refi(i,k,j))
+           else
+              refi(i,k,j) = 0.0
+           endif
+        endif  !end of if reiflag=4
 
-   if ( reiflag .eq. 5 ) then
-      ! mapping spectrum, different over land and ocean
-      if ( qci(i,j,k) .ge. cimin ) then
-         ltk  = log(tair(i,j))
-         lqi  = -1.*log(qci(i,j,k)*rho_mks(i,k,j))
-         ltk2 = ltk*ltk
-         lqi2 = lqi*lqi
-         if ( xland(i,j) .eq. 1.0 ) then
-            ! over land
-            efdi = exp(161.47584 - 0.26232591*lqi + 4.3393883E-4*lqi2 &
-                   - 57.057846*ltk + 5.3668153*ltk2)/10.
-         else
-            ! over ocean
-            efdi = exp(161.92213 - 0.26232591*lqi + 4.3393883E-4*lqi2 &
-                   - 57.057846*ltk + 5.3668153*ltk2)/10.
-         endif
-         refi(i,k,j) = efdi/2.
-         refi(i,k,j) = min( max (refi(i,k,j),1.5),500.)
-      else
-         refi(i,k,j) = 1.5  !test
-      endif
-   endif
-!JJS 20140305 ^^^^^  Calculate effective radius for all cloud species
+        if ( reiflag .eq. 5 ) then
+           ! mapping spectrum, different over land and ocean
+           if ( qci(i,j,k) .ge. cimin ) then
+              ltk  = log(tair(i,j))
+              lqi  = -1.*log(qci(i,j,k)*rho_mks(i,k,j))
+              ltk2 = ltk*ltk
+              lqi2 = lqi*lqi
+              if ( xland(i,j) .eq. 1.0 ) then
+                 ! over land
+                 efdi = exp(161.47584 - 0.26232591*lqi + 4.3393883E-4*lqi2 &
+                        - 57.057846*ltk + 5.3668153*ltk2)/10.
+              else
+                 ! over ocean
+                 efdi = exp(161.92213 - 0.26232591*lqi + 4.3393883E-4*lqi2 &
+                        - 57.057846*ltk + 5.3668153*ltk2)/10.
+              endif
+              refi(i,k,j) = efdi/2.
+              refi(i,k,j) = min( max (refi(i,k,j),1.5),500.)
+           else
+             refi(i,k,j) = 1.5  !test
+           endif
+        endif  !end of if reiflag=5
 
  2000 continue
 
  1000 continue
 
-!JJS  ****************************************************************
-!JJS  convert from GCE grid back to WRF grid
+! ****************************************************************
+! convert from GCE grid back to WRF grid
       do k=kts,kte
          do j=jts,jte
          do i=its,ite
@@ -5632,12 +4734,9 @@ CONTAINS
 !       enddo !i
 !       enddo !j
 
-!     ****************************************************************
+! ****************************************************************
 
-!+---+-----------------------------------------------------------------+
 #ifdef EXT_DIAG
-! EMK NUWRF...Replace Greg Thompson's dBZ calculations with values calculated
-! above.
          IF ( PRESENT (diagflag) ) THEN
          if (diagflag .and. do_radar_ref == 1) then
             do j=jts,jte
@@ -5647,41 +4746,6 @@ CONTAINS
                   end do
                end do
             end do
-!             do j=jts,jte
-!             do i=its,ite
-!                DO K=kts,kte
-!                   t1d(k)=ptwrf(i,k,j)*pi_mks(i,k,j)
-!                   p1d(k)=p0_mks(i,k,j)
-!                   qv1d(k)=qvwrf(i,k,j)
-!                   qr1d(k)=qrwrf(i,k,j)
-!                ENDDO
-!                if (ice2.eq.0) then
-!                   DO K=kts,kte
-!                      qs1d(k)=qswrf(i,k,j)
-!                      qg1d(k)=qgwrf(i,k,j)
-!                   ENDDO
-!                elseif (ice2.eq.1) then
-!                   DO K=kts,kte
-!                      qs1d(k)=qswrf(i,k,j)
-!                   ENDDO
-!                elseif (ice2.eq.2) then
-!                   DO K=kts,kte
-!                      qs1d(k)=0.
-!                      qg1d(k)=qgwrf(i,k,j)
-!                   ENDDO
-!                elseif (ice2.eq.3) then
-!                   DO K=kts,kte
-!                      qs1d(k)=0.
-!                      qg1d(k)=0.
-!                   ENDDO
-!                endif
-!                call refl10cm_gsfc (qv1d, qr1d, qs1d, qg1d,             &
-!                        t1d, p1d, dBZ_GT, kts, kte, i, j, ihail)
-!                do k = kts, kte
-!                   refl_10cm(i,k,j) = MAX(-35., dBZ_GT(k))
-!                enddo
-!             enddo
-!             enddo
          endif
          ENDIF
 #endif
@@ -5745,22 +4809,6 @@ CONTAINS
    P = 0.e0
    return
  endif
-
-!
-! check bad values of N and L
-!
-! if( N < 0.e0 ) stop 'MSG auto_conversion: N is negative, it must be positive' 
-! if( L < 0.e0 ) stop 'MSG auto_conversion: L is negative, it must be positive' 
-! if( L > 1.e0 ) stop 'MSG auto_conversion: L is greater than 1g/cm3.'
-
-!
-! Empirical fit of mu as a function of total particle number concentrations. 
-! From Martin et al. (1994), assign gamma shape parameter mu for cloud
-! drops according to general dispersion characteristics. 
-! disp=~0.25 for Maritime and 0.45 for Continental.
-! Since disp=SQRT((mu+2)/(mu+1) - 1), mu varies from 15 for Maritime (pristine air)
-! to 2 for Continental (really dirty air).  if mu = 0 --> expnential distribution (narrow dist)
-!
 
 ! orig
  mu = MIN(15.e0, (1000.E0/N + 2.e0))
@@ -6442,8 +5490,9 @@ CONTAINS
       real, parameter :: vsmax = 5.0     !(m/s)
       real, parameter :: vsmin = 0.0     !(m/s)
 
-      !local variables
-      integer :: igce
+      integer, parameter :: vtsflag = 2
+      ! 1 : Lin et al. (1983)   ( igce != 1 )
+      ! 2 : Steve's with size mapping  (Lang el al. 2011)
 
       real    :: y1, fv, r00, ftns, ftns0, tzc, vscf
       real    :: tmp1, pi, gamdp4
@@ -6454,30 +5503,28 @@ CONTAINS
       if ( qsz .ge. csmin ) then
          y1 = rhoz*qsz*0.001  !in CGS
          fv = sqrt( rhoe_s/rhoz )
-         igce = 1
-         if ( igce .ne. 1 ) then
-            ! old codes from Chern's in MKS
+!         igce = 1
+         if ( vtsflag .eq. 1 ) then
+            ! Lin et al. (1983) ; in MKS
             tmp1 = sqrt(pi*rhosnow*xnos/rhoz/qsz)
             tmp1 = sqrt(tmp1)
             vts = constc*gamdp4*fv/tmp1**constd
             vts = vts/6.
-         else
-            ! new codes from Steve's in cgs
-!            y1 = rhoz * 0.001 *qsz             ! rhoz need to be in CGS
+         elseif (vtsflag .eq. 2 ) then
+            ! Steve's with size mapping ; in CGS
             y1 = qsz
             r00 = rhoz * 0.001   ! rhoz need to be in CGS
             vscf = vsc*fv
+            tzc = tz - t0
 
             ftns = 1.
             ftns0 = 1.
-            if ( improve .eq. 3 )then
-               tzc = tz - t0
-               call sgmap(1,y1,r00,tzc,ftns0)
-               ftns = ftns0**bsq
-            endif
+            call sgmap(1,y1,r00,tzc,ftns0)
+            ftns = ftns0**bsq
+
             vts = max(vscf*(r00*y1)**bsq/ftns, 0.0)
             vts = vts * 0.01  ! convert back to MKS
-         endif  !end of if igce
+         endif  !end of if vtsflag
          vts = min ( vsmax , max ( vsmin , vts ) )
       else
          vts = vsmin
@@ -6543,14 +5590,6 @@ CONTAINS
                vtg = dmax1(vgcr*(r00*y1)**bgq/ftng, 0.0)
                vtg = vtg * 0.01  !convert back to MKS
 
-!               !>>> from GFDL MP :
-!!               vcong = 87.2382675
-!!               rhof = sqrt(min(10.,1.2/rhoz))
-!!               normg = 5026548245.74367
-!!               vtg = vcong * rhof * sqrt(sqrt(sqrt(qgz*rhoz/normg)))
-!               vtg = 87.2382675 * sqrt(min(10.,rhoe_s/rhoz)) * &
-!                     sqrt(sqrt(sqrt(qgz*rhoz/5026548245.74367)))
-!               !<<<
 !            endif  !end of if igce
             vtg = min ( vgmax , max ( vgmin , vtg ) )
          endif  !end of if ihail
