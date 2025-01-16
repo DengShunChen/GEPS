@@ -3431,7 +3431,7 @@ CONTAINS
               endif
               ncloud = min(1.E9,1.E6*0.88*C1**(2./(K1+2.))*          &
                       (7.E-2*ww1(i,j,k)**1.5)**(K1/(K1+2.)))
-              nact = max(0.,ncloud-qc(i,j)/5.236E-13)             ! CONVERT FROM CM-3 TO M-3 and 5 microm in radius
+              nact = max(0.,ncloud/rhoair-qc(i,j)/5.236E-13)      ! CONVERT FROM CM-3 TO M-3 and 5 microm in radius
               qcmax = max((qv(i,j)-qsw(i,j)),0.)/abw
               pact(i,j) = min(max(nact*1.414E-14,0.),qcmax)       ! 1.5 micron in radius
               tair(i,j) = tair(i,j)+pact(i,j)*xlv/cpm1
@@ -3473,7 +3473,7 @@ CONTAINS
            if ( qv(i,j).gt.qsi(i,j) .and. tair(i,j).lt.t0 ) then
               ssi(i,j) = qv(i,j)/qsi(i,j)-1.
               nice = 1.e3*exp(1.296E+1*ssi(i,j)-6.39E-1)  ! Meyers et al. 1992 (m^-3)
-              r_nci = max(0.,nice-qi(i,j)/4.19E-10)                ! RHOI = 800; DI = 1.E-4
+              r_nci = max(0.,nice/rhoair-qi(i,j)/4.19E-10)          ! RHOI = 800; DI = 1.E-4
 !              if ( xland(i,j) .eq. 1. ) then  !land
 !                 r_nci = max(0.,nice/rhoair-qi(i,j)/2.28E-10)      ! RHOI = 850; DI = 8.E-5
 !              else
