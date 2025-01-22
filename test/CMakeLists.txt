@@ -64,6 +64,14 @@ if(${USE_CUDA})
         test_rozphys
         test_get_phi
         test_rayleifr
+        test_tendget
+        test_zx
+        test_correct
+        test_vartrix
+        test_mpe2d_row_broadcast
+        test_nnmi
+        test_eigen
+        test_initial
     )
 
     foreach(TEST ${TESTS})
@@ -71,6 +79,7 @@ if(${USE_CUDA})
             ${TEST}
             ${TEST}.f90
             helper.f90
+            mod_vcopy.f90
         )
         add_test(
             NAME ${TEST}

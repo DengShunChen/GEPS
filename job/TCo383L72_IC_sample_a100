@@ -24,6 +24,7 @@ JCAP=383
 
 MPI=8
 OMP=1
+export OMP_NUM_THREADS=$OMP
 
 if [ $JCAP = 639 ] ; then
   NPEX=8
