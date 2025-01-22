@@ -17,7 +17,6 @@ subroutine ndslfv_monoadvv_fgnl_unit(forward)
    use grid, only: latpart, ndslvvar
    use mod_ndslfv_monoadv_gpu, only: ndslfv_monoadvv_fgnl_gpu
    use mpe
-   use nvtx
    implicit none
    logical forward
    integer, parameter:: steps = 5

@@ -4,6 +4,7 @@
 ! See LICENSE for license information.
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+#define CUDACHECK(ierr) call cuda_check_helper(ierr, __FILE__, __LINE__)
 #define NCCLCHECK(ierr) call nccl_check_helper(ierr, __FILE__, __LINE__)
 
 subroutine mpe2d_transpose_nx_levp_gpu(ain, aout, nxp, nx, lev, levp, num, my, my_max, jlistnum, jlen, nsizex, comm)
@@ -509,6 +510,61 @@ subroutine mpe2d_transpose_siimpl_back_gpu(ain, aout, levp, jtrun, jtmax, lev, j
 
    return
 end
+!     ----------------------------------------------------------------------
+subroutine mpe2d_unify_lev_gpu(ain, aout, lev, levp, jtrun, jtmax, mlistnum, proc, comm)
+
+   ! unify lev of spectrum var
+   ! present on device: ain, aout
+   use const, only: RTYPE
+   use openacc
+   use cudafor
+   use nccl
+
+   implicit none
+
+   real(kind=RTYPE), intent(out) :: aout(lev, 2*jtrun, jtmax)
+   real(kind=RTYPE), intent(in) :: ain(levp, 2*jtrun, jtmax)
+   type(ncclComm), intent(in) :: comm
+   integer, intent(in):: lev, levp, jtrun, jtmax, mlistnum, proc
+
+   real(kind=RTYPE) work(levp, 2*jtrun, jtmax, proc)
+   integer p, n, m, k, kk
+   integer async_id
+   integer(kind=cuda_stream_kind) stream
+
+   async_id = 1
+   stream = acc_get_cuda_stream(async_id)
+
+   !$acc enter data create(work) async(async_id)
+   !$acc host_data use_device(aout, work)
+   CUDACHECK(cudaMemsetAsync(aout, real(0.0, RTYPE), size(aout), stream))
+   CUDACHECK(cudaMemsetAsync(work, real(0.0, RTYPE), size(work), stream))
+   !$acc end host_data
+
+   !$acc host_data use_device(ain, work)
+#ifdef SP
+   NCCLCHECK(ncclAllGather(ain, work, levp*2*jtrun*jtmax, ncclFloat32, comm, stream))
+#else
+   NCCLCHECK(ncclAllGather(ain, work, levp*2*jtrun*jtmax, ncclFloat64, comm, stream))
+#endif
+   !$acc end host_data
+
+   !$acc parallel loop collapse(4) private(kk) async(async_id)
+   do m = 1, mlistnum
+      do n = 1, jtrun*2
+         do p = 1, proc
+            do k = 1, levp
+               kk = k + (p - 1)*levp
+               aout(kk, n, m) = work(k, n, m, p)
+            end do
+         end do
+      end do
+   end do
+   !$acc exit data delete(work) async(async_id)
+
+   return
+end subroutine mpe2d_unify_lev_gpu
+!     ----------------------------------------------------------------------
 
 subroutine mpe2d_transpose_ndsl_p2f_gpu(ain, aout, nxp, nx, lev, levp, ncld, my, my_max, jlistnum, jlen, nsizex, comm)
    ! Present on device: ain, aout, jlist1, nxjlen, nxjlen_all
@@ -723,3 +779,102 @@ subroutine mpe2d_unify_my1d_gpu(work, a)
 
    return
 end
+!     ----------------------------------------------------------------------
+subroutine mpe2d_unify_spec_lev_zx_gpu(aout, a1, a2, a3, &
+                                       lev, levp, jtrun, jtmax, mlistnum, &
+                                       proc, comm)
+
+   ! unify lev of spectrum for zx
+   ! present on device: aout, a1, a2, a3
+   use const, only: RTYPE
+   use openacc
+   use cudafor
+   use nccl
+
+   implicit none
+
+   integer, intent(in):: lev, levp, jtrun, jtmax, mlistnum, proc
+   type(ncclComm), intent(in) :: comm
+
+   real(kind=RTYPE), dimension(levp, 2, jtrun, jtmax), intent(in):: a1, a2, a3
+   real(kind=RTYPE), dimension(lev, 2, 3, jtrun, jtmax), intent(out):: aout
+
+   real(kind=RTYPE) ain(levp, 2, 3, jtrun, jtmax, proc)
+   real(kind=RTYPE) work(levp, 2, 3, jtrun, jtmax, proc)
+   integer ii, j, jj, k, kk, n, m, p, ierr
+   integer async_id
+   integer(kind=cuda_stream_kind) stream
+
+   async_id = 1
+   stream = acc_get_cuda_stream(async_id)
+
+   !$acc enter data create(work, ain) async(async_id)
+   !$acc host_data use_device(aout, work)
+   CUDACHECK(cudaMemsetAsync(aout, real(0.0, RTYPE), size(aout), stream))
+   CUDACHECK(cudaMemsetAsync(work, real(0.0, RTYPE), size(work), stream))
+   !$acc end host_data
+
+   !$acc parallel loop collapse(4) async(async_id)
+   do m = 1, mlistnum
+      do n = 1, jtrun
+         do j = 1, 2
+            do k = 1, levp
+               ain(k, j, 1, n, m) = a1(k, j, n, m)
+               ain(k, j, 2, n, m) = a2(k, j, n, m)
+               ain(k, j, 3, n, m) = a3(k, j, n, m)
+            end do
+         end do
+      end do
+   end do
+
+   !$acc host_data use_device(ain, work)
+#ifdef SP
+   NCCLCHECK(ncclAllGather(ain, work, levp*2*jtrun*jtmax*3, ncclFloat32, comm, stream))
+#else
+   NCCLCHECK(ncclAllGather(ain, work, levp*2*jtrun*jtmax*3, ncclFloat64, comm, stream))
+#endif
+   !$acc end host_data
+
+   !$acc parallel loop collapse(5) private(kk) async(async_id)
+   do m = 1, mlistnum
+      do n = 1, jtrun
+         do j = 1, 6
+            do p = 1, proc
+               do k = 1, levp
+                  kk = k + (p - 1)*levp
+                  aout(kk, j, 1, n, m) = work(k, j, 1, n, m, p)
+               end do
+            end do
+         end do
+      end do
+   end do
+   !$acc exit data delete(ain, work) async(async_id)
+
+   return
+end subroutine mpe2d_unify_spec_lev_zx_gpu
+!     ----------------------------------------------------------------------
+subroutine mpe2d_row_broadcast_gpu(buf, n, brank)
+
+   ! broadcast for row
+
+   use index, only: nccl_row_comm
+   use openacc
+   use cudafor
+   use nccl
+   implicit none
+
+   real(kind=8) buf(n)
+   integer brank, n
+   integer async_id
+   integer(kind=cuda_stream_kind) stream
+
+   async_id = 1
+   stream = acc_get_cuda_stream(async_id)
+
+   !$acc host_data use_device(BUF)
+   NCCLCHECK(ncclBroadcast(BUF, BUF, N, ncclFloat64, brank, nccl_row_comm, stream))
+   !$acc end host_data
+
+   return
+end subroutine mpe2d_row_broadcast_gpu
+!     ----------------------------------------------------------------------
