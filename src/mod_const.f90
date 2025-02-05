@@ -51,7 +51,7 @@
             nnmiit,nnmivm,itypbl,                          &
             nmgwor,nmgwcv,mtnvar,                          &
             ktrop,ncpu,nmcup,nmpbl,nmland,numreduce,nmshl, &
-            nmmiph,itter
+            nmmiph,itter,naero
 
     common/constI/                                         &
             numout,ipadding,jm2,ksgeo,                     &
@@ -101,7 +101,7 @@
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &
             restrt,hdiff, cstar, update,doincr,hybrid,     &
             doo3l, docgrav, doclx, tofd, doslavepp,        &
-            two_loop,ttl,mass_dp,dpprt
+            two_loop,ttl,mass_dp,dpprt,doaeroclx
 
     ! for stochastic physics
     logical :: dosppt       =.false.
@@ -171,12 +171,14 @@
     character(len=255) ifilin,cwbout,bckfile,namlsts, &
             ifilout,crdate,ocards,phyout,cntrl, &
             ifilin_ncep,ifilin_sst,ifilin_nc,   &
-            ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb
+            ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb, &
+            ifilin_aero
 
     common/files/ifilin,cwbout,bckfile,namlsts, &
             ifilout,crdate,ocards,phyout,cntrl, &
             ifilin_ncep,ifilin_sst,ifilin_nc,   &
-            ifilin_ClmANA,ifilin_ClmFCT
+            ifilin_ClmANA,ifilin_ClmFCT,        &
+            ifilin_aero
 
     character(len=16), dimension(:), allocatable, save  :: outdir
 

@@ -90,7 +90,7 @@
            ( nmmiph,nx,nxj,lev,ncld,plt,ptop,                          &
              dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,            &
              itimestep,sgeo,phi,rhc_mp,pk,                             &
-             snr,xlat,sdec,ivegtyp,                                    &
+             snr,xlat,sdec,ivegtyp,aeroclx,naero,                      &
 !  ---  inputs/outputs:
              tt,qt,qa,ut,vt,vvel,pst,                                  &
 !  ---  outputs:
@@ -134,7 +134,7 @@
       implicit none
 
 !  ---  inputs:
-      integer,  intent(in)    :: nmmiph,nx,nxj,jj,lev,ncld,kdt,me
+      integer,  intent(in)    :: nmmiph,nx,nxj,jj,lev,ncld,kdt,me,naero
 !      integer,  intent(in)    :: ntcw,ntrw,ntiw,ntsw,ntgl,ntinc,ntrnc
       integer,  intent(in)    :: islimsk(nx)
       integer,  intent(in)    :: itimestep
@@ -146,6 +146,7 @@
       real,     intent(in)    :: rhc_mp(nx,lev)
       real,     intent(in)    :: snr(nx)
       real,     intent(in)    :: plt(nx,lev)
+      real,     intent(in)    :: aeroclx(nx,lev*naero)
       real(kind=RTYPE), intent(in):: phi(nx,lev),pk(nx,lev),sgeo(nx)
       real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),dsigma(lev,2)
 !  ---  inputs/outputs:
@@ -228,6 +229,7 @@
       real,dimension(:,:,:),allocatable ::                              &
               th3d,qh3d,rho3d,pii3d,p3d,z3d,rew3d,rer3d,rei3d,res3d,    &
               reg3d,reh3d,refl_10cm
+      real,dimension(:,:,:,:),allocatable :: aero4d
 #ifdef EXT_DIAG
       real,dimension(:,:,:),allocatable ::                              &
               physc, physe, physd, physs, physm, physf,                 &
@@ -945,7 +947,8 @@
            qi3d(nx,lev,1),qs3d(nx,lev,1),qg3d(nx,lev,1),rho3d(nx,lev,1),&
            pii3d(nx,lev,1),p3d(nx,lev,1),z3d(nx,lev,1),dz3d(nx,lev,1),  &
            rain2d(nx,1),snow2d(nx,1),graupel2d(nx,1),sr2d(nx,1),        &
-           ice2d(nx,1),ht(nx,1),land2d(nx,1),w3d(nx,lev,1) )
+           ice2d(nx,1),ht(nx,1),land2d(nx,1),w3d(nx,lev,1),             &
+           aero4d(nx,lev,1,naero) )
         allocate                                                        &
          ( rew3d(nx,lev,1),rer3d(nx,lev,1),rei3d(nx,lev,1),             &
            res3d(nx,lev,1),reg3d(nx,lev,1) )
@@ -983,6 +986,7 @@
         res3d = 0.
         reg3d = 0.
         w3d = 0.
+        aero4d = 0.
 
 #ifdef EXT_DIAG
         preci3d = 0.
@@ -1032,6 +1036,10 @@
             rho3d(i,k,1) = p3d(i,k,1)/                                  &
                            (con_rd*tt(i,kc)*(1+con_fvirt*qv3d(i,k,1)))  !air density (kg/m^3)
             w3d  (i,k,1) = -vvel(i,kc)*100./(rho3d(i,k,1)*con_g)        !vertical velocity (m/s)
+
+            do n = 1, naero
+              aero4d(i,k,1,n) = aeroclx(i,(n-1)*lev+kc)
+            enddo
           enddo
         enddo
 
@@ -1055,7 +1063,7 @@
                    1, nx , 1, 1, 1, lev,                                & ! memory dims
                    1, nxj, 1, 1, 1, lev,                                & ! tile   dims
                    rain2d, ice2d, snow2d, graupel2d, sr2d,              &
-                   .false., qg3d,                                       &
+                   .false., qg3d, aero4d, naero,                        &
                    ihail, ice2,                                         &
 #ifdef EXT_DIAG
                    refl_10cm, diagflag, do_radar_ref,                   &
@@ -1164,7 +1172,7 @@
 
         deallocate                                                      &
          ( th3d,qv3d,qc3d,qr3d,qs3d,qi3d,qg3d,pii3d,p3d,z3d,dz3d,rho3d, &
-           rain2d,ice2d,snow2d,graupel2d,                               &
+           rain2d,ice2d,snow2d,graupel2d,aero4d,                        &
            ht,sr2d,land2d,w3d,rew3d,rer3d,rei3d,res3d,reg3d )
 #ifdef EXT_DIAG
         deallocate                                                      &

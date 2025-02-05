@@ -4,7 +4,7 @@
 !
       use param
       use index
-      use const, only: RTYPE
+      use const, only: RTYPE, naero
 
       implicit none
 
@@ -51,6 +51,7 @@
                                                  dtshl,dushl,dvshl,    &
                                                  dtlsp,dulsp,dvlsp
       real(kind=RTYPE), dimension(:,:,:),allocatable,save :: o3l
+      real, dimension(:,:,:),allocatable,save :: aeroclxm
 
       contains 
 
@@ -64,7 +65,8 @@
                      ftp(nxp,lev,my_max),  fqp(nxp,lev,my_max),  &
                     ftp1(nxp,lev,my_max), fqp1(nxp,lev,my_max),  &
                     deltaq(nxp,lev,my_max),cnvwr(nxp,lev,my_max),&
-                    cnvcr(nxp,lev,my_max),  stat=ierr)
+                    cnvcr(nxp,lev,my_max),                       &
+                    aeroclxm(nxp,naero*lev,my_max), stat=ierr)
 
            if (ierr/= 0) then
                write(6,*) 'mod_phygrid : allocate fail 1 '
@@ -73,6 +75,7 @@
            deltaq = 0.
            cnvcr  = 0.
            cnvwr  = 0.
+           aeroclxm = 0.
 
            allocate (                                 &
              snr(nxp,my_max),   gwr(nxp,my_max),     tg(nxp,my_max), &
@@ -206,7 +209,7 @@
          subroutine deallocate_phygrid_array
 
            deallocate (e,eps,o3l,dtrad,asl,atl,ftp,fqp,ftp1,fqp1)
-           deallocate (deltaq,cnvwr,cnvcr)
+           deallocate (deltaq,cnvwr,cnvcr,aeroclxm)
            deallocate (                                           &
                        snr,gwr,tg,   ss,rs,                       &
              ustar,tstar,qstar,hflux,qflux,raintot,raincu,rainlp, &

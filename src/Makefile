@@ -246,6 +246,7 @@ SRCS_f90  = \
   rcmpsl2.f90 \
   readalb.f90 \
   readclx.f90 \
+  readaeroclx.f90 \
   read_mtnvar.f90 \
   readozpl.f90 \
   reducegrid.f90 \

@@ -159,6 +159,9 @@
       ntinc=7   ! tracer index for ice number concentration
       ntrnc=8   ! tracer index for rain number concentration
 !     ntlnc=9   ! tracer index for liquid number concentration
+! for using aerosol climatology
+      doaeroclx = .false.
+      naero = 1
 !
 ! specify the default option for reduced grids
 ! numreduce : -99 for full grids, 1 to 4 proper for reduced grids
@@ -372,6 +375,8 @@
       ifilin_ClmFCT = 'ifilin_ClmFCT'
 !-- for grib2 output path
       ifilout_grb  = '.'
+!-- for aerosol climatology
+      ifilin_aero   = 'ifilin_aero'
 !
 !dms
 !t512l60

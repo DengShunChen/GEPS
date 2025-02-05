@@ -88,7 +88,8 @@
                       , cmbk,cgwd,nmmiph,spl1,spl2                      &
                       , weightSIT,dSITdt_intv,mwhd,doclx,doslavepp      &
                       , outdms,outgrb2,alpha,two_loop,ttl,tfilt,factop  &
-                      , mass_dp,dpprt,outfv3,itter,vd,dorst
+                      , mass_dp,dpprt,outfv3,itter,vd,dorst,doaeroclx   &
+                      , naero
 !
       real    si(lev+1)
       logical flag
@@ -97,7 +98,7 @@
       character cdtg*12
       character*80 pathname,logicname,truefile
       character*64 type_r,type_w,argument
-      integer istat4,istat5,istat6,istat7
+      integer istat4,istat5,istat6,istat7,istat8
 
       data pathname/'NWPETCGLB'/
       data logicname/'filist'/
@@ -106,7 +107,8 @@
       namelist /filst/ ifilin,cwbout,bckfile,namlsts &
                      , ifilout,crdate,ocards,phyout,cntrl &
                      , ifilin_ncep, ifilin_sst, ifilin_nc &
-                     , ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb
+                     , ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb &
+                     , ifilin_aero
 
       namelist /typ/ write_tau, write_mem, trk_intv, min_trk_pres
 
@@ -545,7 +547,7 @@
 ! data
 ! open ncep data dms
 !
-       istat4=0; istat5=0; istat6=0; istat7=0
+       istat4=0; istat5=0; istat6=0; istat7=0; istat8=0
         if(ldailyFCTsst) then
           call dmsopn(ifilin_sst,"r",istat4)
           istat = istat + abs(istat4)
@@ -561,6 +563,11 @@
           endif
           istat = istat + abs(istat6)+abs(istat7)
         endif
+! open aeroclx data
+        if ( doaeroclx ) then
+          call dmsopn(ifilin_aero,"r",istat8)
+          istat = istat + abs(istat8)
+        endif
 
       end if
 !ch   call mpe_broadcast(istat,1,flag,mpe_integer)
@@ -575,6 +582,7 @@
          if(istat5.ne.0) print*,' IFILE_NCEP=',ifilin_ncep,' dms open failed!'
          if(istat6.ne.0) print*,' IFILE_ClmANA=',ifilin_ClmANA,' dmsopen failed!'
          if(istat7.ne.0) print*,' IFILE_ClmFCT=',ifilin_ClmFCT,' dmsopen failed!'
+         if(istat8.ne.0) print*,' IFILE_AERO=',ifilin_aero,' dmsopen failed!'
         endif
         call mpe_finalize
         call dmsexit(-1)

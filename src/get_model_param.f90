@@ -6,7 +6,8 @@
       use const, only : ifilin,cwbout,bckfile,namlsts,   &
                         ifilout,crdate,ocards,phyout,cntrl, &
                         ifilin_ncep,ifilin_sst,ifilin_nc,&
-                        ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb
+                        ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb, &
+                        ifilin_aero
 
       use paramt
 
@@ -25,7 +26,8 @@
       namelist /filst/ ifilin,cwbout,bckfile,namlsts &
                      , ifilout,crdate,ocards,phyout,cntrl &
                      , ifilin_ncep,ifilin_sst,ifilin_nc &
-                     , ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb
+                     , ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb &
+                     , ifilin_aero
 
       namelist /grb_conf/ grbmem,grbnumm
 
