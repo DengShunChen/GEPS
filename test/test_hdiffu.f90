@@ -60,21 +60,23 @@ subroutine hdiffu_unit
                   , eps4, trefs)
    end do
 
+   !$acc enter data copyin(cosl, um, vm, vornow_gpu, divnow_gpu, temnow_gpu, &
+   !$acc& eps4, trefs, jlist1, nxdef_2d, Llist, hdk2, vornow, divnow, temnow, mlist) async(async_id)
    do i = 1, steps
+      !$acc kernels async(async_id)
       vornow_gpu = vornow
       divnow_gpu = divnow
       temnow_gpu = temnow
+      !$acc end kernels
       ! Present on device: cosl, ut, vt, vornow, divnow, temnow, eps4, trefs
       ! Present on device: jlist1, nxdef_2d, Llist, hdk2
-      !$acc enter data copyin(cosl, um, vm, vornow_gpu, divnow_gpu, temnow_gpu, &
-      !$acc& eps4, trefs, jlist1, nxdef_2d, Llist, hdk2) async(async_id)
       call hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld &
                       , hfiltx, rad, cosl, um, vm, vornow_gpu, divnow_gpu, temnow_gpu &
                       , eps4, trefs)
-      !$acc exit data copyout(cosl, um, vm, vornow_gpu, divnow_gpu, temnow_gpu, &
-      !$acc& eps4, trefs, jlist1, nxdef_2d, Llist, hdk2) async(async_id)
-      !$acc wait(async_id)
    end do
+   !$acc exit data copyout(cosl, um, vm, vornow_gpu, divnow_gpu, temnow_gpu, &
+   !$acc& eps4, trefs, jlist1, nxdef_2d, Llist, hdk2, vornow, divnow, temnow, mlist) async(async_id)
+   !$acc wait(async_id)
 
 #ifdef SP
    call assert_allclose(vornow_gpu, size(vornow_gpu), vornow_cpu, size(vornow_cpu), 1e-4_4, 1e-4_4, "Array vornow")

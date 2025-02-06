@@ -25,7 +25,7 @@ subroutine siimpl_unit
 
    implicit none
 
-   integer, parameter :: steps = 1
+   integer, parameter :: steps = 16
    real(kind=RTYPE) dtahi
    real(kind=RTYPE) dsigma(lev, 2), spalm(lev), eps4(jtrun, jtmax), eigval(lev), evecin(lev, lev), evectr(lev, lev), arrhyd(lev, lev), arsddt(lev, lev)
    real(kind=RTYPE) temmid(levp, 2, jtrun, jtmax), divmid(levp, 2, jtrun, jtmax), plmid(jtrun, jtmax, 2)
@@ -61,16 +61,19 @@ subroutine siimpl_unit
    divten_gpu = divten
    plten_gpu = plten
 
-   call siimpl(jtrun, jtmax, lev, dtahi, ptmeans, dsigma, spalm, eps4, eigval &
-               , evecin, evectr, arrhyd, arsddt, temmid, divmid, plmid &
-               , temmid, divmid, plmid, temten, divten, plten, alpha)
+   do i = 1, steps
+      call siimpl(jtrun, jtmax, lev, dtahi, ptmeans, dsigma, spalm, eps4, eigval &
+                  , evecin, evectr, arrhyd, arsddt, temmid, divmid, plmid &
+                  , temmid, divmid, plmid, temten, divten, plten, alpha)
+   end do
 
    !$acc enter data copyin(plten_gpu, plmid, temmid, temten_gpu, divmid, divten_gpu, &
    !$acc& jtwvp, spalm, arrhyd, eps4L, evecin, eigval, evectr, arsddt, dsigma, mlist) async(async_id)
-   call siimpl_gpu(jtrun, jtmax, lev, dtahi, ptmeans, dsigma, spalm, eps4, eigval &
-                   , evecin, evectr, arrhyd, arsddt, temmid, divmid, plmid &
-                   , temmid, divmid, plmid, temten_gpu, divten_gpu, plten_gpu, alpha)
-
+   do i = 1, steps
+      call siimpl_gpu(jtrun, jtmax, lev, dtahi, ptmeans, dsigma, spalm, eps4, eigval &
+                     , evecin, evectr, arrhyd, arsddt, temmid, divmid, plmid &
+                     , temmid, divmid, plmid, temten_gpu, divten_gpu, plten_gpu, alpha)
+   end do
    !$acc exit data copyout(plten_gpu, plmid, temmid, temten_gpu, divmid, divten_gpu, &
    !$acc& jtwvp, spalm, arrhyd, eps4L, evecin, eigval, evectr, arsddt, dsigma, mlist) async(async_id)
    !$acc wait(async_id)
