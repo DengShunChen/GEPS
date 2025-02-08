@@ -100,7 +100,6 @@
       character:: keydoit*34
 ! for Thompson MP
       real  tem,rho,ttr,ttv
-      real  aeroclx(nxp,lev*naero,my_max)
 
       lmax=26
       cc=0.
@@ -175,7 +174,7 @@
                        ,shdmax,shdmin,slopetyp,snoalb,ggdef,isot,ivegsrc )
           if ( doaeroclx ) then
             call readaeroclx( nx,my,my_max,lev,naero,julian,       &
-                              ggdef,aeroclx )
+                              ggdef,aeroclxm )
           endif
 !---------------------------------------------------------------------
 !   read new albedo:
@@ -356,9 +355,8 @@
 ! read aerosol climate data
 !
         if ( doaeroclx ) then
-          call readaeroclx(nx,my,my_max,lev,naero,julian,ggdef,aeroclx)
+          call readaeroclx(nx,my,my_max,lev,naero,julian,ggdef,aeroclxm)
           if (myrank.eq.0) print *, 'readaeroclx ok!!'
-!          stop
         endif
 !
 !  read sst analysis data

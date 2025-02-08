@@ -88,6 +88,8 @@
 
         if ( jul .le. mon(1) ) jul = jul + 365
 
+        if ( myrank .eq. 0 ) print *, 'read aeroclx : ',aerokey(n)
+
         if ( jul .gt. mon(12) ) then
           coef1 = float(jul - mon(12))/float(380 - mon(12))
           coef2 = 1. - coef1
@@ -113,8 +115,8 @@
               nxj = nxdef_2d(j)
               do i = 1,nxj
                 nm = (n - 1)*lev + m
-                aeroclx(i,nm,jj) = coef1*wrk(i,jj,2) + &
-                                   coef2*wrk(i,jj,1)
+                aeroclx(i,nm,jj) = max(0.0, coef1*wrk(i,jj,2) + &
+                                   coef2*wrk(i,jj,1))
               enddo
             enddo
           enddo   !end of do m=1,lev
@@ -149,8 +151,8 @@
                 j = jlist1(jj)
                 nxj = nxdef_2d(j)
                 do i = 1,nxj
-                  aeroclx(i,nm,jj) = coef1*wrk(i,jj,2) + &
-                                     coef2*wrk(i,jj,1)
+                  aeroclx(i,nm,jj) = max(0.0, coef1*wrk(i,jj,2) + &
+                                     coef2*wrk(i,jj,1))
                 enddo
               enddo
             enddo  !end of do m

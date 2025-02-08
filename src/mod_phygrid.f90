@@ -4,7 +4,7 @@
 !
       use param
       use index
-      use const, only: RTYPE, naero
+      use const, only: RTYPE
 
       implicit none
 
@@ -65,8 +65,7 @@
                      ftp(nxp,lev,my_max),  fqp(nxp,lev,my_max),  &
                     ftp1(nxp,lev,my_max), fqp1(nxp,lev,my_max),  &
                     deltaq(nxp,lev,my_max),cnvwr(nxp,lev,my_max),&
-                    cnvcr(nxp,lev,my_max),                       &
-                    aeroclxm(nxp,naero*lev,my_max), stat=ierr)
+                    cnvcr(nxp,lev,my_max),  stat=ierr)
 
            if (ierr/= 0) then
                write(6,*) 'mod_phygrid : allocate fail 1 '
@@ -75,6 +74,9 @@
            deltaq = 0.
            cnvcr  = 0.
            cnvwr  = 0.
+
+           allocate ( aeroclxm(nxp,15*lev,my_max), stat=ierr )
+           if (ierr/= 0) stop 'mod_phygrid : allocate aeroclxm'
            aeroclxm = 0.
 
            allocate (                                 &
@@ -209,7 +211,8 @@
          subroutine deallocate_phygrid_array
 
            deallocate (e,eps,o3l,dtrad,asl,atl,ftp,fqp,ftp1,fqp1)
-           deallocate (deltaq,cnvwr,cnvcr,aeroclxm)
+           deallocate (deltaq,cnvwr,cnvcr)
+           deallocate (aeroclxm)
            deallocate (                                           &
                        snr,gwr,tg,   ss,rs,                       &
              ustar,tstar,qstar,hflux,qflux,raintot,raincu,rainlp, &

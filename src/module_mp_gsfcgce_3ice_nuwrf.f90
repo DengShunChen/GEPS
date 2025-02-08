@@ -149,7 +149,7 @@ CONTAINS
                       ,its,ite, jts,jte, kts,kte                   & ! tile   dims
                       ,rainnc, icenc, snownc, graupelnc, sr        &
 !                      ,rainncv, snowncv, graupelncv                &
-                      ,f_qg, qg                                    &
+                      ,f_qg, qg, aeroclx, naero                    &
                       ,ihail, ice2                                 &
 #ifdef EXT_DIAG
                       ,refl_10cm, diagflag, do_radar_ref           &
@@ -232,6 +232,9 @@ CONTAINS
   REAL, INTENT(IN   ) :: xlat
   REAL, INTENT(IN   ) :: sdec  ! sine of solar declination angle
   LOGICAL, INTENT(IN), OPTIONAL :: F_QG
+  ! aerosol climatology
+  integer, intent(in) :: naero
+  real, dimension(ims:ime,kms:kme,jms:jme,naero), intent(in) :: aeroclx
 
 !  LOCAL VAR
   INTEGER ::  itaobraun, istatmin, new_ice_sat, id
@@ -425,7 +428,8 @@ CONTAINS
                    itimestep, xland,                             & 
                    refc, refr, refi, refs, refg,                 & ! cloud effective radius
                    ims,ime, jms,jme, kms,kme,                    & ! memory dims
-                   its,ite, jts,jte, kts,kte                     & ! tile   dims
+                   its,ite, jts,jte, kts,kte,                    & ! tile   dims
+                   aeroclx, naero                                &
 #ifdef EXT_DIAG
                    ,refl_10cm, diagflag, do_radar_ref,           & ! GT added for reflectivity calcs
                    physc, physe, physd, physs, physm, physf,     &
@@ -1717,7 +1721,8 @@ CONTAINS
                        itimestep, xland,                               &
                        refc, refr, refi, refs, refg,                   & ! cloud effective radius
                        ims,ime, jms,jme, kms,kme,                      &
-                       its,ite, jts,jte, kts,kte                       &
+                       its,ite, jts,jte, kts,kte,                      &
+                       aeroclx, naero                                  &
 #ifdef EXT_DIAG
                        ,refl_10cm, diagflag, do_radar_ref,             & ! GT added for reflectivity calcs
                        physc, physe, physd, physs, physm, physf,       &   
@@ -2075,6 +2080,10 @@ CONTAINS
 
       ! calculate solar declination angle :
       real, intent(in) :: sdec
+
+      ! aerosol climatology :
+      integer, intent(in) :: naero
+      real, dimension(ims:ime,kms:kme,jms:jme,naero), intent(in) :: aeroclx
 
 #ifdef sat_predict
       ! saturation prediction scheme :
