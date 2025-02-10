@@ -501,5 +501,25 @@
       ccnorm=.false.
       norad_precip=.false.
 !---------------------------------------------------------------------------
+! for aeroclx index
+      naso4 = 1  ! Sulphate
+      nadu1 = 2  ! Dust bin 001
+      nadu2 = 3  ! Dust bin 002
+      nadu3 = 4  ! Dust bin 003
+      nadu4 = 5  ! Dust bin 004
+      nadu5 = 6  ! Dust bin 005
+      nass1 = 7  ! Sea Salt bin 001
+      nass2 = 8  ! Sea Salt bin 002
+      nass3 = 9  ! Sea Salt bin 003
+      nass4 = 10 ! Sea Salt bin 004
+      nass5 = 11 ! Sea Salt bin 005
+      nablc = 12 ! Hydrophilic Black Carbon
+      nabbc = 13 ! Hydrophobic Black Carbon
+      naolc = 14 ! Hydrophilic Organic Carbon
+      naobc = 15 ! Hydrophobic Organic Carbon
+      namsa = 16 ! Methanesulphonic acid
+      nadms = 17 ! Dimethylsulphide
+      naso2 = 18 ! Sulphur dioxide
+!---------------------------------------------------------------------------
       return
       end

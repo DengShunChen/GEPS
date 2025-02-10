@@ -52,6 +52,9 @@
             nmgwor,nmgwcv,mtnvar,                          &
             ktrop,ncpu,nmcup,nmpbl,nmland,numreduce,nmshl, &
             nmmiph,itter,naero
+    integer :: naso4,nadu1,nadu2,nadu3,nadu4,nadu5,        &
+               nass1,nass2,nass3,nass4,nass5,nablc,        &
+               nabbc,naolc,naobc,namsa,nadms,naso2
 
     common/constI/                                         &
             numout,ipadding,jm2,ksgeo,                     &

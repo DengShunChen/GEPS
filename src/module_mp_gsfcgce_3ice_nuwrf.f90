@@ -8,6 +8,9 @@ MODULE module_mp_gsfcgce_3ice_nuwrf
 
 
    USE module_gocart_coupling , only : mass2ccn, mass2icn
+   USE const , only : naso4,nadu1,nadu2,nadu3,nadu4,nadu5,        &
+                      nass1,nass2,nass3,nass4,nass5,nablc,        &
+                      nabbc,naolc,naobc,namsa,nadms,naso2
    USE module_mp_radar
 
    PRIVATE   ! privatize all variables/subroutines in this module excepting public parameter below
@@ -2560,24 +2563,25 @@ CONTAINS
       ! -------------
 
         if ( (ccnflag .eq. 2) .or. (inflag .eq. 2) ) then
+           if ( naero .lt. 15 ) stop 'not enough aerosol types!'
            ! convert from MERRA2-aerotype to GOCART-aerotype
-           aerog(i,j,k, 1) = aeroclx(i,k,j, 1)     !sulfur and its precure    (SO4)
-           aerog(i,j,k, 2) = aeroclx(i,k,j,12) + & !soot                      (BLC
-                             aeroclx(i,k,j,13)     !                          +BBC)
-           aerog(i,j,k, 3) = aeroclx(i,k,j,15)     !non-hygroscopic OC        (OBC)
-           aerog(i,j,k, 4) = aeroclx(i,k,j,14)     !hygroscopic OC            (OLC)
-           aerog(i,j,k, 5) = aeroclx(i,k,j, 7)     !sea salt accumulated mode (SS1)
-           aerog(i,j,k, 6) = aeroclx(i,k,j, 8) + & !sea salt coarse mode      (SS2
-                             aeroclx(i,k,j, 9) + & !                          +SS3
-                             aeroclx(i,k,j,10)     !                          +SS4)
-           aerog(i,j,k, 7) = aeroclx(i,k,j, 2)     !dust mode 1               (DU1)
-           aerog(i,j,k, 8) = aeroclx(i,k,j, 2)     !dust mode 2               (DU1)
-           aerog(i,j,k, 9) = aeroclx(i,k,j, 2)     !dust mode 3               (DU1)
-           aerog(i,j,k,10) = aeroclx(i,k,j, 2)     !dust mode 4               (DU1)
-           aerog(i,j,k,11) = aeroclx(i,k,j, 3)     !dust mode 5               (DU2)
-           aerog(i,j,k,12) = aeroclx(i,k,j, 4)     !dust mode 6               (DU3)
-           aerog(i,j,k,13) = aeroclx(i,k,j, 5)     !dust mode 7               (DU4)
-           aerog(i,j,k,14) = aeroclx(i,k,j, 6)     !dust mode 8               (DU5)
+           aerog(i,j,k, 1) = aeroclx(i,k,j,naso4)     !sulfur and its precure    (SO4)
+           aerog(i,j,k, 2) = aeroclx(i,k,j,nablc) + & !soot                      (BLC
+                             aeroclx(i,k,j,nabbc)     !                          +BBC)
+           aerog(i,j,k, 3) = aeroclx(i,k,j,naobc)     !non-hygroscopic OC        (OBC)
+           aerog(i,j,k, 4) = aeroclx(i,k,j,naolc)     !hygroscopic OC            (OLC)
+           aerog(i,j,k, 5) = aeroclx(i,k,j,nass1)     !sea salt accumulated mode (SS1)
+           aerog(i,j,k, 6) = aeroclx(i,k,j,nass2) + & !sea salt coarse mode      (SS2
+                             aeroclx(i,k,j,nass3) + & !                          +SS3
+                             aeroclx(i,k,j,nass4)     !                          +SS4)
+           aerog(i,j,k, 7) = aeroclx(i,k,j,nadu1)     !dust mode 1               (DU1)
+           aerog(i,j,k, 8) = aeroclx(i,k,j,nadu1)     !dust mode 2               (DU1)
+           aerog(i,j,k, 9) = aeroclx(i,k,j,nadu1)     !dust mode 3               (DU1)
+           aerog(i,j,k,10) = aeroclx(i,k,j,nadu1)     !dust mode 4               (DU1)
+           aerog(i,j,k,11) = aeroclx(i,k,j,nadu2)     !dust mode 5               (DU2)
+           aerog(i,j,k,12) = aeroclx(i,k,j,nadu3)     !dust mode 6               (DU3)
+           aerog(i,j,k,13) = aeroclx(i,k,j,nadu4)     !dust mode 7               (DU4)
+           aerog(i,j,k,14) = aeroclx(i,k,j,nadu5)     !dust mode 8               (DU5)
         endif
 
 !     ******************************************************************

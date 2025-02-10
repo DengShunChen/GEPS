@@ -13,30 +13,33 @@
 !
 !...............................................
 !  naero-species aerosol :
-!    n=1 , SO4 : Sulphate Mixing Ratio
-!    n=2 , DU1 : Dust Mixing Ratio (bin 001)
-!    n=3 , DU2 : Dust Mixing Ratio (bin 002)
-!    n=4 , DU3 : Dust Mixing Ratio (bin 003)
-!    n=5 , DU4 : Dust Mixing Ratio (bin 004)
-!    n=6 , DU5 : Dust Mixing Ratio (bin 005)
-!    n=7 , SS1 : Sea Salt Mixing Ratio (bin 001)
-!    n=8 , SS2 : Sea Salt Mixing Ratio (bin 002)
-!    n=9 , SS3 : Sea Salt Mixing Ratio (bin 003)
-!    n=10, SS4 : Sea Salt Mixing Ratio (bin 004)
-!    n=11, SS5 : Sea Salt Mixing Ratio (bin 005)
-!    n=12, BLC : Hydrophilic Black Carbon
-!    n=13, BBC : Hydrophobic Black Carbon
-!    n=14, OLC : Hydrophilic Organic Carbon (Particulate Matter)
-!    n=15, OBC : Hydrophobic Organic Carbon (Particulate Matter)
-!    n=16, MSA : Methanesulphonic acid
-!    n=17, DMS : Dimethylsulphide
-!    n=18, SO2 : Sulphur dioxide
+!    SO4 : Sulphate Mixing Ratio
+!    DU1 : Dust Mixing Ratio (bin 001)
+!    DU2 : Dust Mixing Ratio (bin 002)
+!    DU3 : Dust Mixing Ratio (bin 003)
+!    DU4 : Dust Mixing Ratio (bin 004)
+!    DU5 : Dust Mixing Ratio (bin 005)
+!    SS1 : Sea Salt Mixing Ratio (bin 001)
+!    SS2 : Sea Salt Mixing Ratio (bin 002)
+!    SS3 : Sea Salt Mixing Ratio (bin 003)
+!    SS4 : Sea Salt Mixing Ratio (bin 004)
+!    SS5 : Sea Salt Mixing Ratio (bin 005)
+!    BLC : Hydrophilic Black Carbon
+!    BBC : Hydrophobic Black Carbon
+!    OLC : Hydrophilic Organic Carbon (Particulate Matter)
+!    OBC : Hydrophobic Organic Carbon (Particulate Matter)
+!    MSA : Methanesulphonic acid
+!    DMS : Dimethylsulphide
+!    SO2 : Sulphur dioxide
 !-----------------------------------------------------------------
 !
       use index
       use mpe
       use rank
-      use const, only: ihdgi,ifilin_aero
+      use const, only: ihdgi,ifilin_aero, &
+                       naso4,nadu1,nadu2,nadu3,nadu4,nadu5, &
+                       nass1,nass2,nass3,nass4,nass5,nablc, &
+                       nabbc,naolc,naobc,namsa,nadms,naso2
 !
       implicit  none
 
@@ -55,12 +58,28 @@
       data mon/15,46,74,105,135,166,196,227,258,288,319,349/
       data mondy/0,31,59,90,120,151,181,212,243,273,304,334,365/
       data blnk/' '/
-      data aerokey/'SO4','DU1','DU2','DU3','DU4','DU5', &
-                   'SS1','SS2','SS3','SS4','SS5','BLC', &
-                   'BBC','OLC','OBC','MSA','DMS','SO2'/
 
       integer   i,j,k,m,n,jul,nxj,mm,istat,monidex,lncrec,jj,ii,nm
       real      coef1,coef2
+
+      if ( naso4.le.naero ) aerokey(naso4) = 'SO4'
+      if ( nadu1.le.naero ) aerokey(nadu1) = 'DU1'
+      if ( nadu2.le.naero ) aerokey(nadu2) = 'DU2'
+      if ( nadu3.le.naero ) aerokey(nadu3) = 'DU3'
+      if ( nadu4.le.naero ) aerokey(nadu4) = 'DU4'
+      if ( nadu5.le.naero ) aerokey(nadu5) = 'DU5'
+      if ( nass1.le.naero ) aerokey(nass1) = 'SS1'
+      if ( nass2.le.naero ) aerokey(nass2) = 'SS2'
+      if ( nass3.le.naero ) aerokey(nass3) = 'SS3'
+      if ( nass4.le.naero ) aerokey(nass4) = 'SS4'
+      if ( nass5.le.naero ) aerokey(nass5) = 'SS5'
+      if ( nablc.le.naero ) aerokey(nablc) = 'BLC'
+      if ( nabbc.le.naero ) aerokey(nabbc) = 'BBC'
+      if ( naolc.le.naero ) aerokey(naolc) = 'OLC'
+      if ( naobc.le.naero ) aerokey(naobc) = 'OBC'
+      if ( namsa.le.naero ) aerokey(namsa) = 'MSA'
+      if ( nadms.le.naero ) aerokey(nadms) = 'DMS'
+      if ( naso2.le.naero ) aerokey(naso2) = 'SO2'
 
       lncrec = nx*my
 
