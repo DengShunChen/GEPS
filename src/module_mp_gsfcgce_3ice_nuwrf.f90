@@ -7,9 +7,7 @@
 MODULE module_mp_gsfcgce_3ice_nuwrf
 
 
-#if ( WRF_CHEM == 1)
-   USE     module_gocart_coupling
-#endif
+   USE module_gocart_coupling , only : mass2ccn, mass2icn
    USE module_mp_radar
 
    PRIVATE   ! privatize all variables/subroutines in this module excepting public parameter below
@@ -2074,6 +2072,14 @@ CONTAINS
       real :: md22, bd22, sigma, cd22, xd22
       real :: lqi,lqi2,efdi
 
+      integer, parameter :: ccnflag = 1
+      ! 1 : default
+      ! 2 : WRF GOCART mass2ccn (LUT approach)
+
+      integer, parameter :: inflag = 1
+      ! 1 : default (Meyers et al. 1992)
+      ! 2 : WRF GOCART mass2icn (DeMotto et al. 2011)
+
       ! calculate allowable ice supersautration :
       real, intent(in) :: xlat
       real :: d2r, arg
@@ -2084,6 +2090,12 @@ CONTAINS
       ! aerosol climatology :
       integer, intent(in) :: naero
       real, dimension(ims:ime,kms:kme,jms:jme,naero), intent(in) :: aeroclx
+
+      ! WRF GOCART coupling :
+      integer, parameter :: ngo = 14
+      real, dimension(:,:,:,:), allocatable :: aerog
+      real, dimension(:), allocatable :: aeromc
+      real :: ew, rhw, ssrw, p_mb
 
 #ifdef sat_predict
       ! saturation prediction scheme :
@@ -2139,7 +2151,7 @@ CONTAINS
          do j=jts,jte
          do i=its,ite
          rho(i,j,k)=rho_mks(i,k,j)*0.001
-         p0(i,j,k)=p0_mks(i,k,j)*10.0
+         p0(i,j,k)=p0_mks(i,k,j)*10.0  !p0 in barye(Ba), equal to 0.1 Pa
          pi(i,j,k)=pi_mks(i,k,j)
          ww1(i,j,k)=w_mks(i,k,j)*100.
          dpt(i,j,k)=ptwrf(i,k,j)
@@ -2321,6 +2333,10 @@ CONTAINS
 !c        beta=-.46
        endif
 
+       if ( (ccnflag .eq. 2) .or. (inflag .eq. 2) ) then
+          allocate( aerog(its:ite,jts:jte,kts:kte,ngo) )
+          allocate( aeromc(ngo) )
+       endif
 !C    ******************************************************************
 
   do 1000 k=kts,kte
@@ -2538,6 +2554,31 @@ CONTAINS
         dlt4(i,j)=0.0
         dlt3(i,j)=0.0
         dlt2(i,j)=0.0
+
+      ! -------------
+      ! aerosol-aware :
+      ! -------------
+
+        if ( (ccnflag .eq. 2) .or. (inflag .eq. 2) ) then
+           ! convert from MERRA2-aerotype to GOCART-aerotype
+           aerog(i,j,k, 1) = aeroclx(i,k,j, 1)     !sulfur and its precure    (SO4)
+           aerog(i,j,k, 2) = aeroclx(i,k,j,12) + & !soot                      (BLC
+                             aeroclx(i,k,j,13)     !                          +BBC)
+           aerog(i,j,k, 3) = aeroclx(i,k,j,15)     !non-hygroscopic OC        (OBC)
+           aerog(i,j,k, 4) = aeroclx(i,k,j,14)     !hygroscopic OC            (OLC)
+           aerog(i,j,k, 5) = aeroclx(i,k,j, 7)     !sea salt accumulated mode (SS1)
+           aerog(i,j,k, 6) = aeroclx(i,k,j, 8) + & !sea salt coarse mode      (SS2
+                             aeroclx(i,k,j, 9) + & !                          +SS3
+                             aeroclx(i,k,j,10)     !                          +SS4)
+           aerog(i,j,k, 7) = aeroclx(i,k,j, 2)     !dust mode 1               (DU1)
+           aerog(i,j,k, 8) = aeroclx(i,k,j, 2)     !dust mode 2               (DU1)
+           aerog(i,j,k, 9) = aeroclx(i,k,j, 2)     !dust mode 3               (DU1)
+           aerog(i,j,k,10) = aeroclx(i,k,j, 2)     !dust mode 4               (DU1)
+           aerog(i,j,k,11) = aeroclx(i,k,j, 3)     !dust mode 5               (DU2)
+           aerog(i,j,k,12) = aeroclx(i,k,j, 4)     !dust mode 6               (DU3)
+           aerog(i,j,k,13) = aeroclx(i,k,j, 5)     !dust mode 7               (DU4)
+           aerog(i,j,k,14) = aeroclx(i,k,j, 6)     !dust mode 8               (DU5)
+        endif
 
 !     ******************************************************************
 !     ***   Y1 : DYNAMIC VISCOSITY OF AIR (U)
@@ -3432,14 +3473,23 @@ CONTAINS
            abw = 1.+xlv**2.*qsw(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)  ! abw=1+dqsdT*(Lv/Cp)
 
            if ( qv(i,j).gt.qsw(i,j) .and. ww1(i,j,k).gt.1.e-3 ) then
+              if ( ccnflag .eq. 1 ) then
               ! C1 and K1 over land and ocean (Roger and Yau)
-              if ( xland(i,j) .eq. 1. ) then  !land
-                 C1 = 1000. ; K1 = 0.5
-              else
-                 C1 = 120.  ; K1 = 0.4         !ocean
+                 if ( xland(i,j) .eq. 1. ) then  !land
+                    C1 = 1000. ; K1 = 0.5
+                 else
+                    C1 = 120.  ; K1 = 0.4         !ocean
+                 endif
+                 ncloud = min(1.E9,1.E6*0.88*C1**(2./(K1+2.))*          &
+                         (7.E-2*ww1(i,j,k)**1.5)**(K1/(K1+2.)))
+              elseif ( ccnflag .eq. 2 ) then
+                 ew = qv(i,j)/(qv(i,j)+0.622)*p0_mks(i,k,j)   !vapor pressure (Pa)
+                 rhw = max(1.e-6, ew/esw(i,j)*100.)           !relative humidity (%)
+                 aeromc(:) = max(0.,aerog(i,k,j,:)*r00*1.e+6) !aerosol mass concentration (g m^-3)
+                 ssrw = max(0.001, rhw - 100.e0)              !super saturation rate over water (%)
+                 call mass2ccn(tair(i,j),ssrw,aeromc,ncloud)
+                 ncloud = ncloud*1.e+6                        !CCN (convert from cm^-3 to m^-3)
               endif
-              ncloud = min(1.E9,1.E6*0.88*C1**(2./(K1+2.))*          &
-                      (7.E-2*ww1(i,j,k)**1.5)**(K1/(K1+2.)))
               nact = max(0.,ncloud/rhoair-qc(i,j)/5.236E-13)      ! CONVERT FROM CM-3 TO M-3 and 5 microm in radius
               qcmax = max((qv(i,j)-qsw(i,j)),0.)/abw
               pact(i,j) = min(max(nact*1.414E-14,0.),qcmax)       ! 1.5 micron in radius
@@ -3480,8 +3530,15 @@ CONTAINS
            abi = 1.+xls**2.*qsi(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)  ! abi=1+dqidT*(Ls/Cp)
 
            if ( qv(i,j).gt.qsi(i,j) .and. tair(i,j).lt.t0 ) then
-              ssi(i,j) = qv(i,j)/qsi(i,j)-1.
-              nice = 1.e3*exp(1.296E+1*ssi(i,j)-6.39E-1)  ! Meyers et al. 1992 (m^-3)
+              if ( inflag .eq. 1 ) then
+                 ssi(i,j) = qv(i,j)/qsi(i,j)-1.
+                 nice = 1.e3*exp(1.296E+1*ssi(i,j)-6.39E-1)  ! Meyers et al. 1992 (m^-3)
+              elseif ( inflag .eq. 2 ) then
+                 p_mb = p0(i,j,k)*1.e-3                       !pressure (hPa, equal to mbar)
+                 aeromc(:) = max(0.,aerog(i,k,j,:)*r00*1.e+6) !aerosol mass concentration (g m^-3)
+                 call mass2icn(p_mb,tair(i,j),aeromc,nice)
+                 nice = nice*1.e+6                            !IN (convert from cm^-3 to m^-3)
+              endif
               r_nci = max(0.,nice/rhoair-qi(i,j)/4.19E-10)          ! RHOI = 800; DI = 1.E-4
 !              if ( xland(i,j) .eq. 1. ) then  !land
 !                 r_nci = max(0.,nice/rhoair-qi(i,j)/2.28E-10)      ! RHOI = 850; DI = 8.E-5
@@ -4715,6 +4772,9 @@ CONTAINS
 
  1000 continue
 
+      if ( (ccnflag .eq. 2) .or. (inflag .eq. 2) ) then
+         deallocate( aerog,aeromc )
+      endif
 ! ****************************************************************
 ! convert from GCE grid back to WRF grid
       do k=kts,kte

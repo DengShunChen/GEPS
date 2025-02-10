@@ -161,6 +161,7 @@ SRCS_f90  = \
   module_mp_gsfcgce.f90 \
   module_mp_gsfcgce_3ice_nuwrf.f90 \
   module_mp_gsfcgce_4ice_nuwrf.f90 \
+  module_gocart_coupling.f90 \
   cld_eff_rad.f90 \
   moninedmf.f90 \
   mpe2d.f90 \

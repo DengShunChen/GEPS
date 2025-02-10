@@ -20,6 +20,8 @@
 ! for GFDL MP v3
       use module_mp_gfdl_v3,  only : gfdlv3_init => gfdl_cld_mp_init
       use physpara, only : is_aerosol_aware,merra2_aerosol_aware
+! for GOCART coupling
+      use module_gocart_coupling, only : makelut_ccn_icn
 
       implicit none
 !  ---  input:
@@ -72,6 +74,7 @@
         if ( nmmiph .eq. 15 ) then
           if ( myrank .eq. 0 )                                         &
              print *,'Goddard (GCE) 3ICE cloud microphysics initialized'
+          call makelut_ccn_icn
         endif
 ! Goddard (GCE) 4ICE MP
         if ( nmmiph .eq. 16 ) then
