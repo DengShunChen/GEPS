@@ -88,8 +88,7 @@
                       , cmbk,cgwd,nmmiph,spl1,spl2                      &
                       , weightSIT,dSITdt_intv,mwhd,doclx,doslavepp      &
                       , outdms,outgrb2,alpha,two_loop,ttl,tfilt,factop  &
-                      , mass_dp,dpprt,outfv3,itter,vd,dorst,doaeroclx   &
-                      , naero
+                      , mass_dp,dpprt,outfv3,itter,vd,dorst,naero
 !
       real    si(lev+1)
       logical flag
@@ -563,11 +562,10 @@
           endif
           istat = istat + abs(istat6)+abs(istat7)
         endif
-! open aeroclx data
-        if ( doaeroclx ) then
-          call dmsopn(ifilin_aero,"r",istat8)
-          istat = istat + abs(istat8)
-        endif
+#ifdef Readaeroclx
+        call dmsopn(ifilin_aero,"r",istat8)
+        istat = istat + abs(istat8)
+#endif
 
       end if
 !ch   call mpe_broadcast(istat,1,flag,mpe_integer)
@@ -582,7 +580,9 @@
          if(istat5.ne.0) print*,' IFILE_NCEP=',ifilin_ncep,' dms open failed!'
          if(istat6.ne.0) print*,' IFILE_ClmANA=',ifilin_ClmANA,' dmsopen failed!'
          if(istat7.ne.0) print*,' IFILE_ClmFCT=',ifilin_ClmFCT,' dmsopen failed!'
+#ifdef Readaeroclx
          if(istat8.ne.0) print*,' IFILE_AERO=',ifilin_aero,' dmsopen failed!'
+#endif
         endif
         call mpe_finalize
         call dmsexit(-1)

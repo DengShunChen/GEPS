@@ -18,7 +18,9 @@
                     , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,cnvwr,cnvcr,sd       &
                     , shdmax,shdmin,snoalb                                     &
                     , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth         &
+#ifdef Readaeroclx
                     , naero,aeroclx                                            &
+#endif
                     , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                    &
                     , nmgwor,nmgwcv,hprime_b,mtnvar,docgrav,nmmiph             &
 !--------------------------------------------------------------------------------
@@ -171,7 +173,7 @@
                                       pdfcloud,cmbk,cgwd, fsit, dosppt, doshum, dossst, &
                                       use_zmtnblck,ldailyFCTicesndpt,dSITdt_intv, &
                                       weightSIT,bckfile,ggdef,doclx,doslavepp,    &
-                                      RTYPE,qmin,julian,mass_dp,doaeroclx
+                                      RTYPE,qmin,julian,mass_dp
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
@@ -207,7 +209,7 @@
 !-----------------------------------------------------------------------
       integer   nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,idg,  &
                 jdg,ldiag,njump,itypbl,ktcup,ktpbl,ktshl,            &
-                km_soil,naero
+                km_soil
 
       logical   docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon,     &
                 land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max),  &
@@ -413,8 +415,10 @@
       real      qtc(nxp,lev), qtr(nxp,lev), ttc(nxp,lev)
       real      ftp(nxp,lev,my_max), fqp(nxp,lev,my_max), fpsp(nxp,my_max)
       real      ftp1(nxp,lev,my_max), fqp1(nxp,lev,my_max), fpsp1(nxp,my_max)
-! for aerosol climatology
+#ifdef Readaeroclx
+      integer   naero
       real      aeroclx(nxp,naero*lev,my_max)
+#endif
 !-------
 !for pdf cloud
       integer   kdt
@@ -706,14 +710,15 @@
         enddo
 
       endif ! doclxu
+#ifdef Readaeroclx
 !
 ! update aerosol climatology
 !
-      if ( doclxu .and. doaeroclx ) then
+      if ( doclxu ) then
         if ( myrank .eq. 0 ) print *, 'update aeroclx at tau= ',tau
-        call readaeroclx( nx,my,my_max,lev,naero,julian,                &
-                          ggdef,aeroclx )
+        call readaeroclx( nx,my,my_max,lev,naero,julian,ggdef,aeroclx )
       endif
+#endif
 !
 ! for nonorographic gravity wave drag
 !
@@ -1953,7 +1958,9 @@
              dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,            &
              itimestep,sgeo(1,jj),phi,rhc_mp,pk(1,1,jj),               &
              snr(1,jj),xlat(j),sdec,ivegtyp(1,jj),                     &
+#ifdef Readaeroclx
              aeroclx(1,1,jj),naero,                                    &
+#endif
 !  ---  inputs/outputs:
              ttc       ,qt(1,1,jj),clds(1,1,jj),                       &
              utc       ,vtc       ,vvel(1,1,jj),                       &

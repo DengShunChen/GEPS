@@ -4,7 +4,7 @@
 !
       use param
       use index
-      use const, only: RTYPE
+      use const, only: RTYPE, naero
 
       implicit none
 
@@ -74,10 +74,6 @@
            deltaq = 0.
            cnvcr  = 0.
            cnvwr  = 0.
-
-           allocate ( aeroclxm(nxp,15*lev,my_max), stat=ierr )
-           if (ierr/= 0) stop 'mod_phygrid : allocate aeroclxm'
-           aeroclxm = 0.
 
            allocate (                                 &
              snr(nxp,my_max),   gwr(nxp,my_max),     tg(nxp,my_max), &
@@ -212,7 +208,6 @@
 
            deallocate (e,eps,o3l,dtrad,asl,atl,ftp,fqp,ftp1,fqp1)
            deallocate (deltaq,cnvwr,cnvcr)
-           deallocate (aeroclxm)
            deallocate (                                           &
                        snr,gwr,tg,   ss,rs,                       &
              ustar,tstar,qstar,hflux,qflux,raintot,raincu,rainlp, &
@@ -234,6 +229,19 @@
 
            return
 
+         end subroutine
+
+         subroutine allocate_aerogrid_array
+           integer  ierr
+           allocate ( aeroclxm(nxp,naero*lev,my_max), stat=ierr )
+           if (ierr/= 0) stop 'mod_phygrid : allocate aeroclxm'
+           aeroclxm = 0.
+           return
+         end subroutine
+
+         subroutine deallocate_aerogrid_array
+           deallocate ( aeroclxm )
+           return
          end subroutine
 
       end module phygrid

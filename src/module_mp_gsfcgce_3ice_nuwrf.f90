@@ -7,10 +7,12 @@
 MODULE module_mp_gsfcgce_3ice_nuwrf
 
 
+#ifdef Readaeroclx
    USE module_gocart_coupling , only : mass2ccn, mass2icn
    USE const , only : naso4,nadu1,nadu2,nadu3,nadu4,nadu5,        &
                       nass1,nass2,nass3,nass4,nass5,nablc,        &
                       nabbc,naolc,naobc,namsa,nadms,naso2
+#endif
    USE module_mp_radar
 
    PRIVATE   ! privatize all variables/subroutines in this module excepting public parameter below
@@ -150,7 +152,10 @@ CONTAINS
                       ,its,ite, jts,jte, kts,kte                   & ! tile   dims
                       ,rainnc, icenc, snownc, graupelnc, sr        &
 !                      ,rainncv, snowncv, graupelncv                &
-                      ,f_qg, qg, aeroclx, naero                    &
+                      ,f_qg, qg                                    &
+#ifdef Readaeroclx
+                      ,aeroclx, naero                              &
+#endif
                       ,ihail, ice2                                 &
 #ifdef EXT_DIAG
                       ,refl_10cm, diagflag, do_radar_ref           &
@@ -159,11 +164,6 @@ CONTAINS
                       ,preci3d, precs3d, precg3d, precr3d          &
 #endif
                       ,refc, refr, refi, refs, refg                & ! cloud effective radius
-#if ( WRF_CHEM == 1)
-                      ,aero, icn_diag, nc_diag, gid                &
-                      ,chem_opt                                    &
-                      ,gsfcgce_gocart_coupling                     &
-#endif 
                                                                    )
 
 !-------------------------------------------------------------------
@@ -182,15 +182,6 @@ CONTAINS
                                                               qi, &
                                                               qs, &
                                                               qg
-
-#if ( WRF_CHEM == 1)
-  INTEGER, PARAMETER :: num_go = 14  ! number of the gocart aerosol species
-  REAL, DIMENSION( ims:ime, kms:kme, jms:jme, num_go), intent(in) :: aero
-  REAL, DIMENSION( ims:ime, kms:kme, jms:jme), intent(out) :: icn_diag, nc_diag
-  INTEGER,      INTENT(IN   )    ::   gid
-  integer,intent(in) :: chem_opt ! EMK
-  integer,intent(in) :: gsfcgce_gocart_coupling ! EMK
-#endif
 !
   REAL, DIMENSION( ims:ime , kms:kme , jms:jme ),                 &
         INTENT(IN   ) ::                                          &
@@ -233,9 +224,11 @@ CONTAINS
   REAL, INTENT(IN   ) :: xlat
   REAL, INTENT(IN   ) :: sdec  ! sine of solar declination angle
   LOGICAL, INTENT(IN), OPTIONAL :: F_QG
+#ifdef Readaeroclx
   ! aerosol climatology
   integer, intent(in) :: naero
   real, dimension(ims:ime,kms:kme,jms:jme,naero), intent(in) :: aeroclx
+#endif
 
 !  LOCAL VAR
   INTEGER ::  itaobraun, istatmin, new_ice_sat, id
@@ -263,10 +256,6 @@ CONTAINS
   ! for sub-cycle time steps :
   integer :: n, ntimes
   real :: mp_time, dts
-
-#if ( WRF_CHEM == 1)
-  logical,save :: first_makelut = .true. ! Initial value, changed later.
-#endif
 
 !+---+-----------------------------------------------------------------+
 
@@ -310,19 +299,6 @@ CONTAINS
 !c ibud = 0 no calculation of dth, dqv, dqrest and dqall
 !c ibud = 1 yes
     ibud = 0
-
-#if ( WRF_CHEM == 1)
-! Create CCN and IN candidate look-up table. Only need to run once at the first timestep of each run
-      if (first_makelut) then
-         ! EMK...Only execute when GOCART and coupling turned on.
-         if ( (chem_opt == 300 .or. chem_opt == 301 .or. &
-               chem_opt == 302 .or. chem_opt == 303) .and. &
-               (gsfcgce_gocart_coupling == 1)) then
-            call makelut_ccn_icn
-            first_makelut = .false. ! This value is saved for subsequent calls.
-         end if
-      end if
-#endif
 
    ! convert specific values of q to mixing ratios :
    qtot = 0.
@@ -430,16 +406,13 @@ CONTAINS
                    refc, refr, refi, refs, refg,                 & ! cloud effective radius
                    ims,ime, jms,jme, kms,kme,                    & ! memory dims
                    its,ite, jts,jte, kts,kte,                    & ! tile   dims
+#ifdef Readaeroclx
                    aeroclx, naero                                &
+#endif
 #ifdef EXT_DIAG
                    ,refl_10cm, diagflag, do_radar_ref,           & ! GT added for reflectivity calcs
                    physc, physe, physd, physs, physm, physf,     &
                    acphysc, acphyse, acphysd, acphyss, acphysm, acphysf &
-#endif
-#if ( WRF_CHEM == 1)
-                   ,aero, icn_diag, nc_diag, gid,                &
-                   chem_opt,                                     &
-                   gsfcgce_gocart_coupling                       &
 #endif
                    )
    enddo  !end of do n=1,ntimes
@@ -1723,16 +1696,13 @@ CONTAINS
                        refc, refr, refi, refs, refg,                   & ! cloud effective radius
                        ims,ime, jms,jme, kms,kme,                      &
                        its,ite, jts,jte, kts,kte,                      &
+#ifdef Readaeroclx
                        aeroclx, naero                                  &
+#endif
 #ifdef EXT_DIAG
                        ,refl_10cm, diagflag, do_radar_ref,             & ! GT added for reflectivity calcs
                        physc, physe, physd, physs, physm, physf,       &   
                        acphysc, acphyse, acphysd, acphyss, acphysm, acphysf &   
-#endif
-#if ( WRF_CHEM == 1)
-                       ,aero, icn_diag, nc_diag, gid,                  &
-                       chem_opt,                                       &
-                       gsfcgce_gocart_coupling                         &
 #endif
                        )
 !-----------------------------------------------------------------------
@@ -1996,18 +1966,11 @@ CONTAINS
   integer,intent(in) :: chem_opt ! EMK
   integer,intent(in) :: gsfcgce_gocart_coupling ! EMK
 
-! Local Variables
-!  REAL, DIMENSION( its:ite, jts:jte, kts:kte) :: icn_cgs !IN concentration [#/cm3]
-!  REAL, DIMENSION( its:ite, jts:jte, kts:kte) :: nc_cgs !cloud concentration [#/cm3]
-
-!  real, dimension( kms:kme, tgmx ) ::  aero_k    ! interporated aerosol mass conc [g/m3]
   real :: e_sat, e_dry  !saturated and dry air water vapor [hPa, mb]
   real :: rh_rad     ! relative humidity [%]
   real :: super_sat  !super saturation [%]
   real :: ccn_out  ! CCN conc [#/cm3]
   real :: icn_out  ! IN conc [#/Litter]
-!  real :: rho_dryair ! dry air density [g/m3]  !
-!  real :: L_cloud    ! cloud water [g/cm3] !
   real :: P_liu_daum  ! autoconversion rate [g/cm3 s-1]    !
   real :: re_liu_daum ! effective radius of cloud [micron]   !
   real,parameter :: min_icn = 0.01 !minimum # conc of IN [#/Litre]
@@ -2090,6 +2053,7 @@ CONTAINS
       ! calculate solar declination angle :
       real, intent(in) :: sdec
 
+#ifdef Readaeroclx
       ! aerosol climatology :
       integer, intent(in) :: naero
       real, dimension(ims:ime,kms:kme,jms:jme,naero), intent(in) :: aeroclx
@@ -2099,6 +2063,7 @@ CONTAINS
       real, dimension(:,:,:,:), allocatable :: aerog
       real, dimension(:), allocatable :: aeromc
       real :: ew, rhw, ssrw, p_mb
+#endif
 
 #ifdef sat_predict
       ! saturation prediction scheme :
@@ -2336,10 +2301,12 @@ CONTAINS
 !c        beta=-.46
        endif
 
+#ifdef Readaeroclx
        if ( (ccnflag .eq. 2) .or. (inflag .eq. 2) ) then
           allocate( aerog(its:ite,jts:jte,kts:kte,ngo) )
           allocate( aeromc(ngo) )
        endif
+#endif
 !C    ******************************************************************
 
   do 1000 k=kts,kte
@@ -2349,21 +2316,6 @@ CONTAINS
 
      do 2000 j=jts,jte
      do 2000 i=its,ite
-
-#if ( WRF_CHEM == 1)
-        ccn_out = 0.e0 
-        icn_out = 0.e0 
-        if ( (chem_opt == 300 .or. chem_opt == 301 .or. &
-              chem_opt == 302 .or. chem_opt == 303) .and. &
-              (gsfcgce_gocart_coupling == 1) ) then
-           icn_diag(i,k,j) = icn_out  ! #/Litre
-           nc_diag(i,k,j) = ccn_out  ! #/cm3
-        else
-           icn_diag(i,k,j) = 0.
-           nc_diag(i,k,j) = 0.
-        end if
-
-#endif
 
          rp0=3.799052e3/p0(i,j,k)
          pi0=pi(i,j,k)
@@ -2562,6 +2514,7 @@ CONTAINS
       ! aerosol-aware :
       ! -------------
 
+#ifdef Readaeroclx
         if ( (ccnflag .eq. 2) .or. (inflag .eq. 2) ) then
            if ( naero .lt. 15 ) stop 'not enough aerosol types!'
            ! convert from MERRA2-aerotype to GOCART-aerotype
@@ -2583,6 +2536,7 @@ CONTAINS
            aerog(i,j,k,13) = aeroclx(i,k,j,nadu4)     !dust mode 7               (DU4)
            aerog(i,j,k,14) = aeroclx(i,k,j,nadu5)     !dust mode 8               (DU5)
         endif
+#endif
 
 !     ******************************************************************
 !     ***   Y1 : DYNAMIC VISCOSITY OF AIR (U)
@@ -2838,24 +2792,10 @@ CONTAINS
                 call mass2ccn(tair(i,j),super_sat,aero(i,k,j,:),ccn_out )
                 !             nc_cgs(i,j,k)  = max(100., ccn_out)  !diagnostic cloud droplet conc  [#/cm3]
                 ccn_out = max(100., ccn_out)
-!                if (mod(itimestep,i24h).eq.1) then
-!                   if (ccn_out > 100.) print *,'in satice, i,j,k,ccn_out = ', i,j,k, ccn_out
-!                endif
                 ! rho_dryair = p0(i,j,k) / ( tair(i,j) * 2.87 * 1.0e6) ! dry air density [g/cm3]
                 L_cloud = qc(i,j) * rho(i,j,k)             ! cloud water [g/cm3]
-                 !  g/g        g/cm3
-                 !             call auto_conversion( L_cloud, nc_cgs(i,j,k), P_liu_daum, re_liu_daum )
                 call auto_conversion( L_cloud, ccn_out, P_liu_daum, re_liu_daum )
                 praut(i,j) = P_liu_daum / rho(i,j,k)  !autoconversion rate [g/g s-1]
-                !             if (i .eq. int((ite+its)/2) .and. j .and. int((jte+jts)/2) )   &
-                !             if (rh_rad .ge. 100.)  then
-                !                print 1078,'i','j', 'k', 'e_sat', 'e_dry', 'rh_rad' , 'super_sat', 'nc_cgs', 'rho_dryair', &
-                !                       'L_cloud', 'P_liu_daum', 'praut'
-                !             1078 format(3a4, 9a11)
-                !                print 1079, i, j, k, e_sat, e_dry, rh_rad, super_sat, nc_cgs(i,j,k), rho_dryair, &
-                !                       L_cloud, P_liu_daum, praut(i,j)
-                !             1079 format(3i4, 9e11.4)
-                !             endif
             else
                 praut(i,j)=max(rn21*(qc(i,j)-bnd21),0.0)
             end if ! if (gsfcgce_gocart_coupling == 1)
@@ -2936,15 +2876,6 @@ CONTAINS
                   !                call mass2icn(p0(i,j,k)*0.001,tair(i,j),aero(i,k,j,:), icn_out)
                   call mass2icn(p0(i,j,k)*0.001,tair(i,j),aero(i,k,j,:), icn_out,i,j,k)
                   icn_out = min(1.e3, max(0.01e0 ,  icn_out) )
-                  !                icn_cgs(i,j,k) = max(min_icn, icn_out) * 1.e-3   !IN conc [#/cm3] <-- [#/Litter]
-                  !                icn_cgs(i,j,k) = icn_out * 1.e-3 !IN conc [#/cm3]
-                  !                if (rh_rad .ge. 100.) then
-                  !                   print 1080, 'i', 'j', 'k', 'p0', 'tair', 'icn_cgs'
-                  !                1080 format(3a4, 4a12)         
-                  !                   print 1081, i,j,k, p0(i,j,k)*0.001,tair(i,j), icn_cgs(i,j,k)
-                  !                1081 format(3i4, 3e12.4)
-                  !                endif
-                  !                r_nci = icn_cgs(i,j,k)  !DeMotto's formuale
                   r_nci = icn_out * 1.e-3  !DeMotto's formuale
                end if ! if (gsfcgce_gocart_coupling == 1)
 #endif
@@ -3349,15 +3280,6 @@ CONTAINS
                      ! convert gocart aerosol mass conc to IN
                      !      p0 need to be converted from g*cm/s2/cm2 to mb (hPa)
                      !                call mass2icn(p0(i,j,k)*0.001,tair(i,j),aero(i,k,j,:), icn_out)
-                     !                icn_cgs(i,j,k) = max(min_icn, icn_out) * 1.e-3   !IN conc [#/cm3] <-- [#/Litter]
-                     !                icn_cgs(i,j,k) = icn_out * 1.e-3 !IN conc [#/cm3]      
-                     !                if (rh_rad .ge. 100.) then
-                     !                   print 1080, 'i', 'j', 'k', 'p0', 'tair', 'icn_cgs'
-                     !                1080 format(3a4, 4a12)
-                     !                   print 1081, i,j,k, p0(i,j,k)*0.001,tair(i,j), icn_cgs(i,j,k)
-                     !                1081 format(3i4, 3e12.4) 
-                     !                endif
-                     !                r_nci = icn_cgs(i,j,k)  !DeMotto's formuale
                      r_nci = icn_out * 1.e-3  !DeMotto's formuale
                   end if
 #endif
@@ -3486,6 +3408,7 @@ CONTAINS
                  endif
                  ncloud = min(1.E9,1.E6*0.88*C1**(2./(K1+2.))*          &
                          (7.E-2*ww1(i,j,k)**1.5)**(K1/(K1+2.)))
+#ifdef Readaeroclx
               elseif ( ccnflag .eq. 2 ) then
                  ew = qv(i,j)/(qv(i,j)+0.622)*p0_mks(i,k,j)   !vapor pressure (Pa)
                  rhw = max(1.e-6, ew/esw(i,j)*100.)           !relative humidity (%)
@@ -3493,6 +3416,9 @@ CONTAINS
                  ssrw = max(0.001, rhw - 100.e0)              !super saturation rate over water (%)
                  call mass2ccn(tair(i,j),ssrw,aeromc,ncloud)
                  ncloud = ncloud*1.e+6                        !CCN (convert from cm^-3 to m^-3)
+#endif
+              else
+                 stop 'ccnflag error!!!'
               endif
               nact = max(0.,ncloud/rhoair-qc(i,j)/5.236E-13)      ! CONVERT FROM CM-3 TO M-3 and 5 microm in radius
               qcmax = max((qv(i,j)-qsw(i,j)),0.)/abw
@@ -3537,11 +3463,15 @@ CONTAINS
               if ( inflag .eq. 1 ) then
                  ssi(i,j) = qv(i,j)/qsi(i,j)-1.
                  nice = 1.e3*exp(1.296E+1*ssi(i,j)-6.39E-1)  ! Meyers et al. 1992 (m^-3)
+#ifdef Readaeroclx
               elseif ( inflag .eq. 2 ) then
                  p_mb = p0(i,j,k)*1.e-3                       !pressure (hPa, equal to mbar)
                  aeromc(:) = max(0.,aerog(i,k,j,:)*r00*1.e+6) !aerosol mass concentration (g m^-3)
                  call mass2icn(p_mb,tair(i,j),aeromc,nice)
                  nice = nice*1.e+6                            !IN (convert from cm^-3 to m^-3)
+#endif
+              else
+                 stop 'inflag error!!!'
               endif
               r_nci = max(0.,nice/rhoair-qi(i,j)/4.19E-10)          ! RHOI = 800; DI = 1.E-4
 !              if ( xland(i,j) .eq. 1. ) then  !land
@@ -3900,9 +3830,6 @@ CONTAINS
                     !                call mass2icn(p0(i,j,k)*0.001,tair(i,j),aero(i,k,j,:), icn_out)
                     !                icn_cgs(i,j,k) = max(min_icn, icn_out) * 1.e-3   !IN conc [#/cm3] <-- [#/Litter]
                     !                call mass2icn(p0(i,j,k)*0.001,tair(i,j),aero(i,k,j,:), icn_out,i,j,k)
-                    !                icn_out = min(1.e3, max(0.01e0 ,  icn_out) )
-                    !                icn_cgs(i,j,k) = icn_out * 1.e-3 !IN conc [#/cm3]
-                    !                r_nci = icn_cgs(i,j,k)  !DeMotto's formuale
                     r_nci = icn_out * 1.e-3  !DeMotto's formuale
                  end if
 #endif  
@@ -4530,19 +4457,6 @@ CONTAINS
 
 !   endif
 
-#if ( WRF_CHEM == 1)
-        ! EMK...Nuclei only calculated when coupling
-        if ( (chem_opt == 300 .or. chem_opt == 301 .or. &
-              chem_opt == 302 .or. chem_opt == 303) .and. &
-              (gsfcgce_gocart_coupling == 1) ) then
-           icn_diag(i,k,j) = icn_out  ! #/Litre 
-           nc_diag(i,k,j) = ccn_out  ! #/cm3
-        else
-           icn_diag(i,k,j) = 0.
-           nc_diag(i,k,j) = 0.
-        end if         
-#endif
-
 !   eff_rad is a function of the slope parameter (Lambda)
         
         ! effective radii of rain :
@@ -4776,9 +4690,11 @@ CONTAINS
 
  1000 continue
 
+#ifdef Readaeroclx
       if ( (ccnflag .eq. 2) .or. (inflag .eq. 2) ) then
          deallocate( aerog,aeromc )
       endif
+#endif
 ! ****************************************************************
 ! convert from GCE grid back to WRF grid
       do k=kts,kte

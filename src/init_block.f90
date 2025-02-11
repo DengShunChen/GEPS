@@ -160,7 +160,6 @@
       ntrnc=8   ! tracer index for rain number concentration
 !     ntlnc=9   ! tracer index for liquid number concentration
 ! for using aerosol climatology
-      doaeroclx = .false.
       naero = 1
 !
 ! specify the default option for reduced grids

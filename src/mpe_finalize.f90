@@ -49,6 +49,9 @@
 !rad
       call deallocate_alb_array
       call deallocate_raddiag_array
+#ifdef Readaeroclx
+      call deallocate_aerogrid_array
+#endif
 
       endif
 
