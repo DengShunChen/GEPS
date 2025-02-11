@@ -405,9 +405,9 @@ CONTAINS
                    itimestep, xland,                             & 
                    refc, refr, refi, refs, refg,                 & ! cloud effective radius
                    ims,ime, jms,jme, kms,kme,                    & ! memory dims
-                   its,ite, jts,jte, kts,kte,                    & ! tile   dims
+                   its,ite, jts,jte, kts,kte                     & ! tile   dims
 #ifdef Readaeroclx
-                   aeroclx, naero                                &
+                   ,aeroclx, naero                               &
 #endif
 #ifdef EXT_DIAG
                    ,refl_10cm, diagflag, do_radar_ref,           & ! GT added for reflectivity calcs
@@ -1695,9 +1695,9 @@ CONTAINS
                        itimestep, xland,                               &
                        refc, refr, refi, refs, refg,                   & ! cloud effective radius
                        ims,ime, jms,jme, kms,kme,                      &
-                       its,ite, jts,jte, kts,kte,                      &
+                       its,ite, jts,jte, kts,kte                       &
 #ifdef Readaeroclx
-                       aeroclx, naero                                  &
+                       ,aeroclx, naero                                 &
 #endif
 #ifdef EXT_DIAG
                        ,refl_10cm, diagflag, do_radar_ref,             & ! GT added for reflectivity calcs
