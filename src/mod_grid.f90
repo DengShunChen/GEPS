@@ -75,6 +75,9 @@
                write(6,*) 'mod_grid : allocate fail 1 '
                stop
            end if
+           ut=0. ;  vt=0.;  sd=0.; rvor=0.; rdiv=0.
+           tt=0. ;  qt=0.; phi=0.;  plt=0.;   pk=0.
+           pk2=0.;  up=0.;  vp=0.;  ttp=0.;   qp=0.
 
            allocate (pt(nxp,my_max),dlpl(nxp,my_max),dtpl(nxp,my_max), &
                     sgeo(nxp,my_max), pdiff(nxp,my_max),&
@@ -84,6 +87,7 @@
                write(6,*) 'mod_grid : allocate fail 2 '
                stop
            end if
+           sgeo=0.; std=0.; pdiff=0.; tsave=0.; pt=0.
 
            allocate (gslati(my*2+1),gglati(my*2+1),                 &
                      lonstr(npe),lonlen(npe),                       &
@@ -107,6 +111,8 @@
                write(6,*) 'mod_grid for ndsl : allocate fail 5'
                stop
            end if
+           dlphi=0.
+           dtphi=0.
 
 !CWB2015
            ptend=0.

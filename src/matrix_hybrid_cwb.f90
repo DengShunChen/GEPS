@@ -133,8 +133,9 @@
       do 11 j=1,lev
    11 csrtn(j,i)= a(j,i)+spalm(j)*dp(i)
 !
-      do 15 i=1,lev*lev
-      evecin(i,1)= csrtn(i,1)
+      do 15 i=1,lev
+      do 15 j=1,lev
+      evecin(i,j)= csrtn(i,j)
    15 continue
 !
 !  find eigenvalues and eigenvectors of gravity wave modes
