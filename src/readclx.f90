@@ -77,6 +77,7 @@
 !jwhwu> 
       wla=0
       wmx=0.
+      wmxcl=0.
       cdate=' '
 !
       write(cdate,'(i12.12)') idtg2
@@ -161,11 +162,13 @@
       call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,sstcl(1,1,1))
 !jwhwu>
+#ifdef WMX
       if(isot .eq. 2) then
         write(ihdgi,111)ggdef,mm
         call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
         call unify_reducepick(nx,my,my_max,glob,wmxcl(1,1,1))
       endif
+#endif
 !jwhwu<
 #endif
 
@@ -197,11 +200,13 @@
       call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,sstcl(1,1,2))
 !jwhwu>
+#ifdef WMX
       if(isot .eq. 2) then
         write(ihdgi,111)ggdef,mm
         call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
         call unify_reducepick(nx,my,my_max,glob,wmxcl(1,1,2))
       endif
+#endif
 #endif
 !jwhwu<
 
@@ -246,11 +251,13 @@
         enddo
 #if (!defined DYCLM) && (!defined DYANL)
 !jwhwu>
+#ifdef WMX
         if(isot .eq. 2) then
           do i=1,nxj
             wmx(i,jj) =coef1*wmxcl(i,jj,2) +coef2*wmxcl(i,jj,1)
           enddo
         endif
+#endif
 !jwhwu<
 #endif
       enddo
@@ -264,11 +271,13 @@
       call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,sstcl(1,1,1))
 !jwhwu>
+#ifdef WMX
       if(isot .eq. 2) then
         write(ihdgi,111)ggdef,k-1
         call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
         call unify_reducepick(nx,my,my_max,glob,wmxcl(1,1,1))
       endif
+#endif
 #endif
 !jwhwu<
 
@@ -298,11 +307,13 @@
       call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,sstcl(1,1,2))
 !jwhwu>
+#ifdef WMX
       if(isot .eq. 2) then
         write(ihdgi,111)ggdef,k
         call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
         call unify_reducepick(nx,my,my_max,glob,wmxcl(1,1,2))
       endif
+#endif
 !jwhwu<
 #endif
 
@@ -347,11 +358,13 @@
 !soil
          enddo
 #if (!defined DYCLM) && (!defined DYANL)
+#ifdef WMX
          if(isot .eq. 2) then
            do i=1,nxj
              wmx(i,jj) =coef1*wmxcl(i,jj,2) +coef2*wmxcl(i,jj,1)
            enddo
          endif
+#endif
 #endif
       enddo
       end if
@@ -361,20 +374,24 @@
       write(ihdgi,'(a6,a4,a4,4x,a4,4x)')"W00100","gbck",ggdef,cmmdd
       call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,sst)
+#ifdef WMX
       if(isot .eq. 2) then
         write(ihdgi,'(a6,a4,a4,4x,a4,4x)')"WMX100","gbck",ggdef,cmmdd
         call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
         call unify_reducepick(nx,my,my_max,glob,wmx)
       endif
+#endif
 #else
       write(ihdgi,'(a6,a4,a4,a8,4x)')"W00100","gbck",ggdef,cyymmdd
       call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,sst)
+#ifdef WMX
       if(isot .eq. 2) then
         write(ihdgi,'(a6,a4,a4,a8,4x)')"WMx100","gbck",ggdef,cyymmdd
         call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
         call unify_reducepick(nx,my,my_max,glob,wmx)
       endif
+#endif
 #endif
 #endif
 
@@ -412,6 +429,7 @@
       enddo
 !helio<
 !jwhwu>
+#ifdef WMX
       if(isot .eq. 2) then
         write(ihdgi,161)ggdef,blnk
         call dmsreadi(nx,my,lncrec,'I',bckfile,iglob,istat)
@@ -426,6 +444,7 @@
            enddo
         enddo
       endif
+#endif
 !jwhwu<
 
 
@@ -516,6 +535,7 @@
 !jwhwu>
 ! for lake points: wmx >  273.15 --> water
 !                  wmx <= 273.15 --> ice
+#ifdef WMX
         if(isot .eq. 2) then
           do i=1,nxj
             if(wla(i,jj) .gt. 2) then
@@ -533,8 +553,9 @@
             endif
           enddo
         endif
-      enddo
+#endif
 !jwhwu<
+      enddo
 !
 !  modify albedo base on ground wetness
 !
