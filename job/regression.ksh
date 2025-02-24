@@ -38,6 +38,10 @@
  odmstail="${DMSFLAG}MG"
  odmsdb=${idmsdb}
 
+# bckhead="BCK_TCo${JCAP}_${DMSFLAG}30S_dyclm"
+ bckhead="BCK_TCo${JCAP}_${DMSFLAG}30S"
+
+ ksgeo=2
 #-- executable
  EXEC='MTCo639L72_'${machine}
 
@@ -67,9 +71,9 @@
  export source="/data/common/gfs/dms_data/bckdms.ufs"
  export target="${dmsdb_home}/bckdms.ufs"
 
- if [ ! -e ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S ] ; then
-   ${DMSPATH}/rdmscrt BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
-   ${LNCP} ${source}/BCK_TCo${JCAP}_${DMSFLAG}30S/* ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S
+ if [ ! -e ${target}/${bckhead} ] ; then
+   ${DMSPATH}/rdmscrt ${bckhead}@bckdms
+   ${LNCP} ${source}/${bckhead}/* ${target}/${bckhead}
  fi
 #----------------------------------------------------------------#
 
@@ -100,7 +104,7 @@ export FIXDIR=${GFSFIX}
 
 export ANADMS=${idmsfile}
 export FCSTDMS=${odmsfile}
-export BCKOPS=BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
+export BCKOPS=${bckhead}@bckdms
 
 ${DMSPATH}/rdmspurge -f FCSTDMS
 ${DMSPATH}/rdmscrt -l34 FCSTDMS
@@ -153,7 +157,7 @@ cat > ${GFSWRK}/namlsts << EOF
   dt=450.0,
   cstar=f, update=t, lsimpl=t,
   hfilt=1.,
-  ksgeo=2, yesdia=t,
+  ksgeo=${ksgeo}, yesdia=t,
   dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f,
   dograv=true, docgrav=true,
   donnmi=true,

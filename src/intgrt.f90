@@ -201,6 +201,12 @@
           qm_sl = 0.
           vvm_sl = 0.
           uum_sl = 0.
+          um=0.
+          vm=0.
+          tm=0.
+          ugws=0.
+          vgws=0.
+          pltemp=0.
 !
           lmax = 16
           nfxr = 33
@@ -294,11 +300,7 @@
           thdai = 0.0
           tkei = 0.0
           tpei = 0.0
-          do i = 1, 4
-          do j = 1, my
-             wkj(j, i) = 0.
-          end do
-          end do
+          wkj     = 0.0
 !
           do jj = 1, jlistnum
              j = jlist1(jj)
@@ -371,6 +373,12 @@
                 flash24(i, jj) = 0.  !xb110, flash density
              end do
           end do
+          raintot = 0.
+          runoff  = 0.
+          tmax    = 0.
+          tmin    = 0.
+          cumtop  = 0.
+          plcl    = 0.
 !
           if (itaui .eq. 0) then   ! when restart, don't zero out
              do jj = 1, jlistnum
@@ -1062,6 +1070,9 @@
 !
 !  for physical parameterization,output spectrum u,v,t,q to grid point
 !
+!jwhwu>
+          call dtgfix12(idtg,idtg2,int(tau+0.001))
+!jwhwu<
 
 
           if (yesdia) then

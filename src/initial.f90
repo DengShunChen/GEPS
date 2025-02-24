@@ -40,6 +40,7 @@
       logical   nnmical
       integer   brank   !root rank of row_broadcast
 !
+      phiten=0.
       mlmax2 = mlmax*2
       if(myrank .eq. 0) print *,'jrtun=',jtrun,' mlmax=',mlmax
       lab='pt'

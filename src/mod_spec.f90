@@ -85,6 +85,7 @@
 !byl           dsqgeo=0.
            spgeo=0.
            jtwv=0.
+           plmid=0.   ! avoid undefine valuse
 
            return
 

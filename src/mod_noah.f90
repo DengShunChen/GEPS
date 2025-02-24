@@ -64,6 +64,15 @@
 !CWB2016
            xtice=0.
            sfemis=0.
+           sfalb=0.
+           zice=0.
+           sncover=0.
+           gfx=0.
+           canopy=0.
+           sndepth=0.
+           cice=0.
+           sld=0.
+           rld=0.
 
            allocate (slopetyp(nxp,my_max),istyp(nxp,my_max),&
                      ivegtyp(nxp,my_max), stat=ierr)
