@@ -293,13 +293,8 @@
 !     jo=236
 !
          ntrac = ncld
-         if (nmmiph .eq. 6) ntrac = ncld - 3
-         if (nmmiph .eq. 8) ntrac = ncld - 4
-         if (nmmiph .eq. 18) ntrac = 5
-         if (nmmiph .eq. 11 .or. nmmiph .eq. 12 .or. nmmiph .eq. 13) ntrac = 7
-         if (nmmiph .eq. 15) ntrac = 5
-         if (nmmiph .eq. 16) ntrac = 5
-!      if ( nmmiph .eq.16 ) ntrac=8
+!         if (nmmiph .eq. 8) ntrac = ncld - 4
+!         if (nmmiph .eq. 18) ntrac = ncld - 4
 
 !
 ! --- ensure ktpbl selection is greater than 2
@@ -658,73 +653,20 @@
          !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
          !
          !
-         if (nmmiph .eq. 6) then  !WSM6
-            do jj = 1, jlistnum
-               do k = 1, lev
-                  kc = lev - k + 1
-                  do i = 1, myim(jj)
-                     q1(i, kc, 1, jj) = qt(i, k, jj)
-                     q1(i, kc, 2, jj) = qt(i, lev*(ntcw - 1) + k, jj)
-                     q1(i, kc, 3, jj) = qt(i, lev*(ntiw - 1) + k, jj)
-                     q1(i, kc, 4, jj) = qt(i, lev*(ntoz - 1) + k, jj)
-                  end do
-               end do
-            end do
-         else if (nmmiph .eq. 8) then ! Thompson
-            do jj = 1, jlistnum
-               do k = 1, lev
-                  kc = lev - k + 1
-                  do i = 1, myim(jj)
-                     q1(i, kc, 1, jj) = qt(i, k, jj)
-                     q1(i, kc, 2, jj) = qt(i, lev*(ntcw - 1) + k, jj)
-                     q1(i, kc, 3, jj) = qt(i, lev*(ntiw - 1) + k, jj)
-                     q1(i, kc, 4, jj) = qt(i, lev*(ntinc - 1) + k, jj)
-                     q1(i, kc, 5, jj) = qt(i, lev*(ntoz - 1) + k, jj)
-                  end do
-               end do
-            end do
-         else if (nmmiph .eq. 18) then ! 2M Thompson
-            do jj = 1, jlistnum
-               do k = 1, lev
-                  kc = lev - k + 1
-                  do i = 1, myim(jj)
-                     q1(i, kc, 1, jj) = qt(i, k, jj)
-                     q1(i, kc, 2, jj) = qt(i, lev*(ntcw - 1) + k, jj)
-                     q1(i, kc, 3, jj) = qt(i, lev*(ntiw - 1) + k, jj)
-                     q1(i, kc, 4, jj) = qt(i, lev*(ntinc - 1) + k, jj)
-                     q1(i, kc, 5, jj) = qt(i, lev*(ntoz - 1) + k, jj)
-                  end do
-               end do
-            end do
-         else if (nmmiph .eq. 11 .or. nmmiph .eq. 12 .or. nmmiph .eq. 13) then ! GFDL MP
-            do jj = 1, jlistnum
-               do k = 1, lev
-                  kc = lev - k + 1
-                  do i = 1, myim(jj)
-                     q1(i, kc, 1, jj) = qt(i, k, jj)
-                     q1(i, kc, 2, jj) = qt(i, lev*(ntcw - 1) + k, jj)
-                     q1(i, kc, 3, jj) = qt(i, lev*(ntiw - 1) + k, jj)
-                     q1(i, kc, 4, jj) = qt(i, lev*(ntrw - 1) + k, jj)
-                     q1(i, kc, 5, jj) = qt(i, lev*(ntsw - 1) + k, jj)
-                     q1(i, kc, 6, jj) = qt(i, lev*(ntgl - 1) + k, jj)
-                     q1(i, kc, 7, jj) = qt(i, lev*(ntoz - 1) + k, jj)
-                  end do
-               end do
-            end do
-         else if (nmmiph .eq. 15 .or. nmmiph .eq. 16) then ! Goddard MP
-            do jj = 1, jlistnum
-               do k = 1, lev
-                  kc = lev - k + 1
-                  do i = 1, myim(jj)
-                     q1(i, kc, 1, jj) = qt(i, k, jj)
-                     q1(i, kc, 2, jj) = qt(i, lev*(ntcw - 1) + k, jj)
-                     q1(i, kc, 3, jj) = qt(i, lev*(ntiw - 1) + k, jj)
-                     q1(i, kc, 4, jj) = qt(i, lev*(ntrw - 1) + k, jj)
-                     q1(i, kc, 5, jj) = qt(i, lev*(ntoz - 1) + k, jj)
-                  end do
-               end do
-            end do
-         else
+!         if (nmmiph .eq. 8 .or. nmmiph .eq. 18) then ! Thompson
+!            do jj = 1, jlistnum
+!               do k = 1, lev
+!                  kc = lev - k + 1
+!                  do i = 1, myim(jj)
+!                     q1(i, kc, 1, jj) = qt(i, k, jj)
+!                     q1(i, kc, 2, jj) = qt(i, lev*(ntcw - 1) + k, jj)
+!                     q1(i, kc, 3, jj) = qt(i, lev*(ntiw - 1) + k, jj)
+!                     q1(i, kc, 4, jj) = qt(i, lev*(ntinc - 1) + k, jj)
+!                     q1(i, kc, 5, jj) = qt(i, lev*(ntoz - 1) + k, jj)
+!                  end do
+!               end do
+!            end do
+!         else
             do jj = 1, jlistnum
                do nc = 1, ntrac
                   do k = 1, lev
@@ -735,7 +677,7 @@
                   end do
                end do
             end do
-         end if
+!         end if
          !
          do jj = 1, jlistnum
             do k = 1, lev
@@ -901,68 +843,19 @@
             !
          end if
          !
-         if (nmmiph .eq. 6) then  !WSM6
-            do jj = 1, jlistnum
-               do k = 1, lev
-                  kc = lev - k + 1
-                  do i = 1, myim(jj)
-                     qt(i, lev*(ntcw - 1) + k, jj) = q1(i, kc, 2, jj)
-                     qt(i, lev*(ntiw - 1) + k, jj) = q1(i, kc, 3, jj)
-                     qt(i, lev*(ntoz - 1) + k, jj) = q1(i, kc, 4, jj)
-                  end do
-               end do
-            end do
-         else if (nmmiph .eq. 8) then ! Thompson
-            do jj = 1, jlistnum
-               do k = 1, lev
-                  kc = lev - k + 1
-                  do i = 1, myim(jj)
-                     qt(i, lev*(ntcw - 1) + k, jj) = q1(i, kc, 2, jj)
-                     qt(i, lev*(ntiw - 1) + k, jj) = q1(i, kc, 3, jj)
-                     qt(i, lev*(ntinc - 1) + k, jj) = q1(i, kc, 4, jj)
-                     qt(i, lev*(ntoz - 1) + k, jj) = q1(i, kc, 5, jj)
-                  end do
-               end do
-            end do
-         else if (nmmiph .eq. 18) then ! 2M Thompson
-            do jj = 1, jlistnum
-               do k = 1, lev
-                  kc = lev - k + 1
-                  do i = 1, myim(jj)
-                     qt(i, lev*(ntcw - 1) + k, jj) = q1(i, kc, 2, jj)
-                     qt(i, lev*(ntiw - 1) + k, jj) = q1(i, kc, 3, jj)
-                     qt(i, lev*(ntinc - 1) + k, jj) = q1(i, kc, 4, jj)
-                     qt(i, lev*(ntoz - 1) + k, jj) = q1(i, kc, 5, jj)
-                  end do
-               end do
-            end do
-         else if (nmmiph .eq. 11 .or. nmmiph .eq. 12 .or. nmmiph .eq. 13) then ! GFDL MP
-            do jj = 1, jlistnum
-               do k = 1, lev
-                  kc = lev - k + 1
-                  do i = 1, myim(jj)
-                     qt(i, lev*(ntcw - 1) + k, jj) = q1(i, kc, 2, jj)
-                     qt(i, lev*(ntiw - 1) + k, jj) = q1(i, kc, 3, jj)
-                     qt(i, lev*(ntrw - 1) + k, jj) = q1(i, kc, 4, jj)
-                     qt(i, lev*(ntsw - 1) + k, jj) = q1(i, kc, 5, jj)
-                     qt(i, lev*(ntgl - 1) + k, jj) = q1(i, kc, 6, jj)
-                     qt(i, lev*(ntoz - 1) + k, jj) = q1(i, kc, 7, jj)
-                  end do
-               end do
-            end do
-         else if (nmmiph .eq. 15 .or. nmmiph .eq. 16) then ! Goddard MP
-            do jj = 1, jlistnum
-               do k = 1, lev
-                  kc = lev - k + 1
-                  do i = 1, myim(jj)
-                     qt(i, lev*(ntcw - 1) + k, jj) = q1(i, kc, 2, jj)
-                     qt(i, lev*(ntiw - 1) + k, jj) = q1(i, kc, 3, jj)
-                     qt(i, lev*(ntrw - 1) + k, jj) = q1(i, kc, 4, jj)
-                     qt(i, lev*(ntoz - 1) + k, jj) = q1(i, kc, 5, jj)
-                  end do
-               end do
-            end do
-         else
+!         if (nmmiph .eq. 8 .or. nmmiph .eq. 18) then ! Thompson
+!            do jj = 1, jlistnum
+!               do k = 1, lev
+!                  kc = lev - k + 1
+!                  do i = 1, myim(jj)
+!                     qt(i, lev*(ntcw - 1) + k, jj) = q1(i, kc, 2, jj)
+!                     qt(i, lev*(ntiw - 1) + k, jj) = q1(i, kc, 3, jj)
+!                     qt(i, lev*(ntinc - 1) + k, jj) = q1(i, kc, 4, jj)
+!                     qt(i, lev*(ntoz - 1) + k, jj) = q1(i, kc, 5, jj)
+!                  end do
+!               end do
+!            end do
+!         else
             do jj = 1, jlistnum
                do nc = 2, ntrac
                   do k = 1, lev
@@ -973,7 +866,7 @@
                   end do
                end do
             end do
-         end if
+!         end if
          !
          do jj = 1, jlistnum
             do k = 1, lev
