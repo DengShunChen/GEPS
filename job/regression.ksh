@@ -71,6 +71,20 @@
    ${DMSPATH}/rdmscrt BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
    ${LNCP} ${source}/BCK_TCo${JCAP}_${DMSFLAG}30S/* ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S
  fi
+
+#-- MERRA2 aerosol climatological data :
+#     for AERO_TCo383L72  : ksgeo=1 , TER=30S_xnew
+#     for AERO_TCo199L128 : ksgeo=2 , TER=30S_xnew
+ aerohead="AERO_TCo${JCAP}L72"
+ export AERODMS=${aerohead}@aeroclx
+ export source="/data/common/gfs/dms_data/aeroclx.ufs"
+ export target="${dmsdb_home}/aeroclx.ufs"
+# ${DMSPATH}/rdmsdbcrt -p ufs aeroclx
+# if [ ! -e ${target}/${aerohead} ] ; then
+#   ${DMSPATH}/rdmscrt ${AERODMS}
+#   ${LNCP} ${source}/${aerohead}/* ${target}/${aerohead}
+# fi
+
 #----------------------------------------------------------------#
 
 
@@ -89,6 +103,7 @@ cat > ${GFSWRK}/filist << EOF
  crdate='${GFSWRK}/crdate',
  ocards='${GFSWRK}/ocards',
  cntrl='${GFSWRK}/gfsctl',
+! ifilin_aero='AERODMS',
  &end
 EOF
 
@@ -177,6 +192,7 @@ cat > ${GFSWRK}/namlsts << EOF
   spl1=10., spl2=100.,
   two_loop=t,
   itter=2, vd=0.002, factop=60.,
+!  naero=1
   ${MODLST_RES}
   ${MODLST_PHY}
  &end
