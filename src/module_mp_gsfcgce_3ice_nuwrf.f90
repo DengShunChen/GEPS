@@ -3473,12 +3473,12 @@ CONTAINS
            if ( qv(i,j).gt.qsi(i,j) .and. tair(i,j).lt.t0 ) then
               ssi(i,j) = qv(i,j)/qsi(i,j)-1.
               nice = 1.e3*exp(1.296E+1*ssi(i,j)-6.39E-1)  ! Meyers et al. 1992 (m^-3)
-              r_nci = max(0.,nice/rhoair-qi(i,j)/4.19E-10)          ! RHOI = 800; DI = 1.E-4
-!              if ( xland(i,j) .eq. 1. ) then  !land
-!                 r_nci = max(0.,nice/rhoair-qi(i,j)/2.28E-10)      ! RHOI = 850; DI = 8.E-5
-!              else
-!                 r_nci = max(0.,nice/rhoair-qi(i,j)/4.19E-10)      ! RHOI = 800; DI = 1.E-4
-!              endif
+!              r_nci = max(0.,nice/rhoair-qi(i,j)/4.19E-10)          ! RHOI = 800; DI = 1.E-4
+              if ( xland(i,j) .eq. 1. ) then  !land
+                 r_nci = max(0.,nice/rhoair-qi(i,j)/2.28E-10)      ! RHOI = 850; DI = 8.E-5
+              else
+                 r_nci = max(0.,nice/rhoair-qi(i,j)/4.19E-10)      ! RHOI = 800; DI = 1.E-4
+              endif
               qimax = max((qv(i,j)-qsi(i,j)),0.)/abi
               pint(i,j) = min(max(0.,r_nci*1.02e-13),qimax)
               tair(i,j) = tair(i,j)+pint(i,j)*xls/cpm1
