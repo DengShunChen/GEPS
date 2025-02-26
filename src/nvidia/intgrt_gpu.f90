@@ -1,3 +1,4 @@
+#define NCCLCHECK(ierr) call nccl_check_helper(ierr, __FILE__, __LINE__)
 subroutine intgrt_gpu
 !
 !***********************************************************************
@@ -11,7 +12,11 @@ subroutine intgrt_gpu
 !  modify to f90 by C-H Lee and sort by River Chen in 2015
 !
 !***********************************************************************
-!
+! **** (Dyn core) input ****
+! - pt, ut, vt, tt, qt, rdiv, phi, dtpl, dlpl
+! - vornow, divnow, temnow, plnow
+! - sgeo
+!***********************************************************************
    use param
    use mpe
    use rank
@@ -56,6 +61,10 @@ subroutine intgrt_gpu
                                      destroy_stochastic_physics, &
                                      skeb3du, skeb3dv, diss_est, skebfilt, &
                                      keb, kea, skebest
+   use spec_cuda_graph, only: cc_cg, gwk1_cg, wcc_fk_cg, &
+                              wc_cg, ws_cg, fj_weight_cg, &
+                              allocate_spec_cg_buffer, &
+                              deallocate_spec_cg_buffer
    use openacc
    use cudafor
 !-----------------------------------------------------------------------
@@ -81,20 +90,7 @@ subroutine intgrt_gpu
       ddtemp(nxp, lev, my_max), &
       pten(nxp, lev, my_max), dummy, &
       ptm(nxp, my_max), &
-      deldm(nxp, my_max), sdpbl(nxp, my_max)
-
-   real(kind=RTYPE), allocatable, dimension(:, :, :, :), device:: &
-      vorold_d, divold_d, temold_d, &
-      vornow_d, divnow_d, temnow_d
-
-   real(kind=RTYPE), allocatable, dimension(:, :, :), device:: &
-      plold_d, plnow_d, &
-      rdiv_d, ut_d, vt_d, tt_d, qt_d, &
-      phi_d, pk_d, pk2_d, vvel_d
-   real, allocatable, dimension(:, :, :), device :: plt_d
-
-   real(kind=RTYPE), allocatable, dimension(:, :), device:: &
-      pt_d, ptend_d
+      deldm(nxp, my_max), sdpbl(nxp, my_max), cosl_j
 
    integer ierr, ittw, itt, year
 !
@@ -110,20 +106,14 @@ subroutine intgrt_gpu
 !
    real(kind=RTYPE) pltemp(jtrun, jtmax, 2), cc(nx + 2, levp, 1, my_max), &
       ww1(nx, my_max)
-   ! << CUDA Graph buffer of spectral transform >>
-   real(kind=RTYPE) :: cc_cg((nx + 2)*levp*2*my_max), gwk1_cg((nx + 2)*levp*2*my_max)
-   real(kind=RTYPE) :: wcc_fk_cg(levp*2*jtmax*my_max*nsizey*2)
-   real :: wc_cg(levp*2*my*jtmax*2, 2)
-   real :: ws_cg(levp*2*jtrun*jtmax*2, 2)
-   real :: fj_weight_cg((jtrun + nsizey)*(my/2)*jtmax, 2)
-   ! --------------------
 !byl      real      dlgeo(nxp,my_max),dtgeo(nxp,my_max)
 !byl      real      cc3(nx+2,levp,3,my_max),wss3(levp,2,3,jtrun,jtmax)
 !
    character rfile*255, ctau*7, ccore*4
 !!      real      tbar(lev),qbar(lev*ncld),qbrrow(ncld,my)
    integer, parameter :: ktop = 4
-   real fac(ktop), wkj(my, 4), wkmf(jtrun), windmax3
+   real fac(ktop), wkj(my, 4), wkmf(jtrun), windmax3, wk4(4), &
+      loc_sum1, loc_sum2, loc_sum3, loc_sum4
    data windmax3/130./
 !
    logical histim, tchange, flag, forward, fwd
@@ -201,7 +191,7 @@ subroutine intgrt_gpu
 !for lightning scheme from ECMWF
    real flash(nxp, my_max), flash24(nxp, my_max)
 !xb110<
-
+   integer lons
    integer, parameter:: async_id = 1
    integer :: stats
    integer(kind=cuda_stream_kind) :: stream
@@ -216,44 +206,32 @@ subroutine intgrt_gpu
    ! ------------------------------------------------------------
    ! << openacc allocate data >>
    stream = acc_get_cuda_stream(async_id)
-   !$acc enter data copyin(nx, my, my_max, jlistnum, mlistnum, jtrun, jtmax, levp, nsizey, nsizex) async(async_id)
-   !$acc enter data copyin(nxjp, nxp, lev, ncld, ndslvvar) async(async_id)
-   !$acc enter data copyin(jlist1, jlist2, nxdef_2d, nxjp_acc, nxptot, &
-   !$acc& jlist2_2d, nxjlen_all, nxjlen, nxdef, mtrundef, mlist, nlist, Llist, &
-   !$acc& nxjstart, nxjend, lonlen, lonstr, latlen, jlist1_sl, &
+   !$acc enter data copyin(ndslvvar) async(async_id)
+   !$acc enter data copyin( &
+   !$acc& lonlen, lonstr, latlen, &
    !$acc& gglati, fa1, fa2, fa3, fa4) async(async_id)
    !! << const >>
    !$acc enter data copyin(grav, rgas, cp, rad, radsq, sinl, cosl, &
-   !$acc& onocos, cor, sigma, dsigma, ptop, hdk1, hdk2) async(async_id)
-   !$acc enter data copyin(poly, dpoly, polyf, dpolyf, weight, cim, wcfac, wdfac) async(async_id)
+   !$acc& cor, sigma, dsigma, ptop, hdk1, hdk2) async(async_id)
    !$acc enter data copyin(ptmeans, spalm, eps4L, eps4, eigval, evecin ,evectr, &
    !$acc& arrhyd, arsddt) async(async_id)
    !! !$acc enter data copyin(hfiltx, alphax) async(async_id)
-   !! << grid >>
-   !$acc enter data copyin(sgeo) async(async_id)
    !! << spec >>
    !$acc enter data copyin(trefs) async(async_id)
-   !! << index >>
-   !$acc enter data copyin(tcolt_jlist, poly_mlist) async(async_id)
    ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    !! << spec >>
-   !$acc enter data create( &
-   !$acc& temmid, divmid, vormid, plmid, &
-   !$acc& temten, divten, vorten, plten, hldten &
-   !$acc& ) async(async_id)
+   !$acc enter data create(temmid, divmid, vormid, plmid) async(async_id)
    !! << grid >>
    !$acc enter data create(qm, rdivm) async(async_id)
    !$acc enter data create(up, vp, ttp, ptp) async(async_id)
-   !$acc enter data create(dtphi, dlphi) async(async_id)
-   !$acc enter data create(sd) async(async_id)
    !! << local >>
    !$acc enter data create(um, vm, tm, ptm, ddtemp) async(async_id)
    !$acc enter data create(diveng, &
    !$acc& vdmerd, vdzonl, vdmerdr, vdzonlr, vdmerdg, vdzonlg, vdzonlrp, vdmerdrp, &
    !$acc& pdot, sdpbl, pltemp) async(async_id)
-
-   !$acc enter data create(ww1, pten, deldm, wkmf, &
-   !$acc& cc_cg, gwk1_cg, ws_cg, wc_cg, wcc_fk_cg, fj_weight_cg) async(async_id)
+   !$acc enter data create(ww1, pten, deldm, wkmf) async(async_id)
+   !$acc enter data create(ut_sl, vt_sl, uum_sl, vvm_sl, ttm_sl) async(async_id)
+   !$acc enter data create(qm_sl, pten_sl) async(async_id)
    ! ------------------------------------------------------------
 !      fsit=-99.             !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
    !default fsit<=0., turn on sit_vdiff every tau
@@ -268,11 +246,13 @@ subroutine intgrt_gpu
       wrestrt = .false.
    end if
 !
-   ttm_sl = 0.
-   pten_sl = 0.
-   qm_sl = 0.
-   vvm_sl = 0.
-   uum_sl = 0.
+   !$acc host_data use_device(ttm_sl, pten_sl, qm_sl, vvm_sl, uum_sl)
+   istat = cudaMemsetAsync(ttm_sl, real(0.0, RTYPE), size(ttm_sl), stream)
+   istat = cudaMemsetAsync(pten_sl, real(0.0, RTYPE), size(pten_sl), stream)
+   istat = cudaMemsetAsync(qm_sl, real(0.0, RTYPE), size(qm_sl), stream)
+   istat = cudaMemsetAsync(vvm_sl, real(0.0, RTYPE), size(vvm_sl), stream)
+   istat = cudaMemsetAsync(uum_sl, real(0.0, RTYPE), size(uum_sl), stream)
+   !$acc end host_data
 !
    lmax = 16
    nfxr = 33
@@ -286,12 +266,8 @@ subroutine intgrt_gpu
 !   yrd = 365
 !   if (mod(year, 4) .eq. 0) yrd = 366
 !
-   do jj = 1, jlistnum
-      j = jlist1(jj)
-!ch     nxj=nxdef(j)
-      call prexp_hybrid_cwb(nxjp(j), nxp, lev, ptop, sigma, pt(1, jj), &
-                            pk(1, 1, jj), pk2(1, 1, jj), plt(1, 1, jj))
-   end do
+   call prexp_hybrid_cwb_gpu_refactor(nxjp, nxp, lev, ptop, sigma, pt, &
+                                      pk, pk2, plt)
 !      call  outsigs ( 0,nx,my,my_max,lev,ncld                                    &
 !                    , idtg,ifilout,ptop,rad,grav                                 &
 !                    , cp,cosl,pt,sgeo,snr,gwr,tg,pk,pk2                          &
@@ -361,48 +337,61 @@ subroutine intgrt_gpu
 !
 !  compute initial moisture and potential temperature
 !
-   qgini = 0.0
-   thdai = 0.0
-   tkei = 0.0
-   tpei = 0.0
    do i = 1, 4
-   do j = 1, my
-      wkj(j, i) = 0.
-   end do
+      wk4(i) = 0.
    end do
 !
+   !$acc enter data copyin(wk4) async(async_id)
+   !$acc parallel loop collapse(2) private(j, nxj, cosl_j, loc_sum1, loc_sum2, loc_sum3, loc_sum4) async(async_id)
    do jj = 1, jlistnum
-      j = jlist1(jj)
-      nxj = nxdef_2d(j)
       do k = 1, lev
+         j = jlist1(jj)
+         nxj = nxdef_2d(j)
+         cosl_j = cosl(j)
+
+         loc_sum1 = 0.
+         loc_sum2 = 0.
+         loc_sum3 = 0.
+         loc_sum4 = 0.
+         !$acc loop vector reduction(+:loc_sum1, loc_sum2, loc_sum3, loc_sum4)
          do i = 1, nxj
             dsigp = dsigma(k, 1)*pt(i, jj) + dsigma(k, 2)
-            wkj(j, 1) = wkj(j, 1) + qt(i, k, jj)*dsigp*cosl(j)
-            wkj(j, 2) = wkj(j, 2) + tt(i, k, jj)*dsigp*cosl(j) &
-                        /(1.+0.608*qt(i, k, jj))
-            wkj(j, 3) = wkj(j, 3) + (ut(i, k, jj)**2 + vt(i, k, jj)**2)*dsigp &
-                        *radsq/(2.*cosl(j))
-            wkj(j, 4) = wkj(j, 4) + cp*tt(i, k, jj)*pk(i, k, jj)*dsigp &
-                        *cosl(j)
+
+            loc_sum1 = loc_sum1 + qt(i, k, jj)*dsigp*cosl_j
+            loc_sum2 = loc_sum2 + tt(i, k, jj)*dsigp*cosl_j &
+                       /(1.+0.608*qt(i, k, jj))
+            loc_sum3 = loc_sum3 + (ut(i, k, jj)**2 + vt(i, k, jj)**2)*dsigp &
+                       *radsq/(2.*cosl_j)
+            loc_sum4 = loc_sum4 + cp*tt(i, k, jj)*pk(i, k, jj)*dsigp &
+                       *cosl_j
          end do
+         !$acc atomic
+         wk4(1) = wk4(1) + loc_sum1
+         !$acc atomic
+         wk4(2) = wk4(2) + loc_sum2
+         !$acc atomic
+         wk4(3) = wk4(3) + loc_sum3
+         !$acc atomic
+         wk4(4) = wk4(4) + loc_sum4
       end do
    end do
 
-   call mpe_unify(wkj, my, 4, 1, mpe_double)
+   !$acc host_data use_device(wk4)
+   NCCLCHECK(ncclAllReduce(wk4, wk4, 4, ncclFloat64, ncclSum, nccl_comm_gfs, stream))
+   !$acc end host_data
+   !$acc exit data copyout(wk4) async(async_id)
 !
    cosw = 0.
    do j = 1, my
       nxj = nxdef(j)
       cosw = cosw + cosl(j)*nxj
-      qgini = qgini + wkj(j, 1)
-      thdai = thdai + wkj(j, 2)
-      tkei = tkei + wkj(j, 3)
-      tpei = tpei + wkj(j, 4)
    end do
-   tengi = tkei + tpei
-   qgini = qgini*100./grav/cosw
+
+   !$acc wait(async_id)
+   tengi = wk4(3) + wk4(4)
+   qgini = wk4(1)*100./grav/cosw
    cosw = cosw*lev
-   thdai = thdai/cosw
+   thdai = wk4(2)/cosw
    tengi = tengi/cosw
    !
 !
@@ -464,87 +453,10 @@ subroutine intgrt_gpu
 !***********************************************************************
 !     start time integration iterations
 !***********************************************************************
-   allocate ( &
-      vorold_d(levp, 2, jtrun, jtmax), &
-      divold_d(levp, 2, jtrun, jtmax), &
-      temold_d(levp, 2, jtrun, jtmax), &
-      vorold_d(levp, 2, jtrun, jtmax), &
-      divold_d(levp, 2, jtrun, jtmax), &
-      temold_d(levp, 2, jtrun, jtmax), &
-      vornow_d(levp, 2, jtrun, jtmax), &
-      divnow_d(levp, 2, jtrun, jtmax), &
-      temnow_d(levp, 2, jtrun, jtmax), &
-      plold_d(jtrun, jtmax, 2), &
-      plnow_d(jtrun, jtmax, 2), &
-      rdiv_d(nxp, lev, my_max), &
-      ut_d(nxp, lev, my_max), &
-      vt_d(nxp, lev, my_max), &
-      tt_d(nxp, lev, my_max), &
-      qt_d(nxp, lev*ncld, my_max), &
-      phi_d(nxp, lev, my_max), &
-      plt_d(nxp, lev, my_max), &
-      pk_d(nxp, lev, my_max), &
-      pk2_d(nxp, lev, my_max), &
-      vvel_d(nxp, lev, my_max), &
-      pt_d(nxp, my_max), ptend_d(nxp, my_max), &
-      stat=istat)
-
-   if (istat /= 0) then
-      write (6, *) 'intgrt : allocate fail '
-      stop
-   end if
-
-   call acc_map_data(vorold, vorold_d, sizeof(vorold))
-   call acc_map_data(divold, divold_d, sizeof(divold))
-   call acc_map_data(temold, temold_d, sizeof(temold))
-   call acc_map_data(plold, plold_d, sizeof(plold))
-
-   call acc_map_data(vornow, vornow_d, sizeof(vornow))
-   call acc_map_data(divnow, divnow_d, sizeof(divnow))
-   call acc_map_data(temnow, temnow_d, sizeof(temnow))
-   call acc_map_data(plnow, plnow_d, sizeof(plnow))
-
-   call acc_map_data(rdiv, rdiv_d, sizeof(rdiv))
-   call acc_map_data(ut, ut_d, sizeof(ut))
-   call acc_map_data(vt, vt_d, sizeof(vt))
-   call acc_map_data(tt, tt_d, sizeof(tt))
-   call acc_map_data(qt, qt_d, sizeof(qt))
-   call acc_map_data(phi, phi_d, sizeof(phi))
-   call acc_map_data(plt, plt_d, sizeof(plt))
-   call acc_map_data(pk, pk_d, sizeof(pk))
-   call acc_map_data(pk2, pk2_d, sizeof(pk2))
-   call acc_map_data(vvel, vvel_d, sizeof(vvel))
-
-   call acc_map_data(pt, pt_d, sizeof(pt))
-   call acc_map_data(ptend, ptend_d, sizeof(ptend))
-
-   istat = cudaMemcpyAsync(vornow_d, vornow, size(vornow), &
-                           cudaMemcpyHostToDevice, stream)
-   istat = cudaMemcpyAsync(divnow_d, divnow, size(divnow), &
-                           cudaMemcpyHostToDevice, stream)
-   istat = cudaMemcpyAsync(temnow_d, temnow, size(temnow), &
-                           cudaMemcpyHostToDevice, stream)
-   istat = cudaMemcpyAsync(plnow_d, plnow, size(plnow), &
-                           cudaMemcpyHostToDevice, stream)
-
-   istat = cudaMemcpyAsync(rdiv_d, rdiv, size(rdiv), &
-                           cudaMemcpyHostToDevice, stream)
-   istat = cudaMemcpyAsync(ut_d, ut, size(ut), &
-                           cudaMemcpyHostToDevice, stream)
-   istat = cudaMemcpyAsync(vt_d, vt, size(vt), &
-                           cudaMemcpyHostToDevice, stream)
-   istat = cudaMemcpyAsync(tt_d, tt, size(tt), &
-                           cudaMemcpyHostToDevice, stream)
-   istat = cudaMemcpyAsync(qt_d, qt, size(qt), &
-                           cudaMemcpyHostToDevice, stream)
-   istat = cudaMemcpyAsync(pt_d, pt, size(pt), &
-                           cudaMemcpyHostToDevice, stream)
+   !$acc enter data create(ptend) async(async_id)
    !++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-   !$acc enter data copyin(dtpl, dlpl) async(async_id)
    !$acc enter data copyin(dta, dtah, ndsldtah, dtahi) async(async_id)
    !$acc enter data copyin(cc, jtwvp) async(async_id)
-   !$acc enter data copyin(ut_sl, vt_sl, uum_sl, vvm_sl, ttm_sl) async(async_id)
-   !$acc enter data copyin(qm_sl, pten_sl) async(async_id)
 
 !
 ! sppt
@@ -825,10 +737,6 @@ subroutine intgrt_gpu
       call tranrs_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, polyf, weight, &
                                  cc_cg, temten, 1, nsizey, &
                                  gwk1_cg, ws_cg, wc_cg, wcc_fk_cg, fj_weight_cg)
-      ! call rstrandz_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, vdmerd, vdzonl, &
-      !                              weight, cim, onocos, polyf, dpolyf, divten, vorten, nsizey, &
-      !                              cc_cg, gwk1_cg, ws_cg, wc_cg(1, 1), wc_cg(1, 2), &
-      !                              wcc_fk_cg, fj_weight_cg(1, 1), fj_weight_cg(1, 2))
       call trandv_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, vdzonl, vdmerd, &
                                  weight, cim, onocos, polyf, dpolyf, vorten, divten, nsizey, &
                                  cc_cg, gwk1_cg, ws_cg, wc_cg(1, 1), wc_cg(1, 2), &
@@ -1086,11 +994,6 @@ subroutine intgrt_gpu
       call tranrs_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, polyf, weight, &
                                  cc_cg, temten, 1, nsizey, &
                                  gwk1_cg, ws_cg, wc_cg, wcc_fk_cg, fj_weight_cg)
-      ! call rstrandz_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, vdmerd, vdzonl, &
-      !                              weight, cim, onocos, poly, dpoly, divten, vorten, nsizey, &
-      !                              cc_cg, gwk1_cg, ws_cg, wc_cg(1, 1), wc_cg(1, 2), &
-      !                              wcc_fk_cg, fj_weight_cg(1, 1), fj_weight_cg(1, 2))
-
       call trandv_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, vdzonl, vdmerd, &
                                  weight, cim, onocos, poly, dpoly, vorten, divten, nsizey, &
                                  cc_cg, gwk1_cg, ws_cg, wc_cg(1, 1), wc_cg(1, 2), &
@@ -1668,56 +1571,12 @@ subroutine intgrt_gpu
 !       if(myrank.eq.0)print *,'chkltr dtaup,dt_trk,dtx_tau=',dtaup,dt_trk,dtx_tau
 
       if (myrank == 0) call system_clock(toutsrt)
-      istat = cudaMemcpyAsync(vorold, vorold_d, size(vorold), &
-                              cudaMemcpyDeviceToHost, stream)
-      istat = cudaMemcpyAsync(divold, divold_d, size(divold), &
-                              cudaMemcpyDeviceToHost, stream)
-      istat = cudaMemcpyAsync(temold, temold_d, size(temold), &
-                              cudaMemcpyDeviceToHost, stream)
-      istat = cudaMemcpyAsync(plold, plold_d, size(plold), &
-                              cudaMemcpyDeviceToHost, stream)
-
-      istat = cudaMemcpyAsync(vornow, vornow_d, size(vornow), &
-                              cudaMemcpyDeviceToHost, stream)
-      istat = cudaMemcpyAsync(divnow, divnow_d, size(divnow), &
-                              cudaMemcpyDeviceToHost, stream)
-      istat = cudaMemcpyAsync(temnow, temnow_d, size(temnow), &
-                              cudaMemcpyDeviceToHost, stream)
-      istat = cudaMemcpyAsync(plnow, plnow_d, size(plnow), &
-                              cudaMemcpyDeviceToHost, stream)
-
-      istat = cudaMemcpyAsync(rdiv, rdiv_d, size(rdiv), &
-                              cudaMemcpyDeviceToHost, stream)
-      istat = cudaMemcpyAsync(ut, ut_d, size(ut), &
-                              cudaMemcpyDeviceToHost, stream)
-      istat = cudaMemcpyAsync(vt, vt_d, size(vt), &
-                              cudaMemcpyDeviceToHost, stream)
-      istat = cudaMemcpyAsync(tt, tt_d, size(tt), &
-                              cudaMemcpyDeviceToHost, stream)
-      istat = cudaMemcpyAsync(qt, qt_d, size(qt), &
-                              cudaMemcpyDeviceToHost, stream)
-      istat = cudaMemcpyAsync(pt, pt_d, size(pt), &
-                              cudaMemcpyDeviceToHost, stream)
-
-      istat = cudaMemcpyAsync(phi, phi_d, size(phi), &
-                              cudaMemcpyDeviceToHost, stream)
-      istat = cudaMemcpyAsync(plt, plt_d, size(plt), &
-                              cudaMemcpyDeviceToHost, stream)
-      istat = cudaMemcpyAsync(pk, pk_d, size(pk), &
-                              cudaMemcpyDeviceToHost, stream)
-      istat = cudaMemcpyAsync(pk2, pk2_d, size(pk2), &
-                              cudaMemcpyDeviceToHost, stream)
-      istat = cudaMemcpyAsync(vvel, vvel_d, size(vvel), &
-                              cudaMemcpyDeviceToHost, stream)
-      istat = cudaMemcpyAsync(ptend, ptend_d, size(ptend), &
-                              cudaMemcpyDeviceToHost, stream)
-
-      ! !$acc udpate self(vorold, divold, temold, plold) async(async_id)
-      ! !$acc udpate self(vornow, divnow, temnow, plnow) async(async_id)
-      ! !$acc udpate self(rdiv, ut, vt, tt, qt, pt) async(async_id)
-      ! !$acc update self(vvel) async(async_id)
-      ! !$acc update self(phi, pk ,pk2, plt) async(async_id)
-      ! !$acc update self(ptend) async(async_id)
+      !$acc update self(vorold, divold, temold, plold) async(async_id)
+      !$acc update self(vornow, divnow, temnow, plnow) async(async_id)
+      !$acc update self(rdiv, ut, vt, tt, qt, pt) async(async_id)
+      !$acc update self(vvel) async(async_id)
+      !$acc update self(phi, pk ,pk2, plt) async(async_id)
+      !$acc update self(ptend) async(async_id)
       !$acc wait(async_id)
       if (io_quilting) then
          write (keydoit, '(A6,I4.4,A4,I12.12,A8)') &
@@ -2222,52 +2081,13 @@ subroutine intgrt_gpu
          ! ------------------------------------------------------------
          ! << openacc deallocate data >>
          ! ------------------------------------------------------------
-         call acc_unmap_data(vorold)
-         call acc_unmap_data(divold)
-         call acc_unmap_data(temold)
-         call acc_unmap_data(plold)
+         !$acc exit data delete(vorold, divold, temold, plold) async(async_id)
+         !$acc exit data delete(vornow, divnow, temnow, plnow) async(async_id)
+         !$acc exit data delete(rdiv, ut, vt, tt, qt, pt) async(async_id)
+         !$acc exit data delete(vvel) async(async_id)
+         !$acc exit data delete(phi, pk ,pk2, plt) async(async_id)
+         !$acc exit data delete(ptend) async(async_id)
 
-         call acc_unmap_data(vornow)
-         call acc_unmap_data(divnow)
-         call acc_unmap_data(temnow)
-         call acc_unmap_data(plnow)
-
-         call acc_unmap_data(rdiv)
-         call acc_unmap_data(ut)
-         call acc_unmap_data(vt)
-         call acc_unmap_data(tt)
-         call acc_unmap_data(qt)
-         call acc_unmap_data(phi)
-         call acc_unmap_data(plt)
-         call acc_unmap_data(pk)
-         call acc_unmap_data(pk2)
-         call acc_unmap_data(vvel)
-
-         call acc_unmap_data(pt)
-         call acc_unmap_data(ptend)
-         deallocate ( &
-            vorold_d, &
-            divold_d, &
-            temold_d, &
-            vorold_d, &
-            divold_d, &
-            temold_d, &
-            vornow_d, &
-            divnow_d, &
-            temnow_d, &
-            plold_d, &
-            plnow_d, &
-            rdiv_d, &
-            ut_d, &
-            vt_d, &
-            tt_d, &
-            qt_d, &
-            phi_d, &
-            plt_d, &
-            pk_d, &
-            pk2_d, &
-            vvel_d, &
-            pt_d, ptend_d)
          ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
          !$acc exit data delete(nx, my, my_max, jlistnum, mlistnum, jtrun, jtmax, levp, nsizey, nsizex) async(async_id)
          !$acc exit data delete(nxjp, nxp, lev, ncld, ndslvvar) async(async_id)
@@ -2296,8 +2116,8 @@ subroutine intgrt_gpu
          !$acc exit data delete(diveng, &
          !$acc& vdmerd, vdzonl, vdmerdr, vdzonlr, vdmerdg, vdzonlg, vdzonlrp, vdmerdrp, &
          !$acc& pdot, sdpbl, pltemp) async(async_id)
-         !$acc exit data delete(ww1, pten, deldm, wkmf, &
-         !$acc& cc_cg, gwk1_cg, ws_cg, wc_cg, wcc_fk_cg, fj_weight_cg) async(async_id)
+         !$acc exit data delete(ww1, pten, deldm, wkmf) async(async_id)
+         call deallocate_spec_cg_buffer
          ! ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
          !$acc exit data delete(dtpl, dlpl) async(async_id)
          !$acc exit data delete(dta, dtah, ndsldtah, dtahi) async(async_id)

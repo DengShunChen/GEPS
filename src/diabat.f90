@@ -1130,9 +1130,15 @@
 !              dtrad(i,k,jj) = asl(i,k,jj) + atl(i,k,jj)
 !            enddo
 !          enddo
+        cnvwr(:,:,jj)=0.
+        cnvcr(:,:,jj)=0.
       endif  ! for uprad .and. irad=2
 
       if ( dorad ) then
+        rld_adj=0.
+        sld_adj=0.
+        ss_adj =0.
+        rs_adj=0.
         call dcyc2t3                                                  &
           !  ---  inputs:
           ( solhr,slag,sdec,cdec,sinl(j),cosl(j),                     &
@@ -1804,7 +1810,9 @@
         endif
 
         lprnt=.false.
-        psfc(:)  = pst(:,jj)*0.1        ! change to cb
+        do i=1,nxj                      ! avoid undefined
+          psfc(i)  = pst(i,jj)*0.1      ! change to cb
+        enddo
         psautco(:)  = 4.0e-4
 !            psautco(i)  = 8.0e-4 * work1(i) + 5.0e-4 * work2(i)
 

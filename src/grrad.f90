@@ -1491,6 +1491,10 @@
         enddo
 
       endif                              ! end_if_ivflip
+      fusl       = 0.
+      fdsl       = 0.
+      fuslr      = 0.
+      fdslr      = 0.
 
 !  --- ...  check for daytime points
 

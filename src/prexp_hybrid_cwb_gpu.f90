@@ -31,9 +31,9 @@ subroutine prexp_hybrid_cwb_gpu_refactor(nxdef_2d, nxp, lev, ptop, sigma, pt, pk
    real, intent(in):: ptop
    real(kind=RTYPE), intent(in):: pt(nxp, my_max), sigma(lev + 1, 2)
    integer, intent(in):: nxdef_2d(my), nxp, lev
-   real(kind=RTYPE) pk2_top, pk2_bot
+   real pk2_top, pk2_bot
    !
-   real(kind=RTYPE) pkbot, pktop
+   real pkbot, pktop
    !
    !  compute  pressure variables
    !
@@ -48,7 +48,6 @@ subroutine prexp_hybrid_cwb_gpu_refactor(nxdef_2d, nxp, lev, ptop, sigma, pt, pk
    opok = 1.0/1000.0**capa
    !
    ptopk = ptop*opok*ptop**capa
-
 
    !$acc parallel loop collapse(2) async(async_id) &
    !$acc& private(j, nxj)
@@ -69,7 +68,7 @@ subroutine prexp_hybrid_cwb_gpu_refactor(nxdef_2d, nxp, lev, ptop, sigma, pt, pk
                rt = (pkbot*pk2_bot - pktop*pk2_top) &
                     /(capap1*(pkbot - pktop))
 
-               pk2(i,k,jj) = pk2_bot
+               pk2(i, k, jj) = pk2_bot
                pk(i, k, jj) = rt
                plt(i, k, jj) = 1000.0*rt**3.*sqrt(rt)
             end do
@@ -83,7 +82,7 @@ subroutine prexp_hybrid_cwb_gpu_refactor(nxdef_2d, nxp, lev, ptop, sigma, pt, pk
                rt = (pkbot*pk2_bot - ptopk) &
                     /(capap1*(pkbot - ptop))
 
-               pk2(i,k,jj) = pk2_bot
+               pk2(i, k, jj) = pk2_bot
                pk(i, k, jj) = rt
                plt(i, k, jj) = 1000.0*rt**3.*sqrt(rt)
             end do
@@ -93,4 +92,4 @@ subroutine prexp_hybrid_cwb_gpu_refactor(nxdef_2d, nxp, lev, ptop, sigma, pt, pk
 
    !
    return
- end subroutine prexp_hybrid_cwb_gpu_refactor
+end subroutine prexp_hybrid_cwb_gpu_refactor

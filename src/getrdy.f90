@@ -165,12 +165,11 @@
 
       call dtgfix12(idtg,idtg2,itaui)
         if(mod(taui,24.) /= 0.) then
-          if(myrank.eq.0) print*,'update climatology data,       &
-                                  for restart in julian day= ',  &
+          if(myrank.eq.0) print*,'update climatology data, for restart in julian day= ',  &
                                   julian,' tau=',taui
 
           call readclx( nx,my,my_max,julian,land,ocean,ice,tgclim,gwclim   &
-                       ,z0,alb,sst,sigmaf,istyp,ivegtyp,ls            &
+                       ,z0,alb,sst,sigmaf,istyp,ivegtyp,ls                 &
                        ,shdmax,shdmin,slopetyp,snoalb,ggdef,isot,ivegsrc )
 !---------------------------------------------------------------------
 !   read new albedo:
@@ -344,6 +343,9 @@
 !
 ! new start gfcst: read climate data, initialize parameters
 !
+#if (defined DYCLM) || (defined DYANL)
+        idtg2=idtg
+#endif
         call readclx( nx,my,my_max,julian,land,ocean,ice,tgclim,gwclim  &
                    ,z0,alb,sst,sigmaf,istyp,ivegtyp,ls                  &
                    ,shdmax,shdmin,slopetyp,snoalb,ggdef,isot,ivegsrc )
