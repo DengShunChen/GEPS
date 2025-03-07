@@ -2062,7 +2062,10 @@ CONTAINS
       integer, parameter :: ngo = 14
       real, dimension(:,:,:,:), allocatable :: aerog
       real, dimension(:), allocatable :: aeromc
-      real :: ew, rhw, ssrw, p_mb
+      real :: ew, rhw, ssrw, p_mb, mr2mc
+
+      real :: P_liu_daum  ! autoconversion rate [g/cm3 s-1]
+      real :: re_liu_daum ! effective radius of cloud [micron]
 #endif
 
 #ifdef sat_predict
@@ -2518,23 +2521,24 @@ CONTAINS
         if ( (ccnflag .eq. 2) .or. (inflag .eq. 2) ) then
            if ( naero .lt. 15 ) stop 'not enough aerosol types!'
            ! convert from MERRA2-aerotype to GOCART-aerotype
-           aerog(i,j,k, 1) = aeroclx(i,k,j,naso4)     !sulfur and its precure    (SO4)
-           aerog(i,j,k, 2) = aeroclx(i,k,j,nablc) + & !soot                      (BLC
-                             aeroclx(i,k,j,nabbc)     !                          +BBC)
-           aerog(i,j,k, 3) = aeroclx(i,k,j,naobc)     !non-hygroscopic OC        (OBC)
-           aerog(i,j,k, 4) = aeroclx(i,k,j,naolc)     !hygroscopic OC            (OLC)
-           aerog(i,j,k, 5) = aeroclx(i,k,j,nass1)     !sea salt accumulated mode (SS1)
-           aerog(i,j,k, 6) = aeroclx(i,k,j,nass2) + & !sea salt coarse mode      (SS2
-                             aeroclx(i,k,j,nass3) + & !                          +SS3
-                             aeroclx(i,k,j,nass4)     !                          +SS4)
-           aerog(i,j,k, 7) = aeroclx(i,k,j,nadu1)     !dust mode 1               (DU1)
-           aerog(i,j,k, 8) = aeroclx(i,k,j,nadu1)     !dust mode 2               (DU1)
-           aerog(i,j,k, 9) = aeroclx(i,k,j,nadu1)     !dust mode 3               (DU1)
-           aerog(i,j,k,10) = aeroclx(i,k,j,nadu1)     !dust mode 4               (DU1)
-           aerog(i,j,k,11) = aeroclx(i,k,j,nadu2)     !dust mode 5               (DU2)
-           aerog(i,j,k,12) = aeroclx(i,k,j,nadu3)     !dust mode 6               (DU3)
-           aerog(i,j,k,13) = aeroclx(i,k,j,nadu4)     !dust mode 7               (DU4)
-           aerog(i,j,k,14) = aeroclx(i,k,j,nadu5)     !dust mode 8               (DU5)
+           mr2mc = r00*1.e+6  !mass mixing ratio (kg/kg) to mass concentration (g/m^-3)
+           aerog(i,j,k, 1) = aeroclx(i,k,j,naso4) *mr2mc    !sulfur and its precure    (SO4)
+           aerog(i,j,k, 2) =(aeroclx(i,k,j,nablc) + &       !soot                      (BLC
+                             aeroclx(i,k,j,nabbc))*mr2mc    !                          +BBC)
+           aerog(i,j,k, 3) = aeroclx(i,k,j,naobc) *mr2mc    !non-hygroscopic OC        (OBC)
+           aerog(i,j,k, 4) = aeroclx(i,k,j,naolc) *mr2mc    !hygroscopic OC            (OLC)
+           aerog(i,j,k, 5) = aeroclx(i,k,j,nass1) *mr2mc    !sea salt accumulated mode (SS1)
+           aerog(i,j,k, 6) =(aeroclx(i,k,j,nass2) + &       !sea salt coarse mode      (SS2
+                             aeroclx(i,k,j,nass3) + &       !                          +SS3
+                             aeroclx(i,k,j,nass4))*mr2mc    !                          +SS4)
+           aerog(i,j,k, 7) = aeroclx(i,k,j,nadu1) *mr2mc    !dust mode 1               (DU1)
+           aerog(i,j,k, 8) = aeroclx(i,k,j,nadu1) *mr2mc    !dust mode 2               (DU1)
+           aerog(i,j,k, 9) = aeroclx(i,k,j,nadu1) *mr2mc    !dust mode 3               (DU1)
+           aerog(i,j,k,10) = aeroclx(i,k,j,nadu1) *mr2mc    !dust mode 4               (DU1)
+           aerog(i,j,k,11) = aeroclx(i,k,j,nadu2) *mr2mc    !dust mode 5               (DU2)
+           aerog(i,j,k,12) = aeroclx(i,k,j,nadu3) *mr2mc    !dust mode 6               (DU3)
+           aerog(i,j,k,13) = aeroclx(i,k,j,nadu4) *mr2mc    !dust mode 7               (DU4)
+           aerog(i,j,k,14) = aeroclx(i,k,j,nadu5) *mr2mc    !dust mode 8               (DU5)
         endif
 #endif
 
@@ -2801,6 +2805,35 @@ CONTAINS
             end if ! if (gsfcgce_gocart_coupling == 1)
 #else
             praut(i,j)=max(rn21*(qc(i,j)-bnd21),0.0)
+!            if ( ccnflag .eq. 1 ) then
+!               praut(i,j)=max(rn21*(qc(i,j)-bnd21),0.0)
+!#ifdef Readaeroclx
+!            elseif ( ccnflag .eq. 2 ) then
+!               esw(i,j) = min(0.99*p0_mks(i,k,j),esw_mks(tair(i,j))) !in MKS
+!               qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
+!               if ( qv(i,j).gt.qsw(i,j) ) then
+!                  rhw = max(1.e-6, qv(i,j)/qsw(i,j)*100.)      !relative humidity (%)
+!                  aeromc(:) = max(0.,aerog(i,j,k,:))           !aerosol mass concentration (g m^-3)
+!                  ssrw = max(0.001, rhw - 100.e0)              !super saturation rate over water (%)
+!                  call mass2ccn(tair(i,j),ssrw,aeromc,ncloud)
+! >>> Khairoutdinov and Kogan (2000) :
+!                  if ( ncloud .gt. 0. ) then
+!                     ! convert NCCN from m^-3 to cm^-3 :
+!                     praut(i,j) = 1350.0*max(qc(i,j),0.)**2.47*     &
+!                                  (ncloud*1.e+6)**(-1.79)
+!                  else
+!                     praut(i,j) = 0.
+!                  endif
+! >>> Liu and Daum (2004) :
+!                  ncloud = max(100., ncloud)
+!                  L_cloud = qc(i,j)*rho(i,j,k)                 !cloud water content (g cm^-3)
+!                  call auto_conversion(L_cloud,ncloud,P_liu_daum,re_liu_daum)
+!                  praut(i,j) = P_liu_daum/rho(i,j,k)           !autoconversion rate (s^-1)
+!               endif
+!#endif
+!            else
+!               stop 'ccnflag error!!!'
+!            endif
 #endif
 
             y1(i,j)=1./zr(i,j)
@@ -3398,9 +3431,9 @@ CONTAINS
 #endif
            abw = 1.+xlv**2.*qsw(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)  ! abw=1+dqsdT*(Lv/Cp)
 
-           if ( qv(i,j).gt.qsw(i,j) .and. ww1(i,j,k).gt.1.e-3 ) then
-              if ( ccnflag .eq. 1 ) then
-              ! C1 and K1 over land and ocean (Roger and Yau)
+           if ( ccnflag .eq. 1 ) then
+              if ( qv(i,j).gt.qsw(i,j) .and. ww1(i,j,k).gt.1.e-3 ) then
+                 ! C1 and K1 over land and ocean (Roger and Yau)
                  if ( xland(i,j) .eq. 1. ) then  !land
                     C1 = 1000. ; K1 = 0.5
                  else
@@ -3408,18 +3441,25 @@ CONTAINS
                  endif
                  ncloud = min(1.E9,1.E6*0.88*C1**(2./(K1+2.))*          &
                          (7.E-2*ww1(i,j,k)**1.5)**(K1/(K1+2.)))
+              else
+                 ncloud = 0.0
+              endif
 #ifdef Readaeroclx
-              elseif ( ccnflag .eq. 2 ) then
-                 ew = qv(i,j)/(qv(i,j)+0.622)*p0_mks(i,k,j)   !vapor pressure (Pa)
-                 rhw = max(1.e-6, ew/esw(i,j)*100.)           !relative humidity (%)
-                 aeromc(:) = max(0.,aerog(i,k,j,:)*r00*1.e+6) !aerosol mass concentration (g m^-3)
-                 ssrw = max(0.001, rhw - 100.e0)              !super saturation rate over water (%)
+           elseif ( ccnflag .eq. 2 ) then
+              if ( qv(i,j).qt.qsw(i,j) ) then
+                 rhw = max(1.e-6,qv(i,j)/qsw(i,j)*100.)       !relative humidity (%)
+                 aeromc(:) = max(0.,aerog(i,j,k,:))           !aerosol mass concentration (g m^-3)
+                 ssrw = max(0.001,rhw-100.0)                  !super saturation rate over water (%)
                  call mass2ccn(tair(i,j),ssrw,aeromc,ncloud)
                  ncloud = ncloud*1.e+6                        !CCN (convert from cm^-3 to m^-3)
-#endif
               else
-                 stop 'ccnflag error!!!'
+                 ncloud = 0.0
               endif
+#endif
+           else
+              stop 'ccnflag error!!!'
+           endif
+           if ( ncloud.gt.0. ) then
               nact = max(0.,ncloud/rhoair-qc(i,j)/5.236E-13)      ! CONVERT FROM CM-3 TO M-3 and 5 microm in radius
               qcmax = max((qv(i,j)-qsw(i,j)),0.)/abw
               pact(i,j) = min(max(nact*1.414E-14,0.),qcmax)       ! 1.5 micron in radius
@@ -3466,9 +3506,9 @@ CONTAINS
 #ifdef Readaeroclx
               elseif ( inflag .eq. 2 ) then
                  p_mb = p0(i,j,k)*1.e-3                       !pressure (hPa, equal to mbar)
-                 aeromc(:) = max(0.,aerog(i,k,j,:)*r00*1.e+6) !aerosol mass concentration (g m^-3)
+                 aeromc(:) = max(0.,aerog(i,j,k,:))           !aerosol mass concentration (g m^-3)
                  call mass2icn(p_mb,tair(i,j),aeromc,nice)
-                 nice = nice*1.e+6                            !IN (convert from cm^-3 to m^-3)
+                 nice = nice*1.e+3                            !IN (convert from L^-1 to m^-3)
 #endif
               else
                  stop 'inflag error!!!'
