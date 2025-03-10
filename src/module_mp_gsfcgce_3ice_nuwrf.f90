@@ -3329,7 +3329,7 @@ CONTAINS
                   rv=0.622*esat/(p0(i,j,k)/1000.-esat)
                   rlapse_m=980.616*(1.+2.5e6*rv/287./tair(i,j))/          &     
                            (1004.67+2.5e6*2.5e6*rv*0.622/(287.*tair(i,j)*tair(i,j)))
-                  delT=rlapse_m*0.5*(ww1(i,j,k)+ww1(i,j,k+1))
+                  delT=rlapse_m*ww1(i,j,k)
                   if (delT.lt.0.) delT=0.
 !  STEVE: PLAESE CHECK (2 4.e-9)
 !                  pimm(i,j)=xncld*Bhi*4.e-9*exp(-tairc(i,j))*delT*d2t*4.e-9
@@ -4593,7 +4593,7 @@ CONTAINS
               efdc = exp(efd1 + efd2*log(mvdc) + efd3*log(1000.)    &
                      + efd4*log(mvdc)**2. + efd5*log(1000.)**2.     &
                      + efd6*log(mvdc)*log(1000.))
-              refc(i,k,j) = min(max(efdc/2.,0.5),50)
+              refc(i,k,j) = min(max(efdc/2.,0.5),50.)
            else
               refc(i,k,j) = 0.5  !test
            endif  !end of if qcl>=cwmin
