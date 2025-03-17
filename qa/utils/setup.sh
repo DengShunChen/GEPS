@@ -9,6 +9,13 @@ NPEY=8
 
 MPI=8
 OMP=1
+export OMP_NUM_THREADS=$OMP
+
+# << Enviroment variables of OpenACC with NVCOMPILER >>
+export NVCOMPILER_ACC_CUDA_MEMALLOCASYNC="1"
+export NVCOMPILER_ACC_CUDA_MEMALLOCASYNC_POOLSIZE="40G"
+export NVCOMPILER_ACC_USE_GRAPH="1"
+export NVCOMPILER_ACC_CUDA_NOCOPY="1"
 
 . /usr/share/Modules/init/bash
 
@@ -31,7 +38,7 @@ module unuse ${MDIR}/modulefiles
 
  if [ $JCAP = 639  ] ; then
    DMSFLAG=GJ
- elif [ $JCAP = 383  ] ; then 
+ elif [ $JCAP = 383  ] ; then
    DMSFLAG=GI
  fi
 
@@ -71,7 +78,7 @@ module unuse ${MDIR}/modulefiles
 
  export source="/data/common/gfs/dms_data/bckdms.ufs"
  export target="${dmsdb_home}/bckdms.ufs"
- 
+
  if [ ! -e ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S ] ; then
    ${DMSPATH}/rdmscrt BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
    ${LNCP} ${source}/BCK_TCo${JCAP}_${DMSFLAG}30S/* ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S
@@ -153,10 +160,10 @@ cat > ${GFSWRK}/namlsts << EOF
   cstar=f, update=t, lsimpl=t,
   hfilt=1.,
   ksgeo=2, yesdia=f,
-  dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f, 
+  dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f,
   dograv=true, docgrav=true,
-  donnmi=true, 
-  dosppt=false, dospptout=false, 
+  donnmi=true,
+  dosppt=false, dospptout=false,
   doshum=false,
   cutfreq=3, nnmivm=3,
   doincr=f,
@@ -164,7 +171,7 @@ cat > ${GFSWRK}/namlsts << EOF
   idg=40, jdg=108,
   itypbl=0, numreduce=5, ptmeans=800.,
   irad=2, nmland=2,
-  nmcup=6, nmshl=3, nmpbl=4, nmmiph=2,  
+  nmcup=6, nmshl=3, nmpbl=4, nmmiph=2,
   nmgwor=2, nmgwcv=2,
   ktcup=20, cgw=4.2e-5,
   mtnvar=14, doo3l=t,
@@ -184,19 +191,19 @@ cat > ${GFSWRK}/namlsts << EOF
   trk_intv=3,
   write_tau=6,
  &end
- 
+
  &stochy_physics
   ncep_seeds = true,
   use_zmtnblck = true,
   sppt_logit = true,
   sppt_sigtop1 = 0.1,
-  sppt_sigtop2 = 0.025, 
+  sppt_sigtop2 = 0.025,
   sppt_sfclimit = true,
   sppt_sigbot1 = 0.975,
   sppt_sigbot2 = 0.9,
   sppt = 0.80,0.4,0.10,0.08,0.04
   sppt_seed = -999,-999,-999,-999,-999
-  sppt_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7 
+  sppt_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7
   sppt_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
   shum = 0.04,-999,-999,-999,-999
   shum_seed = -999,-999,-999,-999,-999
@@ -205,7 +212,7 @@ cat > ${GFSWRK}/namlsts << EOF
   shum_sigefold = 0.2,
   ssst = 0.80,-999,-999,-999,-999
   ssst_seed = -999,-999,-999,-999,-999
-  ssst_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7 
+  ssst_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7
   ssst_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
  /
 

@@ -57,6 +57,13 @@
       data layer/'H10','B40'/
       data var/'010','500','200','210','100','550'/
 !
+      pla=0.
+      oqt=0.
+      oqc=0.
+      ou=0.
+      ov=0.
+      ot=0.
+      runoff=0.
       rcp=rgas/cp
       lenc = nx*my
       nc=0

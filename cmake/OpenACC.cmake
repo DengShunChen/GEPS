@@ -53,9 +53,9 @@ link_libraries(-ltirpc -lm -lcurl -lhdf5_hl -lhdf5 -lgfortran -lcusparse -lcudar
 # Add OpenACC options
 add_compile_options(-DUSE_CUDA=1)
 add_compile_options(-acc=gpu -gpu=cc${GPU_ARCHS},cuda${CUDA_RUNTIME_VERSION}
-                    -Minfo=accel -cuda -cudalib=cublas,cufft,nccl)
+                    -Minfo=accel -cuda -cudalib=cublas,cufft,cusolver,nccl)
 link_libraries(-acc=gpu -gpu=cc${GPU_ARCHS},cuda${CUDA_RUNTIME_VERSION} -cuda
-               -cudalib=cublas,cufft,nccl)
+               -cudalib=cublas,cufft,cusolver,nccl)
 if(${USE_PCAST})
   add_compile_options(-gpu=redundant)
   add_compile_options(-DUSE_PCAST=1)

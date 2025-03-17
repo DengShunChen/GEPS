@@ -57,9 +57,9 @@ MODULE module_mp_gsfcgce_3ice_nuwrf
                                bnd21,  rn22,  rn23, rn231, rn232,     &
                                 rn25,  rn31,  beta,  rn32,  rn33,     &
                                rn331, rn332,  rn34,  rn35,rnn30a,     &
-                               rnn191,rnn192
+                               rnn191,rnn192, cn0
 
-    REAL,    PRIVATE ::          ami50, ami40
+   REAL,    PRIVATE ::         ami50, ami40, ami100
 
    REAL,    PRIVATE, DIMENSION( 31 ) ::    rn12a, rn12b, rn13, rn25a
 
@@ -482,8 +482,8 @@ CONTAINS
 
 ! temperary vars
  
-  REAL,    DIMENSION( kts:kte )           :: fv
-  REAL                                    :: tmp1, term0
+  REAL,    DIMENSION( kts:kte )       :: fv
+  REAL                                :: tmp1, term0
   REAL                                :: pptrain, pptsnow,        &
                                          pptgraul, pptice, pptall
   REAL,    DIMENSION( kts:kte )       :: qvz, qrz, qiz, qsz, qgz, &
@@ -492,7 +492,7 @@ CONTAINS
   REAL,    DIMENSION( kts:kte )       :: rsed, ised, ssed, gsed
   REAL,    DIMENSION( kts:kte )       :: thz, piz, tz
 
-   INTEGER                    :: k, i, j
+  INTEGER                       :: k, i, j
 !
 
   REAL, DIMENSION( kts:kte )    :: vtr, vts, vtg, vti
@@ -1086,437 +1086,120 @@ CONTAINS
 !        itaobraun=0   ! see Tao and Simpson (1993)
 !        itaobraun=1   ! see Tao et al. (2003)
 
+ implicit none
+
  integer :: ihail, itaobraun, improve
- real    :: cn0
 
-!JJS 1/3/2008  vvvvv
-!JJS   the following common blocks have been moved to the top of
-!JJS   module_mp_gsfcgce.F
-!
-! real,   dimension (1:31) ::  a1, a2
-! data a1/.7939e-7,.7841e-6,.3369e-5,.4336e-5,.5285e-5,.3728e-5,       &
-!      .1852e-5,.2991e-6,.4248e-6,.7434e-6,.1812e-5,.4394e-5,.9145e-5, &
-!      .1725e-4,.3348e-4,.1725e-4,.9175e-5,.4412e-5,.2252e-5,.9115e-6, &
-!      .4876e-6,.3473e-6,.4758e-6,.6306e-6,.8573e-6,.7868e-6,.7192e-6, &
-!         .6513e-6,.5956e-6,.5333e-6,.4834e-6/
-! data a2/.4006,.4831,.5320,.5307,.5319,.5249,.4888,.3894,.4047, &
-!         .4318,.4771,.5183,.5463,.5651,.5813,.5655,.5478,.5203,.4906, &
-!         .4447,.4126,.3960,.4149,.4320,.4506,.4483,.4460,.4433,.4413, &
-!         .4382,.4361/
-!JJS 1/3/2008  ^^^^^
+ integer :: k
+ real :: cpi, cpi2, grvt, cd1, cd2
+ real :: ga3, ga4, ga5, ga6, ga7, ga8, ga9, ga3b, ga4b, ga6b, ga5bh, &
+         ga3g, ga4g, ga5gh, ga3d, ga4d, ga5dh, ga6d
+ real :: tca, dwv, dva, scv
+ real :: ac1, ac2, ac3, bc1, cc1, dc1
+ real :: esi, esw, esc, egs, erc, ehs, ehg, egc, eri, erw, esr, eiw, &
+         egw, egi, egr, ehw, ehi, ehr
+ real :: sc13
+ real :: amw, ami, ars, amc
+ real :: rw, cw, ci
+ real :: ui50, ri50, cmn, y1, apri, bpri
 
-!23456789012345678901234567890123456789012345678901234567890123456789012
-!     ******************************************************************
-!JJS
-      if (improve .eq. 3) ihail = 0
-      if (ihail .eq. 1) improve = -20
-      al = 2.5e10
-      cp = 1.004e7
+!      if (improve .eq. 3) ihail = 0
+!      if (ihail .eq. 1) improve = -20
+!      al = 2.5e10
+      rhoe_s = 1.29           !surface air density (kg/m^3)
       rd1 = 1.e-3
       rd2 = 2.2
-!JJS
-      cpi=4.*atan(1.)
-      cpi2=cpi*cpi
-      grvt=980.
+
+      cpi = 4.*atan(1.)
+      cpi2 = cpi*cpi
+      grvt = 980.
+
+      ! Fit of Goff-Gratch equation :
+      c76 = 7.66
+      c141 = 1.414435e7
+      c149 = 1.496286e-5
+      c172 = 17.26939
+      c218 = 21.87456
+      c358 = 35.86
+      c409 = 4098.026
+      c580 = 5807.695
+      c610 = 6.1078e3
+      c879 = 8.794142
 !
-      c76=7.66
-      c141=1.414435e7
-      c149=1.496286e-5
-      c172=17.26939
-      c218=21.87456
-      c358=35.86
-      c409=4098.026
-      c580=5807.695
-      c610=6.1078e3
-      c879=8.794142
+      cd1 = 6.e-1
+      cd2 = 4.*grvt/(3.*cd1)
+      tca = 2.43e3
+      dwv = 0.226
+      dva = 1.718e-4
+      amw = 18.016
+      ars = 8.314e7
+      scv = 2.2904487
 !
-      cd1=6.e-1
-      cd2=4.*grvt/(3.*cd1)
-      tca=2.43e3
-      dwv=.226
-      dva=1.718e-4
-      amw=18.016
-      ars=8.314e7
-      scv=2.2904487
-!
-      t0=273.16
-      t00=238.16
-      alv=2.5e10
-      alf=3.336e9
-      als=2.8336e10
-      avc=alv/cp
-      afc=alf/cp
-      asc=als/cp
-      rw=4.615e6
-      cw=4.187e7
-      ci=2.093e7
-!***   DEFINE THE COEFFICIENTS USED IN TERMINAL VELOCITY
+      t0 = 273.16
+      t00 = 238.16
+
+      ! heat capacity and latent heat (in CGS) :
+      rw = 4.615e+6     !specific heat capacity of vapor
+      cw = 4.187e+7     !specific heat capacity of liquid water
+      ci = 2.093e+7     !specific heat capacity of ice
+      cp = 1.004e7      !specific heat capacity of dry air
+      alv = 2.5e+10     !latent heat of evaporation/condensation
+      alf = 3.336e+9    !latent heat of melting/freezing
+      als = 2.8336e+10  !latent heat of sublimation/deposition
+      avc = alv/cp
+      afc = alf/cp
+      asc = als/cp
+
 !***   DEFINE THE DENSITY AND SIZE DISTRIBUTION OF PRECIPITATION
-!**********   HAIL OR GRAUPEL PARAMETERS   **********
-
-! tnw                  !  rain intercept (1/cm**4)
-! roqr                 !  rain density (g/cm**3)
-! tns                  !  snow intercept (1/cm**4)
-! roqs                 !  snow density (g/cm**3)
-! tng                  !  graupel intercept (1/cm**4)
-! roqg                 !  graupel density (g/cm**3)
-
-
+      ! tng  : intercept parameter of graupel/hail (1/cm**4)
+      ! roqg : density of graupel/hail (g/cm**3)
+      ! ag, bg : coefficients used in terminal velocity
       if(ihail .eq. 1) then
-         roqg=.9
-         ag=sqrt(cd2*roqg)
-         bg=.5
-         tng=.002
+         roqg = 0.9
+         ag = sqrt(cd2*roqg)
+         bg = 0.5
+         tng = 0.002
       else
-!         roqg=.4
-!         ag=351.2
-!         bg=.37
-         roqg=.3
-         ag=330.22    !for bulk density of 0.3
-         bg=.36
-         tng=.04
+         roqg = 0.3
+         ag = 330.22    !for bulk density of 0.3
+         bg = 0.36
+         tng = 0.04
       endif
 
-!**********         SNOW PARAMETERS        **********
-!                             6/15/02
-!      TNS=1.
-!      TNS=.08             ! if ice913=1, tao's
-      tns=.16              ! if ice913=0, tao's
-      roqs=.1
-!      AS=152.93
-      as=78.63
-!      BS=.25
-      bs=.11
-      if(improve.eq.3) then
-        roqs=.05        !  snow density (g/cm**3)
-        tns=0.1         !  snow intercept (1/cm**4)
-        as=151.01
-        bs=0.24
-      endif
+      ! tns  : intercept parameter of snow (1/cm**4)
+      ! roqs : density of snow (g/cm**3)
+      ! as, bs : coefficients used in terminal velocity
+      roqs = 0.05
+      tns = 0.1
+      as = 151.01
+      bs = 0.24
 
-!**********         RAIN PARAMETERS        **********
-      aw=2115.
-      bw=.8
-      roqr=1.  !not defined in Steve's
-      tnw=.08  !not defined in Steve's
-!*****************************************************************
-      bgh=.5*bg
-      bsh=.5*bs
-      bwh=.5*bw
-      bgq=.25*bg
-      bsq=.25*bs
-      bwq=.25*bw
-!**********GAMMA FUNCTION CALCULATIONS*************
-      ga3=2.
-      ga4=6.
-      ga5=24.
-      ga6=120.
-      ga7=720.
-      ga8=5040.
-      ga9=40320.
-!
-      ga3b  = gammagce(3.+bw)
-      ga4b  = gammagce(4.+bw)
-      ga6b  = gammagce(6.+bw)
-      ga5bh = gammagce((5.+bw)/2.)
-      ga3g  = gammagce(3.+bg)
-      ga4g  = gammagce(4.+bg)
-      ga5gh = gammagce((5.+bg)/2.)
-      ga3d  = gammagce(3.+bs)
-      ga4d  = gammagce(4.+bs)
-      ga5dh = gammagce((5.+bs)/2.)
-!        if(bg.eq.0.37) ga4g=9.730877
-!        if(bg.eq.0.37) ga3g=2.8875
-!        if(bg.eq.0.37) ga5gh=1.526425
-!        if(bs.eq.0.57) ga3d=3.59304
-!        if(bs.eq.0.57) ga4d=12.82715
-!        if(bs.eq.0.57) ga5dh=1.655588
-!        if(bs.eq.0.11) ga3d=2.218906
-!        if(bs.eq.0.11) ga4d=6.900796
-!        if(bs.eq.0.11) ga5dh=1.382792
+      ! tnw  : intercept parameter of rain (1/cm**4)
+      ! roqr : density of rain (g/cm**3)
+      ! aw, bw : coefficients used in terminal velocity
+      aw = 2115.
+      bw = 0.8
+      roqr = 1.  !not defined in Steve's
+      tnw = 0.08  !not defined in Steve's
 
-      if(improve .eq. 3) then
-        ga4g=11.63177
-        ga3g=3.3233625          
-        ga5gh=1.608355         
-        if(bg.eq.0.37) ga4g=9.730877 
-        if(bg.eq.0.37) ga3g=2.8875
-        if(bg.eq.0.37) ga5gh=1.526425
-        if(bg.eq.0.36) ga4g=9.599978
-        if(bg.eq.0.36) ga3g=2.857136
-        if(bg.eq.0.36) ga5gh=1.520402  
-          ga3d=2.54925           
-          ga4d=8.285063         
-          ga5dh=1.456943
-          if(bs.eq.0.57) ga3d=3.59304
-          if(bs.eq.0.57) ga4d=12.82715
-          if(bs.eq.0.57) ga5dh=1.655588
-          if(bs.eq.0.24) ga3d=2.523508
-          if(bs.eq.0.24) ga4d=8.176166
-          if(bs.eq.0.24) ga5dh=1.451396
-          if(bs.eq.0.11) ga3d=2.218906
-          if(bs.eq.0.11) ga4d=6.900796
-          if(bs.eq.0.11) ga5dh=1.382792 
-      endif                       
-      ga6d=144.93124
-        if(bs.eq.0.24) ga6d=181.654791
-
-!
-!CCCCC        LIN ET AL., 1983 OR LORD ET AL., 1984   CCCCCCCCCCCCCCCCC
-      ac1=aw
-      ac2=ag            ! Steve only defines ac1 and ac2
-      ac3=as            ! need to talk about these 3 parameters.
-!       ac1=as          ! used in Steve's codes
-!       ac2=ag          ! used in Steve's codes
-
-      bc1=bw
-      cc1=as
-      dc1=bs
-
-      zrc=(cpi*roqr*tnw)**0.25
-      zsc=(cpi*roqs*tns)**0.25
-      zgc=(cpi*roqg*tng)**0.25
-      vrc=aw*ga4b/(6.*zrc**bw)
-
-       vrc0=-26.7
-       vrc1=20600./zrc
-       vrc2=-204500./(zrc*zrc)
-       vrc3=906000./(zrc*zrc*zrc)
-
-      vsc=as*ga4d/(6.*zsc**bs)
-      vgc=ag*ga4g/(6.*zgc**bg)
-
-!     ****************************
-!     RN1=1.E-3
-      rn1=9.4e-15                    ! 6/15/02 tao's
-      bnd1=6.e-4
-      rn2=1.e-3
-!     BND2=1.25E-3
-!     BND2=1.5E-3                    ! if ice913=1 6/15/02 tao's
-      bnd2=2.0e-3                    ! if ice913=0 6/15/02 tao's
-!      rn3=.25*cpi*tns*cc1*ga3d      ! cc1 = as
-      rn3=.25*cpi*tns*as*ga3d
-!
-       esi=.1
-      if (improve .eq. 3) esi=0.25
-      rn3=.25*cpi*tns*as*esi*ga3d
-
-      esw=1.   ! Steve uses esc and ac1
-      esc=1.
-        if (improve.eq.3) esc=0.45
-      rn4=.25*cpi*esw*tns*as*ga3d   
-        if (improve .eq. 3) rn4=.25*cpi*esc*tns*as*ga3d
-!     ERI=1.
-      eri=.1                        ! 6/17/02 tao's ice913=0 (not 1)
-      rn5=.25*cpi*eri*tnw*ac1*ga3b
-         if (improve .eq. 3) rn5=.25*cpi*eri*tnw
-      rn50=-.267e2*ga3
-      rn51=5.15e3*ga4
-      rn52=-1.0225e4*ga5
-      rn53=7.55e3*ga6
-
-!     AMI=1./(24.*4.19E-10)
-      ami=1./(24.*6.e-9)            ! 6/15/02 tao's
-      rn6=cpi2*eri*tnw*ac1*roqr*ga6b*ami
-        if (improve .eq. 3) rn6=cpi2*eri*tnw*roqr*ami
-      rn60=-.267e2*ga6
-      rn61=5.15e3*ga7
-      rn62=-1.0225e4*ga8
-      rn63=7.55e3*ga9
-
-!     ESR=1.                       ! also if ice913=1 for tao's
-      esr=.5                       ! 6/15/02 for ice913=0 tao's
-      if (improve .eq. 3) esr=1.
-      rn7=cpi2*esr*tnw*tns*roqs
-      esr=1.
-      rn8=cpi2*esr*tnw*tns*roqr
-!
-      egs=.1
-
-      rn9=cpi2*tns*tng*roqs
-        if (improve.eq.-1) egs=.01
-        if (improve .eq. 3) rn9=cpi2*egs*tns*tng*roqs
-!
-      rn10=2.*cpi*tns
-        If (improve .eq. 3)  rn10=4.*tns
-      rn101=.31*ga5dh*sqrt(cc1)
-      rn10a=als*als/rw
-      If (improve .eq. 3) then
-         rn101=.65
-         rn102=.44*sqrt(as/dva)*ga5dh
-         rn10a=alv*als*amw/(tca*ars)
-      endif
-      rn10b=alv/tca
-      rn10c=ars/(dwv*amw)
-!
-      rn11=2.*cpi*tns/alf
-        If (improve .eq. 3)  rn11=2.*cpi*tns*tca/alf
-      rn11a=cw/alf
-
-!     AMI50=1.51e-7
-      ami50=3.84e-6               ! 6/15/02 tao's
-!     AMI40=2.41e-8
-      ami40=3.08e-8               ! 6/15/02 tao's
-      ami50=4.8e-7*(100./50.)**3         ! Roger: actually = 3.84e-6 
-        if (improve.eq.3) ami50=4.8e-7
-!       ami40=2.46e-7
-!       ami40=2.46e-7*.5**3              ! Roger: actually = 3.08e-8
-        if (improve.eq.3) ami40=2.46e-7
-!
-      eiw=1.
-!     UI50=20.
-      ui50=100. ! 6/15/02 tao's
-      ri50=2.*5.e-3
-        if (improve.eq.3) ri50=5.e-3
-!
-      cmn=1.05e-15
-      rn12=cpi*eiw*ui50*ri50**2
-      do k=1,31
-         y1=1.-aa2(k)
-         rn13(k)=aa1(k)*y1/(ami50**y1-ami40**y1)
-         rn12a(k)=rn13(k)/ami50
-         rn12b(k)=aa1(k)*ami50**aa2(k)
-         rn25a(k)=aa1(k)*cmn**aa2(k)
-           BergCon1(k)=6.*aa1(k)*ami50**(aa2(k)-1.)
-         BergCon2(k)=-2.*aa1(k)*ami50**aa2(k)*1.2
-
-         BergCon3(k)=6.*aa2(k)/((aa2(k)+1.)*(aa2(k)+2.))        &
-                   *aa1(k)*ami50**(aa2(k)-1.)
-         BergCon4(k)=2.*(1.-aa2(k))/((aa2(k)+1.)*(aa2(k)+2.))   &
-                   *aa1(k)*ami50**aa2(k)*1.2
-      enddo
-!
-      egw=1.    !Roger: ewc in Steve's code
-
-        if(improve.ge.3) egw=0.65
-
-      rn14=.25*cpi*egw*tng*ga3g*ag
-!       egc=1.
-!       rn14=.25*cpi*egc*ac2*tng*ga3g      ! ac2 = ag in Steve's code
-      egi=.1
-        if(improve.eq.-1) egi=.001
-      rn15=.25*cpi*egi*tng*ga3g*ag
-!     rn15=.25*cpi*egi*tng*ac2*ga3g        ! ac2 = ag in Steve's code
-
-      egi=1.
-      rn15a=.25*cpi*egi*tng*ga3g*ag
-!     rn15a=.25*cpi*egi*tng*ac2*ga3g       ! ac2 = ag in Steve's code 
-
-      egr=1.
-      rn16=cpi2*egr*tng*tnw*roqr
-      rn17=2.*cpi*tng
-      rn17a=.31*ga5gh*sqrt(ag)
-      rn17b=cw-ci
-      rn17c=cw
-      if (improve .eq. 3) then
-         rn171=2.*cpi*tng*alv*dwv
-         rn172=2.*cpi*tng*tca
-         rn17a=.31*ga5gh*sqrt(ag/dva)
-      endif
-!
-      apri=.66
-      bpri=1.e-4
-      bpri=0.5*bpri                        ! 6/17/02 tao's
-      rn18=20.*cpi2*bpri*tnw*roqr
-      rn18a=apri
-      rn19=2.*cpi*tng/alf
-!      if (improve .eq. 3) rn19=2.*cpi*tng*tca/alf
-       rn191=.78                     !Are this same as rnn191 (listed below)?
-       rn192=.31*ga5gh*sqrt(ag/dva)  !Are this same as rnn192 (listed below)?
-      rn19a=.31*ga5gh*sqrt(ag)
-      rn19b=cw/alf 
-      
-!      rnn191=.78
-!      rnn192=.31*ga5gh*sqrt(ag/dva)
-       if (improve .eq. 3) then
-          rn19=2.*cpi*tng*tca/alf
-          rn19a=cw/alf
-       endif
-!
-      rn20=2.*cpi*tng
-      rn20a=als*als/rw
-      rn20b=.31*ga5gh*sqrt(ag)
-      rn30a=alv*alv*amw/(tca*ars) ! EMK per Roger's 20110816 code
-      rn30=2.*cpi*tng             ! EMK per Roger's 20110816 code
-      if (improve .eq. 3) then
-         rn20a=als*als*amw/(tca*ars)
-         rn20b=als/tca
-!         rn30=2.*cpi*tng
-!         rn30a=alv*alv*amw/(tca*ars)
-      endif
-!
-      bnd3=2.e-3
-      rn21=1.e3*1.569e-12/0.15
-         if (improve .eq. 3)  rn21=1.e-3
-      bnd21=1.5e-3
-!
-      erw=1. ! erc in Steve's code
-      rn22=.25*cpi*erw*ac1*tnw*ga3b
-      if (improve .eq. 3) then
-         erc=1.
-         rn22=.25*cpi*erc*tnw
-      endif
-!
-      rn23=2.*cpi*tnw
-      rn23a=.31*ga5bh*sqrt(ac1)
-      rn23b=alv*alv/rw
-      if (improve .eq. 3) then
-         rn231=.78
-         rn232=.31*ga3*sqrt(3.e3/dva)
-      endif
-!
-!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-!cc
-!cc        "c0" in routine      "consat" (2d), "consatrh" (3d)
-!cc        if ( itaobraun.eq.1 ) --> betah=0.5*beta=-.46*0.5=-0.23;   cn0=1.e-6
-!cc        if ( itaobraun.eq.0 ) --> betah=0.5*beta=-.6*0.5=-0.30;    cn0=1.e-8
-
-       if (improve .eq. 3) itaobraun=1
-
-       if (itaobraun .eq. 0) then
-         cn0=1.e-8
-         beta=-.6
-       else if (itaobraun .eq. 1) then
-         cn0=1.e-6
-         beta=-.46
-       endif
-!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-!
-      rn25=cn0
-!      rn30a=alv*als*amw/(tca*ars)
-      rn30b=alv/tca
-      rn30c=ars/(dwv*amw)
-      rn31=1.e-17
-
-      rn32=4.*51.545e-4
-!!
-      rn33=4.*tns
-       rn331=.65
-       rn332=.44*sqrt(as/dva)*ga5dh 
-!        rn332=.44*sqrt(ac1/dva)*ga5dh
-!
-      if (improve .eq. 3) then
-!         rn30=2.*cpi*tng
-         amc=1./(24.*4.e-9)
-         rn34=cpi2*esc*amc*as*roqs*tns*ga6d  
-!         print *,'rn34, cpi2, esc, amc, as, roqs, tns, ga6d = ', rn34, cpi2, esc, amc, as, roqs, tns, ga6d 
-         rn35=alv*alv/(cp*rw)
-      endif
-
-!----- for teminal velocity and fall_flux --------
+      ! Lin et al. 1983 : 
       constb = 0.8
-!      constd = 0.25
       constd = 0.11
       consta = 2115.0*0.01**(1-constb)   ! =841.9967
-!      constc=152.93*0.01**(1-constd)
       constc=78.63*0.01**(1-constd)      ! =11.72
-
       o6 = 1./6.
       cdrag = 0.6
       abar = 19.3
       bbar = 0.37
-      rhoe_s = 1.29           !surface air density (km/m^3)
 
+      bgh = 0.5*bg
+      bsh = 0.5*bs
+      bwh = 0.5*bw
+      bgq = 0.25*bg
+      bsq = 0.25*bs
+      bwq = 0.25*bw
+
+      ! unit in MKS :
       xnor = tnw*1.0e8        !intercept parameter of rain (m^-4)
       xnos = tns*1.0e8        !intercept parameter of snow (m^-4)
       xnog = tng*1.0e8        !intercept parameter of graupel (m^-4)
@@ -1528,8 +1211,246 @@ CONTAINS
          rhohail = rhograul   !density of hail (kg/m^3)
       endif
 
-      draimax=0.0500       !maximum rain diameter (cm)
-      draimax=draimax**4.*roqr*cpi
+!***   GAMMA FUNCTION CALCULATIONS   ********
+      ga3=2.
+      ga4=6.
+      ga5=24.
+      ga6=120.
+      ga7=720.
+      ga8=5040.
+      ga9=40320.
+
+      ga3b  = gammagce(3.+bw)
+      ga4b  = gammagce(4.+bw)
+      ga6b  = gammagce(6.+bw)
+      ga5bh = gammagce((5.+bw)/2.)
+      ga3g  = gammagce(3.+bg)
+      ga4g  = gammagce(4.+bg)
+      ga5gh = gammagce((5.+bg)/2.)
+      ga3d  = gammagce(3.+bs)
+      ga4d  = gammagce(4.+bs)
+      ga5dh = gammagce((5.+bs)/2.)
+
+      if(improve .eq. 3) then
+        ga4g=11.63177
+        ga3g=3.3233625          
+        ga5gh=1.608355         
+        if(bg.eq.0.37) ga4g=9.730877 
+        if(bg.eq.0.37) ga3g=2.8875
+        if(bg.eq.0.37) ga5gh=1.526425
+        if(bg.eq.0.36) ga4g=9.599978
+        if(bg.eq.0.36) ga3g=2.857136
+        if(bg.eq.0.36) ga5gh=1.520402  
+        ga3d=2.54925
+        ga4d=8.285063
+        ga5dh=1.456943
+        if(bs.eq.0.57) ga3d=3.59304
+        if(bs.eq.0.57) ga4d=12.82715
+        if(bs.eq.0.57) ga5dh=1.655588
+        if(bs.eq.0.24) ga3d=2.523508
+        if(bs.eq.0.24) ga4d=8.176166
+        if(bs.eq.0.24) ga5dh=1.451396
+        if(bs.eq.0.11) ga3d=2.218906
+        if(bs.eq.0.11) ga4d=6.900796
+        if(bs.eq.0.11) ga5dh=1.382792
+      endif                       
+      ga6d=144.93124
+      if(bs.eq.0.24) ga6d=181.654791
+
+!CCCCC        LIN ET AL., 1983 OR LORD ET AL., 1984   CCCCCCCCCCCCCCCCC
+      ac1=aw
+      ac2=ag            ! Steve only defines ac1 and ac2
+      ac3=as            ! need to talk about these 3 parameters.
+
+      bc1=bw
+      cc1=as
+      dc1=bs
+
+      ! slope parameter :
+      zrc = (cpi*roqr*tnw)**0.25
+      zsc = (cpi*roqs*tns)**0.25
+      zgc = (cpi*roqg*tng)**0.25
+
+      ! terminal velocity of rain (Steve's) :
+      vrc = aw*ga4b/(6.*zrc**bw)
+      vrc0 = -26.7
+      vrc1 = 20600./zrc
+      vrc2 = -204500./(zrc*zrc)
+      vrc3 = 906000./(zrc*zrc*zrc)
+
+      ! terminal velocity of snow and graupel (Lin et al. 1983) :
+      vsc = as*ga4d/(6.*zsc**bs)
+      vgc = ag*ga4g/(6.*zgc**bg)
+
+!     ****************************
+      rn1 = 9.4e-15
+      bnd1 = 6.e-4   !for psaut
+      rn2 = 1.e-3
+      bnd2 = 2.0e-3
+      rn3 = 0.25*cpi*tns*as*ga3d
+
+!      esi=.1
+      esi = 0.25 !improve=3
+      rn3 = 0.25*cpi*tns*as*esi*ga3d
+
+      esw = 1.   ! Steve uses esc and ac1
+!      esc=1.
+      esc = 0.45  !improve=3
+!      rn4=.25*cpi*esw*tns*as*ga3d
+      rn4 = 0.25*cpi*esc*tns*as*ga3d  !improve=3
+      eri = 0.1
+!      rn5=.25*cpi*eri*tnw*ac1*ga3b
+      rn5 = 0.25*cpi*eri*tnw  !improve=3
+      rn50 = -.267e2*ga3
+      rn51 = 5.15e3*ga4
+      rn52 = -1.0225e4*ga5
+      rn53 = 7.55e3*ga6
+
+      ami = 1./(24.*6.e-9)
+!      rn6=cpi2*eri*tnw*ac1*roqr*ga6b*ami
+      rn6 = cpi2*eri*tnw*roqr*ami  !improve=3
+      rn60 = -.267e2*ga6
+      rn61 = 5.15e3*ga7
+      rn62 = -1.0225e4*ga8
+      rn63 = 7.55e3*ga9
+
+!      esr=.5
+      esr = 1.  !improve=3
+      rn7 = cpi2*esr*tnw*tns*roqs
+      rn8 = cpi2*esr*tnw*tns*roqr
+
+      egs = 0.1
+
+!      rn9=cpi2*tns*tng*roqs
+      rn9 = cpi2*egs*tns*tng*roqs  !improve=3
+
+!      rn10=2.*cpi*tns
+      rn10 = 4.*tns  !improve=3
+!      rn101 = 0.31*ga5dh*sqrt(cc1)
+!      rn10a = als*als/rw
+      rn101 = 0.65  !improve=3
+      rn102 = 0.44*sqrt(as/dva)*ga5dh  !improve=3
+      rn10a = alv*als*amw/(tca*ars)  !improve=3
+      rn10b = alv/tca
+      rn10c = ars/(dwv*amw)
+
+!      rn11=2.*cpi*tns/alf
+      rn11 = 2.*cpi*tns*tca/alf  !improve=3
+      rn11a = cw/alf
+
+!      ami50=3.84e-6
+!      ami40=3.08e-8
+!      ami50=4.8e-7*(100./50.)**3         ! Roger: actually = 3.84e-6 
+!      ami40=2.41e-8
+!      ami50=3.76e-8
+      ami50 = 4.8e-7  !improve=3
+      ami40 = 2.46e-7  !improve=3
+      ami100 = 1.51e-7
+
+      eiw = 1.
+      ui50 = 100. ! 6/15/02 tao's
+!      ri50=2.*5.e-3
+      ri50 = 5.e-3  !improve=3
+
+      cmn = 1.05e-15
+      rn12 = cpi*eiw*ui50*ri50**2
+      do k = 1, 31
+         y1 = 1.-aa2(k)
+         rn13(k) = aa1(k)*y1/(ami50**y1-ami40**y1)
+         rn12a(k) = rn13(k)/ami50
+         rn12b(k) = aa1(k)*ami50**aa2(k)
+         rn25a(k) = aa1(k)*cmn**aa2(k)
+         BergCon1(k) = 6.*aa1(k)*ami50**(aa2(k)-1.)
+         BergCon2(k) = -2.*aa1(k)*ami50**aa2(k)*1.2
+         BergCon3(k) = 6.*aa2(k)/((aa2(k)+1.)*(aa2(k)+2.))        &
+                       *aa1(k)*ami50**(aa2(k)-1.)
+         BergCon4(k) = 2.*(1.-aa2(k))/((aa2(k)+1.)*(aa2(k)+2.))   &
+                       *aa1(k)*ami50**aa2(k)*1.2
+      enddo
+
+!      egw=1.
+      egw = 0.65  !improve=3
+      rn14 = 0.25*cpi*egw*tng*ga3g*ag
+
+      egi = 0.1
+!      egi=.001
+      rn15 = 0.25*cpi*egi*tng*ga3g*ag
+      egi = 1.
+      rn15a = 0.25*cpi*egi*tng*ga3g*ag
+
+      egr = 1.
+      rn16 = cpi2*egr*tng*tnw*roqr
+      rn17 = 2.*cpi*tng
+!      rn17a = 0.31*ga5gh*sqrt(ag)
+      rn17b = cw-ci
+      rn17c = cw
+      rn171 = 2.*cpi*tng*alv*dwv  !improve=3
+      rn172 = 2.*cpi*tng*tca  !improve=3
+      rn17a = 0.31*ga5gh*sqrt(ag/dva)  !improve=3
+
+      apri = 0.66
+      bpri = 1.e-4
+      bpri = 0.5*bpri                        ! 6/17/02 tao's
+      rn18 = 20.*cpi2*bpri*tnw*roqr
+      rn18a = apri
+!      rn19=2.*cpi*tng/alf
+      rn191 = 0.78                     !Are this same as rnn191 (listed below)?
+      rn192 = 0.31*ga5gh*sqrt(ag/dva)  !Are this same as rnn192 (listed below)?
+!      rn19a=.31*ga5gh*sqrt(ag)
+      rn19b = cw/alf 
+      
+      rn19 = 2.*cpi*tng*tca/alf  !improve=3
+      rn19a = cw/alf  !improve=3
+
+      rn20 = 2.*cpi*tng
+!      rn20a=als*als/rw
+!      rn20b=.31*ga5gh*sqrt(ag)
+      rn30a = alv*alv*amw/(tca*ars) ! EMK per Roger's 20110816 code
+      rn30 = 2.*cpi*tng             ! EMK per Roger's 20110816 code
+      rn20a = als*als*amw/(tca*ars)  !improve=3
+      rn20b = als/tca  !improve=3
+
+      bnd3 = 2.e-3
+!      rn21=1.e3*1.569e-12/0.15
+      rn21 = 1.e-3  !improve=3
+      bnd21 = 1.5e-3
+
+!      erw=1. ! erc in Steve's code
+!      rn22=.25*cpi*erw*ac1*tnw*ga3b
+      erc = 1.  !improve=3
+      rn22 = 0.25*cpi*erc*tnw  !improve=3
+
+      rn23 = 2.*cpi*tnw
+      rn23a = 0.31*ga5bh*sqrt(ac1)
+      rn23b = alv*alv/rw
+      rn231 = 0.78  !improve=3
+      rn232 = 0.31*ga3*sqrt(3.e3/dva)  !improve=3
+
+!      if (improve .eq. 3) itaobraun=1
+      if (itaobraun .eq. 0) then
+         cn0 = 1.e-8
+         beta = -0.6
+      else if (itaobraun .eq. 1) then
+         cn0 = 1.e-6
+         beta = -0.46
+      endif
+
+      rn25 = cn0
+      rn30b = alv/tca
+      rn30c = ars/(dwv*amw)
+      rn31 = 1.e-17
+
+      rn32 = 4.*51.545e-4
+      rn33 = 4.*tns
+      rn331 = 0.65
+      rn332 = 0.44*sqrt(as/dva)*ga5dh 
+
+      amc = 1./(24.*4.e-9)  !improve=3
+      rn34 = cpi2*esc*amc*as*roqs*tns*ga6d  !improve=3
+      rn35 = alv*alv/(cp*rw)  !improve=3
+
+      draimax = 0.0500       !maximum rain diameter (cm)
+      draimax = draimax**4.*roqr*cpi
 
       ! critical q of hydrometeor characteristics (eg. fall speed, radius)
       cwmin = 1.e-12
@@ -1772,7 +1693,7 @@ CONTAINS
 !cc   using scott braun's way for pint, pidep computations
   integer  ::   itaobraun,ice2,ihail,new_ice_sat,id,istatmin
   integer  ::   itimestep, improve
-  real     ::   tairccri, cn0, dt
+  real     ::   tairccri, dt
 !cc
 
 !  integer ids,ide,jds,jde,kds,kde                                  
@@ -1780,7 +1701,7 @@ CONTAINS
   integer its,ite,jts,jte,kts,kte                                  
   integer i,j,k, kp     
 
-  real   ::   a0 ,a1 ,a2 ,afcp ,alvr ,ami100 ,ami40 ,ami50       &
+  real   ::   a0 ,a1 ,a2 ,afcp ,alvr                             &
              ,ascp ,avcp ,betah, bg3 ,bgh5 ,bs3 ,bs6 ,bsh5       &
              ,bw3 ,bw6 ,bwh5 ,cmin ,cmin1 ,cmin2 ,cp409          &
              ,cp580 ,cs580 ,cv409 ,d2t ,del ,dwvp ,ee1 ,ee2      &
@@ -1987,31 +1908,6 @@ CONTAINS
   real :: mu, ccn_ref, lambda
   real :: gamfac1, gamfac3
 
-!23456789012345678901234567890123456789012345678901234567890123456789012
-
-!
-!JJS 1/3/2008  vvvvv
-!JJS   the following common blocks have been moved to the top of
-!JJS   module_mp_gsfcgce_driver.F
-
-!  real, dimension (31)   ::      aa1,  aa2
-!  data aa1/.7939e-7, .7841e-6, .3369e-5, .4336e-5, .5285e-5,     &
-!           .3728e-5, .1852e-5, .2991e-6, .4248e-6, .7434e-6,     &
-!           .1812e-5, .4394e-5, .9145e-5, .1725e-4, .3348e-4,     &
-!           .1725e-4, .9175e-5, .4412e-5, .2252e-5, .9115e-6,     &
-!           .4876e-6, .3473e-6, .4758e-6, .6306e-6, .8573e-6,     &
-!           .7868e-6, .7192e-6, .6513e-6, .5956e-6, .5333e-6,     &
-!           .4834e-6/
-!  data aa2/.4006, .4831, .5320, .5307, .5319,      &
-!           .5249, .4888, .3894, .4047, .4318,      &
-!           .4771, .5183, .5463, .5651, .5813,      &
-!           .5655, .5478, .5203, .4906, .4447,      &
-!           .4126, .3960, .4149, .4320, .4506,      &
-!           .4483, .4460, .4433, .4413, .4382,      &
-!           .4361/
-
-!JJS 1/3/2008  ^^^^^
-
 !+---+-----------------------------------------------------------------+
 #ifdef EXT_DIAG
       REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT):: refl_10cm  ! GT
@@ -2148,47 +2044,37 @@ CONTAINS
 !
 !     ******   THREE CLASSES OF ICE-PHASE   (LIN ET AL, 1983)  *********
 
-         d2t=dt
+      d2t=dt
 
-!C  TAO 2007 START
-!   ICE2=0 ! default, 3ice with loud ice, snow and graupel
+!   ICE2=0 ! default, 3ice with cloud ice, snow and graupel
 !              r2is=1., r2ig=1.
 !   ICE2=1 ! 2ice with cloud ice and snow (no graupel) - r2iceg=1, r2ice=0.
 !              r2is=1., r2ig=0.
 !   ICE2=2 ! 2ice with cloud ice and graupel (no snow) - r2ice=1, r2iceg=0.
 !              r2is=0., r2ig=1.
-!c
-!        r2ice=1.
-!        r2iceg=1.
-         r2ig=1.
-         r2is=1.
-          if (ice2 .eq. 1) then
-!              r2ice=0.
-!              r2iceg=1.
-              r2ig=0.
-              r2is=1.
-          endif
-          if (ice2 .eq. 2) then
-!              r2ice=1.
-!              r2iceg=0.
-              r2ig=1.
-              r2is=0.
-          endif
-
-          If (improve .eq. 3) then
-              ihail = 0
-          endif
-
-!C  TAO 2007 END
-     
-!JJS  10/7/2008
 !   ICE2=3 ! no ice, warm rain only
-    iwarm = 0
-    if (ice2 .eq. 3) iwarm = 1
+
+      r2ig = 1.
+      r2is = 1.
+      iwarm = 0
+      if (ice2 .eq. 1) then
+         r2ig = 0.
+         r2is = 1.
+      elseif (ice2 .eq. 2) then
+         r2ig = 1.
+         r2is = 0.
+      elseif (ice2 .eq. 3) then
+         r2ig = 0.
+         r2is = 0.
+         iwarm = 1
+      endif
+
+!      If (improve .eq. 3) then
+!         ihail = 0
+!      endif
 
       cmin=1.e-19
-        If (improve .eq. 3) cmin=1.e-40
-        If (improve .eq. 3) cmin=1.e-20 ! EMK NUWRF Bug fix
+      If (improve .eq. 3) cmin=1.e-20 ! EMK NUWRF Bug fix
       cmin1=1.e-20
       cmin2=1.e-40
       ucor=3071.29/tnw**0.75
@@ -2217,7 +2103,7 @@ CONTAINS
 
 !  HALLET-MOSSOP RIME SPLINTERING parameters
       ihalmos=1
-        if (improve.gt.2) ihalmos=1
+!      if (improve.gt.2) ihalmos=1
       xnsplnt=370.     ! peak # splinters per milligram of rime
       xmsplnt=4.4e-8   ! mass of a splinter (from Ferrier 1994)
       hmtemp1=-2.
@@ -2225,11 +2111,9 @@ CONTAINS
       hmtemp3=-6.
       hmtemp4=-8.
 
-!      rijl2 = 1. / (ide-ids) / (jde-jds)
-
       do j=jts,jte
          do i=its,ite
-         it(i,j)=1
+            it(i,j)=1
          enddo
       enddo
 
@@ -2237,8 +2121,6 @@ CONTAINS
       f3=rd2*d2t
 
       ft=dt/d2t
-!      rft=rijl2*ft
-!      a0=.5*istatmin*rijl2
       rt0=1./(t0-t00)
 
       bw3=bw+3.
@@ -2258,22 +2140,9 @@ CONTAINS
       r23t=-rn23*d2t
       r25a=rn25
 
-!     ami50 for use in PINT
-      ami50=3.76e-8
-      ami100=1.51e-7
-      ami40=2.41e-8
-
-      ami50=3.84e-6                       ! 6/15/02 tao's
-      ami40=3.08e-8                       ! 6/15/02 tao's
-      ami50=4.8e-7*(100./50.)**3          ! Roger: actually = 3.84e-6 
-
       if (improve .eq. 3) then
-
-!         itaobraun=0 ! using original way for pint and pidep
-!         itaobraun=1 ! using scott braun's way for pint and pidep
-       
-         itaobraun=1  
-         new_ice_sat=3 
+!         itaobraun=1
+!         new_ice_sat=3
          rdt=1./d2t
          r11t=rn11*d2t
          r19t=rn19*d2t
@@ -2282,27 +2151,12 @@ CONTAINS
          r23t=rn23*d2t
          r30t=rn30*d2t
          r33t=rn33*d2t
-         ami50=4.8e-7
-         ami40=2.46e-7
 
          Rc=1.e-3               ! cloud droplet radius 10 microns
          Ra=1.e-5               ! aerosol radius 0.1 microns
          Cna=500.               ! contact nuclei conc per cc
          Bhi=1.01e-2            ! pollen (Deihl et al. 2006)
-
       endif
-
-!       itaobraun=0 ! original pint and pidep & see Tao and Simpson 1993
-        itaobraun=1 ! see Tao et al. (2003)
-!
-       if ( itaobraun.eq.0 ) then
-          cn0=1.e-8
-!c        beta=-.6
-       else if ( itaobraun.eq.1 ) then
-          cn0=1.e-6
-!         cn0=1.e-8  ! special
-!c        beta=-.46
-       endif
 
 #ifdef Readaeroclx
        if ( (ccnflag .eq. 2) .or. (inflag .eq. 2) ) then
@@ -2312,13 +2166,13 @@ CONTAINS
 #endif
 !C    ******************************************************************
 
-  do 1000 k=kts,kte
-       kp=k+1
-       tb0=0.
-       qb0=0.
+      do 1000 k=kts,kte
+      kp=k+1
+      tb0=0.
+      qb0=0.
 
-     do 2000 j=jts,jte
-     do 2000 i=its,ite
+      do 2000 j=jts,jte
+      do 2000 i=its,ite
 
          rp0=3.799052e3/p0(i,j,k)
          pi0=pi(i,j,k)
@@ -2385,10 +2239,7 @@ CONTAINS
          r31r=rn31*rr0
          r32rt=rn32*d2t*rrs
 
-
-!JJS added 10/1/2009
          if (improve .eq. 3) then
-    
             r7r=rn7*rr0*fv0
             r8r=rn8*rr0*fv0
 
@@ -2406,7 +2257,6 @@ CONTAINS
             r231r=rn231*rr0
             r232rf=rn232*rrs*fvs
 !           xccld=xncld*r00               !cloud number concentration
-
         endif
 
         pt(i,j)=dpt(i,j,k)
@@ -3338,7 +3188,7 @@ CONTAINS
                   rv=0.622*esat/(p0(i,j,k)/1000.-esat)
                   rlapse_m=980.616*(1.+2.5e6*rv/287./tair(i,j))/          &     
                            (1004.67+2.5e6*2.5e6*rv*0.622/(287.*tair(i,j)*tair(i,j)))
-                  delT=rlapse_m*0.5*(ww1(i,j,k)+ww1(i,j,k+1))
+                  delT=rlapse_m*ww1(i,j,k)
                   if (delT.lt.0.) delT=0.
 !  STEVE: PLAESE CHECK (2 4.e-9)
 !                  pimm(i,j)=xncld*Bhi*4.e-9*exp(-tairc(i,j))*delT*d2t*4.e-9
@@ -3652,7 +3502,7 @@ CONTAINS
               afar = max(0.,(6.*kdxr-3.+sqrt(8.*kdxr+1.))/(2.-2.*kdxr))
               lzr = log((afar+3.)/efdr*1.e+6)
               tnr = log(6.*qr(i,j)*rhoair/cpi/1.e+3)                 & ! slope parameter for rain
-                    +(4.+afar)*lzr-lgamma(afar+4.)
+                    +(4.+afar)*lzr-log_gamma(afar+4.)
               avr = exp(7.6004532 - 0.7990953*ltk                    & ! coefficient ... for rain (?)
                         + 1.0281818*lqr - 0.16595505*lqr2            &
                         + 1.110037E-2*lqr*lqr2                       &
@@ -3663,8 +3513,8 @@ CONTAINS
                     - 1.7056075E-5*lqr2*lqr2))
               mur = 1.496E-6*tair(i,j)**1.5/(tair(i,j)+120.)           ! shape parameter for rain
               rhoaj = sqrt(1.29/rhoair)
-              gr2 = lgamma(afar+2.)
-              gbr25 = lgamma(bvr*0.5+afar+2.5)
+              gr2 = log_gamma(afar+2.)
+              gbr25 = log_gamma(bvr*0.5+afar+2.5)
               taur = 1./(2.*cpi*dv1*(0.78*exp(tnr+gr2-(afar+2.)      &
                      *lzr)+0.31*sqrt(avr*rhoaj/mur)*(mur/dv1)        &
                      **thrd*exp(tnr+gbr25-(bvr*0.5+afar+2.5)         &
@@ -3810,14 +3660,6 @@ CONTAINS
 !     THE FLETCHER EQUATION. ALSO, ONLY INITIATE MORE ICE IF THE NEW NUMBER
 !     CONCENTRATION EXCEEDS THAT ALREADY PRESENT.
 
-           if ( itaobraun .eq. 0 ) then            !  tao's original
-              cn0=1.e-8
-              beta=-.6
-           else if ( itaobraun.eq.1 ) then         ! scott's
-              cn0=1.e-6
-              beta=-.46
-           endif
-        
            tair(i,j)=(pt(i,j)+tb0)*pi0
 #ifdef use_cpm
            cpm = cp + cvap*qv(i,j) + cliq*(qc(i,j)+qr(i,j)) + &
@@ -4617,7 +4459,7 @@ CONTAINS
               efdc = exp(efd1 + efd2*log(mvdc) + efd3*log(1000.)    &
                      + efd4*log(mvdc)**2. + efd5*log(1000.)**2.     &
                      + efd6*log(mvdc)*log(1000.))
-              refc(i,k,j) = min(max(efdc/2.,0.5),50)
+              refc(i,k,j) = min(max(efdc/2.,0.5),50.)
            else
               refc(i,k,j) = 0.5  !test
            endif  !end of if qcl>=cwmin
@@ -4806,7 +4648,7 @@ CONTAINS
 
  real :: mu   ! mu of gamma PSD [-]
  real :: eta  ! eta function [cm3 g-2 s-1]
- real :: beta, beta1, beta2     ! beta function [-]
+ real :: betaf, beta1, beta2     ! beta function [-]
  real :: gamfac , gfac1 , gfac2 ! gamma function [-]
  real :: R6_6power  ! mean radius of the sixth moment [cm]
  real :: R6_thresh ! threshold of  mean radius of the sixth moment [cm]
@@ -4881,14 +4723,14 @@ CONTAINS
 !
  beta1 = (6.e0+mu)*(5.e0+mu)*(4.e0+mu) 
  beta2 = (3.e0+mu)*(2.e0+mu)*(1.e0+mu)
- beta  = beta1 / beta2
+ betaf = beta1 / beta2
 
- eta = eta_func * beta  ! eta function (eq 27b) [cm3 g-2 s-1]
+ eta = eta_func * betaf  ! eta function (eq 27b) [cm3 g-2 s-1]
 
 !
 ! threshold of particle radius (mean radius of the sixth moment )
 !
- R6_thresh = beta * Rc  ![cm] (pg 1545)
+ R6_thresh = betaf * Rc  ![cm] (pg 1545)
 
 !
 ! mean radius of the sixth moment 

@@ -204,9 +204,9 @@
              stc(nsoil), smc(nsoil), sh2o(nsoil), ch, cm,sfcems
 
 !  ---  outputs:
-      integer, intent(out) :: nroot
-
-      real (kind=kind_phys), intent(out) :: shdfac, snowh, albedo,      & 
+      integer, intent(inout) :: nroot
+      real (kind=kind_phys), intent(inout) :: shdfac, snowh
+      real (kind=kind_phys), intent(out) ::                albedo,      &
              eta, sheat, ec, edir, et(nsoil), ett, esnow, drip, dew,    & 
              beta, etp, ssoil, flx1, flx2, flx3, snomlt, sncovr,        & 
              runoff1, runoff2, runoff3, rc, pc, rsmin, xlai, rcs,       & 
@@ -2926,7 +2926,8 @@
 !  ====================    end of description    =====================  !
 !
 !  ---  inputs:
-      integer, intent(in) :: nsoil, nroot
+      integer, intent(in) :: nsoil
+      integer, intent(inout) :: nroot
 
       real (kind=kind_phys),  intent(in) :: cmc, cmcmax, etp1, dt, pc,  & 
              smcmax, smcwlt, smcref, smcdry, shdfac, cfactr, fxexp,     & 
@@ -3249,7 +3250,8 @@
       real (kind=kind_phys),  intent(inout) :: cmc, sh2o(nsoil)
 
 !  ---  outputs:
-      real (kind=kind_phys),  intent(out) :: smc(nsoil), runoff1,       & 
+      real (kind=kind_phys),  intent(inout) :: smc(nsoil)
+      real (kind=kind_phys),  intent(out) ::             runoff1,       &
              runoff2, runoff3, drip
 
 !  ---  locals:
@@ -4993,7 +4995,8 @@
              ai(nsold), bi(nsold), ci(nsold)
 
 !  ---  outputs:
-      real (kind=kind_phys), intent(out) :: sh2oout(nsoil), runoff3,    & 
+      real (kind=kind_phys), intent(inout) :: sh2oout(nsoil)
+      real (kind=kind_phys), intent(out) ::                 runoff3,    &
              smc(nsoil)
 
 !  ---  locals:
@@ -5295,7 +5298,8 @@
 !  ====================    end of description    =====================  !
 !
 !  ---  input:
-      integer, intent(in) :: nsoil, nroot
+      integer, intent(in) :: nsoil
+      integer, intent(inout) :: nroot
 
       real (kind=kind_phys), intent(in) :: etp1, smcwlt, smcref,        & 
              cmc, cmcmax, shdfac, pc, cfactr

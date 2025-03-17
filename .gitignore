@@ -21,3 +21,7 @@ src/depend
 work_*
 build
 .*.swp
+build_lake.sh
+modulefiles/modulefile.tcogfs.fx1000_lake
+src/Makefile_lake
+exp*
