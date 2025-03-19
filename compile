@@ -24,7 +24,8 @@ if [[ ${MACHINE} == 'fx1000' ]] ; then
     # Build settings for the fx1000 machine
     cmake -B${BLD_DIR} -S. \
         -DCMAKE_BUILD_TYPE=Release \
-        -DUSE_RSM=OFF
+        -DUSE_RSM=OFF \
+        -DUSE_aeroclx=OFF
     cmake --build ${BLD_DIR} -j $(($(nproc)/2))
 
 elif [[ ${MACHINE} == 'a100' ]] ; then
@@ -35,7 +36,8 @@ elif [[ ${MACHINE} == 'a100' ]] ; then
         -DUSE_CUDA=ON \
         -DUSE_ACC=ON \
         -DUSE_PAR=OFF \
-        -DUSE_SP=OFF
+        -DUSE_SP=OFF \
+        -DUSE_aeroclx=OFF
     cmake --build ${BLD_DIR} -j $(($(nproc)/2))
 
 else

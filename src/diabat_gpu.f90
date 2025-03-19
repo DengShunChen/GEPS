@@ -20,6 +20,9 @@
                             ftp, fqp, fpsp, ftp1, fqp1, fpsp1, deltaq, cnvwr, cnvcr, sd, &
                             shdmax, shdmin, snoalb, &
                             slopetyp, sld, slc, zice, cice, xtice, sncover, sndepth, &
+#ifdef Readaeroclx
+                            naero, aeroclx, &
+#endif
                             ctot, chig, cmid, clow, hpbl, asl, atl, cosz, &
                             nmgwor, nmgwcv, hprime_b, mtnvar, docgrav, nmmiph, &
                             !--------------------------------------------------------------------------------
@@ -418,6 +421,10 @@
          real qtc(nxp, lev, my_max), qtr(nxp, lev, my_max), ttc(nxp, lev, my_max)
          real ftp(nxp, lev, my_max), fqp(nxp, lev, my_max), fpsp(nxp, my_max)
          real ftp1(nxp, lev, my_max), fqp1(nxp, lev, my_max), fpsp1(nxp, my_max)
+#ifdef Readaeroclx
+         integer naero
+         real aeroclx(nxp, naero*lev, my_max)
+#endif
 !-------
 !for pdf cloud
          integer kdt
@@ -744,6 +751,14 @@
             end do
 
          end if ! doclxu
+#ifdef Readaeroclx
+!     read aerosol climatology
+         if ( doclxu ) then
+            if ( myrank .eq. 0 ) print *, 'update aeroclx at tau= ', tau
+            call readaeroclx(nx, my, my_max, lev, naero, julian, &
+                             ggdef, aeroclx)
+         endif
+#endif
 
 !
 ! for nonorographic gravity wave drag
@@ -2351,6 +2366,9 @@
                    dsigma, phii(1, 1, jj), islimsk(1, jj), q0(1, 1, jj), kdt, tpi, me, dta, area(jj), jj, &
                    itimestep, sgeo(1, jj), phi(1, 1, jj), rhc_mp(1, 1, jj), pk(1, 1, jj), &
                    snr(1, jj), xlat(j), sdec, ivegtyp(1, jj), &
+#ifdef Readaeroclx
+                   aeroclx(1, 1, jj), naero, &
+#endif
                    !  ---  inputs/outputs:
                    ttc(1, 1, jj), qt(1, 1, jj), clds(1, 1, jj), &
                    utc(1, 1, jj), vtc(1, 1, jj), vvel(1, 1, jj), &
