@@ -1,6 +1,6 @@
 !#define SL_sedi
-!#define new_saturation
-!#define sat_predict
+#define new_saturation
+#define sat_predict
 !#define use_declination
 !#define use_cpm
 
