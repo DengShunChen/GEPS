@@ -1877,26 +1877,6 @@ CONTAINS
   real     :: r231r, r232rf
   real     :: ami20
 
-#if ( WRF_CHEM == 1)
-! for inline Gocart coupling
-  INTEGER,      INTENT(IN   )    ::   gid
-  INTEGER, PARAMETER :: num_go = 14  ! number of the gocart aerosol species
-  REAL, DIMENSION( ims:ime, kms:kme, jms:jme, num_go), intent(in) :: aero
-  REAL, DIMENSION( ims:ime, kms:kme, jms:jme), intent(out) :: icn_diag !IN concentration [#/Litre]
-  REAL, DIMENSION( ims:ime, kms:kme, jms:jme), intent(out) :: nc_diag !cloud concentration [#/cm3]
-  integer,intent(in) :: chem_opt ! EMK
-  integer,intent(in) :: gsfcgce_gocart_coupling ! EMK
-
-  real :: e_sat, e_dry  !saturated and dry air water vapor [hPa, mb]
-  real :: rh_rad     ! relative humidity [%]
-  real :: super_sat  !super saturation [%]
-  real :: ccn_out  ! CCN conc [#/cm3]
-  real :: icn_out  ! IN conc [#/Litter]
-  real :: P_liu_daum  ! autoconversion rate [g/cm3 s-1]    !
-  real :: re_liu_daum ! effective radius of cloud [micron]   !
-  real,parameter :: min_icn = 0.01 !minimum # conc of IN [#/Litre]
-#endif
-
   REAL , DIMENSION( ims:ime , jms:jme ) , INTENT(IN)   :: XLAND
   real, parameter :: roqi = 0.9179    ! ice density
 !  real, parameter :: ccn_over_land = 1500  ! [#/cm3] climatological value
@@ -2159,10 +2139,10 @@ CONTAINS
       endif
 
 #ifdef Readaeroclx
-       if ( (ccnflag .eq. 2) .or. (inflag .eq. 2) ) then
-          allocate( aerog(its:ite,jts:jte,kts:kte,ngo) )
-          allocate( aeromc(ngo) )
-       endif
+      if ( (ccnflag .eq. 2) .or. (inflag .eq. 2) ) then
+         allocate( aerog(its:ite,jts:jte,kts:kte,ngo) )
+         allocate( aeromc(ngo) )
+      endif
 #endif
 !C    ******************************************************************
 
@@ -2363,11 +2343,11 @@ CONTAINS
         dlt3(i,j)=0.0
         dlt2(i,j)=0.0
 
+#ifdef Readaeroclx
       ! -------------
       ! aerosol-aware :
       ! -------------
 
-#ifdef Readaeroclx
         if ( (ccnflag .eq. 2) .or. (inflag .eq. 2) ) then
            if ( naero .lt. 15 ) stop 'not enough aerosol types!'
            ! convert from MERRA2-aerotype to GOCART-aerotype
@@ -2629,31 +2609,6 @@ CONTAINS
 !* 21 * PRAUT   AUTOCONVERSION OF QC TO QR                        **21**
 !* 22 * PRACW : ACCRETION OF QC BY QR                             **22**
 
-#if ( WRF_CHEM == 1)
-             ! EMK...Only execute when GOCART and coupling are selected
-            if ( (chem_opt == 300 .or. chem_opt == 301 .or. &
-                   chem_opt == 302 .or. chem_opt == 303) .and. &
-                   (gsfcgce_gocart_coupling == 1) ) then 
-                !      sat vapor pressure [hPa,mb]
-                e_sat = 6.11 * exp( 5423. *( 1.0/273.15 - 1./tair(i,j) ) )
-                !      dry air vapor pressure [hPa, mb]
-                e_dry = qv(i,j) / ( qv(i,j) + 0.622 ) * p0(i,j,k) * 1.e-3  ! p0 in [g*cm/s2/cm2]
-                rh_rad = max(1.e-6, e_dry/e_sat*100.)  ! relative humidity [%]
-                super_sat = max(0.001, rh_rad - 100.e0) !super saturation [%]
-                !
-                ! convert gocart aerosol mass conc to CN
-                !
-                call mass2ccn(tair(i,j),super_sat,aero(i,k,j,:),ccn_out )
-                !             nc_cgs(i,j,k)  = max(100., ccn_out)  !diagnostic cloud droplet conc  [#/cm3]
-                ccn_out = max(100., ccn_out)
-                ! rho_dryair = p0(i,j,k) / ( tair(i,j) * 2.87 * 1.0e6) ! dry air density [g/cm3]
-                L_cloud = qc(i,j) * rho(i,j,k)             ! cloud water [g/cm3]
-                call auto_conversion( L_cloud, ccn_out, P_liu_daum, re_liu_daum )
-                praut(i,j) = P_liu_daum / rho(i,j,k)  !autoconversion rate [g/g s-1]
-            else
-                praut(i,j)=max(rn21*(qc(i,j)-bnd21),0.0)
-            end if ! if (gsfcgce_gocart_coupling == 1)
-#else
             praut(i,j)=max(rn21*(qc(i,j)-bnd21),0.0)
 !            if ( ccnflag .eq. 1 ) then
 !               praut(i,j)=max(rn21*(qc(i,j)-bnd21),0.0)
@@ -2684,7 +2639,6 @@ CONTAINS
 !            else
 !               stop 'ccnflag error!!!'
 !            endif
-#endif
 
             y1(i,j)=1./zr(i,j)
             y2(i,j)=y1(i,j)*y1(i,j)
@@ -2746,22 +2700,6 @@ CONTAINS
                endif  !tairc
 
                if (r_nci.gt.15.) r_nci=15.                  !cap at 15000/liter
-
-#if ( WRF_CHEM == 1)
-               ! EMK...Only execute when GOCART and coupling is turned on.
-               if ( (chem_opt == 300 .or. chem_opt == 301 .or. &
-                     chem_opt == 302 .or. chem_opt == 303) .and. &
-                     (gsfcgce_gocart_coupling == 1) ) then
-                  ! Conversion rate of cloud water to ice in the Bergeron porcess based on Meyer + DeMott formulae
-                  !
-                  ! convert gocart aerosol mass conc to IN
-                  !      p0 need to be converted from g*cm/s2/cm2 to mb (hPa)
-                  !                call mass2icn(p0(i,j,k)*0.001,tair(i,j),aero(i,k,j,:), icn_out)
-                  call mass2icn(p0(i,j,k)*0.001,tair(i,j),aero(i,k,j,:), icn_out,i,j,k)
-                  icn_out = min(1.e3, max(0.01e0 ,  icn_out) )
-                  r_nci = icn_out * 1.e-3  !DeMotto's formuale
-               end if ! if (gsfcgce_gocart_coupling == 1)
-#endif
 
                dd(i,j)=min((r00*qi(i,j)/r_nci), ami40)   !mean cloud ice mass
                y4(i,j)=1.-aa2(it(i,j))
@@ -3153,20 +3091,6 @@ CONTAINS
                   r_nci=max(1.e-3*exp(-.639+12.96*fssi), 0.528e-3)  ! Meyers et al. 1992 (cm^-3)
                   if (r_nci.gt.15.) r_nci=15.                       ! cap at 15000/liter
 
-#if ( WRF_CHEM == 1)
-                  ! EMK...Only execute if GOCART and coupling is on
-                  if ( (chem_opt == 300 .or. chem_opt == 301 .or. &
-                        chem_opt == 302 .or. chem_opt == 303) .and. &
-                        (gsfcgce_gocart_coupling == 1) ) then
-                     ! Conversion rate of cloud water to ice in the Bergeron porcess based on Meyer + DeMott formulae
-                     !        
-                     ! convert gocart aerosol mass conc to IN
-                     !      p0 need to be converted from g*cm/s2/cm2 to mb (hPa)
-                     !                call mass2icn(p0(i,j,k)*0.001,tair(i,j),aero(i,k,j,:), icn_out)
-                     r_nci = icn_out * 1.e-3  !DeMotto's formuale
-                  end if
-#endif
-                   
                   dd(i,j)=(r00*qi(i,j)/r_nci)**y3(i,j)                  !meyers
                   PIDW(i,j)=min(RR0*D2T*y2(i,j)*r_nci*dd(i,j), qc(i,j)) !meyers
                endif  !tairc
@@ -3296,7 +3220,7 @@ CONTAINS
               endif
 #ifdef Readaeroclx
            elseif ( ccnflag .eq. 2 ) then
-              if ( qv(i,j).qt.qsw(i,j) ) then
+              if ( qv(i,j).gt.qsw(i,j) ) then
                  rhw = max(1.e-6,qv(i,j)/qsw(i,j)*100.)       !relative humidity (%)
                  aeromc(:) = max(0.,aerog(i,j,k,:))           !aerosol mass concentration (g m^-3)
                  ssrw = max(0.001,rhw-100.0)                  !super saturation rate over water (%)
@@ -3700,22 +3624,6 @@ CONTAINS
                  r_nci=max(1.e-3*exp(-.639+12.96*fssi),0.528e-3)  ! Meyers et al. 1992 (cm^-3)
                  if (r_nci.gt.15.) r_nci=15.                         
 
-#if ( WRF_CHEM == 1)
-                 ! EMK...Only execute if GOCART and coupling is on
-                 if ( (chem_opt == 300 .or. chem_opt == 301 .or. &
-                       chem_opt == 302 .or. chem_opt == 303) .and. &
-                       (gsfcgce_gocart_coupling == 1) ) then
-                    ! Conversion rate of cloud water to ice in the Bergeron porcess based on Meyer + DeMott formulae
-                    !        
-                    ! convert gocart aerosol mass conc to IN
-                    !      p0 need to be converted from g*cm/s2/cm2 to mb (hPa)
-                    !                call mass2icn(p0(i,j,k)*0.001,tair(i,j),aero(i,k,j,:), icn_out)
-                    !                icn_cgs(i,j,k) = max(min_icn, icn_out) * 1.e-3   !IN conc [#/cm3] <-- [#/Litter]
-                    !                call mass2icn(p0(i,j,k)*0.001,tair(i,j),aero(i,k,j,:), icn_out,i,j,k)
-                    r_nci = icn_out * 1.e-3  !DeMotto's formuale
-                 end if
-#endif  
-                   
                  pidep(i,j)=max(R32RT*1.e4*fssi*sqrt(r_nci)*y3(i,j)/dd(i,j), 0.)
                  dd(i,j)=max(1.e-9*r_nci/r00-qci(i,j,k)*1.e-9/ami50, 0.) 
                  pint(i,j)=max(min(dd(i,j),dm(i,j)),0.)
@@ -4369,43 +4277,6 @@ CONTAINS
               refc(i,k,j) = 0.e0
            else
               L_cloud = qcl(i,j,k) * rho(i,j,k)             ! cloud water [g/cm3]
-#if ( WRF_CHEM == 1)
-              ! when running with WRF_Chem and using aerosol coupling in Goddard MP
-              ! cpi: const_pi = 4.*atan(1.)         ~ 3.1415
-              ! roqr: 1.0 g/cm**3, liquid water density
-              ! roqi: 0.9179, ice density
-              if ( (chem_opt == 300 .or. chem_opt == 301 .or. &
-                    chem_opt == 302 .or. chem_opt == 303) .and. &
-                   (gsfcgce_gocart_coupling == 1) ) then
-                 ! for cloud water, estimate lambda (slope of gamma distribution)
-                 mu = min(15.e0, (1000.E0/ccn_out + 2.e0))
-                 gamfac3 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+3.e0) )
-                 gamfac1 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+1.e0) )
-                 lambda = (4.e0/3.e0*cpi*roqr*ccn_out/L_cloud*   &
-                          gamfac1)**(1.e0/3.e0)  ! [1/cm]
-                 refc(i,k,j) = 1.e0/lambda * gamfac3 * 1.e4  !effective radius [micron]
-              else
-              ! when running with WRF_Chem but no aerosol coupling in Goddard MP
-                 if (xland(i,j) .eq. 1.0) then
-                    ccn_ref = ccn_over_land
-                 elseif (xland(i,j) .eq. 2.0) then
-                    ccn_ref = ccn_over_water
-                 else
-                    print *,' xland is not 1. or 2., run stopped'
-                    stop
-                 endif
-                 ! for cloud water, estimate lambda (slope of gamma distribution)
-                 mu = min(15.e0, (1000.E0/ccn_ref + 2.e0))
-                 gamfac3 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+3.e0) )
-                 gamfac1 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+1.e0) )
-                 lambda = (4.e0/3.e0*cpi*roqr*ccn_ref/L_cloud*   &
-                          gamfac1)**(1.e0/3.e0)  ! [1/cm]
-                 refc(i,k,j) = 1.e0/lambda * gamfac3 * 1.e4  !effective radius [micron]
-              endif ! chem_opt and gsfcgce_gocart_coupling
-#else
-              ! Not running with WRF_Chem
-              ! ccn_over_land = 1500  ! [#/cm3] climatological value
-              ! ccn_over_water = 150  ! [#/cm3] climatological value
               if (xland(i,j) .eq. 1.0) then
                  ccn_ref = ccn_over_land
               elseif (xland(i,j) .eq. 2.0) then
@@ -4421,7 +4292,6 @@ CONTAINS
               lambda = (4.e0/3.e0*cpi*roqr*ccn_ref/L_cloud*   &
                         gamfac1)**(1.e0/3.e0)  ! [1/cm]
               refc(i,k,j) = 1.e0/lambda * gamfac3 * 1.e4  !effective radius [micron]
-#endif
            endif ! qcl(i,j,k) < cmin test
         endif  !end of if rewflag=1
 
@@ -4470,34 +4340,10 @@ CONTAINS
            if (qci(i,j,k) .lt. cimin) then
               refi(i,k,j) = 0.e0
            else
-#if ( WRF_CHEM == 1)
-!!! No arosol coupling for calaculating eff radius for ice for the time being 20141027 
-!             ! when running with WRF_Chem and using aerosol coupling in Goddard MP
-!             I_cloud = qci(i,j,k) * rho(i,j,k)             ! cloud ice [g/cm3]
-!             if ( (chem_opt == 300 .or. chem_opt == 301 .or. &
-!                   chem_opt == 302 .or. chem_opt == 303) .and. &
-!                  (gsfcgce_gocart_coupling == 1) ) then
-!                ! for cloud ice, estimate lambda (slope of gamma distribution)
-!                 mu = min(15.e0, (1000.E0/(icn_out*1.e-3)  + 2.e0))
-!                 gamfac3 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+3.e0) )
-!                 gamfac1 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+1.e0) )
-!                 lambda = (4.e0/3.e0*cpi*roqi*icn_out*1.e-3/I_cloud*  &
-!                           gamfac1)**(1.e0/3.e0)  ! [1/cm]
-!                 refi(i,k,j) = 1.e0/lambda * gamfac3 * 1.e4  !effective radius [micron]
-!              endif 
-
-              ! when running with WRF_Chem but no aerosol coupling in Goddard MP
               ! for cloud ice effective radius depends on temperature profile, formula from GCE
               refi(i,k,j) = 125.e0 +(tair(i,j)-243.16)*5.e0     ! [micron]
               if (tair(i,j) .gt. 243.16) refi(i,k,j) = 125.e0
               if (tair(i,j) .lt. 223.16) refi(i,k,j) = 25.e0
-#else
-              ! Not running with WRF_Chem
-              ! for cloud ice effective radius depends on temperature profile, formula from GCE
-              refi(i,k,j) = 125.e0 +(tair(i,j)-243.16)*5.e0     ! [micron]
-              if (tair(i,j) .gt. 243.16) refi(i,k,j) = 125.e0
-              if (tair(i,j) .lt. 223.16) refi(i,k,j) = 25.e0
-#endif
            endif !end of if qci(i,j,k) < cimin
         endif  !end of if reiflag=1
 
