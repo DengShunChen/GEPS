@@ -1,4 +1,10 @@
+#ifdef TIMCOMCPL
+       subroutine intgrt(compid)
+       use gfs_cpl
+#else
        subroutine intgrt
+#endif
+
 !
 !***********************************************************************
 !  this subroutine is the basic time stepping driver.  it does the
@@ -47,7 +53,7 @@
           use radn
           use albn
 !-----------------------------------------------------------------------
-          use mod_stochastic_physics, only: spptout, skebout, &
+          use mod_stochastic_physics, only: spptout, shumout, skebout, &
                                             run_stochastic_physics, &
                                             destroy_stochastic_physics, &
                                             skeb3du, skeb3dv, diss_est, skebfilt, &
@@ -174,6 +180,15 @@
 !for lightning scheme from ECMWF
           real flash(nxp, my_max), flash24(nxp, my_max)
 !xb110<
+#ifdef TIMCOMCPL
+      real, dimension(nxp, my_max) :: tocn_cpl, uocn_cpl, vocn_cpl, &
+                            u10m_cpl, v10m_cpl, t02m_cpl, q02m_cpl, &
+                            pslv_cpl, swup_cpl, swdn_cpl, lwdn_cpl, &
+                            rain_cpl, snow_cpl, tgfs_cpl, tg_ocn, tg_diff
+      real :: dt_cpl, tgwf, cplf
+      logical :: cpl_send_init
+      integer :: compid
+#endif
 
           integer, parameter:: async_id = 1
 #ifdef TIMING
@@ -232,25 +247,46 @@
 !                    , ut,vt,tt,qt,phi,rdiv                                       &
 !                    , km_soil,smc,slc,stc,canopy,zice,ggdef,gmdef )
 
-!          raintot = 0.
-          raincu = 0.
-          rainlp = 0.
-          raincu6 = 0.
-          rainlp6 = 0.
-          raincu3 = 0.
-          rainlp3 = 0.
-          raincu1 = 0.
-          rainlp1 = 0.
-          gfx = 0.
-          if (.not. restrt) then
-             rld = 0.
-             sld = 0.
-             raintot = 0.
-          end if
-          recn = 1
-          rdivm = 0.
-          flash = 0.
-          pdry = 0.
+!      raintot=0.
+      raincu=0.
+      rainlp=0.
+      raincu6=0.
+      rainlp6=0.
+      raincu3=0.
+      rainlp3=0.
+      raincu1=0.
+      rainlp1=0.
+      gfx=0.
+      if ( .not. restrt ) then
+        rld=0.
+        sld=0.
+        raintot = 0.
+      endif
+      recn=1
+      rdivm=0.
+      flash=0.
+      pdry=0.
+
+#ifdef TIMCOMCPL
+      tocn_cpl = 0.
+      uocn_cpl = 0.
+      vocn_cpl = 0.
+      u10m_cpl = 0.
+      v10m_cpl = 0.
+      t02m_cpl = 0.
+      q02m_cpl = 0.
+      pslv_cpl = 0.
+      swup_cpl = 0.
+      swdn_cpl = 0.
+      lwdn_cpl = 0.
+      rain_cpl = 0.
+      snow_cpl = 0.
+        dt_cpl = 0.
+      cpl_send_init = .true.
+         tg_ocn= 0.
+        tg_diff=0.
+           cplf=2.0 !cpl frequency
+#endif
 !
 !
 ! read mountant variables for topographic gravity wave drag
@@ -448,7 +484,37 @@
              icurrentyear = idtg_sst/100000000
           end if   !end lopgsst
 !
-10        continue
+#ifdef TIMCOMCPL
+      call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv)
+!      if(myrank .eq. 0) then
+!      write(*,*) "no replace the tg at first step"
+!        do i = 1,100
+!        do j = 1,100
+!        write(*,*) 'tg_ocn=', tg_ocn(2,7) !, "i=", i, "j=", j
+!        write(*,*) 'tg=', tg(2,7) !, "i=", i, "j=", j
+!        write(*,*) 'sssssu(max)=', maxval(ssu) ,'rank=', myrank
+!        write(*,*) 'sssssu(min)=', minval(ssu) ,'rank=', myrank
+!        write(*,*) 'sssssv(max)=', maxval(ssv)
+!        write(*,*) 'sssssv(min)=', minval(ssv)
+!       enddo
+!       enddo
+        tgwf=1.0/(86400.0/dta/(24.0/cplf)-1.0)
+        do i = 1,nxp
+         do j = 1,my_max
+          if(tg_ocn(i,j).eq.0.0) then
+            tg_diff(i,j)=0.0
+          else 
+            tg_diff(i,j)=(tg_ocn(i,j)-tg(i,j))*tgwf
+          end if
+         end do
+        end do
+      if(myrank .eq. 0) then
+            write(*,*) '1loop tg_diff=',tg_diff(2,7)
+      endif
+
+#endif 
+
+ 10   continue
 
           dtx_tau = dtx/3600.
 
@@ -627,7 +693,6 @@
 !
                 call prexp_hybrid_cwb(nxjp(j), nxp, lev, ptop, sigma, ptm(1, jj), &
                                       pk(1, 1, jj), pk2(1, 1, jj), plt(1, 1, jj))
-!
 !
 !ndy        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld               &
                 call gridnl_hybrid_ndsl(nxjp(j), nxp, lev, ncld &
@@ -1114,7 +1179,11 @@
                          , itimestep, lrun_sitvdiff, ic_sit &
                          !xb110>
                          !byl                      , rmr,smr,flash)
+#ifdef TIMCOMCPL
+                         , flash, tsflw, vvel, totallp,ustress,vstress,ssu,ssv)
+#else
                          , flash, tsflw, vvel, totallp)
+#endif
 !xb110<
 !--------------------------------------------------------------------------------
 !
@@ -1842,6 +1911,9 @@
          if (doskeb .and.  doskebout  ) then
             call skebout(tau)
          endif
+         if (doshum .and.  doshumout  ) then
+            call shumout(tau)
+         endif
         endif
 
         if(do_sit .AND. lgodas .AND. ldailysst) then
@@ -1881,18 +1953,101 @@
 !
 ! new year, read obs sst
 !
-          if (lopgsst) then
-             inexttau = int(tau + dtx/3600.+0.001)
-             call dtgfix12(idtg, idtg1_sst, inexttau)
-             inextyear = idtg1_sst/100000000
-             lnewyear = icurrentyear /= inextyear
-             if (lnewyear) then
-                call read_opgsst(idtg1_sst, ggdef, ocean, ice)
-                icurrentyear = idtg1_sst/100000000
-             end if
-          end if   !end lopgsst
+      if(lopgsst) then
+        inexttau = int(tau+dtx/3600.+0.001)
+        call dtgfix12(idtg,idtg1_sst,inexttau)
+        inextyear=idtg1_sst/100000000
+        lnewyear=icurrentyear/=inextyear
+        if( lnewyear ) then
+          call read_opgsst(idtg1_sst,ggdef,ocean,ice)
+          icurrentyear=idtg1_sst/100000000
+        endif
+      endif   !end lopgsst
 !
-          itau = tau + 0.001
+#ifdef TIMCOMCPL
+      u10m_cpl = u10m_cpl + u10*dtx
+      v10m_cpl = v10m_cpl + v10*dtx
+      t02m_cpl = t02m_cpl +  t2*dtx
+      q02m_cpl = q02m_cpl +  q2*dtx
+      pslv_cpl = pslv_cpl + (pt+pdiff)*dtx
+      swup_cpl = swup_cpl + (ss-sld)*dtx
+      swdn_cpl = swdn_cpl + sld*dtx
+      lwdn_cpl = lwdn_cpl + rld*dtx
+      rain_cpl = rain_cpl + totalp
+      snow_cpl = snow_cpl
+      dt_cpl   = dt_cpl + dtx
+      if(cpl_send_init)then
+        call gfs_cpl_send2gocn(compid,  u10m_cpl/dtx, v10m_cpl/dtx, &
+                                        t02m_cpl/dtx, q02m_cpl/dtx, &
+                                        pslv_cpl/dtx, swup_cpl/dtx, &
+                                        swdn_cpl/dtx, lwdn_cpl/dtx, &
+                                        rain_cpl/dtx, snow_cpl/dtx, tg)
+        cpl_send_init = .false.
+      endif
+
+      dtaup = mod(tau+0.001, cplf)
+      if( dtaup .lt. dtx_tau ) then
+        if(myrank .eq. 0) write(*,*) "TCo time to coupler", tau
+
+        call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv)
+        u10m_cpl = u10m_cpl/dt_cpl
+        v10m_cpl = v10m_cpl/dt_cpl
+        t02m_cpl = t02m_cpl/dt_cpl
+        q02m_cpl = q02m_cpl/dt_cpl
+        pslv_cpl = pslv_cpl/dt_cpl
+        swup_cpl = swup_cpl/dt_cpl
+        swdn_cpl = swdn_cpl/dt_cpl
+        lwdn_cpl = lwdn_cpl/dt_cpl
+        rain_cpl = rain_cpl/dt_cpl
+        snow_cpl = snow_cpl/dt_cpl
+        call gfs_cpl_send2gocn(compid, u10m_cpl, v10m_cpl, &
+                                       t02m_cpl, q02m_cpl, &
+                                       pslv_cpl, swup_cpl, &
+                                       swdn_cpl, lwdn_cpl, &
+                                       rain_cpl, snow_cpl, tg)
+        u10m_cpl = 0.
+        v10m_cpl = 0.
+        t02m_cpl = 0.
+        q02m_cpl = 0.
+        pslv_cpl = 0.
+        swup_cpl = 0.
+        swdn_cpl = 0.
+        lwdn_cpl = 0.
+        rain_cpl = 0.
+        snow_cpl = 0.
+        dt_cpl   = 0.
+
+        tgwf=1.0/(86400.0/dta/(24.0/cplf))
+
+        do i = 1,nxp
+         do j = 1,my_max
+          if(tg_ocn(i,j).eq.0.0) then
+            tg_diff(i,j)=0.0
+          else
+            tg_diff(i,j)=(tg_ocn(i,j)-tg(i,j))*tgwf
+          end if
+         end do
+        end do
+        if(myrank .eq. 0) then
+            write(*,*) '2 loop tg_diff=',tg_diff(2,7)
+        end if
+      end if
+
+      if(myrank .eq. 0) then
+        write(*,*) 'tg_ocn=', tg_ocn(2,7) !, "i=", i, "j=", j
+        write(*,*) 'tg=', tg(2,7) !, "i=", i, "j=", j
+        write(*,*) 'tg_atm=', tg(2,1) !, "i=", i, "j=", j
+      end if
+        tg=tg_diff+tg
+      if(myrank .eq. 0) then
+        write(*,*) '------after-------'
+        write(*,*) 'tg=', tg(2,7)
+        write(*,*) 'tg_atm=', tg(2,1) !, "i=", i, "j=", j
+      end if
+
+#endif
+
+      itau=tau+0.001
 #ifdef TIMING
           tm_2 = mpi_wtime()
 #endif

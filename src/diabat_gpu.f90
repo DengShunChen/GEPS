@@ -176,7 +176,7 @@
                           pdfcloud, cmbk, cgwd, fsit, dosppt, doshum, dossst, &
                           use_zmtnblck, ldailyFCTicesndpt, dSITdt_intv, &
                           weightSIT, bckfile, ggdef, doclx, doslavepp, &
-                          RTYPE, qmin, julian, mass_dp
+                          RTYPE, qmin, julian, doskeb, mass_dp
          use mod_sitgrid
          USE mod_sit_vdiff, ONLY: sit_vdiff, ctfreez
          USE mod_sit_control, ONLY: ftrigsit, ltrigsit, lsitstart, lsftobswt &
@@ -198,7 +198,9 @@
          use phygrid, only: dtcup, ducup, dvcup, dtshl, dushl, dvshl, dtlsp, dulsp, dvlsp
 ! for land_noah_new
          use namelist_soilveg, only: MAX_SLOPETYP, MAX_SOILTYP, MAX_VEGTYP
-         use mod_stochastic_physics, only: sppt3d, shum3d, ssst3d
+         use mod_stochastic_physics, only: sppt3d, shum3d, ssst3d,     &
+                                         diss_dc, shum3d_dq
+
          use leapyr
 !-----------------------------------------------------------------------
          implicit none
@@ -528,7 +530,12 @@
          real dtx_tau, dtaup, dtxb
          INTEGER, PARAMETER :: nerr = 6
          integer async_id
-         ! << For GPU >>
+! for dissipation convective (test)
+      real      diss_dcc(nxp,lev,my_max)
+!xb110>
+!skeb dissipation (test)
+      diss_dcc=0.
+      ! << For GPU >>
          ! present on device:
          !   << input >>
          !   nx, my, my_max, lev, ncld, nxp,
@@ -1745,7 +1752,9 @@
                      ttc(i, kc, jj) = tt(i, k, jj)
                      utc(i, kc, jj) = ut(i, k, jj)
                      vtc(i, kc, jj) = vt(i, k, jj)
-
+                        if(doskeb)then
+                          diss_dcc(i,kc,jj) = diss_dc(i,k,jj)
+                        endif
                      ztenh(i, k, jj) = tt(i, k, jj)
                      zqenh(i, k, jj) = qt(i, k, jj)
                      rho(i, k, jj) = plt(i, k, jj)*100./(con_rd*tt(i, k, jj))
@@ -1820,7 +1829,8 @@
                                       cldwrk(1, jj), rcup(1, jj), kbot(1, jj), &
                                       ktop(1, jj), kuo(1, jj), islimsk(1, jj), garea(1, jj), dotc(1, 1, jj), ncld, &
                                       cnvw(1, 1, jj), cnvc(1, 1, jj), &
-                                      snow_flxn(1, 1, jj), ptun(1, 1, jj), pqun(1, 1, jj))
+                                      snow_flxn(1, 1, jj), ptun(1, 1, jj), & 
+                                      pqun(1, 1, jj), diss_dcc(1, 1, jj))
                end do
             end if
 
@@ -1881,6 +1891,9 @@
                      ptu(i, k, jj) = ptun(i, kc, jj)
                      pqu(i, k, jj) = pqun(i, kc, jj)
                      cnvwn(i, k, jj) = cnvwr(i, kc, jj)
+                     if(doskeb)then
+                        diss_dc(i,k,jj) = diss_dcc(i,kc,jj)
+                     endif
                   end do
                end do
             end do
@@ -2841,7 +2854,14 @@
                do k = 1, lev
                   do i = 1, nxj
                      ru = shum3d(i, k, jj)
-                     qt(i, k, jj) = qt(i, k, jj)*(1.+ru)
+                     qnew = qt(i,k,jj)*(1.+ru)
+                     if ( qnew .ge. qmin ) then
+                       shum3d_dq(i,k,jj)=qnew-qt(i,k,jj)
+                       qt(i,k,jj) = qnew
+                     else
+                       shum3d_dq(i,k,jj)=qmin-qt(i,k,jj)
+                       qt(i,k,jj) = qmin
+                     endif
                   end do
                end do
             end do

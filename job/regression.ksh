@@ -196,7 +196,7 @@ cat > ${GFSWRK}/namlsts << EOF
   spl1=10., spl2=100.,
   two_loop=t,
   itter=2, vd=0.002, factop=60.,
-!  naero=1
+!  naero=1,
   ${MODLST_RES}
   ${MODLST_PHY}
  &end

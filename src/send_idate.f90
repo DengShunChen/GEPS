@@ -1,4 +1,4 @@
-#if defined(RSM) && defined(CWB_MPMD)
+#if defined(RSM) || defined(CWB_MPMD)
       subroutine send_idate(idate)
 !
       use rank, only : root_rsm,myrank,itag

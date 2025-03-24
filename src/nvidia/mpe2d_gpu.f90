@@ -286,6 +286,7 @@ subroutine mpe2d_transpose_siimpl_gpu(ain, aout, &
 
    return
 end
+
 subroutine mpe2d_unify_nx_gpu(work, a)
    ! Present ont device: work, a, nxjlen_all
    ! unify a(nx_partial,my_partial) to work(nx_full,my_partial)

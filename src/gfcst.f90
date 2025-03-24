@@ -1,4 +1,9 @@
-program gfcst
+#ifndef TIMCOMCPL
+      program gfcst
+#else
+      subroutine gfcst(compid, mpi_comm_mct)
+      use gfs_cpl, only:gfs_cpl_init
+#endif
 !
 ! main program of CWBGFS
 ! modify to f90 bt C-H Lee and sort by River Chen in 2015
@@ -36,9 +41,13 @@ program gfcst
 !
    implicit none
 
-   integer no
-   integer async_id
-   async_id = 1
+      integer  no
+      integer async_id
+#ifdef TIMCOMCPL
+      integer, intent(in) :: compid, mpi_comm_mct
+#endif
+      async_id = 1
+
 !
 !  logical io units:
 !
@@ -49,11 +58,18 @@ program gfcst
 !  output model history for diabatic variables='phyout'
 !  input file of path/file names='filist'
 !
-   call mpe_init
+#ifdef TIMCOMCPL
+      call mpe_init(mpi_comm_mct)
+#else
+      call mpe_init
+#endif
 !
 !     get model constants
 !
-   call cons
+      call cons
+#ifdef TIMCOMCPL
+      call gfs_cpl_init(compid)
+#endif
 !
 !  read in initial data and prepare for initialization/forecast
 !
@@ -99,6 +115,12 @@ program gfcst
       no = 2*((jtrun + 1)/2) + (jtrun/2) + 10
 #ifdef USE_CUDA
       call initial_gpu(no, jtrun, jtmax, lev, nx, my, my_max, mlmax)
+!      call initial(no, jtrun, jtmax, lev, nx, my, my_max, mlmax)
+!!20250307 shian trans to GPU after CPU
+!!$acc update device(pt, ut, vt, tt, qt) async(async_id)
+!!$acc update device(rdiv, phi, dtpl, dlpl) async(async_id)
+!!$acc update device(vornow, divnow, temnow, plnow) async(async_id)
+!!$acc update device(sgeo) async(async_id)
       !$acc wait(async_id)
 #else
       call initial(no, jtrun, jtmax, lev, nx, my, my_max, mlmax)
@@ -112,14 +134,30 @@ program gfcst
 !
 !  time integration
 !
-   if (ttl) then
-#ifdef USE_CUDA
+#ifdef TIMCOMCPL
+   #ifdef USE_CUDA
       call cudaProfilerStart
-      call intgrt_gpu
+      call intgrt_gpu(compid)
       call cudaProfilerStop
+      call mpe_finalize
+   #else
+      call intgrt(compid)
+      call mpe_finalize
+   #endif
+
+   end subroutine gfcst
+
+   
 #else
-      call intgrt
-#endif
+       if ( ttl ) then
+  #ifdef USE_CUDA
+        call cudaProfilerStart
+        call intgrt_gpu
+  !      call intgrt
+        call cudaProfilerStop
+  #else
+        call intgrt
+  #endif
    else
       call intgrt_3tl
    end if
@@ -128,5 +166,6 @@ program gfcst
    call mpe_finalize
    call dmsexit(0)
 !
-   stop
-end program gfcst
+      stop
+   end program gfcst
+#endif

@@ -10,7 +10,11 @@
                         , shdmax,shdmin,snoalb,albedo2                  &
                         , sld,zice,cice,xtice,hpbl,asl,atl,xmu,gfx      &
                         , kpbl,nmpbl,nmmiph,jj,isot,ivegsrc,sfemis_g    &
-                        , dudt,dvdt,dtdt,dqdt )
+#ifdef TIMCOMCPL
+                        , dudt,dvdt,dtdt,dqdt,ustress,vstress,ssu, ssv)
+#else
+                        , dudt,dvdt,dtdt,dqdt)
+#endif
 !
 !#######################################################################
 !                     subroutine description
@@ -176,7 +180,11 @@
                qflux(nx),pkd(nx),pk2d(nx),gwclim(nx),                      &
                tgclim(nx),snr(nx),totalp(nx),                              &
                ss(nx),rs(nx),alb(nx),xkmx(2),xkmd(lev),                    &
+#ifdef TIMCOMCPL
+               t2(nx),u10(nx),v10(nx),ustress(nx),vstress(nx),ssu(nx),ssv(nx)
+#else
                t2(nx),u10(nx),v10(nx)
+#endif
       real(kind=RTYPE) qt(nx,lev*ncld),q(nx,lev*ncld),phi(nx,lev),         &
                        topo(nx),pss(nx),ut(nx,lev),vt(nx,lev),tt(nx,lev),  &
                        pk(nx,lev),pk2(nx,lev)
@@ -450,7 +458,11 @@
                     stress,fm,fh,                                       &
                     ustar,sfcw,ddvel,fm10,fh2,fh10,                   &
                     sigmaf,ivegtyp,shdmax,ivegsrc,                      &
+#ifdef TIMCOMCPL
+                    tsurf,flag_iter,redrag,ustress,vstress,ssu,ssv)
+#else
                     tsurf,flag_iter,redrag)
+#endif
 !
 !     print*,'pblnoah,diff'
          do i=1,nxj
@@ -466,7 +478,11 @@
 !                     flag_iter)
       call sfc_ocean(nxj,nx,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev), &
                      tg,cd,cdq,prsl1,prslki,islmsk,ddvel,flag_iter,      &
+#ifdef TIMCOMCPL
+                     qsurf,gfx,qflux,hflux,ep1d,ssu,ssv)
+#else
                      qsurf,gfx,qflux,hflux,ep1d)
+#endif
 !
 !     print*,'pblnoah,ocean'
 !

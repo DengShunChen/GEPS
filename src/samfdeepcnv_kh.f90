@@ -78,14 +78,16 @@
            qi,q1,t1,u1,v1,cldwrk,rn,kbot,ktop,kcnv,islimsk,garea, &
            dot,ncloud,cnvw,cnvc, &
 !xb110>> for flash parameterization
-           snow_flx,ptu,pqu)
+           snow_flx,ptu,pqu, &
+!xb99>> test dissipation
+           dissdc1)
 !xb110<<
 !,ud_mf,dd_mf,dt_mf,cnvw,cnvc, &
 !           clam,c0s,c1,betal,betas,evfact,evfactl,pgcon,asolfac)
 !
       use machine , only : kind_phys
 !      use mpe
-!      use rank
+      use rank
 !      use index
 !byl      use funcphys , only : fpvs
       use physcons, grav => con_g, cp => con_cp, hvap => con_hvap &
@@ -111,6 +113,9 @@
       real(kind=kind_phys), intent(out) :: cldwrk(im),rn(im)
       real(kind=kind_phys) cnvw(ix,km),  cnvc(ix,km),  &
          ud_mf(im,km),dd_mf(im,km), dt_mf(im,km)
+!-----test dissipation from convective
+      real(kind=kind_phys), intent(inout):: dissdc1(ix,km)
+
 !
 !------local variables
       integer              i, indx, jmn, k, kk, km1, n
@@ -376,6 +381,7 @@
           ud_mf(i,k) = 0.
           dd_mf(i,k) = 0.
           dt_mf(i,k) = 0.
+          dissdc1(i,k) = 0.
         enddo
       enddo
 !
@@ -2510,6 +2516,23 @@
           if(cnvflg(i) .and. rn(i) > 0.) then
             if(k >= 1 .and. k <= jmin(i)) then
               dd_mf(i,k) = edto(i) * etad(i,k) * xmb(i) * dt2
+            endif
+          endif
+        enddo
+      enddo
+
+      do k = 2, km1
+        do i = 1, im
+          if(cnvflg(i) .and. rn(i) > 0.) then
+            if(k >= 1 .and. k < ktop(i)) then
+!(test) dissipation 
+              dz = zi(i,k) - zi(i,k-1)
+              rho = po1(i,k)*100. / (rd*to(i,k))
+!              tem=(ud_mf(i,k)+dd_mf(i,k))/dt2    !(kg/m^2)
+              tem=ud_mf(i,k)/dt2    !(kg/m^2)
+              ptem= 0.5*(xlamud(i,k)+xlamud(i,k+1))   !(1/m)
+!              ptem2= 0.5*(xlamue(i,k)+xlamue(i,k+1))   !(1/m)
+              dissdc1(i,k)=(tem**2.)*(ptem)/(rho**3.)*1.e4/(2.6*2.6)*15.  !from Berner_2009*15.
             endif
           endif
         enddo

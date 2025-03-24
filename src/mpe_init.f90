@@ -1,5 +1,8 @@
+#ifdef TIMCOMCPL
+  subroutine mpe_init(mpi_comm_mct)
+#else
   subroutine mpe_init
-
+#endif
 ! CWB2016 io_quilting version
 
 ! CWB2017 2dMPI  V1   version
@@ -35,7 +38,10 @@
 
      implicit none
 
-     integer i, ierr, istat, iworld, igfs, iio, mini, m, n
+#ifdef TIMCOMCPL
+    integer, intent(in), optional :: mpi_comm_mct
+#endif
+    integer i,ierr,istat,iworld,igfs,iio,mini,m,n
 
      integer, dimension(:), allocatable :: ranks_gfs, ranks_io
 
@@ -44,10 +50,16 @@
      call mpmd_init(nsize_all, myrank_all, MPI_COMM_gfs_all, root_rsm, istat)
      if (istat .ne. 0) stop'mpmd_init fail !'
 #else
-     ! the whole group, (gfs + io)
-     call MPI_INIT(ierr)
-     call MPI_COMM_RANK(MPI_COMM_WORLD, myrank_all, ierr)
-     call MPI_COMM_SIZE(MPI_COMM_WORLD, nsize_all, ierr)
+    ! the whole group, (gfs + io)
+      #ifdef TIMCOMCPL
+      MPI_COMM_atm = mpi_comm_mct
+      #else
+      MPI_COMM_atm = MPI_COMM_WORLD
+      call MPI_INIT( ierr )
+      #endif
+    call MPI_COMM_RANK( MPI_COMM_atm, myrank_all, ierr )
+    call MPI_COMM_SIZE( MPI_COMM_atm, nsize_all,  ierr )
+    root_rsm = nsize_all
 #endif
 #ifdef USE_CUDA
      call device_init(myrank_all, nsize_all)
@@ -79,7 +91,7 @@
 #if defined(RSM) && defined(CWB_MPMD)
         call MPI_COMM_GROUP(MPI_COMM_gfs_all, iworld, ierr)
 #else
-        call MPI_COMM_GROUP(MPI_COMM_WORLD, iworld, ierr)
+        call MPI_COMM_GROUP(MPI_COMM_atm, iworld, ierr)
 #endif
         call MPI_GROUP_excl(iworld, Nio, ranks_io, igfs, ierr)
         call MPI_GROUP_excl(iworld, Ngfs, ranks_gfs, iio, ierr)
@@ -91,9 +103,9 @@
         call MPI_COMM_create(MPI_COMM_gfs_all, iio, MPI_COMM_io, ierr)
 #else
         ! create the sub_group(gfs)
-        call MPI_COMM_create(MPI_COMM_WORLD, igfs, MPI_COMM_gfs, ierr)
+        call MPI_COMM_create(MPI_COMM_atm, igfs, MPI_COMM_gfs, ierr)
         ! create the sub_group(io)
-        call MPI_COMM_create(MPI_COMM_WORLD, iio, MPI_COMM_io, ierr)
+        call MPI_COMM_create(MPI_COMM_atm, iio, MPI_COMM_io, ierr)
 #endif
 
         if (myrank_all .le. Ngfs - 1) then
@@ -215,7 +227,7 @@
 #if defined(RSM) && defined(CWB_MPMD)
         MPI_COMM_gfs = MPI_COMM_gfs_all
 #else
-        MPI_COMM_gfs = MPI_COMM_WORLD
+        MPI_COMM_gfs = MPI_COMM_atm
 #endif
 
         npe = nsize

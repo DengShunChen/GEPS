@@ -41,13 +41,14 @@
         print *,'getfname : error','RANK=',myrank
         call mpe_finalize
         call dmsexit(-1)
-!     else
-!       if(myrank .eq. 0) print *,truefile
+!      else
+!        if(myrank .eq. 0) print *, 'check truefile=',truefile
       endif
 !
       open (unit=12,file=trim(truefile),form='formatted')
 !
       read (12,filst,end=110)
+
 !
   110 continue
       close(12)
