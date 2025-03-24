@@ -31,6 +31,17 @@
 !    MSA : Methanesulphonic acid
 !    DMS : Dimethylsulphide
 !    SO2 : Sulphur dioxide
+!...............................................
+!  nlut-species aerosol :
+!    SO4 : Sulphate
+!    SOT : Soot
+!    IOC : Insoluble OC
+!    WOC : Water soluble OC
+!    SAM : Sea salt accumulation mode
+!    SCM : Sea salt coarse mode
+!    DNM : Dust nucleation mode
+!    DAM : Dust accumulation mode
+!    DCM : Dust coarse mode
 !-----------------------------------------------------------------
 !
       use index
@@ -40,6 +51,11 @@
                        naso4,nadu1,nadu2,nadu3,nadu4,nadu5, &
                        nass1,nass2,nass3,nass4,nass5,nablc, &
                        nabbc,naolc,naobc,namsa,nadms,naso2
+#ifdef LUT_aero
+      use module_gocart_coupling, only : nlut,nsuso,nsoot,ninso,   &
+                                         nwaso,nssam,nsscm,nminm2, &
+                                         nmiam2,nmicm1
+#endif
 !
       implicit  none
 
@@ -62,6 +78,19 @@
       integer   i,j,k,m,n,jul,nxj,mm,istat,monidex,lncrec,jj,ii,nm
       real      coef1,coef2
 
+#ifdef LUT_aero
+      if ( naero.ne.nlut ) stop 'error in naero or nlut!!!!'
+
+      if ( nsuso .le.naero ) aerokey(nsuso)  = 'SO4'
+      if ( nsoot .le.naero ) aerokey(nsoot)  = 'SOT'
+      if ( ninso .le.naero ) aerokey(ninso)  = 'IOC'
+      if ( nwaso .le.naero ) aerokey(nwaso)  = 'WOC'
+      if ( nssam .le.naero ) aerokey(nssam)  = 'SAM'
+      if ( nsscm .le.naero ) aerokey(nsscm)  = 'SCM'
+      if ( nminm2.le.naero ) aerokey(nminm2) = 'DNM'
+      if ( nmiam2.le.naero ) aerokey(nmiam2) = 'DAM'
+      if ( nmicm1.le.naero ) aerokey(nmicm1) = 'DCM'
+#else
       if ( naso4.le.naero ) aerokey(naso4) = 'SO4'
       if ( nadu1.le.naero ) aerokey(nadu1) = 'DU1'
       if ( nadu2.le.naero ) aerokey(nadu2) = 'DU2'
@@ -80,6 +109,7 @@
       if ( namsa.le.naero ) aerokey(namsa) = 'MSA'
       if ( nadms.le.naero ) aerokey(nadms) = 'DMS'
       if ( naso2.le.naero ) aerokey(naso2) = 'SO2'
+#endif
 
       lncrec = nx*my
 
