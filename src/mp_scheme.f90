@@ -20,6 +20,10 @@
 ! for GFDL MP v3
       use module_mp_gfdl_v3,  only : gfdlv3_init => gfdl_cld_mp_init
       use physpara, only : is_aerosol_aware,merra2_aerosol_aware
+#ifdef Readaeroclx
+! for GOCART coupling
+      use module_gocart_coupling, only : makelut_ccn_icn
+#endif
 
       implicit none
 !  ---  input:
@@ -72,6 +76,9 @@
         if ( nmmiph .eq. 15 ) then
           if ( myrank .eq. 0 )                                         &
              print *,'Goddard (GCE) 3ICE cloud microphysics initialized'
+#ifdef Readaeroclx
+          call makelut_ccn_icn
+#endif
         endif
 ! Goddard (GCE) 4ICE MP
         if ( nmmiph .eq. 16 ) then
@@ -91,6 +98,9 @@
              dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,            &
              itimestep,sgeo,phi,rhc_mp,pk,                             &
              snr,xlat,sdec,ivegtyp,                                    &
+#ifdef Readaeroclx
+             aeroclx,naero,                                            &
+#endif
 !  ---  inputs/outputs:
              tt,qt,qa,ut,vt,vvel,pst,                                  &
 !  ---  outputs:
@@ -148,6 +158,10 @@
       real,     intent(in)    :: plt(nx,lev)
       real(kind=RTYPE), intent(in):: phi(nx,lev),pk(nx,lev),sgeo(nx)
       real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),dsigma(lev,2)
+#ifdef Readaeroclx
+      integer,  intent(in)    :: naero
+      real,     intent(in)    :: aeroclx(nx,lev*naero)
+#endif
 !  ---  inputs/outputs:
       real, intent(inout) :: tt(nx,lev)
       real,     intent(inout) :: qa(nx,lev)
@@ -228,6 +242,7 @@
       real,dimension(:,:,:),allocatable ::                              &
               th3d,qh3d,rho3d,pii3d,p3d,z3d,rew3d,rer3d,rei3d,res3d,    &
               reg3d,reh3d,refl_10cm
+      real,dimension(:,:,:,:),allocatable :: aero4d
 #ifdef EXT_DIAG
       real,dimension(:,:,:),allocatable ::                              &
               physc, physe, physd, physs, physm, physf,                 &
@@ -983,6 +998,10 @@
         res3d = 0.
         reg3d = 0.
         w3d = 0.
+#ifdef Readaeroclx
+        allocate ( aero4d(nx,lev,1,naero) )
+        aero4d = 0.
+#endif
 
 #ifdef EXT_DIAG
         preci3d = 0.
@@ -1032,6 +1051,12 @@
             rho3d(i,k,1) = p3d(i,k,1)/                                  &
                            (con_rd*tt(i,kc)*(1+con_fvirt*qv3d(i,k,1)))  !air density (kg/m^3)
             w3d  (i,k,1) = -vvel(i,kc)*100./(rho3d(i,k,1)*con_g)        !vertical velocity (m/s)
+
+#ifdef Readaeroclx
+            do n = 1, naero
+              aero4d(i,k,1,n) = aeroclx(i,(n-1)*lev+kc)
+            enddo
+#endif
           enddo
         enddo
 
@@ -1056,6 +1081,9 @@
                    1, nxj, 1, 1, 1, lev,                                & ! tile   dims
                    rain2d, ice2d, snow2d, graupel2d, sr2d,              &
                    .false., qg3d,                                       &
+#ifdef Readaeroclx
+                   aero4d, naero,                                       &
+#endif
                    ihail, ice2,                                         &
 #ifdef EXT_DIAG
                    refl_10cm, diagflag, do_radar_ref,                   &
@@ -1166,6 +1194,9 @@
          ( th3d,qv3d,qc3d,qr3d,qs3d,qi3d,qg3d,pii3d,p3d,z3d,dz3d,rho3d, &
            rain2d,ice2d,snow2d,graupel2d,                               &
            ht,sr2d,land2d,w3d,rew3d,rer3d,rei3d,res3d,reg3d )
+#ifdef Readaeroclx
+        deallocate ( aero4d )
+#endif
 #ifdef EXT_DIAG
         deallocate                                                      &
          ( preci3d,precs3d,precg3d,precr3d,prech3d,refl_10cm )

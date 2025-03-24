@@ -1099,6 +1099,9 @@
                          , ftp, fqp, fpsp, ftp1, fqp1, fpsp1, deltaq, cnvwr, cnvcr, pdot &
                          , shdmax, shdmin, snoalb &
                          , slopetyp, sld, slc, zice, cice, xtice, sncover, sndepth &
+#ifdef Readaeroclx
+                         , naero, aeroclxm &
+#endif
                          , ctot, chig, cmid, clow, hpbl, asl, atl, cosz &
                          , nmgwor, nmgwcv, hprime_b, mtnvar, docgrav, nmmiph &
                          !--------------------------------------------------------------------------------

@@ -4,7 +4,7 @@
 !
       use param
       use index
-      use const, only: RTYPE
+      use const, only: RTYPE, naero
 
       implicit none
 
@@ -51,6 +51,7 @@
                                                  dtshl,dushl,dvshl,    &
                                                  dtlsp,dulsp,dvlsp
       real(kind=RTYPE), dimension(:,:,:),allocatable,save :: o3l
+      real, dimension(:,:,:),allocatable,save :: aeroclxm
 
       contains 
 
@@ -242,6 +243,19 @@
 
            return
 
+         end subroutine
+
+         subroutine allocate_aerogrid_array
+           integer  ierr
+           allocate ( aeroclxm(nxp,naero*lev,my_max), stat=ierr )
+           if (ierr/= 0) stop 'mod_phygrid : allocate aeroclxm'
+           aeroclxm = 0.
+           return
+         end subroutine
+
+         subroutine deallocate_aerogrid_array
+           deallocate ( aeroclxm )
+           return
          end subroutine
 
       end module phygrid
