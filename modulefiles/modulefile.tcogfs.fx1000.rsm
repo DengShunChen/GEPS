@@ -60,7 +60,6 @@ setenv MSG_COM "-Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2"
 setenv LIBS_COM "-SSL2BLAMP"
 setenv OMP_COM "-Kopenmp,parallel"
 setenv CFLAGS_COM "-c -Xg"
-# set MPMD library connecting RSM
 setenv MPMD_LIB "-L../../rsm/lib/cwb_mpmd -lmpmd"
 
 # Known conflicts

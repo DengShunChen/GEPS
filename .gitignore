@@ -7,7 +7,7 @@ src/bl_ysu.org.f90
 run*
 TCo383L72_fx10*
 .d*
-wrk/*
+work/*
 wrk_nmon/*
 wrk_omix/*
 wrk_ysu/*
@@ -20,6 +20,8 @@ wrk_sample
 src/depend
 work_*
 build
+src/libtco.a
+job/*.log
 .*.swp
 build_lake.sh
 modulefiles/modulefile.tcogfs.fx1000_lake

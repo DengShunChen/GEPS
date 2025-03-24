@@ -17,7 +17,6 @@ subroutine device_init(rank, size)
    type(cublashandle) :: handle
    type(cusparseHandle) :: sparsehandle
    type(cusolverDnHandle) :: solverDnhandle
-
    num_device = acc_get_num_devices(acc_device_nvidia)
    device_id = mod(rank, num_device)
    call acc_set_device_num(device_id, acc_device_nvidia)

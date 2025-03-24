@@ -6,8 +6,11 @@
              prsl1, prslki, islimsk, ddvel, flag_iter,                  &
 !  ---  outputs:
 !    &       qsurf, cmm, chh, gflux, evap, hflx, ep                     &  
-             qsurf, gflux, evap, hflx, ep                               &
-           )
+#ifdef TIMCOMCPL
+             qsurf, gflux, evap, hflx, ep, ssu, ssv)
+#else
+             qsurf, gflux, evap, hflx, ep)
+#endif
 
 ! ===================================================================== !
 !  description:                                                         !
@@ -82,7 +85,11 @@
 
       real (kind=RTYPE), dimension(im), intent(in) :: u1, v1, t1, q1
       real (kind=kind_phys), dimension(im), intent(in) :: ps,             &
-            tskin, cm, ch, prsl1, prslki, ddvel
+#ifdef TIMCOMCPL
+              tskin, cm, ch, prsl1, prslki, ddvel, ssu, ssv
+#else
+              tskin, cm, ch, prsl1, prslki, ddvel
+#endif
       integer, dimension(im), intent(in):: islimsk
 
       logical, intent(in) :: flag_iter(im)
@@ -90,7 +97,7 @@
 !  ---  outputs:
 !     real (kind=kind_phys), dimension(im), intent(out) :: qsurf,         &
       real (kind=kind_phys), dimension(im) :: qsurf,         &
-             cmm, chh, gflux, evap, hflx, ep
+             cmm, chh, gflux, evap, hflx, ep, cpl_u1, cpl_v1
 
 !  ---  locals:
 
@@ -99,6 +106,12 @@
       integer :: i
 
       logical :: flag(im)
+#ifdef TIMCOMCPL
+      cpl_u1=0.
+      cpl_v1=0.
+      cpl_u1=u1
+      cpl_v1=v1
+#endif
 !
 !===> ...  begin here
 !
@@ -112,9 +125,13 @@
 
         if ( flag(i) ) then
 
+#ifdef TIMCOMCPL
+          wind     = max(sqrt((cpl_u1(i)-ssu(i))**2 + (cpl_v1(i)-ssv(i))**2)          &
+                       + max( 0.0, min( ddvel(i), 30.0 ) ), 1.0)
+#else
           wind     = max(sqrt(u1(i)*u1(i) + v1(i)*v1(i))                  &
                        + max( 0.0, min( ddvel(i), 30.0 ) ), 1.0)
-
+#endif          
           q0       = max( q1(i), 1.0e-8 )
           rho      = prsl1(i) / (rd*t1(i)*(1.0 + rvrdm1*q0))
 

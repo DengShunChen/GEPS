@@ -207,4 +207,3 @@ EOF
  if [ $? != 0 ] ; then
   echo "error occured: fct model fail !!"
  fi
-
