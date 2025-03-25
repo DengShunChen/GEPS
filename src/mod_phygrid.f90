@@ -51,7 +51,7 @@
                                                  dtshl,dushl,dvshl,    &
                                                  dtlsp,dulsp,dvlsp
       real(kind=RTYPE), dimension(:,:,:),allocatable,save :: o3l
-      real, dimension(:,:,:),allocatable,save :: aeroclxm
+      real(kind=RTYPE), dimension(:,:,:),allocatable,save :: aeroclxm
 
       contains 
 

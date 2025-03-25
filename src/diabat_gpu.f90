@@ -423,7 +423,7 @@
          real ftp1(nxp, lev, my_max), fqp1(nxp, lev, my_max), fpsp1(nxp, my_max)
 #ifdef Readaeroclx
          integer naero
-         real aeroclx(nxp, naero*lev, my_max)
+         real(kind=RTYPE) aeroclx(nxp, naero*lev, my_max)
 #endif
 !-------
 !for pdf cloud

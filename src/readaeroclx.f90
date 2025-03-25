@@ -47,7 +47,7 @@
       use index
       use mpe
       use rank
-      use const, only: ihdgi,ifilin_aero, &
+      use const, only: ihdgi,ifilin_aero,RTYPE, &
                        naso4,nadu1,nadu2,nadu3,nadu4,nadu5, &
                        nass1,nass2,nass3,nass4,nass5,nablc, &
                        nabbc,naolc,naobc,namsa,nadms,naso2
@@ -60,7 +60,7 @@
       implicit  none
 
       integer   nx,my,my_max,julian,lev,naero
-      real      aeroclx(nxp,naero*lev,my_max)
+      real(kind=RTYPE) aeroclx(nxp,naero*lev,my_max)
 
 !
 !  working array as climt data base
