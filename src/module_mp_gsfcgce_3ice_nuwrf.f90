@@ -2357,8 +2357,9 @@ CONTAINS
       ! -------------
 
         if ( (ccnflag .eq. 2) .or. (inflag .eq. 2) ) then
-#ifdef LUT_aero
            mr2mc = r00*1.e+6  !mass mixing ratio (kg/kg) to mass concentration (g/m^-3)
+#ifdef LUT_aero
+           if ( naero .lt. nlut ) stop 'naero must not be smaller than nlut!'
            if ( nsuso .le.nlut ) aerog(i,j,nsuso)  = aeroclx(i,k,j,nsuso) *mr2mc
            if ( nsoot .le.nlut ) aerog(i,j,nsoot)  = aeroclx(i,k,j,nsoot) *mr2mc
            if ( ninso .le.nlut ) aerog(i,j,ninso)  = aeroclx(i,k,j,ninso) *mr2mc
@@ -2371,7 +2372,6 @@ CONTAINS
 #else
            if ( naero .lt. 15 ) stop 'not enough aerosol types!'
            ! convert from MERRA2-aerotype to GOCART-aerotype
-           mr2mc = r00*1.e+6  !mass mixing ratio (kg/kg) to mass concentration (g/m^-3)
            aerog(i,j, 1) = aeroclx(i,k,j,naso4) *mr2mc    !sulfur and its precure    (SO4)
            aerog(i,j, 2) =(aeroclx(i,k,j,nablc) + &       !soot                      (BLC
                            aeroclx(i,k,j,nabbc))*mr2mc    !                          +BBC)

@@ -79,8 +79,6 @@
       real      coef1,coef2
 
 #ifdef LUT_aero
-      if ( naero.ne.nlut ) stop 'error in naero or nlut!!!!'
-
       if ( nsuso .le.naero ) aerokey(nsuso)  = 'SO4'
       if ( nsoot .le.naero ) aerokey(nsoot)  = 'SOT'
       if ( ninso .le.naero ) aerokey(ninso)  = 'IOC'
