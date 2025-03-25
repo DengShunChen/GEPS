@@ -135,14 +135,12 @@
                                nwaso  =  4 , & !water soluble OC
                                nssam  =  5 , & !accumulated sea salt
                                nsscm  =  6 , & !coarse sea salt
-                               nminm2 =  7 , & !nucleated dust
-                               nmiam2 =  8 , & !accumulated dust
-                               nmicm1 =  9 , & !coarse dust
-                               nminm1 = 10 , & !not used
-                               nminm3 = 11 , & !not used
-                               nmiam1 = 12 , & !not used
-                               nmiam3 = 13 , & !not used
-                               nmicm2 = 14     !not used
+                               nminm  =  7 , & !nucleated dust
+                               nmiam  =  8 , & !accumulated dust
+                               nmicm  =  9     !coarse dust
+ integer, parameter, public :: nminm1 = 99 , nminm2 = 99 , nminm3 = 7
+ integer, parameter, public :: nmiam1 = 99 , nmiam2 = 99 , nmiam3 = 8
+ integer, parameter, public :: nmicm1 = 99 , nmicm2 = 9
 #else
  ! GOCART aerotypes , for both LUT and optical variables
  integer, parameter, public :: nlut   = 14     !number of aerotypes

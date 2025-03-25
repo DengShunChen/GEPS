@@ -11,7 +11,7 @@ MODULE module_mp_gsfcgce_3ice_nuwrf
 #ifdef LUT_aero
    USE module_gocart_coupling , only : mass2ccn, mass2icn,        &
                       nlut,nsuso,nsoot,ninso,nwaso,nssam,nsscm,   &
-                      nminm2,nmiam2,nmicm1
+                      nminm,nmiam,nmicm
 #else
    USE module_gocart_coupling , only : mass2ccn, mass2icn
    USE const , only : naso4,nadu1,nadu2,nadu3,nadu4,nadu5,        &
@@ -1942,8 +1942,7 @@ CONTAINS
 
       ! WRF GOCART coupling :
 !      integer, parameter :: ngo = 14
-      real, dimension(:,:,:), allocatable :: aerog
-      real, dimension(:), allocatable :: aeromc
+      real, dimension(:), allocatable :: aerog
       real :: ew, rhw, ssrw, p_mb, mr2mc
 
       real :: P_liu_daum  ! autoconversion rate [g/cm3 s-1]
@@ -2148,8 +2147,7 @@ CONTAINS
       if ( (ccnflag .eq. 2) .or. (inflag .eq. 2) ) then
 !         allocate( aerog(its:ite,jts:jte,ngo) )
 !         allocate( aeromc(ngo) )
-         allocate( aerog(its:ite,jts:jte,nlut) )
-         allocate( aeromc(nlut) )
+         allocate( aerog(nlut) )
       endif
 #endif
 !C    ******************************************************************
@@ -2357,38 +2355,39 @@ CONTAINS
       ! -------------
 
         if ( (ccnflag .eq. 2) .or. (inflag .eq. 2) ) then
+           aerog(:) = 0.
            mr2mc = r00*1.e+6  !mass mixing ratio (kg/kg) to mass concentration (g/m^-3)
 #ifdef LUT_aero
-           if ( naero .lt. nlut ) stop 'naero must not be smaller than nlut!'
-           if ( nsuso .le.nlut ) aerog(i,j,nsuso)  = aeroclx(i,k,j,nsuso) *mr2mc
-           if ( nsoot .le.nlut ) aerog(i,j,nsoot)  = aeroclx(i,k,j,nsoot) *mr2mc
-           if ( ninso .le.nlut ) aerog(i,j,ninso)  = aeroclx(i,k,j,ninso) *mr2mc
-           if ( nwaso .le.nlut ) aerog(i,j,nwaso)  = aeroclx(i,k,j,nwaso) *mr2mc
-           if ( nssam .le.nlut ) aerog(i,j,nssam)  = aeroclx(i,k,j,nssam) *mr2mc
-           if ( nsscm .le.nlut ) aerog(i,j,nsscm)  = aeroclx(i,k,j,nsscm) *mr2mc
-           if ( nminm2.le.nlut ) aerog(i,j,nminm2) = aeroclx(i,k,j,nminm2)*mr2mc
-           if ( nmiam2.le.nlut ) aerog(i,j,nmiam2) = aeroclx(i,k,j,nmiam2)*mr2mc
-           if ( nmicm1.le.nlut ) aerog(i,j,nmicm1) = aeroclx(i,k,j,nmicm1)*mr2mc
+           if ( naero.lt.nlut ) stop 'naero must not be smaller than nlut!'
+           if ( nsuso.le.nlut ) aerog(nsuso) = max(aeroclx(i,k,j,nsuso),0.)*mr2mc
+           if ( nsoot.le.nlut ) aerog(nsoot) = max(aeroclx(i,k,j,nsoot),0.)*mr2mc
+           if ( ninso.le.nlut ) aerog(ninso) = max(aeroclx(i,k,j,ninso),0.)*mr2mc
+           if ( nwaso.le.nlut ) aerog(nwaso) = max(aeroclx(i,k,j,nwaso),0.)*mr2mc
+           if ( nssam.le.nlut ) aerog(nssam) = max(aeroclx(i,k,j,nssam),0.)*mr2mc
+           if ( nsscm.le.nlut ) aerog(nsscm) = max(aeroclx(i,k,j,nsscm),0.)*mr2mc
+           if ( nminm.le.nlut ) aerog(nminm) = max(aeroclx(i,k,j,nminm),0.)*mr2mc
+           if ( nmiam.le.nlut ) aerog(nmiam) = max(aeroclx(i,k,j,nmiam),0.)*mr2mc
+           if ( nmicm.le.nlut ) aerog(nmicm) = max(aeroclx(i,k,j,nmicm),0.)*mr2mc
 #else
            if ( naero .lt. 15 ) stop 'not enough aerosol types!'
            ! convert from MERRA2-aerotype to GOCART-aerotype
-           aerog(i,j, 1) = aeroclx(i,k,j,naso4) *mr2mc    !sulfur and its precure    (SO4)
-           aerog(i,j, 2) =(aeroclx(i,k,j,nablc) + &       !soot                      (BLC
-                           aeroclx(i,k,j,nabbc))*mr2mc    !                          +BBC)
-           aerog(i,j, 3) = aeroclx(i,k,j,naobc) *mr2mc    !non-hygroscopic OC        (OBC)
-           aerog(i,j, 4) = aeroclx(i,k,j,naolc) *mr2mc    !hygroscopic OC            (OLC)
-           aerog(i,j, 5) = aeroclx(i,k,j,nass1) *mr2mc    !sea salt accumulated mode (SS1)
-           aerog(i,j, 6) =(aeroclx(i,k,j,nass2) + &       !sea salt coarse mode      (SS2
-                           aeroclx(i,k,j,nass3) + &       !                          +SS3
-                           aeroclx(i,k,j,nass4))*mr2mc    !                          +SS4)
-           aerog(i,j, 7) = aeroclx(i,k,j,nadu1) *mr2mc    !dust mode 1               (DU1)
-           aerog(i,j, 8) = aeroclx(i,k,j,nadu1) *mr2mc    !dust mode 2               (DU1)
-           aerog(i,j, 9) = aeroclx(i,k,j,nadu1) *mr2mc    !dust mode 3               (DU1)
-           aerog(i,j,10) = aeroclx(i,k,j,nadu1) *mr2mc    !dust mode 4               (DU1)
-           aerog(i,j,11) = aeroclx(i,k,j,nadu2) *mr2mc    !dust mode 5               (DU2)
-           aerog(i,j,12) = aeroclx(i,k,j,nadu3) *mr2mc    !dust mode 6               (DU3)
-           aerog(i,j,13) = aeroclx(i,k,j,nadu4) *mr2mc    !dust mode 7               (DU4)
-           aerog(i,j,14) = aeroclx(i,k,j,nadu5) *mr2mc    !dust mode 8               (DU5)
+           aerog( 1) = max(aeroclx(i,k,j,naso4),0.)*mr2mc    !sulfur and its precure    (SO4)
+           aerog( 2) = max(aeroclx(i,k,j,nablc) + &          !soot                      (BLC
+                           aeroclx(i,k,j,nabbc),0.)*mr2mc    !                          +BBC)
+           aerog( 3) = max(aeroclx(i,k,j,naobc),0.)*mr2mc    !non-hygroscopic OC        (OBC)
+           aerog( 4) = max(aeroclx(i,k,j,naolc),0.)*mr2mc    !hygroscopic OC            (OLC)
+           aerog( 5) = max(aeroclx(i,k,j,nass1),0.)*mr2mc    !sea salt accumulated mode (SS1)
+           aerog( 6) = max(aeroclx(i,k,j,nass2) + &          !sea salt coarse mode      (SS2
+                           aeroclx(i,k,j,nass3) + &          !                          +SS3
+                           aeroclx(i,k,j,nass4),0.)*mr2mc    !                          +SS4)
+           aerog( 7) = max(aeroclx(i,k,j,nadu1),0.)*mr2mc    !dust mode 1               (DU1)
+           aerog( 8) = max(aeroclx(i,k,j,nadu1),0.)*mr2mc    !dust mode 2               (DU1)
+           aerog( 9) = max(aeroclx(i,k,j,nadu1),0.)*mr2mc    !dust mode 3               (DU1)
+           aerog(10) = max(aeroclx(i,k,j,nadu1),0.)*mr2mc    !dust mode 4               (DU1)
+           aerog(11) = max(aeroclx(i,k,j,nadu2),0.)*mr2mc    !dust mode 5               (DU2)
+           aerog(12) = max(aeroclx(i,k,j,nadu3),0.)*mr2mc    !dust mode 6               (DU3)
+           aerog(13) = max(aeroclx(i,k,j,nadu4),0.)*mr2mc    !dust mode 7               (DU4)
+           aerog(14) = max(aeroclx(i,k,j,nadu5),0.)*mr2mc    !dust mode 8               (DU5)
 #endif
         endif
 #endif
@@ -2639,9 +2638,8 @@ CONTAINS
 !               qsw(i,j) = 0.622*esw(i,j)/(p0_mks(i,k,j)-esw(i,j))
 !               if ( qv(i,j).gt.qsw(i,j) ) then
 !                  rhw = max(1.e-6, qv(i,j)/qsw(i,j)*100.)      !relative humidity (%)
-!                  aeromc(:) = max(0.,aerog(i,j,:))           !aerosol mass concentration (g m^-3)
 !                  ssrw = max(0.001, rhw - 100.e0)              !super saturation rate over water (%)
-!                  call mass2ccn(tair(i,j),ssrw,aeromc,ncloud)
+!                  call mass2ccn(tair(i,j),ssrw,aerog,ncloud)
 ! >>> Khairoutdinov and Kogan (2000) :
 !                  if ( ncloud .gt. 0. ) then
 !                     ! convert NCCN from m^-3 to cm^-3 :
@@ -3243,9 +3241,8 @@ CONTAINS
            elseif ( ccnflag .eq. 2 ) then
               if ( qv(i,j).gt.qsw(i,j) ) then
                  rhw = max(1.e-6,qv(i,j)/qsw(i,j)*100.)       !relative humidity (%)
-                 aeromc(:) = max(0.,aerog(i,j,:))           !aerosol mass concentration (g m^-3)
                  ssrw = max(0.001,rhw-100.0)                  !super saturation rate over water (%)
-                 call mass2ccn(tair(i,j),ssrw,aeromc,ncloud)
+                 call mass2ccn(tair(i,j),ssrw,aerog,ncloud)
                  ncloud = ncloud*1.e+6                        !CCN (convert from cm^-3 to m^-3)
               else
                  ncloud = 0.0
@@ -3301,8 +3298,7 @@ CONTAINS
 #ifdef Readaeroclx
               elseif ( inflag .eq. 2 ) then
                  p_mb = p0(i,j,k)*1.e-3                       !pressure (hPa, equal to mbar)
-                 aeromc(:) = max(0.,aerog(i,j,:))           !aerosol mass concentration (g m^-3)
-                 call mass2icn(p_mb,tair(i,j),aeromc,nice)
+                 call mass2icn(p_mb,tair(i,j),aerog,nice)
                  nice = nice*1.e+3                            !IN (convert from L^-1 to m^-3)
 #endif
               else
@@ -4441,7 +4437,7 @@ CONTAINS
 
 #ifdef Readaeroclx
       if ( (ccnflag .eq. 2) .or. (inflag .eq. 2) ) then
-         deallocate( aerog,aeromc )
+         deallocate( aerog )
       endif
 #endif
 ! ****************************************************************

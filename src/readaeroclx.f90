@@ -53,8 +53,8 @@
                        nabbc,naolc,naobc,namsa,nadms,naso2
 #ifdef LUT_aero
       use module_gocart_coupling, only : nlut,nsuso,nsoot,ninso,   &
-                                         nwaso,nssam,nsscm,nminm2, &
-                                         nmiam2,nmicm1
+                                         nwaso,nssam,nsscm,nminm,  &
+                                         nmiam,nmicm
 #endif
 !
       implicit  none
@@ -79,15 +79,15 @@
       real      coef1,coef2
 
 #ifdef LUT_aero
-      if ( nsuso .le.naero ) aerokey(nsuso)  = 'SO4'
-      if ( nsoot .le.naero ) aerokey(nsoot)  = 'SOT'
-      if ( ninso .le.naero ) aerokey(ninso)  = 'IOC'
-      if ( nwaso .le.naero ) aerokey(nwaso)  = 'WOC'
-      if ( nssam .le.naero ) aerokey(nssam)  = 'SAM'
-      if ( nsscm .le.naero ) aerokey(nsscm)  = 'SCM'
-      if ( nminm2.le.naero ) aerokey(nminm2) = 'DNM'
-      if ( nmiam2.le.naero ) aerokey(nmiam2) = 'DAM'
-      if ( nmicm1.le.naero ) aerokey(nmicm1) = 'DCM'
+      if ( nsuso.le.naero ) aerokey(nsuso)  = 'SO4'
+      if ( nsoot.le.naero ) aerokey(nsoot)  = 'SOT'
+      if ( ninso.le.naero ) aerokey(ninso)  = 'IOC'
+      if ( nwaso.le.naero ) aerokey(nwaso)  = 'WOC'
+      if ( nssam.le.naero ) aerokey(nssam)  = 'SAM'
+      if ( nsscm.le.naero ) aerokey(nsscm)  = 'SCM'
+      if ( nminm.le.naero ) aerokey(nminm) = 'DNM'
+      if ( nmiam.le.naero ) aerokey(nmiam) = 'DAM'
+      if ( nmicm.le.naero ) aerokey(nmicm) = 'DCM'
 #else
       if ( naso4.le.naero ) aerokey(naso4) = 'SO4'
       if ( nadu1.le.naero ) aerokey(nadu1) = 'DU1'
