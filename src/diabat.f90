@@ -173,7 +173,7 @@
                                       pdfcloud,cmbk,cgwd, fsit, dosppt, doshum, dossst, &
                                       use_zmtnblck,ldailyFCTicesndpt,dSITdt_intv, &
                                       weightSIT,bckfile,ggdef,doclx,doslavepp,    &
-                                      RTYPE,qmin,julian,mass_dp
+                                      RTYPE,qmin,julian,mass_dp,monsave
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
@@ -716,7 +716,8 @@
 !
       if ( doclxu ) then
         if ( myrank .eq. 0 ) print *, 'update aeroclx at tau= ',tau
-        call readaeroclx( nx,my,my_max,lev,naero,julian,ggdef,aeroclx )
+        call readaeroclx( nx,my,my_max,lev,naero,julian,&
+                          itimestep,monsave,ggdef,aeroclx )
       endif
 #endif
 !

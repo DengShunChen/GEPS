@@ -52,6 +52,8 @@
                                                  dtlsp,dulsp,dvlsp
       real(kind=RTYPE), dimension(:,:,:),allocatable,save :: o3l
       real(kind=RTYPE), dimension(:,:,:),allocatable,save :: aeroclxm
+      real(kind=RTYPE), dimension(:,:,:,:),allocatable,save ::         &
+                                                 aerosave1,aerosave2
 
       contains 
 
@@ -247,14 +249,18 @@
 
          subroutine allocate_aerogrid_array
            integer  ierr
-           allocate ( aeroclxm(nxp,naero*lev,my_max), stat=ierr )
+           allocate ( aeroclxm(nxp,naero*lev,my_max), &
+                      aerosave1(nxp,lev,my_max,naero), &
+                      aerosave2(nxp,lev,my_max,naero),stat=ierr )
            if (ierr/= 0) stop 'mod_phygrid : allocate aeroclxm'
            aeroclxm = 0.
+           aerosave1 = 0.
+           aerosave2 = 0.
            return
          end subroutine
 
          subroutine deallocate_aerogrid_array
-           deallocate ( aeroclxm )
+           deallocate ( aeroclxm,aerosave1,aerosave2 )
            return
          end subroutine
 
