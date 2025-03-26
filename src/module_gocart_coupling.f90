@@ -158,6 +158,7 @@
                                nmiam3 = 12 , & !dust mode 6 (accumulated)
                                nmicm1 = 13 , & !dust mode 7 (coarse)
                                nmicm2 = 14     !dust mode 8 (coarse)
+ integer, parameter, public :: nminm = 99 , nmiam = 99 , nmicm = 99  !not used
 #endif
 
  real,parameter :: pi_const = 3.1415926535e0

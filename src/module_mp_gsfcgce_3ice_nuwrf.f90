@@ -8,16 +8,12 @@ MODULE module_mp_gsfcgce_3ice_nuwrf
 
 
 #ifdef Readaeroclx
-#ifdef LUT_aero
    USE module_gocart_coupling , only : mass2ccn, mass2icn,        &
                       nlut,nsuso,nsoot,ninso,nwaso,nssam,nsscm,   &
                       nminm,nmiam,nmicm
-#else
-   USE module_gocart_coupling , only : mass2ccn, mass2icn
    USE const , only : naso4,nadu1,nadu2,nadu3,nadu4,nadu5,        &
                       nass1,nass2,nass3,nass4,nass5,nablc,        &
                       nabbc,naolc,naobc,namsa,nadms,naso2
-#endif
 #endif
    USE module_mp_radar
 
