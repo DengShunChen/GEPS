@@ -687,10 +687,10 @@
         j=jlist1(jj)
         nxj=nxdef_2d(j)
         do i=1,nxj
-          wk_xy(i,jj,6) = ctot(i,jj) * 100.0 !>> for grib2 unit
-          wk_xy(i,jj,7) = chig(i,jj) * 100.0 !   cloud fraction
-          wk_xy(i,jj,8) = cmid(i,jj) * 100.0
-          wk_xy(i,jj,9) = clow(i,jj) * 100.0 !<<
+          wk_xy(i,jj,6) = ctot(i,jj)
+          wk_xy(i,jj,7) = chig(i,jj)
+          wk_xy(i,jj,8) = cmid(i,jj)
+          wk_xy(i,jj,9) = clow(i,jj)
           wk_xy(i,jj,10) = hpbl(i,jj)
           wk_xy(i,jj,11) = qt(i,1,jj)
           wk_xy(i,jj,12) = qt(i,lev,jj)

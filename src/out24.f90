@@ -169,7 +169,7 @@
       if(outdms.gt.0)  call dmswrit(imax,jmax,lenc,kflag,glob,istat)
       if(outgrb2==1.and.myrank==0)then
         ihdgo2 = ihdgo
-        call wrt_grb2_accu_v2(itau,0,5,4,2,8,0,0,0,24,glob)
+        call wrt_grb2_accu_v2(itau,0,5,5,2,8,0,0,0,24,glob)
       endif
 !
 !xb110>>

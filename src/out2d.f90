@@ -255,7 +255,7 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl_w ('x00340',idtg,itau,ggdef)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
-      ptp0=(/0,5,4,2,8,0,0,-999,-999/)
+      ptp0=(/0,5,5,2,8,0,0,-999,-999/)
       call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
       go to 30
       endif
@@ -775,7 +775,14 @@
 ! ctot_total cloud fraction
       if(label(kk).eq.'x00770') then
       if( itau==0 .or. itau .gt. nint(domfc) )then
-      call unify_reduceintp(nx,my,my_max,wk_xy(1,1,6),glob)
+      do  jj=1,jlistnum
+         j=jlist1(jj)
+       nxj=nxdef_2d(j)
+      do  i=1,nxj
+        globp(i,jj)=wk_xy(i,jj,6) * 100.0
+      enddo
+      enddo
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl_w ('x00770',idtg,itau,ggdef)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/0,6,1,3,10,0,0,-999,-999/)
@@ -785,7 +792,14 @@
       endif
 ! chig_high cloud fraction
       if(label(kk).eq.'x00760') then
-      call unify_reduceintp(nx,my,my_max,wk_xy(1,1,7),glob)
+      do  jj=1,jlistnum
+         j=jlist1(jj)
+       nxj=nxdef_2d(j)
+      do  i=1,nxj
+        globp(i,jj)=wk_xy(i,jj,7) * 100.0
+      enddo
+      enddo
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl_w ('x00760',idtg,itau,ggdef)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/0,6,5,3,10,0,0,-999,-999/)
@@ -794,7 +808,14 @@
       endif
 ! cmid_middle cloud fraction
       if(label(kk).eq.'x00750') then
-      call unify_reduceintp(nx,my,my_max,wk_xy(1,1,8),glob)
+      do  jj=1,jlistnum
+         j=jlist1(jj)
+       nxj=nxdef_2d(j)
+      do  i=1,nxj
+        globp(i,jj)=wk_xy(i,jj,8) * 100.0
+      enddo
+      enddo
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl_w ('x00750',idtg,itau,ggdef)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/0,6,4,3,10,0,0,-999,-999/)
@@ -803,7 +824,14 @@
       endif
 ! clow_low cloud fraction
       if(label(kk).eq.'x00740') then
-      call unify_reduceintp(nx,my,my_max,wk_xy(1,1,9),glob)
+      do  jj=1,jlistnum
+         j=jlist1(jj)
+       nxj=nxdef_2d(j)
+      do  i=1,nxj
+        globp(i,jj)=wk_xy(i,jj,9) * 100.0
+      enddo
+      enddo
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl_w ('x00740',idtg,itau,ggdef)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/0,6,3,3,10,0,0,-999,-999/)
