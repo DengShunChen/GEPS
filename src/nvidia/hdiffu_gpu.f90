@@ -50,9 +50,11 @@ subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
    stream = acc_get_cuda_stream(async_id)
 
    nf = jtrun - 1
-   wmax = 0.0
 
-   !$acc enter data copyin(wmax) create(wmax_buf, vordiss, divdiss) async(async_id)
+   !$acc enter data create(wmax_buf, vordiss, divdiss, wmax) async(async_id)
+   !$acc kernels async(async_id)
+   wmax = 0.0
+   !$acc end kernels
    !$acc parallel loop gang async(async_id) private(wt)
    do k = 1, lev
       wt = 0.0

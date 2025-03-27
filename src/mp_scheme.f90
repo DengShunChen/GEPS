@@ -1,5 +1,4 @@
 #define EffectRad_GCE3
-!#define update_dp
 !--------------------------
       subroutine mp_init                                               &
 !--------------------------
@@ -21,6 +20,10 @@
 ! for GFDL MP v3
       use module_mp_gfdl_v3,  only : gfdlv3_init => gfdl_cld_mp_init
       use physpara, only : is_aerosol_aware,merra2_aerosol_aware
+#ifdef Readaeroclx
+! for GOCART coupling
+      use module_gocart_coupling, only : makelut_ccn_icn
+#endif
 
       implicit none
 !  ---  input:
@@ -73,6 +76,9 @@
         if ( nmmiph .eq. 15 ) then
           if ( myrank .eq. 0 )                                         &
              print *,'Goddard (GCE) 3ICE cloud microphysics initialized'
+#ifdef Readaeroclx
+          call makelut_ccn_icn
+#endif
         endif
 ! Goddard (GCE) 4ICE MP
         if ( nmmiph .eq. 16 ) then
@@ -92,11 +98,14 @@
              dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,            &
              itimestep,sgeo,phi,rhc_mp,pk,                             &
              snr,xlat,sdec,ivegtyp,                                    &
+#ifdef Readaeroclx
+             aeroclx,naero,                                            &
+#endif
 !  ---  inputs/outputs:
              tt,qt,qa,ut,vt,vvel,pst,                                  &
 !  ---  outputs:
              re_cloud,re_ice,re_snow,re_rain,                          &
-             rlsp,sr )
+             rlsp,rlspi,rlsps,rlspg,sr )
 
       use rank
       use radn,                only: ntcw,ntiw,ntrw,ntsw,ntgl,nthl,     &
@@ -149,21 +158,22 @@
       real,     intent(in)    :: plt(nx,lev)
       real(kind=RTYPE), intent(in):: phi(nx,lev),pk(nx,lev),sgeo(nx)
       real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),dsigma(lev,2)
+#ifdef Readaeroclx
+      integer,  intent(in)    :: naero
+      real,     intent(in)    :: aeroclx(nx,lev*naero)
+#endif
 !  ---  inputs/outputs:
       real, intent(inout) :: tt(nx,lev)
       real,     intent(inout) :: qa(nx,lev)
       real(kind=RTYPE), intent(inout) :: vvel(nx,lev) !mb/s
       real, intent(inout) :: ut(nx,lev),vt(nx,lev)
       real(kind=RTYPE), intent(inout) :: qt(nx,lev*ncld)
-#ifdef update_dp
-      real(kind=RTYPE), intent(inout) :: pst(nx)
-#else
       real(kind=RTYPE), intent(in   ) :: pst(nx)
-#endif
 !  ---  outputs:
       real,     intent(inout)   :: re_cloud(nx,lev),re_ice(nx,lev),   &
                                    re_snow(nx,lev),re_rain(nx,lev)
       real,     intent(inout)   :: rlsp(nx),sr(nx)
+      real,     intent(inout)   :: rlspi(nx),rlsps(nx),rlspg(nx)
 !  ---  local arrays:
       integer   kc,k,i,n
       real      prsl(nx,lev),del(nx,lev)
@@ -228,10 +238,11 @@
       real    mp_time,dts
       real    rhowater,rhosnow,dx
       real,dimension(:,:),allocatable ::                                &
-              ht,hail2d,rainnc2d,snownc2d,graupelnc2d,hailnc2d,sr2d
+              ht,hail2d,sr2d
       real,dimension(:,:,:),allocatable ::                              &
               th3d,qh3d,rho3d,pii3d,p3d,z3d,rew3d,rer3d,rei3d,res3d,    &
               reg3d,reh3d,refl_10cm
+      real,dimension(:,:,:,:),allocatable :: aero4d
 #ifdef EXT_DIAG
       real,dimension(:,:,:),allocatable ::                              &
               physc, physe, physd, physs, physm, physf,                 &
@@ -309,6 +320,9 @@
 !
         do i=1,nxj
           rlsp(i) = rainncv(i) + snowncv(i) + graupelncv(i)
+          rlspi(i) = 0.   !ice not precipitating
+          rlsps(i) = snowncv(i)
+          rlspg(i) = graupelncv(i)
         enddo
 !
         do k=1,lev
@@ -563,6 +577,9 @@
         enddo
         do i = 1, nxj
           rlsp(i) = rainncv(i)  !total large scale precipitation (kg/m^2=mm)
+          rlspi(i) = icencv(i)      !not sure
+          rlsps(i) = snowncv(i)     !not sure
+          rlspg(i) = graupelncv(i)  !not sure
         enddo
 
         deallocate                                                      &
@@ -716,6 +733,9 @@
           if ( graupel2d(i,1) .lt. rainmin ) graupel2d(i,1) = 0.0
 
           rlsp(i) = rain2d(i,1)+snow2d(i,1)+ice2d(i,1)+graupel2d(i,1)  !total large scale precipitation (mm)
+          rlspi(i) = ice2d(i,1)
+          rlsps(i) = snow2d(i,1)
+          rlspg(i) = graupel2d(i,1)
           if ( rlsp(i) .gt. rainmin ) then
             sr(i) = (snow2d(i,1)+ice2d(i,1)+graupel2d(i,1))             &
                    /(rain2d(i,1)+snow2d(i,1)+ice2d(i,1)+graupel2d(i,1))  !snow ratio
@@ -907,18 +927,11 @@
           enddo
         endif
 
-#ifdef update_dp
-        ! calculate new terrain pressure pst (hPa)
-        do i = 1, nxj
-          pst(i) = ptop
-          do k = 1, lev
-            pst(i) = pst(i) + dp2d(i,k)/100.
-          enddo
-        enddo
-#endif
-
         do i = 1, nxj
           rlsp(i) = water1d(i)+rain1d(i)+snow1d(i)+ice1d(i)+graupel1d(i)     !total large scale precipitation (mm)
+          rlspi(i) = ice1d(i)
+          rlsps(i) = snow1d(i)
+          rlspg(i) = graupel1d(i)
           if ( rlsp(i) .gt. rainmin ) then
             sr(i) = (snow1d(i)+ice1d(i)+graupel1d(i))                   &
                     /(water1d(i)+rain1d(i)+snow1d(i)+ice1d(i)+graupel1d(i))  !snow ratio
@@ -946,20 +959,19 @@
          ( th3d(nx,lev,1),qv3d(nx,lev,1),qc3d(nx,lev,1),qr3d(nx,lev,1), &
            qi3d(nx,lev,1),qs3d(nx,lev,1),qg3d(nx,lev,1),rho3d(nx,lev,1),&
            pii3d(nx,lev,1),p3d(nx,lev,1),z3d(nx,lev,1),dz3d(nx,lev,1),  &
-           rainnc2d(nx,1),snownc2d(nx,1),graupelnc2d(nx,1),             &
            rain2d(nx,1),snow2d(nx,1),graupel2d(nx,1),sr2d(nx,1),        &
-           refl_10cm(nx,lev,1),ht(nx,1),land2d(nx,1),w3d(nx,lev,1) )
+           ice2d(nx,1),ht(nx,1),land2d(nx,1),w3d(nx,lev,1) )
         allocate                                                        &
          ( rew3d(nx,lev,1),rer3d(nx,lev,1),rei3d(nx,lev,1),             &
            res3d(nx,lev,1),reg3d(nx,lev,1) )
 #ifdef EXT_DIAG
         allocate                                                        &
          ( preci3d(nx,lev,1),precs3d(nx,lev,1),precg3d(nx,lev,1),       &
-           precr3d(nx,lev,1),prech3d(nx,lev,1) )
+           precr3d(nx,lev,1),prech3d(nx,lev,1),refl_10cm(nx,lev,1) )
 #endif
 
         if ( nmmiph.eq.16 ) allocate                                    &
-         ( qh3d(nx,lev,1),hailnc2d(nx,1),hail2d(nx,1),reh3d(nx,lev,1) )
+         ( qh3d(nx,lev,1),hail2d(nx,1),reh3d(nx,lev,1) )
 
         th3d = 0.
         qv3d = 0.
@@ -975,13 +987,10 @@
         ht = 0.
         dz3d = 0.
         rain2d = 0.
+        ice2d = 0.
         snow2d = 0.
         graupel2d = 0.
-        rainnc2d = 0.
-        snownc2d = 0.
-        graupelnc2d = 0.
         sr2d = 0.
-        refl_10cm = 0.
         land2d = 0.
         rew3d = 0.
         rer3d = 0.
@@ -989,6 +998,10 @@
         res3d = 0.
         reg3d = 0.
         w3d = 0.
+#ifdef Readaeroclx
+        allocate ( aero4d(nx,lev,1,naero) )
+        aero4d = 0.
+#endif
 
 #ifdef EXT_DIAG
         preci3d = 0.
@@ -996,12 +1009,12 @@
         precg3d = 0.
         precr3d = 0.
         prech3d = 0.
+        refl_10cm = 0.
 #endif
 
         if ( nmmiph .eq. 16 ) then
           qh3d = 0.
           hail2d = 0.
-          hailnc2d = 0.
           reh3d = 0.
         endif
 
@@ -1038,6 +1051,12 @@
             rho3d(i,k,1) = p3d(i,k,1)/                                  &
                            (con_rd*tt(i,kc)*(1+con_fvirt*qv3d(i,k,1)))  !air density (kg/m^3)
             w3d  (i,k,1) = -vvel(i,kc)*100./(rho3d(i,k,1)*con_g)        !vertical velocity (m/s)
+
+#ifdef Readaeroclx
+            do n = 1, naero
+              aero4d(i,k,1,n) = aeroclx(i,(n-1)*lev+kc)
+            enddo
+#endif
           enddo
         enddo
 
@@ -1060,13 +1079,14 @@
                    itimestep, xlat, sdec, land2d,                       &
                    1, nx , 1, 1, 1, lev,                                & ! memory dims
                    1, nxj, 1, 1, 1, lev,                                & ! tile   dims
-                   rainnc2d, rain2d,                                    &
-                   snownc2d, snow2d, sr2d,                              &
-                   graupelnc2d, graupel2d,                              &
-                   refl_10cm, diagflag, do_radar_ref,                   &
+                   rain2d, ice2d, snow2d, graupel2d, sr2d,              &
                    .false., qg3d,                                       &
+#ifdef Readaeroclx
+                   aero4d, naero,                                       &
+#endif
                    ihail, ice2,                                         &
 #ifdef EXT_DIAG
+                   refl_10cm, diagflag, do_radar_ref,                   &
                    preci3d, precs3d, precg3d, precr3d,                  &
 #endif
                    rew3d, rer3d, rei3d, res3d, reg3d )
@@ -1080,10 +1100,10 @@
                    itimestep,                                           &
                    1, nx , 1, 1, 1, lev,                                & ! memory dims
                    1, nxj, 1, 1, 1, lev,                                & ! tile   dims
-                   rainnc2d, rain2d,                                    &
-                   snownc2d, snow2d, sr2d,                              &
-                   graupelnc2d, graupel2d,                              &
+                   rain2d, snow2d, graupel2d, sr2d,                     &
+#ifdef EXT_DIAG
                    refl_10cm, diagflag, do_radar_ref,                   &
+#endif
 #ifdef EffectRad_GCE3
                    land2d,                                              &
                    rew3d, rer3d, rei3d,                                 &
@@ -1114,14 +1134,11 @@
                    itimestep, land2d, dx,                               &
                    1, nx , 1, 1, 1, lev,                                & ! memory dims
                    1, nxj, 1, 1, 1, lev,                                & ! tile   dims
-                   rainnc2d, rain2d,                                    &
-                   snownc2d, snow2d, sr2d,                              &
-                   graupelnc2d, graupel2d,                              &
-                   hailnc2d, hail2d,                                    &
-                   refl_10cm, diagflag, do_radar_ref,                   &
+                   rain2d, snow2d, graupel2d, hail2d, sr2d,             &
                    rew3d, rer3d, rei3d,                                 &
                    res3d, reg3d, reh3d,                                 &
 #ifdef EXT_DIAG
+                   refl_10cm, diagflag, do_radar_ref,                   &
                    physc, physe, physd, physs, physm, physf,            & !simultaneous diabatic heating rate
                    acphysc, acphyse, acphysd, acphyss, acphysm,acphysf, & !accumulated diabatic heating rate
                    preci3d, precs3d, precg3d, prech3d, precr3d,         & !precitation
@@ -1165,20 +1182,27 @@
           enddo
         enddo
         do i = 1, nxj
-          rlsp(i) = rainnc2d(i,1)  !total large scale precipitation (kg/m^2=mm)
+          rlsp(i) = rain2d(i,1)  !total large scale precipitation (kg/m^2=mm)
+          rlspi(i) = ice2d(i,1)
+          rlsps(i) = snow2d(i,1)
+          rlspg(i) = graupel2d(i,1)
+          if ( nmmiph .eq. 16 ) rlspg(i) = rlspg(i) + hail2d(i,1)
           sr(i)   = sr2d(i,1)
         enddo
 
         deallocate                                                      &
          ( th3d,qv3d,qc3d,qr3d,qs3d,qi3d,qg3d,pii3d,p3d,z3d,dz3d,rho3d, &
-           rainnc2d,snownc2d,graupelnc2d,rain2d,snow2d,graupel2d,       &
-           ht,sr2d,refl_10cm,land2d,w3d,rew3d,rer3d,rei3d,res3d,reg3d )
+           rain2d,ice2d,snow2d,graupel2d,                               &
+           ht,sr2d,land2d,w3d,rew3d,rer3d,rei3d,res3d,reg3d )
+#ifdef Readaeroclx
+        deallocate ( aero4d )
+#endif
 #ifdef EXT_DIAG
         deallocate                                                      &
-         ( preci3d,precs3d,precg3d,precr3d,prech3d )
+         ( preci3d,precs3d,precg3d,precr3d,prech3d,refl_10cm )
 #endif
         if ( nmmiph .eq. 16 ) deallocate                                &
-         ( qh3d,hailnc2d,hail2d,reh3d )
+         ( qh3d,hail2d,reh3d )
 
       endif  !end of if nmmiph=15 .or. nmmiph=16
 

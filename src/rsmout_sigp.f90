@@ -5,7 +5,7 @@
                          , ice,land,ocean,xlon,xlat)
 #ifdef RSM
 
-#ifdef CWB_MPMD
+#if defined(CWB_MPMD)  || defined(CWBSUM)
 #define send_RSM
 #else
 #define write_RSM
@@ -15,7 +15,7 @@
       use mpe
       use radn, only : ntoz,ntcw,ntrw,ntiw,ntsw,ntgl
       use noah, only : cice
-#ifdef CWB_MPMD
+#if defined(CWB_MPMD) || defined(CWBSUM)
       use rank, only : root_rsm,myrank,itag
 #else
       use rank, only : myrank

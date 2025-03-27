@@ -3,7 +3,7 @@
 #if defined(RSM) && defined(CWB_MPMD)
       use rank, only : root_gfs,MPI_COMM_gfs_all
 #else
-      use rank, only : root_gfs
+      use rank, only : root_gfs,MPI_COMM_atm
 #endif
       use const, only : keyo,KLENO
       use mpi

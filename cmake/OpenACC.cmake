@@ -22,6 +22,8 @@ endif()
 # Set variable for NetCDF and W3 libraries
 set(NetCDF_Fortran_INCLUDE_DIRS "/package/x86_64/nvidia/netcdf-4.9.0/include")
 set(W3_LIBRARIES "/package/x86_64/w3lib-2.0.2/lib/libw3.a")
+set(CPL_INCLUDE_DIR "/package/x86_64/nvidia/geps_coupler/include")
+set(MCT_INCLUDE_DIR "/package/x86_64/nvidia/mct-2.11.0/include")
 
 # Link library for dgemm
 link_directories(/home/xa09/pkg/openmpi-4.0.1/lib)
@@ -47,17 +49,29 @@ link_libraries(-lfftw3_threads -lfftw3 -lfftw3f_threads -lfftw3f)
 link_directories(/package/x86_64/operlib/lib)
 link_libraries(-lnwp)
 
+link_directories(/package/x86_64/nvidia/geps_coupler/lib)
+link_libraries(-lcpl)
+
+link_directories(/package/x86_64/nvidia/mct-2.11.0/lib)
+link_libraries(-lmct -lmpeu)
+
 # Additional link
-link_libraries(-ltirpc -lm -lcurl -lhdf5_hl -lhdf5 -lgfortran -lcusparse)
+link_libraries(-ltirpc -lm -lcurl -lhdf5_hl -lhdf5 -lgfortran -lcusparse -lcudart)
 
 # Add OpenACC options
 add_compile_options(-DUSE_CUDA=1)
 add_compile_options(-acc=gpu -gpu=cc${GPU_ARCHS},cuda${CUDA_RUNTIME_VERSION}
-                    -Minfo=accel -cuda -cudalib=cublas,cufft,nccl)
+                    -Minfo=accel -cuda -cudalib=cublas,cufft,cusolver,nccl)
 link_libraries(-acc=gpu -gpu=cc${GPU_ARCHS},cuda${CUDA_RUNTIME_VERSION} -cuda
-               -cudalib=cublas,cufft,nccl)
+               -cudalib=cublas,cufft,cusolver,nccl)
 if(${USE_PCAST})
   add_compile_options(-gpu=redundant)
   add_compile_options(-DUSE_PCAST=1)
   link_libraries(-gpu=redundant)
 endif()
+
+# CPL
+include_directories(${CPL_INCLUDE_DIR})
+# MCT
+include_directories(${MCT_INCLUDE_DIR})
+

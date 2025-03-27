@@ -920,7 +920,7 @@
       call qmax2d(ice_gfs(1,1),1,1,nxs,mys)
       endif
 ! ***
-#ifdef CWB_MPMD
+#if defined(CWB_MPMD) || defined(CWBSUM)
       if(myrank.eq.0) then
       print*,'before into send_data in rsmout.f90'
       call send_data(float(itau),nxs,mys,km,lpout,ncld,temp_gfs,spfh_gfs &

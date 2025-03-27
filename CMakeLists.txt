@@ -40,12 +40,15 @@ option(USE_RSM "enable output RSM initial/basefield data" OFF)
 option(USE_MPMD "enable output RSM via MPMD " OFF)
 option(USE_PCAST "enable OpenACC data correctness check" OFF)
 option(USE_SP "enable partial computation with single precision" OFF)
+option(TIMCOMCPL "enable CPL TIMCOM" ON)
+option(CWBSUM "enable CWBSUM" ON)
+option(USE_aeroclx "enable Readaeroclx" OFF)
 
 set(GPU_ARCHS
     "80"
     CACHE STRING "GPU architecture(V100=70;A100=80)")
 set(CUDA_RUNTIME_VERSION
-    "12.3"
+    "12.6"
     CACHE STRING "CUDA runtime version")
 # set(TCO_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/src" CACHE STRING "TCO destination")
 
@@ -72,6 +75,9 @@ message(STATUS "USE_RSM:      ${USE_RSM}")
 message(STATUS "USE_MPMD:     ${USE_MPMD}")
 message(STATUS "USE_PCAST:    ${USE_PCAST}")
 message(STATUS "USE_SP:       ${USE_SP}")
+message(STATUS "TIMCOMCPL:      ${TIMCOMCPL}")
+message(STATUS "CWBSUM:      ${CWBSUM}")
+message(STATUS "USE_aeroclx:  ${USE_aeroclx}")
 message(STATUS "GPU_ARCHS:    ${GPU_ARCHS}")
 message(STATUS "CUDA_RUNTIME_VERSION: ${CUDA_RUNTIME_VERSION}")
 message(STATUS "Output path:  ${TCO_OUTPUT_PATH}")
@@ -94,7 +100,7 @@ endif()
 # Compiler Options (-c -D<macro> -flag)
 # ##############################################################################
 
-add_definitions(-DTIMING -DUSE_FFTW -DW3TAG)
+add_definitions(-DTIMING -DUSE_FFTW -DW3TAG -Dcheck_info)
 # add_definitions(-DTIMING -DUSE_FFTW -DW3TAG -DVERBOSE -DNO_OUT)
 if(${USE_I38K})
   add_definitions(-DI38K)
@@ -114,6 +120,15 @@ endif()
 if(${USE_SP})
   add_definitions(-DSP)
 endif()
+if(${CWBSUM})
+  add_definitions(-DCWBSUM)
+endif()
+if(${TIMCOMCPL})
+  add_definitions(-DTIMCOMCPL)
+endif()
+if(${USE_aeroclx})
+  add_definitions(-DReadaeroclx)
+endif()
 
 # ##############################################################################
 # Include Directory (-I<path>)
@@ -128,6 +143,7 @@ include_directories(${FFTW_INCLUDE_DIR})
 
 # G2
 include_directories($ENV{G2_INC_PATH})
+
 
 set(TCOGFS_INCLUDE_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src

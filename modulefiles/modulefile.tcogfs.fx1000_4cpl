@@ -1,0 +1,85 @@
+#%Module####################################################
+##                                   dschen@cwb.gov.tw
+##                                   Fujitsu
+## TCoGFS
+##__________________________________________________________
+proc ModulesHelp { } {
+puts stderr "Set environment veriables for TCoGFS"
+puts stderr "This module initializes the environment "
+}
+module-whatis " TCoGFS whatis description"
+
+set ver v1.0.0
+set machine fx1000
+
+set LANG_HOME /opt/FJSVxtclanga/tcsds-1.2.33
+setenv COMP      $LANG_HOME/bin/mpifrtpx
+setenv COMP_MP   $LANG_HOME/bin/mpifrtpx
+setenv COMP_MPI  $LANG_HOME/bin/mpifrtpx
+
+setenv C_COMP    $LANG_HOME/bin/mpifccpx
+setenv C_COMP_MP $LANG_HOME/bin/mpifccpx
+#============================================================
+# select one of the followings :
+#  1. mpi single precision for transpose and unify
+#  2. mpi single precision for unify only
+#  3. mpi double precision 
+# 
+#  1. mpi single precision for transpose and unify
+# FFLAGS  = -c -X9 -Free -CcdRR8 -DMPISP -Cpp \
+#           -Kfast,parallel,openmp,ocl \
+#           -Ksimd=1 -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE)
+#
+#  2. mpi single precision for unify only
+# FFLAGS  = -c -X9 -Free -CcdRR8 -DMPISP -DUNIFY_ONLY -Cpp \
+#           -Kfast,parallel,openmp,ocl \
+#           -Ksimd=1 -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE)
+#
+#  3. mpi double precision 
+# FFLAGS  = -c -X9 -Free -CcdRR8 -Cpp \
+#           -Kfast,parallel,openmp,ocl \
+#           -Ksimd=1 -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE)
+#
+#  use CWB current fft
+#  FFLAGS  = -c -X9 -Free -CcdRR8 -Cpp -DTIMING -DMULTIPLE \
+#            -Kfast,parallel,openmp,ocl,autoobjstack \
+#            -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE)
+#
+#  use FFTW fft
+#  FFLAGS  = -c -X9 -Free -CcdRR8 -Cpp -DTIMING -DMULTIPLE -DUSE_FFTW -DW3TAG \
+#            -Kfast,parallel,openmp,ocl,autoobjstack \
+#                 -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE) 
+#============================================================
+#setenv FFLAGS_COM "-c -X9 -Free -CcdRR8 -Cpp -Kfast,ocl,autoobjstack,preex,simd=2 -SSL2 -x- -xswflux,200 -fw"
+setenv FFLAGS_COM "-c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed"
+setenv DEFINE_FLAGS "-DTIMING -DUSE_FFTW -DRSM -DW3TAG -DCWBSUM -DSP"
+setenv MSG_COM "-Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2"
+#setenv MSG_COM "-Ec -Koptmsg=2"
+setenv LIBS_COM "-SSL2BLAMP"
+setenv OMP_COM "-Kopenmp,parallel"
+setenv CFLAGS_COM "-c -Xg"
+setenv NETCDF_LIB "-L/package/fx1000/netcdf-4.7.4/lib -lnetcdff"
+setenv MPMD_LIB "-L/data/common/gfs/GEPSv3_lib/fx1000/cwb_mpmd -lmpmd"
+
+# Known conflicts
+module use /data/common/gfs/modulefiles/x86_64
+module load tcsds
+module unuse /data/common/gfs/modulefiles/x86_64
+
+# Loading gfs modules
+module use /data/common/gfs/modulefiles/$machine
+
+module load netcdf/4.7.4
+setenv HDF5_LIB " -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5"
+#module load hdf5/1.10.7
+module load fftw/3.3.10.new_sp
+module load dms/v4_38key
+module load operlib
+module load w3lib/2.0.2
+module unuse /data/common/gfs/modulefiles/$machine
+
+#===add for grib2 output
+setenv G2_LIB "-L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 "
+setenv G2_INC "/package/fx1000/g2lib-1.4.0_cwb/include"
+setenv PNG_LIB " -L/package/fx1000/libpng-1.6.37/lib -lpng "
+setenv JASPER_LIB "-L/package/fx1000/jasper-1.900.1/lib -ljasper"

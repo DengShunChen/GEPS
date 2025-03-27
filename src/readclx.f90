@@ -29,7 +29,7 @@
       use mpe
       use phygrid, only : ls_full,ls_redu
 !helio<
-      use const, only: ihdgi,bckfile 
+      use const, only: ihdgi,bckfile,idtg2
 !
       implicit  none
 
@@ -60,8 +60,11 @@
                 vfrcl(nxp,my_max,2)
 !soil
       integer   ls(nxp,my_max),icex(nxp,my_max),iglob(nx,my)
+      integer   wla(nxp,my_max)
+      real      wmx(nxp,my_max),wmxcl(nxp,my_max,2)
 
       character blnk*1,ggdef*4
+      character cdate*12,cmmdd*4,cyymmdd*8  ! jwhwu
       integer   mon(12),mondy(13)
       data mon/15,46,74,105,135,166,196,227,258,288,319,349/
       data mondy/0,31,59,90,120,151,181,212,243,273,304,334,365/
@@ -71,6 +74,16 @@
       real      coef1,coef2
 !
       lncrec=nx*my
+!jwhwu> 
+      wla=0
+      wmx=0.
+      wmxcl=0.
+      cdate=' '
+!
+      write(cdate,'(i12.12)') idtg2
+      cyymmdd=cdate(1:8)
+      cmmdd=cdate(5:8)
+!jwhwu<
 !
       jul=julian
       if(jul .ge. 366)jul=365
@@ -113,6 +126,8 @@
   15  format('S00040','gbck',a4,4x,i2.2,6x)  ! S44
   16  format('S00070','gbck',a4,11x,a1) ! S07
   17  format('S00090','gbck',a4,4x,i2.2,6x) ! S09
+  161 format('S00WLA','gbck',a4,11x,a1) ! S00WLA
+  111 format('WMX100','gbck',a4,4x,i2.2,6x)  ! WMX100
 !soil
   13  format('S9M5B0','gbck',a4,4x,i2.2,6x)  ! for new soil
   18  format('S000ST','gbck',a4,11x,a1)      ! for new soil
@@ -142,9 +157,20 @@
       if(jul .gt. mon(12))then
 !                                -- read dmsfile --
       mm=12
+#if (!defined DYCLM) && (!defined DYANL)
       write(ihdgi,11)ggdef,mm
       call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,sstcl(1,1,1))
+!jwhwu>
+#ifdef WMX
+      if(isot .eq. 2) then
+        write(ihdgi,111)ggdef,mm
+        call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
+        call unify_reducepick(nx,my,my_max,glob,wmxcl(1,1,1))
+      endif
+#endif
+!jwhwu<
+#endif
 
 !ch?  write(lrec,12)ggdef,mm
 !ch?  call dmsread(nx,my,lrec,lncrec,'H',bckfile,soltcl(1,1,1),istat)
@@ -169,9 +195,20 @@
       call unify_reducepick(nx,my,my_max,glob,vfrcl(1,1,1))
 !soil
       mm=1
+#if (!defined DYCLM) && (!defined DYANL)
       write(ihdgi,11)ggdef,mm
       call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,sstcl(1,1,2))
+!jwhwu>
+#ifdef WMX
+      if(isot .eq. 2) then
+        write(ihdgi,111)ggdef,mm
+        call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
+        call unify_reducepick(nx,my,my_max,glob,wmxcl(1,1,2))
+      endif
+#endif
+#endif
+!jwhwu<
 
 !ch?  write(lrec,12)ggdef,mm
 !ch?  call dmsread(nx,my,lrec,lncrec,'H',bckfile,soltcl(1,1,2),istat)
@@ -201,7 +238,9 @@
          j=jlist1(jj)
          nxj=nxdef_2d(j)
          do i=1,nxj
+#if (!defined DYCLM) && (!defined DYANL)
             sst(i,jj) =coef1*sstcl(i,jj,2) +coef2*sstcl(i,jj,1)
+#endif
 !ch?        solt(i,jj)=coef1*soltcl(ii,j,2)+coef2*soltcl(ii,j,1)
             alb(i,jj) =coef1*albcl(i,jj,2) +coef2*albcl(i,jj,1)
             z0(i,jj)=coef1*z0cl(i,jj,2)+coef2*z0cl(i,jj,1)
@@ -210,15 +249,37 @@
           sigmaf(i,jj)=coef1*vfrcl(i,jj,2)+coef2*vfrcl(i,jj,1)
 !soil
         enddo
+#if (!defined DYCLM) && (!defined DYANL)
+!jwhwu>
+#ifdef WMX
+        if(isot .eq. 2) then
+          do i=1,nxj
+            wmx(i,jj) =coef1*wmxcl(i,jj,2) +coef2*wmxcl(i,jj,1)
+          enddo
+        endif
+#endif
+!jwhwu<
+#endif
       enddo
       end if
 !
       do 30 k=2,12
       if(jul .gt. mon(k-1) .and. jul .le. mon(k))then
 !                                -- read dmsfile --
+#if (!defined DYCLM) && (!defined DYANL)
       write(ihdgi,11)ggdef,k-1
       call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,sstcl(1,1,1))
+!jwhwu>
+#ifdef WMX
+      if(isot .eq. 2) then
+        write(ihdgi,111)ggdef,k-1
+        call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
+        call unify_reducepick(nx,my,my_max,glob,wmxcl(1,1,1))
+      endif
+#endif
+#endif
+!jwhwu<
 
 !ch?  write(lrec,12)ggdef,k-1
 !ch?  call dmsread(nx,my,lrec,lncrec,'H',bckfile,soltcl(1,1,1),istat)
@@ -241,9 +302,20 @@
       call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,vfrcl(1,1,1))
 !soil
+#if (!defined DYCLM) && (!defined DYANL)
       write(ihdgi,11)ggdef,k
       call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,sstcl(1,1,2))
+!jwhwu>
+#ifdef WMX
+      if(isot .eq. 2) then
+        write(ihdgi,111)ggdef,k
+        call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
+        call unify_reducepick(nx,my,my_max,glob,wmxcl(1,1,2))
+      endif
+#endif
+!jwhwu<
+#endif
 
 !ch?  write(lrec,12)ggdef,k
 !ch?  call dmsread(nx,my,lrec,lncrec,'H',bckfile,soltcl(1,1,2),istat)
@@ -274,7 +346,9 @@
          j=jlist1(jj)
          nxj=nxdef_2d(j)
          do i=1,nxj
+#if (!defined DYCLM) && (!defined DYANL)
             sst(i,jj) =coef1*sstcl(i,jj,2) +coef2*sstcl(i,jj,1)
+#endif
 !ch?        solt(i,jj)=coef1*soltcl(i,jj,2)+coef2*soltcl(i,jj,1)
             alb(i,jj) =coef1*albcl(i,jj,2) +coef2*albcl(i,jj,1)
             z0(i,jj)=coef1*z0cl(i,jj,2)+coef2*z0cl(i,jj,1)
@@ -283,16 +357,57 @@
             sigmaf(i,jj)=coef1*vfrcl(i,jj,2)+coef2*vfrcl(i,jj,1)
 !soil
          enddo
+#if (!defined DYCLM) && (!defined DYANL)
+#ifdef WMX
+         if(isot .eq. 2) then
+           do i=1,nxj
+             wmx(i,jj) =coef1*wmxcl(i,jj,2) +coef2*wmxcl(i,jj,1)
+           enddo
+         endif
+#endif
+#endif
       enddo
       end if
   30  continue
+#if (defined DYCLM) || (defined DYANL)
+#ifdef DYCLM
+      write(ihdgi,'(a6,a4,a4,4x,a4,4x)')"W00100","gbck",ggdef,cmmdd
+      call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
+      call unify_reducepick(nx,my,my_max,glob,sst)
+#ifdef WMX
+      if(isot .eq. 2) then
+        write(ihdgi,'(a6,a4,a4,4x,a4,4x)')"WMX100","gbck",ggdef,cmmdd
+        call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
+        call unify_reducepick(nx,my,my_max,glob,wmx)
+      endif
+#endif
+#else
+      write(ihdgi,'(a6,a4,a4,a8,4x)')"W00100","gbck",ggdef,cyymmdd
+      call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
+      call unify_reducepick(nx,my,my_max,glob,sst)
+#ifdef WMX
+      if(isot .eq. 2) then
+        write(ihdgi,'(a6,a4,a4,a8,4x)')"WMx100","gbck",ggdef,cyymmdd
+        call dmsread(nx,my,lncrec,'H',bckfile,glob,istat)
+        call unify_reducepick(nx,my,my_max,glob,wmx)
+      endif
+#endif
+#endif
+#endif
+
 !
 !-- climat dataset has 2 half years
 !                                  -- read dmsfile --
 !
 !-- land, sea and ice table
 !                                   -- read dmsflie --
+#ifdef DYCLM
+      write(ihdgi,'(a6,a4,a4,4x,a4,4x)')"S00090","gbck",ggdef,cmmdd
+#elif defined DYANL
+      write(ihdgi,'(a6,a4,a4,a8,4x)')"S00090","gbck",ggdef,cyymmdd
+#else
       write(ihdgi,17)ggdef,monidex
+#endif
       call dmsreadi(nx,my,lncrec,'I',bckfile,iglob,istat)
       call unify_reducepicki(nx,my,my_max,iglob,icex)
 
@@ -312,8 +427,25 @@
          enddo
          ls_redu(:,jj) = iglob(:,j)
       enddo
-
 !helio<
+!jwhwu>
+#ifdef WMX
+      if(isot .eq. 2) then
+        write(ihdgi,161)ggdef,blnk
+        call dmsreadi(nx,my,lncrec,'I',bckfile,iglob,istat)
+        do jj = 1, jlistnum
+           j=jlist1(jj)
+           ii=nxjstart(j)
+           nxj=nxdef_2d(j)
+           if(lreduce.eq.1) call reducepicki (iglob(1,j),nxdef(j),nx,1)
+           do i = 1, nxj
+              wla(i,jj) = iglob(ii,j)
+              ii=ii+1
+           enddo
+        enddo
+      endif
+#endif
+!jwhwu<
 
 
 !soil
@@ -400,6 +532,29 @@
 !soil ice(i,j)=.true.
 !soil end if
         enddo
+!jwhwu>
+! for lake points: wmx >  273.15 --> water
+!                  wmx <= 273.15 --> ice
+#ifdef WMX
+        if(isot .eq. 2) then
+          do i=1,nxj
+            if(wla(i,jj) .gt. 2) then
+              if(wmx(i,jj) .gt. 273.15) then
+                sea(i,jj)=.true.
+                sst(i,jj)=wmx(i,jj)
+                ice(i,jj)=.false.
+                alb(i,jj)=0.09
+              else
+                ice(i,jj)=.true.
+                solt(i,jj)=271.2
+                sea(i,jj)=.false.
+                alb(i,jj)=0.55
+              endif
+            endif
+          enddo
+        endif
+#endif
+!jwhwu<
       enddo
 !
 !  modify albedo base on ground wetness

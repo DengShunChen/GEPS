@@ -49,6 +49,9 @@
 !rad
       call deallocate_alb_array
       call deallocate_raddiag_array
+#ifdef Readaeroclx
+      call deallocate_aerogrid_array
+#endif
 
       endif
 
@@ -73,7 +76,8 @@
       endif
 
 !     call MPI_BARRIER(MPI_COMM_WORLD, IERR )
+#ifndef TIMCOMCPL
       call MPI_FINALIZE(IERR)
-
+#endif
       return
       end

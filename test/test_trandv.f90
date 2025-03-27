@@ -53,7 +53,7 @@ subroutine trandv_unit
    !$acc& mtrundef, jlist1, nxjlen, nxjlen_all, nxdef, tcolt_jlist, poly_mlist) async(async_id)
    !$acc wait(async_id)
    do i = 1, steps
-      call trandv_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, lev, &
+      call trandv_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, &
                                  ut, vt, w, cim, onocos, polyf, dpolyf, &
                                  vor_gpu, div_gpu, nsizey, &
                                  cc, gwk1, ws, wc(1, 1), wc(1, 2), &

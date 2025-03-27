@@ -22,7 +22,9 @@ list(
   xyintpo.f90)
 
 # Main program is not included in the TCO sources.
+if(NOT ${TIMCOMCPL})
 list(REMOVE_ITEM TCO_SRC "gfcst.f90")
+endif()
 
 # RSM sources are not incluced in the TCO sources.
 foreach(RSM_ITEM ${RSM_SRC})
@@ -33,7 +35,6 @@ endforeach()
 list(FILTER TCO_SRC EXCLUDE REGEX ".*_gpu\\.f90$")
 # Remove unnecessary sources in the TCO sources.
 list(REMOVE_ITEM TCO_SRC "unify_grid.f90")
-list(REMOVE_ITEM TCO_SRC "unify_gridr.f90")
 list(REMOVE_ITEM TCO_SRC "unify_gridr.f90")
 list(REMOVE_ITEM TCO_SRC "module_mp_gsfcgce_3ice_cwb.f90")
 list(REMOVE_ITEM TCO_SRC "module_mp_gsfcgce_3ice_nuwrf_ori.f90")
@@ -52,31 +53,39 @@ if(${USE_CUDA})
   list(APPEND TCO_SRC ${TCO_GPU_SRC})
 endif()
 
-if(NOT ${USE_RSM})
+if(NOT ${USE_RSM} AND NOT ${TIMCOMCPL})
   set(EXEC "tcogfs.x")
   set(LIB "tcogfs")
 else()
-  set(EXEC "tcogfs_rsm.x")
-  set(LIB "tcogfs_rsm")
+  set(LIB "tcogfs")
 endif()
 
-if(NOT ${USE_RSM})
+if(NOT ${USE_RSM} AND NOT ${TIMCOMCPL})
   # add_executable(${EXEC} gfcst.f90 ${TCO_SRC})
   add_library(${LIB} STATIC ${TCO_SRC})
 else()
   # add_executable(${EXEC} gfcst.f90 ${TCO_SRC} ${RSM_SRC})
-  add_library(${LIB} STATIC ${TCO_SRC} ${RSM_SRC})
+  add_library(${LIB} STATIC ${TCO_SRC})
 endif()
 
+if(NOT ${TIMCOMCPL})
 add_executable(${EXEC} gfcst.f90)
 target_link_libraries(${EXEC} ${LIB})
+endif()
 
+if(NOT ${TIMCOMCPL})
 set_target_properties(
   ${EXEC}
   PROPERTIES LINKER_LANGUAGE Fortran
              ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
              LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
              RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+else()
+set_target_properties(
+  ${LIB}
+  PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+             LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+endif()
 
 if(NOT ${USE_CUDA})
 
@@ -110,6 +119,8 @@ else()
   endif()
 endif()
 
+if(NOT ${TIMCOMCPL})
 install(TARGETS ${EXEC} DESTINATION ${CMAKE_INSTALL_PREFIX})
+endif()
 target_include_directories(${LIB}
                            PUBLIC "$<BUILD_INTERFACE:${TCOGFS_INCLUDE_DIRS}>")

@@ -62,17 +62,21 @@ subroutine whdiffu_unit
                    , eps4, trefs)
    end do
 
+   !$acc enter data copyin(cosl, um, vm, vormid_gpu, divmid_gpu, temmid_gpu, eps4, trefs, jlist1, nxdef_2d, Llist, hdk2, &
+   !$acc& vormid, divmid, temmid, mlist) async(async_id)
    do i = 1, steps
+      !$acc kernels async(async_id)
       vormid_gpu = vormid
       divmid_gpu = divmid
       temmid_gpu = temmid
-      !$acc enter data copyin(cosl, um, vm, vormid_gpu, divmid_gpu, temmid_gpu, eps4, trefs, jlist1, nxdef_2d, Llist, hdk2) async(async_id)
+      !$acc end kernels
       call whdiffu_gpu(dtah, my, my_max, nx, jtrun, jtmax, lev, ncld &
                        , hfiltm, rad, cosl, um, vm, vormid_gpu, divmid_gpu, temmid_gpu &
                        , eps4, trefs)
-      !$acc exit data copyout(cosl, um, vm, vormid_gpu, divmid_gpu, temmid_gpu, eps4, trefs, jlist1, nxdef_2d, Llist, hdk2) async(async_id)
-      !$acc wait(async_id)
    end do
+   !$acc exit data copyout(cosl, um, vm, vormid_gpu, divmid_gpu, temmid_gpu, eps4, trefs, jlist1, nxdef_2d, Llist, hdk2) &
+   !$acc& delete(vormid, divmid, temmid, mlist) async(async_id)
+   !$acc wait(async_id)
 
 #ifdef SP
    call assert_allclose(vormid_gpu, size(vormid_gpu), vormid_cpu, size(vormid_cpu), 1e-4_4, 1e-4_4, "Array vormid")
