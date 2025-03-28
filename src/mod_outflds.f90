@@ -721,7 +721,8 @@ contains
         endif
         if(outgrb2==1.and.myrank==0)then
           ihdgo2 = ihdgo
-          call wrt_grb2_v2(itau,0,3,1,2,101,0,0,glob)
+          glob=glob*100.0
+          call wrt_grb2_v2(itau,0,3,1,1,101,0,0,glob)
         endif
         call qmaxn3_w(glob,1,1,1,nx,my,1)
         endif !itau .gt. domfc
@@ -748,11 +749,12 @@ contains
         call syslbl_w('b00010',idtg,itau,ggdef)
 !byl        if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
         if(outdms.gt.0)then
-        if(lwrite) call dmswrit(nx,my,lenc,kflag,glob,istat)
+          if(lwrite) call dmswrit(nx,my,lenc,kflag,glob,istat)
         endif
         if(outgrb2==1.and.myrank==0)then
           ihdgo2 = ihdgo
-          call wrt_grb2_v2(itau,0,3,0,2,103,0,0,glob)
+          glob=glob*100.0
+          call wrt_grb2_v2(itau,0,3,0,1,103,0,0,glob)
         endif
         call qmaxn3_w(glob,1,1,1,nx,my,1)
 

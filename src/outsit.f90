@@ -989,7 +989,7 @@
         j=jlist1(jj)
         nxj=nxdef_2d(j)
         do i=1,nxj
-         wrk(i,jj)=tseadiffSIT24(i,jj)/dt24
+         wrk(i,jj)=tseadiffSIT24(i,jj)!/dt24
          wrk2(i,jj)=ratioSIT(i,jj)
         enddo
       enddo
@@ -999,7 +999,7 @@
       call dmswrit(imax,jmax,lenc,kflag,glob,istat)
       if( outgrb2==1.and.myrank==0 ) then
       ihdgo2 = ihdgo
-      call wrt_grb2_v2(itau,10,3,199,6,168,0,1,glob)
+      call wrt_grb2_v2(itau,10,3,199,2,168,0,1,glob)
       endif
       tseadiffSIT24=0.
 

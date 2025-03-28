@@ -221,6 +221,9 @@
       ustar(i)= min(ustar(i),10.000)
       tstar(i)= min(tstar(i),50.00)
       qstar(i)= min(qstar(i),5.000)
+! fix initial sensible and latent heat value very big
+      tstar(i)= max(tstar(i),-3.000) !feb2025
+      qstar(i)= max(qstar(i),-0.001) !feb2025
 ! 360 continue
 !
 !     do 400 i = 1, nxj

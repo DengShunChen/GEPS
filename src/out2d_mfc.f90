@@ -52,7 +52,7 @@
       data ptp0/  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0, 0,  0 /
       data ptp1/  1,  1,  0,  1,  1,  2,  2,  0,  0,  0, 5, 4, 6,  3 /
       data ptp2/  8, 49,  0,  0,  1,  2,  3,  4,  5,  6, 3, 7, 1,  1 /
-      data ptp3/  2,  1,  2,  6,  2,  2,  2,  2,  2,  2, 2, 2, 3,  2 /
+      data ptp3/  2,  1,  2,  6,  2,  2,  2,  2,  2,  2, 2, 2, 3,  1 /
       data ptp4/103,103,103,103,103,103,103,103,103,103, 1, 1,10,101 /
       data ptp5/  0,  0,  2,  2,  2, 10, 10,  2,  2,  2, 0, 0, 0,  0 /
 
@@ -93,19 +93,6 @@
         enddo
       enddo
 
-     !mfcout(:,:,1)=rain1(:,:)
-     !mfcout(:,:,2)=raintot(:,:)
-     !mfcout(:,:,3)=t2(:,:)
-     !mfcout(:,:,4)=q2(:,:)
-     !mfcout(:,:,5)=rh2(:,:) * 100.0
-     !mfcout(:,:,6)=u10(:,:)
-     !mfcout(:,:,7)=v10(:,:)
-     !mfcout(:,:,8)=tmax(:,:)
-     !mfcout(:,:,9)=tmin(:,:)
-     !mfcout(:,:,10)=td(:,:)
-     !mfcout(:,:,11)=rld(:,:)
-     !mfcout(:,:,12)=sld(:,:)
-     !mfcout(:,:,13)=ctot(:,:)
 !
 !  hydrostatic equation
 !
@@ -164,7 +151,7 @@
             anlslp = (pt(i,jj)+ptop)*exp(ttt*(1.0-0.5*apha*ttt+0.333333*  &
                      apha*ttt*apha*ttt) )
           endif
-          mfcout(i,jj,14) = anlslp
+          mfcout(i,jj,14) = anlslp * 100.0  !hPa to Pa
         enddo
       enddo
 !
@@ -191,10 +178,6 @@
 !
       if (myrank .lt. num ) then
 
-        if(outdms.gt.0)then
-             call dmswrit_split(nx,my,lenc,kflag,mout,istat)
-        endif ! outdms .gt. 0
-
         if(outgrb2 == 1 )then
           if(gtp1(8)==-999)then
           call wrt_grb2_v2(itau,gtp1(1),gtp1(2),gtp1(3),gtp1(4),gtp1(5) &
@@ -204,6 +187,11 @@
               ,gtp1(6),gtp1(7),gtp1(8),gtp1(9),mout)
           endif
         endif !outgrb2
+
+        if(outdms.gt.0)then
+          if ( myrank .eq. (14-1) ) mout = mout / 100.0
+          call dmswrit_split(nx,my,lenc,kflag,mout,istat)
+        endif ! outdms .gt. 0
 
       endif
 !
