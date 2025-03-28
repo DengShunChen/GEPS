@@ -168,6 +168,7 @@ subroutine initial_gpu(no, jtrun, jtmax, lev, nx, my, my_max, mlmax)
    !$acc& ut_sl, vt_sl) async(async_id)
 
    !
+ 
    tendget_matmul_cg_created = .false.
    zx_forward_cg_created = .false.
    zx_backward_cg_created = .false.

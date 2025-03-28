@@ -143,7 +143,6 @@
       open(71,file=f71,form='unformatted',access='direct',    &
            recl=8*nx*my,convert="big_endian")
 
-
       do k=1,8
         read(71,rec=k) ww1
         do jj = 1, jlistnum
@@ -1279,7 +1278,7 @@
         if(myrank.eq.0)print*,' output: rsm date',idtg
         write(dtgrsm,'(I12)') idtg
         read(dtgrsm,'(I10,I2)')idtgrsm,ii   ! ii is dummy integer
-#ifdef CWB_MPMD
+#if defined(CWB_MPMD) || defined(CWBSUM)
         call send_idate(idtgrsm)
 #else
         call wrte_idate(idtgrsm)

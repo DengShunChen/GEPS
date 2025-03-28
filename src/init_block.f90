@@ -101,6 +101,7 @@
       dosppt=.false.
       dospptout=.false.
       doshum=.false.
+      doshumout=.false.
 ! update low boundary condition
       doclx=.false.
 ! Semi-Lagrangian Averaging of Physical Parametrizations

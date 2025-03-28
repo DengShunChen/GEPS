@@ -10,6 +10,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#set(CPL_PATH "/package/x86_64/nvidia/geps_coupler")
+#set(TIMCOM_INC_PATH
+#    ${CPL_PATH}/include
+#)
+#set(TIMCOM_LIB_PATH
+#    ${CPL_PATH}/lib
+#)
+#set(TIMCOM_LINK_LIB
+#    -lcpl
+#)
+
+
 add_custom_target(
     run
     COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_SOURCE_DIR}/job pjsub
@@ -53,7 +65,8 @@ if(${USE_CUDA})
         test_nccl
         test_mpe2d_unify_nx
         test_mpe2d_unify_my1d
-        test_ndslfv_monoadvh_refactor
+	test_mpe2d_unify_lev
+  	test_ndslfv_monoadvh_refactor
         test_ndslfv_monoadvh_fgnl_refactor
         test_ptotc
         test_tridi2
@@ -80,7 +93,8 @@ if(${USE_CUDA})
             ${TEST}.f90
             helper.f90
             mod_vcopy.f90
-        )
+	    #cpl_driver.f90
+    	)
         add_test(
             NAME ${TEST}
             COMMAND mpiexec -n 8 ${TEST}
@@ -94,11 +108,16 @@ if(${USE_CUDA})
         )
         target_include_directories(
             ${TEST}
-            PUBLIC ${TCO_LIB}
+            PUBLIC ${TCO_LIB} #${TIMCOM_INC_PATH}
         )
+#        target_link_directories(
+#            ${TEST}
+#            PUBLIC ${TIMCOM_LIB_PATH}
+#        )
         target_link_libraries(
             ${TEST}
-            PUBLIC ${TCO_LIB}
+	    PUBLIC ${TCO_LIB} #${TIMCOM_LINK_LIB}
         )
+
     endforeach()
 endif()

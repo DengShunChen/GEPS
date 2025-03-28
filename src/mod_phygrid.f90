@@ -40,7 +40,12 @@
       real, dimension(:)  ,allocatable,save :: xlat
 
       real, dimension(:,:),allocatable,save :: u10,v10,t2,rh2,rh10,q2  &
+#ifdef TIMCOMCPL
+                                              ,fm,fm10,fh,fh2,srflag   &
+                                              ,ustress,vstress,ssu,ssv
+#else
                                               ,fm,fm10,fh,fh2,srflag
+#endif
  
       real, dimension(:,:),allocatable,save :: fpsp,fpsp1
 
@@ -162,8 +167,13 @@
            allocate (u10(nxp,my_max),v10(nxp,my_max),srflag(nxp,my_max) &
                      ,t2(nxp,my_max),rh2(nxp,my_max),rh10(nxp,my_max)   &
                      ,q2(nxp,my_max),fm(nxp,my_max),fm10(nxp,my_max)    &
+#ifdef TIMCOMCPL
+                     ,fh(nxp,my_max),fh2(nxp,my_max)                    &
+                     ,ustress(nxp,my_max),vstress(nxp,my_max)           &
+                     ,ssu(nxp,my_max),ssv(nxp,my_max), stat=ierr)
+#else
                      ,fh(nxp,my_max),fh2(nxp,my_max), stat=ierr)
-
+#endif
            if (ierr/= 0) then
                write(6,*) 'mod_phygrid : allocate fail 6 '
                stop
@@ -172,7 +182,12 @@
            u10=0.;     v10=0.;     t2=0.;     rh2=0.
           rh10=0.;      q2=0.;     fm=0.;   fm10=0.
             fh=0.;     fh2=0.; srflag=0.
-           gwr=0.
+           gwr=0.;     
+#ifdef TIMCOMCPL
+           ssv=0.;    ssu=0.
+           ustress=0.; vstress=0.
+#endif
+
 !
            allocate (fpsp(nxp,my_max),fpsp1(nxp,my_max),stat=ierr)
 

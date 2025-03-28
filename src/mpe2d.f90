@@ -382,7 +382,7 @@
       return
       end
 !---------------------------------------------------------------------------------------
-      subroutine mpe2d_unify(work,a)
+      subroutine mpe2d_unify(work,a,opt)
 
 ! unify a(nx_partial,my_partial) into work(nx_full,my_full)
 
@@ -395,6 +395,7 @@
       real(kind=RTYPE) work(nx,my)
       real(kind=RTYPE) a(nxp,my_max)
       real(kind=RTYPE) b(nxp,my_max*nsize)
+      logical, optional :: opt
 
       b=0.
       work=0.
@@ -408,6 +409,7 @@
       do i=1,nsizex
          jf=jlist2_2d(i,j)
          nn=nxjlen_all(i,j)
+         if(present(opt)) nn=nxp
          work(ii:ii+nn-1,j)=b(1:nn,jf)
          ii=ii+nn
       enddo
@@ -1439,12 +1441,12 @@
 
       include 'mpif.h'
 
+      integer  nxp,nx,lev,levp,ncld,my,my_max,jlen,proc,comm
       real(kind=RTYPE) ain(nx,levp,ncld,my_max),      &
                        aout(nxp,lev,ncld,my_max),     &
                        c1(levp,ncld,jlen,nxp,proc),   &
                        c2(levp,ncld,jlen,nxp,proc)
 
-      integer  nxp,nx,lev,levp,ncld,my,my_max,jlen,proc,comm
       integer  nlen,ii,j,jj,i,k,KL,ierr,jlistnum,n,i1,i2,i3,i4
 
       c1=0.

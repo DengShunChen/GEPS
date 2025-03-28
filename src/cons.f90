@@ -78,8 +78,9 @@
                       , ntoz,iovr_sw,iovr_lw,isubc_sw,isubc_lw          &
                       , sashal,crick_proof,ccnorm,norad_precip,me,doo3l &
                       , ioutsigr,domfc,out_green,isot,ivegsrc           &
-                      , otgreen,out_hp,dosppt,dospptout, doshum, dossst &
-                      , doskeb, doskebout,  ndsladvh2,hord              &
+                      , otgreen,out_hp,dosppt,dospptout,doshum,doshumout &
+                      , dossst &
+                      , doskeb,doskeb_dc,doskebout,ndsladvh2,hord       &
                       , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
                       , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud,updatetg       &
 ! output data for RSM (Also, RSM compiling flag is necessary)

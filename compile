@@ -25,8 +25,11 @@ if [[ ${MACHINE} == 'fx1000' ]] ; then
     cmake -B${BLD_DIR} -S. \
         -DCMAKE_BUILD_TYPE=Release \
         -DUSE_RSM=OFF \
+        -DCWBSUM=OFF  \
+        -DTIMCOMCPL=OFF  \
         -DUSE_aeroclx=OFF
-    cmake --build ${BLD_DIR} -j $(($(nproc)/2))
+
+    	cmake --build ${BLD_DIR} -j $(($(nproc)/2))
 
 elif [[ ${MACHINE} == 'a100' ]] ; then
     # Build settings for the a100 machine
@@ -36,10 +39,11 @@ elif [[ ${MACHINE} == 'a100' ]] ; then
         -DUSE_CUDA=ON \
         -DUSE_ACC=ON \
         -DUSE_PAR=OFF \
-        -DUSE_SP=OFF \
+        -DUSE_SP=OFF  \
+        -DCWBSUM=OFF  \
+        -DTIMCOMCPL=OFF  \
         -DUSE_aeroclx=OFF
-    cmake --build ${BLD_DIR} -j $(($(nproc)/2))
-
+    cmake --build ${BLD_DIR} -j $(($(nproc)/2)) -v
 else
     echo "[ERROR] Fatal error: unknown MACHINE!"
     exit 1

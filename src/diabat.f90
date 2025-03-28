@@ -33,7 +33,11 @@
 ! sit
                     , itimestep,lrun_sitvdiff,ic_sit                           &
 !xb110>
+#ifdef TIMCOMCPL
+                    , flash,tsflw,vvel,totallp, ustress, vstress, ssu, ssv)
+#else
                     , flash,tsflw,vvel,totallp)
+#endif
 !xb110<
 !--------------------------------------------------------------------------------
 !#######################################################################
@@ -173,7 +177,7 @@
                                       pdfcloud,cmbk,cgwd, fsit, dosppt, doshum, dossst, &
                                       use_zmtnblck,ldailyFCTicesndpt,dSITdt_intv, &
                                       weightSIT,bckfile,ggdef,doclx,doslavepp,    &
-                                      RTYPE,qmin,julian,mass_dp,monsave
+                                      RTYPE,qmin,julian,doskeb,mass_dp,monsave
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
@@ -195,7 +199,8 @@
       use phygrid,  only :dtcup,ducup,dvcup,dtshl,dushl,dvshl,dtlsp,dulsp,dvlsp
 ! for land_noah_new
       use namelist_soilveg, only :MAX_SLOPETYP,MAX_SOILTYP,MAX_VEGTYP
-      use mod_stochastic_physics, only : sppt3d, shum3d, ssst3d
+      use mod_stochastic_physics, only : sppt3d, shum3d, ssst3d,     &
+                                         diss_dc, shum3d_dq
       use leapyr
 !-----------------------------------------------------------------------
       implicit  none
@@ -242,8 +247,13 @@
                 u10(nxp,my_max),v10(nxp,my_max),hpbl(nxp,my_max),         &
                 raincu6(nxp,my_max),rainlp6(nxp,my_max),                  &
                 raincu3(nxp,my_max),rainlp3(nxp,my_max),                  &
+#ifdef TIMCOMCPL
+                raincu1(nxp,my_max),rainlp1(nxp,my_max),                  &
+                ustress(nxp,my_max),vstress(nxp,my_max),ssu(nxp,my_max),ssv(nxp,my_max)
+#else
                 raincu1(nxp,my_max),rainlp1(nxp,my_max)
-      real(kind=RTYPE) qt(nxp,lev*ncld,my_max),qp(nxp,lev*ncld,my_max),   &
+#endif
+        real(kind=RTYPE) qt(nxp,lev*ncld,my_max),qp(nxp,lev*ncld,my_max),   &
                        up(nxp,lev,my_max),vp(nxp,lev,my_max),             &
                        ttp(nxp,lev,my_max),o3l(nxp,lev,my_max),           &
                        sgeo(nxp,my_max),ps(nxp,my_max),pst(nxp,my_max),   &
@@ -522,6 +532,8 @@
       real tauhr
       real dtx_tau,dtaup,dtxb
       INTEGER, PARAMETER :: nerr = 6
+! for dissipation convective (test)
+      real      diss_dcc(nxp,lev)
 !xb110>
       ztenh = 0.
       zqenh = 0.
@@ -551,7 +563,8 @@
       uni_cloud=.false. !if using SHOC scheme, it should be .true.
       lmfshal=( nmshl .eq. 2 .or. nmshl .eq. 3 .or. nmshl .eq. 4 ) ! .true. if using mass-flux shallow convection
       lmfdeep2=( nmcup .eq. 6 .or. nmcup .eq. 7 ) ! .true. if using scale-aware deep con
-
+!skeb dissipation (test)
+      diss_dcc=0.
 
 !     define local constants
 ! for vertical rhc
@@ -680,7 +693,9 @@
 ! (2)  tg replaced by climate sea surface temperature
 !---------------------------------------------------------------------
 !            if ( .not. do_sit )then
+#ifndef TIMCOMCPL
             if (ocean(i,jj)) tg(i,jj)=sstc(i,jj)
+#endif
 !            endif
 !---------------------------------------------------------------------
 ! (3)  set ice thickness => not for couple
@@ -1251,7 +1266,12 @@
                      , sld_adj,zice(1,jj),cice(1,jj),xtice(1,jj)              &
                      , hpbl(1,jj),asl(1,1,jj),atl(1,1,jj),xmu(1,jj),gfx(1,jj) &
                      , kpbl(1,jj),nmpbl,nmmiph,j,isot,ivegsrc,sfemis(1,jj)    &
+#ifdef TIMCOMCPL
+                     , dudtc,dvdtc,dtdtc,dqdtc,ustress(1,jj),vstress(1,jj)    &
+                     , ssu(1,jj),ssv(1,jj))
+#else
                      , dudtc,dvdtc,dtdtc,dqdtc)
+#endif
 !
         do k=1,lev
           kc=lev-k+1
@@ -1520,6 +1540,9 @@
             ttc(i,kc) = tt(i,k,jj)
             utc(i,kc) = ut(i,k,jj)
             vtc(i,kc) = vt(i,k,jj)
+            if(doskeb)then
+              diss_dcc(i,kc) = diss_dc(i,k,jj)
+            endif
           enddo
         enddo
 
@@ -1559,7 +1582,7 @@
           call samfdeepcnv_kh(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil     &
             ,qtr,qti,qtc,ttc,utc,vtc,cldwrk(1,jj),rcup(1,jj),kbot(1,jj)  &
             ,ktop(1,jj),kuo(1,jj),islimsk,garea,dotc,ncld,cnvw,cnvc      &
-            ,snow_flxn,ptun,pqun)
+            ,snow_flxn,ptun,pqun,diss_dcc)
 
         ! for rad input of convection cloud information
         ! bottom(plcl) layer and top(cumtop) layer in pressure(mb)
@@ -1607,6 +1630,9 @@
             ptu(i,k)      = ptun(i,kc)
             pqu(i,k)      = pqun(i,kc)
             cnvwn(i,k)    = cnvwr(i,kc,jj)
+            if(doskeb)then
+              diss_dc(i,k,jj) = diss_dcc(i,kc)
+            endif
           enddo
         enddo
 
@@ -2401,12 +2427,34 @@
 
       ! SHUM process 
       if (doshum) then
-          do k=1,lev
-            do i=1,nxj
-              ru=shum3d(i,k,jj)
-              qt(i,k,jj) = qt(i,k,jj)*(1.+ru)
-            enddo
+        do k=1,lev
+          do i=1,nxj
+            ru=shum3d(i,k,jj)
+            qnew = qt(i,k,jj)*(1.+ru)
+            if(myrank .eq. 152 .and. jj .eq. 12 .and. k .eq. 72) then
+              if (i .ge. 76 .and. i .le. 83 ) then
+                print *,'myrank=',myrank,',i=',i &
+                     ,',jj=',jj,',ru=',shum3d(i,k,jj) &
+                     ,',qt=',qt(i,k,jj),',qnew=',qnew
+              endif
+              if (i .eq. 144 ) then
+                print *,'myrank=',myrank,',i=',i &
+                     ,',jj=',jj,',ru=',shum3d(i,k,jj) &
+                     ,',qt=',qt(i,k,jj),',qnew=',qnew
+              endif
+            endif
+
+            if ( qnew .ge. qmin ) then
+              shum3d_dq(i,k,jj)=qnew-qt(i,k,jj)
+              qt(i,k,jj) = qnew
+            else
+              print *,'myrank=',myrank,',i=',i,',jj=',jj,',k=',k,',qmin=',qmin &
+                     ,',qt=',qt(i,k,jj),',ru=',ru
+              shum3d_dq(i,k,jj)=qmin-qt(i,k,jj)
+              qt(i,k,jj) = qmin
+            endif
           enddo
+        enddo
       endif 
 
 #ifdef VERBOSE

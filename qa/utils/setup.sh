@@ -159,7 +159,7 @@ cat > ${GFSWRK}/namlsts << EOF
   dt=450.0,
   cstar=f, update=t, lsimpl=t,
   hfilt=1.,
-  ksgeo=2, yesdia=f,
+  ksgeo=1, yesdia=f,
   dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f,
   dograv=true, docgrav=true,
   donnmi=true,
