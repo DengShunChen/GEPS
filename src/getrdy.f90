@@ -172,7 +172,8 @@
                        ,shdmax,shdmin,slopetyp,snoalb,ggdef,isot,ivegsrc )
 #ifdef Readaeroclx
           call allocate_aerogrid_array
-          call readaeroclx(nx,my,my_max,lev,naero,julian,ggdef,aeroclxm)
+          call readaeroclx(nx,my,my_max,lev,naero,julian,&
+                           itimestep,monsave,ggdef,aeroclxm)
 #endif
 !---------------------------------------------------------------------
 !   read new albedo:
@@ -357,7 +358,8 @@
 ! read aerosol climate data
 !
         call allocate_aerogrid_array
-        call readaeroclx(nx,my,my_max,lev,naero,julian,ggdef,aeroclxm)
+        call readaeroclx(nx,my,my_max,lev,naero,julian,&
+                         itimestep,monsave,ggdef,aeroclxm)
         if (myrank.eq.0) print *, 'readaeroclx ok!!'
 #endif
 !

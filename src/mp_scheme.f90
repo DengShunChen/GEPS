@@ -160,7 +160,7 @@
       real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),dsigma(lev,2)
 #ifdef Readaeroclx
       integer,  intent(in)    :: naero
-      real,     intent(in)    :: aeroclx(nx,lev*naero)
+      real(kind=RTYPE), intent(in):: aeroclx(nx,lev*naero)
 #endif
 !  ---  inputs/outputs:
       real, intent(inout) :: tt(nx,lev)

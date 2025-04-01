@@ -176,7 +176,7 @@
                           pdfcloud, cmbk, cgwd, fsit, dosppt, doshum, dossst, &
                           use_zmtnblck, ldailyFCTicesndpt, dSITdt_intv, &
                           weightSIT, bckfile, ggdef, doclx, doslavepp, &
-                          RTYPE, qmin, julian, doskeb, mass_dp
+                          RTYPE, qmin, julian, doskeb, mass_dp, monsave
          use mod_sitgrid
          USE mod_sit_vdiff, ONLY: sit_vdiff, ctfreez
          USE mod_sit_control, ONLY: ftrigsit, ltrigsit, lsitstart, lsftobswt &
@@ -425,7 +425,7 @@
          real ftp1(nxp, lev, my_max), fqp1(nxp, lev, my_max), fpsp1(nxp, my_max)
 #ifdef Readaeroclx
          integer naero
-         real aeroclx(nxp, naero*lev, my_max)
+         real(kind=RTYPE) aeroclx(nxp, naero*lev, my_max)
 #endif
 !-------
 !for pdf cloud
@@ -763,7 +763,7 @@
          if ( doclxu ) then
             if ( myrank .eq. 0 ) print *, 'update aeroclx at tau= ', tau
             call readaeroclx(nx, my, my_max, lev, naero, julian, &
-                             ggdef, aeroclx)
+                             itimestep, monsave, ggdef, aeroclx)
          endif
 #endif
 

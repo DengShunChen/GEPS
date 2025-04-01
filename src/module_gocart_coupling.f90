@@ -126,6 +126,40 @@
      r_max    ,&  ! maximum radius [micron]
      rho          ! density [g/cm3]
 
+#ifdef LUT_aero
+ ! GOCART aerotypes , for only LUT :
+ integer, parameter, public :: nlut   =  9     !number of aerotypes
+ integer, parameter, public :: nsuso  =  1 , & !sulphate
+                               nsoot  =  2 , & !soot (BC)
+                               ninso  =  3 , & !insoluble OC
+                               nwaso  =  4 , & !water soluble OC
+                               nssam  =  5 , & !accumulated sea salt
+                               nsscm  =  6 , & !coarse sea salt
+                               nminm  =  7 , & !nucleated dust
+                               nmiam  =  8 , & !accumulated dust
+                               nmicm  =  9     !coarse dust
+ integer, parameter, public :: nminm1 = 99 , nminm2 = 99 , nminm3 = 7
+ integer, parameter, public :: nmiam1 = 99 , nmiam2 = 99 , nmiam3 = 8
+ integer, parameter, public :: nmicm1 = 99 , nmicm2 = 9
+#else
+ ! GOCART aerotypes , for both LUT and optical variables
+ integer, parameter, public :: nlut   = 14     !number of aerotypes
+ integer, parameter, public :: nsuso  =  1 , & !sulphate
+                               nsoot  =  2 , & !soot (BC)
+                               ninso  =  3 , & !insoluble OC
+                               nwaso  =  4 , & !water soluble OC
+                               nssam  =  5 , & !accumulated sea salt
+                               nsscm  =  6 , & !coarse sea salt
+                               nminm1 =  7 , & !dust mode 1 (nucleated)
+                               nminm2 =  8 , & !dust mode 2 (nucleated)
+                               nminm3 =  9 , & !dust mode 3 (nucleated)
+                               nmiam1 = 10 , & !dust mode 4 (accumulated)
+                               nmiam2 = 11 , & !dust mode 5 (accumulated)
+                               nmiam3 = 12 , & !dust mode 6 (accumulated)
+                               nmicm1 = 13 , & !dust mode 7 (coarse)
+                               nmicm2 = 14     !dust mode 8 (coarse)
+ integer, parameter, public :: nminm = 99 , nmiam = 99 , nmicm = 99  !not used
+#endif
 
  real,parameter :: pi_const = 3.1415926535e0
 
@@ -146,8 +180,10 @@
                            300., 320., 340., 360./)
 
 
- real :: lut_ccn(1:mxpts_t,1:mxpts_s,1:tgmx)  ! LUT for CCN # per unit mass mixing ratio
- real :: lut_in_025(1:tgmx) ! LUT for aerosol # per unit mass mixing ratio [#/cm3 per 1g/m3]
+! real :: lut_ccn(1:mxpts_t,1:mxpts_s,1:tgmx)  ! LUT for CCN # per unit mass mixing ratio
+! real :: lut_in_025(1:tgmx) ! LUT for aerosol # per unit mass mixing ratio [#/cm3 per 1g/m3]
+ real :: lut_ccn(1:mxpts_t,1:mxpts_s,1:nlut)  ! LUT for CCN # per unit mass mixing ratio
+ real :: lut_in_025(1:nlut) ! LUT for aerosol # per unit mass mixing ratio [#/cm3 per 1g/m3]
 
 
 !
@@ -8732,17 +8768,31 @@
 ! 13 = DU4      ! dust mode 7
 ! 14 = DU5      ! dust mode 8
 !
+! Note that nlut = 9 : aerosol type (see below), and aero must be in the following order.
+!  #
+!  1 = suso     ! sulphate
+!  2 = waso     ! water soluble OC
+!  3 = ssam     ! sea salt accumulation mode
+!  4 = sscm     ! sea salt coarse mode
+!  5 = soot     ! soot
+!  6 = inso     ! insoluble OC
+!  7 = minm     ! dust nucleation mode
+!  8 = miam     ! dust accumulation mode
+!  9 = micm     ! dust coarse mode
+!
 ! History;
 ! 02/2007  Toshi Matsui ; Initial.
 !------------------------------------------------------------------------
  real,intent(in) :: t_air !air temperature [K]
  real,intent(in) :: s     !super saturation rate [%] 
- real,intent(in) :: aero(tgmx) !aerosol mass conc [g/m3]
+! real,intent(in) :: aero(tgmx) !aerosol mass conc [g/m3]
+ real,intent(in) :: aero(nlut) !aerosol mass conc [g/m3]
  real,intent(out) :: ccn_out  ! CCN concentration [#/cm3]
 
  integer :: im !looping
  real :: ccn   !accmulating CCN conc [#/cm3]
- real :: lut_ccn_interp(tgmx) ! interpolated LUT value 
+! real :: lut_ccn_interp(tgmx) ! interpolated LUT value 
+ real :: lut_ccn_interp(nlut) ! interpolated LUT value 
 
 
  ccn_out = 0.e0 
@@ -8766,7 +8816,8 @@
 !
 ! convert aerosol mass mixing ratio into CCN conc
 !
- do im = 1, tgmx
+! do im = 1, tgmx
+ do im = 1, nlut
 
     ccn = ccn + aero(im)*lut_ccn_interp(im)  ! CCN conc [#/cm3]
 
@@ -8796,7 +8847,8 @@
  real,intent(in) :: t_air  !air temperature [K]
  real,intent(in) :: s_rate !super saturation rate [%] 
 
- real,intent(out) :: lut_ccn_interp(1:tgmx)  !interpolated CCN LUT for a given temperature and super sat rate.
+! real,intent(out) :: lut_ccn_interp(1:tgmx)  !interpolated CCN LUT for a given temperature and super sat rate.
+ real,intent(out) :: lut_ccn_interp(1:nlut)  !interpolated CCN LUT for a given temperature and super sat rate.
 
  real :: t, s  !temperature and super saturation rate
  integer :: it, is  !looping indice
@@ -8826,9 +8878,12 @@
              !
              ! interpolation of 4 point 
              !
-             lut_ccn_interp(1:tgmx) =  &
-               ( lut_ccn(it,is  ,1:tgmx)*wgt1_t + lut_ccn(it+1,is  ,1:tgmx)*wgt2_t ) * wgt1_s &
-             + ( lut_ccn(it,is+1,1:tgmx)*wgt1_t + lut_ccn(it+1,is+1,1:tgmx)*wgt2_t ) * wgt2_s
+!             lut_ccn_interp(1:tgmx) =  &
+!               ( lut_ccn(it,is  ,1:tgmx)*wgt1_t + lut_ccn(it+1,is  ,1:tgmx)*wgt2_t ) * wgt1_s &
+!             + ( lut_ccn(it,is+1,1:tgmx)*wgt1_t + lut_ccn(it+1,is+1,1:tgmx)*wgt2_t ) * wgt2_s
+             lut_ccn_interp(1:nlut) =  &
+               ( lut_ccn(it,is  ,1:nlut)*wgt1_t + lut_ccn(it+1,is  ,1:nlut)*wgt2_t ) * wgt1_s &
+             + ( lut_ccn(it,is+1,1:nlut)*wgt1_t + lut_ccn(it+1,is+1,1:nlut)*wgt2_t ) * wgt2_s
 
              exit it_loop
 
@@ -8870,6 +8925,18 @@
 ! 13 = DU4      ! dust mode 7
 ! 14 = DU5      ! dust mode 8
 !
+! Note that nlut = 9 : aerosol type (see below), and aero must be in the following order.
+!  #   
+!  1 = suso     ! sulphate
+!  2 = waso     ! water soluble OC
+!  3 = ssam     ! sea salt accumulation mode
+!  4 = sscm     ! sea salt coarse mode
+!  5 = soot     ! soot
+!  6 = inso     ! insoluble OC
+!  7 = minm     ! dust nucleation mode
+!  8 = miam     ! dust accumulation mode
+!  9 = micm     ! dust coarse mode
+!
 ! History;
 ! 02/2007  Toshi Matsui@NASA GSFC ; Initial.
 !
@@ -8880,7 +8947,8 @@
 !------------------------------------------------------------------------
  real,intent(in) :: p_air !air pressure [hPa]
  real,intent(in) :: t_air !air temperature [K]
- real,intent(in) :: aero(tgmx) !aerosol mass conc [g/m3]
+! real,intent(in) :: aero(tgmx) !aerosol mass conc [g/m3]
+ real,intent(in) :: aero(nlut) !aerosol mass conc [g/m3]
  real,intent(out) :: icn_out  ! IN concentration [#/L]
 
  integer :: is !loop
@@ -8910,7 +8978,8 @@
 !
  n_025_tot = 0.e0
 
- do is = 1, tgmx
+! do is = 1, tgmx
+ do is = 1, nlut
     n_025_tot = n_025_tot + lut_in_025(is)*aero(is)  ! accumulating aerosol conc [#/cm3]
  enddo
 
@@ -9003,29 +9072,37 @@
  SAT_LOOP : do is = 1, mxpts_s
     s = pts_s(is)     ! super saturation rate  [%]
 
+    if ( nsuso .le. nlut ) then
     ! Sulfate
     vant_fac = 3.e0  ; mol_wgt = 132.13e0   ! (NH4)2SO4
     call ccn_estimate( q_in,  s, t_air, vant_fac, mol_wgt, std%suso, r_mode%suso, r_min%suso, &
-!                       r_max%suso, rho%suso , lut_ccn(it,is,1), frac_ccn, n_gccn, frac_gccn,n_025,frac_025)
-                        r_max%suso, rho%suso , lut_ccn(it,is,1), frac_ccn, n_gccn, frac_gccn,lut_in_025(1),frac_025)
+!                        r_max%suso, rho%suso , lut_ccn(it,is,1), frac_ccn, n_gccn, frac_gccn,lut_in_025(1),frac_025)
+                       r_max%suso, rho%suso , lut_ccn(it,is,nsuso), frac_ccn, n_gccn, frac_gccn,lut_in_025(nsuso),frac_025)
+    endif
 
+    if ( nwaso .le. nlut ) then
     ! hydrophilic organic carbon (chemistry is treated as sulfate) 
     ! water soluble 
     vant_fac = 3.e0  ; mol_wgt = 132.13e0   ! (NH4)2SO4 
     call ccn_estimate( q_in,  s, t_air, vant_fac, mol_wgt, std%waso, r_mode%waso, r_min%waso, &
-!                       r_max%waso, rho%waso , lut_ccn(it,is,4) , frac_ccn, n_gccn, frac_gccn,n_025,frac_025)
-                       r_max%waso, rho%waso , lut_ccn(it,is,4) , frac_ccn, n_gccn, frac_gccn,lut_in_025(4),frac_025)
+!                       r_max%waso, rho%waso , lut_ccn(it,is,4) , frac_ccn, n_gccn, frac_gccn,lut_in_025(4),frac_025)
+                       r_max%waso, rho%waso , lut_ccn(it,is,nwaso) , frac_ccn, n_gccn, frac_gccn,lut_in_025(nwaso),frac_025)
+    endif
+    if ( nssam .le. nlut ) then
     ! Seasalt accumulation mode
     vant_fac = 2.e0  ; mol_wgt = 58.44e0   ! NaCL
     call ccn_estimate( q_in,  s, t_air, vant_fac, mol_wgt, std%ssam, r_mode%ssam, r_min%ssam, &
-!                       r_max%ssam, rho%ssam , lut_ccn(it,is,5), frac_ccn, n_gccn, frac_gccn,n_025,frac_025)  
-                       r_max%ssam, rho%ssam , lut_ccn(it,is,5), frac_ccn, n_gccn, frac_gccn,lut_in_025(5),frac_025)
+!                       r_max%ssam, rho%ssam , lut_ccn(it,is,5), frac_ccn, n_gccn, frac_gccn,lut_in_025(5),frac_025)
+                       r_max%ssam, rho%ssam , lut_ccn(it,is,nssam), frac_ccn, n_gccn, frac_gccn,lut_in_025(nssam),frac_025)
+    endif
 
+    if ( nsscm .le. nlut ) then
     ! Seasalt coarse mode
     vant_fac = 2.e0  ; mol_wgt = 58.44e0   ! NaCL
     call ccn_estimate( q_in,  s, t_air, vant_fac, mol_wgt, std%sscm, r_mode%sscm, r_min%sscm, &
-!                       r_max%sscm, rho%sscm , lut_ccn(it,is,6), frac_ccn, n_gccn, frac_gccn,n_025,frac_025) 
-                       r_max%sscm, rho%sscm , lut_ccn(it,is,6), frac_ccn, n_gccn, frac_gccn,lut_in_025(6),frac_025)
+!                       r_max%sscm, rho%sscm , lut_ccn(it,is,6), frac_ccn, n_gccn, frac_gccn,lut_in_025(6),frac_025)
+                       r_max%sscm, rho%sscm , lut_ccn(it,is,nsscm), frac_ccn, n_gccn, frac_gccn,lut_in_025(nsscm),frac_025)
+    endif
 
 
  enddo SAT_LOOP  
@@ -9037,55 +9114,85 @@
 !
 !    lut_in_025 = 0.e0  !initialize zero [#/cm3]
 
+    if ( nsoot .le. nlut ) then
     ! soot 
     vant_fac = 3.e0  ; mol_wgt = 132.13e0   ! (NH4)2SO4  --> fake
     call ccn_estimate( q_in,  s, t_air, vant_fac, mol_wgt, std%soot, r_mode%soot, r_min%soot, &
-                       r_max%soot, rho%soot , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(2),frac_025)
+!                       r_max%soot, rho%soot , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(2),frac_025)
+                       r_max%soot, rho%soot , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(nsoot),frac_025)
+    endif
 
+    if ( ninso .le. nlut ) then
     ! insoluble organic carbon
     vant_fac = 3.e0  ; mol_wgt = 132.13e0   ! (NH4)2SO4  --> fake
     call ccn_estimate( q_in,  s, t_air, vant_fac, mol_wgt, std%inso, r_mode%inso, r_min%inso, &
-                       r_max%inso, rho%inso , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(3),frac_025)
+!                       r_max%inso, rho%inso , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(3),frac_025)
+                       r_max%inso, rho%inso , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(ninso),frac_025)
+    endif
 
-    ! dust mode 1
+    if ( nminm1 .le. nlut ) then
+    ! dust mode 1 (nucleation mode)
     vant_fac = 3.e0  ; mol_wgt = 132.13e0   ! (NH4)2SO4  --> fake
     call ccn_estimate( q_in,  s, t_air, vant_fac, mol_wgt, std%minm, 0.0421, r_min%minm, &
-                       r_max%minm, rho%minm , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(7),frac_025)
+!                       r_max%minm, rho%minm , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(7),frac_025)
+                       r_max%minm, rho%minm , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(nminm1),frac_025)
+    endif
 
-    ! dust mode 2 
+    if ( nminm2 .le. nlut ) then
+    ! dust mode 2 (nucleation mode)
     vant_fac = 3.e0  ; mol_wgt = 132.13e0   ! (NH4)2SO4  --> fake
     call ccn_estimate( q_in,  s, t_air, vant_fac, mol_wgt, std%minm, 0.0722, r_min%minm, &
-                       r_max%minm, rho%minm , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(8),frac_025)
+!                       r_max%minm, rho%minm , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(8),frac_025)
+                       r_max%minm, rho%minm , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(nminm2),frac_025)
+    endif
 
-    ! dust mode 3 
+    if ( nminm3 .le. nlut ) then
+    ! dust mode 3 (nucleation mode)
     vant_fac = 3.e0  ; mol_wgt = 132.13e0   ! (NH4)2SO4  --> fake
     call ccn_estimate( q_in,  s, t_air, vant_fac, mol_wgt, std%minm, 0.1354, r_min%minm, &
-                       r_max%minm, rho%minm , n_ccn, frac_ccn, n_gccn, frac_gccn, lut_in_025(9),frac_025)
+!                       r_max%minm, rho%minm , n_ccn, frac_ccn, n_gccn, frac_gccn, lut_in_025(9),frac_025)
+                       r_max%minm, rho%minm , n_ccn, frac_ccn, n_gccn, frac_gccn, lut_in_025(nminm3),frac_025)
+    endif
 
-    ! dust mode 4
+    if ( nmiam1 .le. nlut ) then
+    ! dust mode 4 (accumulation mode)
     vant_fac = 3.e0  ; mol_wgt = 132.13e0   ! (NH4)2SO4  --> fake
     call ccn_estimate( q_in,  s, t_air, vant_fac, mol_wgt, std%miam, 0.2407, r_min%miam, &
-                       r_max%miam, rho%miam , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(10),frac_025)
+!                       r_max%miam, rho%miam , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(10),frac_025)
+                       r_max%miam, rho%miam , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(nmiam1),frac_025)
+    endif
 
-    ! dust mode 5 
+    if ( nmiam2 .le. nlut ) then
+    ! dust mode 5 (accumulation mode)
     vant_fac = 3.e0  ; mol_wgt = 132.13e0   ! (NH4)2SO4  --> fake
     call ccn_estimate( q_in,  s, t_air, vant_fac, mol_wgt, std%miam, 0.4212, r_min%miam, &
-                       r_max%miam, rho%miam , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(11),frac_025)
+!                       r_max%miam, rho%miam , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(11),frac_025)
+                       r_max%miam, rho%miam , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(nmiam2),frac_025)
+    endif
 
-    ! dust mode 6
+    if ( nmiam3 .le. nlut ) then
+    ! dust mode 6 (accumulation mode)
     vant_fac = 3.e0  ; mol_wgt = 132.13e0   ! (NH4)2SO4  --> fake
     call ccn_estimate( q_in,  s, t_air, vant_fac, mol_wgt, std%miam, 0.7220, r_min%miam, &
-                       r_max%miam, rho%miam , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(12),frac_025)
+!                       r_max%miam, rho%miam , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(12),frac_025)
+                       r_max%miam, rho%miam , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(nmiam3),frac_025)
+    endif
 
+    if ( nmicm1 .le. nlut ) then
     ! dust mode 7
     vant_fac = 3.e0  ; mol_wgt = 132.13e0   ! (NH4)2SO4  --> fake
     call ccn_estimate( q_in,  s, t_air, vant_fac, mol_wgt, std%micm, 1.354, r_min%micm, &
-                       r_max%micm, rho%micm , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(13),frac_025)
+!                       r_max%micm, rho%micm , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(13),frac_025)
+                       r_max%micm, rho%micm , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(nmicm1),frac_025)
+    endif
 
+    if ( nmicm2 .le. nlut ) then
     ! dust mode 8 
     vant_fac = 3.e0  ; mol_wgt = 132.13e0   ! (NH4)2SO4  --> fake
     call ccn_estimate( q_in,  s, t_air, vant_fac, mol_wgt, std%micm, 2.407, r_min%micm, &
-                       r_max%micm, rho%micm , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(14),frac_025)
+!                       r_max%micm, rho%micm , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(14),frac_025)
+                       r_max%micm, rho%micm , n_ccn, frac_ccn, n_gccn, frac_gccn,lut_in_025(nmicm2),frac_025)
+    endif
 
  if ( myrank .eq. 0 )  print *,' done makelut_ccn_icn ' 
 
