@@ -88,12 +88,12 @@ subroutine moninedmf_unit
    use machine, only: kind_phys
    use const, only: RTYPE
    use rank, only: myrank
-   use cusparse
+   !use cusparse
    !use nvtx
 
    implicit none
 
-   integer :: ntrac
+   integer :: ntrac, myim(my_max)
    real :: dta
    real(kind=kind_phys) u1_gpu(nxp, lev, my_max), v1_gpu(nxp, lev, my_max)
    real(kind=kind_phys) u1(nxp, lev, my_max), v1(nxp, lev, my_max), &
@@ -112,7 +112,8 @@ subroutine moninedmf_unit
       phil(nxp, lev, my_max), phii(nxp, lev + 1, my_max)
    real(kind=kind_phys) hpbl(nxp, my_max), hpbl_gpu(nxp, my_max)
    integer ::           kpbl(nxp, my_max), kpbl_gpu(nxp, my_max)
-   type(cusparseHandle) :: sparsehandle
+   !type(cusparseHandle) :: sparsehandle
+   integer :: sparsehandle
    integer :: i, ii, j, jj, async_id, n, k, istat
    integer, dimension(34) :: seed
 
@@ -125,7 +126,7 @@ subroutine moninedmf_unit
    call random_seed(put=seed)
    ct = 0.
    gt = 0.
-   istat = cusparseCreate(sparsehandle)
+   !istat = cusparseCreate(sparsehandle)
    do ii = 1, 16
       call random_number(u1)
       call random_number(v1)
@@ -191,7 +192,10 @@ subroutine moninedmf_unit
       kpbl_gpu = 0
 
       ntrac = ncld
-
+      do jj = 1, jlistnum
+         j = jlist1(jj)
+         myim(jj) = nxjp(j)
+      end do
       call cpu_time(time1)
       !if (ii .ne. 1) call nvtxStartRange("CPU compute")
       do jj = 1, jlistnum
@@ -212,42 +216,43 @@ subroutine moninedmf_unit
       !write(*,*) 12345
 
       if (.true.) then
-         !$acc enter data copyin(nxp, nxjp, lev, ntrac, ntcw,                &
+         !$acc enter data copyin(nxp, myim, lev, ntrac, ntcw,                &
          !$acc&            swh, hlw, xmu, pk2, rb, z0rl, u10, v10,           &
          !$acc&            fm, fh, tg, heat, evap, stress, sfcw, prsi, del,  &
-         !$acc&            prsl, prslk, phii, phil, dta, jlist1, nxjp_acc)
-         !$acc enter data copyin(u1_gpu, v1_gpu, t1_gpu, q1_gpu, kpbl_gpu, hpbl_gpu)
+         !$acc&            prsl, prslk, phii, phil, dta, jlist1, nxjp_acc)   &
+         !$acc&            async(async_id)
+         !$acc enter data copyin(u1_gpu, v1_gpu, t1_gpu, q1_gpu, kpbl_gpu,   &
+         !$acc&            hpbl_gpu) async(async_id)
          call cpu_time(time1)
          !if (ii .ne. 1) call nvtxStartRange("GPU compute")
-         call moninedmf_gpu(nxp, nxjp, lev, ntrac, ntcw, u1_gpu, v1_gpu, &
+         call moninedmf_gpu(nxp, myim, lev, ntrac, ntcw, u1_gpu, v1_gpu, &
                             t1_gpu, q1_gpu, swh, hlw, &
                             xmu, pk2, rb, z0rl, &
                             u10, v10, fm, fh, tg, &
                             heat, evap, stress, sfcw, &
                             kpbl_gpu, prsi, del, prsl, &
-                            prslk, phii, phil, dta, hpbl_gpu, sparsehandle)
+                            prslk, phii, phil, dta, hpbl_gpu, sparsehandle, async_id)
          !if (ii .ne. 1) call nvtxEndRange
+         !$acc wait(async_id)
          call cpu_time(time2)
          if (ii .ne. 1) gt = gt + time2 - time1
-         !$acc exit data copyout(u1_gpu, v1_gpu, t1_gpu, q1_gpu, kpbl_gpu, hpbl_gpu)
-         !$acc exit data delete(nxp, nxjp, lev, ntrac, ntcw,                 &
+         !$acc exit data copyout(u1_gpu, v1_gpu, t1_gpu, q1_gpu, kpbl_gpu,   &
+         !$acc&           hpbl_gpu) async(async_id)
+         !$acc exit data delete(nxp, myim, lev, ntrac, ntcw,                 &
          !$acc&            swh, hlw, xmu, pk2, rb, z0rl, u10, v10,           &
          !$acc&            fm, fh, tg, heat, evap, stress, sfcw, prsi, del,  &
-         !$acc&            prsl, prslk, phii, phil, dta, jlist1, nxjp_acc)
-
-         diff = 0.
+         !$acc&            prsl, prslk, phii, phil, dta, jlist1, nxjp_acc) &
+         !$acc&           async(async_id)
+         !$acc wait(async_id)
          do jj = 1, jlistnum
             j = jlist1(jj)
             do i = 1, nxjp(j)
-               if (abs(kpbl(i, jj) - kpbl_gpu(i, jj)) .gt. diff) then
-                  diff = abs(kpbl(i, jj) - kpbl_gpu(i, jj))
-                  write (*, *) i, jj, kpbl(i, jj), kpbl_gpu(i, jj)
+               if (kpbl(i, jj) .ne. kpbl_gpu(i, jj)) then
+                  if (myrank .eq. 0) write (*, *) jj, i, kpbl(i, jj), kpbl_gpu(i, jj)
                   !write(*,*) sum(t1(i,:,jj)), sum(t1_gpu(i,:,jj))
                end if
             end do
          end do
-         !write(*,*) 'NaN Check:', sum(u1), sum(v1), sum(t1), sum(q1),sum(kpbl),sum(hpbl)
-         !write(*,*) 'u1 2', u1(1,1,2), u1_gpu(1,1,2)
 
          call assert_real(u1_gpu, size(u1_gpu), u1, size(u1), &
                           1e-10, "Array u1")
@@ -265,7 +270,7 @@ subroutine moninedmf_unit
    end do
    write (*, *) 'Timing for CPU & GPU: ', ct, gt
    write (*, *) 'speedup ratio: ', ct/gt, myrank
-   istat = cusparseDestroy(sparsehandle)
+   !istat = cusparseDestroy(sparsehandle)
 
 end subroutine moninedmf_unit
 

@@ -86,11 +86,12 @@
 !!  -# Solve for the horizontal momentum tendencies and add them to output tendency terms.
 !!  \section detailed Detailed Algorithm
 !!  @{
-      subroutine moninedmf_gpu(ix, im, km, ntrac, ntcw, &
+      subroutine moninedmf_gpu(ix, myim, km, ntrac, ntcw, &
                                u1, v1, t1, q1, swh, hlw, xmu, &
                                psk, rbsoil, zorl, u10m, v10m, fm, fh, &
                                tsea, heat, evap, stress, spd1, kpbl, &
-                               prsi, del, prsl, prslk, phii, phil, delt, hpbl, handle)
+                               prsi, del, prsl, prslk, phii, phil, delt, &
+                               hpbl, handle, async_id )
 !
          use machine, only: kind_phys
          use physcons, grav => con_g, rd => con_rd, cp => con_cp &
@@ -101,7 +102,7 @@
          use rank, only: myrank
          use openacc
          use cudafor
-         use cusparse
+         !use cusparse
 
          implicit none
 !
@@ -109,10 +110,10 @@
 !
          logical lprnt
          integer ipr
-         integer ix, im(my), myim(my_max), km, ntrac, ntcw, kpbl(ix, my_max), kinver(ix)
+         integer ix,  myim(my_max), km, ntrac, ntcw, kpbl(ix, my_max), kinver(ix)
 !
          real(kind=kind_phys) delt, xkzm_m, xkzm_h, xkzm_s
-         real(kind=kind_phys) tau(ix, km, my_max), rtg(ix, km, ntrac, my_max), &
+         real(kind=kind_phys) tau(ix, km, my_max), &!rtg(ix, km, ntrac, my_max), &
             u1(ix, km, my_max), v1(ix, km, my_max), &
             t1(ix, km, my_max), q1(ix, km, ntrac, my_max), &
             swh(ix, km, my_max), hlw(ix, km, my_max), &
@@ -171,8 +172,10 @@
 !
          real(kind=kind_phys) prinv(ix, my_max), rent(ix, my_max)
          real(kind=kind_phys) alg(nxptot, km), adg(nxptot, km), &
-            aug(nxptot, km), a1g(nxptot, km), &
-            a2g(nxptot, km, ntrac), aug_backup(nxptot, km)
+            aug(nxptot, km), a3g(nxptot, km, ntrac+1)
+            
+         real(kind=kind_phys) a2g(nxptot, km, ntrac), aug_backup(nxptot, km), &
+            a1g(nxptot, km) ! cusparse
 
 !
          logical pblflg(ix, my_max), sfcflg(ix, my_max), scuflg(ix, my_max)
@@ -209,14 +212,16 @@
 !
          real(kind=kind_phys) zstblmax, h1, h2, qlcr, actei, &
             cldtime
+         ! registers for GPU
          real(kind=kind_phys) dtodsu_1, rdz_1, dsig_1, tem1_1, dsdz2_1, al_1, &
             tem2_1, ptem_1, ptem2_1, dttmp, dqtmp, tem3, &
-            time1, time2, aur, alr, k1, q1r, t1r, thetar, &
-            crbr, rbupr, rbupr1, kpblr, rbdnr, thvxr, zolr, &
-            wscaleur, wscaler, ustarr, dkur, dktr, kradr
-         type(cusparseHandle) :: handle
+            time1, time2, aur, alr, k1, q1r, t1r, thetar, a3gr1, a3gr2, &
+            crbr, rbupr, rbupr1, kpblr, rbdnr, thvxr, zolr, shr2r, adgr, &
+            wscaleur, wscaler, ustarr, dkur, dktr, kradr, qtxr, tx1r, tx2r
+         !type(cusparseHandle) :: handle
+         integer :: handle
          logical flgr
-         integer :: accui
+         integer :: accui, ii
 !cc
          parameter(gravi=1.0/grav)
          parameter(g=grav)
@@ -251,7 +256,6 @@
          integer(kind=cuda_stream_kind) stream
          integer istat, async_id
 
-         async_id = 1
          stream = acc_get_cuda_stream(async_id)
 
 !
@@ -278,25 +282,13 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !>  ## Compute preliminary variables from input arguments
 !
-         !jlistnum = 2
 
-         !$acc enter data create(beta,bf,ckt,cku,diss, &
-         !$acc&                  dusfc,dvsfc,dtsfc,dqsfc,dku,dkt,dktx, &
-         !$acc&                  crb,govrth,hgamt,hgamq, &
-         !$acc&                  hpblx,hrad,icld,kcld,krad,kpblx, &
-         !$acc&                  kx1,lcld,pblflg,pcnvflg,phih,phim, &
-         !$acc&                  prinv,qcko,qlx,qtx,radmin,radx,rent,rbdn, &
-         !$acc&                  rbup,rdzt,rtg,sfcflg,scuflg,shr2,sflux, &
-         !$acc&                  tau,tcko,theta,thetae,thermal,myim, &
-         !$acc&                  thlvx1,thlvx,thvx,ti,ublflg,ucko, &
-         !$acc&                  ustar,ustmin,vcko,vrad,wscale,wscaleu,wstar, &
-         !$acc&                  xmf,z0,zd,zdd,zi,zl,zol,xkzo,xkzmo,tx1,tx2, &
-         !$acc&                  alg,adg,aug,a1g,a2g,aug_backup) async(async_id)
-      !!$acc enter data copyin(jlist1,nxjp_acc) async(async_id)
+         !!$acc enter data create(a1g, a2g, aug_backup) async(async_id) !cusparse
 
-         !$acc host_data use_device(rtg)
-         istat = cudaMemsetAsync(rtg, 0.0, size(rtg), stream)
-         !$acc end host_data
+         !!acc enter data create(rtg) async(async_id)
+         !!$acc host_data use_device(rtg)
+         !istat = cudaMemsetAsync(rtg, 0.0, size(rtg), stream)
+         !!$acc end host_data
 
 !
 ! compute preliminary variables
@@ -317,11 +309,7 @@
          km1 = km - 1
          kmpbl = km/2
 
-         !$acc parallel loop private(j1,jj) async(async_id)
-         do jj = 1, jlistnum
-            j1 = jlist1(jj)
-            myim(jj) = im(j1)
-         end do
+         !$acc enter data create(zi, zl) async(async_id)
          !>  - Compute physical height of the layer centers and interfaces from the geopotential height (zi and zl)
          !$acc parallel loop gang collapse(2) private(jj,k,i) async(async_id)
          do jj = 1, jlistnum
@@ -335,23 +323,71 @@
             end do
          end do
 
-         !>  - Compute reciprocal of pressure (tx1, tx2)
-         !>  - Compute background vertical diffusivities for scalars and momentum (xkzo and xkzmo)
 
-         !$acc parallel loop gang vector collapse(2) private(jj,k,i,ptem,tem1) async(async_id)
+         !$acc enter data create(ckt, cku, dku, dkt, dktx, qlx, qtx, radx, &
+         !$acc&      theta, thetae, thlvx, thvx) async(async_id)
+         !$acc parallel loop gang collapse(2) private(jj,k,i,ptem, ptem1, ptem2, &
+         !$acc&     q1r,t1r,thetar,qtxr) async(async_id)
+         do jj = 1, jlistnum
+            do k = 1, km
+                !$acc loop vector
+                do i = 1, myim(jj)
+         !>  - Compute \f$\theta\f$ (theta), \f$q_l\f$ (qlx), \f$q_t\f$ (qtx), \f$\theta_e\f$ (thetae), \f$\theta_v\f$ (thvx), \f$\theta_{l,v}\f$ (thlvx)
+                     q1r = q1(i, k, 1, jj)
+                     t1r = t1(i, k, jj)
+                     thetar = t1r*psk(i, km, jj)/prslk(i, k, jj)
+                     ptem = max(q1(i, k, ntcw, jj), qlmin)
+                     qtxr = max(q1r, qmin) + ptem
+                     ptem1 = hvap*max(q1r, qmin)/(cp*t1r)
+                     thetae(i, k, jj) = thetar*(1.+ptem1)
+                     thvx(i, k, jj) = thetar*(1.+fv*max(q1r, qmin) - ptem)
+                     ptem2 = thetar - (hvap/cp)*ptem
+                     thlvx(i, k, jj) = ptem2*(1.+fv*qtxr)
+                     if (k .ne. km) then
+!>  - Initialize diffusion coefficients to 0 and calculate the total radiative heating rate (dku, dkt, radx)
+                        dku(i, k, jj) = 0.
+                        dkt(i, k, jj) = 0.
+                        dktx(i, k, jj) = 0.
+                        cku(i, k, jj) = 0.
+                        ckt(i, k, jj) = 0.
+                        tem = zi(i, k + 1, jj) - zi(i, k, jj)
+                        radx(i, k, jj) = tem*(swh(i, k, jj)*xmu(i, jj) + hlw(i, k, jj))
+                     end if
+                     theta(i, k, jj) = thetar
+                     qlx(i, k, jj) = ptem
+                     qtx(i, k, jj) = qtxr
+               end do
+            end do
+         end do
+         !$acc enter data create(beta,bf,diss, &
+         !$acc&                  dusfc,dvsfc,dtsfc,dqsfc, &
+         !$acc&                  crb,govrth,hgamt,hgamq, &
+         !$acc&                  hpblx,hrad,icld,kcld,krad,kpblx, &
+         !$acc&                  kx1,lcld,pblflg,pcnvflg,phih,phim, &
+         !$acc&                  prinv,qcko,radmin,rent,rbdn, &
+         !$acc&                  rbup,rdzt,sfcflg,scuflg,shr2,sflux, &
+         !$acc&                  tau,tcko,thermal, &
+         !$acc&                  thlvx1,ti,ublflg,ucko, &
+         !$acc&                  ustar,ustmin,vcko,vrad,wscale,wscaleu,wstar, &
+         !$acc&                  xmf,z0,zd,zdd,zol,xkzo,xkzmo,tx1,tx2, &
+         !$acc&                  alg,adg,aug,a3g) async(async_id)
+         
+         !$acc parallel loop gang vector collapse(2) private(jj,k,i,ptem,tem1,tx1r, tx2r) async(async_id)
          do jj = 1, jlistnum
             do i = 1, ix
                if (i .le. myim(jj)) then
+         !>  - Compute reciprocal of pressure (tx1, tx2)
                   kx1(i, jj) = 1
-                  tx1(i, jj) = 1.0/prsi(i, 1, jj)
-                  tx2(i, jj) = tx1(i, jj)
+                  tx1r = 1.0/prsi(i, 1, jj)
+                  tx2r = tx1r
+         !>  - Compute background vertical diffusivities for scalars and momentum (xkzo and xkzmo)
                   !$acc loop seq
                   do k = 1, km1
                      !>  - Compute reciprocal of \f$ \Delta z \f$ (rdzt)
                      rdzt(i, k, jj) = 1.0/(zl(i, k + 1, jj) - zl(i, k, jj))
                      !byl          if (k < kinver(i)) then
                      !                                  vertical background diffusivity
-                     ptem = prsi(i, k + 1, jj)*tx1(i, jj)
+                     ptem = prsi(i, k + 1, jj)*tx1r
                      tem1 = 1.0 - ptem
                      tem1 = tem1*tem1*10.0
                      xkzo(i, k, jj) = xkzm_h*min(1.0, exp(-tem1))
@@ -361,13 +397,15 @@
                         xkzmo(i, k, jj) = xkzm_m
                         kx1(i, jj) = k + 1
                      else
-                        if (k == kx1(i, jj) .and. k > 1) tx2(i, jj) = 1.0/prsi(i, k, jj)
-                        tem1 = 1.0 - prsi(i, k + 1, jj)*tx2(i, jj)
+                        if (k == kx1(i, jj) .and. k > 1) tx2r = 1.0/prsi(i, k, jj)
+                        tem1 = 1.0 - prsi(i, k + 1, jj)*tx2r
                         tem1 = tem1*tem1*5.0
                         xkzmo(i, k, jj) = xkzm_m*min(1.0, exp(-tem1))
                      end if
                      !byl          endif
                   end do
+                  tx1(i, jj) = tx1r
+                  tx2(i, jj) = tx2r
                end if
             end do
          end do
@@ -376,28 +414,42 @@
          !       print *,' xkzmo=',(xkzmo(ipr,k),k=1,km1)
          !     endif
          !
+         
          ! diffusivity in the inversion layer is set to be xkzminv (m^2/s)
          !>  - The background scalar vertical diffusivity is limited to be less than or equal to xkzminv
-         !$acc parallel loop gang collapse(2) private(jj,k,i,tem1) async(async_id)
+         !$acc parallel loop gang collapse(2) private(jj,k,i,tem1,rdz,dw2) async(async_id)
          do jj = 1, jlistnum
-            do k = 1, kmpbl
+            do k = 1, km1
                !$acc loop vector
                do i = 1, myim(jj)
-                  !         if(zi(i,k+1) > 200..and.zi(i,k+1) < zstblmax) then
-                  if (zi(i, k + 1, jj) > 250.) then
-                     tem1 = (t1(i, k + 1, jj) - t1(i, k, jj))*rdzt(i, k, jj)
-                     if (tem1 > 1.e-5) then
-                        xkzo(i, k, jj) = min(xkzo(i, k, jj), xkzminv)
+                  rdz = rdzt(i, k, jj)
+                  bf(i, k, jj) = (thvx(i, k + 1, jj) - thvx(i, k, jj))*rdz
+                  ti(i, k, jj) = 2./(t1(i, k, jj) + t1(i, k + 1, jj))
+                  dw2 = (u1(i, k, jj) - u1(i, k + 1, jj))**2 &
+                        + (v1(i, k, jj) - v1(i, k + 1, jj))**2
+                  shr2(i, k, jj) = max(dw2, dw2min)*rdz*rdz
+                  if (k .le. kmpbl) then
+                     !         if(zi(i,k+1) > 200..and.zi(i,k+1) < zstblmax) then
+                     if (zi(i, k + 1, jj) > 250.) then
+                        tem1 = (t1(i, k + 1, jj) - t1(i, k, jj))*rdz
+                        if (tem1 > 1.e-5) then
+                           xkzo(i, k, jj) = min(xkzo(i, k, jj), xkzminv)
+                        end if
                      end if
                   end if
                end do
             end do
          end do
-         !>  - Some output variables and logical flags are initialized
-         !$acc parallel loop gang vector collapse(2) private(jj,i) async(async_id)
+
+         !$acc parallel loop gang vector collapse(2) &
+         !$acc&              private(jj,k,i,spdk2,tem,robn,tem1,crbr,rbupr, &
+         !$acc&                      rbupr1,kpblr,rbdnr,flgr,thvxr,rbint,zol1, &
+         !$acc&                      wst3,ust3,vpert,zolr,wscaleur,wscaler,&
+         !$acc&                      ustarr,kk,kradr) async(async_id)
          do jj = 1, jlistnum
             do i = 1, ix
                if (i .le. myim(jj)) then
+         !>  - Some output variables and logical flags are initialized
                   z0(i, jj) = 0.01*zorl(i, jj)
                   dusfc(i, jj) = 0.
                   dvsfc(i, jj) = 0.
@@ -425,77 +477,14 @@
                      kcld(i, jj) = km1
                      zd(i, jj) = 0.
                   end if
-               end if
-            end do
-         end do
-         !>  - Compute \f$\theta\f$ (theta), \f$q_l\f$ (qlx), \f$q_t\f$ (qtx), \f$\theta_e\f$ (thetae), \f$\theta_v\f$ (thvx), \f$\theta_{l,v}\f$ (thlvx)
-         !$acc parallel loop gang vector collapse(3) private(jj,k,i,ptem, ptem1, ptem2, &
-         !$acc&                                       q1r,t1r,thetar) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, km
-               do i = 1, ix
-                  if (i .le. myim(jj)) then
-                     q1r = q1(i, k, 1, jj)
-                     t1r = t1(i, k, jj)
-                     thetar = t1r*psk(i, km, jj)/prslk(i, k, jj)
-                     ptem = max(q1(i, k, ntcw, jj), qlmin)
-                     qtx(i, k, jj) = max(q1r, qmin) + ptem
-                     ptem1 = hvap*max(q1r, qmin)/(cp*t1r)
-                     thetae(i, k, jj) = thetar*(1.+ptem1)
-                     thvx(i, k, jj) = thetar*(1.+fv*max(q1r, qmin) - ptem)
-                     ptem2 = thetar - (hvap/cp)*ptem
-                     thlvx(i, k, jj) = ptem2*(1.+fv*qtx(i, k, jj))
-                     if (k .ne. km) then
-                        dku(i, k, jj) = 0.
-                        dkt(i, k, jj) = 0.
-                        dktx(i, k, jj) = 0.
-                        cku(i, k, jj) = 0.
-                        ckt(i, k, jj) = 0.
-                        tem = zi(i, k + 1, jj) - zi(i, k, jj)
-                        radx(i, k, jj) = tem*(swh(i, k, jj)*xmu(i, jj) + hlw(i, k, jj))
-                     end if
-                     theta(i, k, jj) = thetar
-                     qlx(i, k, jj) = ptem
-                  end if
-               end do
-            end do
-         end do
-
-         !
+                  
          !  compute virtual potential temp gradient (bf) and winshear square
          !>  - Compute \f$\frac{\partial \theta_v}{\partial z}\f$ (bf) and the wind shear squared (shr2)
-         !$acc parallel loop gang collapse(2) private(jj,k,i,rdz,dw2) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, km
-               !$acc loop vector
-               do i = 1, myim(jj)
-                  if (k .eq. km) then
-                     govrth(i, jj) = g/theta(i, 1, jj)
-                     beta(i, jj) = dt2/(zi(i, 2, jj) - zi(i, 1, jj))
-                     ustar(i, jj) = sqrt(stress(i, jj))
-                     sflux(i, jj) = heat(i, jj) + evap(i, jj)*fv*theta(i, 1, jj)
-                     if (.not. sfcflg(i, jj) .or. sflux(i, jj) <= 0.) pblflg(i, jj) = .false.
-                  else
-                     rdz = rdzt(i, k, jj)
-                     bf(i, k, jj) = (thvx(i, k + 1, jj) - thvx(i, k, jj))*rdz
-                     ti(i, k, jj) = 2./(t1(i, k, jj) + t1(i, k + 1, jj))
-                     dw2 = (u1(i, k, jj) - u1(i, k + 1, jj))**2 &
-                           + (v1(i, k, jj) - v1(i, k + 1, jj))**2
-                     shr2(i, k, jj) = max(dw2, dw2min)*rdz*rdz
-                  end if
-               end do
-            end do
-         end do
-
-         !$acc parallel loop gang vector collapse(2) &
-         !$acc&              private(jj,k,i,spdk2,tem,robn,tem1,crbr,rbupr, &
-         !$acc&                      rbupr1,kpblr,rbdnr,flgr,thvxr,rbint,zol1, &
-         !$acc&                      wst3,ust3,vpert,zolr,wscaleur,wscaler,&
-         !$acc&                      ustarr,kk,kradr) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               if (i .le. myim(jj)) then
-                  !>  - Initialize diffusion coefficients to 0 and calculate the total radiative heating rate (dku, dkt, radx)
+                  govrth(i, jj) = g/theta(i, 1, jj)
+                  beta(i, jj) = dt2/(zi(i, 2, jj) - zi(i, 1, jj))
+                  ustar(i, jj) = sqrt(stress(i, jj))
+                  sflux(i, jj) = heat(i, jj) + evap(i, jj)*fv*theta(i, 1, jj)
+                  if (.not. sfcflg(i, jj) .or. sflux(i, jj) <= 0.) pblflg(i, jj) = .false.
 
                   !>  - Set lcld to first index above 2.5km
                   flgr = scuflg(i, jj)
@@ -515,14 +504,6 @@
                   !  compute the pbl height
                   !
 
-                  !>  Given the thermal's properties and the critical Richardson number, a loop is executed to find the first level above the surface where the modified Richardson number is greater than the critical Richardson number, using equation 10a from Troen and Mahr
-  !!  \f[
-  !!  h = Ri\frac{T_0\left|\vec{v}(h)\right|^2}{g\left(\theta_v(h) - \theta_s\right)}
-  !!  \f]
-  !!  where \f$h\f$ is the PBL height, \f$Ri\f$ is the Richardson number, \f$T_0\f$ is the virtual potential temperature near the surface, \f$\left|\vec{v}\right|\f$ is the wind speed, and \f$\theta_s\f$ is for the thermal. Rearranging this equation to calc
-  !!  \f[
-  !!  Ri_k = gz(k)\frac{\left(\theta_v(k) - \theta_s\right)}{\theta_v(1)*\vec{v}(k)}
-  !!  \f]
                   flgr = .false.
                   rbupr = rbsoil(i, jj)
                   thvxr = thvx(i, 1, jj)
@@ -539,6 +520,14 @@
                      crbr = 0.16*(tem1**(-0.18))
                      crbr = max(min(crbr, crbmax), crbmin)
                   end if
+                  !>  Given the thermal's properties and the critical Richardson number, a loop is executed to find the first level above the surface where the modified Richardson number is greater than the critical Richardson number, using equation 10a from Troen and Mahr
+  !!  \f[
+  !!  h = Ri\frac{T_0\left|\vec{v}(h)\right|^2}{g\left(\theta_v(h) - \theta_s\right)}
+  !!  \f]
+  !!  where \f$h\f$ is the PBL height, \f$Ri\f$ is the Richardson number, \f$T_0\f$ is the virtual potential temperature near the surface, \f$\left|\vec{v}\right|\f$ is the wind speed, and \f$\theta_s\f$ is for the thermal. Rearranging this equation to calc
+  !!  \f[
+  !!  Ri_k = gz(k)\frac{\left(\theta_v(k) - \theta_s\right)}{\theta_v(1)*\vec{v}(k)}
+  !!  \f]
                   !$acc loop seq
                   do k = 1, kmpbl
                      if (.not. flgr) then
@@ -734,7 +723,6 @@
                   if (scuflg(i, jj) .and. icld(i, jj) < 1) scuflg(i, jj) = .false.
 
 !------------------------------------------
-                  !>  - Determine the distance that a parcel would sink downwards starting from the level of minimum radiative heating rate by comparing the hypothetical minimum \f$\theta_v\f$ calculated above with the environmental \f$\theta_v\f$.
                   !>  - Find the height of the interface where the minimum in radiative heating rate is located. If this height is less than the second model interface height, then set the scuflg to F.
                   if (scuflg(i, jj)) then
                      hrad(i, jj) = zi(i, kradr + 1, jj)
@@ -750,7 +738,7 @@
                      !         if(thlvx1(i) > thlvx(i,k-1)) scuflg(i)=.false.
                   end if
                   !-----------------------------------------------
-
+                  !>  - Determine the distance that a parcel would sink downwards starting from the level of minimum radiative heating rate by comparing the hypothetical minimum \f$\theta_v\f$ calculated above with the environmental \f$\theta_v\f$.
                   flgr = scuflg(i, jj)
                   !$acc loop seq
                   do k = kmpbl, 1, -1
@@ -763,13 +751,13 @@
                         end if
                      end if
                   end do
+                  !>  - Calculate the cloud thickness, where the cloud top is the in-cloud minimum radiative heating level and the bottom is determined previously.
                   if (scuflg(i, jj)) then
                      kk = max(1, kradr + 1 - icld(i, jj))
                      zdd(i, jj) = hrad(i, jj) - zi(i, kk, jj)
                   end if
                   !------------------------------------------------
 
-                  !>  - Calculate the cloud thickness, where the cloud top is the in-cloud minimum radiative heating level and the bottom is determined previously.
                   !>  - Find the largest between the cloud thickness and the distance of a sinking parcel, then determine the smallest of that number and the height of the minimum in radiative heating rate. Set this number to \f$zd\f$. Using \f$zd\f$, calculate the charact
                   if (scuflg(i, jj)) then
                      zd(i, jj) = max(zd(i, jj), zdd(i, jj))
@@ -875,18 +863,19 @@
   !!  where \f$l_0\f$ is currently 30 m for stable conditions and 150 m for unstable. Finally, the diffusion coefficients are kept in a range bounded by the background diffusion and the maximum allowable values.
          !$acc parallel loop gang collapse(2) &
          !$acc&         private(jj,k,i,bvf2,ri,zk,rl2,dk,sri,tem1,prnum, &
-         !$acc&                 dkur,dktr) async(async_id)
+         !$acc&                 dkur,dktr,shr2r) async(async_id)
          do jj = 1, jlistnum
             do k = 1, km1
                !$acc loop vector
                do i = 1, myim(jj)
                   if (k >= kpbl(i, jj)) then
+                     shr2r = shr2(i, k, jj)
                      bvf2 = g*bf(i, k, jj)*ti(i, k, jj)
-                     ri = max(bvf2/shr2(i, k, jj), rimin)
+                     ri = max(bvf2/shr2r, rimin)
                      zk = vk*zi(i, k + 1, jj)
                      if (ri < 0.) then ! unstable regime
                         rl2 = zk*rlamun/(rlamun + zk)
-                        dk = rl2*rl2*sqrt(shr2(i, k, jj))
+                        dk = rl2*rl2*sqrt(shr2r)
                         sri = sqrt(-ri)
 !               dku(i,k) = xkzmo(i,k) + dk*(1+8.*(-ri)/(1+1.746*sri))
 !               dkt(i,k) = xkzo(i,k)  + dk*(1+8.*(-ri)/(1+1.286*sri))
@@ -896,7 +885,7 @@
                         rl2 = zk*rlam/(rlam + zk)
 !!              tem      = rlam * sqrt(0.01*prsi(i,k))
 !!              rl2      = zk*tem/(tem+zk)
-                        dk = rl2*rl2*sqrt(shr2(i, k, jj))
+                        dk = rl2*rl2*sqrt(shr2r)
                         tem1 = dk/(1 + 5.*ri)**2
 !
                         if (k >= kpblx(i, jj)) then
@@ -1018,10 +1007,6 @@
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          !
          !
-         !     compute tridiagonal matrix elements for heat and moisture
-         !
-         !>  ## Solve for the temperature and moisture tendencies due to vertical mixing.
-  !!  The tendencies of heat, moisture, and momentum due to vertical diffusion are calculated using a two-part process. First, a solution is obtained using an implicit time-stepping scheme, then the time tendency terms are "backed out". The tridiagonal matr
 
          if (.false.) then
             !$acc parallel loop gang vector collapse(2) private(dtodsd,&
@@ -1124,7 +1109,7 @@
 
                      !dtsfc(i,jj) = dtsfc(i,jj) + cont*del(i,k,jj)*ttend
                      !dqsfc(i,jj) = dqsfc(i,jj) + conq*del(i,k,jj)*qtend
-                     rtg(i, k, 1, jj) = qtend
+                     !rtg(i, k, 1, jj) = qtend
                      q1(i, k, 1, jj) = a2g(accui + i, k)
                   end do
                end do
@@ -1179,7 +1164,7 @@
                            !
                            !>  After returning with the solution, the tendencies for temperature and moisture are recovered.
                            qtend = (a2g(accui + i, k) - q1(i, k, kk, jj))*rdt
-                           rtg(i, k, kk, jj) = qtend
+                           !rtg(i, k, kk, jj) = qtend
                            q1(i, k, kk, jj) = a2g(accui + i, k)
                         end do
                      end do
@@ -1187,19 +1172,23 @@
                end do
             end if
          else
+         !     compute tridiagonal matrix elements for heat and moisture
+         !
+         !>  ## Solve for the temperature and moisture tendencies due to vertical mixing.
+  !!  The tendencies of heat, moisture, and momentum due to vertical diffusion are calculated using a two-part process. First, a solution is obtained using an implicit time-stepping scheme, then the time tendency terms are "backed out". The tridiagonal matr
             !$acc parallel loop gang vector collapse(2) private(dtodsd,&
-            !$acc&                   dtodsu,dsig,rdz,aur,alr, &
+            !$acc&                   dtodsu,dsig,rdz,aur,alr,a3gr2,a3gr1, &
             !$acc&                   tem1,dsdz2,tem2,ptem,ptem1,ptem2,&
-            !$acc&                   dsdzt,dsdzq,tem,jj,i,k,accui) async(async_id)
+            !$acc&                   dsdzt,dsdzq,tem,jj,i,k,accui,adgr) async(async_id)
             do jj = 1, jlistnum
                do i = 1, ix
                   if (i .le. myim(jj)) then
-                     accui = nxjp_acc(jj) - 1
-                     alg(accui + i, 1) = 0.
-                     aug(accui + i, km) = 0.
-                     adg(accui + i, 1) = 1.
-                     a1g(accui + i, 1) = t1(i, 1, jj) + beta(i, jj)*heat(i, jj)
-                     a2g(accui + i, 1, 1) = q1(i, 1, 1, jj) + beta(i, jj)*evap(i, jj)
+                     ii = nxjp_acc(jj) - 1 + i
+                     alg(ii, 1) = 0.
+                     aug(ii, km) = 0.
+                     adgr = 1.
+                     a3gr1 = t1(i, 1, jj) + beta(i, jj)*heat(i, jj)
+                     a3gr2 = q1(i, 1, 1, jj) + beta(i, jj)*evap(i, jj)
                      !$acc loop seq
                      do k = 1, km1
                         dtodsd = dt2/del(i, k, jj)
@@ -1216,52 +1205,58 @@
                            ptem = 0.5*tem2*xmf(i, k, jj)
                            ptem1 = dtodsd*ptem
                            ptem2 = dtodsu*ptem
-                           adg(accui + i, k) = adg(accui + i, k) - aur - ptem1
-                           adg(accui + i, k + 1) = 1.-alr + ptem2
+                           adg(ii, k) = adgr - aur - ptem1
+                           adgr = 1.-alr + ptem2
                            aur = aur - ptem1
                            alr = alr + ptem2
                            ptem = tcko(i, k, jj) + tcko(i, k + 1, jj)
                            dsdzt = tem1*gocp
-                           a1g(accui + i, k) = a1g(accui + i, k) + dtodsd*dsdzt - ptem1*ptem
-                           a1g(accui + i, k + 1) = t1(i, k + 1, jj) - dtodsu*dsdzt + ptem2*ptem
+                           a3g(ii, k, 1) = a3gr1 + dtodsd*dsdzt - ptem1*ptem
+                           a3gr1 = t1(i, k + 1, jj) - dtodsu*dsdzt + ptem2*ptem
                            ptem = qcko(i, k, 1, jj) + qcko(i, k + 1, 1, jj)
-                           a2g(accui + i, k, 1) = a2g(accui + i, k, 1) - ptem1*ptem
-                           a2g(accui + i, k + 1, 1) = q1(i, k + 1, 1, jj) + ptem2*ptem
+                           a3g(ii, k, 2) = a3gr2 - ptem1*ptem
+                           a3gr2 = q1(i, k + 1, 1, jj) + ptem2*ptem
                         elseif (ublflg(i, jj) .and. k < kpbl(i, jj)) then
                            ptem1 = dsig*dktx(i, k, jj)*rdz
                            tem = 1.0/hpbl(i, jj)
                            dsdzt = tem1*gocp - ptem1*hgamt(i, jj)*tem
                            dsdzq = -ptem1*hgamq(i, jj)*tem
-                           adg(accui + i, k) = adg(accui + i, k) - aur
-                           adg(accui + i, k + 1) = 1.-alr
-                           a1g(accui + i, k) = a1g(accui + i, k) + dtodsd*dsdzt
-                           a1g(accui + i, k + 1) = t1(i, k + 1, jj) - dtodsu*dsdzt
-                           a2g(accui + i, k, 1) = a2g(accui + i, k, 1) + dtodsd*dsdzq
-                           a2g(accui + i, k + 1, 1) = q1(i, k + 1, 1, jj) - dtodsu*dsdzq
+                           adg(ii, k) = adgr - aur
+                           adgr = 1.-alr
+                           a3g(ii, k, 1) = a3gr1 + dtodsd*dsdzt
+                           a3gr1 = t1(i, k + 1, jj) - dtodsu*dsdzt
+                           a3g(ii, k, 2) = a3gr2 + dtodsd*dsdzq
+                           a3gr2 = q1(i, k + 1, 1, jj) - dtodsu*dsdzq
                         else
-                           adg(accui + i, k) = adg(accui + i, k) - aur
-                           adg(accui + i, k + 1) = 1.-alr
+                           adg(ii, k) = adgr - aur
+                           adgr = 1.-alr
                            dsdzt = tem1*gocp
-                           a1g(accui + i, k) = a1g(accui + i, k) + dtodsd*dsdzt
-                           a1g(accui + i, k + 1) = t1(i, k + 1, jj) - dtodsu*dsdzt
-                           a2g(accui + i, k + 1, 1) = q1(i, k + 1, 1, jj)
+                           a3g(ii, k, 1) = a3gr1 + dtodsd*dsdzt
+                           a3gr1 = t1(i, k + 1, jj) - dtodsu*dsdzt
+                           a3g(ii, k, 2) = a3gr2
+                           a3gr2 = q1(i, k + 1, 1, jj)
                         end if
-                        aug(accui + i, k) = aur
-                        alg(accui + i, k + 1) = alr
+                        aug(ii, k) = aur
+                        alg(ii, k + 1) = alr
                      end do
+                     adg(ii, km) = adgr
+                     a3g(ii, km, 1) = a3gr1
+                     a3g(ii, km, 2) = a3gr2
                   end if
                end do
             end do
             !
-            !$acc parallel loop gang vector collapse(3) private(jj,i,k, &
+            !$acc parallel loop gang vector collapse(2) private(jj,i,k, &
             !$acc&                   dtodsu,dsig,tem2,ptem2,ptem,&
             !$acc&                   tem1,dtodsd,ptem1,tem3) async(async_id)
             do jj = 1, jlistnum
-               do kk = 2, ntrac
-                  do i = 1, ix
-                     if (i .le. myim(jj)) then
-                        accui = nxjp_acc(jj) - 1
-                        a2g(accui + i, 1, kk) = q1(i, 1, kk, jj)
+               do i = 1, ix
+                  if (i .le. myim(jj)) then
+                     ii = nxjp_acc(jj) - 1 + i
+                        !$acc loop seq
+                        do kk = 2, ntrac
+                           a3g(ii, 1, kk+1) = q1(i, 1, kk, jj)
+                        end do
                         !$acc loop seq
                         do k = 1, km1
                            if (pcnvflg(i, jj) .and. k < kpbl(i, jj)) then
@@ -1273,47 +1268,54 @@
                               ptem = 0.5*tem2*xmf(i, k, jj)
                               ptem1 = dtodsd*ptem
                               ptem2 = dtodsu*ptem
-                              tem3 = qcko(i, k, kk, jj) + qcko(i, k + 1, kk, jj)
-                              a2g(accui + i, k, kk) = a2g(accui + i, k, kk) - ptem1*tem3
-                              a2g(accui + i, k + 1, kk) = q1(i, k + 1, kk, jj) + ptem2*tem3
+                              !$acc loop seq
+                              do kk = 2, ntrac
+                                 tem3 = qcko(i, k, kk, jj) + qcko(i, k + 1, kk, jj)
+                                 a3g(ii, k, kk+1) = a3g(ii, k, kk+1) - ptem1*tem3
+                                 a3g(ii, k + 1, kk+1) = q1(i, k + 1, kk, jj) + ptem2*tem3
+                              end do
                            else
-                              a2g(accui + i, k + 1, kk) = q1(i, k + 1, kk, jj)
+                              !$acc loop seq
+                              do kk = 2, ntrac
+                                 a3g(ii, k + 1, kk+1) = q1(i, k + 1, kk, jj)
+                              end do
                            end if
                         end do
                      end if
                   end do
                end do
-            end do
 
             !
             !     solve tridiagonal problem for heat and moisture
             !
             !>  The tridiagonal system is solved by calling the internal ::tridin subroutine.
-            call tridin_gpu(nxptot, km, ntrac, alg, adg, aug, a1g, a2g, aug, a1g, a2g, async_id)
-            !$acc parallel loop gang vector collapse(3) private(jj,k,i,accui,qtend,ttend) async(async_id)
+            call tridin_gpu(nxptot, km, ntrac, alg, adg, aug, a3g, aug, a3g, async_id)
+            !$acc parallel loop gang vector collapse(3) private(m,jj,k,i,accui,qtend,ttend) async(async_id)
             do jj = 1, jlistnum
                do k = 1, km
                   do i = 1, ix
-                  if (i .le. myim(jj)) then
-                     accui = nxjp_acc(jj) - 1
-                     !
-                     !     recover tendencies of heat and moisture
-                     !
-                     !>  After returning with the solution, the tendencies for temperature and moisture are recovered.
-                     ttend = (a1g(accui + i, k) - t1(i, k, jj))*rdt
-                     tau(i, k, jj) = ttend
-  !!            tau(i,k)   = tau(i,k)+ttend
-  !!            rtg(i,k,1) = rtg(i,k,1)+qtend
+                     if (i .le. myim(jj)) then
+                        accui = nxjp_acc(jj) - 1
+                        !
+                        !     recover tendencies of heat and moisture
+                        !
+                        !>  After returning with the solution, the tendencies for temperature and moisture are recovered.
+                        ttend = (a3g(accui + i, k, 1) - t1(i, k, jj))*rdt
+                        tau(i, k, jj) = ttend
+     !!            tau(i,k)   = tau(i,k)+ttend
+     !!            rtg(i,k,1) = rtg(i,k,1)+qtend
 
-                     !dtsfc(i,jj) = dtsfc(i,jj) + cont*del(i,k,jj)*ttend
-                     !dqsfc(i,jj) = dqsfc(i,jj) + conq*del(i,k,jj)*qtend
-                     !$acc loop seq
-                     do kk = 1, ntrac
-                        qtend = (a2g(accui + i, k, kk) - q1(i, k, kk, jj))*rdt
-                        rtg(i, k, kk, jj) = qtend
-                        q1(i, k, kk, jj) = a2g(accui + i, k, kk)
-                     end do
-                  end if
+                        !dtsfc(i,jj) = dtsfc(i,jj) + cont*del(i,k,jj)*ttend
+                        !dqsfc(i,jj) = dqsfc(i,jj) + conq*del(i,k,jj)*qtend
+                        
+                        !$acc loop seq
+                        do kk = 1, ntrac
+                           m = kk + 1
+                           !qtend = (a3g(accui + i, k, m) - q1(i, k, kk, jj))*rdt
+                           !rtg(i, k, kk, jj) = qtend
+                           q1(i, k, kk, jj) = a3g(accui + i, k, m)
+                        end do
+                     end if
                   end do
                end do
             end do
@@ -1338,11 +1340,7 @@
             end do
          end if
          !
-         !     add dissipative heating at the first model layer
          !
-         !>  Next, the temperature tendency is updated following equation 14.
-         !
-         !     add dissipative heating above the first model layer
          !
          !$acc parallel loop gang collapse(2) private(jj,k,i,tem,ttend,tem1,tem2) async(async_id)
          do jj = 1, jlistnum
@@ -1352,12 +1350,16 @@
                   if (k .ne. km) then
                      if (dspheat) then
                         if (k .eq. 1) then
+         !     add dissipative heating at the first model layer
+         !
+         !>  Next, the temperature tendency is updated following equation 14.
                            tem = govrth(i, jj)*sflux(i, jj)
                            tem1 = tem + stress(i, jj)*spd1(i, jj)/zl(i, 1, jj)
                            tem2 = 0.5*(tem1 + diss(i, 1, jj))
                         else
                            tem2 = 0.5*(diss(i, k - 1, jj) + diss(i, k, jj))
                         end if
+         !     add dissipative heating above the first model layer
                         tem2 = max(tem2, 0.)
                         ttend = tem2/cp
                         tau(i, k, jj) = tau(i, k, jj) + 0.5*ttend
@@ -1372,17 +1374,13 @@
          !
          !     compute tridiagonal matrix elements for momentum
          !
-         !>  ## Solve for the horizontal momentum tendencies and add them to the output tendency terms
-  !!  As with the temperature and moisture tendencies, the horizontal momentum tendencies are calculated by solving tridiagonal matrices after the matrices are prepared in this section.
-         !
 
          !
-         !     solve tridiagonal problem for momentum
          !
          if (.false.) then
             !may cause some absolute error
             !$acc parallel loop gang vector collapse(2) private(jj,i,k,&
-            !$acc&                   dtodsd,dtodsu,dsig,rdz,aur,alr,&
+            !$acc&                   dtodsd,dtodsu,dsig,rdz,aur,alr,adgr,&
             !$acc&                   tem1,dsdz2,tem2,ptem,ptem1,ptem2,accui) async(async_id)
             do jj = 1, jlistnum
                do i = 1, ix
@@ -1450,8 +1448,10 @@
             end do
             call cusparseDgtsvInterleavedBatch_async(handle, 0, km, alg, adg, aug, a2g, nxptot, async_id)
          else
+         !>  ## Solve for the horizontal momentum tendencies and add them to the output tendency terms
+  !!  As with the temperature and moisture tendencies, the horizontal momentum tendencies are calculated by solving tridiagonal matrices after the matrices are prepared in this section.
             !$acc parallel loop gang vector collapse(2) private(jj,i,k,&
-            !$acc&                   dtodsd,dtodsu,dsig,rdz,aur,alr,&
+            !$acc&                   dtodsd,dtodsu,dsig,rdz,aur,alr,adgr,a3gr1,a3gr2,&
             !$acc&                   tem1,dsdz2,tem2,ptem,ptem1,ptem2,accui) async(async_id)
             do jj = 1, jlistnum
                do i = 1, ix
@@ -1459,9 +1459,9 @@
                      accui = nxjp_acc(jj) - 1
                      alg(accui + i, 1) = 0.
                      aug(accui + i, km) = 0.
-                     adg(accui + i, 1) = 1.0 + beta(i, jj)*stress(i, jj)/spd1(i, jj)
-                     a1g(accui + i, 1) = u1(i, 1, jj)
-                     a2g(accui + i, 1) = v1(i, 1, jj)
+                     adgr = 1.0 + beta(i, jj)*stress(i, jj)/spd1(i, jj)
+                     a3gr1 = u1(i, 1, jj)
+                     a3gr2 = v1(i, 1, jj)
                      !$acc loop seq
                      do k = 1, km1
                         dtodsd = dt2/del(i, k, jj)
@@ -1478,31 +1478,40 @@
                            ptem = 0.5*tem2*xmf(i, k, jj)
                            ptem1 = dtodsd*ptem
                            ptem2 = dtodsu*ptem
-                           adg(accui + i, k) = adg(accui + i, k) - aur - ptem1
-                           adg(accui + i, k + 1) = 1.-alr + ptem2
+                           adg(accui + i, k) = adgr - aur - ptem1
+                           adgr = 1.-alr + ptem2
                            aur = aur - ptem1
                            alr = alr + ptem2
                            ptem = ucko(i, k, jj) + ucko(i, k + 1, jj)
-                           a1g(accui + i, k) = a1g(accui + i, k) - ptem1*ptem
-                           a1g(accui + i, k + 1) = u1(i, k + 1, jj) + ptem2*ptem
+                           a3g(accui + i, k, 1) = a3gr1 - ptem1*ptem
+                           a3gr1 = u1(i, k + 1, jj) + ptem2*ptem
                            ptem = vcko(i, k, jj) + vcko(i, k + 1, jj)
-                           a2g(accui + i, k) = a2g(accui + i, k) - ptem1*ptem
-                           a2g(accui + i, k + 1) = v1(i, k + 1, jj) + ptem2*ptem
+                           a3g(accui + i, k, 2) = a3gr2 - ptem1*ptem
+                           a3gr2 = v1(i, k + 1, jj) + ptem2*ptem
                         else
-                           adg(accui + i, k) = adg(accui + i, k) - aur
-                           adg(accui + i, k + 1) = 1.-alr
-                           a1g(accui + i, k + 1) = u1(i, k + 1, jj)
-                           a2g(accui + i, k + 1) = v1(i, k + 1, jj)
+                           adg(accui + i, k) = adgr - aur
+                           adgr = 1.-alr
+                           a3g(accui + i, k, 1) = a3gr1
+                           a3gr1 = u1(i, k + 1, jj)
+                           a3g(accui + i, k, 2) = a3gr2
+                           a3gr2 = v1(i, k + 1, jj)
                         end if
                         aug(accui + i, k) = aur
                         alg(accui + i, k + 1) = alr
                      end do
+                        adg(accui + i, km) = adgr
+                        a3g(accui + i, km, 1) = a3gr1
+                        a3g(accui + i, km, 2) = a3gr2
                   end if
                end do
             end do
+         !     solve tridiagonal problem for momentum
 
-            call tridi2_gpu(nxptot, km, alg, adg, aug, a1g, a2g, aug, a1g, a2g, async_id)
+            call tridi2_gpu(nxptot, km, alg, adg, aug, a3g, aug, a3g, async_id)
          end if
+!     recover tendencies of momentum
+!
+!>  Finally, the tendencies are recovered from the tridiagonal solutions.
 
          !$acc parallel loop gang collapse(2) private(jj,k,i,accui) async(async_id)
          do jj = 1, jlistnum
@@ -1523,8 +1532,8 @@
                   !dv(i,k,jj)  = vtend
                   !dusfc(i,jj) = dusfc(i,jj) + conw*del(i,k,jj)*utend
                   !dvsfc(i,jj) = dvsfc(i,jj) + conw*del(i,k,jj)*vtend
-                  u1(i, k, jj) = a1g(accui + i, k)   ! cusparse a1g -> a1 -> u1
-                  v1(i, k, jj) = a2g(accui + i, k)   ! cusparse a2g -> a2 -> v1
+                  u1(i, k, jj) = a3g(accui + i, k, 1)   ! cusparse a1g -> a1 -> u1
+                  v1(i, k, jj) = a3g(accui + i, k, 2)   ! cusparse a2g -> a2 -> v1
                   !
                   !  for dissipative heating for ecmwf model
                   !
@@ -1557,13 +1566,15 @@
          !$acc&                 hpblx,hrad,icld,kcld,krad,kpblx, &
          !$acc&                 kx1,lcld,pblflg,pcnvflg,phih,phim, &
          !$acc&                 prinv,qcko,qlx,qtx,radmin,radx,rent,rbdn, &
-         !$acc&                 rbup,rdzt,rtg,sfcflg,scuflg,shr2,sflux, &
+         !$acc&                 rbup,rdzt,sfcflg,scuflg,shr2,sflux, &
          !$acc&                 tau,tcko,theta,thetae,thermal, &
-         !$acc&                 thlvx1,thlvx,thvx,ti,ublflg,ucko,myim, &
+         !$acc&                 thlvx1,thlvx,thvx,ti,ublflg,ucko, &
          !$acc&                 ustar,ustmin,vcko,vrad,wscale,wscaleu,wstar, &
          !$acc&                 xmf,z0,zd,zdd,zi,zl,zol,xkzo,xkzmo,tx1,tx2, &
-         !$acc&                 alg,adg,aug,a1g,a2g,aug_backup) async(async_id)
-         !$acc wait(async_id)
+         !$acc&                 alg,adg,aug,a3g) async(async_id)
+         !!$acc exit data delete(rtg) async(async_id)
+         !!$acc exit data delete(a1g, a2g, aug_backup) async(async_id) !cusparse
+         !!$acc wait(async_id)
 
          return
       end subroutine moninedmf_gpu

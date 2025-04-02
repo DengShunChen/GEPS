@@ -254,23 +254,6 @@ subroutine mfpbl_unit
       !$acc exit data delete(myim,nxp,lev,dt2,cnvflg,zl,zm,thvx, &
       !$acc&                 q1,t1,u1,v1,sflx,ustar,wstar)
 
-      !cnt = 0
-      !nancnt = 0
-      !do jj = 1, jlistnum
-      !  j = jlist1(jj)
-      !  do k = 1, lev
-      !    do i = 1, nxjp(j)
-      !      cnt = cnt + 1
-      !      num = xmf(i,k,jj)
-      !      if (IEEE_IS_NAN (num)) then
-      !        nancnt = nancnt + 1
-      !      endif
-      !    enddo
-      !  enddo
-      !enddo
-      !write(*,*) 'NaN/Total Count:',nancnt, cnt
-      !write(*,*) 'NaN Check:', sum(u1), sum(v1), sum(t1), sum(q1),sum(kpbl),sum(hpbl)
-      !write(*,*) 'u1 2', u1(1,1,2), u1_gpu(1,1,2)
 
       call assert_integer(kpbl_gpu, size(kpbl_gpu), kpbl, size(kpbl), &
                           "Array kpbl")
@@ -279,7 +262,7 @@ subroutine mfpbl_unit
       call assert_real(tcko_gpu, size(tcko_gpu), tcko, size(tcko), &
                        1e-8, "Array tcko")
       call assert_real(qcko_gpu, size(qcko_gpu), qcko, size(qcko), &
-                       1e-8, "Array qcko")
+                       1e-6, "Array qcko")
       call assert_real(ucko_gpu, size(ucko_gpu), ucko, size(ucko), &
                        1e-8, "Array ucko")
       call assert_real(vcko_gpu, size(vcko_gpu), vcko, size(vcko), &

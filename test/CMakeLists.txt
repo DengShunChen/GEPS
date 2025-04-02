@@ -70,6 +70,7 @@ if(${USE_CUDA})
         test_ndslfv_monoadvh_fgnl_refactor
         test_ptotc
         test_tridi2
+        test_tridin
         test_mfpbl
         test_moninedmf
         test_gwdps
@@ -85,6 +86,17 @@ if(${USE_CUDA})
         test_nnmi
         test_eigen
         test_initial
+        test_sfc_diff
+        test_sfc_ocean
+        test_sfc_sice
+        test_fpvs
+        test_sfc_diag
+        test_sfc_drv
+        test_sflx
+        #test_sflx_file
+        test_pbl_noah
+        #test_pbl_noah_file
+
     )
 
     foreach(TEST ${TESTS})
