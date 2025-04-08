@@ -1162,12 +1162,12 @@
                      nxj = nxdef_2d(j)
                      do k=1,lev
                         do i=1,nxj
-                           del(i,k) = 100.0*( dsigma(k,1)*pst(i,jj)+dsigma(k,2))  !  pa
+                           del(i,k,jj) = 100.0*( dsigma(k,1)*pst(i,jj)+dsigma(k,2))  !  pa
                         enddo
                      enddo
                      call ozphys_2015 (nxp, nxjp(j), lev , dta, xlat(j), julian, &
                                   o3l(1,1,jj), o3l(1,1,jj), tt(1,1,jj),          &
-                                  plt(1,1,jj), del, myrank)
+                                  plt(1,1,jj), del(1,1,jj), myrank)
                   end do
                else
                   !$acc enter data copyin(ozplin, pl_lat, pl_pres ,pl_time) async(async_id)

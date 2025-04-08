@@ -12,7 +12,7 @@
  DMSPATH=/package/${mach}/dms/dms.v4/bin
  GFSDIR=$MDIR
  GFSFIX=$MDIR/fix
- export GFSWRK=${GFSDIR}/work_${machine}
+ GFSWRK=${GFSDIR}/work_${machine}
  rm -rf $GFSWRK
  mkdir -p $GFSWRK
 
