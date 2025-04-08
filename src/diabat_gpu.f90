@@ -1157,14 +1157,18 @@
                end if
             else
                if (pl_coeff > 4) then
-                  do k=1,lev
-                     do i=1,nxj
-                        del(i,k) = 100.0*( dsigma(k,1)*pst(i,jj)+dsigma(k,2))  !  pa
+                  do jj = 1, jlistnum
+                     j = jlist1(jj)
+                     nxj = nxdef_2d(j)
+                     do k=1,lev
+                        do i=1,nxj
+                           del(i,k) = 100.0*( dsigma(k,1)*pst(i,jj)+dsigma(k,2))  !  pa
+                        enddo
                      enddo
-                  enddo
-                  call ozphys_2015 (nxp, nxjp(j), lev , dta, xlat(j), julian, &
-                               o3l(1,1,jj), o3l(1,1,jj), tt(1,1,jj),          &
-                               plt(1,1,jj), del, myrank)
+                     call ozphys_2015 (nxp, nxjp(j), lev , dta, xlat(j), julian, &
+                                  o3l(1,1,jj), o3l(1,1,jj), tt(1,1,jj),          &
+                                  plt(1,1,jj), del, myrank)
+                  end do
                else
                   !$acc enter data copyin(ozplin, pl_lat, pl_pres ,pl_time) async(async_id)
                   call rozphys_gpu(nxjp, nxp, lev, dta, iter, xlat, julian, o3l, &
