@@ -53,8 +53,14 @@ export MDIR=$(pwd)
 module purge
 module use  ${MDIR}/modulefiles
 module av
-module show modulefile.tcogfs.${MACHINE}
+
 module load modulefile.tcogfs.${MACHINE}
+### cpl TIMCOM ###
+#step1
+#module load modulefile.tcogfs.${MACHINE}_2cpl
+#step2
+#src/Makefile TIMCOMCPL=TRUE
+
 module list
 module unuse ${MDIR}/modulefiles
 
@@ -62,4 +68,6 @@ module unuse ${MDIR}/modulefiles
 cd src/
 make clean
 make -j24
+
+if [[ $? -ne 0 ]];then exit ;fi
 

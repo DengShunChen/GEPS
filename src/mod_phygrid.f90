@@ -4,7 +4,7 @@
 !
       use param
       use index
-      use const, only: RTYPE
+      use const, only: RTYPE, naero
 
       implicit none
 
@@ -40,7 +40,12 @@
       real, dimension(:)  ,allocatable,save :: xlat
 
       real, dimension(:,:),allocatable,save :: u10,v10,t2,rh2,rh10,q2  &
+#ifdef TIMCOMCPL
+                                              ,fm,fm10,fh,fh2,srflag   &
+                                              ,ustress,vstress,ssu,ssv
+#else
                                               ,fm,fm10,fh,fh2,srflag
+#endif
  
       real, dimension(:,:),allocatable,save :: fpsp,fpsp1
 
@@ -51,6 +56,9 @@
                                                  dtshl,dushl,dvshl,    &
                                                  dtlsp,dulsp,dvlsp
       real(kind=RTYPE), dimension(:,:,:),allocatable,save :: o3l
+      real(kind=RTYPE), dimension(:,:,:),allocatable,save :: aeroclxm
+      real(kind=RTYPE), dimension(:,:,:,:),allocatable,save ::         &
+                                                 aerosave1,aerosave2
 
       contains 
 
@@ -73,6 +81,16 @@
            deltaq = 0.
            cnvcr  = 0.
            cnvwr  = 0.
+           e    = 0.
+           eps  = 0.
+           o3l  = 0.
+           dtrad= 0.
+           asl  = 0.
+           atl  = 0.
+           ftp  = 0.
+           fqp  = 0.
+           ftp1 = 0.
+           fqp1 = 0
 
            allocate (                                 &
              snr(nxp,my_max),   gwr(nxp,my_max),     tg(nxp,my_max), &
@@ -122,6 +140,7 @@
                write(6,*) 'mod_phygrid : allocate fail 3 '
                stop
            end if
+           land=.false.; ice=.false.; ocean=.false.
 
            allocate (il(nxp,4),ib(nxp,4), stat=ierr)
 
@@ -142,12 +161,19 @@
            il=0
            ib=0
            cof=0.
+           xlon=0.
+           xlat=0.
 
            allocate (u10(nxp,my_max),v10(nxp,my_max),srflag(nxp,my_max) &
                      ,t2(nxp,my_max),rh2(nxp,my_max),rh10(nxp,my_max)   &
                      ,q2(nxp,my_max),fm(nxp,my_max),fm10(nxp,my_max)    &
+#ifdef TIMCOMCPL
+                     ,fh(nxp,my_max),fh2(nxp,my_max)                    &
+                     ,ustress(nxp,my_max),vstress(nxp,my_max)           &
+                     ,ssu(nxp,my_max),ssv(nxp,my_max), stat=ierr)
+#else
                      ,fh(nxp,my_max),fh2(nxp,my_max), stat=ierr)
-
+#endif
            if (ierr/= 0) then
                write(6,*) 'mod_phygrid : allocate fail 6 '
                stop
@@ -156,7 +182,12 @@
            u10=0.;     v10=0.;     t2=0.;     rh2=0.
           rh10=0.;      q2=0.;     fm=0.;   fm10=0.
             fh=0.;     fh2=0.; srflag=0.
-           gwr=0.
+           gwr=0.;     
+#ifdef TIMCOMCPL
+           ssv=0.;    ssu=0.
+           ustress=0.; vstress=0.
+#endif
+
 !
            allocate (fpsp(nxp,my_max),fpsp1(nxp,my_max),stat=ierr)
 
@@ -164,6 +195,7 @@
                write(6,*) 'mod_phygrid : allocate fail 7 '
                stop
            end if
+           fpsp=0.;    fpsp1=0.
 !
            allocate (dtcup(nxp,lev,my_max),ducup(nxp,lev,my_max),    &
                      dvcup(nxp,lev,my_max),dtshl(nxp,lev,my_max),    &
@@ -228,6 +260,23 @@
 
            return
 
+         end subroutine
+
+         subroutine allocate_aerogrid_array
+           integer  ierr
+           allocate ( aeroclxm(nxp,naero*lev,my_max), &
+                      aerosave1(nxp,lev,my_max,naero), &
+                      aerosave2(nxp,lev,my_max,naero),stat=ierr )
+           if (ierr/= 0) stop 'mod_phygrid : allocate aeroclxm'
+           aeroclxm = 0.
+           aerosave1 = 0.
+           aerosave2 = 0.
+           return
+         end subroutine
+
+         subroutine deallocate_aerogrid_array
+           deallocate ( aeroclxm,aerosave1,aerosave2 )
+           return
          end subroutine
 
       end module phygrid

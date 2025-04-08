@@ -51,7 +51,11 @@
             nnmiit,nnmivm,itypbl,                          &
             nmgwor,nmgwcv,mtnvar,                          &
             ktrop,ncpu,nmcup,nmpbl,nmland,numreduce,nmshl, &
-            nmmiph,itter
+            nmmiph,itter,naero
+    integer :: naso4,nadu1,nadu2,nadu3,nadu4,nadu5,        &
+               nass1,nass2,nass3,nass4,nass5,nablc,        &
+               nabbc,naolc,naobc,namsa,nadms,naso2
+    integer, save :: monsave
 
     common/constI/                                         &
             numout,ipadding,jm2,ksgeo,                     &
@@ -108,7 +112,9 @@
     logical :: dospptout    =.false.
     logical :: doskebout    =.false.
     logical :: doshum       =.false.
+    logical :: doshumout    =.false.
     logical :: doskeb       =.false.
+    logical :: doskeb_dc    =.false.
     logical :: dossst       =.false.
     logical :: use_zmtnblck =.false.
 
@@ -171,12 +177,14 @@
     character(len=255) ifilin,cwbout,bckfile,namlsts, &
             ifilout,crdate,ocards,phyout,cntrl, &
             ifilin_ncep,ifilin_sst,ifilin_nc,   &
-            ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb
+            ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb, &
+            ifilin_aero
 
     common/files/ifilin,cwbout,bckfile,namlsts, &
             ifilout,crdate,ocards,phyout,cntrl, &
             ifilin_ncep,ifilin_sst,ifilin_nc,   &
-            ifilin_ClmANA,ifilin_ClmFCT
+            ifilin_ClmANA,ifilin_ClmFCT,        &
+            ifilin_aero
 
     character(len=16), dimension(:), allocatable, save  :: outdir
 

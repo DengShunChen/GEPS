@@ -33,10 +33,8 @@
       integer   i,lenc,k,jj,j,nxj,istat,kk,iout_b10,ntrac,nclds
       real      xx,capa,pk2top,sfac2,sfac3,sfac4
 
-      do i = 1, nx*my
-       work(i,1) = 0.
-       mout(i,1) = 0.
-      enddo
+       work = 0.
+       mout = 0.
 !
       lenc=nx*my
       if ( ntoz .gt. 0 ) then

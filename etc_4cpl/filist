@@ -1,0 +1,11 @@
+ &filst
+ ifilin='ANADMS',
+ ifilout='FCSTDMS',
+ cwbout='/data2/datusers/xa09/TL1151L60/etc/tmpdir/gfs_cwbout',
+ bckfile='BCKOPS',
+ phyout='/data2/datusers/xa09/TL1151L60/etc/tmpdir/gfs_phyout',
+ namlsts='/data2/datusers/xa09/TL1151L60/etc/namlsts',
+ crdate='/data2/datusers/xa09/TL1151L60/etc/crdate',
+ ocards='/data2/datusers/xa09/TL1151L60/etc/ocards',
+ ifilout_grb='.'
+ &end

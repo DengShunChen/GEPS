@@ -48,6 +48,7 @@
 !
       integer   num,n,levz,lenc,lenc2,i,ia,kk,j,jj,nxj,istat,nc,ilev
       real      tnshun
+      integer   kfdb,jfdb
 !kc >
       real      sfac2,sfac3,sfac4
       integer::praint
@@ -313,6 +314,7 @@
 !land suface tempaerature or sea surface temperature
       if(label(kk).eq.'s00100') then
       globp=tg
+!      call unify_reduceintp_idw(nx,my,my_max,globp,glob)
       call unify_reduceintp_idw(nx,my,my_max,globp,glob)
       call syslbl_w ('s00100',idtg,itau,ggdef)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
@@ -811,11 +813,13 @@
 !zonal mean cloudiness of Y-Z cross section 0-1 
       if(label(kk).eq.'x00730') then
       call mpe_unify(acld,lev,my,2,mpe_double)
-      do i=1,lev*my
-       acld(i,1)=acld(i,1)*100.
+      do jfdb=1,my
+      do kfdb=1,lev
+       mout(kfdb,jfdb)=acld(kfdb,jfdb)*100.
+      end do
       end do
       call syslbl_w ('x00730',idtg,itau,ggdef)
-      if(outdms.gt.0) call dmswrit(lev,my,lenc2,kflag,acld,istat)
+      if(outdms.gt.0) call dmswrit(lev,my,lenc2,kflag,mout,istat)
       !if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,6,22,2,10,0,0.,glob)
       go to 30
       endif

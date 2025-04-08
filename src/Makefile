@@ -1,5 +1,12 @@
 SHELL = /bin/sh
 
+RANLIB = ranlib
+AR = ar cq
+RM = rm -f
+TIMCOMCPL = FALSE
+### cpl timcom ###
+#TIMCOMCPL = TRUE
+
 SRCS_f90  = \
   ancrt.f90 \
   bl_ysu.f90 \
@@ -161,6 +168,7 @@ SRCS_f90  = \
   module_mp_gsfcgce.f90 \
   module_mp_gsfcgce_3ice_nuwrf.f90 \
   module_mp_gsfcgce_4ice_nuwrf.f90 \
+  module_gocart_coupling.f90 \
   cld_eff_rad.f90 \
   moninedmf.f90 \
   mpe2d.f90 \
@@ -246,6 +254,7 @@ SRCS_f90  = \
   rcmpsl2.f90 \
   readalb.f90 \
   readclx.f90 \
+  readaeroclx.f90 \
   read_mtnvar.f90 \
   readozpl.f90 \
   reducegrid.f90 \
@@ -339,6 +348,11 @@ SRCS_f90  = \
   zimadv.f90 \
   zx.f90 
 
+CPL = /data/common/gfs/GEPSv3_lib/coupler
+ifeq ($(strip $(TIMCOMCPL)),TRUE)
+  SRCS_f90 := $(SRCS_f90) mod_gfscpl.f90
+endif
+
 SRCS_c = cwb_fftw.c
 
 DEPEND_FILES = $(SRCS_f) $(SRCS_f90) $(SRCS_F) $(SRCS_F90)
@@ -356,7 +370,13 @@ FC90 =  ${COMP_MPI}
 
 INCLUDE = -I. -I${FFTW_INC} -I${NETCDF_INC} -I$(G2_INC)
 
+
 CMD  =  MTCo639L72_${MACHINE}
+
+ifeq ($(strip $(TIMCOMCPL)), TRUE)
+  INCLUDE := $(INCLUDE) -I$(CPL) -I/data/common/gfs/GEPSv3_lib/$(MACHINE)/MCT/include
+  CMD = libtco.a
+endif
 
 INSTALL = /usr/bin/install
 # select one of the followings :
@@ -393,7 +413,7 @@ INSTALL = /usr/bin/install
  FFLAGS       = ${FFLAGS_COM}       ${LIBS_COM} ${OMP_COM} ${DEFINE_FLAGS} ${MSG_COM} $(INCLUDE) 
  FFLAGS_NOPAR = ${FFLAGS_COM}       ${LIBS_COM} ${DEFINE_FLAGS} ${MSG_COM} $(INCLUDE) 
  FFLAGS_GWDPS = ${FFLAGS_COM_GWDPS} ${LIBS_COM} ${OMP_COM} ${DEFINE_FLAGS} ${MSG_COM} $(INCLUDE)
- CFLAGS       = ${CFLAGS_COM} 
+ CFLAGS       = ${CFLAGS_COM} $(INCLUDE)
 #           -Kfast,parallel,openmp,ocl,autoobjstack -Nquickdbg
 #---------------------------------------------------------------------------------------------
 # For fx10 compiler, some subroutine, such as rcloud, can not use auto-parallel option.
@@ -401,22 +421,35 @@ INSTALL = /usr/bin/install
 # If it's using fx-100 compiler(new version), you probably can get -Kparallel flag back.
 #--------------------------------------------------------------------------------------------
 LDFLAGS = ${OMP_COM} ${LDFLAGS_COM}
-
 G2LIB_COM= $(G2_LIB) $(PNG_LIB) $(JASPER_LIB) $(W3LIB_LIB) $(Z_LIB)
-LIBS	= ${NETCDF_LIB} ${HDF5_LIB} ${DMS_LIB} ${OPERLIB_LIB} ${FFTW_LIB} ${LIBS_COM} ${MPMD_LIB} $(G2LIB_COM)
+LIBS	= ${NETCDF_LIB} ${HDF5_LIB} ${W3NCO_LIBd} ${DMS_LIB} ${OPERLIB_LIB} ${FFTW_LIB} ${LIBS_COM} ${MPMD_LIB} $(W3LIB_LIB) $(G2LIB_COM)
+
+ifeq ($(strip $(TIMCOMCPL)),TRUE)
+  FFLAGS := $(FFLAGS) -DTIMCOMCPL
+  LIBS   := $(LIBS) -L$(CPL) -lcpl -L/data/common/gfs/GEPSv3_lib/$(MACHINE)/MCT/lib -lmct -lmpeu
+endif
 
 .SUFFIXES: .o .mod .f90 .c
 all defalut:	depend $(CMD)
 
+ifeq ($(strip $(TIMCOMCPL)), TRUE)
+$(CMD): $(OBJS)
+	@echo
+	@echo '==== LINK ===================================================='
+	$(RM) $(@)
+	$(AR) $(@) $(OBJS)
+	$(RANLIB) $(@)
+else
 $(CMD):	$(OBJS)
 	@echo
 	@echo '==== LINK ===================================================='
 	$(FC90) -o $(@)  $(OBJS)  $(LDFLAGS) $(LIBS)
+endif
 
 .f90.o:
 	@echo
 	@echo 'compile --> '$<
-	$(FC90) $(FFLAGS) $<
+	$(FC90) $(FFLAGS) $(LIBS) $<
 
 .c.o:
 	@echo

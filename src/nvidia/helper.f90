@@ -32,6 +32,21 @@ subroutine cufft_check_helper(ierr, filename, line)
 
 end subroutine cufft_check_helper
 
+subroutine cusolver_check_helper(ierr, filename, line)
+   use cusolverDN
+   implicit none
+
+   integer, intent(in) :: ierr
+   character(len=*), intent(in) :: filename
+   integer, intent(in) :: line
+
+   if (ierr .ne. CUSOLVER_STATUS_SUCCESS) then
+      print '(5g0)', "Failed, cuSOLVER error ", filename, ":", line
+      print '(5g0)', "Error : ", ierr
+   end if
+
+end subroutine cusolver_check_helper
+
 subroutine nccl_check_helper(ierr, filename, line)
    use nccl
 
@@ -104,11 +119,11 @@ subroutine nccl_alltoallv_stride(sendbuf, sendcount, senddisplace, recvbuf, recv
    integer :: i
 
    stream = acc_get_cuda_stream(async_id)
-   #ifdef SP
-      dtype = ncclFloat32
-   #else
-      dtype = ncclFloat64
-   #endif
+#ifdef SP
+   dtype = ncclFloat32
+#else
+   dtype = ncclFloat64
+#endif
    NCCLCHECK(ncclGroupStart())
    !$acc host_data use_device(sendbuf, recvbuf)
    do i = 1, nsize
@@ -135,16 +150,16 @@ subroutine histogram(data, n, num_bins)
 
    min_val = minval(data)
    max_val = maxval(data)
-   bin_width = (max_val - min_val) / real(num_bins, RTYPE)
+   bin_width = (max_val - min_val)/real(num_bins, RTYPE)
 
    bin_edges(1) = min_val
    do i = 2, num_bins + 1
-      bin_edges(i) = min_val + (i - 1) * bin_width
+      bin_edges(i) = min_val + (i - 1)*bin_width
    end do
 
    bins = 0
    do i = 1, n
-      bin_index = min(num_bins, max(1, floor((data(i) - min_val) / bin_width) + 1))
+      bin_index = min(num_bins, max(1, floor((data(i) - min_val)/bin_width) + 1))
       bins(bin_index) = bins(bin_index) + 1
    end do
 

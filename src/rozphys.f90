@@ -16,9 +16,8 @@
       integer pl_coeff2, kmax(pl_coeff),kmin(pl_coeff)
              
 
-      real(kind=kind_phys) ps(nx),                               &
-                           pp(nx,lev),ozp(nx,lev,pl_coeff)
-      real(kind=RTYPE)     o3l(nx,lev),tt(nx,lev)
+      real(kind=kind_phys) pp(nx,lev),ozp(nx,lev,pl_coeff)
+      real(kind=RTYPE)     o3l(nx,lev),tt(nx,lev),ps(nx)
       real(kind=kind_phys) dt
 !
       integer k,i,j
@@ -26,6 +25,7 @@
       real(kind=kind_phys) coef(nx,pl_coeff),                    &
                            ozb(nx),  colo3(nx,lev),              &
                            ozo(nx,lev), delp(nx,lev),temp
+      ozo=0.
 !----------------------------------------------------------------------
       lozc = latsozp*levozp*pl_coeff
 !----------------------------------------------------------------------
@@ -42,9 +42,7 @@
          if (n1 .gt. 12) n1=n1-12
          if ( (con1.ge.0.0) .and. (con1.le.1.0) ) then
             con2=1.0-con1
-            do i=1,lozc
-               ozwk1(i,1,1) = con2*ozplin(i,1,1,n) + con1*ozplin(i,1,1,n1)
-            enddo
+             ozwk1(:,:,:) = con2*ozplin(:,:,:,n) + con1*ozplin(:,:,:,n1)
          endif
        enddo
 !
