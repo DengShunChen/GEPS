@@ -201,6 +201,9 @@
       use namelist_soilveg, only :MAX_SLOPETYP,MAX_SOILTYP,MAX_VEGTYP
       use mod_stochastic_physics, only : sppt3d, shum3d, ssst3d,     &
                                          diss_dc, shum3d_dq
+! for ozone physics
+      use ozne_def, only :pl_coeff
+!
       use leapyr
 !-----------------------------------------------------------------------
       implicit  none
@@ -762,6 +765,10 @@
           cnvw(i,k) = 0.
           cnvc(i,k) = 0.
 !for hydrometeor
+          utc(i,k)  = 0.
+          vtc(i,k)  = 0.
+          ttc(i,k)  = 0.
+          del(i,k)  = 0.
           qtr(i,k)  = 0.
           qtc(i,k)  = 0.
           qti(i,k)  = -999.9
@@ -1055,8 +1062,19 @@
             call rozone(nxjp(j),nxp,lev,plt(1,1,jj),o3l(1,1,jj),sinl(j),julian)
           endif
         else
-          call rozphys(nxjp(j),nxp,lev,dta,iter,xlat(j),julian,o3l(1,1,jj),&
+          if (pl_coeff > 4) then
+            do k=1,lev
+              do i=1,nxj
+                del(i,k) = 100.0*( dsigma(k,1)*pst(i,jj)+dsigma(k,2))  !  pa
+              enddo
+            enddo
+             call ozphys_2015 (nxp, nxjp(j), lev , dta, xlat(j), julian,&
+                               o3l(1,1,jj), o3l(1,1,jj), tt(1,1,jj),    &
+                               plt(1,1,jj), del, myrank)
+          else
+             call rozphys(nxjp(j),nxp,lev,dta,iter,xlat(j),julian,o3l(1,1,jj),&
                       tt(1,1,jj),plt(1,1,jj),ps(1,jj),myrank)
+          endif
         endif ! for ntoz
       endif ! for doo3l
 !=======================================================================

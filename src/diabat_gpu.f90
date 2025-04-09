@@ -206,6 +206,8 @@
              wltsmc, qtz, rsmtbl, rgltbl, hstbl, snupx, lai_data, nroot_data
          use mod_stochastic_physics, only: sppt3d, shum3d, ssst3d,     &
                                          diss_dc, shum3d_dq
+! for ozone physics
+         use ozne_def, only :pl_coeff
 
          use leapyr
 !-----------------------------------------------------------------------
@@ -1154,12 +1156,27 @@
                   end do
                end if
             else
-               !$acc enter data copyin(ozplin, pl_lat, pl_pres ,pl_time) async(async_id)
-               call rozphys_gpu(nxjp, nxp, lev, dta, iter, xlat, julian, o3l, &
-                        tt, plt, ps, myrank)
-               !$acc exit data delete(ozplin, pl_lat, pl_pres ,pl_time) async(async_id)
-               !$acc update self(o3l) async(async_id)
-               !$acc wait(async_id)
+               if (pl_coeff > 4) then
+                  do jj = 1, jlistnum
+                     j = jlist1(jj)
+                     nxj = nxdef_2d(j)
+                     do k=1,lev
+                        do i=1,nxj
+                           del(i,k,jj) = 100.0*( dsigma(k,1)*pst(i,jj)+dsigma(k,2))  !  pa
+                        enddo
+                     enddo
+                     call ozphys_2015 (nxp, nxjp(j), lev , dta, xlat(j), julian, &
+                                  o3l(1,1,jj), o3l(1,1,jj), tt(1,1,jj),          &
+                                  plt(1,1,jj), del(1,1,jj), myrank)
+                  end do
+               else
+                  !$acc enter data copyin(ozplin, pl_lat, pl_pres ,pl_time) async(async_id)
+                  call rozphys_gpu(nxjp, nxp, lev, dta, iter, xlat, julian, o3l, &
+                           tt, plt, ps, myrank)
+                  !$acc exit data delete(ozplin, pl_lat, pl_pres ,pl_time) async(async_id)
+                  !$acc update self(o3l) async(async_id)
+                  !$acc wait(async_id)
+               end if ! for pl_coeff
             end if ! for ntoz
          end if ! for doo3l
 !=======================================================================

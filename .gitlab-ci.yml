@@ -11,6 +11,7 @@ arm-build:
   script:
     - echo "arm build"
     - hostname ; pwd
+    - git lfs pull
     - ./compile fx1000
   artifacts:
     paths:
@@ -44,6 +45,7 @@ gpu-build:
   script:
     - echo "gpu build"
     - hostname ; pwd
+    - git lfs pull
     - ./compile a100
   artifacts:
     paths:
