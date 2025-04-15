@@ -7,11 +7,10 @@
           !  ---  outputs:
           !    &       qsurf, cmm, chh, gflux, evap, hflx, ep                     &
 #ifdef TIMCOMCPL
-          qsurf, gflux, evap, hflx, ep, ssu, ssv, &
+          qsurf, gflux, evap, hflx, ep, async_id, ssu, ssv)
 #else
-          qsurf, gflux, evap, hflx, ep, &
+          qsurf, gflux, evap, hflx, ep, async_id)
 #endif
-          async_id)
       !$acc routine(fpvs_gpu) seq
 
 ! ===================================================================== !

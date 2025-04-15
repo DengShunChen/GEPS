@@ -468,7 +468,6 @@
                end if
             end do
          end do
-                  fh10(i, jj) = fh10r
 #ifdef TIMCOMCPL
          !$acc exit data delete(cpl_u1, cpl_v1) async(async_id)
 #endif
