@@ -196,7 +196,7 @@ cat > ${GFSWRK}/namlsts << EOF
   ndsladvh2=false,
   isot=1, ivegsrc=1, cgwd=1.20, cmbk=1.00,
   spl1=10., spl2=100.,
-  two_loop=t,
+  two_loop=t, mass_dp=t,
   itter=2, vd=0.002, factop=60.,
 !  naero=1,
   ${MODLST_RES}

@@ -1075,7 +1075,7 @@
          !  change t from virtual potential temperature to real temperature
          !  change ttp from virtual potential temperature to potential temperature
          !-----------------------------------------------------------------------------
-         !$acc parallel loop collapse(3) private(j, nxj, xx) async(async_id)
+         !$acc parallel loop collapse(3) private(j, nxj, xx, kk) async(async_id)
          do jj = 1, jlistnum
             do k = 1, lev
                do i = 1, nxp
@@ -1094,7 +1094,10 @@
                      tpp(i, k, jj) = pkp(i, k, jj)*xx
                      ttpp(i, k, jj) = xx
                      ! ----------------------------------------
-                     qtp(i, k, jj) = qt(i, k, jj)
+                     do n = 1, ncld
+                        kk = k + (n-1)*lev
+                        qtp(i, kk, jj) = qt(i, kk, jj)
+                     end do
                   end if
                end do
             end do
