@@ -1323,7 +1323,7 @@
          if (mass_dp) then
             call mpe2d_unify_nx_gpu(ww1, ptp)
             call tranrs1_gpu(jtrun, jtmax, nx, my, my_max, polyf, weight, ww1, &
-                             plten, nsizey)
+                             plten, nsizey, cc_cg, gwk1_cg)
          end if
 
       end if ! two_loop
