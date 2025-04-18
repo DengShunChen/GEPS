@@ -1922,7 +1922,10 @@ CONTAINS
 
       integer, parameter :: inflag = 1
       ! 1 : default (Meyers et al. 1992)
-      ! 2 : WRF GOCART mass2icn (DeMotto et al. 2011)
+      ! 2 : WRF GOCART mass2icn (DeMotto et al. 2010)
+      ! 3 : Hong et al. 2004
+      ! 4 : Cooper curve (Cooper 1986 ; Chern et al. 2016)
+      ! 5 : Fletcher 1962
 
       ! calculate allowable ice supersautration :
       real, intent(in) :: xlat
@@ -3288,15 +3291,24 @@ CONTAINS
            abi = 1.+xls**2.*qsi(i,j)/cpm1/(4.61495E2*tair(i,j)**2.)  ! abi=1+dqidT*(Ls/Cp)
 
            if ( qv(i,j).gt.qsi(i,j) .and. tair(i,j).lt.t0 ) then
-              if ( inflag .eq. 1 ) then
+              if ( inflag .eq. 1 ) then       !Meyers et al. 1992
                  ssi(i,j) = qv(i,j)/qsi(i,j)-1.
-                 nice = 1.e3*exp(1.296E+1*ssi(i,j)-6.39E-1)  ! Meyers et al. 1992 (m^-3)
+                 nice = 1.e3*exp(1.296E+1*ssi(i,j)-6.39E-1)   !IN (convert from L^-1 to m^-3)
 #ifdef Readaeroclx
-              elseif ( inflag .eq. 2 ) then
+              elseif ( inflag .eq. 2 ) then   !GOCART mass2icn
                  p_mb = p0(i,j,k)*1.e-3                       !pressure (hPa, equal to mbar)
                  call mass2icn(p_mb,tair(i,j),aerog,nice)
                  nice = nice*1.e+3                            !IN (convert from L^-1 to m^-3)
+!                 nice = min(nice,rhoair*qi(i,j)/4.71E-10)     !cap IN to the amount corresponding to rhoi=900, Ri=50
+!                 nice = min(nice,rhoair*qi(i,j)/3.77E-9)      !cap IN to the amount corresponding to rhoi=900, Ri=100
 #endif
+              elseif ( inflag .eq. 3 ) then   !Hong et al. 2004
+                 nice = 5.38e+7*exp(0.75*log(qi(i,j)*rhoair)) !IN (m^-3)
+              elseif ( inflag .eq. 4 ) then   !Cooper curve ; Chern et al. 2016
+                 nice = 5.e-3*exp(0.304*abs(max(tairc(i,j),-40)))*1.e+3     !(m^-3)
+                 nice = min(nice,rhoair*qi(i,j)/3.77e-9)      !cap IN to the amount corresponding to rhoi=900, Ri=100
+              elseif ( inflag .eq. 5 ) then   !Fletcher 1962
+                 nice = min(cn0*exp(beta*tairc(i,j)),1.0)*1.e+3
               else
                  stop 'inflag error!!!'
               endif
