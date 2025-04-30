@@ -1141,7 +1141,7 @@ CONTAINS
       t00 = 238.16
 
       ! heat capacity and latent heat (in CGS) :
-      rw = 4.615e+6     !specific heat capacity of vapor
+      rw = 4.615e+6     !gas constant of vapor
       cw = 4.187e+7     !specific heat capacity of liquid water
       ci = 2.093e+7     !specific heat capacity of ice
       cp = 1.004e7      !specific heat capacity of dry air
@@ -2575,20 +2575,20 @@ CONTAINS
 
             if (tair(i,j).lt.t0) then
 
-#ifdef sat_predict
+!#ifdef sat_predict
                rn1s=1.e-3
                bnd1=1.e-4
                esi(i,j)=exp(0.025*tairc(i,j))
                psaut(i,j)=r2is*max(rn1s*esi(i,j)*(qi(i,j)-bnd1*fv0*fv0) ,0.0)
-#else
+!#else
 !             y1(i,j)=rdt*(qi(i,j)-r1r*exp(beta*tairc(i,j)))
 !             psaut(i,j)=max(y1(i,j),0.0)
-               rn1s=1.e-3
-               bnd1=6.e-4
-               esi(i,j)=exp(.025*tairc(i,j))
-               if (improve.gt.2) esi(i,j)=0.15
-               psaut(i,j)=r2is*max(rn1s*esi(i,j)*(qi(i,j)-bnd1*fv0*fv0) ,0.0) 
-#endif
+!               rn1s=1.e-3
+!               bnd1=6.e-4
+!               esi(i,j)=exp(.025*tairc(i,j))
+!               if (improve.gt.2) esi(i,j)=0.15
+!               psaut(i,j)=r2is*max(rn1s*esi(i,j)*(qi(i,j)-bnd1*fv0*fv0) ,0.0) 
+!#endif
                esi(i,j)=1.0 
                dmicrons=(r00*qs(i,j)/roqs/cpi/(tns*ftns(i,j)))**.25*1.e4
                if (improve.gt.2) esi(i,j)=min(1.,(dmicrons/1500.)**4.) ! f(dmicrons)
@@ -5093,17 +5093,17 @@ CONTAINS
             endif
 
             ! shape parameter (ice aspect ratio) :
-!            adagr = inhgr**thrd
+            adagr = inhgr**thrd
 ! >>> reduce upper-level vti :
-            if ( tc .ge. -40. ) then
-              adagr = inhgr**thrd
-            else
-#ifdef sat_predict
-              adagr = inhgr**thrd
-#else
-              adagr = inhgr**0.9
-#endif
-            endif
+!            if ( tc .ge. -40. ) then
+!              adagr = inhgr**thrd
+!            else
+!#ifdef sat_predict
+!              adagr = inhgr**thrd
+!#else
+!              adagr = inhgr**0.9
+!#endif
+!            endif
 ! <<<
             ltk   = log(tz)
             ltk2  = ltk*ltk
