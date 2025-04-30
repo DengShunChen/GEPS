@@ -3317,7 +3317,9 @@
           cldcov(i,k) = 0.0
 !          clwf  (i,k) = clw(i,k,ntcw)+clw(i,k,ntiw)+clw(i,k,ntrw)+      &
 !                        clw(i,k,ntsw)+clw(i,k,ntgl)+clw(i,k,nthl)
-          clwf  (i,k) = clw(i,k,ntcw)+clw(i,k,ntiw)+clw(i,k,ntsw)
+!          clwf  (i,k) = clw(i,k,ntcw)+clw(i,k,ntiw)+clw(i,k,ntsw)
+          clwf  (i,k) = clw(i,k,ntcw)+clw(i,k,ntiw)+clw(i,k,ntrw)+      &
+                        clw(i,k,ntsw)+clw(i,k,ntgl)
         enddo
       enddo
 
