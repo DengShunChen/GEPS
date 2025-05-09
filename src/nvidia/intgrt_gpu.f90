@@ -544,6 +544,7 @@
    end if   !end lopgsst
 !
 #ifdef TIMCOMCPL
+!$acc wait(async_id)
       call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv)
 !      if(myrank .eq. 0) then
 !      write(*,*) "no replace the tg at first step"
@@ -1322,7 +1323,7 @@
          if (mass_dp) then
             call mpe2d_unify_nx_gpu(ww1, ptp)
             call tranrs1_gpu(jtrun, jtmax, nx, my, my_max, polyf, weight, ww1, &
-                             plten, nsizey)
+                             plten, nsizey, cc_cg, gwk1_cg)
          end if
 
       end if ! two_loop
@@ -2135,6 +2136,7 @@
    end if   !end lopgsst
 !
 #ifdef TIMCOMCPL
+!$acc wait(async_id)
       u10m_cpl = u10m_cpl + u10*dtx
       v10m_cpl = v10m_cpl + v10*dtx
       t02m_cpl = t02m_cpl +  t2*dtx

@@ -276,10 +276,10 @@
          logical lprnt
          real dutmp, dvtmp, taudtmp, deltmp, vtjp, taup1, &
             vtj0, vtj1, vtk0, vtk1, delp, dtfac_min, t1k0, t1k1, prslk1, &
-            atmp, btmp, hprimetmp, nptr, velcor, u1r, v1r, kmin
+            atmp, btmp, hprimetmp, velcor, u1r, v1r, kmin
 
          real time1, time2, time3   !timer
-         integer istat, async_id
+         integer istat, async_id, nptr
          integer(kind=cuda_stream_kind) stream
 
          async_id = 1

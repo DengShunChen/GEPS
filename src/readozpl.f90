@@ -22,22 +22,14 @@
       real (kind=kind_phys), allocatable :: xmin(:,:), xmax(:,:)
       real (kind=kind_phys), allocatable :: rmin(:), rmax(:)
       
-      character*80 pathname,filename,truefile
+      character*80 filename
 
-      data pathname/'FIXDIR'/
-      data filename/'global_o3prdlos.f77'/
+!      data pathname/'FIXDIR'/
+!      data pathname/'GFSWRK'/
+      data filename/'global_o3prdlos'/
       me=1
 !       
-      call getfname(pathname,filename,truefile,istat)
-      if(istat.ne.0)then
-        print *,'getfname : error',truefile
-        call mpe_finalize
-        call dmsexit(-1)
-      else
-!       if(myrank .eq. 0) print *,truefile
-      endif
-!
-    open(kozpl,file=trim(truefile),form='unformatted',convert='BIG_ENDIAN')
+    open(kozpl,file=filename,form='unformatted',convert='BIG_ENDIAN')
 !
         rewind (kozpl)
         read (kozpl) pl_coeff, latsozp, levozp, timeoz

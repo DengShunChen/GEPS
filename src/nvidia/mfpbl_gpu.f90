@@ -125,6 +125,8 @@
                   if (cnvflg(i, jj)) then
                      zi(i, k, jj) = zm(i, k + 1, jj)
                      if (k .eq. 1) then
+         !>  ## Determine an updraft parcel's entrainment rate, buoyancy, and vertical velocity.
+  !!  Calculate the entrainment rate according to equation 16 in Siebesma et al. (2007) \cite siebesma_et_al_2007 for all levels (xlamue) and a default entrainment rate (xlamax) for use above the PBL top.
                         m = kpbl(i, jj)/2
                         m = max(m, 1)
                         delz(i, jj) = zl(i, m + 1, jj) - zl(i, m, jj)
@@ -134,8 +136,6 @@
                end do
             end do
          end do
-         !>  ## Determine an updraft parcel's entrainment rate, buoyancy, and vertical velocity.
-  !!  Calculate the entrainment rate according to equation 16 in Siebesma et al. (2007) \cite siebesma_et_al_2007 for all levels (xlamue) and a default entrainment rate (xlamax) for use above the PBL top.
          !$acc parallel loop gang collapse(2) private(jj,k,i,ptem,tem,ptem1) async(async_id)
          do jj = 1, jlistnum
             do k = 1, kmpbl
@@ -158,88 +158,90 @@
          !  compute thermal excess
          !
          !>  Using equations 17 and 7 from Siebesma et al (2007) \cite siebesma_et_al_2007 along with \f$u_*\f$, \f$w_*\f$, and the previously diagnosed PBL height, the initial \f$\theta_v\f$ of the updraft (and its surface buoyancy) is calculated.
-         !
-         !  compute potential temperature and buoyancy for updraft air parcel
-         !
-         !>  From the second level to the middle of the vertical domain, the updraft virtual potential temperature is calculated using the entraining updraft equation as in equation 10 of Siebesma et al (2007) \cite siebesma_et_al_2007, discretized as
-  !!  \f[
-  !!  \frac{\theta_{v,u}^k - \theta_{v,u}^{k-1}}{\Delta z}=-\epsilon^{k-1}\left[\frac{1}{2}\left(\theta_{v,u}^k + \theta_{v,u}^{k-1}\right)-\frac{1}{2}\left(\overline{\theta_{v}}^k + \overline{\theta_v}^{k-1}\right)\right]
-  !!  \f]
-  !!  where the superscript \f$k\f$ denotes model level, and subscript \f$u\f$ denotes an updraft property, and the overbar denotes the grid-scale mean value.
          !$acc parallel loop gang vector collapse(2) private(jj,k,i,dz,tem,&
          !$acc&                      flg,ptem,ptem1,tem1,tem2) async(async_id)
          do jj = 1, jlistnum
             do i = 1, ix
-               if (i .le. myim(jj) .and. cnvflg(i, jj)) then
-                  tem = zl(i, 1, jj)/hpbl(i, jj)
-                  usws3(i, jj) = (ustar(i, jj)/wstar(i, jj))**3.
-                  tem1 = usws3(i, jj) + 0.6*tem
-                  tem2 = max((1.-tem), zfmin)
-                  ptem = (tem1**h1)*sqrt(tem2)
-                  sigw1(i, jj) = 1.3*ptem*wstar(i, jj)
-                  ptem1 = alp*sflx(i, jj)/sigw1(i, jj)
-                  thvu(i, 1, jj) = thvx(i, 1, jj) + ptem1
-                  buo(i, 1, jj) = g*(thvu(i, 1, jj)/thvx(i, 1, jj) - 1.)
+               if (i .le. myim(jj)) then
+                  if (cnvflg(i, jj)) then
+                     tem = zl(i, 1, jj)/hpbl(i, jj)
+                     usws3(i, jj) = (ustar(i, jj)/wstar(i, jj))**3.
+                     tem1 = usws3(i, jj) + 0.6*tem
+                     tem2 = max((1.-tem), zfmin)
+                     ptem = (tem1**h1)*sqrt(tem2)
+                     sigw1(i, jj) = 1.3*ptem*wstar(i, jj)
+                     ptem1 = alp*sflx(i, jj)/sigw1(i, jj)
+                     thvu(i, 1, jj) = thvx(i, 1, jj) + ptem1
+                     buo(i, 1, jj) = g*(thvu(i, 1, jj)/thvx(i, 1, jj) - 1.)
 
-                  !$acc loop seq
-                  do k = 2, kmpbl
-                     thvxr = thvx(i, k, jj)
-                     dz = zl(i, k, jj) - zl(i, k - 1, jj)
-                     tem = xlamue(i, k - 1, jj)*dz
-                     ptem = 2.+tem
-                     ptem1 = (2.-tem)/ptem
-                     tem1 = tem*(thvxr + thvx(i, k - 1, jj))/ptem
-                     thvur = ptem1*thvu(i, k - 1, jj) + tem1
-                     buo(i, k, jj) = g*(thvur/thvxr - 1.)
-                     thvu(i, k, jj) = thvur
-                  end do
-!---------------------------------------
-                  !
-                  !  compute updraft velocity square(wu2)
-                  !
-                  !>  Rather than use the vertical velocity equation given as equation 15 in Siebesma et al (2007) \cite siebesma_et_al_2007 (which parameterizes the pressure term in terms of the updraft vertical velocity itself), this scheme uses the more widely used form
-  !!  \f[
-  !!  \frac{w_{u,k}^2 - w_{u,k-1}^2}{\Delta z} = -2b_1\frac{1}{2}\left(\epsilon_k + \epsilon_{k-1}\right)\frac{1}{2}\left(w_{u,k}^2 + w_{u,k-1}^2\right) + 2b_2B
-  !!  \f]
-  !! The constants used in the scheme are labeled \f$bb1 = 2b_1\f$ and \f$bb2 = 2b_2\f$ and are tuned to be equal to 1.8 and 3.5, respectively, close to the values proposed by Soares et al. (2004) \cite soares_et_al_2004 .
-                  !     tem = 1.-2.*f1
-                  !     bb1 = 2. * b1 / tem
-                  !     bb2 = 2. / tem
-                  !  from soares et al. (2004,qjrms)
-                  !     bb1 = 2.
-                  !     bb2 = 4.
-                  !
-                  !  from bretherton et al. (2004, mwr)
-                  !     bb1 = 4.
-                  !     bb2 = 2.
-                  !
-                  !  from our tuning
-                  bb1 = 1.8    !(org)
-                  !      bb1 = 2.8    !(lin)
+         !
+         !  compute potential temperature and buoyancy for updraft air parcel
+         !
+         !>  From the second level to the middle of the vertical domain, the updraft virtual potential temperature is calculated using the entraining updraft equation as in equation 10 of Siebesma et al (2007) \cite siebesma_et_al_2007, discretized as
+        !!  \f[
+        !!  \frac{\theta_{v,u}^k - \theta_{v,u}^{k-1}}{\Delta z}=-\epsilon^{k-1}\left[\frac{1}{2}\left(\theta_{v,u}^k + \theta_{v,u}^{k-1}\right)-\frac{1}{2}\left(\overline{\theta_{v}}^k + \overline{\theta_v}^{k-1}\right)\right]
+        !!  \f]
+        !!  where the superscript \f$k\f$ denotes model level, and subscript \f$u\f$ denotes an updraft property, and the overbar denotes the grid-scale mean value.
+                     !$acc loop seq
+                     do k = 2, kmpbl
+                        thvxr = thvx(i, k, jj)
+                        dz = zl(i, k, jj) - zl(i, k - 1, jj)
+                        tem = xlamue(i, k - 1, jj)*dz
+                        ptem = 2.+tem
+                        ptem1 = (2.-tem)/ptem
+                        tem1 = tem*(thvxr + thvx(i, k - 1, jj))/ptem
+                        thvur = ptem1*thvu(i, k - 1, jj) + tem1
+                        buo(i, k, jj) = g*(thvur/thvxr - 1.)
+                        thvu(i, k, jj) = thvur
+                     end do
+   !---------------------------------------
+                     !
+                     !  compute updraft velocity square(wu2)
+                     !
+                     !>  Rather than use the vertical velocity equation given as equation 15 in Siebesma et al (2007) \cite siebesma_et_al_2007 (which parameterizes the pressure term in terms of the updraft vertical velocity itself), this scheme uses the more widely used form
+     !!  \f[
+     !!  \frac{w_{u,k}^2 - w_{u,k-1}^2}{\Delta z} = -2b_1\frac{1}{2}\left(\epsilon_k + \epsilon_{k-1}\right)\frac{1}{2}\left(w_{u,k}^2 + w_{u,k-1}^2\right) + 2b_2B
+     !!  \f]
+     !! The constants used in the scheme are labeled \f$bb1 = 2b_1\f$ and \f$bb2 = 2b_2\f$ and are tuned to be equal to 1.8 and 3.5, respectively, close to the values proposed by Soares et al. (2004) \cite soares_et_al_2004 .
+                     !     tem = 1.-2.*f1
+                     !     bb1 = 2. * b1 / tem
+                     !     bb2 = 2. / tem
+                     !  from soares et al. (2004,qjrms)
+                     !     bb1 = 2.
+                     !     bb2 = 4.
+                     !
+                     !  from bretherton et al. (2004, mwr)
+                     !     bb1 = 4.
+                     !     bb2 = 2.
+                     !
+                     !  from our tuning
+                     bb1 = 1.8    !(org)
+                     !      bb1 = 2.8    !(lin)
 
-                  bb2 = 3.5
-                  !
-                  !         tem = zi(i,1)/hpbl(i)
-                  !         tem1 = usws3(i) + 0.6*tem
-                  !         tem2 = max((1.-tem), zfmin)
-                  !         ptem = (tem1**h1) * sqrt(tem2)
-                  !         ptem1 = 1.3 * ptem * wstar(i)
-                  !         wu2(i,1) = d1*d1*ptem1*ptem1
-                  !
-                  dz = zi(i, 1, jj)
-                  tem = 0.5*bb1*xlamue(i, 1, jj)*dz
-                  tem1 = bb2*buo(i, 1, jj)*dz
-                  ptem1 = 1.+tem
-                  wu2(i, 1, jj) = tem1/ptem1
-                  !$acc loop seq
-                  do k = 2, kmpbl
-                     dz = zi(i, k, jj) - zi(i, k - 1, jj)
-                     tem = 0.25*bb1*(xlamue(i, k, jj) + xlamue(i, k - 1, jj))*dz
-                     tem1 = bb2*buo(i, k, jj)*dz
-                     ptem = (1.-tem)*wu2(i, k - 1, jj)
+                     bb2 = 3.5
+                     !
+                     !         tem = zi(i,1)/hpbl(i)
+                     !         tem1 = usws3(i) + 0.6*tem
+                     !         tem2 = max((1.-tem), zfmin)
+                     !         ptem = (tem1**h1) * sqrt(tem2)
+                     !         ptem1 = 1.3 * ptem * wstar(i)
+                     !         wu2(i,1) = d1*d1*ptem1*ptem1
+                     !
+                     dz = zi(i, 1, jj)
+                     tem = 0.5*bb1*xlamue(i, 1, jj)*dz
+                     tem1 = bb2*buo(i, 1, jj)*dz
                      ptem1 = 1.+tem
-                     wu2(i, k, jj) = (ptem + tem1)/ptem1
-                  end do
+                     wu2(i, 1, jj) = tem1/ptem1
+                     !$acc loop seq
+                     do k = 2, kmpbl
+                        dz = zi(i, k, jj) - zi(i, k - 1, jj)
+                        tem = 0.25*bb1*(xlamue(i, k, jj) + xlamue(i, k - 1, jj))*dz
+                        tem1 = bb2*buo(i, k, jj)*dz
+                        ptem = (1.-tem)*wu2(i, k - 1, jj)
+                        ptem1 = 1.+tem
+                        wu2(i, k, jj) = (ptem + tem1)/ptem1
+                     end do
+                  end if
                end if
 !-----------------------------------------
                !
@@ -273,6 +275,8 @@
                         rbint = rbdn(i, jj)/(rbdn(i, jj) - rbup(i, jj))
                      end if
                      hpbl(i, jj) = zi(i, k - 1, jj) + rbint*(zi(i, k, jj) - zi(i, k - 1, jj))
+         !
+         !>  Recalculate the entrainment rate as before except use the updated value of the PBL height.
 
                      m = kpbl(i, jj)/2
                      m = max(m, 1)
@@ -282,8 +286,6 @@
                end if
             end do
          end do
-         !
-         !>  Recalculate the entrainment rate as before except use the updated value of the PBL height.
 
          !
          !  update entrainment rate
@@ -317,19 +319,6 @@
                         tem = max((hpbl(i, jj) - zir + delzr), delzr)
                         ptem1 = 1./tem
                         xlamue(i, k, jj) = ce0*(ptem + ptem1)
-
-                        xmfr = a1*sqrt(wu2(i, k, jj))
-                        dz = zl(i, k + 1, jj) - zl(i, k, jj)
-                        xmmx = dz/dt2
-                        xmf(i, k, jj) = min(xmfr, xmmx)
-
-                     else
-                        xlamue(i, k, jj) = xlamax(i, jj)
-                     end if
-                  end if
-               end do
-            end do
-         end do
          !
          !  updraft mass flux as a function of sigmaw
          !   (0.3*sigmaw[square root of vertical turbulence variance])
@@ -355,6 +344,19 @@
   !!  M = a_uw_u
   !!  \f]
   !!  where \f$a_u\f$ is the tunable parameter that represents the fractional area of updrafts (currently set to 0.08). Limit the computed mass flux to be less than \f$\frac{\Delta z}{\Delta t}\f$. This is different than what is done in Siebesma et al. (200
+
+                        xmfr = a1*sqrt(wu2(i, k, jj))
+                        dz = zl(i, k + 1, jj) - zl(i, k, jj)
+                        xmmx = dz/dt2
+                        xmf(i, k, jj) = min(xmfr, xmmx)
+
+                     else
+                        xlamue(i, k, jj) = xlamax(i, jj)
+                     end if
+                  end if
+               end do
+            end do
+         end do
 
          !
          !c!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

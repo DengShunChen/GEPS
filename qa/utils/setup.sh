@@ -123,7 +123,8 @@ export EMMISSIVITY_FILE=${EMMISSIVITY_FILE:-${FIXDIR}/global_sfc_emissivity_idx.
 
 cd $GFSWRK
 #====================================================================
-ln -fs $O3FORC fort.28
+#ln -fs $O3FORC fort.28
+ln -fs $O3FORC global_o3prdlos
 ln -fs $O3CLIM fort.48
 ln -fs $AEROSOL_FILE  aerosol.dat
 ln -fs $EMMISSIVITY_FILE sfc_emissivity_idx.txt

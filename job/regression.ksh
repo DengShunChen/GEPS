@@ -135,14 +135,16 @@ ${DMSPATH}/rdmspurge -f FCSTDMS
 ${DMSPATH}/rdmscrt -l34 FCSTDMS
 
 export FLIB_CNTL_BARRIER_ERR=FALSE
-export O3FORC=${O3FORC:-${FIXDIR}/global_o3prdlos.f77}
+#export O3FORC=${O3FORC:-${FIXDIR}/global_o3prdlos.f77}
+export O3FORC=${O3FORC:-${FIXDIR}/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77}
 export O3CLIM=${O3CLIM:-${FIXDIR}/global_o3clim.txt}
 export AEROSOL_FILE=${AEROSOL_FILE:-${FIXDIR}/global_climaeropac_global.txt}
 export EMMISSIVITY_FILE=${EMMISSIVITY_FILE:-${FIXDIR}/global_sfc_emissivity_idx.txt}
 
 cd $GFSWRK
 #====================================================================
-ln -fs $O3FORC fort.28
+#ln -fs $O3FORC fort.28
+ln -fs $O3FORC global_o3prdlos
 ln -fs $O3CLIM fort.48
 ln -fs $AEROSOL_FILE  aerosol.dat
 ln -fs $EMMISSIVITY_FILE sfc_emissivity_idx.txt
@@ -160,7 +162,7 @@ if [ $JCAP = 639  ] ; then
   MODLST_PHY='isot=2,ivegsrc=2,'
   MODEL_BASIC='nco=640,'
 elif [ $JCAP = 383  ] ; then
-  MODLST_RES='dt=720., hfilt=1., cgw=2.6e-5, cgwd=2.40, cmbk=0.60,'
+  MODLST_RES='dt=720., hfilt=1., cgw=2.6e-5, cgwd=2.40, cmbk=0.60,itter=1,'
   MODLST_PHY="nmgwcv=1"
   MODEL_BASIC='nco=384,'
 elif [ $JCAP = 383  ] ; then
@@ -207,9 +209,9 @@ cat > ${GFSWRK}/namlsts << EOF
   outdms   =0, outgrb2  =${OUTGRB}, 
   ndsladvh2=false,
   isot=1, ivegsrc=1, cgwd=1.20, cmbk=1.00, tofd=t,
-  spl1=80., spl2=100.,
-  two_loop=t,
-  itter=1, vd=0.002, factop=60.,alpha=0.7
+  spl1=10., spl2=100.,
+  two_loop=t, mass_dp=t,
+  itter=2, vd=0.002, factop=60.,alpha=0.7
 !  naero=1,
   ${MODLST_RES}
   ${MODLST_PHY}

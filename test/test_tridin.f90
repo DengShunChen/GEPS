@@ -2,7 +2,7 @@ program test_moninedmf
    implicit none
    call mpe_init
    call cons
-   call tridi2_unit
+   call tridin_unit
    call mpe_finalize
 
 end program
@@ -47,9 +47,9 @@ subroutine assert_real(actual, n_actual, desired, n_desired, rtol, err_msg)
 
 end subroutine assert_real
 
-subroutine tridi2_unit
+subroutine tridin_unit
    use index, only: nxjp, nxp, jlistnum, jlist1, nxptot, nxjp_acc
-   use param, only: lev, my_max, my, ncld
+   use param, only: lev, my_max, my
    use machine, only: kind_phys
    use const, only: RTYPE
    use rank, only: myrank
@@ -59,18 +59,20 @@ subroutine tridi2_unit
    !USE, INTRINSIC :: IEEE_ARITHMETIC
    implicit none
 
+   integer, parameter :: ncld = 7
    real(kind=kind_phys) au(nxp, lev - 1, my_max), au_gpu(nxp, lev - 1, my_max)
    real(kind=kind_phys) a1(nxp, lev, my_max), a1_gpu(nxp, lev, my_max)
-   real(kind=kind_phys) a2(nxp, lev, my_max), a2_gpu(nxp, lev, my_max)
+   real(kind=kind_phys) a2(nxp, lev, my_max, ncld), a2_gpu(nxp, lev, my_max, ncld)
    real(kind=kind_phys) al(nxp, lev - 1, my_max), ad(nxp, lev, my_max)
    integer :: ntrac, myim(my_max), ix, km
-   integer :: i, ii, j, jj, async_id, n, k, kk, im, j1, istat, accui
+   integer :: i, ii, j, jj, async_id, n, k, kk, im, j1, istat, accui, m
    integer, dimension(34) :: seed
    real(kind=kind_phys) dt2, num
-   real(kind=kind_phys), allocatable, dimension(:, :) :: alc, adc, auc, a1c, a2c
+   real(kind=kind_phys), allocatable, dimension(:, :) :: alc, adc, auc, a1c
+   real(kind=kind_phys), allocatable, dimension(:, :, :) :: a2c
    real(kind=kind_phys) :: alg(nxptot, lev), adg(nxptot, lev), &
                            aug(nxptot, lev), a1g(nxptot, lev), &
-                           a2g(nxptot, lev), a3g(nxptot, lev, 2)
+                           a2g(nxptot, lev, ncld), a3g(nxptot, lev, ncld+1)
    type(cusparseHandle) :: handle
    integer(8), value :: buffer_size
    character(1), allocatable :: pbuffer(:)
@@ -113,13 +115,15 @@ subroutine tridi2_unit
          allocate (adc(im, lev))
          allocate (auc(im, lev - 1))
          allocate (a1c(im, lev))
-         allocate (a2c(im, lev))
+         allocate (a2c(im, lev, ncld))
 
          do i = 1, im
             do k = 1, lev
                adc(i, k) = ad(i, k, jj)
                a1c(i, k) = a1(i, k, jj)
-               a2c(i, k) = a2(i, k, jj)
+               do m = 1, ncld
+                  a2c(i, k, m) = a2(i, k, jj, m)
+               end do
             end do
             do k = 1, lev - 1
                alc(i, k) = al(i, k, jj)
@@ -129,13 +133,15 @@ subroutine tridi2_unit
          end do
 
          call cpu_time(time1)
-         call tridi2(im, lev, alc, adc, auc, a1c, a2c, auc, a1c, a2c)
+         call tridin(im, lev, ncld, alc, adc, auc, a1c, a2c, auc, a1c, a2c)
          call cpu_time(time2)
 
          do k = 1, lev
             do i = 1, im
                a1(i, k, jj) = a1c(i, k)
-               a2(i, k, jj) = a2c(i, k)
+               do m = 1, ncld
+                  a2(i, k, jj, m) = a2c(i, k, m)
+               end do
             end do
          end do
 
@@ -197,12 +203,14 @@ subroutine tridi2_unit
                   
                   adg(accui + i, k) = ad(i, k, jj)
                   a3g(accui + i, k, 1) = a1_gpu(i, k, jj)
-                  a3g(accui + i, k, 2) = a2_gpu(i, k, jj)
+                  do m = 1, ncld
+                     a3g(accui + i, k, m+1) = a2_gpu(i, k, jj, m)
+                  end do
                end if
             end do
          end do
       end do
-      call tridi2_gpu(nxptot, km, alg, adg, aug, a3g, aug, a3g, -1)
+      call tridin_gpu(nxptot, km, ncld, alg, adg, aug, a3g, aug, a3g, -1)
       !$acc parallel loop gang collapse(3) private(jj,k,i,accui)
       do jj = 1, jlistnum
          do k = 1, lev
@@ -210,7 +218,9 @@ subroutine tridi2_unit
                if (i .le. myim(jj)) then
                   accui = nxjp_acc(jj) - 1
                   a1_gpu(i, k, jj) = a3g(accui + i, k, 1)
-                  a2_gpu(i, k, jj) = a3g(accui + i, k, 2)
+                  do m = 1, ncld
+                     a2_gpu(i, k, jj, m) = a3g(accui + i, k, m+1)
+                  end do
                end if
             end do
          end do
@@ -264,5 +274,5 @@ contains
       end do
    end subroutine set_tridiagonal
 
-end subroutine tridi2_unit
+end subroutine tridin_unit
 

@@ -35,7 +35,11 @@
                             ! sit
                             itimestep, lrun_sitvdiff, ic_sit, &
                             !xb110>
+#ifdef TIMCOMCPL
+                            flash, tsflw, vvel, totallp, ustress, vstress, ssu, ssv)
+#else
                             flash, tsflw, vvel, totallp)
+#endif
 !xb110<
 !--------------------------------------------------------------------------------
 !#######################################################################
@@ -176,7 +180,7 @@
                           pdfcloud, cmbk, cgwd, fsit, dosppt, doshum, dossst, &
                           use_zmtnblck, ldailyFCTicesndpt, dSITdt_intv, &
                           weightSIT, bckfile, ggdef, doclx, doslavepp, &
-                          RTYPE, qmin, julian, doskeb, mass_dp
+                          RTYPE, qmin, julian, doskeb, mass_dp, monsave
          use mod_sitgrid
          USE mod_sit_vdiff, ONLY: sit_vdiff, ctfreez
          USE mod_sit_control, ONLY: ftrigsit, ltrigsit, lsitstart, lsftobswt &
@@ -197,9 +201,13 @@
 ! for slavepp
          use phygrid, only: dtcup, ducup, dvcup, dtshl, dushl, dvshl, dtlsp, dulsp, dvlsp
 ! for land_noah_new
-         use namelist_soilveg, only: MAX_SLOPETYP, MAX_SOILTYP, MAX_VEGTYP
+         use namelist_soilveg, only: MAX_SLOPETYP, MAX_SOILTYP, MAX_VEGTYP, &
+             slope_data, bb, drysmc, f11, maxsmc, refsmc, satpsi, satdk, satdw, &
+             wltsmc, qtz, rsmtbl, rgltbl, hstbl, snupx, lai_data, nroot_data
          use mod_stochastic_physics, only: sppt3d, shum3d, ssst3d,     &
                                          diss_dc, shum3d_dq
+! for ozone physics
+         use ozne_def, only :pl_coeff
 
          use leapyr
 !-----------------------------------------------------------------------
@@ -246,7 +254,12 @@
             u10(nxp, my_max), v10(nxp, my_max), hpbl(nxp, my_max), &
             raincu6(nxp, my_max), rainlp6(nxp, my_max), &
             raincu3(nxp, my_max), rainlp3(nxp, my_max), &
-            raincu1(nxp, my_max), rainlp1(nxp, my_max)
+#ifdef TIMCOMCPL
+            raincu1(nxp,my_max),rainlp1(nxp,my_max),                  &
+            ustress(nxp,my_max),vstress(nxp,my_max),ssu(nxp,my_max),ssv(nxp,my_max)
+#else
+            raincu1(nxp,my_max),rainlp1(nxp,my_max)
+#endif
          real(kind=RTYPE) qt(nxp, lev*ncld, my_max), qp(nxp, lev*ncld, my_max), &
             up(nxp, lev, my_max), vp(nxp, lev, my_max), &
             ttp(nxp, lev, my_max), o3l(nxp, lev, my_max), &
@@ -425,7 +438,7 @@
          real ftp1(nxp, lev, my_max), fqp1(nxp, lev, my_max), fpsp1(nxp, my_max)
 #ifdef Readaeroclx
          integer naero
-         real aeroclx(nxp, naero*lev, my_max)
+         real(kind=RTYPE) aeroclx(nxp, naero*lev, my_max)
 #endif
 !-------
 !for pdf cloud
@@ -530,6 +543,10 @@
          real dtx_tau, dtaup, dtxb
          INTEGER, PARAMETER :: nerr = 6
          integer async_id
+         integer, parameter :: nxpvs = 7501
+         real :: c1xpvs,c2xpvs,tbpvs(nxpvs)
+         common/fpvscom/ c1xpvs,c2xpvs,tbpvs(nxpvs)
+         
 ! for dissipation convective (test)
       real      diss_dcc(nxp,lev,my_max)
 !xb110>
@@ -728,7 +745,9 @@
 ! (2)  tg replaced by climate sea surface temperature
 !---------------------------------------------------------------------
 !            if ( .not. do_sit )then
+#ifndef TIMCOMCPL
                      if (ocean(i, jj)) tg(i, jj) = sstc(i, jj)
+#endif
 !            endif
 !---------------------------------------------------------------------
 ! (3)  set ice thickness => not for couple
@@ -763,7 +782,7 @@
          if ( doclxu ) then
             if ( myrank .eq. 0 ) print *, 'update aeroclx at tau= ', tau
             call readaeroclx(nx, my, my_max, lev, naero, julian, &
-                             ggdef, aeroclx)
+                             itimestep, monsave, ggdef, aeroclx)
          endif
 #endif
 
@@ -1056,7 +1075,7 @@
          !  change t from virtual potential temperature to real temperature
          !  change ttp from virtual potential temperature to potential temperature
          !-----------------------------------------------------------------------------
-         !$acc parallel loop collapse(3) private(j, nxj, xx) async(async_id)
+         !$acc parallel loop collapse(3) private(j, nxj, xx, kk) async(async_id)
          do jj = 1, jlistnum
             do k = 1, lev
                do i = 1, nxp
@@ -1075,7 +1094,10 @@
                      tpp(i, k, jj) = pkp(i, k, jj)*xx
                      ttpp(i, k, jj) = xx
                      ! ----------------------------------------
-                     qtp(i, k, jj) = qt(i, k, jj)
+                     do n = 1, ncld
+                        kk = k + (n-1)*lev
+                        qtp(i, kk, jj) = qt(i, kk, jj)
+                     end do
                   end if
                end do
             end do
@@ -1137,12 +1159,27 @@
                   end do
                end if
             else
-               !$acc enter data copyin(ozplin, pl_lat, pl_pres ,pl_time) async(async_id)
-               call rozphys_gpu(nxjp, nxp, lev, dta, iter, xlat, julian, o3l, &
-                        tt, plt, ps, myrank)
-               !$acc exit data delete(ozplin, pl_lat, pl_pres ,pl_time) async(async_id)
-               !$acc update host(o3l) async(async_id)
-               !$acc wait(async_id)
+               if (pl_coeff > 4) then
+                  do jj = 1, jlistnum
+                     j = jlist1(jj)
+                     nxj = nxdef_2d(j)
+                     do k=1,lev
+                        do i=1,nxj
+                           del(i,k,jj) = 100.0*( dsigma(k,1)*pst(i,jj)+dsigma(k,2))  !  pa
+                        enddo
+                     enddo
+                     call ozphys_2015 (nxp, nxjp(j), lev , dta, xlat(j), julian, &
+                                  o3l(1,1,jj), o3l(1,1,jj), tt(1,1,jj),          &
+                                  plt(1,1,jj), del(1,1,jj), myrank)
+                  end do
+               else
+                  !$acc enter data copyin(ozplin, pl_lat, pl_pres ,pl_time) async(async_id)
+                  call rozphys_gpu(nxjp, nxp, lev, dta, iter, xlat, julian, o3l, &
+                           tt, plt, ps, myrank)
+                  !$acc exit data delete(ozplin, pl_lat, pl_pres ,pl_time) async(async_id)
+                  !$acc update self(o3l) async(async_id)
+                  !$acc wait(async_id)
+               end if ! for pl_coeff
             end if ! for ntoz
          end if ! for doo3l
 !=======================================================================
@@ -1365,33 +1402,81 @@
             end do
          end if
          if (dopbl .and. (nmland .eq. 2)) then
-               call pbl_noah_gpu(nxjp, nxp, lev, ktpbl, dta, grav, rgas, cp, xkapa, hltm, ptop, &
-                             tice, hice, tg, z0, land, &
-                             sgeo, phi, phii, pst, upp, vpp, &
-                             ttpp, qp, ut, vt, &
-                             tt, qt, pk, pk2, &
-                             ustar, tstar, qstar, e, &
-                             eps, hflux, qflux, itimestep, &
-                             gwclim, tgclim, ocean, ice, &
-                             !                     , snr(1,jj),totalp(1,jj),ss_adj(1,jj),rs(1,jj),albx(1,jj)      , &
-                             snr, totalp, ss_adj, rs, sfalb, &
-                             ipblmx, xkmx, ijdg, xkmd, itypbl, &
-                             t2, q2, rh2, rh10, u10, &
-                             v10, fm, fh, fm10, fh2, &
-                             srflag, rld_adj, stbo, &
-                             km_soil, smc, stc, canopy, &
-                             runoff, sigmaf, istyp, ivegtyp, &
-                             ncld, dsigma, &
-                             slopetyp, &
-                             slc, sncover, sndepth, &
-                             shdmax, shdmin, snoalb, albedo2, &
-                             sld_adj, zice, cice, xtice, &
-                             hpbl, asl, atl, xmu, gfx, &
-                             kpbl, nmpbl, nmmiph, isot, ivegsrc, sfemis, &
-                             dudtc, dvdtc, dtdtc, dqdtc)
+            !$acc wait(async_id)
+            ntrac = ncld
+!         if (nmmiph .eq. 8) ntrac = ncld - 4
+!         if (nmmiph .eq. 18) ntrac = ncld - 4
+
+            !$acc enter data copyin(slope_data, bb, drysmc, f11, maxsmc, refsmc, &
+            !$acc&      satpsi, satdk, satdw, wltsmc, qtz, rsmtbl, rgltbl, hstbl, &
+            !$acc&      snupx, lai_data, nroot_data) async(async_id)
+            !$acc enter data copyin(tbpvs) async(async_id)
+            !$acc enter data copyin(land, e, eps, hflux, qflux, gwclim, tgclim, &
+            !$acc&      ocean, ice, totalp, ss_adj, rs, sfalb, ipblmx, xkmx, ijdg, &
+            !$acc&      xkmd, rld_adj, sigmaf, istyp, ivegtyp, slopetyp, &
+            !$acc&      shdmax, shdmin, snoalb, sld_adj, asl, atl, xmu, sfemis) &
+            !$acc&      async(async_id)
+            !$acc enter data copyin(tg, z0, ustar, snr, &
+            !$acc&      smc, stc, canopy, runoff, slc, &
+            !$acc&      sndepth, zice, cice, xtice) async(async_id)
+            !$acc enter data copyin(tstar, qstar, hflux, qflux, &
+            !$acc&      t2, q2, rh2, rh10, u10, v10, &
+            !$acc&      fm, fh, fm10, fh2, srflag, sncover, &
+            !$acc&      albedo2, hpbl, gfx, kpbl &
+            !$acc&      ) async(async_id)
+            call pbl_noah_gpu(nxjp, nxp, lev, ktpbl, dta, grav, rgas, cp, xkapa, hltm, ptop, &
+                          tice, hice, tg, z0, land, &
+                          sgeo, phi, phii, pst, upp, vpp, &
+                          ttpp, qp, ut, vt, &
+                          tt, qt, pk, pk2, &
+                          ustar, tstar, qstar, e, &
+                          eps, hflux, qflux, itimestep, &
+                          gwclim, tgclim, ocean, ice, &
+                          !                     , snr(1,jj),totalp(1,jj),ss_adj(1,jj),rs(1,jj),albx(1,jj)      , &
+                          snr, totalp, ss_adj, rs, sfalb, &
+                          ipblmx, xkmx, ijdg, xkmd, itypbl, &
+                          t2, q2, rh2, rh10, u10, &
+                          v10, fm, fh, fm10, fh2, &
+                          srflag, rld_adj, stbo, &
+                          km_soil, smc, stc, canopy, &
+                          runoff, sigmaf, istyp, ivegtyp, &
+                          ncld, dsigma, &
+                          slopetyp, &
+                          slc, sncover, sndepth, &
+                          shdmax, shdmin, snoalb, albedo2, &
+                          sld_adj, zice, cice, xtice, &
+                          hpbl, asl, atl, xmu, gfx, &
+                          kpbl, nmpbl, nmmiph, isot, ivegsrc, sfemis, &
+#ifdef TIMCOMCPL
+                          dudtc,dvdtc,dtdtc,dqdtc,ntrac,ustress,vstress,    &
+                          ssu,ssv)
+#else
+                          dudtc,dvdtc,dtdtc,dqdtc,ntrac)
+#endif
+            !$acc exit data delete(slope_data, bb, drysmc, f11, maxsmc, refsmc, &
+            !$acc&     satpsi, satdk, satdw, wltsmc, qtz, rsmtbl, rgltbl, hstbl, &
+            !$acc&     snupx, lai_data, nroot_data) async(async_id)
+            !$acc exit data delete(tbpvs) async(async_id)
+            !$acc exit data delete(land, e, eps, hflux, qflux, gwclim, tgclim, &
+            !$acc&     ocean, ice, totalp, ss_adj, rs, sfalb, ipblmx, xkmx, ijdg, &
+            !$acc&     xkmd, rld_adj, sigmaf, istyp, ivegtyp, slopetyp, &
+            !$acc&     shdmax, shdmin, snoalb, sld_adj, asl, atl, xmu, sfemis) &
+            !$acc&     async(async_id)
+            !$acc exit data copyout(tg, z0, ustar, snr, &
+            !$acc&     smc, stc, canopy, runoff, slc, &
+            !$acc&     sndepth, zice, cice, xtice) async(async_id)
+            !$acc exit data copyout(tstar, qstar, hflux, qflux, &
+            !$acc&     t2, q2, rh2, rh10, u10, v10, &
+            !$acc&     fm, fh, fm10, fh2, srflag, sncover, &
+            !$acc&     albedo2, hpbl, gfx, kpbl &
+            !$acc&     ) async(async_id)
+            !$acc wait(async_id)
+
+
          end if
-!
-         !$acc update device(pk, pk2, tt, ut, vt, qt, dtdtc, dudtc, dvdtc, dqdtc) async(async_id)
+         !!$acc update self(qt, dtdtc, dudtc, dvdtc, dqdtc) async(async_id)
+         !!$acc update device(pk, pk2, tt, ut, vt, qt, dtdtc, dudtc, dvdtc, dqdtc) async(async_id)
+         !$acc update device(pk, pk2, tt, ut, vt) async(async_id)
          !$acc parallel loop collapse(3) private(j, nxj, kc) async(async_id)
          do jj = 1, jlistnum
             do k = 1, lev
@@ -1524,7 +1609,7 @@
             end do
 
             !$acc enter data copyin(ugws,vgws,elvmax,zmtnblck,hprime,sigmaog,gamma,theta,kpbl, &
-            !$acc&       oc,clx,oa4) async(async_id)
+            !$acc&       oc,clx,oa4,garea,hpbl) async(async_id)
             call gwdps_gpu(nxjp, nxp, nxp, lev, &
                        dvdtc, dudtc, dtdtc, &
                        utc, vtc, ttc, qtc, &
@@ -1538,7 +1623,7 @@
                        me, zmtnblck, garea, hpbl, tofd)
             !$acc exit data copyout(elvmax,zmtnblck,ugws,vgws) async(async_id)
             !$acc exit data delete(hprime,sigmaog,gamma,theta,kpbl, &
-            !$acc&       oc,clx,oa4) async(async_id)
+            !$acc&       oc,clx,oa4,garea,hpbl) async(async_id)
             
             !$acc parallel loop collapse(3) private(j, nxj, kc) async(async_id)
             do jj = 1, jlistnum

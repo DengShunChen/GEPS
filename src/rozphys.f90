@@ -1,5 +1,6 @@
       subroutine rozphys(nxj, nx, lev, dt, iter, theta, julian,        &
                          o3l, tt, pp, ps, myrank)
+      use machine,  only : kind_phys
       use physcons, only : grav => con_g
       use ozne_def
       use const, only : RTYPE
