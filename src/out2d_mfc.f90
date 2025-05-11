@@ -12,7 +12,7 @@
       use phygrid ,only: raincu3, rainlp3
       implicit  none
 
-      integer   nx,lev,my,my_max,itau,ntau,num
+      integer   nx,lev,my,my_max,itau,ntau,num,nc
       parameter (num=14)
 
       real      raintot(nxp,my_max),t2(nxp,my_max),u10(nxp,my_max),   &
@@ -45,7 +45,7 @@
                   'b10200','b10210','b02171','b02181','b02150', &
                   's003x0','s003u0','x00770','ssl010'/
 
-      integer:: gtp1(9)
+      integer:: gtp1(9),gtp0(9)
 !     grib code 0,1,2:variable   3:order  4:layer  5:above_land_height
 !                 1h  Tot                   T2M T2M  2M DW DW       
 !                 p   p  T2 sh2 rh2 u10 v10 max min DPT LW SW CC SLP
@@ -170,14 +170,14 @@
 !
 ! Total Precp.
 !byl      call mpe2d_unify(glob,raintot)
-
+      nc=0
       do n=1,num
         call syslbl_w (dmskey(n),idtg,ntau,ggdef)
         call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),glob)
-        !call qmaxn3_w (glob,1,1,1,nx,my,1)
-        if ( myrank .eq. n-1 ) then
-          mout=glob
-          ihdgo2=ihdgo
+        call qmaxn3_w (glob,1,1,1,nx,my,1)
+!        if ( myrank .eq. n-1 ) then
+!          mout=glob
+!          ihdgo2=ihdgo
           gtp1=(/ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,ptp5(n),-999,-999/)
           if(n==1)then
              gtp1(8:9)=(/1,1/) !1hr precip
@@ -186,15 +186,16 @@
           else if(n==9)then
              gtp1(8:9)=(/3,1/) !MinT2m
           endif
-        endif
+!        endif
+          call split2(nx,my,lenc,nc,glob,mout,gtp1,gtp0)
       enddo
 !
-      if (myrank .lt. num ) then
+      if (myrank .lt. nc ) then
 
         if(outdms.gt.0)then
              call dmswrit_split(nx,my,lenc,kflag,mout,istat)
         endif ! outdms .gt. 0
-
+!
         if(outgrb2 == 1 )then
           if(gtp1(8)==-999)then
           call wrt_grb2_v2(itau,gtp1(1),gtp1(2),gtp1(3),gtp1(4),gtp1(5) &
