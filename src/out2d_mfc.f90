@@ -178,7 +178,7 @@
 !        if ( myrank .eq. n-1 ) then
 !          mout=glob
 !          ihdgo2=ihdgo
-          gtp1=(/ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,ptp5(n),-999,-999/)
+          gtp0=(/ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,ptp5(n),-999,-999/)
           if(n==1)then
              gtp1(8:9)=(/1,1/) !1hr precip
           else if(n==8)then
@@ -187,7 +187,7 @@
              gtp1(8:9)=(/3,1/) !MinT2m
           endif
 !        endif
-          call split2(nx,my,lenc,nc,glob,mout,gtp1,gtp0)
+          call split2(nx,my,lenc,nc,glob,mout,gtp0,gtp1)
       enddo
 !
       if (myrank .lt. nc ) then
