@@ -2184,10 +2184,10 @@
 
             ! scale-aware shalcon
             if (nmshl .eq. 3) then
+               if (myrank .eq. 0) print *, "Not support this entry. nmshl=", nmshl
                do jj = 1, jlistnum
                   j = jlist1(jj)
                   nxj = nxdef_2d(j)
-                  if (myrank .eq. 0) print *, "Not support this entry. nmshl=", nmshl
                   call samfshalcnv(nxjp(j), nxp, lev, dta, del(1, 1, jj), prsl(1, 1, jj), psfc(1, jj), phil(1, 1, jj), &
                                    qtr(1, 1, jj), &
                                    qti(1, 1, jj), qtc(1, 1, jj), ttc(1, 1, jj), utc(1, 1, jj), vtc(1, 1, jj), &
