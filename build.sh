@@ -2,46 +2,33 @@
 #------------------------------------------------------------------------------
 #
 #  build GFS forecast model
-# 
-# 1. select targe machine(fx10, fx100, or pcc) 
-# 2. run this building up script
-#   ./build.sh [MACHINE]
-#                                                                Deng-Shun Chen
-#                                                                   2020-04-28
-#-------------
-# add feature:                                        
-#   1. for RSM-IO                                                  CHEN,YING-JU
-#      use "modulefile.tcogfs.${MACHINE}.rsm" files                  2021-07-30
+#
+# Usage:
+#   ./build.sh [MACHINE] [OPTION]
+#     MACHINE: fx10, fx100, pcc, fx1000
+#     OPTION : 2cpl, 4cpl(optional, for coupling build)
+#
 #------------------------------------------------------------------------------
 #
-# MACHINE : fx10, fx100, pcc
-#
-if [ $# == 1 ] ; then
-  export MACHINE=${1}
-else
-  echo "usage: $0 [MACHINE]"
-  exit
-fi
-machines='fx1000 fx100 fx10 pcc'
-[[ $machines =~ (^|[[:space:]])$MACHINE($|[[:space:]]) ]] && known='True' || known='False'
-if [ "${known}" == 'True' ] ; then
-  echo "${HOSTNAME} : Build ${MACHINE} executable"
-else
-  echo "Fatal Error : $0: Unknown machine --> ${MACHINE}" ; exit
+if [ $# -lt 1 ] || [ $# -gt 2 ]; then
+  echo "Usage: $0 [MACHINE] [OPTION: 2cpl 4cpl]"
+  exit 1
 fi
 
-if [ "${MACHINE}" == 'fx1000' ] ; then
-  [[ $HOSTNAME =~ h6ln?? ]] && known='True' || known='False' 
-  if [ "${known}" == 'False' ] ; then
-   echo "Fatal Error : Build ${MACHINE} executable, please move to login node of HPC Gen6 h6ln?? !" 
-   exit
-  fi
+export MACHINE=$1
+OPTION=$2
+
+machines='fx1000 fx100 fx10 pcc'
+[[ $machines =~ (^|[[:space:]])$MACHINE($|[[:space:]]) ]] && known='True' || known='False'
+if [ "${known}" == 'False' ]; then
+  echo "Fatal Error: Unknown machine --> ${MACHINE}"
+  exit 1
 fi
-if [ "${MACHINE}" == 'fx1000' ] ; then
-  [[ $HOSTNAME =~ h6ln?? ]] && known='True' || known='False'
-  if [ "${known}" == 'False' ] ; then
-   echo "Fatal Error : Build ${MACHINE} executable, please move to login12/13/15/16/17/18/19 for inside HPC, login23 for outside HPC !"
-   exit
+
+if [ "${MACHINE}" == 'fx1000' ]; then
+  if ! [[ $HOSTNAME =~ h6ln[0-9][0-9] ]]; then
+    echo "Fatal Error: Please build on login node of HPC Gen6 (h6ln??)"
+    exit 1
   fi
 fi
 
@@ -54,12 +41,26 @@ module purge
 module use  ${MDIR}/modulefiles
 module av
 
-module load modulefile.tcogfs.${MACHINE}
-### cpl TIMCOM ###
-#step1
-#module load modulefile.tcogfs.${MACHINE}_2cpl
-#step2
-#src/Makefile TIMCOMCPL=TRUE
+# Decide module to load
+case "$OPTION" in
+  2cpl)
+    module load modulefile.tcogfs.${MACHINE}_2cpl
+    export TIMCOMCPL=TRUE
+    ;;
+  4cpl)
+    module load modulefile.tcogfs.${MACHINE}_4cpl
+    export TIMCOMCPL=TRUE
+    ;;
+  "")
+    module load modulefile.tcogfs.${MACHINE}
+    export TIMCOMCPL=FALSE
+    ;;
+  *)
+    echo "Fatal Error: Unknown option --> $OPTION"
+    echo "Usage: $0 [MACHINE] [OPTION: 2cpl | 4cpl]"
+    exit 1
+    ;;
+esac
 
 module list
 module unuse ${MDIR}/modulefiles
@@ -67,7 +68,9 @@ module unuse ${MDIR}/modulefiles
 # compile
 cd src/
 make clean
-make -j24
+make -j24 TIMCOMCPL=$TIMCOMCPL
 
-if [[ $? -ne 0 ]];then exit ;fi
+if [[ $? -ne 0 ]]; then
+  exit 1
+fi
 
