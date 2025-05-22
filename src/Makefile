@@ -457,7 +457,7 @@ endif
 clean :
 	@echo
 	@echo '==== CLEAN ===================================================='
-	rm -f *.o *.lst *.mod depend MTCo639L72_${MACHINE}
+	rm -f *.o *.lst *.mod *.a depend MTCo639L72_${MACHINE}
 
 install :
 	$(INSTALL) -d ../bin
