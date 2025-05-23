@@ -71,6 +71,16 @@ make clean
 make -j24 TIMCOMCPL=$TIMCOMCPL
 
 if [[ $? -ne 0 ]]; then
+  echo "Build failed for MACHINE=$MACHINE OPTION=$OPTION"
   exit 1
+fi
+
+# Echo current build info
+echo "✅ Build completed for:"
+echo "   MACHINE : $MACHINE"
+if [[ "$OPTION" == "2cpl" || "$OPTION" == "4cpl" ]]; then
+  echo "   MODE    : Coupled (${OPTION})"
+else
+  echo "   MODE    : Atmosphere-only"
 fi
 
