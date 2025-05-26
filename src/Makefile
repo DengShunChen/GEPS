@@ -3,9 +3,7 @@ SHELL = /bin/sh
 RANLIB = ranlib
 AR = ar cq
 RM = rm -f
-TIMCOMCPL = FALSE
-### cpl timcom ###
-#TIMCOMCPL = TRUE
+TIMCOMCPL ?= FALSE
 
 SRCS_f90  = \
   ancrt.f90 \
@@ -459,7 +457,7 @@ endif
 clean :
 	@echo
 	@echo '==== CLEAN ===================================================='
-	rm -f *.o *.lst *.mod depend MTCo639L72_${MACHINE}
+	rm -f *.o *.lst *.mod *.a depend MTCo639L72_${MACHINE}
 
 install :
 	$(INSTALL) -d ../bin
