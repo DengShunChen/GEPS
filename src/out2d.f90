@@ -785,7 +785,7 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl_w ('x00770',idtg,itau,ggdef)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
-      ptp0=(/0,6,1,3,10,0,0,-999,-999/)
+      ptp0=(/0,6,1,2,10,0,0,-999,-999/)
       call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
       endif !domfc
       go to 30
@@ -802,7 +802,7 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl_w ('x00760',idtg,itau,ggdef)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
-      ptp0=(/0,6,5,3,10,0,0,-999,-999/)
+      ptp0=(/0,6,5,2,10,0,0,-999,-999/)
       call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
       go to 30
       endif
@@ -818,7 +818,7 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl_w ('x00750',idtg,itau,ggdef)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
-      ptp0=(/0,6,4,3,10,0,0,-999,-999/)
+      ptp0=(/0,6,4,2,10,0,0,-999,-999/)
       call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
       go to 30
       endif
@@ -834,7 +834,7 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl_w ('x00740',idtg,itau,ggdef)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
-      ptp0=(/0,6,3,3,10,0,0,-999,-999/)
+      ptp0=(/0,6,3,2,10,0,0,-999,-999/)
       call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
       go to 30
       endif

@@ -629,7 +629,7 @@ contains
 !
       call syslbl_w(lrec(k),idtg,itau,ggdef)
       call qmaxn3_w(glob,1,1,1,nx,my,1)
-      ptp0=(/0,6,32,3,100,-2,nint(plev(k)),-999,-999/)
+      ptp0=(/0,6,32,2,100,-2,nint(plev(k)),-999,-999/)
       call split2(nx,my,lenc,ncnt,glob,pout,ptp0,ptp1)
       go to 30
       endif
