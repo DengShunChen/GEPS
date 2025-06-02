@@ -96,7 +96,7 @@
       character*10 fulldtg,Wfulldtg
       character*255 filist
       character cdtg*12
-      character*80 pathname,logicname,truefile
+      character*255 pathname,logicname,truefile
       character*64 type_r,type_w,argument
       integer istat4,istat5,istat6,istat7,istat8
 

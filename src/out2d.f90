@@ -841,13 +841,14 @@
 !zonal mean cloudiness of Y-Z cross section 0-1 
       if(label(kk).eq.'x00730') then
       call mpe_unify(acld,lev,my,2,mpe_double)
+      !use 'mout' could effect another output
       do jfdb=1,my
       do kfdb=1,lev
-       mout(kfdb,jfdb)=acld(kfdb,jfdb)*100.
+       glob(kfdb,jfdb)=acld(kfdb,jfdb)*100.
       end do
       end do
       call syslbl_w ('x00730',idtg,itau,ggdef)
-      if(outdms.gt.0) call dmswrit(lev,my,lenc2,kflag,mout,istat)
+      if(outdms.gt.0) call dmswrit(lev,my,lenc2,kflag,glob,istat)
       !if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,6,22,2,10,0,0.,glob)
       go to 30
       endif

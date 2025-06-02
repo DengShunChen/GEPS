@@ -167,11 +167,11 @@
 !          ihdgo2=ihdgo
           gtp0=(/ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,ptp5(n),-999,-999/)
           if(n==1)then
-             gtp1(8:9)=(/1,1/) !1hr precip
+             gtp0(8:9)=(/1,1/) !1hr precip
           else if(n==8)then
-             gtp1(8:9)=(/2,1/) !MaxT2m
+             gtp0(8:9)=(/2,1/) !MaxT2m
           else if(n==9)then
-             gtp1(8:9)=(/3,1/) !MinT2m
+             gtp0(8:9)=(/3,1/) !MinT2m
           endif
 !        endif
           call split2(nx,my,lenc,nc,glob,mout,gtp0,gtp1)

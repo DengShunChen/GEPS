@@ -22,7 +22,7 @@
 !
       integer istat
       character*80 filist
-      character*80 pathname,logicname,truefile
+      character*255 pathname,logicname,truefile
       namelist /filst/ ifilin,cwbout,bckfile,namlsts &
                      , ifilout,crdate,ocards,phyout,cntrl &
                      , ifilin_ncep,ifilin_sst,ifilin_nc &
@@ -48,7 +48,6 @@
       open (unit=12,file=trim(truefile),form='formatted')
 !
       read (12,filst,end=110)
-
 !
   110 continue
       close(12)

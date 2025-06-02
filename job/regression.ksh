@@ -33,7 +33,7 @@
    DMSFLAG=GK
  fi
 
- dtg='18090800'
+ dtg='22081500'
  fgdtg=$(/users/xb80/bin/Caldtg.ksh ${dtg} -6)
 
  idmshead='MASOPS'
@@ -63,7 +63,10 @@
   export LNCP='ln -fs'
 
   # TCo IC data path
-  export source="/data/common/gfs/dms_data/ncep_ana.ufs/TCo${JCAP}l72_${dtg}"
+  export source="/data/common/gfs/dms_data/ncep_ana_n1.ufs/TCo${JCAP}l72_${dtg}"
+  #export source="/data/common/gfs/dms_data/ncep_ana.ufs/TCo${JCAP}l72_${dtg}"
+  #export source="/data/common/gfs/dms_data/ERA5_n1.ufs/TCo${JCAP}l72_${dtg}"
+  #export source="/data/common/gfs/dms_data/NCEPCFSR_n1.ufs/TCo${JCAP}l72_${dtg}"
 
   # link/copy DMS files
   export target="${dmsdb_home}/${idmsdb}.ufs"
@@ -158,14 +161,14 @@ cp $NWPETC/ocards $GFSWRK/ocards
 cp $NWPETC/namlsts $GFSWRK/namlsts
 
 if [ $JCAP = 639  ] ; then
-  MODLST_RES='dt=450., hfilt=1., cgw=4.2e-5, cgwd=1.20, cmbk=1.00,spl1=5.,spl2=50.,'
+  MODLST_RES='dt=450., hfilt=1., cgw=4.2e-5, cgwd=1.20, cmbk=1.00,spl2=50.,itter=2,'
   MODLST_PHY='isot=2,ivegsrc=2,'
   MODEL_BASIC='nco=640,'
 elif [ $JCAP = 383  ] ; then
-  MODLST_RES='dt=720., hfilt=1., cgw=2.6e-5, cgwd=2.40, cmbk=0.60,itter=1,'
-  MODLST_PHY="nmgwcv=1"
+  MODLST_RES='dt=600., hfilt=1., cgw=2.6e-5, cgwd=2.40, cmbk=0.60,'
+  MODLST_PHY="nmgwcv=1,"
   MODEL_BASIC='nco=384,'
-elif [ $JCAP = 383  ] ; then
+elif [ $JCAP = 199  ] ; then
   MODLST_RES='dt=1200., hfilt=1., cgwd=2.40, cmbk=0.60,'
   MODEL_BASIC='nco=200,'
 fi
@@ -192,7 +195,7 @@ cat > ${GFSWRK}/namlsts << EOF
   dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f,
   dograv=true, docgrav=true,
   donnmi=true,
-  dosppt=false, dospptout=false, doshum=false,
+  dosppt=false, doskeb=false, doshum=false,
   cutfreq=3, nnmivm=3,
   doincr=f,
   hdiff=t, frad=1.0, ldiag=0,
@@ -205,13 +208,13 @@ cat > ${GFSWRK}/namlsts << EOF
   mtnvar=14, doo3l=t,
   ioutsigr=1,
   ggdef='${DMSFLAG}0G', gmdef='${DMSFLAG}MG',
-  domfc=0., out_green=t, otgreen=6., out_hp=false,
+  domfc=0., out_green=t, otgreen=3., out_hp=false,
   outdms   =0, outgrb2  =${OUTGRB}, 
   ndsladvh2=false,
   isot=1, ivegsrc=1, cgwd=1.20, cmbk=1.00, tofd=t,
-  spl1=10., spl2=100.,
-  two_loop=t, mass_dp=t,
-  itter=2, vd=0.002, factop=60.,alpha=0.7
+  spl1=5., spl2=100.,
+  two_loop=t, mass_dp=t, doclx=f,
+  itter=1, factop=80.,alpha=0.7,
 !  naero=1,
   ${MODLST_RES}
   ${MODLST_PHY}
@@ -241,6 +244,17 @@ cat > ${GFSWRK}/namlsts << EOF
   shum_decort = 2.16E4,1.728E5,2.592E6,7.776E6,3.1536E7
   shum_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
   shum_sigefold = 0.2,
+  skeb_sigtop1 = 0.1,
+  skeb_sigtop2 = 0.025, 
+  skeb_sigbot1 = 0.975,
+  skeb_sigbot2 = 0.9,
+  skeb_vdof = 5,
+  skebnorm = 2,
+  skebfilt = 12,
+  skeb = 20.0,-999,-999,-999,-999
+  skeb_seed = -999,-999,-999,-999,-999
+  skeb_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7
+  skeb_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
   ssst = 0.80,-999,-999,-999,-999
   ssst_seed = -999,-999,-999,-999,-999
   ssst_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7
