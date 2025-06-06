@@ -50,7 +50,7 @@ integer*4,parameter :: numcoord=1 !number of values in array
       !GRIB2 SECTION 5
       integer*4 :: idrsnum40,idrsnum0 ,idrsnum3
                  !Max dimension of idrstmpl()
-      integer*4,parameter :: idrstmplen40=7, idrstmplen0=5 ,idrstmplen3=17
+      integer*4,parameter :: idrstmplen40=7, idrstmplen0=5 ,idrstmplen3=18
       integer*4 :: idrstmpl40(idrstmplen40),idrstmpl0(idrstmplen0),idrstmpl3(idrstmplen3)
       integer*4 :: ngrdpts
       !GRIB2 SECTION 6
@@ -298,7 +298,7 @@ integer*4,parameter :: numcoord=1 !number of values in array
       ! idrstmpl(5)=    !Type of original field values( see Code Table 5.1 )
                         ! 0 -> folating points, 1 -> integer
       !  ngrdpts=nx*my  !Number of data points in grid. i.e. size of fld and bmap.
-       data idrstmpl3/0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,2/
+       data idrstmpl3/0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0/
       !=======================================================================
       ! grib2 section 6
         data ibmap/255/
@@ -516,8 +516,8 @@ integer*4,parameter :: numcoord=1 !number of values in array
              ipdstmpl(17)=grbmem  !Perturbation number
              ipdstmpl(18)=grbnumm !Number of forecasts in ensemble
             endif
-      ! Add packing info. (section 5) 
-           idrstmpl3=(/0,0,p3,0,0,0,0,0,0,0,0,0,0,0,0,0,2/)
+      ! Add packing info. (section 5)
+           idrstmpl3=(/0,0,p3,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0/)
 
             call gribcreate(cgrib,lcgrib,listsec0,listsec1,ierr)
             call addgrid(cgrib,lcgrib,igds,igdstmpl,igdstmplen,ideflist,idefnum,ierr)
@@ -610,7 +610,7 @@ integer*4,parameter :: numcoord=1 !number of values in array
               ipdstmpl8(32)=0  !t29
             endif
       ! Add packing info. (section 5) 
-           idrstmpl3=(/0,0,p3,0,0,0,0,0,0,0,0,0,0,0,0,0,2/)
+           idrstmpl3=(/0,0,p3,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0/)
 
             call gribcreate(cgrib,lcgrib,listsec0,listsec1,ierr)
             call addgrid(cgrib,lcgrib,igds,igdstmpl,igdstmplen,ideflist,idefnum,ierr)

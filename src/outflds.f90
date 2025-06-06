@@ -614,6 +614,9 @@
 !!clouds output
       labx='cld   '
       call whtrec (labx,ntau,taudir,whtlev,num)
+      !for debug
+      !num=12
+      !whtlev(1:12)=(/100.,150.,200.,250.,300.,400.,500.,600.,700.,850.,925.,1000./)
       if(num.gt.0) then
         tmp=0.
         do jj = 1, jlistnum

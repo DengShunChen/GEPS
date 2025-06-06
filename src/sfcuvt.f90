@@ -224,8 +224,10 @@
 ! 360 continue
 !
 !     do 400 i = 1, nxj
-      hflux(i) = -rosfc(i)*cp*ustar(i)*tstar(i)
-      qflux(i) = -rosfc(i)*hltm*ustar(i)*qstar(i)
+      !hflux(i) = -rosfc(i)*cp*ustar(i)*tstar(i)
+      !qflux(i) = -rosfc(i)*hltm*ustar(i)*qstar(i)
+      hflux(i) = -rosfc(i)*cp*ustar(i)*max(tstar(i),-0.300) ! -3
+      qflux(i) = -rosfc(i)*hltm*ustar(i)*min(max(qstar(i),-0.0003),0.0001)
 ! 400 continue
 !
   100 continue

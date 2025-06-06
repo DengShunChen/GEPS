@@ -204,17 +204,17 @@
 
 
       subroutine GETFNAME(pathname,logicfile,truefile,istat)
-      character pathname*80,logicfile*80,truefile*80,value*80,blank*80
+      character pathname*255,logicfile*255,truefile*255,value*255,blank*255
 !     integer getenv
 
-      truefile(1:80)=' '
-      value(1:80)=' '
-      blank(1:80)=' '
+      truefile(1:255)=' '
+      value(1:255)=' '
+      blank(1:255)=' '
 !     i = getenv(pathname,value)
 !     if (i .eq. 0) then
       ix=index(pathname,' ')
       call getenv(pathname(1:ix-1),value)
-      if (value(1:80) .eq. blank(1:80)) then
+      if (value(1:255) .eq. blank(1:255)) then
  	istat=-1
       else
 	j=index(value,' ')

@@ -180,9 +180,9 @@
 !output P
       write(wtemp,'(a3,a3)')layer(mm),var(1)
       call syslbl_w(wtemp,idtg,itau,ggdef)
-      wrk=pla
+      wrk=pla * 100.0
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      ptp0=(/0,3,0,2,103,0,nint(hm(mm)),-999,-999/)
+      ptp0=(/0,3,0,1,103,0,nint(hm(mm)),-999,-999/)
       call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 
 !output Q
@@ -259,12 +259,13 @@
         nxj=nxdef_2d(j)
           do i = 1, nxj
            wrk(i,jj)=pt(i,jj)+ptop
+           wrk(i,jj)=wrk(i,jj) * 100.0
           enddo
       enddo
       write(wtemp,'(a6)')'B00010'
       call syslbl_w(wtemp,idtg,itau,ggdef)
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      ptp0=(/0,3,0,2,103,0,0,-999,-999/)
+      ptp0=(/0,3,0,1,103,0,0,-999,-999/)
       call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 !=======================================================================
 !output 6hr prec.

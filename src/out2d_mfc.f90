@@ -52,7 +52,7 @@
       data ptp0/  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0, 0,  0 /
       data ptp1/  1,  1,  0,  1,  1,  2,  2,  0,  0,  0, 5, 4, 6,  3 /
       data ptp2/  8, 49,  0,  0,  1,  2,  3,  4,  5,  6, 3, 7, 1,  1 /
-      data ptp3/  2,  1,  2,  6,  2,  2,  2,  2,  2,  2, 2, 2, 3,  2 /
+      data ptp3/  2,  1,  2,  6,  2,  2,  2,  2,  2,  2, 2, 2, 3,  1 /
       data ptp4/103,103,103,103,103,103,103,103,103,103, 1, 1,10,101 /
       data ptp5/  0,  0,  2,  2,  2, 10, 10,  2,  2,  2, 0, 0, 0,  0 /
 
@@ -89,23 +89,10 @@
           mfcout(i,jj,10)= ( TdBeta * TdGamma / ( TdAlpha - TdGamma ) ) + 273.15
           mfcout(i,jj,11)=rld (i,jj)
           mfcout(i,jj,12)=sld (i,jj)
-          mfcout(i,jj,13)=ctot(i,jj) ! total cloud cover
+          mfcout(i,jj,13)=ctot(i,jj) * 100.0 ! total cloud cover
         enddo
       enddo
 
-     !mfcout(:,:,1)=rain1(:,:)
-     !mfcout(:,:,2)=raintot(:,:)
-     !mfcout(:,:,3)=t2(:,:)
-     !mfcout(:,:,4)=q2(:,:)
-     !mfcout(:,:,5)=rh2(:,:) * 100.0
-     !mfcout(:,:,6)=u10(:,:)
-     !mfcout(:,:,7)=v10(:,:)
-     !mfcout(:,:,8)=tmax(:,:)
-     !mfcout(:,:,9)=tmin(:,:)
-     !mfcout(:,:,10)=td(:,:)
-     !mfcout(:,:,11)=rld(:,:)
-     !mfcout(:,:,12)=sld(:,:)
-     !mfcout(:,:,13)=ctot(:,:)
 !
 !  hydrostatic equation
 !
@@ -164,7 +151,7 @@
             anlslp = (pt(i,jj)+ptop)*exp(ttt*(1.0-0.5*apha*ttt+0.333333*  &
                      apha*ttt*apha*ttt) )
           endif
-          mfcout(i,jj,14) = anlslp
+          mfcout(i,jj,14) = anlslp * 100.0  !hPa to Pa
         enddo
       enddo
 !
@@ -180,11 +167,11 @@
 !          ihdgo2=ihdgo
           gtp0=(/ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,ptp5(n),-999,-999/)
           if(n==1)then
-             gtp1(8:9)=(/1,1/) !1hr precip
+             gtp0(8:9)=(/1,1/) !1hr precip
           else if(n==8)then
-             gtp1(8:9)=(/2,1/) !MaxT2m
+             gtp0(8:9)=(/2,1/) !MaxT2m
           else if(n==9)then
-             gtp1(8:9)=(/3,1/) !MinT2m
+             gtp0(8:9)=(/3,1/) !MinT2m
           endif
 !        endif
           call split2(nx,my,lenc,nc,glob,mout,gtp0,gtp1)
@@ -192,10 +179,6 @@
 !
       if (myrank .lt. nc ) then
 
-        if(outdms.gt.0)then
-             call dmswrit_split(nx,my,lenc,kflag,mout,istat)
-        endif ! outdms .gt. 0
-!
         if(outgrb2 == 1 )then
           if(gtp1(8)==-999)then
           call wrt_grb2_v2(itau,gtp1(1),gtp1(2),gtp1(3),gtp1(4),gtp1(5) &
@@ -205,6 +188,11 @@
               ,gtp1(6),gtp1(7),gtp1(8),gtp1(9),mout)
           endif
         endif !outgrb2
+
+        if(outdms.gt.0)then
+          if ( myrank .eq. (14-1) ) mout = mout / 100.0
+          call dmswrit_split(nx,my,lenc,kflag,mout,istat)
+        endif ! outdms .gt. 0
 
       endif
 !

@@ -614,9 +614,6 @@ contains
       lenc= nx*my
       ncnt= 0
 !
-      !for debug
-      !num=12
-      !whtlev(1:12)=(/100.,150.,200.,250.,300.,400.,500.,600.,700.,850.,925.,1000./)
       do 30 n=1,num
       do 10 k=1,lpout
 !
@@ -626,13 +623,13 @@ contains
       j=jlist1(jj)
       nxj=nxdef_2d(j)
       do 11 i=1,nxj
-       tmp(i,jj)= cldfc(i,jj,k)
+       tmp(i,jj)= cldfc(i,jj,k) * 100.0
    11 continue
       call unify_reduceintp(nx,my,my_max,tmp,glob)
 !
       call syslbl_w(lrec(k),idtg,itau,ggdef)
       call qmaxn3_w(glob,1,1,1,nx,my,1)
-      ptp0=(/0,6,32,3,100,-2,nint(plev(k)),-999,-999/)
+      ptp0=(/0,6,32,2,100,-2,nint(plev(k)),-999,-999/)
       call split2(nx,my,lenc,ncnt,glob,pout,ptp0,ptp1)
       go to 30
       endif
@@ -724,7 +721,8 @@ contains
         endif
         if(outgrb2==1.and.myrank==0)then
           ihdgo2 = ihdgo
-          call wrt_grb2_v2(itau,0,3,1,2,101,0,0,glob)
+          glob=glob*100.0
+          call wrt_grb2_v2(itau,0,3,1,1,101,0,0,glob)
         endif
         call qmaxn3_w(glob,1,1,1,nx,my,1)
         endif !itau .gt. domfc
@@ -751,11 +749,12 @@ contains
         call syslbl_w('b00010',idtg,itau,ggdef)
 !byl        if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
         if(outdms.gt.0)then
-        if(lwrite) call dmswrit(nx,my,lenc,kflag,glob,istat)
+          if(lwrite) call dmswrit(nx,my,lenc,kflag,glob,istat)
         endif
         if(outgrb2==1.and.myrank==0)then
           ihdgo2 = ihdgo
-          call wrt_grb2_v2(itau,0,3,0,2,103,0,0,glob)
+          glob=glob*100.0
+          call wrt_grb2_v2(itau,0,3,0,1,103,0,0,glob)
         endif
         call qmaxn3_w(glob,1,1,1,nx,my,1)
 
