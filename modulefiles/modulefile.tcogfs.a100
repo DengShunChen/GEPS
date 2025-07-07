@@ -23,7 +23,7 @@ module load cmake/3.21.4
 module unuse /data/common/gfs/modulefiles/x86_64
 
 # Add for grib2 output
-set G2_PATH "/package/x86_64/nvidia/g2lib-1.4.0"
+set G2_PATH "/package/x86_64/nvidia/g2lib-1.4.0_cwb"
 set PNG_PATH "/package/x86_64/libpng-1.6.37"
 set JASPER_PATH "/package/x86_64/nvidia/jasper-1.900.1"
 setenv G2_INC_PATH "${G2_PATH}/include"

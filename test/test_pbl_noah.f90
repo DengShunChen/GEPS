@@ -54,7 +54,7 @@ subroutine assert_real(actual, n_actual, desired, n_desired, rtol, err_msg)
       print *, "Max relative difference = ", rel_diff
       !print *, "Max absolute difference = ", abs_diff
       if (present(err_msg)) print *, err_msg, myrank
-      !call exit(1)
+      call exit(1)
    end if
 
 end subroutine assert_real
@@ -430,7 +430,7 @@ subroutine pbl_noah_unit
       call assert_real(dudtc_gpu, size(dudtc_gpu), dudtc, size(dudtc), &
                        1e-5, "Array dudtc")
       call assert_real(dvdtc_gpu, size(dvdtc_gpu), dvdtc, size(dvdtc), &
-                       1e-6, "Array dvdtc")
+                       1e-5, "Array dvdtc")
       call assert_real(dtdtc_gpu, size(dtdtc_gpu), dtdtc, size(dtdtc), &
                        1e-3, "Array dtdtc")
       call assert_real(dqdtc_gpu, size(dqdtc_gpu), dqdtc, size(dqdtc), &

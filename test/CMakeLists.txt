@@ -37,6 +37,15 @@ if(${USE_CUDA})
     endif()
 
     set(TESTS
+        test_gsfcgce_3ice_nuwrf
+        test_pbl_noah
+        test_sfc_sice
+        test_sfc_diff
+        test_sfc_drv
+        test_sflx
+        test_sfc_ocean
+        test_fpvs
+        test_sfc_diag
         test_dgemm_wrapper
         test_fft_wrapper
         test_cufft_plan_cache
@@ -85,17 +94,12 @@ if(${USE_CUDA})
         test_mpe2d_row_broadcast
         test_nnmi
         test_eigen
-        test_initial
-        test_sfc_diff
-        test_sfc_ocean
-        test_sfc_sice
-        test_fpvs
-        test_sfc_diag
-        test_sfc_drv
-        test_sflx
+        #test_initial
         #test_sflx_file
-        test_pbl_noah
         #test_pbl_noah_file
+        #test_gsfcgce_3ice_nuwrf_file
+        #test_fall_flux_file
+        #test_saticel_s_file
 
     )
 

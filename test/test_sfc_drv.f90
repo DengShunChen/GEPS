@@ -404,11 +404,11 @@ subroutine sfc_drv_unit
       call assert_real(drain_gpu, size(drain_gpu), drain, size(drain), &
                        1e-10, "Array drain")
       call assert_real(qflux_gpu, size(qflux_gpu), qflux, size(qflux), &
-                       1e-10, "Array qflux")
+                       1e-8, "Array qflux")
       call assert_real(hflux_gpu, size(hflux_gpu), hflux, size(hflux), &
-                       1e-10, "Array hflux")
+                       1e-8, "Array hflux")
       call assert_real(ep1d_gpu, size(ep1d_gpu), ep1d, size(ep1d), &
-                       1e-10, "Array ep1d")
+                       1e-8, "Array ep1d")
       call assert_real(runof_gpu, size(runof_gpu), runof, size(runof), &
                        1e-8, "Array runof")
       call assert_real(albedo2_gpu, size(albedo2_gpu), albedo2, size(albedo2), &

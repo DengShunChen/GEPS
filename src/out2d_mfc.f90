@@ -24,22 +24,23 @@
                           rld(nxp,my_max),sld(nxp,my_max),            &
            raincu1(nxp,my_max),rainlp1(nxp,my_max)
 !
-      real(kind=RTYPE) mfcout(nxp,my_max,num)
-!
       character*4 ggdef
       integer*8 idtg
       character*6 dmskey(num)
+!     --- local variable
+      real(kind=RTYPE) mfcout(nxp,my_max,num)
 
       integer,dimension(num):: ptp0 ,ptp1 ,ptp2 ,ptp3 ,ptp4 ,ptp5
 !
       real(kind=RTYPE) glob(nx,my),mout(nx,my)
 !
       integer   n,levz,lenc,lenc2,i,ia,kk,j,nxj,istat,jj,llts,k
-      real      tnshun,alaps,rdg,ttb,ttp,ttt,ttt1,ttt2,anlslp,apha
-      real      phi(nxp,lev,my_max),hld1(nxp,my_max),hld2(nxp,my_max)
+      real      tnshun
+      real(kind=RTYPE) alaps,rdg,ttb,ttp,ttt,ttt1,ttt2,anlslp,apha
+      real(kind=RTYPE) phi(nxp,lev,my_max),hld1(nxp,my_max),hld2(nxp,my_max)
 ! for due point temperature
-      real,parameter:: TdAlpha = 17.27 ,TdBeta = 237.7
-      real      TdGamma
+      real(kind=RTYPE),parameter:: TdAlpha = 17.27 ,TdBeta = 237.7
+      real(kind=RTYPE)      TdGamma
 !
       data dmskey/'b00621','b0062t','b02100','b02500','b02510', &
                   'b10200','b10210','b02171','b02181','b02150', &

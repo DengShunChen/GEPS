@@ -261,6 +261,11 @@ cat > ${GFSWRK}/namlsts << EOF
   ssst_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
  /
 
+ &gce_3ice
+  SL_sedi=false, sat_predict=true, new_saturation=true,
+  use_cpm=false, use_declination=false
+ /
+
 EOF
 
  if [ $CMAKE_BUILD = 1 ] ; then
