@@ -146,7 +146,7 @@ cat > ${GFSWRK}/namlsts << EOF
  &model_param
   nco=640,
   lev=72,
-  ncld=3,
+  ncld=7,
   octahedral=true,
   nout=9000,
   io_quilting=false,

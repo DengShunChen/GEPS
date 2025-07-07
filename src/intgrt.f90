@@ -1180,10 +1180,13 @@
                          !xb110>
                          !byl                      , rmr,smr,flash)
 #ifdef TIMCOMCPL
-                         , flash, tsflw, vvel, totallp,ustress,vstress,ssu,ssv)
+                         , flash, tsflw, vvel,totallp,ustress,vstress,ssu,ssv &
 #else
-                         , flash, tsflw, vvel, totallp)
+                         , flash, tsflw, vvel, totallp &
 #endif
+                         , SL_sedi, sat_predict, new_saturation &
+                         , use_cpm, use_declination)
+
 !xb110<
 !--------------------------------------------------------------------------------
 !
@@ -1351,31 +1354,9 @@
                             , onocos, poly, dpoly, vornow, divnow, nsizey)
              end if
           end if ! .not. two_loop
-!
-! update tg, dtsea/dt (W00100)
-!
-          if (ldailyFCTsst .OR. ldailyFCTicesndpt .OR. dailyClm_option .ge. 1) then
-             if (tau .ge. 24.) then
-                do jj = 1, jlistnum
-                   j = jlist1(jj)
-                   nxj = nxdef_2d(j)
-                   do ii = 1, nxj
-                      i = nxjstart(j) + ii - 1
-                      if (ocean(ii, jj)) then
-                         tseanew(ii, jj) = dta*dtseadt(ii, jj) + tseaold(ii, jj)
-!                  tseaold(ii,jj)=tseanow(ii,jj) + tfilt*(tseaold(ii,jj)     &
-!                                 -2.0*tseanow(ii,jj)+tseanew(ii,jj) )
-                         tseaold(ii, jj) = tseanew(ii, jj)
-                         tseanow(ii, jj) = tseanew(ii, jj)
 
-                         dtaup = mod(tau + 0.001, updatetg)
-                         if (dtaup .lt. dtx_tau) then
-                            tg(ii, jj) = tseanow(ii, jj)
-                         end if
-                      end if !end if(ocean)
-                   end do
-                end do
-             end if
+
+          if (ldailyFCTsst .OR. ldailyFCTicesndpt .OR. dailyClm_option .ge. 1) then
              CALL read_dailyFCT(idtg, tau, dt, tg, cice, sndepth, xlon, xlat, ocean)
           end if
 !

@@ -127,7 +127,7 @@ if(${TIMCOMCPL})
   add_definitions(-DTIMCOMCPL)
 endif()
 if(${USE_aeroclx})
-  add_definitions(-DReadaeroclx)
+  add_definitions(-DReadaeroclx -DLUT_aero)
 endif()
 
 # ##############################################################################

@@ -295,6 +295,7 @@ SRCS_f90  = \
   shr_kind_mod.f90 \
   sigful.f90 \
   siimpl.f90 \
+  sitocn.f90 \
   smth9.f90 \
   sortml.f90 \
   splin1.f90 \
