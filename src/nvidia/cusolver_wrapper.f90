@@ -38,12 +38,13 @@ subroutine DnDsyevd_async(jobz, uplo, n, A, lda, W, &
 
 end subroutine DnDsyevd_Async
 ! ============================================================
-subroutine DnDsyevj_async(jobz, uplo, n, A, lda, W, &
+subroutine DnDsyevj_async(handle, jobz, uplo, n, A, lda, W, &
                           devinfo, params, async_id)
    use openacc
    use cudafor
    use cusolverDN
    implicit none
+   type(cusolverDnHandle) :: handle
    integer :: jobz, uplo
    integer :: n, lda
    real(kind=8), dimension(lda, *) :: A
@@ -56,10 +57,8 @@ subroutine DnDsyevj_async(jobz, uplo, n, A, lda, W, &
    integer async_id
 
    integer(kind=cuda_stream_kind) :: stream
-   type(cusolverDnHandle) handle
    integer istat
 
-   CUSOLVERCHECK(cusolverDnCreate(handle))
    stream = acc_get_cuda_stream(async_id)
    CUSOLVERCHECK(cusolverDnSetStream(handle, stream))
 
