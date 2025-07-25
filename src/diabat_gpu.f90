@@ -36,10 +36,13 @@
                             itimestep, lrun_sitvdiff, ic_sit, &
                             !xb110>
 #ifdef TIMCOMCPL
-                            flash, tsflw, vvel, totallp, ustress, vstress, ssu, ssv)
+                            flash, tsflw, vvel, totallp, ustress, vstress, ssu, ssv, &
 #else
-                            flash, tsflw, vvel, totallp)
+                            flash, tsflw, vvel, totallp, &
 #endif
+                            SL_sedi, sat_predict, new_saturation, &
+                            use_cpm, use_declination)
+
 !xb110<
 !--------------------------------------------------------------------------------
 !#######################################################################
@@ -474,6 +477,8 @@
          real icem, ntnc(nxp, lev, 2) !1:ice, 2:liquid
          real ice00(nxp, lev, my_max)
          real qni
+! for GCE 3ice
+         logical SL_sedi, sat_predict, new_saturation, use_cpm, use_declination
 ! for updating low boundary condition
          integer ls(nxp, my_max)
          real sstc(nxp, my_max), z0ocn(nxp, my_max)
@@ -1411,7 +1416,7 @@
             !$acc&      satpsi, satdk, satdw, wltsmc, qtz, rsmtbl, rgltbl, hstbl, &
             !$acc&      snupx, lai_data, nroot_data) async(async_id)
             !$acc enter data copyin(tbpvs) async(async_id)
-            !$acc enter data copyin(land, e, eps, hflux, qflux, gwclim, tgclim, &
+            !$acc enter data copyin(land, e, eps, gwclim, tgclim, &
             !$acc&      ocean, ice, totalp, ss_adj, rs, sfalb, ipblmx, xkmx, ijdg, &
             !$acc&      xkmd, rld_adj, sigmaf, istyp, ivegtyp, slopetyp, &
             !$acc&      shdmax, shdmin, snoalb, sld_adj, asl, atl, xmu, sfemis) &
@@ -1457,7 +1462,7 @@
             !$acc&     satpsi, satdk, satdw, wltsmc, qtz, rsmtbl, rgltbl, hstbl, &
             !$acc&     snupx, lai_data, nroot_data) async(async_id)
             !$acc exit data delete(tbpvs) async(async_id)
-            !$acc exit data delete(land, e, eps, hflux, qflux, gwclim, tgclim, &
+            !$acc exit data delete(land, e, eps, gwclim, tgclim, &
             !$acc&     ocean, ice, totalp, ss_adj, rs, sfalb, ipblmx, xkmx, ijdg, &
             !$acc&     xkmd, rld_adj, sigmaf, istyp, ivegtyp, slopetyp, &
             !$acc&     shdmax, shdmin, snoalb, sld_adj, asl, atl, xmu, sfemis) &
@@ -2184,10 +2189,10 @@
 
             ! scale-aware shalcon
             if (nmshl .eq. 3) then
+               if (myrank .eq. 0) print *, "Not support this entry. nmshl=", nmshl
                do jj = 1, jlistnum
                   j = jlist1(jj)
                   nxj = nxdef_2d(j)
-                  if (myrank .eq. 0) print *, "Not support this entry. nmshl=", nmshl
                   call samfshalcnv(nxjp(j), nxp, lev, dta, del(1, 1, jj), prsl(1, 1, jj), psfc(1, jj), phil(1, 1, jj), &
                                    qtr(1, 1, jj), &
                                    qti(1, 1, jj), qtc(1, 1, jj), ttc(1, 1, jj), utc(1, 1, jj), vtc(1, 1, jj), &
@@ -2455,30 +2460,59 @@
                end do
             end do
 
-            do jj = 1, jlistnum
-               j = jlist1(jj)
-               nxj = nxdef_2d(j)
-               call mp_scheme &
-                  !  ---  inputs:
-                  (nmmiph, nxp, nxjp(j), lev, ncld, plt(1, 1, jj), ptop, &
-                   dsigma, phii(1, 1, jj), islimsk(1, jj), q0(1, 1, jj), kdt, tpi, me, dta, area(jj), jj, &
-                   itimestep, sgeo(1, jj), phi(1, 1, jj), rhc_mp(1, 1, jj), pk(1, 1, jj), &
-                   snr(1, jj), xlat(j), sdec, ivegtyp(1, jj), &
+!            do jj = 1, jlistnum
+!               j = jlist1(jj)
+!               nxj = nxdef_2d(j)
+!               call mp_scheme &
+!                  !  ---  inputs:
+!                  (nmmiph, nxp, nxjp(j), lev, ncld, plt(1, 1, jj), ptop, &
+!                   dsigma, phii(1, 1, jj), islimsk(1, jj), q0(1, 1, jj), kdt, tpi, me, dta, area(jj), jj, &
+!                   itimestep, sgeo(1, jj), phi(1, 1, jj), rhc_mp(1, 1, jj), pk(1, 1, jj), &
+!                   snr(1, jj), xlat(j), sdec, ivegtyp(1, jj), &
+!#ifdef Readaeroclx
+!                   aeroclx(1, 1, jj), naero, &
+!#endif
+!                   !  ---  inputs/outputs:
+!                   ttc(1, 1, jj), qt(1, 1, jj), clds(1, 1, jj), &
+!                   utc(1, 1, jj), vtc(1, 1, jj), vvel(1, 1, jj), &
+!                   pst(1, jj), &
+!                   !  ---  outputs:
+!                   ftp(1, 1, jj), ftp1(1, 1, jj), fqp(1, 1, jj), fqp1(1, 1, jj), &
+!                   rlsp(1, jj),  & !total precipitation(rain+ice+snow+graupel,may include cloud water)
+!                   rlspi(1, jj), & !ice precipitation
+!                   rlsps(1, jj), & !snow precipitation
+!                   rlspg(1, jj), & !graupel precipitation(include hail for GCE 4ICE)
+!                   sr(1, jj))
+!            end do
+            !if (itimestep .eq. 5) then
+            !   do jj = 1, jlistnum
+            !      do k = 1, lev
+            !         write(*,*) vvel(1:20, k, jj)
+            !      end do
+            !   end do
+            !end if
+            call mp_scheme_gpu &
+               !  ---  inputs:
+               (nmmiph, nxp, nxjp, lev, ncld, plt, ptop, &
+                dsigma, phii, islimsk, q0, kdt, tpi, me, dta, area, 1, &
+                itimestep, sgeo, phi, rhc_mp, pk, &
+                snr, xlat, sdec, ivegtyp, &
 #ifdef Readaeroclx
-                   aeroclx(1, 1, jj), naero, &
+                aeroclx, naero, &
 #endif
-                   !  ---  inputs/outputs:
-                   ttc(1, 1, jj), qt(1, 1, jj), clds(1, 1, jj), &
-                   utc(1, 1, jj), vtc(1, 1, jj), vvel(1, 1, jj), &
-                   pst(1, jj), &
-                   !  ---  outputs:
-                   ftp(1, 1, jj), ftp1(1, 1, jj), fqp(1, 1, jj), fqp1(1, 1, jj), &
-                   rlsp(1, jj),  & !total precipitation(rain+ice+snow+graupel,may include cloud water)
-                   rlspi(1, jj), & !ice precipitation
-                   rlsps(1, jj), & !snow precipitation
-                   rlspg(1, jj), & !graupel precipitation(include hail for GCE 4ICE)
-                   sr(1, jj))
-            end do
+                !  ---  inputs/outputs:
+                ttc, qt, clds, &
+                utc, vtc, vvel, &
+                pst, &
+                !  ---  outputs:
+                ftp, ftp1, fqp, fqp1, &
+                rlsp,  & !total precipitation(rain+ice+snow+graupel,may include cloud water)
+                rlspi, & !ice precipitation
+                rlsps, & !snow precipitation
+                rlspg, & !graupel precipitation(include hail for GCE 4ICE)
+                sr, &
+                SL_sedi, sat_predict, new_saturation, &
+                use_cpm, use_declination) ! flags for GCE 3ice
 !
             do jj = 1, jlistnum
                j = jlist1(jj)

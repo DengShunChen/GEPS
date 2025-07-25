@@ -96,10 +96,10 @@
       character*10 fulldtg,Wfulldtg
       character*255 filist
       character cdtg*12
-      character*80 pathname,logicname,truefile
+      character*255 pathname,logicname,truefile
       character*64 type_r,type_w,argument
       integer istat4,istat5,istat6,istat7,istat8
-
+      integer :: ios
       data pathname/'NWPETCGLB'/
       data logicname/'filist'/
 
@@ -124,6 +124,8 @@
                    skeb_vdof, skebnorm, skebfilt, &
                    ssst, ssst_seed, ssst_decort, ssst_lscale
       namelist /grb_conf/ grbmem,grbnumm
+      namelist /gce_3ice/ SL_sedi, sat_predict, new_saturation, &
+                          use_cpm, use_declination
 
 ! for ECHAM4 Tiedtke cumulus scheme
       call cuparam
@@ -170,9 +172,12 @@
       ! read stochastic_physics
       read (1,stochy_physics,end=122)
   122 continue
+      read (1,gce_3ice,end=124)
+  124 continue
       read (1,grb_conf,end=123)
   123 continue
       close(1)
+
 !
       open (unit=1,file=trim(namlsts),form='formatted')
 

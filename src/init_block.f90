@@ -162,6 +162,14 @@
 !     ntlnc=9   ! tracer index for liquid number concentration
 ! for using aerosol climatology
       naero = 1
+! for GCE 3ice
+      SL_sedi = .false.
+      sat_predict = .true.
+      new_saturation = .true.
+      use_cpm = .false.
+      use_declination = .false.
+
+
 !
 ! specify the default option for reduced grids
 ! numreduce : -99 for full grids, 1 to 4 proper for reduced grids

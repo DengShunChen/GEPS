@@ -160,6 +160,10 @@
 
     ! SKEB
     logical :: first_call
+    
+    !GCE 3ice
+    logical :: SL_sedi, sat_predict, new_saturation, use_cpm, use_declination
+
 
     !for output
     integer :: outgrb2    !output grib2 format

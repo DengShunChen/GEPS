@@ -16,6 +16,7 @@ etc/gfs.tauchk
 etc/namlsts_tco383
 etc/namlsts_tco383_*
 *.o*
+*.stats
 wrk_sample
 src/depend
 work_*

@@ -5,7 +5,9 @@
 !  ---  inputs:
            ( nmmiph ,myrank)
 !  ---  outputs: ( none )
-
+      use const,              only : SL_sedi, sat_predict, &
+                                     new_saturation, use_cpm, &
+                                     use_declination
 ! for WSM6
       use module_mp_wsm6,     only : wsm6init
 ! for Thompson
@@ -23,6 +25,10 @@
 #ifdef Readaeroclx
 ! for GOCART coupling
       use module_gocart_coupling, only : makelut_ccn_icn
+#ifdef USE_CUDA
+      use module_gocart_coupling_gpu, only : makelut_ccn_icn_gpu
+      use module_mp_gsfcgce_3ice_nuwrf_gpu, only: gce_table_copyin_gpu
+#endif
 #endif
 
       implicit none
@@ -74,11 +80,26 @@
         endif
 ! Goddard (GCE) 3ICE MP
         if ( nmmiph .eq. 15 ) then
-          if ( myrank .eq. 0 )                                         &
-             print *,'Goddard (GCE) 3ICE cloud microphysics initialized'
 #ifdef Readaeroclx
+#ifdef USE_CUDA
+          call makelut_ccn_icn_gpu
+#else
           call makelut_ccn_icn
 #endif
+#endif
+          if ( myrank .eq. 0 ) then
+#ifdef USE_CUDA
+       print *,'Goddard (GCE) 3ICE cloud microphysics initialized (GPU)'
+#else
+             print *,'Goddard (GCE) 3ICE cloud microphysics initialized'
+#endif
+             print *,'Flag settings:'
+             print *,'SL_sedi = ', SL_sedi
+             print *,'sat_predict = ', sat_predict 
+             print *,'new_saturation = ', new_saturation
+             print *,'use_cpm = ', use_cpm 
+             print *,'use_declination = ', use_declination
+          endif
         endif
 ! Goddard (GCE) 4ICE MP
         if ( nmmiph .eq. 16 ) then
@@ -105,7 +126,10 @@
              tt,qt,qa,ut,vt,vvel,pst,                                  &
 !  ---  outputs:
              re_cloud,re_ice,re_snow,re_rain,                          &
-             rlsp,rlspi,rlsps,rlspg,sr )
+             rlsp,rlspi,rlsps,rlspg,sr,                                &
+!  ---  flags:
+             SL_sedi, sat_predict, new_saturation,                     &
+             use_cpm, use_declination )
 
       use rank
       use radn,                only: ntcw,ntiw,ntrw,ntsw,ntgl,nthl,     &
@@ -249,6 +273,10 @@
               acphysc, acphyse, acphysd, acphyss, acphysm, acphysf,     &
               preci3d, precs3d, precg3d, precr3d, prech3d
 #endif
+      logical, intent(in) :: SL_sedi, sat_predict, new_saturation,      &
+                 use_cpm, use_declination
+      logical :: benchmark = .true.
+      integer :: jtest = 0
       convert_dry_q = .true.
       q_remove_cond = .false.
 !
@@ -1089,7 +1117,9 @@
                    refl_10cm, diagflag, do_radar_ref,                   &
                    preci3d, precs3d, precg3d, precr3d,                  &
 #endif
-                   rew3d, rer3d, rei3d, res3d, reg3d )
+                   rew3d, rer3d, rei3d, res3d, reg3d, &
+                   SL_sedi, sat_predict, new_saturation, use_cpm, &
+                   use_declination, benchmark )
 
           if ( nmgce3 .eq. 1 )                                          &
           call gsfcgce                                                  &

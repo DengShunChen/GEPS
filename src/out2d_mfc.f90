@@ -12,7 +12,7 @@
       use phygrid ,only: raincu3, rainlp3
       implicit  none
 
-      integer   nx,lev,my,my_max,itau,ntau,num
+      integer   nx,lev,my,my_max,itau,ntau,num,nc
       parameter (num=14)
 
       real      raintot(nxp,my_max),t2(nxp,my_max),u10(nxp,my_max),   &
@@ -24,35 +24,36 @@
                           rld(nxp,my_max),sld(nxp,my_max),            &
            raincu1(nxp,my_max),rainlp1(nxp,my_max)
 !
-      real(kind=RTYPE) mfcout(nxp,my_max,num)
-!
       character*4 ggdef
       integer*8 idtg
       character*6 dmskey(num)
+!     --- local variable
+      real(kind=RTYPE) mfcout(nxp,my_max,num)
 
       integer,dimension(num):: ptp0 ,ptp1 ,ptp2 ,ptp3 ,ptp4 ,ptp5
 !
       real(kind=RTYPE) glob(nx,my),mout(nx,my)
 !
       integer   n,levz,lenc,lenc2,i,ia,kk,j,nxj,istat,jj,llts,k
-      real      tnshun,alaps,rdg,ttb,ttp,ttt,ttt1,ttt2,anlslp,apha
-      real      phi(nxp,lev,my_max),hld1(nxp,my_max),hld2(nxp,my_max)
+      real      tnshun
+      real(kind=RTYPE) alaps,rdg,ttb,ttp,ttt,ttt1,ttt2,anlslp,apha
+      real(kind=RTYPE) phi(nxp,lev,my_max),hld1(nxp,my_max),hld2(nxp,my_max)
 ! for due point temperature
-      real,parameter:: TdAlpha = 17.27 ,TdBeta = 237.7
-      real      TdGamma
+      real(kind=RTYPE),parameter:: TdAlpha = 17.27 ,TdBeta = 237.7
+      real(kind=RTYPE)      TdGamma
 !
       data dmskey/'b00621','b0062t','b02100','b02500','b02510', &
                   'b10200','b10210','b02171','b02181','b02150', &
                   's003x0','s003u0','x00770','ssl010'/
 
-      integer:: gtp1(9)
+      integer:: gtp1(9),gtp0(9)
 !     grib code 0,1,2:variable   3:order  4:layer  5:above_land_height
 !                 1h  Tot                   T2M T2M  2M DW DW       
 !                 p   p  T2 sh2 rh2 u10 v10 max min DPT LW SW CC SLP
       data ptp0/  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0, 0,  0 /
       data ptp1/  1,  1,  0,  1,  1,  2,  2,  0,  0,  0, 5, 4, 6,  3 /
       data ptp2/  8, 49,  0,  0,  1,  2,  3,  4,  5,  6, 3, 7, 1,  1 /
-      data ptp3/  2,  1,  2,  6,  2,  2,  2,  2,  2,  2, 2, 2, 3,  2 /
+      data ptp3/  2,  1,  2,  6,  2,  2,  2,  2,  2,  2, 2, 2, 3,  1 /
       data ptp4/103,103,103,103,103,103,103,103,103,103, 1, 1,10,101 /
       data ptp5/  0,  0,  2,  2,  2, 10, 10,  2,  2,  2, 0, 0, 0,  0 /
 
@@ -89,23 +90,10 @@
           mfcout(i,jj,10)= ( TdBeta * TdGamma / ( TdAlpha - TdGamma ) ) + 273.15
           mfcout(i,jj,11)=rld (i,jj)
           mfcout(i,jj,12)=sld (i,jj)
-          mfcout(i,jj,13)=ctot(i,jj) ! total cloud cover
+          mfcout(i,jj,13)=ctot(i,jj) * 100.0 ! total cloud cover
         enddo
       enddo
 
-     !mfcout(:,:,1)=rain1(:,:)
-     !mfcout(:,:,2)=raintot(:,:)
-     !mfcout(:,:,3)=t2(:,:)
-     !mfcout(:,:,4)=q2(:,:)
-     !mfcout(:,:,5)=rh2(:,:) * 100.0
-     !mfcout(:,:,6)=u10(:,:)
-     !mfcout(:,:,7)=v10(:,:)
-     !mfcout(:,:,8)=tmax(:,:)
-     !mfcout(:,:,9)=tmin(:,:)
-     !mfcout(:,:,10)=td(:,:)
-     !mfcout(:,:,11)=rld(:,:)
-     !mfcout(:,:,12)=sld(:,:)
-     !mfcout(:,:,13)=ctot(:,:)
 !
 !  hydrostatic equation
 !
@@ -164,36 +152,33 @@
             anlslp = (pt(i,jj)+ptop)*exp(ttt*(1.0-0.5*apha*ttt+0.333333*  &
                      apha*ttt*apha*ttt) )
           endif
-          mfcout(i,jj,14) = anlslp
+          mfcout(i,jj,14) = anlslp * 100.0  !hPa to Pa
         enddo
       enddo
 !
 ! Total Precp.
 !byl      call mpe2d_unify(glob,raintot)
-
+      nc=0
       do n=1,num
         call syslbl_w (dmskey(n),idtg,ntau,ggdef)
         call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),glob)
-        !call qmaxn3_w (glob,1,1,1,nx,my,1)
-        if ( myrank .eq. n-1 ) then
-          mout=glob
-          ihdgo2=ihdgo
-          gtp1=(/ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,ptp5(n),-999,-999/)
+        call qmaxn3_w (glob,1,1,1,nx,my,1)
+!        if ( myrank .eq. n-1 ) then
+!          mout=glob
+!          ihdgo2=ihdgo
+          gtp0=(/ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,ptp5(n),-999,-999/)
           if(n==1)then
-             gtp1(8:9)=(/1,1/) !1hr precip
+             gtp0(8:9)=(/1,1/) !1hr precip
           else if(n==8)then
-             gtp1(8:9)=(/2,1/) !MaxT2m
+             gtp0(8:9)=(/2,1/) !MaxT2m
           else if(n==9)then
-             gtp1(8:9)=(/3,1/) !MinT2m
+             gtp0(8:9)=(/3,1/) !MinT2m
           endif
-        endif
+!        endif
+          call split2(nx,my,lenc,nc,glob,mout,gtp0,gtp1)
       enddo
 !
-      if (myrank .lt. num ) then
-
-        if(outdms.gt.0)then
-             call dmswrit_split(nx,my,lenc,kflag,mout,istat)
-        endif ! outdms .gt. 0
+      if (myrank .lt. nc ) then
 
         if(outgrb2 == 1 )then
           if(gtp1(8)==-999)then
@@ -204,6 +189,11 @@
               ,gtp1(6),gtp1(7),gtp1(8),gtp1(9),mout)
           endif
         endif !outgrb2
+
+        if(outdms.gt.0)then
+          if ( myrank .eq. (14-1) ) mout = mout / 100.0
+          call dmswrit_split(nx,my,lenc,kflag,mout,istat)
+        endif ! outdms .gt. 0
 
       endif
 !

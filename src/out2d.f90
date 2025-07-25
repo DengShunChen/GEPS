@@ -775,51 +775,80 @@
 ! ctot_total cloud fraction
       if(label(kk).eq.'x00770') then
       if( itau==0 .or. itau .gt. nint(domfc) )then
-      call unify_reduceintp(nx,my,my_max,wk_xy(1,1,6),glob)
+      do  jj=1,jlistnum
+         j=jlist1(jj)
+       nxj=nxdef_2d(j)
+      do  i=1,nxj
+        globp(i,jj)=wk_xy(i,jj,6) * 100.0
+      enddo
+      enddo
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl_w ('x00770',idtg,itau,ggdef)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
-      ptp0=(/0,6,1,3,10,0,0,-999,-999/)
+      ptp0=(/0,6,1,2,10,0,0,-999,-999/)
       call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
       endif !domfc
       go to 30
       endif
 ! chig_high cloud fraction
       if(label(kk).eq.'x00760') then
-      call unify_reduceintp(nx,my,my_max,wk_xy(1,1,7),glob)
+      do  jj=1,jlistnum
+         j=jlist1(jj)
+       nxj=nxdef_2d(j)
+      do  i=1,nxj
+        globp(i,jj)=wk_xy(i,jj,7) * 100.0
+      enddo
+      enddo
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl_w ('x00760',idtg,itau,ggdef)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
-      ptp0=(/0,6,5,3,10,0,0,-999,-999/)
+      ptp0=(/0,6,5,2,10,0,0,-999,-999/)
       call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
       go to 30
       endif
 ! cmid_middle cloud fraction
       if(label(kk).eq.'x00750') then
-      call unify_reduceintp(nx,my,my_max,wk_xy(1,1,8),glob)
+      do  jj=1,jlistnum
+         j=jlist1(jj)
+       nxj=nxdef_2d(j)
+      do  i=1,nxj
+        globp(i,jj)=wk_xy(i,jj,8) * 100.0
+      enddo
+      enddo
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl_w ('x00750',idtg,itau,ggdef)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
-      ptp0=(/0,6,4,3,10,0,0,-999,-999/)
+      ptp0=(/0,6,4,2,10,0,0,-999,-999/)
       call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
       go to 30
       endif
 ! clow_low cloud fraction
       if(label(kk).eq.'x00740') then
-      call unify_reduceintp(nx,my,my_max,wk_xy(1,1,9),glob)
+      do  jj=1,jlistnum
+         j=jlist1(jj)
+       nxj=nxdef_2d(j)
+      do  i=1,nxj
+        globp(i,jj)=wk_xy(i,jj,9) * 100.0
+      enddo
+      enddo
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl_w ('x00740',idtg,itau,ggdef)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
-      ptp0=(/0,6,3,3,10,0,0,-999,-999/)
+      ptp0=(/0,6,3,2,10,0,0,-999,-999/)
       call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
       go to 30
       endif
 !zonal mean cloudiness of Y-Z cross section 0-1 
       if(label(kk).eq.'x00730') then
       call mpe_unify(acld,lev,my,2,mpe_double)
+      !use 'mout' could effect another output
       do jfdb=1,my
       do kfdb=1,lev
-       mout(kfdb,jfdb)=acld(kfdb,jfdb)*100.
+       glob(kfdb,jfdb)=acld(kfdb,jfdb)*100.
       end do
       end do
       call syslbl_w ('x00730',idtg,itau,ggdef)
-      if(outdms.gt.0) call dmswrit(lev,my,lenc2,kflag,mout,istat)
+      if(outdms.gt.0) call dmswrit(lev,my,lenc2,kflag,glob,istat)
       !if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,6,22,2,10,0,0.,glob)
       go to 30
       endif

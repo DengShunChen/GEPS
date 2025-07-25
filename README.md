@@ -73,3 +73,9 @@ The `pjsub` command in the following block is an example to request whole resour
 pjsub -L "vnode=1,vnode-core=32,ru=rscunit_pg01,rg=gpu-rd-large,gpu=8" --sparam wait-time=100 -g sum --interact
 bash qa/L0_test_subroutine/test.sh
 ```
+
+### Guidance for GPU porting ###
+
+```sh
+https://www.notion.so/OpenACC-porting-TCo-GPU-1826f2851fb180e894aec45be810557a?pvs=4
+```

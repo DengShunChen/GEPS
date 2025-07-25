@@ -1274,11 +1274,12 @@
                       !xb110>
                       !byl                      , rmr,smr,flash)
 #ifdef TIMCOMCPL
-                      , flash, tsflw, vvel, totallp,ustress,vstress,ssu,ssv)
+                      , flash, tsflw, vvel, totallp,ustress,vstress,ssu,ssv &
 #else
-                      , flash, tsflw, vvel, totallp)
+                      , flash, tsflw, vvel, totallp &
 #endif
-                      
+                      , SL_sedi, sat_predict, new_saturation, use_cpm, use_declination)
+
       !xb110<
       !$acc update device(plt, pk2, &
       !$acc& ptp, up, vp, ttp, &
