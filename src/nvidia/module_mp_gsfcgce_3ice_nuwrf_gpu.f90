@@ -1244,7 +1244,7 @@ CONTAINS
       t00 = 238.16
 
       ! heat capacity and latent heat (in CGS) :
-      rw = 4.615e+6     !specific heat capacity of vapor
+      rw = 4.615e+6     !gas constant of vapor
       cw = 4.187e+7     !specific heat capacity of liquid water
       ci = 2.093e+7     !specific heat capacity of ice
       cp = 1.004e7      !specific heat capacity of dry air
@@ -2665,22 +2665,22 @@ CONTAINS
 
                   if (tairr .lt. t0) then
 
-                     if (sat_predict) then
+!                     if (sat_predict) then
                         rn1s = 1.e-3
                         bnd1 = 1.e-4
                         esi = exp(0.025*tairc)
                         psaut = r2is*max(rn1s*esi*(qiwrfr &
                                 - bnd1*fv0r*fv0r), 0.0)
-                     else !sat_predict
+!                     else !sat_predict
    !             y1(i,j)=rdt*(qi(i,j)-r1r*exp(beta*tairc(i,j)))
    !             psaut(i,j)=max(y1(i,j),0.0)
-                        rn1s = 1.e-3
-                        bnd1 = 6.e-4
-                        esi = exp(.025*tairc)
-                        if (improve .gt. 2) esi = 0.15
-                        psaut = r2is*max(rn1s*esi*(qiwrfr &
-                                - bnd1*fv0r*fv0r), 0.0)
-                     end if !sat_predict
+!                        rn1s = 1.e-3
+!                        bnd1 = 6.e-4
+!                        esi = exp(.025*tairc)
+!                        if (improve .gt. 2) esi = 0.15
+!                        psaut = r2is*max(rn1s*esi*(qiwrfr &
+!                                - bnd1*fv0r*fv0r), 0.0)
+!                     end if !sat_predict
                      esi = 1.0
                      dmicrons = (r00r*qswrfr &
                                 /roqs/cpi/(tns*ftns))**.25*1.e4
@@ -5524,17 +5524,17 @@ CONTAINS
                      end if
 
                      ! shape parameter (ice aspect ratio) :
-!            adagr = inhgr**thrd
+                     adagr = inhgr**thrd
 ! >>> reduce upper-level vti :
-                     if (tc .ge. -40.) then
-                        adagr = inhgr**thrd
-                     else
-                        if (sat_predict) then
-                           adagr = inhgr**thrd
-                        else !sat_predict
-                           adagr = inhgr**0.9
-                        end if !sat_predict
-                     end if
+!                     if (tc .ge. -40.) then
+!                        adagr = inhgr**thrd
+!                     else
+!                        if (sat_predict) then
+!                           adagr = inhgr**thrd
+!                        else !sat_predict
+!                           adagr = inhgr**0.9
+!                        end if !sat_predict
+!                     end if
 ! <<<
                      ltk = log(tz)
                      ltk2 = ltk*ltk

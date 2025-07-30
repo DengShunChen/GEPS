@@ -2604,20 +2604,20 @@ CONTAINS
 
                if (tair(i, j) .lt. t0) then
 
-                  if (sat_predict) then
+!                  if (sat_predict) then
                      rn1s = 1.e-3
                      bnd1 = 1.e-4
                      esi(i, j) = exp(0.025*tairc(i, j))
                      psaut(i, j) = r2is*max(rn1s*esi(i, j)*(qi(i, j) - bnd1*fv0*fv0), 0.0)
-                  else !sat_predict
+!                  else !sat_predict
 !             y1(i,j)=rdt*(qi(i,j)-r1r*exp(beta*tairc(i,j)))
 !             psaut(i,j)=max(y1(i,j),0.0)
-                     rn1s = 1.e-3
-                     bnd1 = 6.e-4
-                     esi(i, j) = exp(.025*tairc(i, j))
-                     if (improve .gt. 2) esi(i, j) = 0.15
-                     psaut(i, j) = r2is*max(rn1s*esi(i, j)*(qi(i, j) - bnd1*fv0*fv0), 0.0)
-                  end if !sat_predict
+!                     rn1s = 1.e-3
+!                     bnd1 = 6.e-4
+!                     esi(i, j) = exp(.025*tairc(i, j))
+!                     if (improve .gt. 2) esi(i, j) = 0.15
+!                     psaut(i, j) = r2is*max(rn1s*esi(i, j)*(qi(i, j) - bnd1*fv0*fv0), 0.0)
+!                  end if !sat_predict
                   esi(i, j) = 1.0
                   dmicrons = (r00*qs(i, j)/roqs/cpi/(tns*ftns(i, j)))**.25*1.e4
                   if (improve .gt. 2) esi(i, j) = min(1., (dmicrons/1500.)**4.) ! f(dmicrons)
@@ -5119,17 +5119,17 @@ CONTAINS
                      end if
 
                      ! shape parameter (ice aspect ratio) :
-!            adagr = inhgr**thrd
+                     adagr = inhgr**thrd
 ! >>> reduce upper-level vti :
-                     if (tc .ge. -40.) then
-                        adagr = inhgr**thrd
-                     else
-                        if (sat_predict) then
-                           adagr = inhgr**thrd
-                        else !sat_predict
-                           adagr = inhgr**0.9
-                        end if !sat_predict
-                     end if
+!                     if (tc .ge. -40.) then
+!                        adagr = inhgr**thrd
+!                     else
+!                        if (sat_predict) then
+!                           adagr = inhgr**thrd
+!                        else !sat_predict
+!                           adagr = inhgr**0.9
+!                        end if !sat_predict
+!                     end if
 ! <<<
                      ltk = log(tz)
                      ltk2 = ltk*ltk
