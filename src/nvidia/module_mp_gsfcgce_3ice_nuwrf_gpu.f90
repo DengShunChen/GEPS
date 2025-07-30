@@ -2007,7 +2007,10 @@ CONTAINS
 
       integer, parameter :: inflag = 1
       ! 1 : default (Meyers et al. 1992)
-      ! 2 : WRF GOCART mass2icn (DeMotto et al. 2011)
+      ! 2 : WRF GOCART mass2icn (DeMotto et al. 2010)
+      ! 3 : Hong et al. 2004
+      ! 4 : Cooper curve (Cooper 1986 ; Chern et al. 2016)
+      ! 5 : Fletcher 1962
 
       ! calculate allowable ice supersautration :
       real, intent(in) :: xlat(my_max)
@@ -3474,16 +3477,25 @@ CONTAINS
                      abi = 1.+xls**2.*qsi/cpm1/(4.61495E2*tairr**2.)  ! abi=1+dqidT*(Ls/Cp)
 
                      if (qvwrfr .gt. qsi .and. tairr .lt. t0) then
-                        if (inflag .eq. 1) then
+                        if (inflag .eq. 1) then       ! Meyers et al. 1992 (m^-3)
                            ssi = qvwrfr/qsi - 1.
-                           nice = 1.e3*exp(1.296E+1*ssi - 6.39E-1)  ! Meyers et al. 1992 (m^-3)
+                           nice = 1.e3*exp(1.296E+1*ssi - 6.39E-1)  ! IN (convert from L^-1 to m^-3)
       #ifdef Readaeroclx
-                        elseif (inflag .eq. 2) then
-                           p_mb = p0r1*10.0*1.e-3                       !pressure (hPa, equal to mbar)
+                        elseif (inflag .eq. 2) then   ! GOCART mass2icn
+                           p_mb = p0r1*10.0*1.e-3                       ! pressure (hPa, equal to mbar)
                            call mass2icn_gpu(p_mb, tairr, &
                               aerog(1, i, k, j), nice, nlut, lut_in_025)
-                           nice = nice*1.e+3                            !IN (convert from L^-1 to m^-3)
+                           nice = nice*1.e+3                            ! IN (convert from L^-1 to m^-3)
+!                           nice = min(nice, rhoair*qiwrfr/4.71E-10)     ! cap IN to the amount corresponding to rhoi=900, Ri=50
+!                           nice = min(nice, rhoair*qiwrfr/3.77E-9)      ! cap IN to the amount corresponding to rhoi=900, Ri=100
       #endif
+                        elseif (inflag .eq. 3) then  ! Hong et al. 2004
+                           nice = 5.38e+7*exp(0.75*log(qiwrfr*rhoair))   ! IN (m^-3)
+                        elseif (inflag .eq. 4) then  ! Cooper curve ; Chern et al. 2016
+                           nice = 5.e-3*exp(0.304*abs(max(tairc, -40.0)))*1.e+3   ! IN (m^-3)
+                           nice = min(nice, rhoair*qiwrfr/3.77e-9)      ! cap IN to the amount corresponding to rhoi=900, Ri=100
+                        elseif (inflag .eq. 5) then  ! Fletcher 1962
+                           nice = min(cn0*exp(beta*tairc), 1.0)*1.e+3
                         else
                            stop 'inflag error!!!'
                         end if
