@@ -5514,7 +5514,12 @@ CONTAINS
                         rhoi = 900.*exp(-3.*max(qvz - qsi - 5.e-5, 0.)/inhgr)
                      else
                         ! Pokrifka et al. 2023, equation 18
-                        inhgr = 3.          !inherent growth ratio (FIG. 16)
+!                        inhgr = 3.          !inherent growth ratio (FIG. 16)
+                        if ( tc. ge. -50. ) then  !-50<=Tc<-40
+                           inhgr = 3.
+                        else                      !-65<=Tc<-50
+                           inhgr = 2.
+                        endif
                         ssi = qvz/qsi - 1.
                         if (ssi .gt. 0.267) then
                            rhoi = -1027.456*ssi + 1185.834
@@ -5556,19 +5561,25 @@ CONTAINS
                              -5.6243169E-4*lqi*lroi
                      viroi = min(1., viroi)
 
+                     ! "NO" divide between land and ocean :
+                     vti = exp(259.25629 - 0.26367743*lqi - 4.184759E-3*lqi2 &
+                           - 91.567622*ltk + 8.6164869*ltk2) &
+                           /1.e+6*vishp*viroi*(1.0837/rhoz)**0.35
+
                      ! the divide between land and ocean :
-                     if (xland .eq. 1.) then   ! land
-                        vti = exp(265.16805 - 0.28802545*lqi - 3.754874E-3*lqi2 &
-                                  - 93.843132*ltk + 8.8315122*ltk2) &
-                              /1.e+6*vishp*viroi*(1.0837/rhoz)**0.35
-                     else                        ! ocean
-                        vti = exp(252.86312 - 0.23844613*lqi - 4.6185936E-3*lqi2 &
-                                  - 89.119066*ltk + 8.3851678*ltk2) &
-                              /1.e+6*vishp*viroi*(1.0837/rhoz)**0.35
-                     end if
+!                     if (xland .eq. 1.) then   ! land
+!                        vti = exp(265.16805 - 0.28802545*lqi - 3.754874E-3*lqi2 &
+!                                  - 93.843132*ltk + 8.8315122*ltk2) &
+!                              /1.e+6*vishp*viroi*(1.0837/rhoz)**0.35
+!                     else                        ! ocean
+!                        vti = exp(252.86312 - 0.23844613*lqi - 4.6185936E-3*lqi2 &
+!                                  - 89.119066*ltk + 8.3851678*ltk2) &
+!                              /1.e+6*vishp*viroi*(1.0837/rhoz)**0.35
+!                     end if
                   end if
 
-                  vti = min(vimax, max(vimin, vti))
+!                  vti = min(vimax, max(vimin, vti))
+                  vti = max(vimin, vti)   ! remove upper limit of vti
                else
                   vti = vimin
                end if  !end of if qiz
