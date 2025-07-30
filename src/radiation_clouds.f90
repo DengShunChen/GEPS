@@ -3371,6 +3371,20 @@
                ( IX, NLAY, plyr, clwf, rhly, qstl,                      &
                  lmfshal, lmfdeep2, cldcov )
 
+      do k = 1, NLAY
+        do i = 1, IX
+          ! impose minimum cloudiness if substantial liquid exists
+          tem1 = clw(i,k,ntcw) + clw(i,k,ntrw)
+          if ( tem1 .ge. 1.e-8 ) then
+            cldcov(i,k) = max(0.05,cldcov(i,k))
+          endif
+          ! saturation cloudiness
+          if ( rhly(i,k).gt.0.99 .and. tlyr(i,k).gt.288.16 ) then
+            cldcov(i,k) = 1.0
+          endif
+        enddo
+      enddo
+
 !  ---  find top pressure for each cloud domain for given latitude
 !       ptopc(k,i): top presure of each cld domain (k=1-4 are sfc,L,m,h;
 !  ---  i=1,2 are low-lat (<45 degree) and pole regions)
