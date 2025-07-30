@@ -3427,7 +3427,8 @@ CONTAINS
                                    + 3.75543E-4*lqi2 - 54.560357*ltk &
                                    + 5.1248879*ltk2)
                      else
-                        mvdi = exp(155.33396 - 0.25772005*lqi &
+!                        mvdi = exp(155.33396 - 0.25772005*lqi &
+                        mvdi = exp(155.03396 - 0.25772005*lqi &   !decrease diameter
                                    + 3.75543E-4*lqi2 - 54.560357*ltk &
                                    + 5.1248879*ltk2)
                      end if
@@ -4451,7 +4452,8 @@ CONTAINS
                                 - 57.057846*ltk + 5.3668153*ltk2)/10.
                   else
                      ! over ocean
-                     efdi = exp(161.92213 - 0.26232591*lqi + 4.3393883E-4*lqi2 &
+!                     efdi = exp(161.92213 - 0.26232591*lqi + 4.3393883E-4*lqi2 &
+                     efdi = exp(161.62213 - 0.26232591*lqi + 4.3393883E-4*lqi2 &   ! decrease diameter
                                 - 57.057846*ltk + 5.3668153*ltk2)/10.
                   end if
                   refi(i, k, j) = efdi/2.
