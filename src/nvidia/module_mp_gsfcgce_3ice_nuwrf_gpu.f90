@@ -3591,12 +3591,13 @@ CONTAINS
                                       + 1.3178721*lqc + 1.1741987*ltk2 &
                                       + 2.6110916E-3*lqc2 - 0.26646396*ltk*lqc)
                         else
-                           mvdc = exp(173.57305 - 64.370929*ltk &
+!                           mvdc = exp(173.57305 - 64.370929*ltk &
+                           mvdc = exp(173.57305 - 64.370929*ltk &   ! decrease diameter
                                       + 0.36833626*lqc + 6.1389254*ltk2 &
                                       + 5.5915321E-3*lqc2 - 0.12488698*ltk*lqc)
                         end if
-                        mvrc = max(5.e-7, min(5.e-5, mvdc/2.e+6))             ! diameter of cloud water
-                        ncloud = 3.*qlwrfr*rhoair/(4.*cpi*1000.*mvrc**3.)  ! concentration of cloud water
+                        mvrc = max(5.e-7, min(5.e-5, mvdc/2.e+6))          ! volume-weighted mean radius of cloud water (m)
+                        ncloud = 3.*qlwrfr*rhoair/(4.*cpi*1000.*mvrc**3.)  ! number concentration of cloud water (m^-3)
                         ncloud = min(1.e+9, max(0.1, ncloud))
                         tauc = 1./(4.*cpi*dv1*ncloud*mvrc)                  ! tauc=1/(4*pi*Dv*Nc*rc)
                      else
@@ -3617,7 +3618,7 @@ CONTAINS
                                       + 3.75543E-4*lqi2 - 54.560357*ltk &
                                       + 5.1248879*ltk2)
                         end if
-                        mvri = min(5.e-4, max(3.e-6, mvdi/2.e+7))
+                        mvri = min(5.e-4, max(3.e-6, mvdi/2.e+7))   ! volume-weighted mean radius of cloud ice (m)
                         tairc = tairr - t0
                         if (tairc .ge. -40.0) then
                            hid = max(min(nint(abs(tairc)/0.25), 120), 0)
@@ -3634,7 +3635,7 @@ CONTAINS
                            end if
                         end if
                         rhoi = min(max(rhoi, 50.), 900.)
-                        nice = 3.*qiwrfr*rhoair/(4.*cpi*rhoi*mvri**3.)
+                        nice = 3.*qiwrfr*rhoair/(4.*cpi*rhoi*mvri**3.)  ! number concentration of cloud ice (m^-3)
                         nice = min(1.e+7, max(0.1, nice))
                         taui = 1./(4.*cpi*dv1*nice*mvri)                    ! taui=1/(4*pi*Dv*Ni*ri)
                      else
@@ -3663,11 +3664,11 @@ CONTAINS
                         lzr = log((afar + 3.)/efdr*1.e+6)
                         tnr = log(6.*qrwrfr*rhoair/cpi/1.e+3) & ! slope parameter for rain
                               + (4.+afar)*lzr - log_gamma(afar + 4.)
-                        avr = exp(7.6004532 - 0.7990953*ltk & ! coefficient ... for rain (?)
+                        avr = exp(7.6004532 - 0.7990953*ltk &
                                   + 1.0281818*lqr - 0.16595505*lqr2 &
                                   + 1.110037E-2*lqr*lqr2 &
                                   - 2.0925743E-4*lqr2*lqr2)
-                        bvr = max(0.5, min(2., 1.2218728 - 0.1281004*ltk & ! exponent ... for rain (?)
+                        bvr = max(0.5, min(2., 1.2218728 - 0.1281004*ltk &
                                            + 2.6088596E-2*lqr - 7.4467639E-3*lqr2 &
                                            + 7.7592532E-4*lqr*lqr2 &
                                            - 1.7056075E-5*lqr2*lqr2))
@@ -4746,7 +4747,8 @@ CONTAINS
                         mdc5 = 2.6110916E-3
                         mdc6 = -0.26646396
                      else
-                        mdc1 = 173.57305
+!                        mdc1 = 173.57305
+                        mdc1 = 173.57305   ! decrease diameter
                         mdc2 = -64.370929
                         mdc3 = 0.36833626
                         mdc4 = 6.1389254
