@@ -6315,6 +6315,9 @@ CONTAINS
                esw_mks_gpu = a0 + DT*(a1 + DT*(a2 + DT*(a3 + DT*(a4 + DT*(a5 + &
                                            DT*(a6 + DT*(a7 + a8*DT)))))))
                esw_mks_gpu = esw_mks_gpu*100.  !convert to Pa
+
+               ! to be closer to function fpvs :
+               if ( DT.gt.-5.0 ) esw_mks_gpu = esw_mks_gpu*max(1.0-(DT+5.0)*0.0025/35.0,0.9975)
 !
 !  Goff-Gratch equation (Goff and Gratch 1945)
 !       esw_mks = c610 * exp( c172 - c409 / (tair - c358) )
