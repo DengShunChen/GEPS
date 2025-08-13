@@ -3042,7 +3042,8 @@ CONTAINS
    !********   HANDLING THE NEGATIVE RAIN WATER (QR)    *******************
    !********   HANDLING THE NEGATIVE SNOW (QS)          *******************
                   if (use_cpm) then
-                     cpm = cp + cvap*qvwrfr &
+                     cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
+                           + cvap*qvwrfr &
                            + cliq*(qlwrfr + qrwrfr) &
                            + cice*(qiwrfr + qswrfr + qgwrfr)
                      hlv = alv - (cliq - cvap)*(tairr - t0)
@@ -3139,7 +3140,8 @@ CONTAINS
                                                                      + qgacr))
                      pgmlt = r2ig*min(qgwrfr, max(dd1, 0.0))
                      if (use_cpm) then
-                        cpm = cp + cvap*qvwrfr &
+                        cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
+                              + cvap*qvwrfr &
                               + cliq*(qlwrfr + qrwrfr) &
                               + cice*(qiwrfr + qswrfr + qgwrfr)
                         hlv = alv - (cliq - cvap)*(tairr - t0)
@@ -3316,7 +3318,8 @@ CONTAINS
                   end if  !y1
 
                   if (use_cpm) then
-                     cpm = cp + cvap*qvwrfr &
+                     cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
+                           + cvap*qvwrfr &
                            + cliq*(qlwrfr + qrwrfr) &
                            + cice*(qiwrfr + qswrfr + qgwrfr)
                      hlv = alv - (cliq - cvap)*(tairr - t0)
@@ -3387,14 +3390,15 @@ CONTAINS
                      qswrfr = qswrf(i, k, j)
                      qgwrfr = qgwrf(i, k, j)
                      if (use_cpm) then
-                        cpm = cp + cvap*qvwrfr &
+                        cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
+                              + cvap*qvwrfr &
                               + cliq*(qlwrfr + qrwrfr) &
                               + cice*(qiwrfr + qswrfr + qgwrfr)      ! specific heat capacity (in CGS)
                         cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
                         hlv = alv - (cliq - cvap)*(tairr - t0)    ! latent heat of vaporization (in CGS)
                         xlv = hlv*1.e-4                           ! latent heat of vaporization (in MKS)
                      else
-                        cpm1 = 1005.46*(1.+0.887*qvwrfr)         ! specific heat capacity (in MKS)
+                        cpm1 = cp*1.e-4*(1. + 0.887*qvwrfr)       ! specific heat capacity (in MKS)
                         xlv = 3.1484E6 - 2370.*tairr           ! latent heat of vaporization (in MKS)
                      end if
                      if (new_saturation) then
@@ -3450,7 +3454,8 @@ CONTAINS
                      ! pint : cloud ice initialization
                      ! -------------
                      if (use_cpm) then
-                        cpm = cp + cvap*qvwrfr &
+                        cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
+                              + cvap*qvwrfr &
                               + cliq*(qlwrfr + qrwrfr) &
                               + cice*(qiwrfr + qswrfr + qgwrfr)      ! specific heat capacity (in CGS)
                         cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
@@ -3459,7 +3464,7 @@ CONTAINS
                         hls = hlv + hlf                           ! latent heat of sublimation (in CGS)
                         xls = hls*1.e-4                           ! latent heat of sublimation (in MKS)
                      else
-                        cpm1 = 1005.46*(1.+0.887*qvwrfr)         ! specific heat capacity (in MKS)
+                        cpm1 = cp*1.e-4*(1. + 0.887*qvwrfr)       ! specific heat capacity (in MKS)
                         xls = 3.15E6 - 2370.*tairr + 0.3337E6    ! latent heat of sublimation  (in MKS)
                      endif
                      if (new_saturation) then
@@ -3556,7 +3561,8 @@ CONTAINS
                      qswrfr = qswrf(i, k, j)
                      qgwrfr = qgwrf(i, k, j)
                      if (use_cpm) then
-                        cpm = cp + cvap*qvwrfr &
+                        cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
+                              + cvap*qvwrfr &
                               + cliq*(qlwrfr + qrwrfr) &
                               + cice*(qiwrfr + qswrfr + qgwrfr)      ! specific heat capacity (in CGS)
                         cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
@@ -3567,8 +3573,8 @@ CONTAINS
                         hls = hlv + hlf                           ! latent heat of sublimation (in CGS)
                         xls = hls*1.e-4                           ! latent heat of sublimation (in MKS)
                      else
-                        cpm1 = 1005.46*(1.+0.887*qvwrfr)        ! specific heat capacity (in MKS)
-                        cpm = 1.00546e+7*(1.+0.887*qvwrfr)     ! specific heat capacity (in CGS)
+                        cpm = cp*(1. + 0.887*qvwrfr)     ! specific heat capacity (in CGS)
+                        cpm1 = cpm*1.e-4                 ! specific heat capacity (in MKS)
                         xlv = 3.1484E6 - 2370.*tairr          ! latent heat of vaporization (in MKS)
                         xls = 3.15E6 - 2370.*tairr + 0.3337E6   ! latent heat of sublimation  (in MKS)
                         xlf = alf*1.e-4                         ! latent heat of fusion (in MKS)
@@ -3873,7 +3879,8 @@ CONTAINS
                      avcpr = avcp(i, k, j)
                      rp0r = rp0(i, k, j)
                      if (use_cpm) then
-                        cpm = cp + cvap*qvwrfr &
+                        cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
+                              + cvap*qvwrfr &
                               + cliq*(qlwrfr + qrwrfr) &
                               + cice*(qiwrfr + qswrfr + qgwrfr)
                         hlv = alv - (cliq - cvap)*(tairr - t0)
@@ -3940,7 +3947,8 @@ CONTAINS
                         tairr = (ptwrfr + tb0)*pi0r
                         tair(i, k, j) = tairr
                         if (use_cpm) then
-                           cpm = cp + cvap*qvwrfr &
+                           cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
+                                 + cvap*qvwrfr &
                                  + cliq*(qlwrfr + qrwrfr) &
                                  + cice*(qiwrfr + qswrfr + qgwrfr)
                            hlv = alv - (cliq - cvap)*(tairr - t0)
@@ -4011,7 +4019,8 @@ CONTAINS
                         tairr = (ptwrfr + tb0)*pi0r
                         tair(i, k, j) = tairr
                         if (use_cpm) then
-                           cpm = cp + cvap*qvwrfr &
+                           cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
+                                 + cvap*qvwrfr &
                                  + cliq*(qlwrfr + qrwrfr) &
                                  + cice*(qiwrfr + qswrfr + qgwrfr)
                            hlv = alv - (cliq - cvap)*(tairr - t0)
@@ -4081,7 +4090,8 @@ CONTAINS
                         tairr = (ptwrfr + tb0)*pi0r
                         tair(i, k, j) = tairr
                         if (use_cpm) then
-                           cpm = cp + cvap*qvwrfr &
+                           cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
+                                 + cvap*qvwrfr &
                                  + cliq*(qlwrfr + qrwrfr) &
                                  + cice*(qiwrfr + qswrfr + qgwrfr)
                            hlv = alv - (cliq - cvap)*(tairr - t0)
@@ -4140,7 +4150,8 @@ CONTAINS
                         tairr = (ptwrfr + tb0)*pi0r
                         tair(i, k, j) = tairr
                         if (use_cpm) then
-                           cpm = cp + cvap*qvwrfr &
+                           cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
+                                 + cvap*qvwrfr &
                                  + cliq*(qlwrfr + qrwrfr) &
                                  + cice*(qiwrfr + qswrfr + qgwrfr)
                            hlv = alv - (cliq - cvap)*(tairr - t0)
@@ -4175,7 +4186,8 @@ CONTAINS
                         tairr = (ptwrfr + tb0)*pi0r
                         tair(i, k, j) = tairr
                         if (use_cpm) then
-                           cpm = cp + cvap*qvwrfr &
+                           cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
+                                 + cvap*qvwrfr &
                                  + cliq*(qlwrfr + qrwrfr) &
                                  + cice*(qiwrfr + qswrfr + qgwrfr)
                            hlv = alv - (cliq - cvap)*(tairr - t0)
@@ -4292,7 +4304,8 @@ CONTAINS
 
                   if (tairr .lt. t0) then
                      if (use_cpm) then
-                        cpm = cp + cvap*qvwrfr &
+                        cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
+                              + cvap*qvwrfr &
                               + cliq*(qlwrfr + qrwrfr) &
                               + cice*(qiwrfr + qswrfr + qgwrfr)
                         hlv = alv - (cliq - cvap)*(tairr - t0)
@@ -4435,7 +4448,8 @@ CONTAINS
                         tair(i, k, j) = tairr
                         rtair = 1./(tairr - c358)
                         if (use_cpm) then
-                           cpm = cp + cvap*qvwrfr &
+                           cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
+                                 + cvap*qvwrfr &
                                  + cliq*(qlwrfr + qrwrfr) &
                                  + cice*(qiwrfr + qswrfr + qgwrfr)
                            hlv = alv - (cliq - cvap)*(tairr - t0)
@@ -4480,7 +4494,8 @@ CONTAINS
                   tair(i, k, j) = tairr
                   tairc = tairr - t0
                   if (use_cpm) then
-                     cpm = cp + cvap*qvwrfr &
+                     cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
+                           + cvap*qvwrfr &
                            + cliq*(qlwrfr + qrwrfr) &
                            + cice*(qiwrfr + qswrfr + qgwrfr)
                      hlv = alv - (cliq - cvap)*(tairr - t0)
@@ -5515,7 +5530,7 @@ CONTAINS
                      else
                         ! Pokrifka et al. 2023, equation 18
 !                        inhgr = 3.          !inherent growth ratio (FIG. 16)
-                        if ( tc. ge. -50. ) then  !-50<=Tc<-40
+                        if ( tc .ge. -50. ) then  !-50<=Tc<-40
                            inhgr = 3.
                         else                      !-65<=Tc<-50
                            inhgr = 2.
