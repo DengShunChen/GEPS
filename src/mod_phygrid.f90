@@ -21,8 +21,8 @@
              alb       ,gwclim       ,   acld       , &
             ctot       ,  chig       ,   cmid       , &
             clow       ,  hpbl       ,   cosz       , & 
-         rainlp6       ,raincu6      ,                &
-         rainlp3       ,raincu3      ,                &
+         rainlp6       ,raincu6      ,tg_diff       , &
+         rainlp3       ,raincu3      ,tg_ocn        , &
          rainlp1       ,raincu1      ,tsflw
 
       logical, allocatable,save :: land(:,:),ice(:,:),ocean(:,:)
@@ -103,8 +103,8 @@
              alb(nxp,my_max),gwclim(nxp,my_max),  acld(lev,my), &
             ctot(nxp,my_max),  chig(nxp,my_max),   cmid(nxp,my_max), &
             clow(nxp,my_max),  hpbl(nxp,my_max),   cosz(nxp,my_max), &
-         rainlp6(nxp,my_max),raincu6(nxp,my_max),                    &
-         rainlp3(nxp,my_max),raincu3(nxp,my_max),                    &
+         rainlp6(nxp,my_max),raincu6(nxp,my_max),tg_diff(nxp,my_max), &
+         rainlp3(nxp,my_max),raincu3(nxp,my_max),tg_ocn(nxp,my_max), &
          rainlp1(nxp,my_max),raincu1(nxp,my_max), tsflw(nxp,my_max), &
                                           stat=ierr)
 
