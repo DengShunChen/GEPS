@@ -261,6 +261,8 @@
         read(i) sncover
         read(i) sndepth
         read(i) tg
+        read(i) tg_diff
+        read(i) tg_ocn
         read(i) gwr
         read(i) gwet
         read(i) cice
@@ -325,6 +327,10 @@
         read(i) smc
         read(i) stc
         read(i) slc
+#ifdef TIMCOMCPL
+        read(i) ssu
+        read(i) ssv
+#endif
         close(i)
 !
       endif     ! end of (restrt=true)

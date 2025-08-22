@@ -23,7 +23,7 @@ subroutine gfs_cpl_init(compid)
   enddo
 
   call cpl_gsmap_init(myid, nlat-1, seg_strt, seg_leng, rank_root, mpi_comm_atm, compid, "datm GSMap:")
-  call cpl_smat_init(myid, rank_root, compid, id_gocn, mpi_comm_atm, "/data/common/gfs/GEPSv3_lib/data/rmp_tco2timcom_xnew.nc")
+  call cpl_smat_init(myid, rank_root, compid, id_gocn, mpi_comm_atm, "./rmp_tco2timcom.nc")
   call cpl_attr_init(compid, id_gocn, MPI_COMM_atm)
 end subroutine gfs_cpl_init
 
@@ -225,10 +225,7 @@ subroutine gfs_cpl_recv4gocn(compid, mask_lnd, mask_ice, tgfs, ssufs, ssvfs)
 
       
     do i = 1, nxj
-!jwhwu 20241007
-!     if(.not.mask_lnd(i,jj).and.sst_glb(ii,j).gt.271.0) then
       if(.not.mask_lnd(i,jj).and.sst_glb(ii,j).gt.271.0 .and. .not.mask_ice(i,jj)) then
-!jwhwu
         tgfs(i,jj)  = sst_glb(ii,j) 
         ssufs(i,jj) = ssu_glb(ii,j)
         ssvfs(i,jj) = ssv_glb(ii,j)

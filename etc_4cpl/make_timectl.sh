@@ -1,13 +1,13 @@
 #!/bin/sh
 
- tautemp=0
+ tautemp=24
  endtau=168
- updatehr=6
+ updatehr=24
  while [ ${tautemp} -le ${endtau} ]
  do
    tau=$(printf "%08d" ${tautemp})
 
-   echo "${tau}" >> gfsctl.${endtau}.${updatehr}
+   echo "${tau}" >> timectl.${endtau}.${updatehr}
    
    tautemp=$((tautemp+updatehr))
    
