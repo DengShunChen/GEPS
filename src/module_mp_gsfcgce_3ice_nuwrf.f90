@@ -1867,7 +1867,8 @@ CONTAINS
       real     ::  hmtemp1, hmtemp2, hmtemp3, hmtemp4
       real     ::  ftnsQ, ftngQ, fexp
       real     ::  xssi, fssi
-      real     ::  dmicrons, dmicrong, dvair, alpha
+      real     ::  efsi
+      real     ::  dmicrons, dmicrong, fdms, fdmg, dvair, alpha
       real, dimension(its:ite, jts:jte) :: tairN, tairI, &
                                            ftns, ftng, &
                                            pihms, pihmg, &
@@ -2607,8 +2608,8 @@ CONTAINS
 !                  if (sat_predict) then
                      rn1s = 1.e-3
                      bnd1 = 1.e-4
-                     esi(i, j) = exp(0.025*tairc(i, j))
-                     psaut(i, j) = r2is*max(rn1s*esi(i, j)*(qi(i, j) - bnd1*fv0*fv0), 0.0)
+                     efsi = exp(0.025*tairc(i, j))
+                     psaut(i, j) = r2is*max(rn1s*efsi*(qi(i, j) - bnd1*fv0*fv0), 0.0)
 !                  else !sat_predict
 !             y1(i,j)=rdt*(qi(i,j)-r1r*exp(beta*tairc(i,j)))
 !             psaut(i,j)=max(y1(i,j),0.0)
@@ -2618,13 +2619,13 @@ CONTAINS
 !                     if (improve .gt. 2) esi(i, j) = 0.15
 !                     psaut(i, j) = r2is*max(rn1s*esi(i, j)*(qi(i, j) - bnd1*fv0*fv0), 0.0)
 !                  end if !sat_predict
-                  esi(i, j) = 1.0
+!                  esi(i, j) = 1.0
                   dmicrons = (r00*qs(i, j)/roqs/cpi/(tns*ftns(i, j)))**.25*1.e4
-                  if (improve .gt. 2) esi(i, j) = min(1., (dmicrons/1500.)**4.) ! f(dmicrons)
+                  fdms = min(1., (dmicrons/1500.)**4.) ! f(dmicrons)
 
                   y1(i, j) = 1.0
                   if (vs(i, j) .gt. 0.) y1(i, j) = abs((vs(i, j) - vi(i, j))/vs(i, j))
-                  psaci(i, j) = y1(i, j)*r3f*qi(i, j)/zs(i, j)**bs3*ftns(i, j)*esi(i, j)
+                  psaci(i, j) = y1(i, j)*r3f*qi(i, j)/zs(i, j)**bs3*ftns(i, j)*fdms
                   psacw(i, j) = r4f*qc(i, j)/zs(i, j)**bs3*ftns(i, j)
                   if (ihalmos .eq. 1) then
                      y2(i, j) = 0.
@@ -2783,12 +2784,12 @@ CONTAINS
                dgacs(i, j) = 0.0             !Lang et al. 2007
                wgacs(i, j) = 0.0
                y1(i, j) = 1./zg(i, j)**bg3
-               esi(i, j) = 1.0 !egc constant in consatrh via r14f/rn14; use esi( ) to make f(T)/f(q)
+!               esi(i, j) = 1.0 !egc constant in consatrh via r14f/rn14; use esi( ) to make f(T)/f(q)
 
                dmicrong = (r00*qg(i, j)/roqg/cpi/(tng*ftng(i, j)))**.25*1.e4
-               esi(i, j) = min(1., (dmicrong/500.)**1.1)       ! f(dmicrons)
+               fdmg = min(1., (dmicrong/500.)**1.1)       ! f(dmicrons)
 
-               dgacw(i, j) = r2ig*esi(i, j)*r14f*qc(i, j)*y1(i, j)*ftng(i, j)
+               dgacw(i, j) = r2ig*fdmg*r14f*qc(i, j)*y1(i, j)*ftng(i, j)
 !            dgacw(i,j)=r2ig*r14f*qc(i,j)*y1(i,j)*ftng(i,j)
                y2(i, j) = 0.
                if ((tairc(i, j) .le. hmtemp1) .and. (tairc(i, j) .ge. hmtemp4)) &

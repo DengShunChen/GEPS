@@ -1939,7 +1939,8 @@ CONTAINS
       real     ::  hmtemp1, hmtemp2, hmtemp3, hmtemp4
       real     ::  ftnsQ, ftngQ, fexp
       real     ::  xssi, fssi
-      real     ::  dmicrons, dmicrong, dvair, alpha
+      real     ::  efsi
+      real     ::  dmicrons, dmicrong, fdms, fdmg, dvair, alpha
       !real, dimension(its:ite, jts:jte) :: tairN, tairI
 
 ! for Xiping's new dbz code
@@ -2668,8 +2669,8 @@ CONTAINS
 !                     if (sat_predict) then
                         rn1s = 1.e-3
                         bnd1 = 1.e-4
-                        esi = exp(0.025*tairc)
-                        psaut = r2is*max(rn1s*esi*(qiwrfr &
+                        efsi = exp(0.025*tairc)
+                        psaut = r2is*max(rn1s*efsi*(qiwrfr &
                                 - bnd1*fv0r*fv0r), 0.0)
 !                     else !sat_predict
    !             y1(i,j)=rdt*(qi(i,j)-r1r*exp(beta*tairc(i,j)))
@@ -2681,15 +2682,15 @@ CONTAINS
 !                        psaut = r2is*max(rn1s*esi*(qiwrfr &
 !                                - bnd1*fv0r*fv0r), 0.0)
 !                     end if !sat_predict
-                     esi = 1.0
+!                     esi = 1.0
                      dmicrons = (r00r*qswrfr &
                                 /roqs/cpi/(tns*ftns))**.25*1.e4
-                     if (improve .gt. 2) esi = min(1., (dmicrons/1500.)**4.) ! f(dmicrons)
+                     fdms = min(1., (dmicrons/1500.)**4.) ! f(dmicrons)
 
                      y1 = 1.0
                      if (vsr .gt. 0.) y1 = abs((vsr - vir) &
                                                    /vsr)
-                     psaci = y1*r3f*qiwrfr/zsr**bs3*ftns*esi
+                     psaci = y1*r3f*qiwrfr/zsr**bs3*ftns*fdms
                      psacw = r4f*qlwrfr/zsr**bs3*ftns
                      if (ihalmos .eq. 1) then
                         y2 = 0.
@@ -2854,11 +2855,11 @@ CONTAINS
                   dgacs = 0.0             !Lang et al. 2007
                   wgacs = 0.0
                   y1 = 1./zgr**bg3
-                  esi = 1.0 !egc constant in consatrh via r14f/rn14; use esi( ) to make f(T)/f(q)
+!                  esi = 1.0 !egc constant in consatrh via r14f/rn14; use esi( ) to make f(T)/f(q)
 
                   dmicrong = (r00r*qgwrfr/roqg/cpi/(tng*ftng))**.25*1.e4
-                  esi = min(1., (dmicrong/500.)**1.1)       ! f(dmicrons)
-                  dgacw = r2ig*esi*r14f*qlwrfr*y1*ftng
+                  fdmg = min(1., (dmicrong/500.)**1.1)       ! f(dmicrons)
+                  dgacw = r2ig*fdmg*r14f*qlwrfr*y1*ftng
    !            dgacw(i,j)=r2ig*r14f*qc(i,j)*y1(i,j)*ftng(i,j)
                   y2 = 0.
                   if ((tairc .le. hmtemp1) .and. (tairc .ge. hmtemp4)) &
