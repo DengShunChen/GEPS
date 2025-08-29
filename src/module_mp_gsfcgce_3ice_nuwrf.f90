@@ -2803,7 +2803,7 @@ CONTAINS
                if (vg(i, j) .gt. 0.) y5(i, j) = abs((vg(i, j) - vi(i, j))/vg(i, j))
                dgaci(i, j) = r2ig*y5(i, j)*r15f*qi(i, j)*y1(i, j)*ftng(i, j)
 !            dgaci(i,j)=r2ig*r15f*qi(i,j)*y1(i,j)*ftng(i,j)
-               dgaci(i, j) = 0.0
+!               dgaci(i, j) = 0.0
                wgaci(i, j) = 0.0
 
                y1(i, j) = abs(vg(i, j) - vr(i, j))
@@ -2950,6 +2950,9 @@ CONTAINS
                qracs(i, j) = min(d2t*pracs(i, j), qs(i, j))
 
                pgaut(i, j) = 0.0
+               if (qs(i, j) .gt. 2.e-3) then
+                  pgaut(i, j) = r2is*max(1.e-3*exp(0.09*tairc(i, j))*qs(i, j) - 2.e-3, 0.0)
+               endif
                pgfr(i, j) = 0.0
                if (tair(i, j) .lt. t0) then
                   y2(i, j) = exp(rn18a*(t0 - tair(i, j)))

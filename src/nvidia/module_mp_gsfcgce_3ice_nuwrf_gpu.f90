@@ -2874,7 +2874,7 @@ CONTAINS
                                                 /vgr)
                   dgaci = r2ig*y5*r15f*qiwrfr*y1*ftng
    !            dgaci(i,j)=r2ig*r15f*qi(i,j)*y1(i,j)*ftng(i,j)
-                  dgaci = 0.0
+!                  dgaci = 0.0
                   wgaci = 0.0
                   y1 = abs(vgr - vrr)
                   y2 = zrr*zgr
@@ -3024,6 +3024,9 @@ CONTAINS
                   qracs = min(d2t*pracs, qswrfr)
 
                   pgaut = 0.0
+                  if (qswrfr .gt. 2.e-3) then
+                     pgaut = r2is*max(1.e-3*exp(0.09*tairc)*qswrfr - 2.e-3, 0.0)
+                  endif
                   pgfr = 0.0
                   if (tairr .lt. t0) then
                      y2 = exp(rn18a*(t0 - tairr))
