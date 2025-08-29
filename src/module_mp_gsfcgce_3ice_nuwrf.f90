@@ -1241,42 +1241,43 @@ CONTAINS
       ga8 = 5040.
       ga9 = 40320.
 
-      ga3b = gammagce(3.+bw)
-      ga4b = gammagce(4.+bw)
-      ga6b = gammagce(6.+bw)
-      ga5bh = gammagce((5.+bw)/2.)
+      ga3b = gammagce(3.+bw)       !not used
+      ga4b = gammagce(4.+bw)       !not used
+      ga6b = gammagce(6.+bw)       !not used
+      ga5bh = gammagce((5.+bw)/2.) !not used
       ga3g = gammagce(3.+bg)
       ga4g = gammagce(4.+bg)
       ga5gh = gammagce((5.+bg)/2.)
       ga3d = gammagce(3.+bs)
       ga4d = gammagce(4.+bs)
       ga5dh = gammagce((5.+bs)/2.)
+      ga6d = gammagce(6.+bs)
 
-      if (improve .eq. 3) then
-         ga4g = 11.63177
-         ga3g = 3.3233625
-         ga5gh = 1.608355
-         if (bg .eq. 0.37) ga4g = 9.730877
-         if (bg .eq. 0.37) ga3g = 2.8875
-         if (bg .eq. 0.37) ga5gh = 1.526425
-         if (bg .eq. 0.36) ga4g = 9.599978
-         if (bg .eq. 0.36) ga3g = 2.857136
-         if (bg .eq. 0.36) ga5gh = 1.520402
-         ga3d = 2.54925
-         ga4d = 8.285063
-         ga5dh = 1.456943
-         if (bs .eq. 0.57) ga3d = 3.59304
-         if (bs .eq. 0.57) ga4d = 12.82715
-         if (bs .eq. 0.57) ga5dh = 1.655588
-         if (bs .eq. 0.24) ga3d = 2.523508
-         if (bs .eq. 0.24) ga4d = 8.176166
-         if (bs .eq. 0.24) ga5dh = 1.451396
-         if (bs .eq. 0.11) ga3d = 2.218906
-         if (bs .eq. 0.11) ga4d = 6.900796
-         if (bs .eq. 0.11) ga5dh = 1.382792
-      end if
-      ga6d = 144.93124
-      if (bs .eq. 0.24) ga6d = 181.654791
+!      if (improve .eq. 3) then
+!         ga4g = 11.63177
+!         ga3g = 3.3233625
+!         ga5gh = 1.608355
+!         if (bg .eq. 0.37) ga4g = 9.730877
+!         if (bg .eq. 0.37) ga3g = 2.8875
+!         if (bg .eq. 0.37) ga5gh = 1.526425
+!         if (bg .eq. 0.36) ga4g = 9.599978
+!         if (bg .eq. 0.36) ga3g = 2.857136
+!         if (bg .eq. 0.36) ga5gh = 1.520402
+!         ga3d = 2.54925
+!         ga4d = 8.285063
+!         ga5dh = 1.456943
+!         if (bs .eq. 0.57) ga3d = 3.59304
+!         if (bs .eq. 0.57) ga4d = 12.82715
+!         if (bs .eq. 0.57) ga5dh = 1.655588
+!         if (bs .eq. 0.24) ga3d = 2.523508
+!         if (bs .eq. 0.24) ga4d = 8.176166
+!         if (bs .eq. 0.24) ga5dh = 1.451396
+!         if (bs .eq. 0.11) ga3d = 2.218906
+!         if (bs .eq. 0.11) ga4d = 6.900796
+!         if (bs .eq. 0.11) ga5dh = 1.382792
+!      end if
+!      ga6d = 144.93124
+!      if (bs .eq. 0.24) ga6d = 181.654791
 
 !CCCCC        LIN ET AL., 1983 OR LORD ET AL., 1984   CCCCCCCCCCCCCCCCC
       ac1 = aw
