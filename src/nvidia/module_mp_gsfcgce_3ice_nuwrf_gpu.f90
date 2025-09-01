@@ -1338,18 +1338,18 @@ CONTAINS
       ga6d = gammagce_gpu(6.+bs)
 
 !      if (improve .eq. 3) then
-!         ga4g = 11.63177
-!         ga3g = 3.3233625
-!         ga5gh = 1.608355
+!         ga4g = 11.63177     !bg=0.5
+!         ga3g = 3.3233625    !bg=0.5
+!         ga5gh = 1.608355    !bg=0.5
 !         if (bg .eq. 0.37) ga4g = 9.730877
 !         if (bg .eq. 0.37) ga3g = 2.8875
 !         if (bg .eq. 0.37) ga5gh = 1.526425
 !         if (bg .eq. 0.36) ga4g = 9.599978
 !         if (bg .eq. 0.36) ga3g = 2.857136
 !         if (bg .eq. 0.36) ga5gh = 1.520402
-!         ga3d = 2.54925
-!         ga4d = 8.285063
-!         ga5dh = 1.456943
+!         ga3d = 2.54925      !bs=0.25
+!         ga4d = 8.285063     !bs=0.25
+!         ga5dh = 1.456943    !bs=0.25
 !         if (bs .eq. 0.57) ga3d = 3.59304
 !         if (bs .eq. 0.57) ga4d = 12.82715
 !         if (bs .eq. 0.57) ga5dh = 1.655588
@@ -1360,7 +1360,7 @@ CONTAINS
 !         if (bs .eq. 0.11) ga4d = 6.900796
 !         if (bs .eq. 0.11) ga5dh = 1.382792
 !      end if
-!      ga6d = 144.93124
+!      ga6d = 144.93124       !bs=0.11
 !      if (bs .eq. 0.24) ga6d = 181.654791
 
 !CCCCC        LIN ET AL., 1983 OR LORD ET AL., 1984   CCCCCCCCCCCCCCCCC
@@ -3615,7 +3615,7 @@ CONTAINS
                                       + 2.6110916E-3*lqc2 - 0.26646396*ltk*lqc)
                         else
 !                           mvdc = exp(173.57305 - 64.370929*ltk &
-                           mvdc = exp(173.57305 - 64.370929*ltk &   ! decrease diameter
+                           mvdc = exp(173.27305 - 64.370929*ltk &   ! decrease diameter
                                       + 0.36833626*lqc + 6.1389254*ltk2 &
                                       + 5.5915321E-3*lqc2 - 0.12488698*ltk*lqc)
                         end if
@@ -4783,7 +4783,7 @@ CONTAINS
                         mdc6 = -0.26646396
                      else
 !                        mdc1 = 173.57305
-                        mdc1 = 173.57305   ! decrease diameter
+                        mdc1 = 173.27305   ! decrease diameter
                         mdc2 = -64.370929
                         mdc3 = 0.36833626
                         mdc4 = 6.1389254
@@ -5536,6 +5536,9 @@ CONTAINS
                         hid = max(min(nint(abs(tc)/0.25), 120), 0)
                         inhgr = itble(hid)  !inherent growth ratio
                         rhoi = 900.*exp(-3.*max(qvz - qsi - 5.e-5, 0.)/inhgr)
+                     elseif (tc .lt. -65.) then
+                        inhgr = 1.
+                        rhoi = 900.
                      else
                         ! Pokrifka et al. 2023, equation 18
 !                        inhgr = 3.          !inherent growth ratio (FIG. 16)
