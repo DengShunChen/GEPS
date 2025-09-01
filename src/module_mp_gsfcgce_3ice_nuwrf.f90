@@ -1160,7 +1160,7 @@ CONTAINS
       t00 = 238.16
 
       ! heat capacity and latent heat (in CGS) :
-      rw = 4.615e+6     !specific heat capacity of vapor
+      rw = 4.615e+6     !gas constant of vapor
       cw = 4.187e+7     !specific heat capacity of liquid water
       ci = 2.093e+7     !specific heat capacity of ice
       cp = 1.004e7      !specific heat capacity of dry air
@@ -1241,42 +1241,43 @@ CONTAINS
       ga8 = 5040.
       ga9 = 40320.
 
-      ga3b = gammagce(3.+bw)
-      ga4b = gammagce(4.+bw)
-      ga6b = gammagce(6.+bw)
-      ga5bh = gammagce((5.+bw)/2.)
+      ga3b = gammagce(3.+bw)       !not used
+      ga4b = gammagce(4.+bw)       !not used
+      ga6b = gammagce(6.+bw)       !not used
+      ga5bh = gammagce((5.+bw)/2.) !not used
       ga3g = gammagce(3.+bg)
       ga4g = gammagce(4.+bg)
       ga5gh = gammagce((5.+bg)/2.)
       ga3d = gammagce(3.+bs)
       ga4d = gammagce(4.+bs)
       ga5dh = gammagce((5.+bs)/2.)
+      ga6d = gammagce(6.+bs)
 
-      if (improve .eq. 3) then
-         ga4g = 11.63177
-         ga3g = 3.3233625
-         ga5gh = 1.608355
-         if (bg .eq. 0.37) ga4g = 9.730877
-         if (bg .eq. 0.37) ga3g = 2.8875
-         if (bg .eq. 0.37) ga5gh = 1.526425
-         if (bg .eq. 0.36) ga4g = 9.599978
-         if (bg .eq. 0.36) ga3g = 2.857136
-         if (bg .eq. 0.36) ga5gh = 1.520402
-         ga3d = 2.54925
-         ga4d = 8.285063
-         ga5dh = 1.456943
-         if (bs .eq. 0.57) ga3d = 3.59304
-         if (bs .eq. 0.57) ga4d = 12.82715
-         if (bs .eq. 0.57) ga5dh = 1.655588
-         if (bs .eq. 0.24) ga3d = 2.523508
-         if (bs .eq. 0.24) ga4d = 8.176166
-         if (bs .eq. 0.24) ga5dh = 1.451396
-         if (bs .eq. 0.11) ga3d = 2.218906
-         if (bs .eq. 0.11) ga4d = 6.900796
-         if (bs .eq. 0.11) ga5dh = 1.382792
-      end if
-      ga6d = 144.93124
-      if (bs .eq. 0.24) ga6d = 181.654791
+!      if (improve .eq. 3) then
+!         ga4g = 11.63177    !bg=0.5
+!         ga3g = 3.3233625   !bg=0.5
+!         ga5gh = 1.608355   !bg=0.5
+!         if (bg .eq. 0.37) ga4g = 9.730877
+!         if (bg .eq. 0.37) ga3g = 2.8875
+!         if (bg .eq. 0.37) ga5gh = 1.526425
+!         if (bg .eq. 0.36) ga4g = 9.599978
+!         if (bg .eq. 0.36) ga3g = 2.857136
+!         if (bg .eq. 0.36) ga5gh = 1.520402
+!         ga3d = 2.54925     !bs=0.25
+!         ga4d = 8.285063    !bs=0.25
+!         ga5dh = 1.456943   !bs=0.25
+!         if (bs .eq. 0.57) ga3d = 3.59304
+!         if (bs .eq. 0.57) ga4d = 12.82715
+!         if (bs .eq. 0.57) ga5dh = 1.655588
+!         if (bs .eq. 0.24) ga3d = 2.523508
+!         if (bs .eq. 0.24) ga4d = 8.176166
+!         if (bs .eq. 0.24) ga5dh = 1.451396
+!         if (bs .eq. 0.11) ga3d = 2.218906
+!         if (bs .eq. 0.11) ga4d = 6.900796
+!         if (bs .eq. 0.11) ga5dh = 1.382792
+!      end if
+!      ga6d = 144.93124      !bs=0.11
+!      if (bs .eq. 0.24) ga6d = 181.654791
 
 !CCCCC        LIN ET AL., 1983 OR LORD ET AL., 1984   CCCCCCCCCCCCCCCCC
       ac1 = aw
@@ -1867,7 +1868,8 @@ CONTAINS
       real     ::  hmtemp1, hmtemp2, hmtemp3, hmtemp4
       real     ::  ftnsQ, ftngQ, fexp
       real     ::  xssi, fssi
-      real     ::  dmicrons, dmicrong, dvair, alpha
+      real     ::  efsi
+      real     ::  dmicrons, dmicrong, fdms, fdmg, dvair, alpha
       real, dimension(its:ite, jts:jte) :: tairN, tairI, &
                                            ftns, ftng, &
                                            pihms, pihmg, &
@@ -1941,7 +1943,10 @@ CONTAINS
 
       integer, parameter :: inflag = 1
       ! 1 : default (Meyers et al. 1992)
-      ! 2 : WRF GOCART mass2icn (DeMotto et al. 2011)
+      ! 2 : WRF GOCART mass2icn (DeMotto et al. 2010)
+      ! 3 : Hong et al. 2004
+      ! 4 : Cooper curve (Cooper 1986 ; Chern et al. 2016)
+      ! 5 : Fletcher 1962
 
       ! calculate allowable ice supersautration :
       real, intent(in) :: xlat
@@ -2601,27 +2606,27 @@ CONTAINS
 
                if (tair(i, j) .lt. t0) then
 
-                  if (sat_predict) then
+!                  if (sat_predict) then
                      rn1s = 1.e-3
                      bnd1 = 1.e-4
-                     esi(i, j) = exp(0.025*tairc(i, j))
-                     psaut(i, j) = r2is*max(rn1s*esi(i, j)*(qi(i, j) - bnd1*fv0*fv0), 0.0)
-                  else !sat_predict
+                     efsi = exp(0.025*tairc(i, j))
+                     psaut(i, j) = r2is*max(rn1s*efsi*(qi(i, j) - bnd1*fv0*fv0), 0.0)
+!                  else !sat_predict
 !             y1(i,j)=rdt*(qi(i,j)-r1r*exp(beta*tairc(i,j)))
 !             psaut(i,j)=max(y1(i,j),0.0)
-                     rn1s = 1.e-3
-                     bnd1 = 6.e-4
-                     esi(i, j) = exp(.025*tairc(i, j))
-                     if (improve .gt. 2) esi(i, j) = 0.15
-                     psaut(i, j) = r2is*max(rn1s*esi(i, j)*(qi(i, j) - bnd1*fv0*fv0), 0.0)
-                  end if !sat_predict
-                  esi(i, j) = 1.0
+!                     rn1s = 1.e-3
+!                     bnd1 = 6.e-4
+!                     esi(i, j) = exp(.025*tairc(i, j))
+!                     if (improve .gt. 2) esi(i, j) = 0.15
+!                     psaut(i, j) = r2is*max(rn1s*esi(i, j)*(qi(i, j) - bnd1*fv0*fv0), 0.0)
+!                  end if !sat_predict
+!                  esi(i, j) = 1.0
                   dmicrons = (r00*qs(i, j)/roqs/cpi/(tns*ftns(i, j)))**.25*1.e4
-                  if (improve .gt. 2) esi(i, j) = min(1., (dmicrons/1500.)**4.) ! f(dmicrons)
+                  fdms = min(1., (dmicrons/1500.)**4.) ! f(dmicrons)
 
                   y1(i, j) = 1.0
                   if (vs(i, j) .gt. 0.) y1(i, j) = abs((vs(i, j) - vi(i, j))/vs(i, j))
-                  psaci(i, j) = y1(i, j)*r3f*qi(i, j)/zs(i, j)**bs3*ftns(i, j)*esi(i, j)
+                  psaci(i, j) = y1(i, j)*r3f*qi(i, j)/zs(i, j)**bs3*ftns(i, j)*fdms
                   psacw(i, j) = r4f*qc(i, j)/zs(i, j)**bs3*ftns(i, j)
                   if (ihalmos .eq. 1) then
                      y2(i, j) = 0.
@@ -2780,12 +2785,12 @@ CONTAINS
                dgacs(i, j) = 0.0             !Lang et al. 2007
                wgacs(i, j) = 0.0
                y1(i, j) = 1./zg(i, j)**bg3
-               esi(i, j) = 1.0 !egc constant in consatrh via r14f/rn14; use esi( ) to make f(T)/f(q)
+!               esi(i, j) = 1.0 !egc constant in consatrh via r14f/rn14; use esi( ) to make f(T)/f(q)
 
                dmicrong = (r00*qg(i, j)/roqg/cpi/(tng*ftng(i, j)))**.25*1.e4
-               esi(i, j) = min(1., (dmicrong/500.)**1.1)       ! f(dmicrons)
+               fdmg = min(1., (dmicrong/500.)**1.1)       ! f(dmicrons)
 
-               dgacw(i, j) = r2ig*esi(i, j)*r14f*qc(i, j)*y1(i, j)*ftng(i, j)
+               dgacw(i, j) = r2ig*fdmg*r14f*qc(i, j)*y1(i, j)*ftng(i, j)
 !            dgacw(i,j)=r2ig*r14f*qc(i,j)*y1(i,j)*ftng(i,j)
                y2(i, j) = 0.
                if ((tairc(i, j) .le. hmtemp1) .and. (tairc(i, j) .ge. hmtemp4)) &
@@ -2799,7 +2804,7 @@ CONTAINS
                if (vg(i, j) .gt. 0.) y5(i, j) = abs((vg(i, j) - vi(i, j))/vg(i, j))
                dgaci(i, j) = r2ig*y5(i, j)*r15f*qi(i, j)*y1(i, j)*ftng(i, j)
 !            dgaci(i,j)=r2ig*r15f*qi(i,j)*y1(i,j)*ftng(i,j)
-               dgaci(i, j) = 0.0
+!               dgaci(i, j) = 0.0
                wgaci(i, j) = 0.0
 
                y1(i, j) = abs(vg(i, j) - vr(i, j))
@@ -2946,6 +2951,9 @@ CONTAINS
                qracs(i, j) = min(d2t*pracs(i, j), qs(i, j))
 
                pgaut(i, j) = 0.0
+               if (qs(i, j) .gt. 2.e-3) then
+                  pgaut(i, j) = r2is*max(1.e-3*exp(0.09*tairc(i, j))*qs(i, j) - 2.e-3, 0.0)
+               endif
                pgfr(i, j) = 0.0
                if (tair(i, j) .lt. t0) then
                   y2(i, j) = exp(rn18a*(t0 - tair(i, j)))
@@ -2966,7 +2974,8 @@ CONTAINS
 !********   HANDLING THE NEGATIVE SNOW (QS)          *******************
 
                if (use_cpm) then
-                  cpm = cp + cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
+                  cpm = cp*(1 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
+                        cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
                         cice*(qi(i, j) + qs(i, j) + qg(i, j))
                   hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
                   hlf = alf - (cice - cliq)*(tair(i, j) - t0)
@@ -3061,7 +3070,8 @@ CONTAINS
                                                                   + qgacr(i, j)))
                   pgmlt(i, j) = r2ig*min(qg(i, j), max(dd1(i, j), 0.0))
                   if (use_cpm) then
-                     cpm = cp + cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
+                     cpm = cp*(1 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
+                           cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
                            cice*(qi(i, j) + qs(i, j) + qg(i, j))
                      hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
                      hlf = alf - (cice - cliq)*(tair(i, j) - t0)
@@ -3200,7 +3210,8 @@ CONTAINS
                end if  !y1
 
                if (use_cpm) then
-                  cpm = cp + cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
+                  cpm = cp*(1 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
+                        cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
                         cice*(qi(i, j) + qs(i, j) + qg(i, j))
                   hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
                   hlf = alf - (cice - cliq)*(tair(i, j) - t0)
@@ -3234,13 +3245,14 @@ CONTAINS
                   tairc(i, j) = tair(i, j) - t0
                   rhoair = rho_mks(i, k, j)
                   if (use_cpm) then
-                     cpm = cp + cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
+                     cpm = cp*(1 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
+                           cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
                            cice*(qi(i, j) + qs(i, j) + qg(i, j))      ! specific heat capacity (in CGS)
                      cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
                      hlv = alv - (cliq - cvap)*(tair(i, j) - t0)    ! latent heat of vaporization (in CGS)
                      xlv = hlv*1.e-4                           ! latent heat of vaporization (in MKS)
                   else
-                     cpm1 = 1005.46*(1.+0.887*qv(i, j))         ! specific heat capacity (in MKS)
+                     cpm1 = cp*1.e-4*(1. + 0.887*qv(i, j))       ! specific heat capacity (in MKS)
                      xlv = 3.1484E6 - 2370.*tair(i, j)           ! latent heat of vaporization (in MKS)
                   end if
                   if (new_saturation) then
@@ -3294,7 +3306,8 @@ CONTAINS
                   ! -------------
 
                   if (use_cpm) then
-                     cpm = cp + cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
+                     cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
+                           cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
                            cice*(qi(i, j) + qs(i, j) + qg(i, j))      ! specific heat capacity (in CGS)
                      cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
                      hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
@@ -3302,7 +3315,7 @@ CONTAINS
                      hls = hlv + hlf                           ! latent heat of sublimation (in CGS)
                      xls = hls*1.e-4                           ! latent heat of sublimation (in MKS)
                   else
-                     cpm1 = 1005.46*(1.+0.887*qv(i, j))         ! specific heat capacity (in MKS)
+                     cpm1 = cp*1.e-4*(1. + 0.887*qv(i, j))         ! specific heat capacity (in MKS)
                      xls = 3.15E6 - 2370.*tair(i, j) + 0.3337E6    ! latent heat of sublimation  (in MKS)
                   endif
                   if (new_saturation) then
@@ -3320,15 +3333,24 @@ CONTAINS
                   abi = 1.+xls**2.*qsi(i, j)/cpm1/(4.61495E2*tair(i, j)**2.)  ! abi=1+dqidT*(Ls/Cp)
 
                   if (qv(i, j) .gt. qsi(i, j) .and. tair(i, j) .lt. t0) then
-                     if (inflag .eq. 1) then
+                     if (inflag .eq. 1) then      ! Meyers et al. 1992 (m^-3)
                         ssi(i, j) = qv(i, j)/qsi(i, j) - 1.
-                        nice = 1.e3*exp(1.296E+1*ssi(i, j) - 6.39E-1)  ! Meyers et al. 1992 (m^-3)
+                        nice = 1.e3*exp(1.296E+1*ssi(i, j) - 6.39E-1)  ! IN (convert from L^-1 to m^-3)
    #ifdef Readaeroclx
-                     elseif (inflag .eq. 2) then
-                        p_mb = p0(i, j, k)*1.e-3                       !pressure (hPa, equal to mbar)
+                     elseif (inflag .eq. 2) then  ! GOCART mass2icn
+                        p_mb = p0(i, j, k)*1.e-3                       ! pressure (hPa, equal to mbar)
                         call mass2icn(p_mb, tair(i, j), aerog, nice)
-                        nice = nice*1.e+3                            !IN (convert from L^-1 to m^-3)
+                        nice = nice*1.e+3                              ! IN (convert from L^-1 to m^-3)
+!                        nice = min(nice, rhoair*qi(i, j)/4.71E-10)     ! cap IN to the amount corresponding to rhoi=900, Ri=50
+!                        nice = min(nice, rhoair*qi(i, j)/3.77E-9)      ! cap IN to the amount corresponding to rhoi=900, Ri=100
    #endif
+                     elseif (inflag .eq. 3) then  ! Hong et al. 2004
+                        nice = 5.38e+7*exp(0.75*log(qi(i, j)*rhoair))   ! IN (m^-3)
+                     elseif (inflag .eq. 4) then  ! Cooper curve ; Chern et al. 2016
+                        nice = 5.e-3*exp(0.304*abs(max(tairc(i, j), -40.0)))*1.e+3   ! IN (m^-3)
+                        nice = min(nice, rhoair*qi(i, j)/3.77e-9)       ! cap IN to the amount corresponding to rhoi=900, Ri=100
+                     elseif (inflag .eq. 5) then  ! Fletcher 1962
+                        nice = min(cn0*exp(beta*tairc(i, j)), 1.0)*1.e+3
                      else
                         stop 'inflag error!!!'
                      end if
@@ -3354,7 +3376,8 @@ CONTAINS
                   ! -------------
 
                   if (use_cpm) then
-                     cpm = cp + cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
+                     cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
+                           cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
                            cice*(qi(i, j) + qs(i, j) + qg(i, j))      ! specific heat capacity (in CGS)
                      cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
                      hlv = alv - (cliq - cvap)*(tair(i, j) - t0)    ! latent heat of vaporization (in CGS)
@@ -3364,8 +3387,8 @@ CONTAINS
                      hls = hlv + hlf                           ! latent heat of sublimation (in CGS)
                      xls = hls*1.e-4                           ! latent heat of sublimation (in MKS)
                   else
-                     cpm1 = 1005.46*(1.+0.887*qv(i, j))        ! specific heat capacity (in MKS)
-                     cpm = 1.00546e+7*(1.+0.887*qv(i, j))     ! specific heat capacity (in CGS)
+                     cpm = cp*(1. + 0.887*qv(i, j))             ! specific heat capacity (in CGS)
+                     cpm1 = cpm*1.e-4                           ! specific heat capacity (in MKS)
                      xlv = 3.1484E6 - 2370.*tair(i, j)          ! latent heat of vaporization (in MKS)
                      xls = 3.15E6 - 2370.*tair(i, j) + 0.3337E6   ! latent heat of sublimation  (in MKS)
                      xlf = alf*1.e-4                         ! latent heat of fusion (in MKS)
@@ -3400,12 +3423,13 @@ CONTAINS
                                    + 1.3178721*lqc + 1.1741987*ltk2 &
                                    + 2.6110916E-3*lqc2 - 0.26646396*ltk*lqc)
                      else
-                        mvdc = exp(173.57305 - 64.370929*ltk &
+!                        mvdc = exp(173.57305 - 64.370929*ltk &
+                        mvdc = exp(173.27305 - 64.370929*ltk &   !decrease diameter
                                    + 0.36833626*lqc + 6.1389254*ltk2 &
                                    + 5.5915321E-3*lqc2 - 0.12488698*ltk*lqc)
                      end if
-                     mvrc = max(5.e-7, min(5.e-5, mvdc/2.e+6))             ! diameter of cloud water
-                     ncloud = 3.*qc(i, j)*rhoair/(4.*cpi*1000.*mvrc**3.)  ! concentration of cloud water
+                     mvrc = max(5.e-7, min(5.e-5, mvdc/2.e+6))            ! volume-weighted mean radius of cloud water (m)
+                     ncloud = 3.*qc(i, j)*rhoair/(4.*cpi*1000.*mvrc**3.)  ! number concentration of cloud water (m^-3)
                      ncloud = min(1.e+9, max(0.1, ncloud))
                      tauc = 1./(4.*cpi*dv1*ncloud*mvrc)                  ! tauc=1/(4*pi*Dv*Nc*rc)
                   else
@@ -3419,15 +3443,18 @@ CONTAINS
                      ltk2 = ltk*ltk
                      lqi2 = lqi*lqi
                      if (xland(i, j) .eq. 1.) then
-                        mvdi = exp(154.88767 - 0.25772005*lqi &
+!                        mvdi = exp(154.88767 - 0.25772005*lqi &
+                        mvdi = exp(155.18767 - 0.25772005*lqi &   !increase diameter
                                    + 3.75543E-4*lqi2 - 54.560357*ltk &
                                    + 5.1248879*ltk2)
                      else
-                        mvdi = exp(155.33396 - 0.25772005*lqi &
+!                        mvdi = exp(155.33396 - 0.25772005*lqi &
+!                        mvdi = exp(155.03396 - 0.25772005*lqi &   !decrease diameter
+                        mvdi = exp(155.23396 - 0.25772005*lqi &   !slightly decrease diameter
                                    + 3.75543E-4*lqi2 - 54.560357*ltk &
                                    + 5.1248879*ltk2)
                      end if
-                     mvri = min(5.e-4, max(3.e-6, mvdi/2.e+7))
+                     mvri = min(5.e-4, max(3.e-6, mvdi/2.e+7))   !volume-weighted mean radius of cloud ice (m)
                      if (tairc(i, j) .ge. -40.0) then
                         hid = max(min(nint(abs(tairc(i, j))/0.25), 120), 0)
                         inhgr = itble(hid)
@@ -3443,7 +3470,7 @@ CONTAINS
                         end if
                      end if
                      rhoi = min(max(rhoi, 50.), 900.)
-                     nice = 3.*qi(i, j)*rhoair/(4.*cpi*rhoi*mvri**3.)
+                     nice = 3.*qi(i, j)*rhoair/(4.*cpi*rhoi*mvri**3.)  !number concentration of cloud ice (m^-3)
                      nice = min(1.e+7, max(0.1, nice))
                      taui = 1./(4.*cpi*dv1*nice*mvri)                    ! taui=1/(4*pi*Dv*Ni*ri)
                   else
@@ -3472,11 +3499,11 @@ CONTAINS
                      lzr = log((afar + 3.)/efdr*1.e+6)
                      tnr = log(6.*qr(i, j)*rhoair/cpi/1.e+3) & ! slope parameter for rain
                            + (4.+afar)*lzr - log_gamma(afar + 4.)
-                     avr = exp(7.6004532 - 0.7990953*ltk & ! coefficient ... for rain (?)
+                     avr = exp(7.6004532 - 0.7990953*ltk &
                                + 1.0281818*lqr - 0.16595505*lqr2 &
                                + 1.110037E-2*lqr*lqr2 &
                                - 2.0925743E-4*lqr2*lqr2)
-                     bvr = max(0.5, min(2., 1.2218728 - 0.1281004*ltk & ! exponent ... for rain (?)
+                     bvr = max(0.5, min(2., 1.2218728 - 0.1281004*ltk &
                                         + 2.6088596E-2*lqr - 7.4467639E-3*lqr2 &
                                         + 7.7592532E-4*lqr*lqr2 &
                                         - 1.7056075E-5*lqr2*lqr2))
@@ -3631,7 +3658,8 @@ CONTAINS
 
                   tair(i, j) = (pt(i, j) + tb0)*pi0
                   if (use_cpm) then
-                     cpm = cp + cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
+                     cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
+                           cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
                            cice*(qi(i, j) + qs(i, j) + qg(i, j))
                      hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
                      hlf = alf - (cice - cliq)*(tair(i, j) - t0)
@@ -3693,7 +3721,8 @@ CONTAINS
 
                      tair(i, j) = (pt(i, j) + tb0)*pi0
                      if (use_cpm) then
-                        cpm = cp + cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
+                        cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
+                              cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
                               cice*(qi(i, j) + qs(i, j) + qg(i, j))
                         hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
                         hlf = alf - (cice - cliq)*(tair(i, j) - t0)
@@ -3758,7 +3787,8 @@ CONTAINS
 
                      tair(i, j) = (pt(i, j) + tb0)*pi0
                      if (use_cpm) then
-                        cpm = cp + cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
+                        cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
+                              cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
                               cice*(qi(i, j) + qs(i, j) + qg(i, j))
                         hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
                         hlf = alf - (cice - cliq)*(tair(i, j) - t0)
@@ -3823,7 +3853,8 @@ CONTAINS
                      cnd(i, j) = 0.0
                      tair(i, j) = (pt(i, j) + tb0)*pi0
                      if (use_cpm) then
-                        cpm = cp + cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
+                        cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
+                              cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
                               cice*(qi(i, j) + qs(i, j) + qg(i, j))
                         hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
                         hlf = alf - (cice - cliq)*(tair(i, j) - t0)
@@ -3876,7 +3907,8 @@ CONTAINS
                      cnd(i, j) = 0.0
                      tair(i, j) = (pt(i, j) + tb0)*pi0
                      if (use_cpm) then
-                        cpm = cp + cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
+                        cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
+                              cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
                               cice*(qi(i, j) + qs(i, j) + qg(i, j))
                         hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
                         hlf = alf - (cice - cliq)*(tair(i, j) - t0)
@@ -3905,7 +3937,8 @@ CONTAINS
                      end if
                      tair(i, j) = (pt(i, j) + tb0)*pi0
                      if (use_cpm) then
-                        cpm = cp + cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
+                        cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
+                              cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
                               cice*(qi(i, j) + qs(i, j) + qg(i, j))
                         hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
                         hlf = alf - (cice - cliq)*(tair(i, j) - t0)
@@ -3972,7 +4005,8 @@ CONTAINS
 
                if (tair(i, j) .lt. t0) then
                   if (use_cpm) then
-                     cpm = cp + cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
+                     cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
+                           cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
                            cice*(qi(i, j) + qs(i, j) + qg(i, j))
                      hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
                      hlf = alf - (cice - cliq)*(tair(i, j) - t0)
@@ -4063,7 +4097,8 @@ CONTAINS
                      tair(i, j) = (pt(i, j) + tb0)*pi0
                      rtair(i, j) = 1./(tair(i, j) - c358)
                      if (use_cpm) then
-                        cpm = cp + cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
+                        cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
+                              cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
                               cice*(qi(i, j) + qs(i, j) + qg(i, j))
                         hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
                         hlf = alf - (cice - cliq)*(tair(i, j) - t0)
@@ -4105,14 +4140,15 @@ CONTAINS
                tair(i, j) = (pt(i, j) + tb0)*pi0
                tairc(i, j) = tair(i, j) - t0
                if (use_cpm) then
-               cpm = cp + cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
-                     cice*(qi(i, j) + qs(i, j) + qg(i, j))
-               hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
-               hlf = alf - (cice - cliq)*(tair(i, j) - t0)
-               hls = hlv + hlf
-               avcp = hlv/cpm*pir
-               ascp = hls/cpm*pir
-               afcp = hlf/cpm*pir
+                  cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
+                        cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
+                        cice*(qi(i, j) + qs(i, j) + qg(i, j))
+                  hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
+                  hlf = alf - (cice - cliq)*(tair(i, j) - t0)
+                  hls = hlv + hlf
+                  avcp = hlv/cpm*pir
+                  ascp = hls/cpm*pir
+                  afcp = hlf/cpm*pir
                end if
 
                ftns0(i, j) = 1.
@@ -4348,7 +4384,8 @@ CONTAINS
                      mdc5 = 2.6110916E-3
                      mdc6 = -0.26646396
                   else
-                     mdc1 = 173.57305
+!                     mdc1 = 173.57305
+                     mdc1 = 173.27305  !decrease diameter
                      mdc2 = -64.370929
                      mdc3 = 0.36833626
                      mdc4 = 6.1389254
@@ -4442,11 +4479,14 @@ CONTAINS
                   lqi2 = lqi*lqi
                   if (xland(i, j) .eq. 1.0) then
                      ! over land
-                     efdi = exp(161.47584 - 0.26232591*lqi + 4.3393883E-4*lqi2 &
+!                     efdi = exp(161.47584 - 0.26232591*lqi + 4.3393883E-4*lqi2 &
+                     efdi = exp(161.77584 - 0.26232591*lqi + 4.3393883E-4*lqi2 &   ! increase diameter
                                 - 57.057846*ltk + 5.3668153*ltk2)/10.
                   else
                      ! over ocean
-                     efdi = exp(161.92213 - 0.26232591*lqi + 4.3393883E-4*lqi2 &
+!                     efdi = exp(161.92213 - 0.26232591*lqi + 4.3393883E-4*lqi2 &
+!                     efdi = exp(161.62213 - 0.26232591*lqi + 4.3393883E-4*lqi2 &   ! decrease diameter
+                     efdi = exp(161.82213 - 0.26232591*lqi + 4.3393883E-4*lqi2 &   ! slightly decrease diameter
                                 - 57.057846*ltk + 5.3668153*ltk2)/10.
                   end if
                   refi(i, k, j) = efdi/2.
@@ -5091,9 +5131,17 @@ CONTAINS
                         hid = max(min(nint(abs(tc)/0.25), 120), 0)
                         inhgr = itble(hid)  !inherent growth ratio
                         rhoi = 900.*exp(-3.*max(qvz - qsi - 5.e-5, 0.)/inhgr)
+                     elseif (tc .lt. -65.) then
+                        inhgr = 1.
+                        rhoi = 900.
                      else
                         ! Pokrifka et al. 2023, equation 18
-                        inhgr = 3.          !inherent growth ratio (FIG. 16)
+!                        inhgr = 3.          !inherent growth ratio (FIG. 16)
+                        if ( tc .ge. -50. ) then  !-50<=Tc<-40
+                           inhgr = 3.
+                        else                      !-65<=Tc<-50
+                           inhgr = 2.
+                        endif
                         ssi = qvz/qsi - 1.
                         if (ssi .gt. 0.267) then
                            rhoi = -1027.456*ssi + 1185.834
@@ -5103,17 +5151,17 @@ CONTAINS
                      end if
 
                      ! shape parameter (ice aspect ratio) :
-!            adagr = inhgr**thrd
+                     adagr = inhgr**thrd
 ! >>> reduce upper-level vti :
-                     if (tc .ge. -40.) then
-                        adagr = inhgr**thrd
-                     else
-                        if (sat_predict) then
-                           adagr = inhgr**thrd
-                        else !sat_predict
-                           adagr = inhgr**0.9
-                        end if !sat_predict
-                     end if
+!                     if (tc .ge. -40.) then
+!                        adagr = inhgr**thrd
+!                     else
+!                        if (sat_predict) then
+!                           adagr = inhgr**thrd
+!                        else !sat_predict
+!                           adagr = inhgr**0.9
+!                        end if !sat_predict
+!                     end if
 ! <<<
                      ltk = log(tz)
                      ltk2 = ltk*ltk
@@ -5135,19 +5183,25 @@ CONTAINS
                              -5.6243169E-4*lqi*lroi
                      viroi = min(1., viroi)
 
+                     ! "NO" divide between land and ocean :
+                     vti = exp(259.25629 - 0.26367743*lqi - 4.184759E-3*lqi2 &
+                           - 91.567622*ltk + 8.6164869*ltk2) &
+                           /1.e+6*vishp*viroi*(1.0837/rhoz)**0.35
+
                      ! the divide between land and ocean :
-                     if (xland .eq. 1.) then   ! land
-                        vti = exp(265.16805 - 0.28802545*lqi - 3.754874E-3*lqi2 &
-                                  - 93.843132*ltk + 8.8315122*ltk2) &
-                              /1.e+6*vishp*viroi*(1.0837/rhoz)**0.35
-                     else                        ! ocean
-                        vti = exp(252.86312 - 0.23844613*lqi - 4.6185936E-3*lqi2 &
-                                  - 89.119066*ltk + 8.3851678*ltk2) &
-                              /1.e+6*vishp*viroi*(1.0837/rhoz)**0.35
-                     end if
+!                     if (xland .eq. 1.) then   ! land
+!                        vti = exp(265.16805 - 0.28802545*lqi - 3.754874E-3*lqi2 &
+!                                  - 93.843132*ltk + 8.8315122*ltk2) &
+!                              /1.e+6*vishp*viroi*(1.0837/rhoz)**0.35
+!                     else                        ! ocean
+!                        vti = exp(252.86312 - 0.23844613*lqi - 4.6185936E-3*lqi2 &
+!                                  - 89.119066*ltk + 8.3851678*ltk2) &
+!                              /1.e+6*vishp*viroi*(1.0837/rhoz)**0.35
+!                     end if
                   end if
 
-                  vti = min(vimax, max(vimin, vti))
+!                  vti = min(vimax, max(vimin, vti))
+                  vti = max(vimin, vti)   ! remove upper limit of vti
                else
                   vti = vimin
                end if  !end of if qiz
@@ -5673,6 +5727,9 @@ CONTAINS
                esw_mks = a0 + DT*(a1 + DT*(a2 + DT*(a3 + DT*(a4 + DT*(a5 + DT* &
                                                                       (a6 + DT*(a7 + a8*DT)))))))
                esw_mks = esw_mks*100.  !convert to Pa
+
+               ! to be closer to function fpvs :
+               if ( DT.gt.-5.0 ) esw_mks = esw_mks*max(1.0-(DT+5.0)*0.0025/35.0,0.9975)
 !
 !  Goff-Gratch equation (Goff and Gratch 1945)
 !       esw_mks = c610 * exp( c172 - c409 / (tair - c358) )

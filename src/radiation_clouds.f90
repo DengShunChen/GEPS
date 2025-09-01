@@ -3317,7 +3317,9 @@
           cldcov(i,k) = 0.0
 !          clwf  (i,k) = clw(i,k,ntcw)+clw(i,k,ntiw)+clw(i,k,ntrw)+      &
 !                        clw(i,k,ntsw)+clw(i,k,ntgl)+clw(i,k,nthl)
-          clwf  (i,k) = clw(i,k,ntcw)+clw(i,k,ntiw)+clw(i,k,ntsw)
+!          clwf  (i,k) = clw(i,k,ntcw)+clw(i,k,ntiw)+clw(i,k,ntsw)
+          clwf  (i,k) = clw(i,k,ntcw)+clw(i,k,ntiw)+clw(i,k,ntrw)+      &
+                        clw(i,k,ntsw)+clw(i,k,ntgl)
         enddo
       enddo
 
@@ -3368,6 +3370,20 @@
       call cloud_fraction_XuRandall                                     &
                ( IX, NLAY, plyr, clwf, rhly, qstl,                      &
                  lmfshal, lmfdeep2, cldcov )
+
+      do k = 1, NLAY
+        do i = 1, IX
+          ! impose minimum cloudiness if substantial liquid exists
+          tem1 = clw(i,k,ntcw) + clw(i,k,ntrw)
+          if ( tem1 .ge. 1.e-8 ) then
+            cldcov(i,k) = max(0.05,cldcov(i,k))
+          endif
+          ! saturation cloudiness
+          if ( rhly(i,k).gt.0.99 .and. tlyr(i,k).gt.288.16 ) then
+            cldcov(i,k) = 1.0
+          endif
+        enddo
+      enddo
 
 !  ---  find top pressure for each cloud domain for given latitude
 !       ptopc(k,i): top presure of each cld domain (k=1-4 are sfc,L,m,h;
