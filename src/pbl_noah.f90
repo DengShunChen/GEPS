@@ -271,7 +271,11 @@
 !
 ! noah mode
       lsm   =  1
-      mom4ice =.false.
+#ifdef CPL_CICE
+      mom4ice =.true.
+#else
+      mom4ice=.false.
+#endif
       redrag =.false.
 !------------------------------------------------------------
 !     io=67
