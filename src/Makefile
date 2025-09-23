@@ -347,7 +347,7 @@ SRCS_f90  = \
   zimadv.f90 \
   zx.f90 
 
-CPL = /data/common/gfs/GEPSv3_lib/coupler
+CPL = ${clpath}
 ifeq ($(strip $(TIMCOMCPL)),TRUE)
   SRCS_f90 := $(SRCS_f90) mod_gfscpl.f90
 endif
