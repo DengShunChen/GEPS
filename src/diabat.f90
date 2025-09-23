@@ -219,6 +219,10 @@
       logical   docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon,     &
                 land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max),  &
                 docgrav,tofd,fwd
+#ifdef CPL_CICE
+      logical ice_cpl(nxp,my_max), ocean_cpl(nxp,my_max), land_cpl(nxp,my_max)
+      real    z0_cpl(nxp,my_max)
+#endif
 
       real      tice,hice,qgini,thdai,tengi,ptop,                    &
                 hltm,evaprh,s0,stbo,cp,rgas,grav,frad,               &
@@ -651,7 +655,13 @@
       uprad  = uprad  .and. dorad
 !
 ! update low boundary condition
-! 
+!
+#ifdef CPL_CICE
+      ice_cpl = ice
+      ocean_cpl = ocean
+      land_cpl = land
+      z0_cpl = z0 
+#endif
       if ( doclxu .and. doclx ) then
         if (myrank.eq.0)                                                &
            print *,'update low boundary condition at tau= ',tau
@@ -669,6 +679,7 @@
                      alvsf,alvwf,alnsf,alnwf,facsf,facwf)
         endif
 !
+#ifndef CPL_CICE
         do jj = 1, jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
@@ -682,9 +693,9 @@
 ! (2)  tg replaced by climate sea surface temperature
 !---------------------------------------------------------------------
 !            if ( .not. do_sit )then
-#ifndef TIMCOMCPL
+  #ifndef TIMCOMCPL
             if (ocean(i,jj)) tg(i,jj)=sstc(i,jj)
-#endif
+  #endif
 !            endif
 !---------------------------------------------------------------------
 ! (3)  set ice thickness => not for couple
@@ -712,6 +723,22 @@
           endif ! if(ls(i,jj).eq.0) then
         enddo
         enddo
+#else
+        ice   = ice_cpl
+        land  = land_cpl
+        ocean = ocean_cpl
+        z0    = z0_cpl
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+        do i=1,nxj
+          if(ice(i,jj)) z0(i,jj)=(1.-cice(i,jj))*z0_cpl(i,jj)+cice(i,jj)*0.00001
+          
+          if(ocean(i,jj)) z0(i,jj)=ustar(i,jj)*ustar(i,jj)*0.014/grav
+        enddo
+        enddo
+
+#endif
 
       endif ! doclxu
 #ifdef Readaeroclx
@@ -982,6 +1009,9 @@
         if(land (i,jj))islimsk(i)=1
         if(ocean(i,jj))islimsk(i)=0
         if(ice  (i,jj))islimsk(i)=2
+#ifdef CPL_CICE
+        if(myrank .eq. 0) write(*,*) "check cice :", i, jj, cice(i,jj), ice(i,jj)
+#endif
       enddo
 
     !    compute new time level p**kapa quantites

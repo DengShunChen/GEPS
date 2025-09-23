@@ -129,7 +129,11 @@ end subroutine gfs_cpl_send2gocn
 
 !jwhwu 20241007
 !subroutine gfs_cpl_recv4gocn(compid, mask_lnd, tgfs, ssufs, ssvfs)
-subroutine gfs_cpl_recv4gocn(compid, mask_lnd, mask_ice, tgfs, ssufs, ssvfs)
+#ifdef CPL_CICE
+  subroutine gfs_cpl_recv4gocn(compid, mask_lnd, mask_ice, tgfs, ssufs, ssvfs, ifrac, icedp, snodp)
+#else
+  subroutine gfs_cpl_recv4gocn(compid, mask_lnd, mask_ice, tgfs, ssufs, ssvfs)
+#endif
 !jwhwu
   use param,        only: nx, my, my_max
   use index,        only: nxp, jlistnum, jlist1, &
@@ -147,11 +151,17 @@ subroutine gfs_cpl_recv4gocn(compid, mask_lnd, mask_ice, tgfs, ssufs, ssvfs)
 ! logical, intent(inout) :: mask_lnd(nxp, my_max)
   logical, intent(inout) :: mask_lnd(nxp, my_max), mask_ice(nxp, my_max)
 !jwhwu
+#ifdef CPL_CICE
+  real, intent(inout) :: tgfs(nxp, my_max), ssufs(nxp,my_max), ssvfs(nxp,my_max), ifrac(nxp,my_max), icedp(nxp,my_max), snodp(nxp,my_max)
+  real, dimension(nx, my) :: tg_glb, sst_glb, ssu_glb, ssv_glb, ifrac_glb, icedp_glb, snodp_glb
+  real, dimension(nx, my_max) :: sst_nxj
+  real, dimension(nxp, my_max) :: SST, SSU, SSV, CICE, ZICE, ZSNO
+#else
   real, intent(inout) :: tgfs(nxp, my_max), ssufs(nxp,my_max), ssvfs(nxp,my_max)
   real, dimension(nx, my) :: tg_glb, sst_glb, ssu_glb, ssv_glb
   real, dimension(nx, my_max) :: sst_nxj
   real, dimension(nxp, my_max) :: SST, SSU, SSV
-
+#endif
   real(kind=RTYPE) :: ocnwrk3(nxp, my_max)
   real(kind=RTYPE), dimension(nx, my) :: ocnwrk4
   real(kind=RTYPE), dimension(nx, my_max) :: ocnwrk5
@@ -168,6 +178,14 @@ subroutine gfs_cpl_recv4gocn(compid, mask_lnd, mask_ice, tgfs, ssufs, ssvfs)
   SST=0.
   SSU=0.
   SSV=0.
+#ifdef CPL_CICE
+  CICE=0.
+  ZICE=0.
+  ZSNO=0.
+  ifrac_glb=0.           
+  icedp_glb=0.           
+  snodp_glb=0.           
+#endif
   ssu_glb=0.
   ssv_glb=0.
   ssufs=0.
@@ -185,6 +203,11 @@ subroutine gfs_cpl_recv4gocn(compid, mask_lnd, mask_ice, tgfs, ssufs, ssvfs)
       SST(i,jj) = recv_AV%rAttr(1,cnt)
       SSU(i,jj) = recv_AV%rAttr(2,cnt)
       SSV(i,jj) = recv_AV%rAttr(3,cnt)
+#ifdef CPL_CICE        
+      CICE(i,jj) = recv_AV%rAttr(4,cnt)
+      ZICE(i,jj) = recv_AV%rAttr(5,cnt)
+      ZSNO(i,jj) = recv_AV%rAttr(6,cnt)
+#endif
     end do
   end do
 !      write(*,*) 'SSUmax=', maxval(SSU), 'myrank=', myrank
@@ -203,6 +226,20 @@ subroutine gfs_cpl_recv4gocn(compid, mask_lnd, mask_ice, tgfs, ssufs, ssvfs)
   ocnwrk6 = SSV
   call mpe2d_unify(ocnwrk4, ocnwrk6, .true.)
   ssv_glb = ocnwrk4
+#ifdef CPL_CICE
+  ocnwrk6 = CICE
+  call mpe2d_unify(ocnwrk4, ocnwrk6, .true.)
+  ifrac_glb = ocnwrk4
+
+  ocnwrk6 = ZICE
+  call mpe2d_unify(ocnwrk4, ocnwrk6, .true.)
+  icedp_glb = ocnwrk4
+
+  ocnwrk6 = ZSNO
+  call mpe2d_unify(ocnwrk4, ocnwrk6, .true.)
+  snodp_glb = ocnwrk4
+#endif
+
 !      if(myrank .eq. 0) write(*,*) 'ssu_glbmax=', maxval(ssu_glb)
   !call mpe2d_unify_nx(sst_nxj, SST)
   !call mpe2d_unify_my(sst_glb, sst_nxj)
@@ -221,8 +258,12 @@ subroutine gfs_cpl_recv4gocn(compid, mask_lnd, mask_ice, tgfs, ssufs, ssvfs)
       call reducepick(sst_glb(1,j), nxdef(j), nx, 1)
       call reducepick(ssu_glb(1,j), nxdef(j), nx, 1)
       call reducepick(ssv_glb(1,j), nxdef(j), nx, 1)
+    #ifdef CPL_CICE
+      call reducepick(ifrac_glb(1,j), nxdef(j), nx, 1)
+      call reducepick(icedp_glb(1,j), nxdef(j), nx, 1)
+      call reducepick(snodp_glb(1,j), nxdef(j), nx, 1)
+    #endif
     end if
-
       
     do i = 1, nxj
       if(.not.mask_lnd(i,jj).and.sst_glb(ii,j).gt.271.0 .and. .not.mask_ice(i,jj)) then
@@ -230,6 +271,13 @@ subroutine gfs_cpl_recv4gocn(compid, mask_lnd, mask_ice, tgfs, ssufs, ssvfs)
         ssufs(i,jj) = ssu_glb(ii,j)
         ssvfs(i,jj) = ssv_glb(ii,j)
       end if
+#ifdef CPL_CICE
+      if(.not.mask_lnd(i,jj)) then
+        ifrac(i,jj) = ifrac_glb(ii,j)
+        icedp(i,jj) = icedp_glb(ii,j)
+        snodp(i,jj) = snodp_glb(ii,j)
+      endif
+#endif
       ii = ii + 1 
     end do
   end do
