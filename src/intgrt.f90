@@ -511,6 +511,7 @@
           j=jlist1(jj)
           nxj=nxdef_2d(j)
         do i=1,nxj
+          if(tg_ocn(i,j).ne.0.0) then
           if(.not. land(i,jj)) then
             if(cice(i,jj) .ge. 0.15) then
               ice(i,jj)   = .true.
@@ -521,15 +522,16 @@
               sncover(i,jj) = min(1., snr(i,jj)/400.)
               shdmax(i,jj) = cice(i,jj)
             else
-              ice(i,jj)   = .true.
-              ocean(i,jj) = .false.
+              ice(i,jj)   = .false.
+              ocean(i,jj) = .true.
               xtice(i,jj) = tg(i,jj)
-              zice(i,jj)  = max(0.15, zice(i,jj))
+              zice(i,jj)  = 0.0 !max(0.15, zice(i,jj))
               cice(i,jj)  = 0.0
               sndepth(i,jj) = 0.0
               sncover(i,jj) = 0.0
               shdmax(i,jj) = 0.0
             endif
+          endif
           endif
         enddo
         enddo
@@ -1544,8 +1546,8 @@
                   sncover(i,jj) = min(1., snr(i,jj)/400.)
                   shdmax(i,jj) = cice(i,jj)
                 else
-                  ice(i,jj)   = .true.
-                  ocean(i,jj) = .false.
+                  ice(i,jj)   = .false.
+                  ocean(i,jj) = .true.
                   xtice(i,jj) = tg(i,jj)
                   zice(i,jj)  = max(0.15, zice(i,jj))
                   cice(i,jj)  = 0.0
