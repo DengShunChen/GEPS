@@ -1092,7 +1092,7 @@
           ht(i,1) = sgeo(i)/con_g   !terrain geopotential height above sea level (m)
           if( islimsk(i) .eq. 1 ) then
             land2d(i,1) = 1.        !land
-            if ( ivegtyp(i) .eq. 15 ) land2d(i,1) = 2.   !glacial is seen as ocean
+!            if ( ivegtyp(i) .eq. 15 ) land2d(i,1) = 2.   !glacial is seen as ocean
           else
             land2d(i,1) = 2.        !ocean & seaice
           endif
