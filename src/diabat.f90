@@ -180,7 +180,7 @@
                                       pdfcloud,cmbk,cgwd, fsit, dosppt, doshum, dossst, &
                                       use_zmtnblck,ldailyFCTicesndpt,dSITdt_intv, &
                                       weightSIT,bckfile,ggdef,doclx,doslavepp,    &
-                                      RTYPE,qmin,julian,doskeb,mass_dp,monsave
+                                      RTYPE,qmin,julian,doskeb,mass_dp,monsave,mom4ice
       use mod_sitgrid,           ONLY:sitmask,tseadiffSIT,sumdSITdt,countdSITdt, &
                                       ratioSIT,tseadiffSIT24,dtswdt
       USE mod_sit_control,       ONLY:ltrigsit
@@ -219,7 +219,7 @@
       logical   docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon,     &
                 land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max),  &
                 docgrav,tofd,fwd
-#ifdef CPL_CICE
+#ifdef TIMCOMCPL
       logical ice_cpl(nxp,my_max), ocean_cpl(nxp,my_max), land_cpl(nxp,my_max)
       real    z0_cpl(nxp,my_max)
 #endif
@@ -656,7 +656,7 @@
 !
 ! update low boundary condition
 !
-#ifdef CPL_CICE
+#ifdef TIMCOMCPL
       ice_cpl = ice
       ocean_cpl = ocean
       land_cpl = land
@@ -679,7 +679,7 @@
                      alvsf,alvwf,alnsf,alnwf,facsf,facwf)
         endif
 !
-#ifndef CPL_CICE
+        if(.not. mom4ice) then 
         do jj = 1, jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
@@ -693,9 +693,9 @@
 ! (2)  tg replaced by climate sea surface temperature
 !---------------------------------------------------------------------
 !            if ( .not. do_sit )then
-  #ifndef TIMCOMCPL
+#ifndef TIMCOMCPL
             if (ocean(i,jj)) tg(i,jj)=sstc(i,jj)
-  #endif
+#endif
 !            endif
 !---------------------------------------------------------------------
 ! (3)  set ice thickness => not for couple
@@ -723,23 +723,59 @@
           endif ! if(ls(i,jj).eq.0) then
         enddo
         enddo
-#else
-        ice   = ice_cpl
-        land  = land_cpl
-        ocean = ocean_cpl
-        z0    = z0_cpl
+
+        else !mom4ice
+
         do jj = 1, jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
         do i=1,nxj
-          if(ice(i,jj)) z0(i,jj)=(1.-cice(i,jj))*z0_cpl(i,jj)+cice(i,jj)*0.00001
-          
-          if(ocean(i,jj)) z0(i,jj)=ustar(i,jj)*ustar(i,jj)*0.014/grav
+          if(xlat(j) .gt. -80.0 .and. xlat(j) .lt. 86.76) then
+            ice(i,jj) = ice_cpl(i,jj)
+            land(i,jj) = land_cpl(i,jj)
+            ocean(i,jj) = ocean_cpl(i,jj)
+            if(ocean(i,jj)) then
+              z0(i,jj)=ustar(i,jj)*ustar(i,jj)*0.014/grav
+              shdmax(i,jj) = 0.0
+              shdmin(i,jj) = 0.0
+              tgclim(i,jj) = tg(i,jj)
+            endif
+            if(ice(i,jj))  then
+              z0(i,jj) = (1.-cice(i,jj))*z0ocn(i,jj)+cice(i,jj)*0.00001
+              tgclim(i,jj) = 271.2
+              shdmax(i,jj) = cice(i,jj)
+              shdmin(i,jj) = 0.15
+            endif
+          else
+            if(.not. land(i,jj)) then
+              z0(i,jj)=z0ocn(i,jj)
+              if(iceold(i,jj) .and. .not. ice(i,jj)) then
+                zice(i,jj)=0.
+                cice(i,jj)=0.
+                snr(i,jj) =0.
+                sndepth(i,jj)=0.
+                sncover(i,jj)=0.
+                shdmax(i,jj)=0.
+                z0(i,jj)=ustar(i,jj)*ustar(i,jj)*0.014/grav
+                xtice(i,jj) = tg(i,jj)
+              endif
+              if(.not. iceold(i,jj) .and. ice(i,jj)) then
+                tg(i,jj)=271.2
+                xtice(i,jj)=tg(i,jj)
+                zice(i,jj)=0.15 ! from himin in sfc_sice
+                cice(i,jj)=0.5 ! from cimin in sfc_sice
+                snr(i,jj) =15.
+                sndepth(i,jj)=snr(i,jj)*8.
+                sncover(i,jj)=min(1., snr(i,jj)/400.)
+                shdmax(i,jj)=cice(i,jj)
+                z0(i,jj)=(1.-cice(i,jj))*z0ocn(i,jj)+cice(i,jj)*0.00001
+                tgclim(i,jj) = 271.2
+              endif
+            endif
+           endif
         enddo
         enddo
-
-#endif
-
+        endif
       endif ! doclxu
 #ifdef Readaeroclx
 !
@@ -1009,9 +1045,6 @@
         if(land (i,jj))islimsk(i)=1
         if(ocean(i,jj))islimsk(i)=0
         if(ice  (i,jj))islimsk(i)=2
-#ifdef CPL_CICE
-        if(myrank .eq. 0) write(*,*) "check cice :", i, jj, cice(i,jj), ice(i,jj)
-#endif
       enddo
 
     !    compute new time level p**kapa quantites

@@ -43,15 +43,10 @@ module av
 
 # Decide module to load
 case "$OPTION" in
-  2cpl_CICE)
-    module load modulefile.tcogfs.${MACHINE}_2cpl_CICE
-    export TIMCOMCPL=TRUE
-    export clpath=${MDIR}/../coupler
-    ;;
   2cpl)
     module load modulefile.tcogfs.${MACHINE}_2cpl
     export TIMCOMCPL=TRUE
-    export clpath=/data/common/gfs/GEPSv3_lib/coupler
+    export clpath=${MDIR}/../coupler
     ;;
   4cpl)
     module load modulefile.tcogfs.${MACHINE}_4cpl

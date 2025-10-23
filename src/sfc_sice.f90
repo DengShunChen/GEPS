@@ -228,11 +228,7 @@
 
           ffw(i)    = 1.0 - fice(i)
           if (fice(i) < cimin) then
-#ifdef CPL_CICE
-            print *,'warning: ice fraction is low:', fice(i), flag_iter(i), flag(i), islimsk(i)
-#else
             print *,'warning: ice fraction is low:', fice(i)
-#endif
             fice(i) = cimin
             ffw (i) = 1.0 - fice(i)
             tice(i) = tgice
