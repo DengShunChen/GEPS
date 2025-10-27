@@ -46,12 +46,12 @@ case "$OPTION" in
   2cpl)
     module load modulefile.tcogfs.${MACHINE}_2cpl
     export TIMCOMCPL=TRUE
-    export clpath=${MDIR}/../coupler/fx1000
+    export clpath=/data/common/gfs/GEPSv3_lib/coupler/fx1000
     ;;
   4cpl)
     module load modulefile.tcogfs.${MACHINE}_4cpl
     export TIMCOMCPL=TRUE
-    export clpath=${MDIR}/../coupler/fx1000
+    export clpath=/data/common/gfs/GEPSv3_lib/coupler/fx1000
     ;;
   "")
     module load modulefile.tcogfs.${MACHINE}
