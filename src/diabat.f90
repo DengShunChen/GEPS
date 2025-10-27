@@ -219,10 +219,10 @@
       logical   docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon,     &
                 land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max),  &
                 docgrav,tofd,fwd
-#ifdef TIMCOMCPL
+!#ifdef TIMCOMCPL
       logical ice_cpl(nxp,my_max), ocean_cpl(nxp,my_max), land_cpl(nxp,my_max)
       real    z0_cpl(nxp,my_max)
-#endif
+!#endif
 
       real      tice,hice,qgini,thdai,tengi,ptop,                    &
                 hltm,evaprh,s0,stbo,cp,rgas,grav,frad,               &
