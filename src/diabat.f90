@@ -34,7 +34,7 @@
                     , itimestep,lrun_sitvdiff,ic_sit                           &
 !xb110>
 #ifdef TIMCOMCPL
-                    , flash,tsflw,vvel,totallp, ustress, vstress, ssu, ssv     &
+                    , flash,tsflw,vvel,totallp,ustress,vstress,ssu,ssv,tg_ocn  &
 #else
                     , flash,tsflw,vvel,totallp                                 &
 #endif
@@ -219,10 +219,10 @@
       logical   docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon,     &
                 land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max),  &
                 docgrav,tofd,fwd
-!#ifdef TIMCOMCPL
+#ifdef TIMCOMCPL
       logical ice_cpl(nxp,my_max), ocean_cpl(nxp,my_max), land_cpl(nxp,my_max)
-      real    z0_cpl(nxp,my_max)
-!#endif
+      real    z0_cpl(nxp,my_max), tg_cpl(nxp,my_max)
+#endif
 
       real      tice,hice,qgini,thdai,tengi,ptop,                    &
                 hltm,evaprh,s0,stbo,cp,rgas,grav,frad,               &
@@ -253,11 +253,12 @@
                 raincu3(nxp,my_max),rainlp3(nxp,my_max),                  &
 #ifdef TIMCOMCPL
                 raincu1(nxp,my_max),rainlp1(nxp,my_max),                  &
-                ustress(nxp,my_max),vstress(nxp,my_max),ssu(nxp,my_max),ssv(nxp,my_max)
+                ustress(nxp,my_max),vstress(nxp,my_max),                  &
+                ssu(nxp,my_max),ssv(nxp,my_max),tg_ocn(nxp,my_max)
 #else
                 raincu1(nxp,my_max),rainlp1(nxp,my_max)
 #endif
-        real(kind=RTYPE) qt(nxp,lev*ncld,my_max),qp(nxp,lev*ncld,my_max),   &
+        real(kind=RTYPE) qt(nxp,lev*ncld,my_max),qp(nxp,lev*ncld,my_max), &
                        up(nxp,lev,my_max),vp(nxp,lev,my_max),             &
                        ttp(nxp,lev,my_max),o3l(nxp,lev,my_max),           &
                        sgeo(nxp,my_max),ps(nxp,my_max),pst(nxp,my_max),   &
@@ -660,7 +661,7 @@
       ice_cpl = ice
       ocean_cpl = ocean
       land_cpl = land
-      z0_cpl = z0 
+      z0_cpl = z0
 #endif
       if ( doclxu .and. doclx ) then
         if (myrank.eq.0)                                                &
@@ -693,9 +694,9 @@
 ! (2)  tg replaced by climate sea surface temperature
 !---------------------------------------------------------------------
 !            if ( .not. do_sit )then
-  #ifndef TIMCOMCPL
+#ifndef TIMCOMCPL
             if (ocean(i,jj)) tg(i,jj)=sstc(i,jj)
-  #endif
+#endif
 !            endif
 !---------------------------------------------------------------------
 ! (3)  set ice thickness => not for couple
@@ -723,25 +724,9 @@
           endif ! if(ls(i,jj).eq.0) then
         enddo
         enddo
-#else
-        ice   = ice_cpl
-        land  = land_cpl
-        ocean = ocean_cpl
-        z0    = z0_cpl
-        do jj = 1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-        do i=1,nxj
-          if(ice(i,jj)) z0(i,jj)=(1.-cice(i,jj))*z0_cpl(i,jj)+cice(i,jj)*0.00001
-          
-          if(ocean(i,jj)) z0(i,jj)=ustar(i,jj)*ustar(i,jj)*0.014/grav
-        enddo
-        enddo
-
-#endif
 
         else !mom4ice
-
+#ifdef TIMCOMCPL
         do jj = 1, jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
@@ -791,6 +776,7 @@
            endif
         enddo
         enddo
+#endif
         endif
       endif ! doclxu
 #ifdef Readaeroclx
