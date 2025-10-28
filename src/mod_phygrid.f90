@@ -41,6 +41,11 @@
 
       real, dimension(:,:),allocatable,save :: u10,v10,t2,rh2,rh10,q2  &
 #ifdef TIMCOMCPL
+  #ifdef CPL_CICE
+                                              ,fm,fm10,fh,fh2,srflag   &
+                                              ,ustress,vstress,ssu,ssv &
+                                              ,ifrac,icedp,snodp
+  #else
                                               ,fm,fm10,fh,fh2,srflag   &
                                               ,ustress,vstress,ssu,ssv &
                                               ,ifrac,icedp,snodp

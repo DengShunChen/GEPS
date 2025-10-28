@@ -693,9 +693,9 @@
 ! (2)  tg replaced by climate sea surface temperature
 !---------------------------------------------------------------------
 !            if ( .not. do_sit )then
-#ifndef TIMCOMCPL
+  #ifndef TIMCOMCPL
             if (ocean(i,jj)) tg(i,jj)=sstc(i,jj)
-#endif
+  #endif
 !            endif
 !---------------------------------------------------------------------
 ! (3)  set ice thickness => not for couple
@@ -723,6 +723,22 @@
           endif ! if(ls(i,jj).eq.0) then
         enddo
         enddo
+#else
+        ice   = ice_cpl
+        land  = land_cpl
+        ocean = ocean_cpl
+        z0    = z0_cpl
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+        do i=1,nxj
+          if(ice(i,jj)) z0(i,jj)=(1.-cice(i,jj))*z0_cpl(i,jj)+cice(i,jj)*0.00001
+          
+          if(ocean(i,jj)) z0(i,jj)=ustar(i,jj)*ustar(i,jj)*0.014/grav
+        enddo
+        enddo
+
+#endif
 
         else !mom4ice
 
@@ -1045,6 +1061,9 @@
         if(land (i,jj))islimsk(i)=1
         if(ocean(i,jj))islimsk(i)=0
         if(ice  (i,jj))islimsk(i)=2
+#ifdef CPL_CICE
+        if(myrank .eq. 0) write(*,*) "check cice :", i, jj, cice(i,jj), ice(i,jj)
+#endif
       enddo
 
     !    compute new time level p**kapa quantites
