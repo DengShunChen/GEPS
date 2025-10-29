@@ -138,6 +138,7 @@
       ldailyFCTsst=.false.
       ldailyFCTicesndpt=.false.
       lFCTweight=.false.
+      mom4ice=.false.
       lopgsst=.false.
       dailyClm_option=-99
 !--for SIT

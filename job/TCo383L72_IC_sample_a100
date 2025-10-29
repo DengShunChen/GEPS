@@ -2,10 +2,10 @@
 #PJM -L vnode=1
 #PJM -L vnode-core=32
 #PJM -L rscunit=rscunit_pg01
-#PJM -L rscgrp=gpu-rd-large
+#PJM -L rscgrp=gpu-rd-small
 #PJM -L elapse=02:30:00
 #PJM -L node-mem=unlimited
-#PJM -L gpu=8
+#PJM -L gpu-share=8
 #PJM --no-stging
 #PJM --mpi "proc=8"
 #PJM -j

@@ -20,7 +20,7 @@ set(CMAKE_C_FLAGS_RELEASE "")
 add_compile_options("$<$<COMPILE_LANGUAGE:C>:SHELL:-Xg>")
 
 #set(NetCDF_Fortran_INCLUDE_DIRS "/package/fx1000/netcdf-4.9.0/include")
-set(CPL_INCLUDE_DIR "/data/common/gfs/GEPSv3_lib/coupler/")
+set(CPL_INCLUDE_DIR "/data/common/gfs/GEPSv3_lib/coupler/fx1000")
 set(MCT_INCLUDE_DIR "/data/common/gfs/GEPSv3_lib/fx1000/MCT/include")
 
 # Auto-parallel and OpenMP

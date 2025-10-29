@@ -22,7 +22,7 @@ endif()
 # Set variable for NetCDF and W3 libraries
 set(NetCDF_Fortran_INCLUDE_DIRS "/package/x86_64/nvidia/netcdf-4.9.0/include")
 set(W3_LIBRARIES "/package/x86_64/w3lib-2.0.2/lib/libw3.a")
-set(CPL_INCLUDE_DIR "/package/x86_64/nvidia/geps_coupler/include")
+set(CPL_INCLUDE_DIR "/data/common/gfs/GEPSv3_lib/coupler/a100")
 set(MCT_INCLUDE_DIR "/package/x86_64/nvidia/mct-2.11.0/include")
 
 # Link library for dgemm

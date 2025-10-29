@@ -546,7 +546,41 @@ if(.not. restrt) &
 #ifdef TIMCOMCPL
 !$acc wait(async_id)
 if(.not. restrt) then
-      call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv)
+!      call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv)
+      call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv, ifrac, icedp, snodp)
+! cpl cice
+      if(mom4ice) then
+          cice = ifrac  ![0-1]
+          zice = icedp
+          snr  = snodp  !the unit of icedp and snodp is mm
+          do jj = 1, jlistnum
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+          do i=1,nxj
+            if(.not. land(i,jj)) then
+              if(cice(i,jj) .ge. 0.15) then
+                ice(i,jj)   = .true.
+                ocean(i,jj) = .false.
+                xtice(i,jj) = tg(i,jj)
+                zice(i,jj)  = max(0.15, zice(i,jj))
+                sndepth(i,jj) = snr(i,jj)*0.001/cice(i,jj)
+                sncover(i,jj) = min(1., snr(i,jj)/400.)
+                shdmax(i,jj) = cice(i,jj)
+              else
+                ice(i,jj)   = .false.
+                ocean(i,jj) = .true.
+                xtice(i,jj) = tg(i,jj)
+                zice(i,jj)  = 0.0 !max(0.15, zice(i,jj))
+                cice(i,jj)  = 0.0
+                sndepth(i,jj) = 0.0
+                sncover(i,jj) = 0.0
+                shdmax(i,jj) = 0.0
+              endif
+            endif
+          enddo
+          enddo
+      endif
+!
         tgwf=1.0/(86400.0/dta/(24.0/cplf)-1.0)
         tg_diff=0.
         do i = 1,nxp
@@ -1652,7 +1686,41 @@ endif
           dtaup = mod(tau+0.001, 2.0)
           if( dtaup .lt. dtx_tau ) then
             if(myrank .eq. 0) write(*,*) "TCo time to coupler", tau
-            call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv)
+!            call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv)
+            call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv, ifrac, icedp, snodp)
+! cpl cice
+            if(mom4ice) then
+              cice = ifrac ! [0-1]
+              zice = icedp
+              snr  = snodp ! the unit of icedp and snodp is mm
+              do jj = 1, jlistnum
+                j=jlist1(jj)
+                nxj=nxdef_2d(j)
+              do i=1,nxj
+                if(.not. land(i,jj)) then
+                  if(cice(i,jj) .ge. 0.15) then
+                    ice(i,jj)   = .true.
+                    ocean(i,jj) = .false.
+                    xtice(i,jj) = tg(i,jj)
+                    zice(i,jj)  = max(0.15, zice(i,jj))
+                    sndepth(i,jj) = snr(i,jj)*0.001/cice(i,jj)
+                    sncover(i,jj) = min(1., snr(i,jj)/400.)
+                    shdmax(i,jj) = cice(i,jj)
+                  else
+                    ice(i,jj)   = .false.
+                    ocean(i,jj) = .true.
+                    xtice(i,jj) = tg(i,jj)
+                    zice(i,jj)  = max(0.15, zice(i,jj))
+                    cice(i,jj)  = 0.0
+                    sndepth(i,jj) = 0.0
+                    sncover(i,jj) = 0.0
+                    shdmax(i,jj) = 0.0
+                  endif
+                endif
+              enddo
+              enddo
+            end if
+!            
             u10m_cpl = u10m_cpl/dt_cpl
             v10m_cpl = v10m_cpl/dt_cpl
             t02m_cpl = t02m_cpl/dt_cpl
