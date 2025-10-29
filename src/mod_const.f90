@@ -151,7 +151,7 @@
     integer :: itimestep
 
     ! daily forecast sst, sea ice fraction, water equivlent snow depth, time weighting
-    logical :: ldailyFCTsst,ldailyFCTicesndpt,lFCTweight
+    logical :: ldailyFCTsst,ldailyFCTicesndpt,lFCTweight,mom4ice
     integer :: dailyClm_option
     logical :: lopgsst
 

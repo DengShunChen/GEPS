@@ -169,7 +169,7 @@ elif [ $JCAP = 383  ] ; then
   MODLST_PHY="nmgwcv=1,"
   MODEL_BASIC='nco=384,'
 elif [ $JCAP = 199  ] ; then
-  MODLST_RES='dt=1200., hfilt=1., cgwd=2.40, cmbk=0.60,'
+  MODLST_RES='dt=1200., hfilt=1., cgwd=2.40, cmbk=0.60, mom4ice=f, '
   MODEL_BASIC='nco=200,'
 fi
 
