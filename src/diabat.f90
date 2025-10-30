@@ -731,7 +731,8 @@
           j=jlist1(jj)
           nxj=nxdef_2d(j)
         do i=1,nxj
-          if(xlat(j) .gt. -80.0 .and. xlat(j) .lt. 86.76) then
+!          if(xlat(j) .gt. -80.0 .and. xlat(j) .lt. 86.76) then
+          if(tg_ocn(i,jj) .gt. 0.0) then
             ice(i,jj) = ice_cpl(i,jj)
             land(i,jj) = land_cpl(i,jj)
             ocean(i,jj) = ocean_cpl(i,jj)
@@ -748,7 +749,7 @@
               shdmin(i,jj) = 0.15
             endif
           else
-            if(.not. land(i,jj)) then
+            if(ls(i,jj).eq.0) then
               z0(i,jj)=z0ocn(i,jj)
               if(iceold(i,jj) .and. .not. ice(i,jj)) then
                 zice(i,jj)=0.

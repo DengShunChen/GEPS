@@ -485,97 +485,53 @@
           end if   !end lopgsst
 !
 #ifdef TIMCOMCPL
-  #ifndef CPL_CICE
       if(.not. restrt) then
         call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv, ifrac, icedp, snodp)
         if(mom4ice) then
-          cice = ifrac  ![0-1]
-          zice = icedp
-          snr  = snodp  !the unit of icedp and snodp is mm
           do jj = 1, jlistnum
             j=jlist1(jj)
             nxj=nxdef_2d(j)
           do i=1,nxj
-            if(.not. land(i,jj)) then
-              if(cice(i,jj) .ge. 0.15) then
-                ice(i,jj)   = .true.
-                ocean(i,jj) = .false.
-                xtice(i,jj) = tg(i,jj)
-                zice(i,jj)  = max(0.15, zice(i,jj))
-                sndepth(i,jj) = snr(i,jj)*0.001/cice(i,jj)
-                sncover(i,jj) = min(1., snr(i,jj)/400.)
-                shdmax(i,jj) = cice(i,jj)
-              else
-                ice(i,jj)   = .false.
-                ocean(i,jj) = .true.
-                xtice(i,jj) = tg(i,jj)
-                zice(i,jj)  = 0.0 !max(0.15, zice(i,jj))
-                cice(i,jj)  = 0.0
-                sndepth(i,jj) = 0.0
-                sncover(i,jj) = 0.0
-                shdmax(i,jj) = 0.0
+            if(tg_ocn(i,jj).ne.0.0) then
+              cice(i,jj) = ifrac(i,jj)
+              zice(i,jj) = icedp(i,jj)
+              snr(i,jj)  = snodp(i,jj)
+              if(.not. land(i,jj)) then
+                if(cice(i,jj) .ge. 0.15) then
+                  ice(i,jj)   = .true.
+                  ocean(i,jj) = .false.
+                  xtice(i,jj) = tg(i,jj)
+                  zice(i,jj)  = max(0.15, zice(i,jj))
+                  sndepth(i,jj) = snr(i,jj)*0.001/cice(i,jj)
+                  sncover(i,jj) = min(1., snr(i,jj)/400.)
+                  shdmax(i,jj) = cice(i,jj)
+                else
+                  ice(i,jj)   = .false.
+                  ocean(i,jj) = .true.
+                  xtice(i,jj) = tg(i,jj)
+                  zice(i,jj)  = 0.0 !max(0.15, zice(i,jj))
+                  cice(i,jj)  = 0.0
+                  sndepth(i,jj) = 0.0
+                  sncover(i,jj) = 0.0
+                  shdmax(i,jj) = 0.0
+                endif
               endif
             endif
           enddo
           enddo
-        endif
+        end if
 
         tgwf=1.0/(86400.0/dta/(24.0/cplf)-1.0)
         tg_diff=0.
-        do i = 1,nxp
-         do j = 1,my_max
-          if(tg_ocn(i,j).ne.0.0) then
-            tg_diff(i,j)=(tg_ocn(i,j)-tg(i,j))*tgwf
-          end if
-         end do
-        end do
-        tg = tg + tg_diff
-      if(myrank .eq. 0) then
-            write(*,*) '1loop tg_diff=',tg_diff(2,7)
-      endif
-      endif
-  #else
-      if(.not. restrt) then
-        call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv, ifrac, icedp, snodp)
-        cice = ifrac  ![0-1]
-        zice = icedp
-        snr  = snodp  !the unit of icedp and snodp is mm
         do jj = 1, jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
         do i=1,nxj
-          if(tg_ocn(i,j).ne.0.0) then
-          if(.not. land(i,jj)) then
-            if(cice(i,jj) .ge. 0.15) then
-              ice(i,jj)   = .true.
-              ocean(i,jj) = .false.
-              xtice(i,jj) = tg(i,jj)
-              zice(i,jj)  = max(0.15, zice(i,jj))
-              sndepth(i,jj) = snr(i,jj)*0.001/cice(i,jj)
-              sncover(i,jj) = min(1., snr(i,jj)/400.)
-              shdmax(i,jj) = cice(i,jj)
-            else
-              ice(i,jj)   = .false.
-              ocean(i,jj) = .true.
-              xtice(i,jj) = tg(i,jj)
-              zice(i,jj)  = 0.0 !max(0.15, zice(i,jj))
-              cice(i,jj)  = 0.0
-              sndepth(i,jj) = 0.0
-              sncover(i,jj) = 0.0
-              shdmax(i,jj) = 0.0
-            endif
-          endif
-          endif
-        enddo
-        enddo
-        tgwf=1.0/(86400.0/dta/(24.0/cplf)-1.0)
-        tg_diff=0.
-        do i = 1,nxp
-         do j = 1,my_max
-          if(tg_ocn(i,j).ne.0.0) then
-            tg_diff(i,j)=(tg_ocn(i,j)-tg(i,j))*tgwf
+          if(tg_ocn(i,jj).ne.0.0) then
+            tg_diff(i,jj)=(tg_ocn(i,jj)-tg(i,jj))*tgwf
+            tg(i,jj) = tg(i,jj) + tg_diff(i,jj)
           end if
-         end do
+        end do
         end do
       if(myrank .eq. 0) then
             write(*,*) '1loop tg_diff=',tg_diff(2,7)
@@ -1250,7 +1206,7 @@
                          !xb110>
                          !byl                      , rmr,smr,flash)
 #ifdef TIMCOMCPL
-                         , flash, tsflw, vvel,totallp,ustress,vstress,ssu,ssv &
+                         , flash, tsflw, vvel,totallp,ustress,vstress,ssu,ssv, tg_ocn &
 #else
                          , flash, tsflw, vvel, totallp &
 #endif
@@ -1621,13 +1577,15 @@
             tgwf=1.0/(86400.0/dta/(24.0/cplf))
 
             tg_diff=0.
-            do j = 1,my_max
-             do i = 1,nxp
+            do jj = 1, jlistnum
+             j = jlist1(jj)
+             nxj = nxdef_2d(j)
+             do i = 1, nxj
 !             if(tg_ocn(i,j).eq.0.0) then
 !               tg_diff(i,j)=0.0
 !             else
-              if(tg_ocn(i,j).ne.0.0) then
-                tg_diff(i,j)=(tg_ocn(i,j)-tg(i,j))*tgwf
+              if(tg_ocn(i,jj).ne.0.0) then
+                tg_diff(i,jj)=(tg_ocn(i,jj)-tg(i,jj))*tgwf
               end if
              end do
             end do
