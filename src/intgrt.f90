@@ -537,7 +537,6 @@
             write(*,*) '1loop tg_diff=',tg_diff(2,7)
       endif
       endif
-  #endif
 #endif 
 
  10   continue
@@ -1516,13 +1515,14 @@
             if(myrank .eq. 0) write(*,*) "TCo time to coupler", tau
             call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv, ifrac, icedp, snodp)
             if(mom4ice) then
-              cice = ifrac ! [0-1]
-              zice = icedp
-              snr  = snodp ! the unit of icedp and snodp is mm
               do jj = 1, jlistnum
                 j=jlist1(jj)
                 nxj=nxdef_2d(j)
               do i=1,nxj
+                if(tg_ocn(i,jj).ne.0.0) then
+                  cice(i,jj) = ifrac(i,jj)
+                  zice(i,jj) = icedp(i,jj)
+                  snr(i,jj)  = snodp(i,jj)
                 if(.not. land(i,jj)) then
                   if(cice(i,jj) .ge. 0.15) then
                     ice(i,jj)   = .true.
@@ -1542,6 +1542,7 @@
                     sncover(i,jj) = 0.0
                     shdmax(i,jj) = 0.0
                   endif
+                endif
                 endif
               enddo
               enddo

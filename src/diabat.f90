@@ -220,8 +220,8 @@
                 land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max),  &
                 docgrav,tofd,fwd
 #ifdef TIMCOMCPL
-      logical ice_cpl(nxp,my_max), ocean_cpl(nxp,my_max), land_cpl(nxp,my_max)
-      real    z0_cpl(nxp,my_max), tg_cpl(nxp,my_max)
+      logical ice_cpl(nxp,my_max), ocean_cpl(nxp,my_max)
+      real    z0_cpl(nxp,my_max)
 #endif
 
       real      tice,hice,qgini,thdai,tengi,ptop,                    &
@@ -660,7 +660,6 @@
 #ifdef TIMCOMCPL
       ice_cpl = ice
       ocean_cpl = ocean
-      land_cpl = land
       z0_cpl = z0
 #endif
       if ( doclxu .and. doclx ) then
@@ -696,6 +695,8 @@
 !            if ( .not. do_sit )then
 #ifndef TIMCOMCPL
             if (ocean(i,jj)) tg(i,jj)=sstc(i,jj)
+#else
+            if (ocean(i,jj) .and. tg_ocn(i,jj) .eq. 0) tg(i, jj)=sstc(i,jj) 
 #endif
 !            endif
 !---------------------------------------------------------------------
@@ -734,7 +735,6 @@
 !          if(xlat(j) .gt. -80.0 .and. xlat(j) .lt. 86.76) then
           if(tg_ocn(i,jj) .gt. 0.0) then
             ice(i,jj) = ice_cpl(i,jj)
-            land(i,jj) = land_cpl(i,jj)
             ocean(i,jj) = ocean_cpl(i,jj)
             if(ocean(i,jj)) then
               z0(i,jj)=ustar(i,jj)*ustar(i,jj)*0.014/grav
@@ -1048,9 +1048,6 @@
         if(land (i,jj))islimsk(i)=1
         if(ocean(i,jj))islimsk(i)=0
         if(ice  (i,jj))islimsk(i)=2
-#ifdef CPL_CICE
-        if(myrank .eq. 0) write(*,*) "check cice :", i, jj, cice(i,jj), ice(i,jj)
-#endif
       enddo
 
     !    compute new time level p**kapa quantites
