@@ -2411,6 +2411,7 @@
 !    heating and the moistening
 !
           if(rn(i) < 0. .and. .not.flg(i)) rn(i) = 0.
+          if(rn(i) < 1.e-13) rn(i) = 0.
           if(rn(i) <= 0.) then
             rn(i) = 0.
           else

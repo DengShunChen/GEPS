@@ -1532,6 +1532,7 @@
 !cj
       do i = 1, im
         if(cnvflg(i)) then
+          if (rn(i) < 1.e-13) rn(i) = 0.
           if(rn(i) < 0. .or. .not.flg(i)) rn(i) = 0.
           ktop(i) = ktcon(i)
           kbot(i) = kbcon(i)
