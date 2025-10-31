@@ -115,7 +115,8 @@ export FCSTDMS=${odmsfile}
 export BCKOPS=BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
 
 export FLIB_CNTL_BARRIER_ERR=FALSE
-export O3FORC=${O3FORC:-${FIXDIR}/global_o3prdlos.f77}
+#export O3FORC=${O3FORC:-${FIXDIR}/global_o3prdlos.f77}
+export O3FORC=${O3FORC:-${FIXDIR}/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77}
 export O3CLIM=${O3CLIM:-${FIXDIR}/global_o3clim.txt}
 export AEROSOL_FILE=${AEROSOL_FILE:-${FIXDIR}/global_climaeropac_global.txt}
 export EMMISSIVITY_FILE=${EMMISSIVITY_FILE:-${FIXDIR}/global_sfc_emissivity_idx.txt}

@@ -121,7 +121,7 @@
             u1(ix, km, my_max), v1(ix, km, my_max), t1(ix, km, my_max), &
             q1(ix, km, my_max), prsi(ix, km + 1, my_max), del(ix, km, my_max), &
             prsl(ix, km, my_max), prslk(ix, km, my_max), phil(ix, km, my_max), &
-            phii(ix, km + 1, jj)
+            phii(ix, km + 1, my_max)
 !lzl      real oc(im),     oa4(iy,4), clx4(iy,4),                            &
 !lzl           hprime(im)
          real oc(ix, my_max), oa4(ix, 4, my_max), clx4(ix, 4, my_max), &
