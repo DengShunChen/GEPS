@@ -555,12 +555,25 @@
          integer, parameter :: nxpvs = 7501
          real :: c1xpvs,c2xpvs,tbpvs(nxpvs)
          common/fpvscom/ c1xpvs,c2xpvs,tbpvs(nxpvs)
-         
+         character(len=4) :: myrank_str
+         character(len=4) :: itimestep_str
+         logical :: gpucup      = .true., &
+                    gpupbl      = .true., &
+                    gpugrav     = .true., &
+                    gpulsp      = .true., &
+                    gpushl      = .true., &
+                    gpuo3l      = .true., &
+                    gpucgrav    = .true., &
+                    gpumass_dp  = .true.
+
 ! for dissipation convective (test)
       real      diss_dcc(nxp,lev,my_max)
+      450 format(a3, 1x, a, 1x, I3, 1x, 30(ES26.17, 1x))
+      451 format(a3, 1x, a, 1x, I3, 1x, 30(I10, 1x))
+      !write(*,*) nxjp
+      !write(*,*) jlist1
 !xb110>
 !skeb dissipation (test)
-      diss_dcc=0.
       ! << For GPU >>
          ! present on device:
          !   << input >>
@@ -573,19 +586,31 @@
          !   dtrad
          !   << input/output >>
          !   plt, pk, pk2,
-         !   ps,  up, vp, ttp, qp,
-         !   pst, ut, vt, tt,  qt,
+         !   ps, up, vp, ttp, qp,
+         !   pst, ut, vt, tt, qt,
          !   pdot,
          !   sdpbl,
-         !   vel,
+         !   vvel,
+         !   o3l, dtrad, 
+         !   asl, atl, asl_clr, atl_clr, 
+         !   e, eps, 
+         !   cnvcr, cnvwr, 
+         !   ftp, fqp, ftp1, fqp1, clds,
+         !   dtcup, ducup, dvcup,  dtlsp, dulsp, dvlsp, dtshl, dushl, dvshl,
+         !   hprime_b, stc, smc, slc,
+         !   gwclim, tgclim, totalp, rs, sfalb, sigmaf, istyp, ivegtyp, slopetyp, 
+         !   land, ocean, ice, cosz, tg, tsflw, std, sld, ss, rld, sfemis,
+         !   shdmax, shdmin, snoalb, z0, ustar, snr, canopy, runoff, sndepth,
+         !   zice, cice, xtice, tstar, qstar, srflag, sncover,
+         !   plcl, cumtop, flash, diss_dc, curate,
+         !   t2, q2, rh2, rh10, u10, v10, fm, fh, fm10, fh2, 
+         !   totallp, raincu, rainlp, raincu1, rainlp1, raincu6, rainlp6, raintot
          !-----------------------------------------------------------------------
          async_id = 1
          ! << input >>
          !!!! ---- phygrid
          !$acc enter data copyin(xlat, xlon) async(async_id)
          ! << output >>
-         !!!! ---- phygrid
-         !$acc enter data create(o3l, dtrad) async(async_id)
          ! << input/output >>
          ! << local >>
          !$acc enter data create(sinl, cosl) async(async_id)
@@ -597,32 +622,68 @@
          !$acc enter data create(ttc, utc, vtc, qtc) async(async_id)
          !$acc enter data create(dtdtc, dudtc, dvdtc, dqdtc) async(async_id)
          !$acc enter data create(prsl, prslk, prsi, del) async(async_id)
-         !$acc wait(async_id)
 !xb110>
-         ztenh = 0.
-         zqenh = 0.
-         rho = 0.
-         snow_flx = 0.
-         ptu = 0.
-         pqu = 0.
-         cnvwn = 0.
-         dtradn = 0.
+         !$acc enter data create(ztenh, zqenh, rho, snow_flx, ptu, pqu, &
+         !$acc&      cnvwn, kuo, rcup2, islimsk, kpbl, icsdsw, icsdlw, &
+         !$acc&      rld_adj, sld_adj, ss_adj) async(async_id)
+         !$acc enter data create(qflux, hflux, utgwc, vtgwc, cnvw, cnvc, &
+         !$acc&      qtr, qti) async(async_id)
+         !$acc enter data create(rcup, rlsp, rlspi, rlsps, rlspg, cldwrk, &
+         !$acc&      xmu, sr, asr, alr, xsr, xlr, dtcupz, dqcupz, nlcl, &
+         !$acc&      nnegl, nosat) async(async_id)
+         !$acc enter data create(nwork, ntcup, nflx, ilsp, nlsp, aflxd, aflxu, ijdg, &
+         !$acc&      ncup, ndry, nshl, icupmx, ipblmx, xkmx, dtcupx) async(async_id)
+         !$acc enter data create(albx, albedo2, alb, slimsk, tem1, tem2, work1, dtradc, &
+         !$acc&      work2, garea, rstd, dotc, ixseed, rs_adj, xlonr) async(async_id)
+         !$acc enter data create(u0, v0, t0, q0, xkmd, hprime, oc, theta, &
+         !$acc&      gamma, sigmaog) async(async_id)
+         !$acc enter data create(elvmax, oa4, clx, zmtnblck, psfc, sl, &
+         !$acc&      kbot, ktop, snow_flxn) async(async_id)
+         !$acc enter data create(ptun, pqun, diss_dcc, kbotc, ktopc, cumabs, &
+         !$acc&      work3, dlength, cldf, tauctx, taucty, heat, evap, &
+         !$acc&      area, rhc_mp) async(async_id)
+         !$acc enter data create(itlsp, nnlsp, dtcupd, dqcupd, dtcupl, dqcupl) async(async_id)
+         !$acc enter data copyin(tbpvs) async(async_id)
+
+         !$acc wait(async_id)
+         !$acc parallel loop collapse(3) async(async_id)
+         do jj = 1, jlistnum
+            do k = 1, lev
+               do i = 1, nxp
+                  ztenh(i, k, jj) = 0.
+                  zqenh(i, k, jj) = 0.
+                  rho(i, k, jj) = 0.
+                  snow_flx(i, k, jj) = 0.
+                  ptu(i, k, jj) = 0.
+                  pqu(i, k, jj) = 0.
+                  cnvwn(i, k, jj) = 0.
+                  dtradn(i, k, jj) = 0.
+                  diss_dcc(i, k, jj) = 0.
+               end do
+            end do
+         end do
 !xb110<
 !ps
 !CWB2015
-         kuo = 0
-         rcup2 = 0.
-         islimsk = 0
-         kpbl = 1
+         !$acc parallel loop collapse(2) async(async_id)
+         do jj = 1, jlistnum
+            do i = 1, nxp
+               kuo(i, jj) = 0
+               rcup2(i, jj) = 0.
+               islimsk(i, jj) = 0
+               kpbl(i, jj) = 1
 
 !CWB2016
+               icsdsw(i, jj) = 0
+               icsdlw(i, jj) = 0
+               rld_adj(i, jj) = 0.
+               sld_adj(i, jj) = 0.
+               ss_adj(i, jj) = 0.
+            end do
+         end do
+         
          lssav = .false.
          doclxu = .false.
-         icsdsw = 0
-         icsdlw = 0
-         rld_adj = 0.
-         sld_adj = 0.
-         ss_adj = 0.
 ! for MP WSM6 & Thompson
          uni_cloud = .false. !if using SHOC scheme, it should be .true.
          lmfshal = (nmshl .eq. 2 .or. nmshl .eq. 3 .or. nmshl .eq. 4) ! .true. if using mass-flux shallow convection
@@ -732,24 +793,42 @@
          if (doclxu .and. doclx) then
             if (myrank .eq. 0) &
                print *, 'update low boundary condition at tau= ', tau
-            iceold = ice
-            z0ocn = z0
+            !$acc parallel loop collapse(2) async(async_id)
+            do jj = 1, jlistnum
+               do i = 1, nxp
+                  iceold(i, jj) = ice(i, jj)
+                  z0ocn(i, jj) = z0(i, jj)
+               end do
+            end do
 !     read climate data
+            !$acc wait(async_id)
             call readclx(nx, my, my_max, julian, land, ocean, ice, tgclim, gwclim, &
                          z0, alb, sstc, sigmaf, istyp, ivegtyp, ls, &
                          shdmax, shdmin, slopetyp, snoalb, ggdef, isot, ivegsrc)
+            !$acc wait(async_id)
+            !$acc update device(land, ocean, ice, tgclim, gwclim, z0, alb, &
+            !$acc&       sigmaf, istyp, ivegtyp, shdmax, shdmin, slopetyp, &
+            !$acc&       snoalb) &
+            !$acc&       async(async_id)
+            !$acc wait(async_id)
 !
 !     read new albedo
 !
-            if (irad .eq. 2) then
+            if (irad .eq. 2) then 
+               !$acc wait(async_id)
                call readalb(nx, my, my_max, julian, &
                             alvsf, alvwf, alnsf, alnwf, facsf, facwf)
+               !$acc wait(async_id)
+               !$acc update device(alvsf, alvwf, alnsf, alnwf, facsf, facwf) &
+               !$acc&       async(async_id)
+               !$acc wait(async_id)
             end if
 !
             if(.not. mom4ice) then
             do jj = 1, jlistnum
                j = jlist1(jj)
                nxj = nxdef_2d(j)
+               !$acc loop vector
                do i = 1, nxj
                   if (ls(i, jj) .eq. 0) then
 !---------------------------------------------------------------------
@@ -865,9 +944,11 @@
          upnor = upnor .and. donor
 !
          if (.not. dopbl) then
+            !$acc parallel loop gang private(j, nxj) async(async_id)
             do jj = 1, jlistnum
                j = jlist1(jj)
                nxj = nxdef_2d(j)
+               !$acc loop vector
                do i = 1, nxj
                   qflux(i, jj) = 0.
                   hflux(i, jj) = 0.
@@ -875,40 +956,34 @@
             end do
          end if
 
-         do k = 1, lev
-            do i = 1, nxp
-               ! utgwc(i, k) = 0.
-               ! vtgwc(i, k) = 0.
-!for pdfcloud
-               ! cnvw(i, k) = 0.
-               ! cnvc(i, k) = 0.
-!for hydrometeor
-               ! qtr(i, k) = 0.
-               ! qtc(i, k) = 0.
-               ! qti(i, k) = -999.9
-               ! dudtc(i, k) = 0.
-               ! dvdtc(i, k) = 0.
-               ! dtdtc(i, k) = 0.
-               ! dqdtc(i, k) = 0.
+         
+         !$acc wait(async_id)
+         !$acc parallel loop collapse(3) async(async_id)
+         do jj = 1, jlistnum
+            do k = 1, lev
+               do i = 1, nxp
+                  utgwc(i, k, jj) = 0.
+                  vtgwc(i, k, jj) = 0.
+         !for pdfcloud
+                  cnvw(i, k, jj) = 0.
+                  cnvc(i, k, jj) = 0.
+         !for hydrometeor
+                  qtr(i, k, jj) = 0.
+                  qtc(i, k, jj) = 0.
+                  qti(i, k, jj) = -999.9
+                  dudtc(i, k, jj) = 0.
+                  dvdtc(i, k, jj) = 0.
+                  dtdtc(i, k, jj) = 0.
+                  dqdtc(i, k, jj) = 0.
+               end do
             end do
          end do
-         utgwc = 0.
-         vtgwc = 0.
-!for pdfcloud
-         cnvw = 0.
-         cnvc = 0.
-!for hydrometeor
-         qtr = 0.
-         qtc = 0.
-         qti = -999.9
-         dudtc = 0.
-         dvdtc = 0.
-         dtdtc = 0.
-         dqdtc = 0.
 !
+         !$acc parallel loop gang async(async_id)
          do jj = 1, jlistnum
             j = jlist1(jj)
             nxj = nxdef_2d(j)
+            !$acc loop vector
             do i = 1, nxp
                rcup(i, jj) = 0.0
                rlsp(i, jj) = 0.0
@@ -924,44 +999,48 @@
             end do
          end do
 
+         !$acc parallel loop collapse(2) async(async_id)
          do j = 1, my
-         do k = 1, lev
-            asr(k, j) = 0.0
-            alr(k, j) = 0.0
-            xsr(k, j) = 0.0
-            xlr(k, j) = 0.0
-            dtcupz(k, j) = 0.0
-            dqcupz(k, j) = 0.0
-            nlcl(k, j) = 0
-            nnegl(k, j) = 0
-            nosat(k, j) = 0
-            nwork(k, j) = 0
-            ntcup(k, j) = 0
-            nflx(k, j) = 0
-            ilsp(k, j) = 0
-            nlsp(k, j) = 0
-         end do
-
-         do k = 1, lev + 2
-            aflxd(k, j) = 0.0
-            aflxu(k, j) = 0.0
+            do k = 1, lev + 2
+                  if (k .le. lev) then
+                  asr(k, j) = 0.0
+                  alr(k, j) = 0.0
+                  xsr(k, j) = 0.0
+                  xlr(k, j) = 0.0
+                  dtcupz(k, j) = 0.0
+                  dqcupz(k, j) = 0.0
+                  nlcl(k, j) = 0
+                  nnegl(k, j) = 0
+                  nosat(k, j) = 0
+                  nwork(k, j) = 0
+                  ntcup(k, j) = 0
+                  nflx(k, j) = 0
+                  ilsp(k, j) = 0
+                  nlsp(k, j) = 0
+                  end if
+               aflxd(k, j) = 0.0
+               aflxu(k, j) = 0.0
+            end do
          end do
 !
-         ijdg(j) = 0
-!ch    qbrrow(1,j)= 0.0
-!ch    qbrrow(2,j)= 0.0
-!!       qbrrow(1:ncld,j)= 0.0
-         ncup(j) = 0
-         ndry(j) = 0
-         nshl(j) = 0
-         icupmx(j) = 0
-         ipblmx(1, j) = 0
-         ipblmx(2, j) = 0
-         xkmx(1, j) = 0.0
-         xkmx(2, j) = 0.0
-         dtcupx(j) = 0.0
+         !$acc parallel loop async(async_id)
+         do j = 1, my
+            ijdg(j) = 0
+   !ch    qbrrow(1,j)= 0.0
+   !ch    qbrrow(2,j)= 0.0
+   !!       qbrrow(1:ncld,j)= 0.0
+            ncup(j) = 0
+            ndry(j) = 0
+            nshl(j) = 0
+            icupmx(j) = 0
+            ipblmx(1, j) = 0
+            ipblmx(2, j) = 0
+            xkmx(1, j) = 0.0
+            xkmx(2, j) = 0.0
+            dtcupx(j) = 0.0
          end do
 
+         !$acc parallel loop async(async_id)
          do k = 1, lev
             itlsp(k) = 0
             nnlsp(k) = 0
@@ -973,11 +1052,13 @@
          end do
 !
          if (ldiag .ge. 2) then
+            !$acc parallel loop async(async_id)
             do jj = 1, jlistnum
                j = jlist1(jj)
                if (j .eq. jdg) ijdg(j) = idg
             end do
          end if
+         !$acc wait(async_id)
          !
          !     compute cos and sin of latitude
          !
@@ -986,17 +1067,15 @@
             cosl(j) = cos(xlat(j)*d2r)
             sinl(j) = sin(xlat(j)*d2r)
          end do
-         !$acc update self(cosl, sinl) async(async_id)
-         !$acc wait(async_id)
 !-------------------------------------------------------------------------
 !     if radiation is to be called, compute cos of solar zenith angular
 !                njump, il, ib, and cof for different meridional zones
 !-------------------------------------------------------------------------
-         call prerrtmg(nx, my, my_max, idtg, tau, dt, hours, frad, uprad, &
+         call prerrtmg_gpu(nx, my, my_max, idtg, tau, dt, hours, frad, uprad, &
                        isubc_sw, isubc_lw, d2r, xlon, myrank, me, &
                        idat, jdat, solhr, dtsw, dtlw, lsswr, lslwr, &
                        slag, sdec, cdec, solcon, &
-                       xlonr, ixseed)
+                       xlonr, ixseed, icsdsw, icsdlw, async_id)
          year = jdat(1)
 !-------------------------------------------------------------------------
 ! cosz was modified to be an average of the  calling period(1 hour fo
@@ -1078,17 +1157,20 @@
 !     initial albx by climate values of gwet and alb, while it may
 !     be updated in grdcon according ground conditions
 !
+         !$acc parallel loop gang private(j, nxj) async(async_id)
          do jj = 1, jlistnum
             j = jlist1(jj)
             nxj = nxdef_2d(j)
+            !$acc loop vector
             do i = 1, nxj
                albx(i, jj) = alb(i, jj)
                albedo2(i, jj) = alb(i, jj)
             end do
          end do
-!
+         !
 !-----------------------------------------------------------------------
          if (ntoz .gt. 0) then
+            !$acc wait(async_id)
             !$acc parallel loop collapse(3) private(j, nxj, kk) async(async_id)
             do jj = 1, jlistnum
                do k = 1, lev
@@ -1102,7 +1184,6 @@
                   end do
                end do
             end do
-            !$acc update self(o3l) async(async_id)
             !$acc wait(async_id)
          end if
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -1111,15 +1192,22 @@
 !                                                                      c
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
+         !$acc wait(async_id)
+         !$acc parallel loop private(j, jup, jdn) async(async_id)
          do jj = 1, jlistnum
             j = jlist1(jj)
-            nxj = nxdef_2d(j)
-
             ! for scale-aware
             tem1(jj) = tpr*cosl(j)/float(nxdef(j))
             jup = min(j + 1, my)
             jdn = max(j - 1, 1)
             tem2(jj) = radus*0.5*abs(xlat(jup) - xlat(jdn))*d2r
+         end do
+         
+         !$acc parallel loop gang private(j, nxj) async(async_id)
+         do jj = 1, jlistnum
+            j = jlist1(jj)
+            nxj = nxdef_2d(j)
+            !$acc loop vector
             do i = 1, nxj
                work1(i, jj) = (log(cosl(j)/(nxdef(j)*my)) - dxmin)*dxinv
                work1(i, jj) = max(0.0, min(1.0, work1(i, jj)))
@@ -1134,7 +1222,6 @@
             end do
          end do
 
-         !$acc update device(pst, ps) async(async_id)
          call prexp_hybrid_cwb_gpu_refactor(nxjp, nxp, lev, ptop, sigma, pst, &
                                             pk, pk2, plt)
          call prexp_hybrid_cwb_gpu_refactor(nxjp, nxp, lev, ptop, sigma, ps, &
@@ -1145,30 +1232,30 @@
          !  change t from virtual potential temperature to real temperature
          !  change ttp from virtual potential temperature to potential temperature
          !-----------------------------------------------------------------------------
-         !$acc parallel loop collapse(3) private(j, nxj, xx, kk) async(async_id)
+         !$acc parallel loop gang collapse(2) private(j, nxj, xx, kk) async(async_id)
          do jj = 1, jlistnum
             do k = 1, lev
-               do i = 1, nxp
-                  j = jlist1(jj)
-                  nxj = nxdef_2d(j)
-                  if (i .le. nxj) then
-                     xx = radus/cosl(j)
-                     ut(i, k, jj) = ut(i, k, jj)*xx
-                     vt(i, k, jj) = vt(i, k, jj)*xx
-                     tt(i, k, jj) = tt(i, k, jj)*pk(i, k, jj)/(1.0 + 0.608*qt(i, k, jj))
-                     ! ----------------------------------------
-                     upp(i, k, jj) = up(i, k, jj)*xx
-                     vpp(i, k, jj) = vp(i, k, jj)*xx
+               j = jlist1(jj)
+               nxj = nxdef_2d(j)
+               !$acc loop vector
+               do i = 1, nxj
+                  xx = radus/cosl(j)
+                  ut(i, k, jj) = ut(i, k, jj)*xx
+                  vt(i, k, jj) = vt(i, k, jj)*xx
+                  tt(i, k, jj) = tt(i, k, jj)*pk(i, k, jj)/(1.0 + 0.608*qt(i, k, jj))
+                  ! ----------------------------------------
+                  upp(i, k, jj) = up(i, k, jj)*xx
+                  vpp(i, k, jj) = vp(i, k, jj)*xx
 
-                     xx = ttp(i, k, jj)/(1.0 + 0.608*qp(i, k, jj))
-                     tpp(i, k, jj) = pkp(i, k, jj)*xx
-                     ttpp(i, k, jj) = xx
-                     ! ----------------------------------------
-                     do n = 1, ncld
-                        kk = k + (n-1)*lev
-                        qtp(i, kk, jj) = qt(i, kk, jj)
-                     end do
-                  end if
+                  xx = ttp(i, k, jj)/(1.0 + 0.608*qp(i, k, jj))
+                  tpp(i, k, jj) = pkp(i, k, jj)*xx
+                  ttpp(i, k, jj) = xx
+                  ! ----------------------------------------
+                  !$acc loop seq
+                  do n = 1, ncld
+                     kk = k + (n-1)*lev
+                     qtp(i, kk, jj) = qt(i, kk, jj)
+                  end do
                end do
             end do
          end do
@@ -1200,12 +1287,6 @@
          call get_phi_gpu(nxjp, nxp, lev, ptop, cp, rgas, grav, sgeo, &
                           pk, pk2, tt, qt, &
                           phii, phi)
-         !$acc update self(pk, pk2, plt) async(async_id)
-         !$acc update self(pltp) async(async_id)
-         !$acc update self(ut, vt, tt) async(async_id)
-         !$acc update self(upp, vpp, tpp, ttpp) async(async_id)
-         !$acc update self(qtp) async(async_id)
-         !$acc update self(phii, phi) async(async_id)
          !$acc wait(async_id)
          ! ======================================================= >>>>
 
@@ -1229,27 +1310,40 @@
                   end do
                end if
             else
+               !$acc enter data copyin(ozplin, pl_lat, pl_pres ,pl_time) async(async_id)
+               !$acc wait(async_id)
                if (pl_coeff > 4) then
-                  do jj = 1, jlistnum
-                     j = jlist1(jj)
-                     nxj = nxdef_2d(j)
-                     do k=1,lev
-                        do i=1,nxj
-                           del(i,k,jj) = 100.0*( dsigma(k,1)*pst(i,jj)+dsigma(k,2))  !  pa
+                  if (gpuo3l) then
+                     call ozphys_2015_gpu(nxp, nxjp, lev ,dta, xlat, julian, &
+                                  o3l, o3l, tt,          &
+                                  plt, dsigma, pst, myrank)
+                  else
+                     !$acc wait(async_id)
+                     !$acc update self(tt, plt, o3l) async(async_id)
+                     !$acc wait(async_id)
+                     do jj = 1, jlistnum
+                        j = jlist1(jj)
+                        nxj = nxdef_2d(j)
+                        do k=1,lev
+                           do i=1,nxj
+                              del(i,k,jj) = 100.0*( dsigma(k,1)*pst(i,jj)+dsigma(k,2))  !  pa
+                           enddo
                         enddo
-                     enddo
-                     call ozphys_2015 (nxp, nxjp(j), lev , dta, xlat(j), julian, &
-                                  o3l(1,1,jj), o3l(1,1,jj), tt(1,1,jj),          &
-                                  plt(1,1,jj), del(1,1,jj), myrank)
-                  end do
+                        call ozphys_2015 (nxp, nxjp(j), lev , dta, xlat(j), julian, &
+                                     o3l(1,1,jj), o3l(1,1,jj), tt(1,1,jj),          &
+                                     plt(1,1,jj), del(1,1,jj), myrank)
+                     end do
+                     !$acc wait(async_id)
+                     !$acc update device(o3l) async(async_id)
+                     !$acc wait(async_id)
+                  end if
                else
-                  !$acc enter data copyin(ozplin, pl_lat, pl_pres ,pl_time) async(async_id)
                   call rozphys_gpu(nxjp, nxp, lev, dta, iter, xlat, julian, o3l, &
                            tt, plt, ps, myrank)
-                  !$acc exit data delete(ozplin, pl_lat, pl_pres ,pl_time) async(async_id)
-                  !$acc update self(o3l) async(async_id)
-                  !$acc wait(async_id)
                end if ! for pl_coeff
+               !$acc wait(async_id)
+               !$acc exit data delete(ozplin, pl_lat, pl_pres ,pl_time) async(async_id)
+               !$acc wait(async_id)
             end if ! for ntoz
          end if ! for doo3l
 !=======================================================================
@@ -1293,32 +1387,46 @@
 !   RRTMG scheme
 !--------------------------------------------------------------------------------
          if (uprad .and. (irad .eq. 2)) then
-            if ((isubc_lw .eq. 2) .or. (isubc_sw .eq. 2)) then
-               do jj = 1, jlistnum
-                  j = jlist1(jj)
-                  nxj = nxdef_2d(j)
-                  ii = nxjstart(j)
-                  do i = 1, nxj
-                     icsdsw(i, jj) = ixseed(ii, j, 1)
-                     icsdlw(i, jj) = ixseed(ii, j, 2)
-                     ii = ii + 1
-                  end do
-               end do
-            end if  !isubc_lw
+            !$acc wait(async_id)
+            !if ((isubc_lw .eq. 2) .or. (isubc_sw .eq. 2)) then
+            !   !$acc parallel loop gang private(j, nxj, kc) async(async_id)
+            !   do jj = 1, jlistnum
+            !      j = jlist1(jj)
+            !      nxj = nxdef_2d(j)
+            !      ii = nxjstart(j)
+            !      !$acc loop vector
+            !      do i = 1, nxj
+            !         icsdsw(i, jj) = ixseed(ii+i-1, j, 1)
+            !         icsdlw(i, jj) = ixseed(ii+i-1, j, 2)
+            !      end do
+            !   end do
+            !end if  !isubc_lw
+            ! these code is moved into prerrtmg_gpu
             if (nmgwor .eq. 1) then
                if (myrank .eq. 0) print *, "Not support this entry. nmgwor=", nmgwor
-               rstd = std
+               !$acc parallel loop collapse(2) async(async_id)
+               do jj = 1, jlistnum
+                  do i = 1, nxp
+                     rstd(i, jj) = std(i, jj)
+                  end do
+               end do
             else if (nmgwor .eq. 2) then
-               rstd = hprime_b(:, 1, 1:jlistnum)
+               !$acc parallel loop collapse(2) async(async_id)
+               do jj = 1, jlistnum
+                  do i = 1, nxp
+                     rstd(i, jj) = hprime_b(i, 1, jj)
+                  end do
+               end do
             end if
             !
-            !
+            !$acc parallel loop gang collapse(2) private(j, nxj, kc) async(async_id)
             do jj = 1, jlistnum
-               j = jlist1(jj)
-               nxj = nxdef_2d(j)
                do k = 1, lev
-                  kc = lev - k + 1
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
+                  !$acc loop vector
                   do i = 1, nxj
+                     kc = lev - k + 1
                      dotc(i, kc, jj) = vvel(i, k, jj)
                   end do
                end do
@@ -1332,6 +1440,11 @@
 !          print *,'### before rrtmg : solcon=',solcon
 !      endif
 !--------------------------------------------------------------------------------
+            !$acc wait(async_id)
+            !$acc update self(icsdsw, icsdlw, slimsk, rstd, dotc, tg, xlonr, tpp, qp, ps, pltp, &
+            !$acc&       cnvwr, cnvcr, cice, xtice, snr, snoalb, z0, o3l, &
+            !$acc&       sncover, curate, ftp, ftp1, fqp, fqp1, cosl, sinl) async(async_id)
+            !$acc wait(async_id)
             do jj = 1, jlistnum
                j = jlist1(jj)
                nxj = nxdef_2d(j)
@@ -1367,40 +1480,56 @@
 !            enddo
 !          enddo
             end do
+            !$acc wait(async_id)
+            !$acc update device(sld, ss, rld, asl, atl, asl_clr, atl_clr, sfemis, &
+            !$acc&       tsflw, cosz, rs, sfalb, clds) async(async_id)
+            !$acc wait(async_id)
          end if  ! for uprad .and. irad=2
 
          if (dorad) then
+            !$acc wait(async_id)
+            call dcyc2t3_gpu &
+            !  ---  inputs:
+            (solhr, slag, sdec, cdec, sinl, cosl, &
+             xlonr, cosz, tg, tt, tsflw, &
+             sld, ss, rld, asl, atl, &
+             asl_clr, atl_clr, nxp, nxjp, lev, &
+             !  ---  outputs:
+             dtradn, dtradc, sld_adj, ss_adj, rld_adj, &
+             rs_adj, xmu)
+               
+            !$acc parallel loop gang private(j, nxj) async(async_id)
             do jj = 1, jlistnum
                j = jlist1(jj)
                nxj = nxdef_2d(j)
-               call dcyc2t3 &
-                  !  ---  inputs:
-                  (solhr, slag, sdec, cdec, sinl(j), cosl(j), &
-                   xlonr(1, jj), cosz(1, jj), tg(1, jj), tt(1, lev, jj), tsflw(1, jj), &
-                   sld(1, jj), ss(1, jj), rld(1, jj), asl(1, 1, jj), atl(1, 1, jj), &
-                   asl_clr(1, 1, jj), atl_clr(1, 1, jj), nxp, nxjp(j), lev, &
-                   !  ---  outputs:
-                   dtradn(1, 1, jj), dtradc(1, 1, jj), sld_adj(1, jj), ss_adj(1, jj), rld_adj(1, jj), &
-                   rs_adj(1, jj), xmu(1, jj))
-            end do
-
-            do jj = 1, jlistnum
-               j = jlist1(jj)
-               nxj = nxdef_2d(j)
+               !$acc loop vector
                do i = 1, nxj
                   rld_adj(i, jj) = rld_adj(i, jj)*sfemis(i, jj)
                   rs_adj(i, jj) = rs_adj(i, jj)*sfemis(i, jj)
                end do
             end do
 
-            if (itimestep .le. 1) dtrad = dtradn
+            if (itimestep .le. 1) then
+            !$acc parallel loop collapse(3) private(j, nxj) async(async_id)
+               do jj = 1, jlistnum
+                  do k = 1, lev
+                     do i = 1, nxp
+                        dtrad(i, k, jj) = dtradn(i, k, jj)
+                     end do
+                  end do
+               end do
+            end if
+            !$acc wait(async_id)
          end if
 
 !xb110> save the variables for TDK before doing PBL parameterization
+         !$acc wait(async_id)
+         !$acc parallel loop gang collapse(2) private(j, nxj) async(async_id)
          do jj = 1, jlistnum
-            j = jlist1(jj)
-            nxj = nxdef_2d(j)
             do k = 1, lev
+               j = jlist1(jj)
+               nxj = nxdef_2d(j)
+               !$acc loop vector
                do i = 1, nxj
                   u0(i, k, jj) = ut(i, k, jj)
                   v0(i, k, jj) = vt(i, k, jj)
@@ -1408,16 +1537,21 @@
                end do
             end do
          end do
-
+         !$acc parallel loop gang collapse(2) private(j, nxj) async(async_id)
          do jj = 1, jlistnum
-            j = jlist1(jj)
-            nxj = nxdef_2d(j)
             do k = 1, lev*ncld
+               j = jlist1(jj)
+               nxj = nxdef_2d(j)
+               !$acc loop vector
                do i = 1, nxj
                   q0(i, k, jj) = qt(i, k, jj)
                end do
             end do
          end do
+         !$acc wait(async_id)
+
+         
+         
 !xb110<
 !
 !=======================================================================
@@ -1476,90 +1610,117 @@
             ntrac = ncld
 !         if (nmmiph .eq. 8) ntrac = ncld - 4
 !         if (nmmiph .eq. 18) ntrac = ncld - 4
-
-            !$acc enter data copyin(slope_data, bb, drysmc, f11, maxsmc, refsmc, &
-            !$acc&      satpsi, satdk, satdw, wltsmc, qtz, rsmtbl, rgltbl, hstbl, &
-            !$acc&      snupx, lai_data, nroot_data) async(async_id)
-            !$acc enter data copyin(tbpvs) async(async_id)
-            !$acc enter data copyin(land, e, eps, gwclim, tgclim, &
-            !$acc&      ocean, ice, totalp, ss_adj, rs, sfalb, ipblmx, xkmx, ijdg, &
-            !$acc&      xkmd, rld_adj, sigmaf, istyp, ivegtyp, slopetyp, &
-            !$acc&      shdmax, shdmin, snoalb, sld_adj, asl, atl, xmu, sfemis) &
-            !$acc&      async(async_id)
-            !$acc enter data copyin(tg, z0, ustar, snr, &
-            !$acc&      smc, stc, canopy, runoff, slc, &
-            !$acc&      sndepth, zice, cice, xtice) async(async_id)
-            !$acc enter data copyin(tstar, qstar, hflux, qflux, &
-            !$acc&      t2, q2, rh2, rh10, u10, v10, &
-            !$acc&      fm, fh, fm10, fh2, srflag, sncover, &
-            !$acc&      albedo2, hpbl, gfx, kpbl &
-            !$acc&      ) async(async_id)
-            call pbl_noah_gpu(nxjp, nxp, lev, ktpbl, dta, grav, rgas, cp, xkapa, hltm, ptop, &
-                          tice, hice, tg, z0, land, &
-                          sgeo, phi, phii, pst, upp, vpp, &
-                          ttpp, qp, ut, vt, &
-                          tt, qt, pk, pk2, &
-                          ustar, tstar, qstar, e, &
-                          eps, hflux, qflux, itimestep, &
-                          gwclim, tgclim, ocean, ice, &
-                          !                     , snr(1,jj),totalp(1,jj),ss_adj(1,jj),rs(1,jj),albx(1,jj)      , &
-                          snr, totalp, ss_adj, rs, sfalb, &
-                          ipblmx, xkmx, ijdg, xkmd, itypbl, &
-                          t2, q2, rh2, rh10, u10, &
-                          v10, fm, fh, fm10, fh2, &
-                          srflag, rld_adj, stbo, &
-                          km_soil, smc, stc, canopy, &
-                          runoff, sigmaf, istyp, ivegtyp, &
-                          ncld, dsigma, &
-                          slopetyp, &
-                          slc, sncover, sndepth, &
-                          shdmax, shdmin, snoalb, albedo2, &
-                          sld_adj, zice, cice, xtice, &
-                          hpbl, asl, atl, xmu, gfx, &
-                          kpbl, nmpbl, nmmiph, isot, ivegsrc, sfemis, &
-#ifdef TIMCOMCPL
-                          dudtc,dvdtc,dtdtc,dqdtc,ntrac,ustress,vstress,    &
-                          ssu,ssv)
-#else
-                          dudtc,dvdtc,dtdtc,dqdtc,ntrac)
-#endif
-            !$acc exit data delete(slope_data, bb, drysmc, f11, maxsmc, refsmc, &
-            !$acc&     satpsi, satdk, satdw, wltsmc, qtz, rsmtbl, rgltbl, hstbl, &
-            !$acc&     snupx, lai_data, nroot_data) async(async_id)
-            !$acc exit data delete(tbpvs) async(async_id)
-            !$acc exit data delete(land, e, eps, gwclim, tgclim, &
-            !$acc&     ocean, ice, totalp, ss_adj, rs, sfalb, ipblmx, xkmx, ijdg, &
-            !$acc&     xkmd, rld_adj, sigmaf, istyp, ivegtyp, slopetyp, &
-            !$acc&     shdmax, shdmin, snoalb, sld_adj, asl, atl, xmu, sfemis) &
-            !$acc&     async(async_id)
-            !$acc exit data copyout(tg, z0, ustar, snr, &
-            !$acc&     smc, stc, canopy, runoff, slc, &
-            !$acc&     sndepth, zice, cice, xtice) async(async_id)
-            !$acc exit data copyout(tstar, qstar, hflux, qflux, &
-            !$acc&     t2, q2, rh2, rh10, u10, v10, &
-            !$acc&     fm, fh, fm10, fh2, srflag, sncover, &
-            !$acc&     albedo2, hpbl, gfx, kpbl &
-            !$acc&     ) async(async_id)
-            !$acc wait(async_id)
-
-
-         end if
-         !!$acc update self(qt, dtdtc, dudtc, dvdtc, dqdtc) async(async_id)
-         !!$acc update device(pk, pk2, tt, ut, vt, qt, dtdtc, dudtc, dvdtc, dqdtc) async(async_id)
-         !$acc update device(pk, pk2, tt, ut, vt) async(async_id)
-         !$acc parallel loop collapse(3) private(j, nxj, kc) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, lev
-               do i = 1, nxp
+            if (gpupbl == .false.) then
+               !$acc wait(async_id)
+               !$acc update self(tg, z0, qt, ustar, snr, smc, stc, canopy, &
+               !$acc&       runoff, slc, sndepth, zice, cice, xtice, upp, vpp, &
+               !$acc&       ttpp, qp, e, eps, gwclim, rs, ipblmx, xkmx, ijdg, &
+               !$acc&       xkmd, tstar, qstar, hflux, qflux, t2, q2, rh2, rh10, &
+               !$acc&       u10, v10, fm, fh, fm10, fh2, srflag, rld_adj, sncover, &
+               !$acc&       snoalb, albedo2, hpbl, gfx, kpbl, dudtc, dvdtc, dtdtc, &
+               !$acc&       dqdtc, land, sgeo, phi, phii, pst, ut, vt, tt, pk, &
+               !$acc&       pk2, tgclim, ocean, ice, totalp, ss_adj, sfalb, sigmaf, &
+               !$acc&       istyp, ivegtyp, dsigma, slopetyp, shdmax, shdmin, &
+               !$acc&       sld_adj, asl, atl, xmu, sfemis) &
+               !$acc&       async(async_id)
+               !$acc wait(async_id)
+               do jj = 1, jlistnum
                   j = jlist1(jj)
                   nxj = nxdef_2d(j)
-                  if (i .le. nxj) then
-                     kc = lev - k + 1
-                     tt(i, k, jj) = tt(i, k, jj) + dtdtc(i, kc, jj)*dta
-                     ut(i, k, jj) = ut(i, k, jj) + dudtc(i, kc, jj)*dta
-                     vt(i, k, jj) = vt(i, k, jj) + dvdtc(i, kc, jj)*dta
-                     qt(i, k, jj) = qt(i, k, jj) + dqdtc(i, kc, jj)*dta
-                  end if
+                  call pbl_noah(nxjp(j), nxp, lev, ktpbl, dta, grav, rgas, cp, xkapa, hltm, ptop, &
+                                tice, hice, tg(1, jj), z0(1, jj), land(1, jj), &
+                                sgeo(1, jj), phi(1, 1, jj), phii(1, 1, jj), pst(1, jj), upp(1, 1, jj), vpp(1, 1, jj), &
+                                ttpp(1, 1, jj), qp(1, 1, jj), ut(1, 1, jj), vt(1, 1, jj), &
+                                tt(1, 1, jj), qt(1, 1, jj), pk(1, 1, jj), pk2(1, 1, jj), &
+                                ustar(1, jj), tstar(1, jj), qstar(1, jj), e(1, 1, jj), &
+                                eps(1, 1, jj), hflux(1, jj), qflux(1, jj), itimestep, &
+                                gwclim(1, jj), tgclim(1, jj), ocean(1, jj), ice(1, jj), &
+                                !                     , snr(1,jj),totalp(1,jj),ss_adj(1,jj),rs(1,jj),albx(1,jj)      , &
+                                snr(1, jj), totalp(1, jj), ss_adj(1, jj), rs(1, jj), sfalb(1, jj), &
+                                ipblmx(1, j), xkmx(1, j), ijdg(j), xkmd, itypbl, &
+                                t2(1, jj), q2(1, jj), rh2(1, jj), rh10(1, jj), u10(1, jj), &
+                                v10(1, jj), fm(1, jj), fh(1, jj), fm10(1, jj), fh2(1, jj), &
+                                srflag(1, jj), rld_adj(1, jj), stbo, &
+                                km_soil, smc(1, 1, jj), stc(1, 1, jj), canopy(1, jj), &
+                                runoff(1, jj), sigmaf(1, jj), istyp(1, jj), ivegtyp(1, jj), &
+                                ncld, dsigma, &
+                                slopetyp(1, jj), &
+                                slc(1, 1, jj), sncover(1, jj), sndepth(1, jj), &
+                                shdmax(1, jj), shdmin(1, jj), snoalb(1, jj), albedo2(1, jj), &
+                                sld_adj(1, jj), zice(1, jj), cice(1, jj), xtice(1, jj), &
+                                hpbl(1, jj), asl(1, 1, jj), atl(1, 1, jj), xmu(1, jj), gfx(1, jj), &
+                                kpbl(1, jj), nmpbl, nmmiph, j, isot, ivegsrc, sfemis(1, jj), &
+                                dudtc(1, 1, jj), dvdtc(1, 1, jj), dtdtc(1, 1, jj), dqdtc(1, 1, jj))
+               end do
+               !$acc wait(async_id)
+               !$acc update device(tg, z0, qt, ustar, snr, smc, stc, canopy, &
+               !$acc&       runoff, slc, sndepth, zice, cice, xtice, upp, vpp, &
+               !$acc&       ttpp, qp, e, eps, gwclim, rs, ipblmx, xkmx, ijdg, &
+               !$acc&       xkmd, tstar, qstar, hflux, qflux, t2, q2, rh2, rh10, &
+               !$acc&       u10, v10, fm, fh, fm10, fh2, srflag, rld_adj, sncover, &
+               !$acc&       snoalb, albedo2, hpbl, gfx, kpbl, dudtc, dvdtc, dtdtc, &
+               !$acc&       dqdtc, land, sgeo, phi, phii, pst, ut, vt, tt, pk, &
+               !$acc&       pk2, tgclim, ocean, ice, totalp, ss_adj, sfalb, sigmaf, &
+               !$acc&       istyp, ivegtyp, dsigma, slopetyp, shdmax, shdmin, &
+               !$acc&       sld_adj, asl, atl, xmu, sfemis) &
+               !$acc&       async(async_id)
+               !$acc wait(async_id)
+            else
+               !$acc wait(async_id)
+               !$acc enter data copyin(slope_data, bb, drysmc, f11, maxsmc, refsmc, &
+               !$acc&      satpsi, satdk, satdw, wltsmc, qtz, rsmtbl, rgltbl, hstbl, &
+               !$acc&      snupx, lai_data, nroot_data) async(async_id)
+               !$acc wait(async_id)
+               call pbl_noah_gpu(nxjp, nxp, lev, ktpbl, dta, grav, rgas, cp, xkapa, hltm, ptop, &
+                             tice, hice, tg, z0, land, &
+                             sgeo, phi, phii, pst, upp, vpp, &
+                             ttpp, qp, ut, vt, &
+                             tt, qt, pk, pk2, &
+                             ustar, tstar, qstar, e, &
+                             eps, hflux, qflux, itimestep, &
+                             gwclim, tgclim, ocean, ice, &
+                             !                     , snr(1,jj),totalp(1,jj),ss_adj(1,jj),rs(1,jj),albx(1,jj)      , &
+                             snr, totalp, ss_adj, rs, sfalb, &
+                             ipblmx, xkmx, ijdg, xkmd, itypbl, &
+                             t2, q2, rh2, rh10, u10, &
+                             v10, fm, fh, fm10, fh2, &
+                             srflag, rld_adj, stbo, &
+                             km_soil, smc, stc, canopy, &
+                             runoff, sigmaf, istyp, ivegtyp, &
+                             ncld, dsigma, &
+                             slopetyp, &
+                             slc, sncover, sndepth, &
+                             shdmax, shdmin, snoalb, albedo2, &
+                             sld_adj, zice, cice, xtice, &
+                             hpbl, asl, atl, xmu, gfx, &
+                             kpbl, nmpbl, nmmiph, isot, ivegsrc, sfemis, &
+   #ifdef TIMCOMCPL
+                             dudtc,dvdtc,dtdtc,dqdtc,ntrac,ustress,vstress,    &
+                             ssu,ssv)
+   #else
+                             dudtc,dvdtc,dtdtc,dqdtc,ntrac)
+   #endif
+               !$acc wait(async_id)
+               !$acc exit data delete(slope_data, bb, drysmc, f11, maxsmc, refsmc, &
+               !$acc&     satpsi, satdk, satdw, wltsmc, qtz, rsmtbl, rgltbl, hstbl, &
+               !$acc&     snupx, lai_data, nroot_data) async(async_id)
+               !$acc wait(async_id)
+            end if
+
+         end if
+         !$acc wait(async_id)
+         !$acc parallel loop collapse(2) private(j, nxj, kc) async(async_id)
+         do jj = 1, jlistnum
+            do k = 1, lev
+               j = jlist1(jj)
+               nxj = nxdef_2d(j)
+               !$acc loop vector
+               do i = 1, nxj
+                  kc = lev - k + 1
+                  tt(i, k, jj) = tt(i, k, jj) + dtdtc(i, kc, jj)*dta
+                  ut(i, k, jj) = ut(i, k, jj) + dudtc(i, kc, jj)*dta
+                  vt(i, k, jj) = vt(i, k, jj) + dvdtc(i, kc, jj)*dta
+                  qt(i, k, jj) = qt(i, k, jj) + dqdtc(i, kc, jj)*dta
                end do
             end do
          end do
@@ -1569,7 +1730,6 @@
          call get_phi_gpu(nxjp, nxp, lev, ptop, cp, rgas, grav, sgeo, &
                           pk, pk2, tt, qt, &
                           phii, phi)
-         !$acc update self(tt, ut, vt, qt, phii, phi) async(async_id)
          !$acc wait(async_id)
 !
 
@@ -1609,12 +1769,15 @@
 !
 !        cdmbgwd(1)       = 2.00      ! mtn blking and gwd tuning factors
 !        cdmbgwd(2)       = 0.25      ! mtn blking and gwd tuning factors
+            !$acc wait(async_id)
             cdmbgwd(1) = cmbk      ! mtn blocking tuning factors
             cdmbgwd(2) = cgwd      ! gwd tuning factors
 
+            !$acc parallel loop gang private(j, nxj) async(async_id)
             do jj = 1, jlistnum
                j = jlist1(jj)
                nxj = nxdef_2d(j)
+               !$acc loop vector
                do i = 1, nxj
                   hprime(i, jj) = hprime_b(i, 1, jj)
                   oc(i, jj) = hprime_b(i, 2, jj)
@@ -1624,6 +1787,7 @@
                   elvmax(i, jj) = hprime_b(i, 14, jj)
                end do
 
+               !$acc loop vector collapse(2)
                do k = 1, 4
                   do i = 1, nxj
                      oa4(i, k, jj) = hprime_b(i, k + 2, jj)
@@ -1632,109 +1796,129 @@
                end do
             end do
 
-            !$acc update device(plt, pst, phi, tt, ut, vt, qt(1:nxp,1:lev,1:my_max))&
-            !$acc& async(async_id)
-            !$acc parallel loop collapse(3) private(j, nxj, kc) async(async_id)
+            !$acc parallel loop collapse(2) private(j, nxj, kc) async(async_id)
             do jj = 1, jlistnum
                do k = 1, lev
-                  do i = 1, nxp
-                     j = jlist1(jj)
-                     nxj = nxdef_2d(j)
-                     if (i .le. nxj) then
-                        kc = lev - k + 1
-                        prsl(i, kc, jj) = 100.0*plt(i, k, jj) ! pa
-                        prslk(i, kc, jj) = (plt(i, k, jj)/1000.)**xkapa
-                        del(i, kc, jj) = 100.0*(dsigma(k, 1)*pst(i, jj) &
-                                                + dsigma(k, 2))  !  pa
-                        phil(i, kc, jj) = phi(i, k, jj) - sgeo(i, jj)
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
+                  kc = lev - k + 1
+                  !$acc loop vector
+                  do i = 1, nxj
+                     prsl(i, kc, jj) = 100.0*plt(i, k, jj) ! pa
+                     prslk(i, kc, jj) = (plt(i, k, jj)/1000.)**xkapa
+                     del(i, kc, jj) = 100.0*(dsigma(k, 1)*pst(i, jj) &
+                                             + dsigma(k, 2))  !  pa
+                     phil(i, kc, jj) = phi(i, k, jj) - sgeo(i, jj)
 
-                        qtc(i, kc, jj) = qt(i, k, jj)
-                        ttc(i, kc, jj) = tt(i, k, jj)
-                        utc(i, kc, jj) = ut(i, k, jj)
-                        vtc(i, kc, jj) = vt(i, k, jj)
+                     qtc(i, kc, jj) = qt(i, k, jj)
+                     ttc(i, kc, jj) = tt(i, k, jj)
+                     utc(i, kc, jj) = ut(i, k, jj)
+                     vtc(i, kc, jj) = vt(i, k, jj)
 
-                        dtdtc(i, k, jj) = 0.
-                        dudtc(i, k, jj) = 0.
-                        dvdtc(i, k, jj) = 0.
-                        dqdtc(i, k, jj) = 0.
-                     end if
+                     dtdtc(i, k, jj) = 0.
+                     dudtc(i, k, jj) = 0.
+                     dvdtc(i, k, jj) = 0.
+                     dqdtc(i, k, jj) = 0.
                   end do
                end do
             end do
             !
             !  for interface pressure
-            !$acc parallel loop collapse(3) private(j, nxj, kc) async(async_id)
+            !$acc parallel loop collapse(2) private(j, nxj, kc) async(async_id)
             do jj = 1, jlistnum
                do k = 1, lev + 1
-                  do i = 1, nxp
-                     j = jlist1(jj)
-                     nxj = nxdef_2d(j)
-                     if (i .le. nxj) then
-                        kc = (lev + 1) - k + 1
-                        prsi(i, kc, jj) = 100.0*(sigma(k, 1)*pst(i, jj) &
-                                                 + sigma(k, 2) + ptop) !pa
-                     end if
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
+                  !$acc loop vector
+                  do i = 1, nxj
+                     kc = (lev + 1) - k + 1
+                     prsi(i, kc, jj) = 100.0*(sigma(k, 1)*pst(i, jj) &
+                                              + sigma(k, 2) + ptop) !pa
                   end do
                end do
             end do
 
-            !$acc enter data copyin(ugws,vgws,elvmax,zmtnblck,hprime,sigmaog,gamma,theta,kpbl, &
-            !$acc&       oc,clx,oa4,garea,hpbl) async(async_id)
-            call gwdps_gpu(nxjp, nxp, nxp, lev, &
-                       dvdtc, dudtc, dtdtc, &
-                       utc, vtc, ttc, qtc, &
-                       kpbl, prsi, del, prsl, prslk, &
-                       phii, phil, dta, &
-                       kdt, hprime, oc, oa4, clx, &
-                       !               theta(1,jj),sigmaog(1,jj),gamma(1,jj),elvmax(1,jj),dusfcg, dvsfcg,          &
-                       theta, sigmaog, gamma, elvmax, ugws, vgws, &
-                       grav, cp, con_rd, con_rv, nx, mtnvar, cdmbgwd, &
-                       !              me,zmtnblck)
-                       me, zmtnblck, garea, hpbl, tofd)
-            !$acc exit data copyout(elvmax,zmtnblck,ugws,vgws) async(async_id)
-            !$acc exit data delete(hprime,sigmaog,gamma,theta,kpbl, &
-            !$acc&       oc,clx,oa4,garea,hpbl) async(async_id)
+            if (gpugrav .eq. .true.) then
+               call gwdps_gpu(nxjp, nxp, nxp, lev, &
+                          dvdtc, dudtc, dtdtc, &
+                          utc, vtc, ttc, qtc, &
+                          kpbl, prsi, del, prsl, prslk, &
+                          phii, phil, dta, &
+                          kdt, hprime, oc, oa4, clx, &
+                          !               theta(1,jj),sigmaog(1,jj),gamma(1,jj),elvmax(1,jj),dusfcg, dvsfcg,          &
+                          theta, sigmaog, gamma, elvmax, ugws, vgws, &
+                          grav, cp, con_rd, con_rv, nx, mtnvar, cdmbgwd, &
+                          !              me,zmtnblck)
+                          me, zmtnblck, garea, hpbl, tofd)
+            else
             
-            !$acc parallel loop collapse(3) private(j, nxj, kc) async(async_id)
+               !$acc wait(async_id)
+               !$acc update self(utc, vtc, ttc, qtc, kpbl, prsi, del, prsl, &
+               !$acc&       prslk, phii, phil, hprime, oc, oa4, clx, theta, sigmaog, &
+               !$acc&       gamma, garea, hpbl, dvdtc, dudtc, dtdtc, elvmax) &
+               !$acc&       async(async_id)
+               !$acc wait(async_id)
+               do jj = 1, jlistnum
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
+                  call gwdps(nxjp(j), nxp, nxp, lev, &
+                             dvdtc(1, 1, jj), dudtc(1, 1, jj), dtdtc(1, 1, jj), &
+                             utc(1, 1, jj), vtc(1, 1, jj), ttc(1, 1, jj), qtc(1, 1, jj), &
+                             kpbl(1, jj), prsi(1, 1, jj), del(1, 1, jj), prsl(1, 1, jj), prslk(1, 1, jj), &
+                             phii(1, 1, jj), phil(1, 1, jj), dta, &
+                             kdt, hprime(1, jj), oc(1, jj), oa4(1, 1, jj), clx(1, 1, jj), &
+                             !               theta(1,jj),sigmaog(1,jj),gamma(1,jj),elvmax(1,jj),dusfcg, dvsfcg,          &
+                             theta(1, jj), sigmaog(1, jj), gamma(1, jj), elvmax(1, jj), ugws(1, jj), vgws(1, jj), &
+                             grav, cp, con_rd, con_rv, nx, mtnvar, cdmbgwd, &
+                             !              me,zmtnblck)
+                             me, zmtnblck(1, jj), garea(1, jj), hpbl(1, jj), tofd)
+               end do
+               !$acc wait(async_id)
+               !$acc update device(ugws, vgws, zmtnblck, dvdtc, dudtc, dtdtc, &
+               !$acc&       elvmax) &
+               !$acc&       async(async_id)
+               !$acc wait(async_id)
+            end if
+
+ 
+            !$acc parallel loop collapse(2) private(j, nxj, kc) async(async_id)
             do jj = 1, jlistnum
                do k = 1, lev
-                  do i = 1, nxp
-                     j = jlist1(jj)
-                     nxj = nxdef_2d(j)
-                     if (i .le. nxj) then
-                        kc = lev - k + 1
-                        tt(i, k, jj) = ttc(i, kc, jj) + dtdtc(i, kc, jj)*dta
-                        ut(i, k, jj) = utc(i, kc, jj) + dudtc(i, kc, jj)*dta
-                        vt(i, k, jj) = vtc(i, kc, jj) + dvdtc(i, kc, jj)*dta
-                        qt(i, k, jj) = qtc(i, kc, jj) + dqdtc(i, kc, jj)*dta
-                     end if
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
+                  !$acc loop vector
+                  do i = 1, nxj
+                     kc = lev - k + 1
+                     tt(i, k, jj) = ttc(i, kc, jj) + dtdtc(i, kc, jj)*dta
+                     ut(i, k, jj) = utc(i, kc, jj) + dudtc(i, kc, jj)*dta
+                     vt(i, k, jj) = vtc(i, kc, jj) + dvdtc(i, kc, jj)*dta
+                     qt(i, k, jj) = qtc(i, kc, jj) + dqdtc(i, kc, jj)*dta
                   end do
                end do
             end do
+            !$acc wait(async_id)
          end if  !(end of topo dograv and nmgwor=2)
 
          !
          !     update tt by radiation heating/cooling rate: dtrad (k/day)
          !
-         !$acc update device(dtrad, dtradn) async(async_id)
-         !$acc update device(pk, pk2) async(async_id)
-         !$acc parallel loop collapse(3) private(j, nxj, xx, wrk) async(async_id)
+         !$acc wait(async_id)
+         !$acc parallel loop collapse(2) private(j, nxj, xx, wrk) async(async_id)
          do jj = 1, jlistnum
             do k = 1, lev
-               do i = 1, nxp
-                  j = jlist1(jj)
-                  nxj = nxdef_2d(j)
-                  if (i .le. nxj) then
-                     if (doslavepp) then
-                        xx = .5*(dtrad(i, k, jj) + dtradn(i, k, jj))
-                        dtrad(i, k, jj) = dtradn(i, k, jj)
-                     else
-                        xx = dtradn(i, k, jj)
-                     end if
-                     wrk = tt(i, k, jj) + dta*xx/86400.0
-                     tt(i, k, jj) = wrk
-                     tt_bfcnv(i, k, jj) = wrk
+               j = jlist1(jj)
+               nxj = nxdef_2d(j)
+               !$acc loop vector
+               do i = 1, nxj
+                  if (doslavepp) then
+                     xx = .5*(dtrad(i, k, jj) + dtradn(i, k, jj))
+                     dtrad(i, k, jj) = dtradn(i, k, jj)
+                  else
+                     xx = dtradn(i, k, jj)
                   end if
+                  wrk = tt(i, k, jj) + dta*xx/86400.0
+                  tt(i, k, jj) = wrk
+                  tt_bfcnv(i, k, jj) = wrk
                end do
             end do
          end do
@@ -1744,7 +1928,6 @@
          call get_phi_gpu(nxjp, nxp, lev, ptop, cp, rgas, grav, sgeo, &
                           pk, pk2, tt, qt, &
                           phii, phi)
-         !$acc update self(tt, ut, vt, qt, tt_bfcnv, dtrad, phii, phi) async(async_id)
          !$acc wait(async_id)
 !=======================================================================
 !  cumulus scheme
@@ -1874,29 +2057,41 @@
             ! CWB <<<
             lprnt = .false.
             jcap = 240
+            !$acc wait(async_id)
+            !$acc parallel loop gang private(j, nxj) async(async_id)
             do jj = 1, jlistnum
                j = jlist1(jj)
                nxj = nxdef_2d(j)
+               !$acc loop vector
                do i = 1, nxj
                   psfc(i, jj) = pst(i, jj)*0.1        ! change to cb
                end do
             end do
+            !$acc parallel loop gang collapse(2) private(j, nxj, kc) async(async_id)
             do jj = 1, jlistnum
-               j = jlist1(jj)
-               nxj = nxdef_2d(j)
                do k = 1, lev
-                  kc = lev - k + 1
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
+                  !$acc loop vector
                   do i = 1, nxj
+                     kc = lev - k + 1
                      dotc(i, kc, jj) = vvel(i, k, jj)*0.1
                   end do
                end do
             end do
+            !$acc parallel loop private(kc) async(async_id)
+            do k = 1, lev
+               kc = lev - k + 1
+               sl(kc) = (sigma(k, 1) + sigma(k + 1, 1))*0.5
+            end do
+
+            !$acc parallel loop gang collapse(2) private(j, nxj, kc) async(async_id)
             do jj = 1, jlistnum
-               j = jlist1(jj)
-               nxj = nxdef_2d(j)
                do k = 1, lev
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
                   kc = lev - k + 1
-                  sl(kc) = (sigma(k, 1) + sigma(k + 1, 1))*0.5
+                  !$acc loop vector
                   do i = 1, nxj
                      prsl(i, kc, jj) = plt(i, k, jj)*0.1 ! change to cb
                      del(i, kc, jj) = psfc(i, jj)*dsigma(k, 1) + dsigma(k, 2)*0.1  !unit cb
@@ -1976,10 +2171,16 @@
 
             ! KH scale-aware SAS
             if (nmcup .eq. 7) then
+               if (gpucup == .false.) then 
+               !$acc wait(async_id)
+               !$acc update self(del, prsl, psfc, phil, islimsk, garea, dotc, &
+               !$acc&       qtr, qti, qtc, ttc, utc, vtc, kuo, diss_dcc) &
+               !$acc&       async(async_id)
+               !$acc wait(async_id)
                do jj = 1, jlistnum
                   j = jlist1(jj)
                   nxj = nxdef_2d(j)
-                  call samfdeepcnv_kh(nxjp(j), nxp, lev, dta, del(1, 1, jj), prsl(1, 1, jj), psfc(1, jj), phil(1, 1, jj), &
+                  call samfdeepcnv_kh(nxjp(j),nxp, lev, dta, del(1, 1, jj), prsl(1, 1, jj), psfc(1, jj), phil(1, 1, jj), &
                                       qtr(1, 1, jj), qti(1, 1, jj), qtc(1, 1, jj), ttc(1, 1, jj), utc(1, 1, jj), vtc(1, 1, jj), &
                                       cldwrk(1, jj), rcup(1, jj), kbot(1, jj), &
                                       ktop(1, jj), kuo(1, jj), islimsk(1, jj), garea(1, jj), dotc(1, 1, jj), ncld, &
@@ -1987,13 +2188,31 @@
                                       snow_flxn(1, 1, jj), ptun(1, 1, jj), & 
                                       pqun(1, 1, jj), diss_dcc(1, 1, jj))
                end do
+               !$acc wait(async_id)
+               !$acc update device(cldwrk, rcup, kbot, ktop, cnvw, cnvc, &
+               !$acc&       snow_flxn, ptun, pqun, qtr, qti, qtc, ttc, utc, vtc, &
+               !$acc&       kuo, diss_dcc) &
+               !$acc&       async(async_id)
+               !$acc wait(async_id)
+               else
+                  call samfdeepcnv_kh_gpu(nxjp,nxp, lev, dta, del, prsl, psfc, phil, &
+                                      qtr, qti, qtc, ttc, utc, vtc, &
+                                      cldwrk, rcup, kbot, &
+                                      ktop, kuo, islimsk, garea, dotc, ncld, &
+                                      cnvw, cnvc, &
+                                      snow_flxn, ptun, & 
+                                      pqun, diss_dcc)
+               end if
+
             end if
 
             ! for rad input of convection cloud information
             ! bottom(plcl) layer and top(cumtop) layer in pressure(mb)
+            !$acc parallel loop gang private(j, nxj) async(async_id)
             do jj = 1, jlistnum
                j = jlist1(jj)
                nxj = nxdef_2d(j)
+               !$acc loop vector
                do i = 1, nxj
                   if ((kbot(i, jj) .eq. lev + 1) .and. (ktop(i, jj) .eq. 0)) then
                      plcl(i, jj) = 0.
@@ -2005,19 +2224,24 @@
                end do
             end do
 
+            !$acc parallel loop gang private(j, nxj) async(async_id)
             do jj = 1, jlistnum
                j = jlist1(jj)
                nxj = nxdef_2d(j)
+               !$acc loop vector
                do i = 1, nxj
                   rcup(i, jj) = rcup(i, jj)*1000.         ! mm/call
                end do
             end do
 
+            !$acc parallel loop gang collapse(2) private(j, kc, nxj, dttmp, &
+            !$acc&         dutmp, dvtmp) async(async_id)
             do jj = 1, jlistnum
-               j = jlist1(jj)
-               nxj = nxdef_2d(j)
                do k = 1, lev
                   kc = lev - k + 1
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
+                  !$acc loop vector
                   do i = 1, nxj
                      qt(i, k, jj) = max(qtc(i, kc, jj), qmin)
                      qt(i, k + lev, jj) = max(qtr(i, kc, jj), qmin)
@@ -2062,22 +2286,30 @@
         !! ----------------------------------------
 
             ! for dianostic lightning calculation
+            !$acc parallel loop gang private(j, nxj) async(async_id)
             do jj = 1, jlistnum
                j = jlist1(jj)
                nxj = nxdef_2d(j)
+               !$acc loop vector
                do i = 1, nxj
                   kbotc(i, jj) = lev - kbot(i, jj) + 1
                   ktopc(i, jj) = lev - ktop(i, jj) + 1
                end do
             end do
-            do jj = 1, jlistnum
-               j = jlist1(jj)
-               nxj = nxdef_2d(j)
-               call lightning_ec(nxjp(j), nxp, lev, ptu(1, 1, jj), pqu(1, 1, jj), ztenh(1, 1, jj), zqenh(1, 1, jj), &
-                                 cnvwn(1, 1, jj), rho(1, 1, jj), kbotc(1, jj), ktopc(1, jj), &
-                                 phi(1, 1, jj), plt(1, 1, jj), snow_flx(1, 1, jj), &
-                                 flash(1, jj), islimsk(1, jj), kuo(1, jj))
-            end do
+            !do jj = 1, jlistnum
+            !   j = jlist1(jj)
+            !   nxj = nxdef_2d(j)
+            !   call lightning_ec(nxjp(j), nxp, lev, ptu(1, 1, jj), pqu(1, 1, jj), ztenh(1, 1, jj), zqenh(1, 1, jj), &
+            !                     cnvwn(1, 1, jj), rho(1, 1, jj), kbotc(1, jj), ktopc(1, jj), &
+            !                     phi(1, 1, jj), plt(1, 1, jj), snow_flx(1, 1, jj), &
+            !                     flash(1, jj), islimsk(1, jj), kuo(1, jj))
+            !end do
+            call lightning_ec_gpu(nxjp, nxp, lev, ptu, pqu, &
+                              ztenh, zqenh, &
+                              cnvwn, rho, kbotc, ktopc, &
+                              phi, plt, snow_flx, &
+                              flash, islimsk, kuo)
+            !$acc wait(async_id)
         !!!! << output >>
         !! flash
         !! ----------------------------------------
@@ -2096,50 +2328,70 @@
 !=======================================================================
 ! convective gravity wave drag
 !=======================================================================
+        
+ 
          if (docgrav .and. upnor .and. (nmgwcv .eq. 1)) then
+            if (myrank .eq. 0) print *, "Not support this entry. nmgwcv=", nmgwcv
+            !$acc wait(async_id)
+            !$acc update self(ut, vt, tt, qt, plt, pk, pk2, phi) async(async_id)
+            !$acc wait(async_id)
             do jj = 1, jlistnum
                j = jlist1(jj)
-               nxj = nxdef_2d(j)
-
+            
                call nor_gwdp(j, nxjp(j), nxp, lev, &
                              ut(1, 1, jj), vt(1, 1, jj), tt(1, 1, jj), qt(1, 1, jj), &
                              plt(1, 1, jj), pk(1, 1, jj), pk2(1, 1, jj), phi(1, 1, jj), dta, &
                              grav, rgas, sinl(j), cosl(j), drag_u(1, jj), drag_v(1, jj), cp, ptop)
             end do
+            !$acc wait(async_id)
+            !$acc update device(ut, vt, tt) async(async_id)
+            !$acc wait(async_id)
+
+            !   call nor_gwdp_gpu(1, nxjp, nxp, lev, &
+            !                 ut, vt, tt, qt, &
+            !                 plt, pk, pk2, phi, dta, &
+            !                 grav, rgas, sinl, cosl, drag_u, drag_v, cp, ptop)
          end if ! (end of docgrav .and. nmgwcv.eq.1)
 
          if (docgrav .and. (nmgwcv .eq. 2)) then
-            if (myrank .eq. 0) print *, "Not support this entry. nmgwcv=", nmgwcv
             cgwf(1) = 0.5      ! cloud top fraction for convective gwd scheme
             cgwf(2) = 0.05     ! cloud top fraction for convective gwd scheme
 
+            !$acc wait(async_id)
+            !$acc parallel loop gang collapse(2) private(j, nxj) async(async_id)
+            do jj = 1, jlistnum
+               do k = 1, lev + 1
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
+                  !$acc loop vector
+                  do i = 1, nxj
+                     prsi(i, k, jj) = 100.0*(sigma(k, 1)*pst(i, jj) + sigma(k, 2) + ptop) !pa
+                     if (k .le. lev) then
+                        prsl(i, k, jj) = 100.0*plt(i, k, jj) ! pa
+                        del(i, k, jj) = 100.0*(dsigma(k, 1)*pst(i, jj) + dsigma(k, 2))  !pa
+                     end if
+                  end do
+               end do
+            end do
+            !$acc parallel loop gang  private(j, nxj) async(async_id)
             do jj = 1, jlistnum
                j = jlist1(jj)
                nxj = nxdef_2d(j)
-               do k = 1, lev + 1
-                  do i = 1, nxj
-                     prsi(i, k, jj) = 100.0*(sigma(k, 1)*pst(i, jj) + sigma(k, 2) + ptop) !pa
-                  end do
-               end do
-
-               do k = 1, lev
-                  do i = 1, nxj
-                     prsl(i, k, jj) = 100.0*plt(i, k, jj) ! pa
-                     del(i, k, jj) = 100.0*(dsigma(k, 1)*pst(i, jj) + dsigma(k, 2))  !pa
-                  end do
-               end do
-
+               !$acc loop vector
                do i = 1, nxj
                   cumabs(i, jj) = 0.0
                   work3(i, jj) = 0.0
                end do
             end do
 
+            !$acc parallel loop gang private(j, nxj) async(async_id)
             do jj = 1, jlistnum
                j = jlist1(jj)
                nxj = nxdef_2d(j)
-               do k = 1, lev
-                  do i = 1, nxj
+               !$acc loop vector
+               do i = 1, nxj
+                  !$acc loop seq
+                  do k = 1, lev
                      if ((k <= lev - kbot(i, jj) + 1) .and. (k >= lev - ktop(i, jj) + 1)) then
                         cumabs(i, jj) = cumabs(i, jj) + (tt(i, k, jj) - tt_bfcnv(i, k, jj))*del(i, k, jj)
                         work3(i, jj) = work3(i, jj) + del(i, k, jj)
@@ -2148,33 +2400,52 @@
                end do
             end do
 
+            !$acc parallel loop gang private(j, nxj) async(async_id)
             do jj = 1, jlistnum
                j = jlist1(jj)
                nxj = nxdef_2d(j)
+               !$acc loop vector
                do i = 1, nxj
                   if (work3(i, jj) > 0.0) cumabs(i, jj) = cumabs(i, jj)/(dta*work3(i, jj))
                   !   dlength(i)  = sqrt( tem1*tem1+tem2*tem2 )
                   !   cldf(i)     = cgwf(1)*work1(i) + cgwf(2)*work2(i)
+                  dlength(i, jj) = sqrt(tem1(jj)*tem1(jj) + tem2(jj)*tem2(jj))
+                  cldf(i, jj) = cgwf(1)*work1(i, jj) + cgwf(2)*work2(i, jj)
                end do
-
-               dlength(1:nxj, jj) = sqrt(tem1(jj)*tem1(jj) + tem2(jj)*tem2(jj))
-               cldf(1:nxj, jj) = cgwf(1)*work1(1:nxj, jj) + cgwf(2)*work2(1:nxj, jj)
             end do
 
-            do jj = 1, jlistnum
-               j = jlist1(jj)
-               nxj = nxdef_2d(j)
-               call gwdc(nxjp(j), nxp, nxp, lev, u0(1, 1, jj), v0(1, 1, jj), &
-                         t0(1, 1, jj), q0(1, 1, jj), prsl(1, 1, jj), prsi(1, 1, jj), del(1, 1, jj), &
-                         ktop(1, jj), kbot(1, jj), kuo(1, jj), cldf(1, jj), cumabs(1, jj), &
-                         grav, cp, con_rd, con_fvirt, dta, dlength(1, jj), &
-                         utgwc(1, 1, jj), vtgwc(1, 1, jj), tauctx(1, jj), taucty(1, jj), j)
-            end do
+            if (gpucgrav .eq. .true.) then
+               call gwdc_gpu(nxp, nxp, lev, u0, v0, &
+                         t0, q0, prsl, prsi, del, &
+                         ktop, kbot, kuo, cldf, cumabs, &
+                         grav, cp, con_rd, con_fvirt, dta, dlength, &
+                         utgwc, vtgwc, tauctx, taucty)
+            else
+               !$acc wait(async_id)
+               !$acc update self(u0, v0, t0, q0, prsl, prsi, del, ktop, kbot, &
+               !$acc&       kuo, cldf, cumabs, dlength) &
+               !$acc&       async(async_id)
+               !$acc wait(async_id)
+               do jj = 1, jlistnum
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
+                  call gwdc(nxjp(j), nxp, nxp, lev, u0(1, 1, jj), v0(1, 1, jj), &
+                            t0(1, 1, jj), q0(1, 1, jj), prsl(1, 1, jj), prsi(1, 1, jj), del(1, 1, jj), &
+                            ktop(1, jj), kbot(1, jj), kuo(1, jj), cldf(1, jj), cumabs(1, jj), &
+                            grav, cp, con_rd, con_fvirt, dta, dlength(1, jj), &
+                            utgwc(1, 1, jj), vtgwc(1, 1, jj), tauctx(1, jj), taucty(1, jj), j)
+               end do
+               !$acc wait(async_id)
+               !$acc update device(utgwc, vtgwc, tauctx, taucty) async(async_id)
+               !$acc wait(async_id)
+            end if
 
+            !$acc parallel loop gang collapse(2) private(j, nxj, eng0, eng1) async(async_id)
             do jj = 1, jlistnum
-               j = jlist1(jj)
-               nxj = nxdef_2d(j)
                do k = 1, lev
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
+                  !$acc loop vector
                   do i = 1, nxj
                      eng0 = 0.5*(ut(i, k, jj)*ut(i, k, jj) + vt(i, k, jj)*vt(i, k, jj))
                      ut(i, k, jj) = ut(i, k, jj) + utgwc(i, k, jj)*dta
@@ -2184,15 +2455,19 @@
                   end do
                end do
             end do
+            !$acc wait(async_id)
          end if  !(end of docgrav and nmgwcv=2)
 
 !=======================================================================
 ! shallow convection
 !=======================================================================
          if (doshl .and. (nmshl .eq. 2 .or. nmshl .eq. 3 .or. nmshl .eq. 4)) then
+            !$acc wait(async_id)
+            !$acc parallel loop gang private(j, nxj) async(async_id)
             do jj = 1, jlistnum
                j = jlist1(jj)
                nxj = nxdef_2d(j)
+               !$acc loop vector
                do i = 1, nxj
                   psfc(i, jj) = pst(i, jj)*0.1        ! change to cb
 
@@ -2204,23 +2479,25 @@
                ! evap(1:nxj)=-ustar(1:nxj,jj)*qstar(1:nxj,jj)
             end do
 
+            !$acc parallel loop gang collapse(2) private(j, nxj) async(async_id)
             do jj = 1, jlistnum
-               j = jlist1(jj)
-               nxj = nxdef_2d(j)
                do k = 1, lev
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
                   kc = lev - k + 1
+                  !$acc loop vector
                   do i = 1, nxj
                      dotc(i, kc, jj) = vvel(i, k, jj)*0.1
                   end do
                end do
             end do
-
+            !$acc parallel loop gang collapse(2) private(j, nxj) async(async_id)
             do jj = 1, jlistnum
-               j = jlist1(jj)
-               nxj = nxdef_2d(j)
                do k = 1, lev
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
                   kc = lev - k + 1
-                  sl(kc) = (sigma(k, 1) + sigma(k + 1, 1))*0.5
+                  !$acc loop vector
                   do i = 1, nxj
                      prsl(i, kc, jj) = plt(i, k, jj)*0.1 ! change to cb
                      del(i, kc, jj) = psfc(i, jj)*dsigma(k, 1) + dsigma(k, 2)*0.1  !unit cb
@@ -2234,6 +2511,12 @@
                   end do
                end do
             end do
+            !$acc parallel loop private(kc) async(async_id)
+            do k = 1, lev
+               kc = lev - k + 1
+               sl(kc) = (sigma(k, 1) + sigma(k + 1, 1))*0.5
+            end do
+            
 !
 
 !
@@ -2268,6 +2551,12 @@
 
             ! KH scale-aware shalcon
             if (nmshl .eq. 4) then
+               if (gpushl == .false.) then 
+               !$acc wait(async_id)
+               !$acc update self(del, prsl, psfc, phil, islimsk, garea, dotc, &
+               !$acc&       hpbl, qtr, qti, qtc, ttc, utc, vtc, kbot, ktop, kuo) &
+               !$acc&       async(async_id)
+               !$acc wait(async_id)
                do jj = 1, jlistnum
                   j = jlist1(jj)
                   nxj = nxdef_2d(j)
@@ -2278,22 +2567,42 @@
                                       islimsk(1, jj), garea(1, jj), dotc(1, 1, jj), ncld, hpbl(1, jj), &
                                       cnvw(1, 1, jj), cnvc(1, 1, jj))
                end do
+               !$acc wait(async_id)
+               !$acc update device(rcup2, cnvw, cnvc, qtr, qti, qtc, ttc, &
+               !$acc&       utc, vtc, kbot, ktop, kuo) &
+               !$acc&       async(async_id)
+               !$acc wait(async_id)
+               else
+               call samfshalcnv_kh_gpu(nxjp, nxp, lev, dta, del, prsl, psfc, phil, &
+                                      qtr, &
+                                      qti, qtc, ttc, utc, vtc, &
+                                      rcup2, kbot, ktop, kuo, &
+                                      islimsk, garea, dotc, ncld, hpbl, &
+                                      cnvw, cnvc)
+               end if
+
+               
             end if
 
+            !$acc parallel loop gang private(j, nxj) async(async_id)
             do jj = 1, jlistnum
                j = jlist1(jj)
                nxj = nxdef_2d(j)
+               !$acc loop vector
                do i = 1, nxj
                   rcup(i, jj) = rcup(i, jj) + rcup2(i, jj)*1000.         ! mm/call
                end do
                !rcup(1:nxj,jj) = rcup(1:nxj,jj)+rcup2(1:nxj) * 1000.         ! mm/call
             end do
 
+            !$acc parallel loop gang collapse(2) private(j, nxj, kc, dttmp, dutmp, dvtmp) &
+            !$acc&         async(async_id)
             do jj = 1, jlistnum
-               j = jlist1(jj)
-               nxj = nxdef_2d(j)
                do k = 1, lev
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
                   kc = lev - k + 1
+                  !$acc loop vector
                   do i = 1, nxj
                      qt(i, k, jj) = max(qtc(i, kc, jj), qmin)
                      qt(i, k + lev, jj) = max(qtr(i, kc, jj), qmin)
@@ -2318,6 +2627,8 @@
                   end do
                end do
             end do
+            !$acc wait(async_id)
+            
          end if  !(end of doshl .and. (nmshl.eq.2 .or. nmshl.eq.3)
 
          if (doshl .and. (nmshl .eq. 1)) then
@@ -2479,6 +2790,8 @@
                           nmmiph .eq. 8 .or. nmmiph .eq. 18 .or. & ! Thompson
                           nmmiph .eq. 11 .or. nmmiph .eq. 12 .or. nmmiph .eq. 13 .or. & !GFDL MP
                           nmmiph .eq. 15 .or. nmmiph .eq. 16)) then !Goddard MP
+            !$acc wait(async_id)
+            !$acc parallel loop async(async_id)
             do jj = 1, jlistnum
                j = jlist1(jj)
                nxj = nxdef_2d(j)
@@ -2488,7 +2801,15 @@
             end do
 
 ! define rhc for GFDL MP
-            rhc_mp = 1.
+            !$acc parallel loop collapse(3) async(async_id)
+            do jj = 1, jlistnum
+               do k = 1, lev
+                  do i = 1, nxp
+                     rhc_mp(i, k, jj) = 1.
+                  end do
+               end do
+            end do
+            
 #ifdef rhc_GFDL
             if (myrank .eq. 0) print *, "Not support this entry. (rhc_GFDL)"
             if (arg .gt. 45.) then
@@ -2496,10 +2817,12 @@
             elseif (arg .lt. -45) then
                arg = -45.
             end if
+            !$acc parallel loop gang collapse(2) private(i, nxj, tem) async(async_id)
             do jj = 1, jlistnum
-               j = jlist1(jj)
-               nxj = nxdef_2d(j)
                do k = 1, lev
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
+                  !$acc loop vector
                   do i = 1, nxj
 !          rhc_mp(i,k) = 1.0 - 0.02*cos(d2r*arg)**2
                      if (plt(i, k, jj)/plt(i, lev, jj) .lt. 0.4) then
@@ -2513,10 +2836,12 @@
 #endif
 
 ! for slavepp
+            !$acc parallel loop gang collapse(2) private(j, nxj) async(async_id)
             do jj = 1, jlistnum
-               j = jlist1(jj)
-               nxj = nxdef_2d(j)
                do k = 1, lev
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
+                  !$acc loop vector
                   do i = 1, nxj
                      ttc(i, k, jj) = tt(i, k, jj)
                      utc(i, k, jj) = ut(i, k, jj)
@@ -2524,65 +2849,78 @@
                   end do
                end do
             end do
-
-!            do jj = 1, jlistnum
-!               j = jlist1(jj)
-!               nxj = nxdef_2d(j)
-!               call mp_scheme &
-!                  !  ---  inputs:
-!                  (nmmiph, nxp, nxjp(j), lev, ncld, plt(1, 1, jj), ptop, &
-!                   dsigma, phii(1, 1, jj), islimsk(1, jj), q0(1, 1, jj), kdt, tpi, me, dta, area(jj), jj, &
-!                   itimestep, sgeo(1, jj), phi(1, 1, jj), rhc_mp(1, 1, jj), pk(1, 1, jj), &
-!                   snr(1, jj), xlat(j), sdec, ivegtyp(1, jj), &
-!#ifdef Readaeroclx
-!                   aeroclx(1, 1, jj), naero, &
-!#endif
-!                   !  ---  inputs/outputs:
-!                   ttc(1, 1, jj), qt(1, 1, jj), clds(1, 1, jj), &
-!                   utc(1, 1, jj), vtc(1, 1, jj), vvel(1, 1, jj), &
-!                   pst(1, jj), &
-!                   !  ---  outputs:
-!                   ftp(1, 1, jj), ftp1(1, 1, jj), fqp(1, 1, jj), fqp1(1, 1, jj), &
-!                   rlsp(1, jj),  & !total precipitation(rain+ice+snow+graupel,may include cloud water)
-!                   rlspi(1, jj), & !ice precipitation
-!                   rlsps(1, jj), & !snow precipitation
-!                   rlspg(1, jj), & !graupel precipitation(include hail for GCE 4ICE)
-!                   sr(1, jj))
-!            end do
-            !if (itimestep .eq. 5) then
-            !   do jj = 1, jlistnum
-            !      do k = 1, lev
-            !         write(*,*) vvel(1:20, k, jj)
-            !      end do
-            !   end do
-            !end if
-            call mp_scheme_gpu &
-               !  ---  inputs:
-               (nmmiph, nxp, nxjp, lev, ncld, plt, ptop, &
-                dsigma, phii, islimsk, q0, kdt, tpi, me, dta, area, 1, &
-                itimestep, sgeo, phi, rhc_mp, pk, &
-                snr, xlat, sdec, ivegtyp, &
-#ifdef Readaeroclx
-                aeroclx, naero, &
-#endif
-                !  ---  inputs/outputs:
-                ttc, qt, clds, &
-                utc, vtc, vvel, &
-                pst, &
-                !  ---  outputs:
-                ftp, ftp1, fqp, fqp1, &
-                rlsp,  & !total precipitation(rain+ice+snow+graupel,may include cloud water)
-                rlspi, & !ice precipitation
-                rlsps, & !snow precipitation
-                rlspg, & !graupel precipitation(include hail for GCE 4ICE)
-                sr, &
-                SL_sedi, sat_predict, new_saturation, &
-                use_cpm, use_declination) ! flags for GCE 3ice
-!
+            
+            if (gpulsp .eq. .true. .and. nmmiph .eq. 15) then
+               ! data transfer (i/o arrays)
+               call mp_scheme_gpu &
+                  !  ---  inputs:
+                  (nmmiph, nxp, nxjp, lev, ncld, plt, ptop, &
+                   dsigma, phii, islimsk, q0, kdt, tpi, me, dta, area, 1, &
+                   itimestep, sgeo, phi, rhc_mp, pk, &
+                   snr, xlat, sdec, ivegtyp, &
+   #ifdef Readaeroclx
+                   aeroclx, naero, &
+   #endif
+                   !  ---  inputs/outputs:
+                   ttc, qt, clds, &
+                   utc, vtc, vvel, &
+                   pst, &
+                   !  ---  outputs:
+                   ftp, ftp1, fqp, fqp1, &
+                   rlsp,  & !total precipitation(rain+ice+snow+graupel,may include cloud water)
+                   rlspi, & !ice precipitation
+                   rlsps, & !snow precipitation
+                   rlspg, & !graupel precipitation(include hail for GCE 4ICE)
+                   sr, &
+                   SL_sedi, sat_predict, new_saturation, &
+                   use_cpm, use_declination) ! flags for GCE 3ice
+                  ! data transfer (i/o arrays)
+            else
+               !$acc wait(async_id)
+               !$acc update self(plt, phii, islimsk, q0, area, sgeo, phi, &
+               !$acc&       rhc_mp, pk, snr, ivegtyp, pst, ttc, qt, clds, utc, &
+               !$acc&       vtc, vvel, ftp, ftp1, fqp, fqp1) &
+               !$acc&       async(async_id)
+               !$acc wait(async_id)
+               do jj = 1, jlistnum
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
+                  call mp_scheme &
+                     !  ---  inputs:
+                     (nmmiph, nxp, nxjp(j), lev, ncld, plt(1, 1, jj), ptop, &
+                      dsigma, phii(1, 1, jj), islimsk(1, jj), q0(1, 1, jj), kdt, tpi, me, dta, area(jj), jj, &
+                      itimestep, sgeo(1, jj), phi(1, 1, jj), rhc_mp(1, 1, jj), pk(1, 1, jj), &
+                      snr(1, jj), xlat(j), sdec, ivegtyp(1, jj), &
+   #ifdef Readaeroclx
+                      aeroclx(1, 1, jj), naero, &
+   #endif
+                      !  ---  inputs/outputs:
+                      ttc(1, 1, jj), qt(1, 1, jj), clds(1, 1, jj), &
+                      utc(1, 1, jj), vtc(1, 1, jj), vvel(1, 1, jj), &
+                      pst(1, jj), &
+                      !  ---  outputs:
+                      ftp(1, 1, jj), ftp1(1, 1, jj), fqp(1, 1, jj), fqp1(1, 1, jj), &
+                      rlsp(1, jj),  & !total precipitation(rain+ice+snow+graupel,may include cloud water)
+                      rlspi(1, jj), & !ice precipitation
+                      rlsps(1, jj), & !snow precipitation
+                      rlspg(1, jj), & !graupel precipitation(include hail for GCE 4ICE)
+                      sr(1, jj), SL_sedi, sat_predict, new_saturation, &
+                      use_cpm, use_declination)
+               end do
+               !$acc wait(async_id)
+               !$acc update device(rlsp, rlspi, rlsps, rlspg, sr, ttc, qt, &
+               !$acc&       clds, utc, vtc, vvel, ftp, ftp1, fqp, fqp1) &
+               !$acc&       async(async_id)
+               !$acc wait(async_id)
+            end if
+            
+            !$acc parallel loop gang collapse(2) private(j, nxj, dttmp, dutmp, dvtmp) &
+            !$acc&         async(async_id)
             do jj = 1, jlistnum
-               j = jlist1(jj)
-               nxj = nxdef_2d(j)
                do k = 1, lev
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
+                  !$acc loop vector
                   do i = 1, nxj
                      dttmp = ttc(i, k, jj) - tt(i, k, jj)
                      dutmp = utc(i, k, jj) - ut(i, k, jj)
@@ -2602,6 +2940,7 @@
                   end do
                end do
             end do
+            !$acc wait(async_id)
          end if
 
 !
@@ -2621,13 +2960,13 @@
             end do
          end if
 
+         !$acc parallel loop gang private(j, nxj) async(async_id)
          do jj = 1, jlistnum
             j = jlist1(jj)
             nxj = nxdef_2d(j)
-            ! do  i = 1, nxj
-            !   curate(i,jj) = rcup(i,jj) * 86400.0/dta
-            ! enddo
-            curate(1:nxj, jj) = rcup(1:nxj, jj)*86400.0/dta
+            do i = 1, nxj
+               curate(i, jj) = rcup(i, jj)*86400.0/dta
+            end do
          end do
 
 !=======================================================================
@@ -2897,12 +3236,22 @@
 !=======================================================================
 ! Cal. SST tendency (dtsea/dt)
 !=======================================================================
-         do jj = 1, jlistnum
-            j = jlist1(jj)
-            nxj = nxdef_2d(j)
-            dtx_tau = dt/3600.
-            if (ldailyFCTsst .OR. ldailyFCTicesndpt .OR. dailyClm_option .ge. 1) then
-               if (itimestep .le. 1) then
+         if (ldailyFCTsst .OR. ldailyFCTicesndpt .OR. dailyClm_option .ge. 1) then
+            !$acc wait(async_id)
+            !$acc enter data create(dtseadt, dFCTsstdt, obswtbnow, &
+            !$acc&      tseadiffFCT, tseanow, obswtbnew, tseadiffSIT) &
+            !$acc&      async(async_id)
+            !$acc enter data copyin(tseaold, sitmask, dtswdt, &
+            !$acc&      ratioSIT, ssst3d, obswtbold, sumdSITdt, countdSITdt, &
+            !$acc&      tseadiffSIT24, tseadiffFCT24) async(async_id)
+            !$acc wait(async_id)
+            if (itimestep .le. 1) then
+               !$acc parallel loop gang async(async_id) private(j, nxj, dtx_tau, i)
+               do jj = 1, jlistnum
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
+                  dtx_tau = dt/3600.
+                  !$acc loop vector
                   do ii = 1, nxj
                      i = nxjstart(j) + ii - 1
                      dtseadt(ii, jj) = 0.
@@ -2913,8 +3262,17 @@
                         tseanow(ii, jj) = dta*dFCTsstdt(ii, jj) + tseaold(ii, jj)
                      end if
                   end do
-               end if
-               if ((tau .ge. 24.)) then
+               end do
+            end if
+            
+            if ((tau .ge. 24.)) then
+               !$acc parallel loop gang async(async_id) private(j, nxj, dtx_tau, &
+               !$acc&         i, dtaup)
+               do jj = 1, jlistnum
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
+                  dtx_tau = dt/3600.
+                  !$acc loop vector
                   do ii = 1, nxj
                      i = nxjstart(j) + ii - 1
                      dtseadt(ii, jj) = 0.
@@ -2957,9 +3315,17 @@
                         tseadiffFCT24(ii, jj) = tseadiffFCT24(ii, jj) + tseadiffFCT(ii, jj)/dta*dt
                      end if !end if(ocean)
                   end do  !end ii
-               end if  !end if(tau .ge. 24.)
-            end if !end if(ldailyFCTsst....)
-         end do
+               end do
+            end if  !end if(tau .ge. 24.)
+            !$acc wait(async_id)
+            !$acc exit data delete(tseaold, sitmask, dtswdt, &
+            !$acc&     ratioSIT, ssst3d) async(async_id)
+            !$acc exit data copyout(dtseadt, dFCTsstdt, obswtbnow, &
+            !$acc&     tseadiffFCT, tseanow, obswtbnew, tseadiffSIT, obswtbold, &
+            !$acc&     sumdSITdt, countdSITdt, tseadiffSIT24, tseadiffFCT24) &
+            !$acc&     async(async_id)
+            !$acc wait(async_id)
+         end if !end if(ldailyFCTsst....)
 
 !=======================================================================
 ! Add SPPT pertubation
@@ -3068,39 +3434,57 @@
          ! adjustmen of surface pressure, virtual potential
          ! temperature and all tracers
          if (mass_dp) then
-            do jj = 1, jlistnum
-               j = jlist1(jj)
-               !        call adjptq(qt(1,1,jj),qtp,pst(1,jj),ps(1,jj),nxjp(j),nxp,    &
-               !                    my_max,lev,ncld,dta)
-               call adjptqintp(ut(1, 1, jj), vt(1, 1, jj), tt(1, 1, jj), &
-                               qt(1, 1, jj), qtp(1, 1, jj), pst(1, jj), ps(1, jj), &
-                               nxjp(j), nxp, my_max, lev, ncld, dta)
-               call prexp_hybrid_cwb(nxjp(j), nxp, lev, ptop, sigma, pst(1, jj), &
-                                     pk(1, 1, jj), pk2(1, 1, jj), plt(1, 1, jj))
-            end do
+            if (gpumass_dp .eq. .true.) then
+               !$acc wait(async_id)
+               call adjptqintp_gpu(ut, vt, tt, &
+                               qt, qtp, pst, ps, &
+                               nxjp, nxp, my_max, lev, ncld, dta)
+               call prexp_hybrid_cwb_gpu_refactor(nxjp, nxp, lev, ptop, sigma, pst, &
+                                                  pk, pk2, plt)
+               !$acc wait(async_id)
+               !$acc update self(pst) async(async_id)
+               !$acc wait(async_id)
+               
+            else
+               !$acc wait(async_id)
+               !$acc update self(qtp, ut, vt, tt, qt, pst, ps) async(async_id)
+               !$acc wait(async_id)
+               do jj = 1, jlistnum
+                  j = jlist1(jj)
+                  !        call adjptq(qt(1,1,jj),qtp,pst(1,jj),ps(1,jj),nxjp(j),nxp,    &
+                  !                    my_max,lev,ncld,dta)
+                  call adjptqintp(ut(1, 1, jj), vt(1, 1, jj), tt(1, 1, jj), &
+                                  qt(1, 1, jj), qtp(1, 1, jj), pst(1, jj), ps(1, jj), &
+                                  nxjp(j), nxp, my_max, lev, ncld, dta)
+                  call prexp_hybrid_cwb(nxjp(j), nxp, lev, ptop, sigma, pst(1, jj), &
+                                        pk(1, 1, jj), pk2(1, 1, jj), plt(1, 1, jj))
+               end do
+               !$acc wait(async_id)
+               !$acc update device(pk, pk2, plt, ut, vt, tt, qt, pst, ps) async(async_id)
+               !$acc wait(async_id)
+            end if
          end if
 
          !--------------------------------------------------------------------------------
          !     weight back u and v by cosl/radus and
          !     change real temp back to virtual potential temperature
          !--------------------------------------------------------------------------------
-         !$acc update device(ut, vt, tt, qt, o3l, pk) async(async_id)
-         !$acc parallel loop collapse(3) private(j, nxj, yy, kk) async(async_id)
+         !$acc wait(async_id)
+         !$acc parallel loop gang collapse(2) private(j, nxj, yy, kk) async(async_id)
          do jj = 1, jlistnum
             do k = 1, lev
-               do i = 1, nxp
-                  j = jlist1(jj)
-                  nxj = nxdef_2d(j)
-                  if (i .le. nxj) then
-                     yy = cosl(j)/radus
-                     ut(i, k, jj) = ut(i, k, jj)*yy
-                     vt(i, k, jj) = vt(i, k, jj)*yy
-                     tt(i, k, jj) = tt(i, k, jj)*(1.0 + 0.608*qt(i, k, jj))/pk(i, k, jj)
-                     ! update o3l to qt
-                     if (ntoz .gt. 0) then
-                        kk = (ntoz - 1)*lev + k
-                        qt(i, kk, jj) = o3l(i, k, jj)
-                     end if
+               j = jlist1(jj)
+               nxj = nxdef_2d(j)
+               !$acc loop vector
+               do i = 1, nxj
+                  yy = cosl(j)/radus
+                  ut(i, k, jj) = ut(i, k, jj)*yy
+                  vt(i, k, jj) = vt(i, k, jj)*yy
+                  tt(i, k, jj) = tt(i, k, jj)*(1.0 + 0.608*qt(i, k, jj))/pk(i, k, jj)
+                  ! update o3l to qt
+                  if (ntoz .gt. 0) then
+                     kk = (ntoz - 1)*lev + k
+                     qt(i, kk, jj) = o3l(i, k, jj)
                   end if
                end do
             end do
@@ -3150,38 +3534,91 @@
 !      call mpe_global_sum(dqcupd,lev,mpe_double)
 
          !  compute accumulated rain (mm)
-         do jj = 1, jlistnum
-            j = jlist1(jj)
-            nxj = nxdef_2d(j)
-            do i = 1, nxj
-               totalp(i, jj) = (rcup(i, jj) + rlsp(i, jj))*rainfc
-               totallp(i, jj) = rlsp(i, jj)*rainfc
-               raincu(i, jj) = raincu(i, jj) + rcup(i, jj)*rainfc
-               rainlp(i, jj) = rainlp(i, jj) + rlsp(i, jj)*rainfc
-               raincu1(i, jj) = raincu1(i, jj) + rcup(i, jj)*rainfc
-               rainlp1(i, jj) = rainlp1(i, jj) + rlsp(i, jj)*rainfc
-               raincu6(i, jj) = raincu6(i, jj) + rcup(i, jj)*rainfc
-               rainlp6(i, jj) = rainlp6(i, jj) + rlsp(i, jj)*rainfc
-               raintot(i, jj) = raintot(i, jj) + totalp(i, jj)
+         if (gpupbl .eq. .true.) then
+            !$acc wait(async_id)
+            !$acc parallel loop gang private(j, nxj) async(async_id)
+            do jj = 1, jlistnum
+               j = jlist1(jj)
+               nxj = nxdef_2d(j)
+               !$acc loop vector
+               do i = 1, nxj
+                  totalp(i, jj) = (rcup(i, jj) + rlsp(i, jj))*rainfc
+                  totallp(i, jj) = rlsp(i, jj)*rainfc
+                  raincu(i, jj) = raincu(i, jj) + rcup(i, jj)*rainfc
+                  rainlp(i, jj) = rainlp(i, jj) + rlsp(i, jj)*rainfc
+                  raincu1(i, jj) = raincu1(i, jj) + rcup(i, jj)*rainfc
+                  rainlp1(i, jj) = rainlp1(i, jj) + rlsp(i, jj)*rainfc
+                  raincu6(i, jj) = raincu6(i, jj) + rcup(i, jj)*rainfc
+                  rainlp6(i, jj) = rainlp6(i, jj) + rlsp(i, jj)*rainfc
+                  raintot(i, jj) = raintot(i, jj) + totalp(i, jj)
+                  !if (totalp(i, jj) .le. 1e-13) totalp(i, jj) = 0.
+                  !if (totallp(i, jj) .le. 1e-13) totallp(i, jj) = 0.
+               end do
             end do
-         end do
 
-         !  reduce totalp in first hour forecast to avoid apin-up problem
-         if (tau .le. 1.001) then
-            dtau = dt/3600.0
+            !  reduce totalp in first hour forecast to avoid apin-up problem
+            if (tau .le. 1.001) then
+               dtau = dt/3600.0
+               !$acc parallel loop gang private(j, nxj) async(async_id)
+               do jj = 1, jlistnum
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
+                  !$acc loop vector
+                  do i = 1, nxj
+                     totalp(i, jj) = (tau - dtau)*totalp(i, jj)
+                     runoff(i, jj) = (tau - dtau)*runoff(i, jj)
+                  !if (totalp(i, jj) .le. 1e-13) totalp(i, jj) = 0.
+                  end do
+               end do
+            end if
+            !$acc wait(async_id)
+         else
+            !$acc wait(async_id)
+            !$acc update self(rcup, rlsp, raincu, rainlp, raincu1, rainlp1, &
+            !$acc&       raincu6, rainlp6, raintot, runoff) &
+            !$acc&       async(async_id)
+            !$acc wait(async_id)
             do jj = 1, jlistnum
                j = jlist1(jj)
                nxj = nxdef_2d(j)
                do i = 1, nxj
-                  totalp(i, jj) = (tau - dtau)*totalp(i, jj)
-                  runoff(i, jj) = (tau - dtau)*runoff(i, jj)
+                  totalp(i, jj) = (rcup(i, jj) + rlsp(i, jj))*rainfc
+                  totallp(i, jj) = rlsp(i, jj)*rainfc
+                  raincu(i, jj) = raincu(i, jj) + rcup(i, jj)*rainfc
+                  rainlp(i, jj) = rainlp(i, jj) + rlsp(i, jj)*rainfc
+                  raincu1(i, jj) = raincu1(i, jj) + rcup(i, jj)*rainfc
+                  rainlp1(i, jj) = rainlp1(i, jj) + rlsp(i, jj)*rainfc
+                  raincu6(i, jj) = raincu6(i, jj) + rcup(i, jj)*rainfc
+                  rainlp6(i, jj) = rainlp6(i, jj) + rlsp(i, jj)*rainfc
+                  raintot(i, jj) = raintot(i, jj) + totalp(i, jj)
+                  !if (totalp(i, jj) .le. 1e-13) totalp(i, jj) = 0.
+                  !if (totallp(i, jj) .le. 1e-13) totallp(i, jj) = 0.
                end do
             end do
+
+            !  reduce totalp in first hour forecast to avoid apin-up problem
+            if (tau .le. 1.001) then
+               dtau = dt/3600.0
+               do jj = 1, jlistnum
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
+                  do i = 1, nxj
+                     totalp(i, jj) = (tau - dtau)*totalp(i, jj)
+                     runoff(i, jj) = (tau - dtau)*runoff(i, jj)
+                  !if (totalp(i, jj) .le. 1e-13) totalp(i, jj) = 0.
+                  end do
+               end do
+            end if
+            !$acc wait(async_id)
+            !$acc update device(totalp, totallp, raincu, rainlp, raincu1, &
+            !$acc&       rainlp1, raincu6, rainlp6, raintot, runoff) &
+            !$acc&       async(async_id)
+            !$acc wait(async_id)
          end if
 !
 !      call mpe_unify(totalp,nx,my,2,mpe_double)
 !
-         if (ldiag .ge. 1) then
+         if (ldiag .ge. 1) then ! ldiag is 0 in present settings
 !     print level-1 diagnostics
 !                   (aps,psx,psn,nncup,nnshl,nndry,nnlsp,itlsp,arcup
 !                   arlsp,xkmx,dtcupx and layer mean dtcup and dqcup )
@@ -3635,8 +4072,6 @@
          !!!! ---- phygrid
          !$acc exit data delete(xlat, xlon) async(async_id)
          ! << output >>
-         !!!! ---- phygrid
-         !$acc exit data copyout(o3l, dtrad) async(async_id)
          ! << input/output >>
          ! << local >>
          !$acc exit data delete(sinl, cosl) async(async_id)
@@ -3648,5 +4083,26 @@
          !$acc exit data delete(ttc, utc, vtc, qtc) async(async_id)
          !$acc exit data delete(dtdtc, dudtc, dvdtc, dqdtc) async(async_id)
          !$acc exit data delete(prsl, prslk, prsi, del) async(async_id)
+         !$acc exit data delete(ztenh, zqenh, rho, snow_flx, ptu, pqu, &
+         !$acc&      cnvwn, kuo, rcup2, islimsk, kpbl, icsdsw, icsdlw, &
+         !$acc&      rld_adj, sld_adj, ss_adj) async(async_id)
+         !$acc exit data delete(qflux, hflux, utgwc, vtgwc, cnvw, cnvc, &
+         !$acc&      qtr, qti) async(async_id)
+         !$acc exit data delete(rcup, rlsp, rlspi, rlsps, rlspg, cldwrk, &
+         !$acc&      xmu, sr, asr, alr, xsr, xlr, dtcupz, dqcupz, nlcl, &
+         !$acc&      nnegl, nosat) async(async_id)
+         !$acc exit data delete(nwork, ntcup, nflx, ilsp, nlsp, aflxd, aflxu, ijdg, &
+         !$acc&      ncup, ndry, nshl, icupmx, ipblmx, xkmx, dtcupx) async(async_id)
+         !$acc exit data delete(albx, albedo2, alb, slimsk, tem1, tem2, work1, &
+         !$acc&      work2, garea, rstd, dotc, ixseed, rs_adj, xlonr, dtradc) async(async_id)
+         !$acc exit data delete(u0, v0, t0, q0, xkmd, hprime, oc, theta, &
+         !$acc&      gamma, sigmaog) async(async_id)
+         !$acc exit data delete(elvmax, oa4, clx, zmtnblck, psfc, sl, &
+         !$acc&     kbot, ktop, snow_flxn) async(async_id)
+         !$acc exit data delete(ptun, pqun, diss_dcc, kbotc, ktopc, cumabs, &
+         !$acc&     work3, dlength, cldf, tauctx, taucty, heat, evap, &
+         !$acc&     area, rhc_mp) async(async_id)
+         !$acc exit data delete(itlsp, nnlsp, dtcupd, dqcupd, dtcupl, dqcupl) async(async_id)
+         !$acc exit data delete(tbpvs) async(async_id)
          !$acc wait(async_id)
       end subroutine diabat_gpu

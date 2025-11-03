@@ -732,7 +732,6 @@
           j=jlist1(jj)
           nxj=nxdef_2d(j)
         do i=1,nxj
-!          if(xlat(j) .gt. -80.0 .and. xlat(j) .lt. 86.76) then
           if(tg_ocn(i,jj) .gt. 0.0) then
             ice(i,jj) = ice_cpl(i,jj)
             ocean(i,jj) = ocean_cpl(i,jj)

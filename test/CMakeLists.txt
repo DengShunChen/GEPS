@@ -37,6 +37,11 @@ if(${USE_CUDA})
     endif()
 
     set(TESTS
+        test_adjptqintp
+        test_ozphys_2015
+        test_gwdc
+        test_samfdeepcnv_kh
+        test_samfshalcnv_kh
         test_gsfcgce_3ice_nuwrf
         test_pbl_noah
         test_sfc_sice
@@ -74,8 +79,8 @@ if(${USE_CUDA})
         test_nccl
         test_mpe2d_unify_nx
         test_mpe2d_unify_my1d
-	test_mpe2d_unify_lev
-  	test_ndslfv_monoadvh_refactor
+        test_mpe2d_unify_lev
+        test_ndslfv_monoadvh_refactor
         test_ndslfv_monoadvh_fgnl_refactor
         test_ptotc
         test_tridi2
@@ -100,6 +105,11 @@ if(${USE_CUDA})
         #test_gsfcgce_3ice_nuwrf_file
         #test_fall_flux_file
         #test_saticel_s_file
+        #test_samfdeepcnv_kh_file
+        #test_samfshalcnv_kh_file
+        #test_nor_gwdp_file
+        #test_ozphys_2015_file
+        #test_gwdc_file
 
     )
 

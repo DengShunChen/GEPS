@@ -183,6 +183,7 @@
              evbs, evcw, sbsno, snowc, stm, snohf, smcwlt2, smcref2,    & 
              wet1
 !  ---  locals:
+      real (kind=kind_phys), dimension(km) :: stc1d, smc1d, slc1d, et1d
       real (kind=kind_phys), dimension(im, my_max) :: rch, rho,                 & 
              q0, qs1, theta1, wind
       real (kind=kind_phys), dimension(6, im, my_max) :: old_2d
@@ -418,6 +419,67 @@
           snomlt, sncovr1, rc, pc, rsmin, xlai, rcs, rct, rcq,        & 
           rcsoil, soilw, stm, smcwlt2, smcdry, smcref2, smcmax,      &
           async_id)
+
+      !!$acc wait(async_id)
+      !!$acc update self(soiltyp, vegtype, slopetyp, sfcemis, dlwflx, &
+      !!$acc&       dswsfc, snet, snoalb, sfalb, zf, prsl1, shdmin, weasd, &
+      !!$acc&       canopy, tsurf, trans, sncovr1, gflux, drain, evap, &
+      !!$acc&       hflx, ep, runoff, zorl, albedo2, evbs, evcw, sbsno, &
+      !!$acc&       stm, smcwlt2, smcref2, q0, qs1, theta1, wind, beta, &
+      !!$acc&       chx, cmx, dew, drip, dqsdt2, flx1, flx2, flx3, ffrozp, &
+      !!$acc&       pc, prcp, rc, rcs, rct, rcq, rcsoil, rsmin, runoff3, &
+      !!$acc&       sfctmp, shdfac, smcdry, smcmax, snowh, snomlt, soilw, &
+      !!$acc&       tbot, xlai, couple, ice, nroot, sldpth, stc, smc, slc, &
+      !!$acc&       et, myim, flag_iter, flag) &
+      !!$acc&       async(async_id)
+      !!$acc wait(async_id)
+      !do jj = 1, jlistnum
+      !   do i = 1, myim(jj)
+      !      if (flag_iter(i, jj) .and. flag(i, jj)) then
+      !         do k = 1, km
+      !            stc1d(k) = stc(i, k, jj)
+      !            smc1d(k) = smc(i, k, jj)
+      !            slc1d(k) = slc(i, k, jj)
+      !            et1d(k) = et(i, k, jj)
+      !         end do
+      !          call sflx                                                     &
+      !   !  ---  inputs: &
+      !           ( nsoil, couple(i, jj), ice(i, jj), ffrozp(i, jj), delt, zf(i, jj), sldpth,            & 
+      !             dswsfc(i, jj), snet(i, jj), dlwflx(i, jj), sfcemis(i, jj), prsl1(i, jj), sfctmp(i, jj),                & 
+      !             wind(i, jj), prcp(i, jj), q0(i, jj), qs1(i, jj), dqsdt2(i, jj), theta1(i, jj), ivegsrc,             & 
+      !             vegtype(i, jj), soiltyp(i, jj), slopetyp(i, jj), shdmin(i, jj), sfalb(i, jj), snoalb(i, jj),              &
+      !   !  ---  input/outputs: &
+      !             tbot(i, jj), canopy(i, jj), tsurf(i, jj), stc1d, &
+      !             smc1d, slc1d, weasd(i, jj), chx(i, jj), cmx(i, jj),  & 
+      !             zorl(i, jj),                                                        &
+      !   !  ---  outputs: &
+      !             nroot(i, jj), shdfac(i, jj), snowh(i, jj), albedo2(i, jj), evap(i, jj), hflx(i, jj), evcw(i, jj),              & 
+      !             evbs(i, jj), et1d, trans(i, jj), sbsno(i, jj), drip(i, jj), dew(i, jj), beta(i, jj), ep(i, jj), gflux(i, jj),         & 
+      !             flx1(i, jj), flx2(i, jj), flx3(i, jj), runoff(i, jj), drain(i, jj), runoff3(i, jj),               & 
+      !             snomlt(i, jj), sncovr1(i, jj), rc(i, jj), pc(i, jj), rsmin(i, jj), xlai(i, jj), rcs(i, jj), rct(i, jj), rcq(i, jj),        & 
+      !             rcsoil(i, jj), soilw(i, jj), stm(i, jj), smcwlt2(i, jj), smcdry(i, jj), smcref2(i, jj), smcmax(i, jj))
+      !         do k = 1, km
+      !            stc(i, k, jj) = stc1d(k)
+      !            smc(i, k, jj) = smc1d(k)
+      !            slc(i, k, jj) = slc1d(k)
+      !            et(i, k, jj) = et1d(k)
+      !         end do
+      !      end if
+      !   end do
+      !end do
+      !!$acc wait(async_id)
+      !!$acc update device(soiltyp, vegtype, slopetyp, sfcemis, &
+      !!$acc&       dlwflx, dswsfc, snet, snoalb, sfalb, zf, prsl1, shdmin, &
+      !!$acc&       weasd, canopy, tsurf, trans, sncovr1, gflux, drain, &
+      !!$acc&       evap, hflx, ep, runoff, zorl, albedo2, evbs, evcw, &
+      !!$acc&       sbsno, stm, smcwlt2, smcref2, q0, qs1, theta1, wind, &
+      !!$acc&       beta, chx, cmx, dew, drip, dqsdt2, flx1, flx2, flx3, &
+      !!$acc&       ffrozp, pc, prcp, rc, rcs, rct, rcq, rcsoil, rsmin, &
+      !!$acc&       runoff3, sfctmp, shdfac, smcdry, smcmax, snowh, snomlt, &
+      !!$acc&       soilw, tbot, xlai, couple, ice, nroot, sldpth, stc, &
+      !!$acc&       smc, slc, et, myim, flag_iter, flag) &
+      !!$acc&       async(async_id)
+      !!$acc wait(async_id)
       !write(*,*) check
    !  --- ...  noah: prepare variables for return to parent mode
    !   6. output (o):

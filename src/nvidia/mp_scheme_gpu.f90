@@ -263,7 +263,11 @@
               use_cpm, use_declination
       logical :: benchmark = .false.
       integer :: async_id = 1
-
+      ! allocate temporary arrays (GCE) on GPU
+      !$acc enter data create(prsl, del, ttc, qtc, qtr, qtrw, qti, qtsw, &
+      !$acc&      qtgl, refl10, ntnc, rainncv, snowncv, graupelncv) async(async_id)
+      !$acc wait(async_id)
+      !$acc parallel loop private(j, nxj) async(async_id)
       do jj = 1, jlistnum
          j = jlist1(jj)
          nxj = nxjp(j)
@@ -275,6 +279,7 @@
       q_remove_cond = .false.
    !
    ! reset all value to zero
+      !$acc parallel loop gang collapse(3) async(async_id)
       do jj = 1, jlistnum
          do k = 1, lev
             do i = 1, nx
@@ -288,12 +293,12 @@
                qtsw(i,k,jj)  = 0.
                qtgl(i,k,jj)  = 0.
                refl10(i,k,jj)= 0.
-               do m = 1, 2
-                  ntnc(i,k,m,jj)  = 0.
-               end do
+               ntnc(i,k,1,jj)  = 0.
+               ntnc(i,k,2,jj)  = 0.
             end do
          end do
       end do
+      !$acc parallel loop collapse(2) async(async_id)
       do jj = 1, jlistnum
          do i = 1, nx
             rainncv(i,jj)=0.
@@ -1098,29 +1103,17 @@
          if ( nmmiph.eq.16 ) allocate                                                 &
           ( qh3d(nx,lev,my_max),hail2d(nx,my_max),reh3d(nx,lev,my_max) )
 
-      ! data transfer (i/o arrays)
-      !$acc update device(qt, plt, pk, sgeo, tt, phi, phii, vvel) async(async_id)
-      !$acc enter data copyin(islimsk, ivegtyp) async(async_id)
-      !$acc enter data create(re_cloud, re_rain, re_ice, re_snow, rlsp, &
-      !$acc&      rlspi, rlsps, rlspg, sr) async(async_id)
-      ! allocate temporary arrays (GCE) on GPU
-      !$acc enter data create(th3d, qv3d, qc3d, qr3d, &
-      !$acc&      qi3d, qs3d, rain2d, ice2d, snow2d, &
-      !$acc&      graupel2d, sr2d, qg3d, rew3d, rer3d, &
-      !$acc&      rei3d, res3d, reg3d, myim, xlat_myim) async(async_id)
-      !$acc enter data create(rho3d, pii3d, p3d, z3d, ht, dz3d, &
-      !$acc&      w3d, land2d) async(async_id)
 #ifdef Readaeroclx
       allocate ( aero4d(nx,lev,naero,my_max) )
       !$acc enter data copyin(aeroclx) async(async_id)
       !$acc enter data create(aero4d) async(async_id)
 #endif
-         !$acc parallel loop async(async_id) private(j)
-         do jj = 1, jlistnum
-            j = jlist1(jj)
-            myim(jj) = nxjp(j)
-            xlat_myim(jj) = xlat(j)
-         end do
+         !$acc enter data create(th3d, qv3d, qc3d, qr3d, &
+         !$acc&      qi3d, qs3d, rain2d, ice2d, snow2d, &
+         !$acc&      graupel2d, sr2d, qg3d, rew3d, rer3d, &
+         !$acc&      rei3d, res3d, reg3d, myim, xlat_myim) async(async_id)
+         !$acc enter data create(rho3d, pii3d, p3d, z3d, ht, dz3d, &
+         !$acc&      w3d, land2d) async(async_id)
          
          !$acc parallel loop gang vector collapse(3) async(async_id)
          do jj = 1, jlistnum
@@ -1391,17 +1384,14 @@
             enddo
          end do
          ! deallocate GPU temporary arrays (GCE)
+         !$acc exit data delete(prsl, del, ttc, qtc, qtr, qtrw, qti, qtsw, &
+         !$acc&     qtgl, refl10, ntnc, rainncv, snowncv, graupelncv) async(async_id)
          !$acc exit data delete(th3d, qv3d, qc3d, qr3d, &
          !$acc&     qi3d, qs3d, rain2d, ice2d, snow2d, &
          !$acc&     graupel2d, sr2d, qg3d, rew3d, rer3d, &
          !$acc&     rei3d, res3d, reg3d, myim, xlat_myim) async(async_id)
          !$acc exit data delete(rho3d, pii3d, p3d, z3d, ht, dz3d, &
          !$acc&     w3d, land2d) async(async_id)
-         ! data transfer (i/o arrays)
-         !$acc exit data copyout(re_cloud, re_rain, re_ice, re_snow, rlsp, &
-         !$acc&     rlspi, rlsps, rlspg, sr) async(async_id)
-         !$acc exit data delete(islimsk, ivegtyp) async(async_id)
-         !$acc update self(qt, tt) async(async_id)
 #ifdef Readaeroclx
          !$acc exit data delete(aero4d) async(async_id)
          !$acc exit data delete(aeroclx) async(async_id)
