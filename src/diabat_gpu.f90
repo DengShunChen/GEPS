@@ -644,7 +644,7 @@
          !$acc&      area, rhc_mp) async(async_id)
          !$acc enter data create(itlsp, nnlsp, dtcupd, dqcupd, dtcupl, dqcupl) async(async_id)
          !$acc enter data copyin(tbpvs) async(async_id)
-
+         !$acc enter data create(ice_cpl, ocean_cpl, z0_cpl) async(async_id)
          !$acc wait(async_id)
          !$acc parallel loop collapse(3) async(async_id)
          do jj = 1, jlistnum
@@ -786,9 +786,14 @@
 ! update low boundary condition
 !
 #ifdef TIMCOMCPL
-      ice_cpl = ice
-      ocean_cpl = ocean
-      z0_cpl = z0
+!$acc parallel loop collapse(2) async(async_id)
+       do jj = 1, jlistnum
+         do i = 1, nxp
+           ice_cpl(i, jj) = ice(i, jj)
+           ocean_cpl(i, jj) = ocean(i, jj)
+           z0_cpl(i, jj) = z0(i, jj)
+        end do
+      end do
 #endif
          if (doclxu .and. doclx) then
             if (myrank .eq. 0) &
@@ -825,6 +830,7 @@
             end if
 !
             if(.not. mom4ice) then
+            !$acc parallel loop gang private(j, nxj) async(async_id)
             do jj = 1, jlistnum
                j = jlist1(jj)
                nxj = nxdef_2d(j)
@@ -874,11 +880,12 @@
 
             else !mom4ice
 #ifdef TIMCOMCPL
+            !$acc parallel loop gang private(j, nxj) async(async_id)
             do jj = 1, jlistnum
               j=jlist1(jj)
               nxj=nxdef_2d(j)
+            !$acc loop vector
             do i=1,nxj
-!          if(xlat(j) .gt. -80.0 .and. xlat(j) .lt. 86.76) then
               if(tg_ocn(i,jj) .gt. 0.0) then
                 ice(i,jj) = ice_cpl(i,jj)
                 ocean(i,jj) = ocean_cpl(i,jj)
@@ -4104,5 +4111,6 @@
          !$acc&     area, rhc_mp) async(async_id)
          !$acc exit data delete(itlsp, nnlsp, dtcupd, dqcupd, dtcupl, dqcupl) async(async_id)
          !$acc exit data delete(tbpvs) async(async_id)
+         !$acc exit data delete(ice_cpl, ocean_cpl, z0_cpl) async(async_id)
          !$acc wait(async_id)
       end subroutine diabat_gpu
