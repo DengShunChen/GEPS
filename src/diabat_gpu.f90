@@ -644,7 +644,9 @@
          !$acc&      area, rhc_mp) async(async_id)
          !$acc enter data create(itlsp, nnlsp, dtcupd, dqcupd, dtcupl, dqcupl) async(async_id)
          !$acc enter data copyin(tbpvs) async(async_id)
+#ifdef TIMCOMCPL
          !$acc enter data create(ice_cpl, ocean_cpl, z0_cpl) async(async_id)
+#endif
          !$acc wait(async_id)
          !$acc parallel loop collapse(3) async(async_id)
          do jj = 1, jlistnum
@@ -4111,6 +4113,8 @@
          !$acc&     area, rhc_mp) async(async_id)
          !$acc exit data delete(itlsp, nnlsp, dtcupd, dqcupd, dtcupl, dqcupl) async(async_id)
          !$acc exit data delete(tbpvs) async(async_id)
+#ifdef TIMCOMCPL
          !$acc exit data delete(ice_cpl, ocean_cpl, z0_cpl) async(async_id)
+#endif
          !$acc wait(async_id)
       end subroutine diabat_gpu
