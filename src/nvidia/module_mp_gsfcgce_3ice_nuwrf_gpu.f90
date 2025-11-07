@@ -3788,9 +3788,11 @@ CONTAINS
                         elseif (xlat(j) .lt. sbd2 .or. xlat(j) .gt. nbd2) then    ! polar region
                            fxlat = 1.
                         elseif (xlat(j) .ge. sbd2 .and. xlat(j) .le. sbd1) then   ! southern transition zone
-                           fxlat = (sin(max((sbd1 - xlat(j))*90.0/latint, -90.0)*cpi/180.0))**2.0
+!                           fxlat = sin((sbd1 - xlat(j))*90.0/latint*cpi/180.0)
+                           fxlat = (sin((sbd1 - xlat(j))*90.0/latint*cpi/180.0))**2.0
                         elseif (xlat(j) .ge. nbd1 .and. xlat(j) .le. nbd2) then   ! northern transition zone
-                           fxlat = (sin(min((xlat(j) - nbd1)*90.0/latint, 90.0)*cpi/180.0))**2.0
+!                           fxlat = sin((xlat(j) - nbd1)*90.0/latint*cpi/180.0)
+                           fxlat = (sin((xlat(j) - nbd1)*90.0/latint*cpi/180.0))**2.0
                         end if
 
                         cnd = cnd1*(1.0 - fxlat) + cnd2*fxlat
