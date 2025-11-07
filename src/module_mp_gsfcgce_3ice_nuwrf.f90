@@ -1984,6 +1984,7 @@ CONTAINS
               tnr, lzr, bvr, avr, mur, rhoaj, gr2, gbr25
       real :: cnd1, cnd2, dep1, dep2, fez1, fez2, ern1, ern2
       real :: qlimh, qlimm, qliml, dep3, fez3
+      real :: tmnlbc
       real, allocatable, dimension(:,:) :: pact, fez
 
       ! transition zone :
@@ -3566,19 +3567,25 @@ CONTAINS
                   ! create liquid-bearing clouds at polar regions (cnd2, fez2, dep2) :
                   if (use_declination) then
                      ern2 = ern1
-                     if (tair(i, j) .ge. 253.16) then
-                        ! T>=-20 : all ice melt ;
-                        !          condense/evaporate to saturation (with respect to ice) ;
-                        !          no deposition/sublimation
+
+                     ! set minimum temperature of liquid-bearing cloud :
+                     tmnlbc = 253.16  !-20 oC
+
+                     if (tair(i, j) .ge. tmnlbc) then
+                        ! lower liquid clouds :
+                        !   all ice melt ;
+                        !   condense/evaporate to saturation (with respect to ice) ;
+                        !   no deposition/sublimation
 !                        cnd2 = max(-qc(i, j), (qv(i, j) - qsi(i, j))/abi)
                         abw = 1. + xlv**2.*qsi(i, j)/cpm1/(4.61495E2*tair(i, j)**2.)
                         cnd2 = max(-qc(i, j), (qv(i, j) - qsi(i, j))/abw)
                         fez2 = -qi(i, j)
                         dep2 = 0.
                      else
-                        ! T<-20  : all water freeze ;
-                        !          deposite/sublimate to saturation (with respect to ice) ;
-                        !          no condensation/evaporation
+                        ! upper ice clouds :
+                        !   all water freeze ;
+                        !   deposite/sublimate to saturation (with respect to ice) ;
+                        !   no condensation/evaporation
                         dep2 = max(-qi(i, j), (qv(i, j) - qsi(i, j))/abi)
                         fez2 = qc(i, j)
                         cnd2 = 0.
@@ -3622,7 +3629,7 @@ CONTAINS
                      if (xlat .ge. nbd1 .or. xlat .le. sbd1) then
                         ! remove excessive qi (saturation with respect to water)
                         qliml = 5.e-5
-                        if (tair(i, j) .ge. 253.16 .and. qi(i, j) .gt. qliml) then
+                        if (tair(i, j) .ge. tmnlbc .and. qi(i, j) .gt. qliml) then
                            ! T>=-20, qi>qliml
                            if (use_cpm) then
                               cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &

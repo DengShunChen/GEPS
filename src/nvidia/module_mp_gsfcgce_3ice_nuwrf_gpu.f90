@@ -2050,6 +2050,7 @@ CONTAINS
               tnr, lzr, bvr, avr, mur, rhoaj, gr2, gbr25
       real :: cnd1, cnd2, dep1, dep2, fez1, fez2, ern1, ern2
       real :: qlimh, qlimm, qliml, dep3, fez3
+      real :: tmnlbc
 
       ! transition zone :
       real :: dltd, nbd, sbd, nbd1, nbd2, sbd1, sbd2, latint
@@ -3549,7 +3550,8 @@ CONTAINS
             !$acc&         cpm1, xlv, xlf, xls, esw, esi, qsw, qsi, y1, y2, &
             !$acc&         pr0, rhoair, dv1, abw, abi, tauc, tairc, ssi, taui, &
             !$acc&         taur, cnd, dep, fez, ern, tairr, rp0r, xlandr, qvwrfr, &
-            !$acc&         qlwrfr, qiwrfr, qrwrfr, qswrfr, qgwrfr, p0r1)
+            !$acc&         qlwrfr, qiwrfr, qrwrfr, qswrfr, qgwrfr, p0r1, &
+            !$acc&         tmnlbc)
             do j = jts, jte
                do k = kts, kte
                   !$acc loop vector
@@ -3755,19 +3757,25 @@ CONTAINS
                      ! create liquid-bearing clouds at polar regions (cnd2, fez2, dep2) :
                      if (use_declination) then
                         ern2 = ern1
-                        if (tairr .ge. 253.16) then
-                           ! T>=-20     : all ice melt ; 
-                           !              condense/evaporate to saturation (with respect to ice) ;
-                           !              no deposition/sulimation
+
+                        ! set minimum temperature of liquid-bearing cloud :
+                        tmnlbc = 253.16  !-20 oC
+
+                        if (tairr .ge. tmnlbc) then
+                           ! lower liquid clouds :
+                           !   all ice melt ;
+                           !   condense/evaporate to saturation (with respect to ice) ;
+                           !   no deposition/sublimation
 !                           cnd2 = max(-qlwrfr, (qvwrfr - qsi)/abi)
                            abw = 1. + xlv**2.*qsi/cpm1/(4.61495E2*tairr**2.)
                            cnd2 = max(-qlwrfr, (qvwrfr - qsi)/abw)
                            fez2 = -qiwrfr
                            dep2 = 0.
                         else
-                           ! T<-20      : all water freeze ; 
-                           !              deposite/sublimate to saturation (with respect to ice) ;
-                           !              no condensation/evaporation
+                           ! upper ice clouds :
+                           !   all water freeze ;
+                           !   deposite/sublimate to saturation (with respect to ice) ;
+                           !   no condensation/evaporation
                            dep2 = max(-qiwrfr, (qvwrfr - qsi)/abi)
                            fez2 = qlwrfr
                            cnd2 = 0.
@@ -3819,7 +3827,7 @@ CONTAINS
 
                            ! remove excessive qi (saturation with respect to water)
                            qliml = 5.e-5
-                           if (tairr .ge. 253.16 .and. qiwrfr .gt. qliml) then
+                           if (tairr .ge. tmnlbc .and. qiwrfr .gt. qliml) then
                               ! T>=-20, qi>qliml
                               if (use_cpm) then
                                  cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
