@@ -240,7 +240,7 @@ subroutine fall_flux_unit(SL_sedi, sat_predict, new_saturation, &
          ht(i,jj) = sgeo(i,jj)/con_g   !terrain geopotential height above sea level (m)
          if( islimsk(i,jj) .eq. 1 ) then
             land2d(i,jj) = 1.        !land
-            if ( ivegtyp(i,jj) .eq. 15 ) land2d(i,jj) = 2.   !glacial is seen as ocean
+!            if ( ivegtyp(i,jj) .eq. 15 ) land2d(i,jj) = 2.   !glacial is seen as ocean
          else
             land2d(i,jj) = 2.        !ocean & seaice
          endif
@@ -558,7 +558,7 @@ subroutine saticel_s_unit(SL_sedi, sat_predict, new_saturation, &
          ht(i,jj) = sgeo(i,jj)/con_g   !terrain geopotential height above sea level (m)
          if( islimsk(i,jj) .eq. 1 ) then
             land2d(i,jj) = 1.        !land
-            if ( ivegtyp(i,jj) .eq. 15 ) land2d(i,jj) = 2.   !glacial is seen as ocean
+!            if ( ivegtyp(i,jj) .eq. 15 ) land2d(i,jj) = 2.   !glacial is seen as ocean
          else
             land2d(i,jj) = 2.        !ocean & seaice
          endif
@@ -899,7 +899,7 @@ subroutine gsfcgce_3ice_nuwrf_unit(SL_sedi, sat_predict, new_saturation, &
          ht(i,jj) = sgeo(i,jj)/con_g   !terrain geopotential height above sea level (m)
          if( islimsk(i,jj) .eq. 1 ) then
             land2d(i,jj) = 1.        !land
-            if ( ivegtyp(i,jj) .eq. 15 ) land2d(i,jj) = 2.   !glacial is seen as ocean
+!            if ( ivegtyp(i,jj) .eq. 15 ) land2d(i,jj) = 2.   !glacial is seen as ocean
          else
             land2d(i,jj) = 2.        !ocean & seaice
          endif

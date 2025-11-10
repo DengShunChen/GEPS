@@ -2711,7 +2711,7 @@ CONTAINS
 
                pidep(i, j) = 0.0
 
-               if (sat_predict .eq. .false.) then
+               if (.not. sat_predict) then
    !>>> Note that Bergeron processes are concerned in saturation prediction scheme
                   if (tair(i, j) .lt. t0) then
                      y1(i, j) = max(min(tairc(i, j), -1.), -31.)
@@ -3129,7 +3129,7 @@ CONTAINS
 
                if (tair(i, j) .lt. t0 .and. tair(i, j) .gt. t00) then
                   tairc(i, j) = tair(i, j) - t0
-                  if (sat_predict .eq. .false.) then
+                  if (.not. sat_predict) then
 !>>> pidw may be already calculated in saturation prediction scheme.
                      y1(i, j) = max(min(tairc(i, j), -1.), -31.)
                      it(i, j) = int(abs(y1(i, j)))
@@ -4141,7 +4141,7 @@ CONTAINS
 
 !!!  end of Processes 10 and 20
 
-               if (sat_predict .eq. .false.) then
+               if (.not. sat_predict) then
 !>>> Note that ern is already calculated in saturation prediction scheme.
 
 !* 23 * ERN : EVAPORATION OF QR (SUBSATURATION)                   **23**

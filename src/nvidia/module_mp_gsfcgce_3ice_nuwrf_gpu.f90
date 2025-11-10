@@ -2778,7 +2778,7 @@ CONTAINS
 
                   pidep = 0.0
 
-                  if (sat_predict .eq. .false.) then
+                  if (.not. sat_predict) then
       !>>> Note that Bergeron processes are concerned in saturation prediction scheme
                      if (tairr .lt. t0) then
                         y1 = max(min(tairc, -1.), -31.)
@@ -3246,7 +3246,7 @@ CONTAINS
 
                   if (tairr .lt. t0 .and. tairr .gt. t00) then
                      tairc = tairr - t0
-                     if (sat_predict .eq. .false.) then
+                     if (.not. sat_predict) then
    !>>> pidw may be already calculated in saturation prediction scheme.
                         y1 = max(min(tairc, -1.), -31.)
                         it = int(abs(y1))
@@ -3919,7 +3919,7 @@ CONTAINS
    !     CONCENTRATION EXCEEDS THAT ALREADY PRESENT.
       
       IF (IWARM .ne. 1) THEN
-         if (sat_predict .eq. .false.) then
+         if (.not. sat_predict) then
             !$acc parallel loop gang collapse(2) async(async_id) private(cpm, &
             !$acc&         hlv, hlf, hls, fssi, r_nci, cp409, cp580, r32rt, &
             !$acc&         rtair, y3, dd, dm, rsub1, y4, tairc, y2, qsi, esi, &
@@ -4514,7 +4514,7 @@ CONTAINS
                      r231r = rn231*rr0r
                      r232rf = rn232*rrs*fvs
                   end if
-                  if (sat_predict .eq. .false.) then
+                  if (.not. sat_predict) then
                      if (qrwrfr .gt. 0.0) then
                         tairr = (ptwrfr + tb0)*pi0r
                         tair(i, k, j) = tairr
