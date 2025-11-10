@@ -153,6 +153,7 @@ CONTAINS
                                  , ht, dz8w, grav, w &
                                  !                      ,rhowater, rhosnow                           &
                                  , itimestep, xlat, sdec, xland &
+                                 , ivegsrc, ivegtyp &
                                  !                      ,ids,ide, jds,jde, kds,kde                   & ! domain dims
                                  , ims, ime, jms, jme, kms, kme & ! memory dims
                                  , its, ite, jts, jte, kts, kte & ! tile   dims
@@ -212,6 +213,9 @@ CONTAINS
                           refi, &
                           refs, &
                           refg
+
+      integer, intent(in) :: ivegsrc
+      integer, dimension(ims:ime) :: ivegtyp
 
 !+---+-----------------------------------------------------------------+
 #ifdef EXT_DIAG
@@ -413,6 +417,7 @@ CONTAINS
                         qi, qs, qg, &
                         rho, pii, p, w, &
                         itimestep, xland, &
+                        ivegsrc, ivegtyp, &
                         refc, refr, refi, refs, refg, & ! cloud effective radius
                         ims, ime, jms, jme, kms, kme, & ! memory dims
                         its, ite, jts, jte, kts, kte, & ! tile   dims
@@ -1636,6 +1641,7 @@ CONTAINS
                         qiwrf, qswrf, qgwrf, &
                         rho_mks, pi_mks, p0_mks, w_mks, &
                         itimestep, xland, &
+                        ivegsrc, ivegtyp, &
                         refc, refr, refi, refs, refg, & ! cloud effective radius
                         ims, ime, jms, jme, kms, kme, &
                         its, ite, jts, jte, kts, kte, &
@@ -1901,6 +1907,8 @@ CONTAINS
       real     :: ami20
 
       REAL, DIMENSION(ims:ime, jms:jme), INTENT(IN)   :: XLAND
+      integer, intent(in) :: ivegsrc
+      integer, dimension(ims:ime), intent(in) :: ivegtyp
       real, parameter :: roqi = 0.9179    ! ice density
 !  real, parameter :: ccn_over_land = 1500  ! [#/cm3] climatological value
 !  real, parameter :: ccn_over_water = 150  ! [#/cm3] climatological value
@@ -3569,7 +3577,13 @@ CONTAINS
                      ern2 = ern1
 
                      ! set minimum temperature of liquid-bearing cloud :
-                     tmnlbc = 253.16  !-20 oC
+                     if ((ivegsrc .eq. 0 .and. ivegtyp(i) .eq. 13) .or. &
+                         (ivegsrc .eq. 1 .and. ivegtyp(i) .eq. 15) .or. &
+                         (ivegsrc .eq. 2 .and. ivegtyp(i) .eq. 15)) then
+                        tmnlbc = 248.16  !-25 oC at glacial
+                     else
+                        tmnlbc = 253.16  !-20 oC
+                     endif
 
                      if (tair(i, j) .ge. tmnlbc) then
                         ! lower liquid clouds :

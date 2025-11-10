@@ -1996,7 +1996,7 @@
            ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),ptop,             &
              dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,            &
              itimestep,sgeo(1,jj),phi,rhc_mp,pk(1,1,jj),               &
-             snr(1,jj),xlat(j),sdec,ivegtyp(1,jj),                     &
+             snr(1,jj),xlat(j),sdec,ivegsrc,ivegtyp(1,jj),             &
 #ifdef Readaeroclx
              aeroclx(1,1,jj),naero,                                    &
 #endif

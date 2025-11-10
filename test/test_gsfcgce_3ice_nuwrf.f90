@@ -432,7 +432,7 @@ subroutine saticel_s_unit(SL_sedi, sat_predict, new_saturation, &
    logical, intent(in) :: benchmark
    real, intent(inout) :: ct, gt
    
-   integer :: itimestep, ihail, ice2, islimsk(nxp, my_max)
+   integer :: itimestep, ihail, ice2, ivegsrc, islimsk(nxp, my_max)
    real :: dta, sdec, grav, rgas, cp, ptop
    real, dimension(my_max) :: xlat_myim
    real(kind=kind_phys), dimension(nxp, lev+1, my_max) :: phii
@@ -626,6 +626,7 @@ subroutine saticel_s_unit(SL_sedi, sat_predict, new_saturation, &
                         qi3d_cpu(1, 1, jj), qs3d_cpu(1, 1, jj), qg3d_cpu(1, 1, jj), &
                         rho3d(1, 1, jj), pii3d(1, 1, jj), p3d(1, 1, jj), w3d(1, 1, jj), &
                         itimestep, land2d(1, jj), &
+                        ivegsrc, ivegtyp(1, jj), &
                         rew3d_cpu(1, 1, jj), rer3d_cpu(1, 1, jj), rei3d_cpu(1, 1, jj), &
                         res3d_cpu(1, 1, jj), reg3d_cpu(1, 1, jj), & ! cloud effective radius
                          1, nxp , 1, 1, 1, lev,         & ! memory dims
@@ -665,6 +666,7 @@ subroutine saticel_s_unit(SL_sedi, sat_predict, new_saturation, &
                      qi3d_gpu, qs3d_gpu, qg3d_gpu, &
                      rho3d, pii3d, p3d, w3d, &
                      itimestep, land2d, &
+                     ivegsrc, ivegtyp, &
                      rew3d_gpu, rer3d_gpu, rei3d_gpu, &
                      res3d_gpu, reg3d_gpu, & ! cloud effective radius
                      1, nxp, 1, jlistnum, 1, lev, & ! memory dims
@@ -771,7 +773,7 @@ subroutine gsfcgce_3ice_nuwrf_unit(SL_sedi, sat_predict, new_saturation, &
    logical, intent(in) :: benchmark
    real, intent(inout) :: ct, gt
    
-   integer :: itimestep, ihail, ice2, islimsk(nxp, my_max)
+   integer :: itimestep, ihail, ice2, ivegsrc, islimsk(nxp, my_max)
    real :: dta, sdec, grav, rgas, cp, ptop
    real, dimension(my_max) :: xlat_myim
    real(kind=kind_phys), dimension(nxp, lev+1, my_max) :: phii
@@ -964,6 +966,7 @@ subroutine gsfcgce_3ice_nuwrf_unit(SL_sedi, sat_predict, new_saturation, &
                   rho3d(1,1,jj), pii3d(1,1,jj), p3d(1,1,jj), dta, z3d(1,1,jj),                         &
                   ht(1,jj), dz3d(1,1,jj), con_g, w3d(1,1,jj),                                &
                   itimestep, xlat_myim(jj), sdec, land2d(1,jj),                       &
+                  ivegsrc, ivegtyp(1,jj), &
                   1, nxp , 1, 1, 1, lev,                                & ! memory dims
                   1, myim(jj), 1, 1, 1, lev,                                & ! tile   dims
                   rain2d_cpu(1,jj), ice2d_cpu(1,jj), snow2d_cpu(1,jj), graupel2d_cpu(1,jj), &
@@ -1005,6 +1008,7 @@ subroutine gsfcgce_3ice_nuwrf_unit(SL_sedi, sat_predict, new_saturation, &
                rho3d, pii3d, p3d, dta, z3d,                         &
                ht, dz3d, con_g, w3d,                                &
                itimestep, xlat_myim, sdec, land2d,                       &
+               ivegsrc, ivegtyp, &
                1, nxp , 1, jlistnum, 1, lev,                                & ! memory dims
                1, nxp, 1, jlistnum, 1, lev,                                & ! tile   dims
                rain2d_gpu, ice2d_gpu, snow2d_gpu, graupel2d_gpu, sr2d_gpu,              &

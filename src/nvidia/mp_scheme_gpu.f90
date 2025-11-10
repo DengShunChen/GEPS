@@ -97,7 +97,7 @@
            ( nmmiph,nx,nxjp,lev,ncld,plt,ptop,                         &
              dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jjj,           &
              itimestep,sgeo,phi,rhc_mp,pk,                             &
-             snr,xlat,sdec,ivegtyp,                                    &
+             snr,xlat,sdec,ivegsrc,ivegtyp,                            &
 #ifdef Readaeroclx
              aeroclx,naero,                                            &
 #endif
@@ -153,6 +153,7 @@
 !      integer,  intent(in)    :: ntcw,ntrw,ntiw,ntsw,ntgl,ntinc,ntrnc
       integer,  intent(in)    :: islimsk(nx,my_max)
       integer,  intent(in)    :: itimestep
+      integer,  intent(in)    :: ivegsrc
       integer,  intent(in)    :: ivegtyp(nx,my_max)
       real,     intent(in)    :: tpi,dta,xlat(my),sdec
       real,     intent(in)    :: phii(nx,lev+1,my_max)
@@ -1255,6 +1256,7 @@
                            rho3d, pii3d, p3d, dta, z3d,                         &
                            ht, dz3d, con_g, w3d,                                &
                            itimestep, xlat_myim, sdec, land2d,                  &
+                           ivegsrc, ivegtyp,                                    &
                            1, nx , 1, jlistnum, 1, lev,                         & ! memory dims
                            1, nx, 1, jlistnum, 1, lev,                          & ! tile   dims
                            rain2d, ice2d, snow2d, graupel2d, sr2d,              &

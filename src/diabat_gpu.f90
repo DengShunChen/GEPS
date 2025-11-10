@@ -2496,7 +2496,7 @@
                (nmmiph, nxp, nxjp, lev, ncld, plt, ptop, &
                 dsigma, phii, islimsk, q0, kdt, tpi, me, dta, area, 1, &
                 itimestep, sgeo, phi, rhc_mp, pk, &
-                snr, xlat, sdec, ivegtyp, &
+                snr, xlat, sdec, ivegsrc, ivegtyp, &
 #ifdef Readaeroclx
                 aeroclx, naero, &
 #endif

@@ -177,6 +177,7 @@ CONTAINS
                                  , ht, dz8w, grav, w &
                                  !                      ,rhowater, rhosnow                           &
                                  , itimestep, xlat, sdec, xland &
+                                 , ivegsrc, ivegtyp &
                                  !                      ,ids,ide, jds,jde, kds,kde                   & ! domain dims
                                  , ims, ime, jms, jme, kms, kme & ! memory dims
                                  , its, ite, jts, jte, kts, kte & ! tile   dims
@@ -221,6 +222,9 @@ CONTAINS
       REAL, DIMENSION(ims:ime, jms:jme), INTENT(IN)   :: XLAND
       REAL, DIMENSION(ims:ime, kms:kme, jms:jme), &
          INTENT(INOUT) :: refc, refr, refi, refs, refg
+
+      integer, intent(in) :: ivegsrc
+      integer, dimension(ims:ime, jms:jme), intent(in) :: ivegtyp
 
 !+---+-----------------------------------------------------------------+
 #ifdef EXT_DIAG
@@ -451,6 +455,7 @@ CONTAINS
                            qi, qs, qg, &
                            rho, pii, p, w, &
                            itimestep, xland, &
+                           ivegsrc, ivegtyp, &
                            refc, refr, refi, &
                            refs, refg, & ! cloud effective radius
                            ims, ime, jms, jme, kms, kme, & ! memory dims
@@ -1724,6 +1729,7 @@ CONTAINS
                         qiwrf, qswrf, qgwrf, &
                         rho_mks, pi_mks, p0_mks, w_mks, &
                         itimestep, xland, &
+                        ivegsrc, ivegtyp, &
                         refc, refr, refi, refs, refg, & ! cloud effective radius
                         ims, ime, jms, jme, kms, kme, &
                         its, ite, jts, jte, kts, kte, &
@@ -1822,6 +1828,8 @@ CONTAINS
       integer ims, ime, jms, jme, kms, kme
       integer its, ite, jts, jte, kts, kte
       integer i, j, k, kp, n
+      integer, intent(in) :: ivegsrc
+      integer, dimension(ims:ime, jms:jme), intent(in) :: ivegtyp
 
       real, dimension(ims:ime, kms:kme, jms:jme) :: afcp, ascp, avcp, &
          pi0, pir, r00, rp0
@@ -1882,6 +1890,7 @@ CONTAINS
          ftns0r, ftng0r, dlt1, dlt3, dlt4, rhoair, taur, tairr, ascpr, afcpr, &
          avcpr, pi0r, pirr, pr0r, rp0r, r00r, vrr, vsr, vgr, vir, p0r1, refcr, &
          refrr, refir, refsr, refgr
+      integer :: ivegtypr
 
       !real, dimension(its:ite, jts:jte) :: asss
 
@@ -3551,7 +3560,7 @@ CONTAINS
             !$acc&         pr0, rhoair, dv1, abw, abi, tauc, tairc, ssi, taui, &
             !$acc&         taur, cnd, dep, fez, ern, tairr, rp0r, xlandr, qvwrfr, &
             !$acc&         qlwrfr, qiwrfr, qrwrfr, qswrfr, qgwrfr, p0r1, &
-            !$acc&         tmnlbc)
+            !$acc&         tmnlbc, ivegtypr)
             do j = jts, jte
                do k = kts, kte
                   !$acc loop vector
@@ -3562,6 +3571,7 @@ CONTAINS
                      tairr = tair(i, k, j)
                      rp0r = rp0(i, k, j)
                      xlandr = xland(i, j)
+                     ivegtypr = ivegtyp(i, j)
                      qvwrfr = qvwrf(i, k, j)
                      qlwrfr = qlwrf(i, k, j)
                      qiwrfr = qiwrf(i, k, j)
@@ -3759,7 +3769,13 @@ CONTAINS
                         ern2 = ern1
 
                         ! set minimum temperature of liquid-bearing cloud :
-                        tmnlbc = 253.16  !-20 oC
+                        if ((ivegsrc .eq. 0 .and. ivegtypr .eq. 13) .or. &
+                            (ivegsrc .eq. 1 .and. ivegtypr .eq. 15) .or. &
+                            (ivegsrc .eq. 2 .and. ivegtypr .eq. 15)) then
+                           tmnlbc = 248.16  !-25 oC at glacial
+                        else
+                           tmnlbc = 253.16  !-20 oC
+                        endif
 
                         if (tairr .ge. tmnlbc) then
                            ! lower liquid clouds :
