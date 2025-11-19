@@ -42,7 +42,8 @@
       real, dimension(:,:),allocatable,save :: u10,v10,t2,rh2,rh10,q2  &
 #ifdef TIMCOMCPL
                                               ,fm,fm10,fh,fh2,srflag   &
-                                              ,ustress,vstress,ssu,ssv
+                                              ,ustress,vstress,ssu,ssv &
+                                              ,ifrac,icedp,snodp
 #else
                                               ,fm,fm10,fh,fh2,srflag
 #endif
@@ -170,7 +171,9 @@
 #ifdef TIMCOMCPL
                      ,fh(nxp,my_max),fh2(nxp,my_max)                    &
                      ,ustress(nxp,my_max),vstress(nxp,my_max)           &
-                     ,ssu(nxp,my_max),ssv(nxp,my_max), stat=ierr)
+                     ,ssu(nxp,my_max),ssv(nxp,my_max)                   &
+                     ,ifrac(nxp,my_max),icedp(nxp,my_max),snodp(nxp,my_max) &
+                     ,stat=ierr)
 #else
                      ,fh(nxp,my_max),fh2(nxp,my_max), stat=ierr)
 #endif
@@ -186,6 +189,7 @@
 #ifdef TIMCOMCPL
            ssv=0.;    ssu=0.
            ustress=0.; vstress=0.
+           ifrac=0.;   icedp=0.;  snodp=0.
 #endif
 
 !

@@ -34,7 +34,7 @@
                     , itimestep,lrun_sitvdiff,ic_sit                           &
 !xb110>
 #ifdef TIMCOMCPL
-                    , flash,tsflw,vvel,totallp, ustress, vstress, ssu, ssv     &
+                    , flash,tsflw,vvel,totallp,ustress,vstress,ssu,ssv,tg_ocn  &
 #else
                     , flash,tsflw,vvel,totallp                                 &
 #endif
@@ -180,7 +180,7 @@
                                       pdfcloud,cmbk,cgwd, fsit, dosppt, doshum, dossst, &
                                       use_zmtnblck,ldailyFCTicesndpt,dSITdt_intv, &
                                       weightSIT,bckfile,ggdef,doclx,doslavepp,    &
-                                      RTYPE,qmin,julian,doskeb,mass_dp,monsave
+                                      RTYPE,qmin,julian,doskeb,mass_dp,monsave,mom4ice
       use mod_sitgrid,           ONLY:sitmask,tseadiffSIT,sumdSITdt,countdSITdt, &
                                       ratioSIT,tseadiffSIT24,dtswdt
       USE mod_sit_control,       ONLY:ltrigsit
@@ -219,6 +219,10 @@
       logical   docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon,     &
                 land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max),  &
                 docgrav,tofd,fwd
+#ifdef TIMCOMCPL
+      logical ice_cpl(nxp,my_max), ocean_cpl(nxp,my_max)
+      real    z0_cpl(nxp,my_max)
+#endif
 
       real      tice,hice,qgini,thdai,tengi,ptop,                    &
                 hltm,evaprh,s0,stbo,cp,rgas,grav,frad,               &
@@ -249,11 +253,12 @@
                 raincu3(nxp,my_max),rainlp3(nxp,my_max),                  &
 #ifdef TIMCOMCPL
                 raincu1(nxp,my_max),rainlp1(nxp,my_max),                  &
-                ustress(nxp,my_max),vstress(nxp,my_max),ssu(nxp,my_max),ssv(nxp,my_max)
+                ustress(nxp,my_max),vstress(nxp,my_max),                  &
+                ssu(nxp,my_max),ssv(nxp,my_max),tg_ocn(nxp,my_max)
 #else
                 raincu1(nxp,my_max),rainlp1(nxp,my_max)
 #endif
-        real(kind=RTYPE) qt(nxp,lev*ncld,my_max),qp(nxp,lev*ncld,my_max),   &
+        real(kind=RTYPE) qt(nxp,lev*ncld,my_max),qp(nxp,lev*ncld,my_max), &
                        up(nxp,lev,my_max),vp(nxp,lev,my_max),             &
                        ttp(nxp,lev,my_max),o3l(nxp,lev,my_max),           &
                        sgeo(nxp,my_max),ps(nxp,my_max),pst(nxp,my_max),   &
@@ -651,7 +656,12 @@
       uprad  = uprad  .and. dorad
 !
 ! update low boundary condition
-! 
+!
+#ifdef TIMCOMCPL
+      ice_cpl = ice
+      ocean_cpl = ocean
+      z0_cpl = z0
+#endif
       if ( doclxu .and. doclx ) then
         if (myrank.eq.0)                                                &
            print *,'update low boundary condition at tau= ',tau
@@ -669,6 +679,7 @@
                      alvsf,alvwf,alnsf,alnwf,facsf,facwf)
         endif
 !
+        if(.not. mom4ice) then 
         do jj = 1, jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
@@ -684,6 +695,8 @@
 !            if ( .not. do_sit )then
 #ifndef TIMCOMCPL
             if (ocean(i,jj)) tg(i,jj)=sstc(i,jj)
+#else
+            if (ocean(i,jj) .and. tg_ocn(i,jj) .eq. 0) tg(i, jj)=sstc(i,jj) 
 #endif
 !            endif
 !---------------------------------------------------------------------
@@ -713,6 +726,58 @@
         enddo
         enddo
 
+        else !mom4ice
+#ifdef TIMCOMCPL
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+        do i=1,nxj
+          if(tg_ocn(i,jj) .gt. 0.0) then
+            ice(i,jj) = ice_cpl(i,jj)
+            ocean(i,jj) = ocean_cpl(i,jj)
+            if(ocean(i,jj)) then
+              z0(i,jj)=ustar(i,jj)*ustar(i,jj)*0.014/grav
+              shdmax(i,jj) = 0.0
+              shdmin(i,jj) = 0.0
+              tgclim(i,jj) = tg(i,jj)
+            endif
+            if(ice(i,jj))  then
+              z0(i,jj) = (1.-cice(i,jj))*z0ocn(i,jj)+cice(i,jj)*0.00001
+              tgclim(i,jj) = 271.2
+              shdmax(i,jj) = cice(i,jj)
+              shdmin(i,jj) = 0.15
+            endif
+          else
+            if(ls(i,jj).eq.0) then
+              z0(i,jj)=z0ocn(i,jj)
+              if(iceold(i,jj) .and. .not. ice(i,jj)) then
+                zice(i,jj)=0.
+                cice(i,jj)=0.
+                snr(i,jj) =0.
+                sndepth(i,jj)=0.
+                sncover(i,jj)=0.
+                shdmax(i,jj)=0.
+                z0(i,jj)=ustar(i,jj)*ustar(i,jj)*0.014/grav
+                xtice(i,jj) = tg(i,jj)
+              endif
+              if(.not. iceold(i,jj) .and. ice(i,jj)) then
+                tg(i,jj)=271.2
+                xtice(i,jj)=tg(i,jj)
+                zice(i,jj)=0.15 ! from himin in sfc_sice
+                cice(i,jj)=0.5 ! from cimin in sfc_sice
+                snr(i,jj) =15.
+                sndepth(i,jj)=snr(i,jj)*8.
+                sncover(i,jj)=min(1., snr(i,jj)/400.)
+                shdmax(i,jj)=cice(i,jj)
+                z0(i,jj)=(1.-cice(i,jj))*z0ocn(i,jj)+cice(i,jj)*0.00001
+                tgclim(i,jj) = 271.2
+              endif
+            endif
+           endif
+        enddo
+        enddo
+#endif
+        endif
       endif ! doclxu
 #ifdef Readaeroclx
 !

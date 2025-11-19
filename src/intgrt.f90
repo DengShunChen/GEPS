@@ -486,15 +486,52 @@
 !
 #ifdef TIMCOMCPL
       if(.not. restrt) then
-        call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv)
+        call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv, ifrac, icedp, snodp)
+        if(mom4ice) then
+          do jj = 1, jlistnum
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+          do i=1,nxj
+            if(tg_ocn(i,jj).ne.0.0) then
+              cice(i,jj) = ifrac(i,jj)
+              zice(i,jj) = icedp(i,jj)
+              snr(i,jj)  = snodp(i,jj)
+              if(.not. land(i,jj)) then
+                if(cice(i,jj) .ge. 0.15) then
+                  ice(i,jj)   = .true.
+                  ocean(i,jj) = .false.
+                  xtice(i,jj) = tg(i,jj)
+                  zice(i,jj)  = max(0.15, zice(i,jj))
+                  sndepth(i,jj) = snr(i,jj)*0.001/cice(i,jj)
+                  sncover(i,jj) = min(1., snr(i,jj)/400.)
+                  shdmax(i,jj) = cice(i,jj)
+                else
+                  ice(i,jj)   = .false.
+                  ocean(i,jj) = .true.
+                  xtice(i,jj) = tg(i,jj)
+                  zice(i,jj)  = 0.0 !max(0.15, zice(i,jj))
+                  cice(i,jj)  = 0.0
+                  sndepth(i,jj) = 0.0
+                  sncover(i,jj) = 0.0
+                  shdmax(i,jj) = 0.0
+                endif
+              endif
+            endif
+          enddo
+          enddo
+        end if
+
         tgwf=1.0/(86400.0/dta/(24.0/cplf)-1.0)
         tg_diff=0.
-        do i = 1,nxp
-         do j = 1,my_max
-          if(tg_ocn(i,j).ne.0.0) then
-            tg_diff(i,j)=(tg_ocn(i,j)-tg(i,j))*tgwf
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+        do i=1,nxj
+          if(tg_ocn(i,jj).ne.0.0) then
+            tg_diff(i,jj)=(tg_ocn(i,jj)-tg(i,jj))*tgwf
+            tg(i,jj) = tg(i,jj) + tg_diff(i,jj)
           end if
-         end do
+        end do
         end do
       if(myrank .eq. 0) then
             write(*,*) '1loop tg_diff=',tg_diff(2,7)
@@ -1168,7 +1205,7 @@
                          !xb110>
                          !byl                      , rmr,smr,flash)
 #ifdef TIMCOMCPL
-                         , flash, tsflw, vvel,totallp,ustress,vstress,ssu,ssv &
+                         , flash, tsflw, vvel,totallp,ustress,vstress,ssu,ssv, tg_ocn &
 #else
                          , flash, tsflw, vvel, totallp &
 #endif
@@ -1473,10 +1510,44 @@
             cpl_send_init = .false.
           endif
 
-          dtaup = mod(tau+0.001, 2.0)
+          dtaup = mod(tau+0.001, cplf)
           if( dtaup .lt. dtx_tau ) then
             if(myrank .eq. 0) write(*,*) "TCo time to coupler", tau
-            call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv)
+            call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv, ifrac, icedp, snodp)
+            if(mom4ice) then
+              do jj = 1, jlistnum
+                j=jlist1(jj)
+                nxj=nxdef_2d(j)
+              do i=1,nxj
+                if(tg_ocn(i,jj).ne.0.0) then
+                  cice(i,jj) = ifrac(i,jj)
+                  zice(i,jj) = icedp(i,jj)
+                  snr(i,jj)  = snodp(i,jj)
+                if(.not. land(i,jj)) then
+                  if(cice(i,jj) .ge. 0.15) then
+                    ice(i,jj)   = .true.
+                    ocean(i,jj) = .false.
+                    xtice(i,jj) = tg(i,jj)
+                    zice(i,jj)  = max(0.15, zice(i,jj))
+                    sndepth(i,jj) = snr(i,jj)*0.001/cice(i,jj)
+                    sncover(i,jj) = min(1., snr(i,jj)/400.)
+                    shdmax(i,jj) = cice(i,jj)
+                  else
+                    ice(i,jj)   = .false.
+                    ocean(i,jj) = .true.
+                    xtice(i,jj) = tg(i,jj)
+                    zice(i,jj)  = max(0.15, zice(i,jj))
+                    cice(i,jj)  = 0.0
+                    sndepth(i,jj) = 0.0
+                    sncover(i,jj) = 0.0
+                    shdmax(i,jj) = 0.0
+                  endif
+                endif
+                endif
+              enddo
+              enddo
+            end if
+
             u10m_cpl = u10m_cpl/dt_cpl
             v10m_cpl = v10m_cpl/dt_cpl
             t02m_cpl = t02m_cpl/dt_cpl
@@ -1507,13 +1578,15 @@
             tgwf=1.0/(86400.0/dta/(24.0/cplf))
 
             tg_diff=0.
-            do j = 1,my_max
-             do i = 1,nxp
+            do jj = 1, jlistnum
+             j = jlist1(jj)
+             nxj = nxdef_2d(j)
+             do i = 1, nxj
 !             if(tg_ocn(i,j).eq.0.0) then
 !               tg_diff(i,j)=0.0
 !             else
-              if(tg_ocn(i,j).ne.0.0) then
-                tg_diff(i,j)=(tg_ocn(i,j)-tg(i,j))*tgwf
+              if(tg_ocn(i,jj).ne.0.0) then
+                tg_diff(i,jj)=(tg_ocn(i,jj)-tg(i,jj))*tgwf
               end if
              end do
             end do
@@ -2027,88 +2100,6 @@
         endif
       endif   !end lopgsst
 !
-!#ifdef TIMCOMCPL
-!     u10m_cpl = u10m_cpl + u10*dtx
-!     v10m_cpl = v10m_cpl + v10*dtx
-!     t02m_cpl = t02m_cpl +  t2*dtx
-!     q02m_cpl = q02m_cpl +  q2*dtx
-!     pslv_cpl = pslv_cpl + (pt+pdiff)*dtx
-!     swup_cpl = swup_cpl + (ss-sld)*dtx
-!     swdn_cpl = swdn_cpl + sld*dtx
-!     lwdn_cpl = lwdn_cpl + rld*dtx
-!     rain_cpl = rain_cpl + totalp
-!     snow_cpl = snow_cpl
-!     dt_cpl   = dt_cpl + dtx
-!     if(cpl_send_init)then
-!       call gfs_cpl_send2gocn(compid,  u10m_cpl/dtx, v10m_cpl/dtx, &
-!                                       t02m_cpl/dtx, q02m_cpl/dtx, &
-!                                       pslv_cpl/dtx, swup_cpl/dtx, &
-!                                       swdn_cpl/dtx, lwdn_cpl/dtx, &
-!                                       rain_cpl/dtx, snow_cpl/dtx, tg)
-!       cpl_send_init = .false.
-!     endif
-
-!     dtaup = mod(tau+0.001, cplf)
-!     if( dtaup .lt. dtx_tau ) then
-!       if(myrank .eq. 0) write(*,*) "TCo time to coupler", tau
-
-!       call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv)
-!       u10m_cpl = u10m_cpl/dt_cpl
-!       v10m_cpl = v10m_cpl/dt_cpl
-!       t02m_cpl = t02m_cpl/dt_cpl
-!       q02m_cpl = q02m_cpl/dt_cpl
-!       pslv_cpl = pslv_cpl/dt_cpl
-!       swup_cpl = swup_cpl/dt_cpl
-!       swdn_cpl = swdn_cpl/dt_cpl
-!       lwdn_cpl = lwdn_cpl/dt_cpl
-!       rain_cpl = rain_cpl/dt_cpl
-!       snow_cpl = snow_cpl/dt_cpl
-!       call gfs_cpl_send2gocn(compid, u10m_cpl, v10m_cpl, &
-!                                      t02m_cpl, q02m_cpl, &
-!                                      pslv_cpl, swup_cpl, &
-!                                      swdn_cpl, lwdn_cpl, &
-!                                      rain_cpl, snow_cpl, tg)
-!       u10m_cpl = 0.
-!       v10m_cpl = 0.
-!       t02m_cpl = 0.
-!       q02m_cpl = 0.
-!       pslv_cpl = 0.
-!       swup_cpl = 0.
-!       swdn_cpl = 0.
-!       lwdn_cpl = 0.
-!       rain_cpl = 0.
-!       snow_cpl = 0.
-!       dt_cpl   = 0.
-
-!       tgwf=1.0/(86400.0/dta/(24.0/cplf))
-
-!       do i = 1,nxp
-!        do j = 1,my_max
-!         if(tg_ocn(i,j).eq.0.0) then
-!           tg_diff(i,j)=0.0
-!         else
-!           tg_diff(i,j)=(tg_ocn(i,j)-tg(i,j))*tgwf
-!         end if
-!        end do
-!       end do
-!       if(myrank .eq. 0) then
-!           write(*,*) '2 loop tg_diff=',tg_diff(2,7)
-!       end if
-!     end if
-
-!     if(myrank .eq. 0) then
-!       write(*,*) 'tg_ocn=', tg_ocn(2,7) !, "i=", i, "j=", j
-!       write(*,*) 'tg=', tg(2,7) !, "i=", i, "j=", j
-!       write(*,*) 'tg_atm=', tg(2,1) !, "i=", i, "j=", j
-!     end if
-!       tg=tg_diff+tg
-!     if(myrank .eq. 0) then
-!       write(*,*) '------after-------'
-!       write(*,*) 'tg=', tg(2,7)
-!       write(*,*) 'tg_atm=', tg(2,1) !, "i=", i, "j=", j
-!     end if
-
-!#endif
 
       itau=tau+0.001
 #ifdef TIMING

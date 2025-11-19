@@ -228,6 +228,7 @@
 
           ffw(i)    = 1.0 - fice(i)
           if (fice(i) < cimin) then
+!            print *,'warning: ice fraction is low:', fice(i), flag_iter(i), flag(i), islimsk(i)
             print *,'warning: ice fraction is low:', fice(i)
             fice(i) = cimin
             ffw (i) = 1.0 - fice(i)

@@ -66,13 +66,14 @@
                                      run_stochastic_physics, &
                                      destroy_stochastic_physics, &
                                      skeb3du, skeb3dv, diss_est, skebfilt, &
-                                     keb, kea, skebest
+                                     keb, kea, skebest, diss_dc
    use spec_cuda_graph, only: cc_cg, gwk1_cg, wcc_fk_cg, &
                               wc_cg, ws_cg, fj_weight_cg, &
                               allocate_spec_cg_buffer, &
                               deallocate_spec_cg_buffer
    use openacc
    use cudafor
+   !use nvtx
 !-----------------------------------------------------------------------
    implicit none
 !
@@ -215,7 +216,7 @@
    real wkmf_local
 #ifdef TIMING
 ! for timing
-   real*8 tm_1, tm_2, tm_use, mpi_wtime
+   real*8 tm_1, tm_2, tm_use, mpi_wtime, cputime1, cputime2
 !CWB2020
    tm_1 = mpi_wtime()
    tm_2 = mpi_wtime()
@@ -249,6 +250,20 @@
    !$acc enter data create(ww1, pten, deldm, wkmf) async(async_id)
    !$acc enter data create(ut_sl, vt_sl, uum_sl, vvm_sl, ttm_sl) async(async_id)
    !$acc enter data create(qm_sl, pten_sl) async(async_id)
+   !! << variables used in diabat_gpu >>
+   !$acc enter data create(o3l, dtrad, asl, atl, asl_clr, atl_clr, e, eps, &
+   !$acc&      cnvcr, cnvwr, ftp, fqp, ftp1, fqp1, clds, sld, rld, runoff, flash, &
+   !$acc&      gfx, ugws, vgws, totallp, raincu, rainlp, raincu1, rainlp1, &
+   !$acc&      raincu6, rainlp6, raintot) async(async_id)
+   !$acc enter data copyin(dtcup, ducup, dvcup, dtshl, dushl, dvshl, dtlsp, dulsp, dvlsp) async(async_id)
+   !$acc enter data copyin(stc, smc, slc, gwclim, tgclim, totalp, rs, sfalb, &
+   !$acc&      sigmaf, istyp, ivegtyp, slopetyp) async(async_id)
+   !$acc enter data copyin(land, ocean, ice, cosz, tg, tsflw, std, &
+   !$acc&      ss, sfemis, shdmax, shdmin, snoalb, z0, ustar, snr, canopy, &
+   !$acc&      sndepth, zice, cice, xtice, tstar, qstar, srflag, sncover, &
+   !$acc&      plcl, cumtop, diss_dc, curate, t2, q2, rh2, rh10, u10, v10, &
+   !$acc&      fm, fh, fm10, fh2, hpbl) async(async_id)
+   !$acc wait(async_id)
    ! ------------------------------------------------------------
 !      fsit=-99.             !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
    !default fsit<=0., turn on sit_vdiff every tau
@@ -304,11 +319,17 @@
    if (.not. restrt) then
       rld = 0.
       sld = 0.
+      !$acc wait(async_id)
+      !$acc update device(sld, rld) async(async_id)
+      !$acc wait(async_id)
    end if
    recn = 1
    rdivm = 0.
    flash = 0.
    pdry = 0.
+   !$acc wait(async_id)
+   !$acc update device(flash, gfx, raincu1, rainlp1, raincu6, rainlp6, raintot) async(async_id)
+   !$acc wait(async_id)
 !
 #ifdef TIMCOMCPL
       tocn_cpl = 0.
@@ -326,8 +347,8 @@
       snow_cpl = 0.
         dt_cpl = 0.
       cpl_send_init = .true.
-if(.not. restrt) &
-        tg_ocn= 0.
+         tg_ocn= 0.
+        tg_diff=0.
            cplf=2.0 !cpl frequency
 #endif
 
@@ -340,6 +361,9 @@ if(.not. restrt) &
       if (myrank .eq. 0) &
          print *, 'read mtnvar=14 hprime_b=', (hprime_b(1, i, 1), i=1, mtnvar)
    end if
+   !$acc wait(async_id)
+   !$acc enter data copyin(hprime_b) async(async_id)
+   !$acc wait(async_id)
 !
    tchange = .false.
    nxmy = nx*my
@@ -469,6 +493,10 @@ if(.not. restrt) &
          flash24(i, jj) = 0.  !xb110, flash density
       end do
    end do
+   !$acc wait(async_id)
+   !$acc update device(runoff, totallp, raincu, rainlp, raincu1, rainlp1, &
+   !$acc&       raincu6, rainlp6, raintot) async(async_id)
+   !$acc wait(async_id)
 !
    if (itaui .eq. 0) then   ! when restart, don't zero out
       do jj = 1, jlistnum
@@ -482,6 +510,9 @@ if(.not. restrt) &
             rld(i, jj) = stbo*(tg2*tg2)   !soil
          end do
       end do
+      !$acc wait(async_id)
+      !$acc update device(rs, sld, ss, rld) async(async_id)
+      !$acc wait(async_id)
    end if
 !xb110>
 !byl      rmr = 0.
@@ -546,15 +577,54 @@ if(.not. restrt) &
 #ifdef TIMCOMCPL
 !$acc wait(async_id)
 if(.not. restrt) then
-      call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv)
+!      call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv)
+      call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv, ifrac, icedp, snodp)
+! cpl cice
+      if(mom4ice) then
+          do jj = 1, jlistnum
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+          do i=1,nxj
+            if(tg_ocn(i,jj).ne.0.0) then
+             cice(i,jj) = ifrac(i,jj)
+             zice(i,jj) = icedp(i,jj)
+             snr(i,jj)  = snodp(i,jj)
+             if(.not. land(i,jj)) then
+              if(cice(i,jj) .ge. 0.15) then
+                ice(i,jj)   = .true.
+                ocean(i,jj) = .false.
+                xtice(i,jj) = tg(i,jj)
+                zice(i,jj)  = max(0.15, zice(i,jj))
+                sndepth(i,jj) = snr(i,jj)*0.001/cice(i,jj)
+                sncover(i,jj) = min(1., snr(i,jj)/400.)
+                shdmax(i,jj) = cice(i,jj)
+              else
+                ice(i,jj)   = .false.
+                ocean(i,jj) = .true.
+                xtice(i,jj) = tg(i,jj)
+                zice(i,jj)  = 0.0 !max(0.15, zice(i,jj))
+                cice(i,jj)  = 0.0
+                sndepth(i,jj) = 0.0
+                sncover(i,jj) = 0.0
+                shdmax(i,jj) = 0.0
+              endif
+             endif
+            endif
+          enddo
+          enddo
+      endif
+!
         tgwf=1.0/(86400.0/dta/(24.0/cplf)-1.0)
         tg_diff=0.
-        do i = 1,nxp
-         do j = 1,my_max
-          if(tg_ocn(i,j).ne.0.0) then
-           tg_diff(i,j)=(tg_ocn(i,j)-tg(i,j))*tgwf
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+        do i=1,nxj
+          if(tg_ocn(i,jj).ne.0.0) then
+            tg_diff(i,jj)=(tg_ocn(i,jj)-tg(i,jj))*tgwf
+            tg(i,jj) = tg(i,jj) + tg_diff(i,jj)
           end if
-         end do
+        end do
         end do
       if(myrank .eq. 0) then
             write(*,*) '1loop tg_diff=',tg_diff(2,7)
@@ -1217,14 +1287,16 @@ endif
       !! !$acc update self(qm_sl, pten_sl, cc_cg, gwk1_cg) async(async_id)
       !! !$acc wait(async_id)
 
-      !$acc update self(plt, pk, pk2, &
-      !$acc& ptp, up, vp, ttp, &
-      !$acc& pt, ut, vt, tt, qt, &
-      !$acc& pdot, vvel, sdpbl, &
-      !$acc& plnow, pltemp, plten, um, vm, qm, &
-      !$acc& vornow, divnow, temnow) async(async_id)
+      !!$acc update self(plt, pk, pk2, &
+      !!$acc& ptp, up, vp, ttp, &
+      !!$acc& pt, ut, vt, tt, qt, &
+      !!$acc& pdot, vvel, sdpbl, &
+      !!$acc& plnow, pltemp, plten, um, vm, qm, &
+      !!$acc& vornow, divnow, temnow) async(async_id)
       !$acc wait(async_id)
       ! qp(:, :, :) = qt(:, :, :)
+      cputime1 = mpi_wtime()
+      !call nvtxStartRange("GPUdiabat")
       call diabat_gpu(fwd, docup, dodry, dolsp, dopbl, dorad, doshl, dograv, tofd &
                       , nx, my, my_max, lev, ncld, nmcup, nmpbl, nmland, nmshl, cgw &
                       , idg, jdg, ldiag, dtx, tau, hours, year &
@@ -1262,19 +1334,24 @@ endif
                       !xb110>
                       !byl                      , rmr,smr,flash)
 #ifdef TIMCOMCPL
-                      , flash, tsflw, vvel, totallp,ustress,vstress,ssu,ssv &
+                      , flash, tsflw, vvel, totallp,ustress,vstress,ssu,ssv,tg_ocn &
 #else
                       , flash, tsflw, vvel, totallp &
 #endif
                       , SL_sedi, sat_predict, new_saturation, use_cpm, use_declination)
+      !$acc wait(async_id)
+      cputime2 = mpi_wtime()
+      !call nvtxEndRange
+      !if (myrank .eq. 0) print 2650, cputime2-cputime1
+      2650 format(' diabat time = ', f8.3, ' elapse seconds')
 
       !xb110<
-      !$acc update device(plt, pk2, &
-      !$acc& ptp, up, vp, ttp, &
-      !$acc& pt, &
-      !$acc& pdot, vvel, sdpbl, &
-      !$acc& pltemp, plten, um, vm, qm, &
-      !$acc& plnow) async(async_id)
+      !!$acc update device(plt, pk2, &
+      !!$acc& ptp, up, vp, ttp, &
+      !!$acc& pt, &
+      !!$acc& pdot, vvel, sdpbl, &
+      !!$acc& pltemp, plten, um, vm, qm, &
+      !!$acc& plnow) async(async_id)
       !$acc wait(async_id)
 !--------------------------------------------------------------------------------
 !
@@ -1487,6 +1564,9 @@ endif
 ! update tg, dtsea/dt (W00100)
 !
    if (ldailyFCTsst .OR. ldailyFCTicesndpt .OR. dailyClm_option .ge. 1) then
+      !$acc wait(async_id)
+      !$acc update self(ocean, tg, sndepth, cice) async(async_id)
+      !$acc wait(async_id)
       print *, "daily entry"
       if (tau .ge. 24.) then
          do jj = 1, jlistnum
@@ -1510,11 +1590,17 @@ endif
          end do
       end if
       CALL read_dailyFCT(idtg, tau, dt, tg, cice, sndepth, xlon, xlat, ocean)
+      !$acc wait(async_id)
+      !$acc update device(ocean, tg, sndepth, cice) async(async_id)
+      !$acc wait(async_id)
    end if
 !
 ! accumulate some flux every time step to output point (24 hour)
 ! 1994 11 11
 !
+   !$acc wait(async_id)
+   !$acc update self(totalp, rs, ss, flash, totallp) async(async_id)
+   !$acc wait(async_id)
    do jj = 1, jlistnum
       j = jlist1(jj)
       nxj = nxdef_2d(j)
@@ -1606,6 +1692,9 @@ endif
    end if
 
 ! calculate Tmax Tmin @ 2m from T2
+   !$acc wait(async_id)
+   !$acc update self(t2) async(async_id)
+   !$acc wait(async_id)
    do jj = 1, jlistnum
       j = jlist1(jj)
       nxj = nxdef_2d(j)
@@ -1619,14 +1708,10 @@ endif
          end if
       end do
    end do
-      !$acc update self(vorold, divold, temold, plold) async(async_id)
-      !$acc update self(vornow, divnow, temnow, plnow) async(async_id)
-      !$acc update self(rdiv, ut, vt, tt, qt, pt) async(async_id)
-      !$acc update self(vvel) async(async_id)
-      !$acc update self(phi, pk ,pk2, plt) async(async_id)
-      !$acc update self(ptend) async(async_id)
-      !$acc wait(async_id)
 #ifdef TIMCOMCPL
+      !$acc wait(async_id)
+      !$acc update self(pt, tg) async(async_id)
+      !$acc wait(async_id)
           u10m_cpl = u10m_cpl + u10*dtx
           v10m_cpl = v10m_cpl + v10*dtx
           t02m_cpl = t02m_cpl +  t2*dtx
@@ -1649,10 +1734,46 @@ endif
             cpl_send_init = .false.
           endif
 
-          dtaup = mod(tau+0.001, 2.0)
+          dtaup = mod(tau+0.001, cplf)
           if( dtaup .lt. dtx_tau ) then
             if(myrank .eq. 0) write(*,*) "TCo time to coupler", tau
-            call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv)
+!            call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv)
+            call gfs_cpl_recv4gocn(compid, land, ice, tg_ocn, ssu, ssv, ifrac, icedp, snodp)
+! cpl cice
+            if(mom4ice) then
+              do jj = 1, jlistnum
+                j=jlist1(jj)
+                nxj=nxdef_2d(j)
+              do i=1,nxj
+               if(tg_ocn(i,jj).ne.0.0) then
+                cice(i,jj) = ifrac(i,jj)
+                zice(i,jj) = icedp(i,jj)
+                snr(i,jj)  = snodp(i,jj)
+                if(.not. land(i,jj)) then
+                  if(cice(i,jj) .ge. 0.15) then
+                    ice(i,jj)   = .true.
+                    ocean(i,jj) = .false.
+                    xtice(i,jj) = tg(i,jj)
+                    zice(i,jj)  = max(0.15, zice(i,jj))
+                    sndepth(i,jj) = snr(i,jj)*0.001/cice(i,jj)
+                    sncover(i,jj) = min(1., snr(i,jj)/400.)
+                    shdmax(i,jj) = cice(i,jj)
+                  else
+                    ice(i,jj)   = .false.
+                    ocean(i,jj) = .true.
+                    xtice(i,jj) = tg(i,jj)
+                    zice(i,jj)  = max(0.15, zice(i,jj))
+                    cice(i,jj)  = 0.0
+                    sndepth(i,jj) = 0.0
+                    sncover(i,jj) = 0.0
+                    shdmax(i,jj) = 0.0
+                  endif
+                endif
+               endif
+              enddo
+              enddo
+            end if
+!            
             u10m_cpl = u10m_cpl/dt_cpl
             v10m_cpl = v10m_cpl/dt_cpl
             t02m_cpl = t02m_cpl/dt_cpl
@@ -1683,13 +1804,15 @@ endif
             tgwf=1.0/(86400.0/dta/(24.0/cplf))
 
             tg_diff=0.
-            do j = 1,my_max
-             do i = 1,nxp
+            do jj = 1, jlistnum
+             j = jlist1(jj)
+             nxj = nxdef_2d(j)
+             do i = 1, nxj
 !             if(tg_ocn(i,j).eq.0.0) then
 !               tg_diff(i,j)=0.0
 !             else
-              if(tg_ocn(i,j).ne.0.0) then
-                tg_diff(i,j)=(tg_ocn(i,j)-tg(i,j))*tgwf
+              if(tg_ocn(i,jj).ne.0.0) then
+                tg_diff(i,jj)=(tg_ocn(i,jj)-tg(i,jj))*tgwf
               end if
              end do
             end do
@@ -1729,6 +1852,13 @@ endif
 !       if(myrank.eq.0)print *,'chkltr dtaup,dt_trk,dtx_tau=',dtaup,dt_trk,dtx_tau
 
       if (myrank == 0) call system_clock(toutsrt)
+      !$acc update self(vorold, divold, temold, plold) async(async_id)
+      !$acc update self(vornow, divnow, temnow, plnow) async(async_id)
+      !$acc update self(rdiv, ut, vt, tt, qt, pt) async(async_id)
+      !$acc update self(vvel) async(async_id)
+      !$acc update self(phi, pk ,pk2, plt) async(async_id)
+      !$acc update self(ptend) async(async_id)
+      !$acc wait(async_id)
       if (io_quilting) then
          write (keydoit, '(A6,I4.4,A4,I12.12,A8)') &
             "OPEN..", itau, "....", idtg, "H...DOIT"
@@ -1738,6 +1868,12 @@ endif
 !
 !--- histim (start)
       if (histim .or. ltrack) then
+         !$acc wait(async_id)
+         !$acc update self(stc, smc, slc, gwclim, rs, land, ocean, ice, tg, &
+         !$acc&       sld, ss, rld, z0, snr, canopy, cice, xtice, sncover, &
+         !$acc&       t2, q2, rh2, rh10, u10, v10, hpbl, gfx, ugws, vgws, &
+         !$acc&       raincu, rainlp, raintot) async(async_id)
+         !$acc wait(async_id)
          !itau = tau + 0.1
          itau = NINT(tau)
          if (myrank .eq. 0) print *, ' history file written at tau= ', itau
@@ -1752,6 +1888,9 @@ endif
 ! saturate gwrcc set to be 20mm as original land mode setting
 !
 ! xb119 may2022 not need to run every time step ,move to histim inside
+         !$acc wait(async_id)
+         !$acc update self(istyp) async(async_id)
+         !$acc wait(async_id)
          do jj = 1, jlistnum
             j = jlist1(jj)
             nxj = nxdef_2d(j)
@@ -1773,7 +1912,13 @@ endif
          if (wrestrt) then
 ! set write out restart at the end of integration
             if (mod(float(itau), float(itauezz)) .lt. 0.01) then
-              if(myrank.eq.0) write(*,*) 'Write out restart files in itau=',itau
+               !$acc wait(async_id)
+               !$acc update self(o3l, dtrad, asl, atl, cnvcr, cnvwr, &
+               !$acc&       ftp, fqp, ftp1, fqp1, clds, tgclim, totalp, sfalb, &
+               !$acc&       cosz, tsflw, std, sfemis, ustar, sndepth, zice, &
+               !$acc&       tstar, qstar, plcl, cumtop, curate) async(async_id)
+               !$acc update self(dtcup, ducup, dvcup) async(async_id)
+               !$acc wait(async_id)
                write (ctau, 800) itau
 800            format(i7.7)
                write (ccore, '(i4.4)') myrank
@@ -1844,8 +1989,6 @@ endif
                write (i) sncover
                write (i) sndepth
                write (i) tg
-               write (i) tg_diff
-               write (i) tg_ocn
                write (i) gwr
                write (i) gwet
                write (i) cice
@@ -1910,10 +2053,6 @@ endif
                write (i) smc
                write (i) stc
                write (i) slc
-             #ifdef TIMCOMCPL
-               write (i) ssu
-               write (i) ssv
-             #endif
                close (i)
             end if ! end of ( mod(float(itau),float(itauezz)) .lt. 0.01 )
             if (do_sit) then
@@ -1933,6 +2072,9 @@ endif
          if (tau .le. (taureg + 0.001) .and. histim) then
 !jh        if( histim ) then
 #ifndef NO_OUT
+            !$acc wait(async_id)
+            !$acc update self(zice) async(async_id)
+            !$acc wait(async_id)
             call outsigs(itau, nx, my, my_max, lev, ncld &
                          , idtg, ptop, rad, grav &
                          , cp, cosl, pt, sgeo, snr, gwr, tg, pk, pk2 &
@@ -1944,6 +2086,9 @@ endif
 !     !---output sigma layer radiation data---
 !      if (myrank .eq. 0) print *,'ioutsigr =',ioutsigr
          if (ioutsigr .eq. 0 .and. histim) then
+            !$acc wait(async_id)
+            !$acc update self(dtrad, asl, atl, asl_clr, atl_clr, clds, rs, snoalb) async(async_id)
+            !$acc wait(async_id)
             if (myrank .eq. 0) print *, 'outsigr start !!!'
 #ifndef NO_OUT
             call outsigr(itau, nx, my, my_max, lev &
@@ -1959,6 +2104,9 @@ endif
                          , ctot, chig, cmid, clow &
                          , ggdef, gmdef)
 #endif
+            !$acc wait(async_id)
+            !$acc update device(dtrad, asl, atl, asl_clr, atl_clr, clds, rs, snoalb) async(async_id)
+            !$acc wait(async_id)
             if (myrank .eq. 0) print *, 'outsigr ok !!!'
          end if
 !-------------------------------------------------------------------------------
@@ -2069,6 +2217,9 @@ endif
 !
 !
          if (myrank .eq. 0) print *, ' history written at tau=', itau
+         !$acc wait(async_id)
+         !$acc update device(raincu, rainlp) async(async_id)
+         !$acc wait(async_id)
       end if     ! end of (histim) --- --- ---
 
 !       output f006 data for FV3
@@ -2076,6 +2227,9 @@ endif
       if (itau == 6) then
 #ifndef NO_OUT
          if (myrank .eq. 0) print *, 'output FV3 data !!!'
+         !$acc wait(async_id)
+         !$acc update self(ustar, srflag, q2, fm, fh, fm10, fh2) async(async_id)
+         !$acc wait(async_id)
          call outflds_fv3(nint(tau), nx, my, my_max, idtg, ggdef &
                           , q2, fm, fh, fm10, fh2, srflag, ustar)
 #endif
@@ -2094,6 +2248,10 @@ endif
          if (itau .le. nint(domfc)) then
             if (myrank .eq. 0) print *, 'out1 at tau=', itau
 #ifndef NO_OUT
+            !$acc wait(async_id)
+            !$acc update self(sld, rld, t2, q2, rh2, rh10, u10, v10, &
+            !$acc&       raincu1, rainlp1, raintot) async(async_id)
+            !$acc wait(async_id)
             call out2d_mfc(nx, lev, my, my_max, itau, idtg &
                            , raincu1, rainlp1, raintot, glob, t2, q2, rh2, rh10 &
                            , u10, v10, tmax, tmin, rld, sld, ctot, pt, ggdef)
@@ -2103,6 +2261,9 @@ endif
          rainlp1 = 0.0
          tmax = 0.0
          tmin = 0.0
+         !$acc wait(async_id)
+         !$acc update device(raincu1, rainlp1) async(async_id)
+         !$acc wait(async_id)
       end if
 !
 
@@ -2110,6 +2271,9 @@ endif
 !       out green energy plan
       if (out_green .and. mod(itau, nint(otgreen)) == 0) then
 #ifndef NO_OUT
+         !$acc wait(async_id)
+         !$acc update self(ss, t2, u10, v10, raincu6, rainlp6) async(async_id)
+         !$acc wait(async_id)
          call outflds_green(nint(tau), nx, my, my_max, lev, ncld &
                             , idtg, cp, rgas, grav, t2, u10, v10, ss, pk &
                             , sgeo, pt, plt, ptop, ut, vt, tt, qt, cosl, raincu6, rainlp6)
@@ -2117,6 +2281,9 @@ endif
          if (mod(itau, 6) == 0) then
             raincu6 = 0.
             rainlp6 = 0.
+         !$acc wait(async_id)
+         !$acc update device(raincu6, rainlp6) async(async_id)
+         !$acc wait(async_id)
          end if
       end if
 !
@@ -2211,8 +2378,14 @@ endif
       inextyear = idtg1_sst/100000000
       lnewyear = icurrentyear /= inextyear
       if (lnewyear) then
+         !$acc wait(async_id)
+         !$acc update self(totalp, ocean, ice) async(async_id)
+         !$acc wait(async_id)
          call read_opgsst(idtg1_sst, ggdef, ocean, ice)
          icurrentyear = idtg1_sst/100000000
+         !$acc wait(async_id)
+         !$acc update device(totalp, ocean, ice) async(async_id)
+         !$acc wait(async_id)
       end if
    end if   !end lopgsst
 !
@@ -2283,6 +2456,20 @@ endif
          !$acc exit data delete(cc, jtwvp) async(async_id)
          !$acc exit data delete(ut_sl, vt_sl, uum_sl, vvm_sl, ttm_sl) async(async_id)
          !$acc exit data delete(qm_sl, pten_sl) async(async_id)
+         !! << variabels used in diabat_gpu >>
+         !$acc exit data delete(o3l, dtrad, asl, atl, asl_clr, atl_clr, e, eps, &
+         !$acc&     cnvcr, cnvwr, ftp, fqp, ftp1, fqp1, clds) async(async_id)
+         !$acc exit data delete(dtcup, ducup, dvcup) async(async_id)
+         !$acc exit data delete(stc, smc, slc, gwclim, tgclim, totalp, rs, sfalb, &
+         !$acc&     sigmaf, istyp, ivegtyp, slopetyp) async(async_id)
+         !$acc exit data delete(hprime_b) async(async_id)
+         !$acc exit data delete(land, ocean, ice, cosz, tg, tsflw, std, &
+         !$acc&      sld, ss, rld, sfemis, shdmax, shdmin, snoalb, z0, ustar, &
+         !$acc&      snr, canopy, runoff, sndepth, zice, cice, xtice, tstar, &
+         !$acc&      qstar, srflag, sncover, plcl, cumtop, flash, diss_dc, curate, &
+         !$acc&      t2, q2, rh2, rh10, u10, v10, fm, fh, fm10, fh2, hpbl, gfx, &
+         !$acc&      ugws, vgws, totallp, raincu, rainlp, raincu1, rainlp1, &
+         !$acc&      raincu6, rainlp6, raintot) async(async_id)
          !$acc wait(async_id)
          ! for io quilting
          if (io_quilting) then

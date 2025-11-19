@@ -160,7 +160,7 @@
       use rank
       use index
       use radn,   only:ntcw,ntiw,ntinc,ntrnc,ntoz,ntrw,ntsw,ntgl
-      use const,  only:RTYPE 
+      use const,  only:RTYPE,mom4ice 
 !ch   use paramt
 
 !
@@ -253,7 +253,7 @@
 !
       real      srflag(nx),sfemis(nx)
 !orig logical   flag_guess(nx),flag_iter(nx),mom4ice(nx)
-      logical   flag_guess(nx),flag_iter(nx),mom4ice
+      logical   flag_guess(nx),flag_iter(nx)
 !
 !2018 new
       logical   redrag
@@ -271,7 +271,6 @@
 !
 ! noah mode
       lsm   =  1
-      mom4ice =.false.
       redrag =.false.
 !------------------------------------------------------------
 !     io=67

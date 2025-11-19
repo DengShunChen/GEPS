@@ -506,6 +506,7 @@
             !............................................
          !call nvtxStartRange("GPU:noah")
          do iter = 1, 2
+            
             call sfc_diff_gpu(myim, nx, lev, ncld, psi, ut, &
                           vt, tt, &
                           qt, &
@@ -598,6 +599,40 @@
                           qsurf, gfx,drain, qflux, &
                           hflux, ep1d, runof, &
                           albedo2, j, io, jo, async_id)
+            !!$acc wait(async_id)
+            !!$acc update self(myim, psi, ut, vt, tt, qt, istyp, ivegtyp, sigmaf, &
+            !!$acc&       sfemis, rld, sld, ss, tgclim, cd, cdq, prsl1, prslki, &
+            !!$acc&       hgt, islmsk, ddvel, islopetyp, shdmin, shdmax, snoalb, &
+            !!$acc&       alb, flag_iter, flag_guess, sheleg, snwdph, tg, tprcp, &
+            !!$acc&       srflag, smc, stc, slc, canopy, tsurf, z0rl, sncover, &
+            !!$acc&       qsurf, gfx, drain, qflux, hflux, ep1d, runof, albedo2) &
+            !!$acc&       async(async_id)
+            !!$acc wait(async_id)
+            ! do jj = 1, jlistnum
+            !    call sfc_drv(myim(jj),nx,km,psi(1, jj),ut(1,lev, jj),vt(1,lev, jj),tt(1,lev, jj),qt(1,lev, jj),   &
+            !         istyp(1, jj),ivegtyp(1, jj),sigmaf(1, jj),sfemis(1, jj), &
+            !         rld(1, jj),sld(1, jj),ss(1, jj),dth,tgclim(1, jj),     &
+            !         cd(1, jj),cdq(1, jj),prsl1(1, jj),prslki(1, jj),hgt(1, jj), &
+            !         islmsk(1, jj),ddvel(1, jj),islopetyp(1, jj),        &
+            !         shdmin(1, jj),shdmax(1, jj),snoalb(1, jj),alb(1, jj), &
+            !         flag_iter(1, jj),flag_guess(1, jj),         &
+            !         isot,ivegsrc,                                          &
+            !         sheleg(1, jj),snwdph(1, jj),tg(1, jj),tprcp(1, jj),srflag(1, jj),                         &
+            !         smc(1, 1, jj),stc(1, 1, jj),slc(1, 1, jj),canopy(1, jj),tsurf(1, jj),z0rl(1, jj),                         &
+            !         sncover(1, jj),qsurf(1, jj),gfx(1, jj),                                     &
+            !         drain(1, jj),qflux(1, jj),hflux(1, jj),ep1d(1, jj),runof(1, jj),                          &
+            !         albedo2(1, jj),jj,io,jo)
+            ! end do
+            !!$acc wait(async_id)
+            !!$acc update device(myim, psi, ut, vt, tt, qt, istyp, ivegtyp, &
+            !!$acc&       sigmaf, sfemis, rld, sld, ss, tgclim, cd, cdq, prsl1, &
+            !!$acc&       prslki, hgt, islmsk, ddvel, islopetyp, shdmin, shdmax, &
+            !!$acc&       snoalb, alb, flag_iter, flag_guess, sheleg, snwdph, &
+            !!$acc&       tg, tprcp, srflag, smc, stc, slc, canopy, tsurf, z0rl, &
+            !!$acc&       sncover, qsurf, gfx, drain, qflux, hflux, ep1d, runof, &
+            !!$acc&       albedo2) &
+            !!$acc&       async(async_id)
+            !!$acc wait(async_id)
              !!$acc wait(async_id)
             
             !call nvtxEndRange
