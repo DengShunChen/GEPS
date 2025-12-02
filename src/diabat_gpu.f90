@@ -2887,7 +2887,7 @@
             else
                !$acc wait(async_id)
                !$acc update self(plt, phii, islimsk, q0, area, sgeo, phi, &
-               !$acc&       rhc_mp, pk, snr, ivegsrc, ivegtyp, pst, ttc, qt, clds, utc, &
+               !$acc&       rhc_mp, pk, snr, ivegtyp, pst, ttc, qt, clds, utc, &
                !$acc&       vtc, vvel, ftp, ftp1, fqp, fqp1) &
                !$acc&       async(async_id)
                !$acc wait(async_id)
