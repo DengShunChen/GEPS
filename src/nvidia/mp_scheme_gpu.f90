@@ -97,7 +97,7 @@
            ( nmmiph,nx,nxjp,lev,ncld,plt,ptop,                         &
              dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jjj,           &
              itimestep,sgeo,phi,rhc_mp,pk,                             &
-             snr,xlat,sdec,ivegtyp,                                    &
+             snr,xlat,sdec,ivegsrc,ivegtyp,                            &
 #ifdef Readaeroclx
              aeroclx,naero,                                            &
 #endif
@@ -153,6 +153,7 @@
 !      integer,  intent(in)    :: ntcw,ntrw,ntiw,ntsw,ntgl,ntinc,ntrnc
       integer,  intent(in)    :: islimsk(nx,my_max)
       integer,  intent(in)    :: itimestep
+      integer,  intent(in)    :: ivegsrc
       integer,  intent(in)    :: ivegtyp(nx,my_max)
       real,     intent(in)    :: tpi,dta,xlat(my),sdec
       real,     intent(in)    :: phii(nx,lev+1,my_max)
@@ -1234,7 +1235,7 @@
                   ht(i,jj) = sgeo(i,jj)/con_g   !terrain geopotential height above sea level (m)
                   if( islimsk(i,jj) .eq. 1 ) then
                      land2d(i,jj) = 1.        !land
-                     if ( ivegtyp(i,jj) .eq. 15 ) land2d(i,jj) = 2.   !glacial is seen as ocean
+!                     if ( ivegtyp(i,jj) .eq. 15 ) land2d(i,jj) = 2.   !glacial is seen as ocean
                   else
                      land2d(i,jj) = 2.        !ocean & seaice
                   endif
@@ -1248,6 +1249,7 @@
                            rho3d, pii3d, p3d, dta, z3d,                         &
                            ht, dz3d, con_g, w3d,                                &
                            itimestep, xlat_myim, sdec, land2d,                  &
+                           ivegsrc, ivegtyp,                                    &
                            1, nx , 1, jlistnum, 1, lev,                         & ! memory dims
                            1, nx, 1, jlistnum, 1, lev,                          & ! tile   dims
                            rain2d, ice2d, snow2d, graupel2d, sr2d,              &

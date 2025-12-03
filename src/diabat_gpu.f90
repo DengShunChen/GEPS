@@ -2866,7 +2866,7 @@
                   (nmmiph, nxp, nxjp, lev, ncld, plt, ptop, &
                    dsigma, phii, islimsk, q0, kdt, tpi, me, dta, area, 1, &
                    itimestep, sgeo, phi, rhc_mp, pk, &
-                   snr, xlat, sdec, ivegtyp, &
+                   snr, xlat, sdec, ivegsrc, ivegtyp, &
    #ifdef Readaeroclx
                    aeroclx, naero, &
    #endif
@@ -2899,7 +2899,7 @@
                      (nmmiph, nxp, nxjp(j), lev, ncld, plt(1, 1, jj), ptop, &
                       dsigma, phii(1, 1, jj), islimsk(1, jj), q0(1, 1, jj), kdt, tpi, me, dta, area(jj), jj, &
                       itimestep, sgeo(1, jj), phi(1, 1, jj), rhc_mp(1, 1, jj), pk(1, 1, jj), &
-                      snr(1, jj), xlat(j), sdec, ivegtyp(1, jj), &
+                      snr(1, jj), xlat(j), sdec, ivegsrc, ivegtyp(1, jj), &
    #ifdef Readaeroclx
                       aeroclx(1, 1, jj), naero, &
    #endif

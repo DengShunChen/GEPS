@@ -177,6 +177,7 @@ CONTAINS
                                  , ht, dz8w, grav, w &
                                  !                      ,rhowater, rhosnow                           &
                                  , itimestep, xlat, sdec, xland &
+                                 , ivegsrc, ivegtyp &
                                  !                      ,ids,ide, jds,jde, kds,kde                   & ! domain dims
                                  , ims, ime, jms, jme, kms, kme & ! memory dims
                                  , its, ite, jts, jte, kts, kte & ! tile   dims
@@ -221,6 +222,9 @@ CONTAINS
       REAL, DIMENSION(ims:ime, jms:jme), INTENT(IN)   :: XLAND
       REAL, DIMENSION(ims:ime, kms:kme, jms:jme), &
          INTENT(INOUT) :: refc, refr, refi, refs, refg
+
+      integer, intent(in) :: ivegsrc
+      integer, dimension(ims:ime, jms:jme), intent(in) :: ivegtyp
 
 !+---+-----------------------------------------------------------------+
 #ifdef EXT_DIAG
@@ -451,6 +455,7 @@ CONTAINS
                            qi, qs, qg, &
                            rho, pii, p, w, &
                            itimestep, xland, &
+                           ivegsrc, ivegtyp, &
                            refc, refr, refi, &
                            refs, refg, & ! cloud effective radius
                            ims, ime, jms, jme, kms, kme, & ! memory dims
@@ -1724,6 +1729,7 @@ CONTAINS
                         qiwrf, qswrf, qgwrf, &
                         rho_mks, pi_mks, p0_mks, w_mks, &
                         itimestep, xland, &
+                        ivegsrc, ivegtyp, &
                         refc, refr, refi, refs, refg, & ! cloud effective radius
                         ims, ime, jms, jme, kms, kme, &
                         its, ite, jts, jte, kts, kte, &
@@ -1822,6 +1828,8 @@ CONTAINS
       integer ims, ime, jms, jme, kms, kme
       integer its, ite, jts, jte, kts, kte
       integer i, j, k, kp, n
+      integer, intent(in) :: ivegsrc
+      integer, dimension(ims:ime, jms:jme), intent(in) :: ivegtyp
 
       real, dimension(ims:ime, kms:kme, jms:jme) :: afcp, ascp, avcp, &
          pi0, pir, r00, rp0
@@ -1882,6 +1890,7 @@ CONTAINS
          ftns0r, ftng0r, dlt1, dlt3, dlt4, rhoair, taur, tairr, ascpr, afcpr, &
          avcpr, pi0r, pirr, pr0r, rp0r, r00r, vrr, vsr, vgr, vir, p0r1, refcr, &
          refrr, refir, refsr, refgr
+      integer :: ivegtypr
 
       !real, dimension(its:ite, jts:jte) :: asss
 
@@ -2048,7 +2057,9 @@ CONTAINS
       real :: qimax, nice, inhgr, rhoi, mvdi, mvri
       real :: lqr, lqr2, mvdr, efdr, kmin, kmax, kdxr, afar, &
               tnr, lzr, bvr, avr, mur, rhoaj, gr2, gbr25
-      real :: cnd1, cnd2, dep1, dep2, fez1, fez2, latr, ern1, ern2
+      real :: cnd1, cnd2, dep1, dep2, fez1, fez2, ern1, ern2
+      real :: qlimh, qlimm, qliml, dep3, fez3
+      real :: tmnlbc
 
       ! transition zone :
       real :: dltd, nbd, sbd, nbd1, nbd2, sbd1, sbd2, latint
@@ -2767,7 +2778,7 @@ CONTAINS
 
                   pidep = 0.0
 
-                  if (sat_predict .eq. .false.) then
+                  if (.not. sat_predict) then
       !>>> Note that Bergeron processes are concerned in saturation prediction scheme
                      if (tairr .lt. t0) then
                         y1 = max(min(tairc, -1.), -31.)
@@ -3235,7 +3246,7 @@ CONTAINS
 
                   if (tairr .lt. t0 .and. tairr .gt. t00) then
                      tairc = tairr - t0
-                     if (sat_predict .eq. .false.) then
+                     if (.not. sat_predict) then
    !>>> pidw may be already calculated in saturation prediction scheme.
                         y1 = max(min(tairc, -1.), -31.)
                         it = int(abs(y1))
@@ -3543,12 +3554,13 @@ CONTAINS
             !$acc&         lqi, lqi2, mvdi, mvri, hid, inhgr, rhoi, nice, lqr, &
             !$acc&         lqr2, kmin, kmax, mvdr, efdr, kdxr, afar, lzr, tnr, &
             !$acc&         avr, bvr, mur, rhoaj, gr2, gbr25, cnd1, cnd2, dep1, &
-            !$acc&         dep2, fez1, fez2, ern1, ern2, latr, tau, atem, dltd, &
+            !$acc&         dep2, fez1, fez2, ern1, ern2, tau, atem, dltd, &
             !$acc&         latint, sbd, nbd, sbd1, sbd2, nbd1, nbd2, fxlat, &
             !$acc&         cpm1, xlv, xlf, xls, esw, esi, qsw, qsi, y1, y2, &
             !$acc&         pr0, rhoair, dv1, abw, abi, tauc, tairc, ssi, taui, &
             !$acc&         taur, cnd, dep, fez, ern, tairr, rp0r, xlandr, qvwrfr, &
-            !$acc&         qlwrfr, qiwrfr, qrwrfr, qswrfr, qgwrfr, p0r1)
+            !$acc&         qlwrfr, qiwrfr, qrwrfr, qswrfr, qgwrfr, p0r1, &
+            !$acc&         tmnlbc, ivegtypr)
             do j = jts, jte
                do k = kts, kte
                   !$acc loop vector
@@ -3559,6 +3571,7 @@ CONTAINS
                      tairr = tair(i, k, j)
                      rp0r = rp0(i, k, j)
                      xlandr = xland(i, j)
+                     ivegtypr = ivegtyp(i, j)
                      qvwrfr = qvwrf(i, k, j)
                      qlwrfr = qlwrf(i, k, j)
                      qiwrfr = qiwrf(i, k, j)
@@ -3712,7 +3725,6 @@ CONTAINS
 
                      cnd1 = 0.; cnd2 = 0.; dep1 = 0.; dep2 = 0.
                      fez1 = 0.; fez2 = 0.; ern1 = 0.; ern2 = 0.
-                     latr = 0.
 
                      ! increase condensation at lower-level tropics :
       !      if ( abs(xlat) .le. 23.5 ) then
@@ -3752,22 +3764,34 @@ CONTAINS
                             - qsw - atem*tau)*(1.-exp(-dt/tau))*tau/taur)/abw)
                      fez1 = 0.
 
+                     ! create liquid-bearing clouds at polar regions (cnd2, fez2, dep2) :
                      if (use_declination) then
-                        ! decide values at polar regions :
                         ern2 = ern1
-                        if (tairr .ge. 253.16) then
-                           ! T>=-20     : all ice melt; all excess vapor (over ice) condense; no deposition
-                           cnd2 = max(-qlwrfr, (qvwrfr - qsi)/abi)
+
+                        ! set minimum temperature of liquid-bearing cloud :
+                        if ((ivegsrc .eq. 0 .and. ivegtypr .eq. 13) .or. &
+                            (ivegsrc .eq. 1 .and. ivegtypr .eq. 15) .or. &
+                            (ivegsrc .eq. 2 .and. ivegtypr .eq. 15)) then
+                           tmnlbc = 248.16  !-25 oC at glacial
+                        else
+                           tmnlbc = 253.16  !-20 oC
+                        endif
+
+                        if (tairr .ge. tmnlbc) then
+                           ! lower liquid clouds :
+                           !   all ice melt ;
+                           !   condense/evaporate to saturation (with respect to ice) ;
+                           !   no deposition/sublimation
+!                           cnd2 = max(-qlwrfr, (qvwrfr - qsi)/abi)
+                           abw = 1. + xlv**2.*qsi/cpm1/(4.61495E2*tairr**2.)
+                           cnd2 = max(-qlwrfr, (qvwrfr - qsi)/abw)
                            fez2 = -qiwrfr
                            dep2 = 0.
-                        elseif (tairr .lt. 253.16 &
-                                .and. tairr .ge. t00) then
-                           ! -40<=T<-20 : all water freeze; all excess vapor (over water) deposite; no condensation
-                           dep2 = max(-qiwrfr, (qvwrfr - qsw)/abw)
-                           fez2 = qlwrfr
-                           cnd2 = 0.
                         else
-                           ! T<-40      : all water freeze; all excess vapor (over ice) deposite; no condensation
+                           ! upper ice clouds :
+                           !   all water freeze ;
+                           !   deposite/sublimate to saturation (with respect to ice) ;
+                           !   no condensation/evaporation
                            dep2 = max(-qiwrfr, (qvwrfr - qsi)/abi)
                            fez2 = qlwrfr
                            cnd2 = 0.
@@ -3775,9 +3799,9 @@ CONTAINS
 
                         ! create transition zones :
                         dltd = asin(sdec)*180.0/cpi      ! solar declination angle (in degree latitude)
-                        latint = 23.5                    ! width of the transition zone (in degree latitude)
-                        sbd = dltd - 90.0                  ! southern boundary of sun (in degree latitude)
-                        nbd = dltd + 90.0                  ! northern boundary of sun (in degree latitude)
+                        latint = 20.0                    ! width of the transition zone (in degree latitude)
+                        sbd = dltd - 90.0 + 15.0           ! southern boundary of sun (in degree latitude)
+                        nbd = dltd + 90.0 + 15.0           ! northern boundary of sun (in degree latitude)
                         sbd1 = sbd + latint/2.0            ! southern boundary of southern transition zone
                         sbd2 = sbd - latint/2.0            ! northern boundary of southern transition zone
                         nbd1 = nbd - latint/2.0            ! southern boundary of northern transition zone
@@ -3788,10 +3812,11 @@ CONTAINS
                         elseif (xlat(j) .lt. sbd2 .or. xlat(j) .gt. nbd2) then    ! polar region
                            fxlat = 1.
                         elseif (xlat(j) .ge. sbd2 .and. xlat(j) .le. sbd1) then   ! southern transition zone
-                           fxlat = sin(abs(max((xlat(j) - sbd1)*90.0/latint, -90.0) &
-                                   *cpi/180.0))
+!                           fxlat = sin((sbd1 - xlat(j))*90.0/latint*cpi/180.0)
+                           fxlat = (sin((sbd1 - xlat(j))*90.0/latint*cpi/180.0))**2.0
                         elseif (xlat(j) .ge. nbd1 .and. xlat(j) .le. nbd2) then   ! northern transition zone
-                           fxlat = sin(min((xlat(j) - nbd1)*90.0/latint, 90.0)*cpi/180.0)
+!                           fxlat = sin((xlat(j) - nbd1)*90.0/latint*cpi/180.0)
+                           fxlat = (sin((xlat(j) - nbd1)*90.0/latint*cpi/180.0))**2.0
                         end if
 
                         cnd = cnd1*(1.0 - fxlat) + cnd2*fxlat
@@ -3799,40 +3824,80 @@ CONTAINS
                         fez = fez1*(1.0 - fxlat) + fez2*fxlat
                         ern = ern1*(1.0 - fxlat) + ern2*fxlat
 
+                        ! update tair, qv, qc, qi, qr :
+                        tairr = tair(i, k, j) + (ern + cnd)*xlv/cpm1 &
+                                     + dep*xls/cpm1 + fez*xlf/cpm1
+                        tair(i, k, j) = tairr
+                        qvwrf(i, k, j) = max(0., qvwrf(i, k, j) - cnd - dep - ern)
+                        qlwrf(i, k, j) = max(0., qlwrf(i, k, j) + cnd - fez)
+                        qiwrf(i, k, j) = max(0., qiwrf(i, k, j) + dep + fez)
+                        qrwrf(i, k, j) = max(0., qrwrf(i, k, j) + ern)
+
+                        if (xlat(j) .ge. nbd1 .or. xlat(j) .le. sbd1) then
+                           qvwrfr = qvwrf(i, k, j)
+                           qlwrfr = qlwrf(i, k, j)
+                           qiwrfr = qiwrf(i, k, j)
+                           qrwrfr = qrwrf(i, k, j)
+                           qswrfr = qswrf(i, k, j)
+                           qgwrfr = qgwrf(i, k, j)
+
+                           ! remove excessive qi (saturation with respect to water)
+                           qliml = 5.e-5
+                           if (tairr .ge. tmnlbc .and. qiwrfr .gt. qliml) then
+                              ! T>=-20, qi>qliml
+                              if (use_cpm) then
+                                 cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
+                                       + cvap*qvwrfr &
+                                       + cliq*(qlwrfr + qrwrfr) &
+                                       + cice*(qiwrfr + qswrfr + qgwrfr)   ! specific heat capacity (in CGS)
+                                 cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
+                                 hlv = alv - (cliq - cvap)*(tairr - t0)    ! latent heat of vaporization (in CGS)
+                                 hlf = alf - (cice - cliq)*(tairr - t0)    ! latent heat of fusion (in CGS)
+                                 hls = hlv + hlf                           ! latent heat of sublimation (in CGS)
+                                 xls = hls*1.e-4                           ! latent heat of sublimation (in MKS)
+                              else
+                                 cpm = cp*(1. + 0.887*qvwrfr)            ! specific heat capacity (in CGS)
+                                 cpm1 = cpm*1.e-4                        ! specific heat capacity (in MKS)
+                                 xls = 3.15E6 - 2370.*tairr + 0.3337E6   ! latent heat of sublimation  (in MKS)
+                              endif
+                              if (new_saturation) then
+                                 esw = min(0.99*p0r1, esw_mks_gpu(tairr))
+                                 esi = min(0.99*p0r1, esi_mks_gpu(tairr))
+                                 if (esi .gt. esw) esi = esw
+                                 qsw = 0.622*esw/(p0r1 - esw)
+                                 qsi = 0.622*esi/(p0r1 - esi)
+                              else
+                                 y1 = 1./(tairr - c358)
+                                 qsw = rp0r*exp(c172 - c409*y1)
+                                 y2 = 1./(tairr - c76)
+                                 qsi = rp0r*exp(c218 - c580*y2)
+                              endif
+                              abi = 1. + xls**2.*qsi/cpm1/(4.61495E2*tairr**2.)
+                              dep3 = max(-qiwrfr, (qvwrfr - qsw)/abi)*fxlat
+
+                              tairr = tair(i, k, j) + dep3*xls/cpm1
+                              tair(i, k, j) = tairr
+                              qvwrf(i, k, j) = max(0., qvwrf(i, k, j) - dep3)
+                              qiwrf(i, k, j) = max(0., qiwrf(i, k, j) + dep3)
+                           endif
+                        endif
+
                      else
                         cnd = cnd1
                         dep = dep1
                         fez = fez1
                         ern = ern1
-                     end if
 
-                     ! update tair, qv, qc, qi, qr :
-                     tairr = tair(i, k, j) + (ern + cnd)*xlv/cpm1 &
-                                  + dep*xls/cpm1 + fez*xlf/cpm1
-                     tair(i, k, j) = tairr
-                     qvwrf(i, k, j) = max(0., qvwrf(i, k, j) - cnd - dep - ern)
-                     qlwrf(i, k, j) = max(0., qlwrf(i, k, j) + cnd - fez)
-                     qiwrf(i, k, j) = max(0., qiwrf(i, k, j) + dep + fez)
-                     qrwrf(i, k, j) = max(0., qrwrf(i, k, j) + ern)
+                        ! update tair, qv, qc, qi, qr :
+                        tairr = tair(i, k, j) + (ern + cnd)*xlv/cpm1 &
+                                     + dep*xls/cpm1 + fez*xlf/cpm1
+                        tair(i, k, j) = tairr
+                        qvwrf(i, k, j) = max(0., qvwrf(i, k, j) - cnd - dep - ern)
+                        qlwrf(i, k, j) = max(0., qlwrf(i, k, j) + cnd - fez)
+                        qiwrf(i, k, j) = max(0., qiwrf(i, k, j) + dep + fez)
+                        qrwrf(i, k, j) = max(0., qrwrf(i, k, j) + ern)
 
-                     ! refreeze at mid-level polar regions :
-      !           if ( abs(xlat).ge.66.0 .and.                             &
-      !                p0(i,j,k).ge.8.e+5 .and.                            &
-      !                qc(i,j).ge.cwmin ) then
-      !              latr = min(1.,max(0.,abs(xlat)-66.0))
-      !              fez(i,j) = qc(i,j)*latr
-      !              tair(i,j) = tair(i,j) + fez(i,j)*alf/cpm
-      !              qi(i,j) = max(0.,qi(i,j)+fez(i,j))
-      !              qc(i,j) = max(0.,qc(i,j)-fez(i,j))
-      !           endif
-
-                     ! small cloud water all refreeze at polar regions,
-                     ! in order to make the distribution more continuous :
-      !           if ( abs(xlat).ge.66.5 .and. qc(i,j).lt.1.e-4 ) then
-      !              tair(i,j) = tair(i,j)+qc(i,j)*alf/cpm
-      !              qi(i,j) = max(0.,qi(i,j)+qc(i,j))
-      !              qc(i,j) = 0.
-      !           endif
+                     end if  !end of if use_declination
 
                      ! update pt :
                      ptwrf(i, k, j) = tairr/pi0(i, k, j) - tb0   !tair=(pt(i,j)+tb0)*pi0
@@ -3854,7 +3919,7 @@ CONTAINS
    !     CONCENTRATION EXCEEDS THAT ALREADY PRESENT.
       
       IF (IWARM .ne. 1) THEN
-         if (sat_predict .eq. .false.) then
+         if (.not. sat_predict) then
             !$acc parallel loop gang collapse(2) async(async_id) private(cpm, &
             !$acc&         hlv, hlf, hls, fssi, r_nci, cp409, cp580, r32rt, &
             !$acc&         rtair, y3, dd, dm, rsub1, y4, tairc, y2, qsi, esi, &
@@ -4449,7 +4514,7 @@ CONTAINS
                      r231r = rn231*rr0r
                      r232rf = rn232*rrs*fvs
                   end if
-                  if (sat_predict .eq. .false.) then
+                  if (.not. sat_predict) then
                      if (qrwrfr .gt. 0.0) then
                         tairr = (ptwrfr + tb0)*pi0r
                         tair(i, k, j) = tairr
