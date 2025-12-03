@@ -118,7 +118,7 @@
            ( nmmiph,nx,nxj,lev,ncld,plt,ptop,                          &
              dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,            &
              itimestep,sgeo,phi,rhc_mp,pk,                             &
-             snr,xlat,sdec,ivegtyp,                                    &
+             snr,xlat,sdec,ivegsrc,ivegtyp,                            &
 #ifdef Readaeroclx
              aeroclx,naero,                                            &
 #endif
@@ -172,6 +172,7 @@
 !      integer,  intent(in)    :: ntcw,ntrw,ntiw,ntsw,ntgl,ntinc,ntrnc
       integer,  intent(in)    :: islimsk(nx)
       integer,  intent(in)    :: itimestep
+      integer,  intent(in)    :: ivegsrc
       integer,  intent(in)    :: ivegtyp(nx)
       real,     intent(in)    :: tpi,dta,xlat,sdec
       real,     intent(in)    :: phii(nx,lev+1)
@@ -262,7 +263,7 @@
       real    mp_time,dts
       real    rhowater,rhosnow,dx
       real,dimension(:,:),allocatable ::                                &
-              ht,hail2d,sr2d
+              ht,hail2d,sr2d,vegt
       real,dimension(:,:,:),allocatable ::                              &
               th3d,qh3d,rho3d,pii3d,p3d,z3d,rew3d,rer3d,rei3d,res3d,    &
               reg3d,reh3d,refl_10cm
@@ -988,7 +989,7 @@
            qi3d(nx,lev,1),qs3d(nx,lev,1),qg3d(nx,lev,1),rho3d(nx,lev,1),&
            pii3d(nx,lev,1),p3d(nx,lev,1),z3d(nx,lev,1),dz3d(nx,lev,1),  &
            rain2d(nx,1),snow2d(nx,1),graupel2d(nx,1),sr2d(nx,1),        &
-           ice2d(nx,1),ht(nx,1),land2d(nx,1),w3d(nx,lev,1) )
+           ice2d(nx,1),ht(nx,1),land2d(nx,1),w3d(nx,lev,1),vegt(nx,1) )
         allocate                                                        &
          ( rew3d(nx,lev,1),rer3d(nx,lev,1),rei3d(nx,lev,1),             &
            res3d(nx,lev,1),reg3d(nx,lev,1) )
@@ -1020,6 +1021,7 @@
         graupel2d = 0.
         sr2d = 0.
         land2d = 0.
+        vegt = 0.
         rew3d = 0.
         rer3d = 0.
         rei3d = 0.
@@ -1090,9 +1092,10 @@
 
         do i = 1, nxj
           ht(i,1) = sgeo(i)/con_g   !terrain geopotential height above sea level (m)
+          vegt(i,1) = real(ivegtyp(i))  !vegetation type
           if( islimsk(i) .eq. 1 ) then
             land2d(i,1) = 1.        !land
-            if ( ivegtyp(i) .eq. 15 ) land2d(i,1) = 2.   !glacial is seen as ocean
+!            if ( ivegtyp(i) .eq. 15 ) land2d(i,1) = 2.   !glacial is seen as ocean
           else
             land2d(i,1) = 2.        !ocean & seaice
           endif
@@ -1105,6 +1108,7 @@
                    rho3d, pii3d, p3d, dta, z3d,                         &
                    ht, dz3d, con_g, w3d,                                &
                    itimestep, xlat, sdec, land2d,                       &
+                   ivegsrc, ivegtyp,                                    &
                    1, nx , 1, 1, 1, lev,                                & ! memory dims
                    1, nxj, 1, 1, 1, lev,                                & ! tile   dims
                    rain2d, ice2d, snow2d, graupel2d, sr2d,              &
