@@ -97,6 +97,8 @@ stg-test:
 merge_request:
   only:
     - merge_requests
+  variables:
+    GIT_SSL_NO_VERIFY: "true"
   script:
     - ./compile fx1000
     - echo "cpu regression test"

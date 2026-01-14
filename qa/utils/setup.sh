@@ -42,7 +42,7 @@ module unuse ${MDIR}/modulefiles
    DMSFLAG=GI
  fi
 
- dtg='18090800'
+ dtg='22081500'
  fgdtg=$(/users/xb80/bin/Caldtg.ksh ${dtg} -6)
 
  idmshead='MASOPS'
@@ -173,7 +173,7 @@ cat > ${GFSWRK}/namlsts << EOF
   idg=40, jdg=108,
   itypbl=0, numreduce=5, ptmeans=800.,
   irad=2, nmland=2,
-  nmcup=6, nmshl=3, nmpbl=4, nmmiph=2,
+  nmcup=6, nmshl=3, nmpbl=4, nmmiph=15,
   nmgwor=2, nmgwcv=2,
   ktcup=20, cgw=4.2e-5,
   mtnvar=14, doo3l=t,

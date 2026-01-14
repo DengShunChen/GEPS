@@ -349,7 +349,7 @@
 
 !  ---  public accessable subprograms
 
-      public swrad, rswinit
+      public swrad, rswinit, cldprop, setcoef, taumol, spcvrtc
 
 
 ! =================

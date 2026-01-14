@@ -1,4 +1,4 @@
-      subroutine cons
+      subroutine cons_test
 !
 !***********************************************************************
 !  this subroutine defines several important constants and arrays
@@ -648,17 +648,14 @@
 !  for rrtmg scheme : rad_initialize
 !-----------------------------------------------------------------------
       if (irad .eq. 2) then
-#ifdef USE_CUDA
-       call rad_initialize_gpu (si,lev,ictm, isol, ico2, iaer, ialb,        &
-       iems, ntcw, nmmiph, ntoz, iovr_sw, iovr_lw, isubc_sw, isubc_lw,  &
-       icliq_sw, icice_sw, icliq_lw, icice_lw, sashal, crick_proof,     &
-       ccnorm, norad_precip, idate, iflip, me, myrank)
-#else
        call rad_initialize (si,lev,ictm, isol, ico2, iaer, ialb,        &
        iems, ntcw, nmmiph, ntoz, iovr_sw, iovr_lw, isubc_sw, isubc_lw,  &
        icliq_sw, icice_sw, icliq_lw, icice_lw, sashal, crick_proof,     &
        ccnorm, norad_precip, idate, iflip, me, myrank)
-#endif
+       call rad_initialize_gpu (si,lev,ictm, isol, ico2, iaer, ialb,        &
+       iems, ntcw, nmmiph, ntoz, iovr_sw, iovr_lw, isubc_sw, isubc_lw,  &
+       icliq_sw, icice_sw, icliq_lw, icice_lw, sashal, crick_proof,     &
+       ccnorm, norad_precip, idate, iflip, me, myrank)
 
       if(myrank .eq. 0) print *,'after rad_initialize ..'
       if(myrank .eq. 0) print *,'ntoz=',ntoz,' iflip=',iflip

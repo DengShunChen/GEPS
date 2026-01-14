@@ -37,6 +37,23 @@ if(${USE_CUDA})
     endif()
 
     set(TESTS
+        #test_grrad_file
+        #test_coszmn_file
+        #test_getgases_file
+        #test_setaer_file
+        #test_progcld_gce_file
+        #test_setalb_file
+        #test_setemis_file
+        #test_sw_setcoef_file
+        #test_swrad_file
+        #test_sw_cldprop_file
+        #test_sw_spcvrtc_file
+        #test_sw_taumol_file
+        #test_lwrad_file
+        #test_lw_cldprop_file
+        #test_lw_setcoef_file
+        #test_lw_rtrnmr_file
+        #test_lw_taumol_file
         test_adjptqintp
         test_ozphys_2015
         test_gwdc
