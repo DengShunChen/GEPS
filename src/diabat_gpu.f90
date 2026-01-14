@@ -213,6 +213,7 @@
          use ozne_def, only :pl_coeff
 
          use leapyr
+         !use nvtx
 !-----------------------------------------------------------------------
          implicit none
          integer nfxr, ntrac, kk, nk, n
@@ -1085,6 +1086,7 @@
                        idat, jdat, solhr, dtsw, dtlw, lsswr, lslwr, &
                        slag, sdec, cdec, solcon, &
                        xlonr, ixseed, icsdsw, icsdlw, async_id)
+         !$acc wait(async_id)
          year = jdat(1)
 !-------------------------------------------------------------------------
 ! cosz was modified to be an average of the  calling period(1 hour fo
@@ -1450,50 +1452,78 @@
 !      endif
 !--------------------------------------------------------------------------------
             !$acc wait(async_id)
-            !$acc update self(icsdsw, icsdlw, slimsk, rstd, dotc, tg, xlonr, tpp, qp, ps, pltp, &
-            !$acc&       cnvwr, cnvcr, cice, xtice, snr, snoalb, z0, o3l, &
-            !$acc&       sncover, curate, ftp, ftp1, fqp, fqp1, cosl, sinl) async(async_id)
+            !!$acc update self(icsdsw, icsdlw, slimsk, rstd, dotc, tg, xlonr, tpp, qp, ps, pltp, &
+            !!$acc&       cnvwr, cnvcr, cice, xtice, snr, snoalb, z0, o3l, &
+            !!$acc&       sncover, curate, ftp, ftp1, fqp, fqp1, cosl, sinl) async(async_id)
             !$acc wait(async_id)
-            do jj = 1, jlistnum
-               j = jlist1(jj)
-               nxj = nxdef_2d(j)
-               call rrtmg &
-                  !  ---  inputs:
-                  (sigma, ps(1, jj), pltp(1, 1, jj), rstd(1, jj), &
-                   tpp(1, 1, jj), qp(1, 1, jj), o3l(1, 1, jj), dotc(1, 1, jj), tg(1, jj), &
-                   slimsk(1, jj), cice(1, jj), xtice(1, jj), &
-                   snr(1, jj), sncover(1, jj), snoalb(1, jj), z0(1, jj), &
-                   alvsf(1, jj), alnsf(1, jj), alvwf(1, jj), &
-                   alnwf(1, jj), facsf(1, jj), facwf(1, jj), &
-                   curate(1, jj), icsdsw(1, jj), icsdlw(1, jj), &
-                   sinl(j), cosl(j), xlat(j), xlonr(1, jj), jdat, d2r, xkapa, &
-                   ptrad, dtlw, dtsw, lsswr, lslwr, lssav, &
-                   nfxr, j, &
-                   nxp, nxjp(j), lev, ncld, lprnt, ipt, kdt, &
-                   uni_cloud, lmfshal, lmfdeep2, &
-                   deltaq(1, 1, jj), sup, cnvwr(1, 1, jj), cnvcr(1, 1, jj), &
-                   ftp(1, 1, jj), ftp1(1, 1, jj), fqp(1, 1, jj), fqp1(1, 1, jj), nmmiph, &
-                   !  ---  outputs:
-                   asol(1, jj), olr(1, jj), ss(1, jj), rs(1, jj), &
-                   sld(1, jj), rld(1, jj), tsflw(1, jj), &
-                   ctot(1, jj), chig(1, jj), cmid(1, jj), clow(1, jj), &
-                   clds(1, 1, jj), asl(1, 1, jj), atl(1, 1, jj), &
-                   fusl(1, 1, jj), fdsl(1, 1, jj), fuir(1, 1, jj), fdir(1, 1, jj), &
-                   fuslr(1, 1, jj), fdslr(1, 1, jj), fuirr(1, 1, jj), fdirr(1, 1, jj), &
-                   asl_clr(1, 1, jj), atl_clr(1, 1, jj), cosz(1, jj), &
-                   asol_clr(1, jj), olr_clr(1, jj), ss_clr(1, jj), rs_clr(1, jj), &
-                   sld_clr(1, jj), rld_clr(1, jj), sfalb(1, jj), sfemis(1, jj))
+            !do jj = 1, jlistnum
+            !   j = jlist1(jj)
+            !   nxj = nxdef_2d(j)
+            !   call rrtmg &
+            !      !  ---  inputs:
+            !      (sigma, ps(1, jj), pltp(1, 1, jj), rstd(1, jj), &
+            !       tpp(1, 1, jj), qp(1, 1, jj), o3l(1, 1, jj), dotc(1, 1, jj), tg(1, jj), &
+            !       slimsk(1, jj), cice(1, jj), xtice(1, jj), &
+            !       snr(1, jj), sncover(1, jj), snoalb(1, jj), z0(1, jj), &
+            !       alvsf(1, jj), alnsf(1, jj), alvwf(1, jj), &
+            !       alnwf(1, jj), facsf(1, jj), facwf(1, jj), &
+            !       curate(1, jj), icsdsw(1, jj), icsdlw(1, jj), &
+            !       sinl(j), cosl(j), xlat(j), xlonr(1, jj), jdat, d2r, xkapa, &
+            !       ptrad, dtlw, dtsw, lsswr, lslwr, lssav, &
+            !       nfxr, j, &
+            !       nxp, nxjp(j), lev, ncld, lprnt, ipt, kdt, &
+            !       uni_cloud, lmfshal, lmfdeep2, &
+            !       deltaq(1, 1, jj), sup, cnvwr(1, 1, jj), cnvcr(1, 1, jj), &
+            !       ftp(1, 1, jj), ftp1(1, 1, jj), fqp(1, 1, jj), fqp1(1, 1, jj), nmmiph, &
+            !       !  ---  outputs:
+            !       asol(1, jj), olr(1, jj), ss(1, jj), rs(1, jj), &
+            !       sld(1, jj), rld(1, jj), tsflw(1, jj), &
+            !       ctot(1, jj), chig(1, jj), cmid(1, jj), clow(1, jj), &
+            !       clds(1, 1, jj), asl(1, 1, jj), atl(1, 1, jj), &
+            !       fusl(1, 1, jj), fdsl(1, 1, jj), fuir(1, 1, jj), fdir(1, 1, jj), &
+            !       fuslr(1, 1, jj), fdslr(1, 1, jj), fuirr(1, 1, jj), fdirr(1, 1, jj), &
+            !       asl_clr(1, 1, jj), atl_clr(1, 1, jj), cosz(1, jj), &
+            !       asol_clr(1, jj), olr_clr(1, jj), ss_clr(1, jj), rs_clr(1, jj), &
+            !       sld_clr(1, jj), rld_clr(1, jj), sfalb(1, jj), sfemis(1, jj))
 !          do k = 1, lev
 !            do i = 1, nxj
 !              dtrad(i,k,jj) = asl(i,k,jj) + atl(i,k,jj)
 !            enddo
 !          enddo
-            end do
+            !end do
+       !call nvtxStartRange("rrtmg")
+       call rrtmg_gpu                                                           &
+          !  ---  inputs:
+           ( sigma,ps,pltp,rstd,                                     &
+             tpp,qp,o3l,dotc,tg,                     &
+             slimsk   ,cice,xtice,                             &
+             snr,sncover,snoalb,z0,                &
+             alvsf,alnsf,alvwf,                          &
+             alnwf,facsf,facwf,                          &
+             curate,icsdsw,icsdlw,                                   &
+             sinl,cosl,xlat,xlonr,jdat,d2r,xkapa,           &
+             ptrad,dtlw,dtsw,lsswr,lslwr,lssav,                            &
+             nfxr,j,                                                       &
+             nxp,1,lev,ncld,lprnt,ipt,kdt,                           &
+             uni_cloud,lmfshal,lmfdeep2,                                   &
+             deltaq,sup,cnvwr,cnvcr,               &
+             ftp,ftp1,fqp,fqp1,nmmiph,     &
+!  ---  outputs:
+             asol,olr,ss,rs,                       &
+             sld,rld,tsflw,                              &
+             ctot,chig,cmid,clow,                  &
+             clds,asl,atl,                         &
+             fusl,fdsl,fuir,fdir,          &
+             fuslr,fdslr,fuirr,fdirr,      &
+             asl_clr,atl_clr,cosz,                   &
+             asol_clr,olr_clr,ss_clr,rs_clr,       &
+             sld_clr,rld_clr,sfalb,sfemis)
             !$acc wait(async_id)
-            !$acc update device(sld, ss, rld, asl, atl, asl_clr, atl_clr, sfemis, &
-            !$acc&       tsflw, cosz, rs, sfalb, clds) async(async_id)
+            !!$acc update device(sld, ss, rld, asl, atl, asl_clr, atl_clr, sfemis, &
+            !!$acc&       tsflw, cosz, rs, sfalb, clds) async(async_id)
             !$acc wait(async_id)
          end if  ! for uprad .and. irad=2
+         !call nvtxEndRange
 
          if (dorad) then
             !$acc wait(async_id)

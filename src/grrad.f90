@@ -1085,6 +1085,28 @@
 !     if (myrank .eq. 0) print *,' #### present (htrlw0)=',lhtrlw0
 !     if (myrank .eq. 0) print *,' #### present (flwprf)=',lflwprf
 
+      !if (lprnt .eq. .true. .and. myrank .eq. 3) then
+      !  write(*,*) prsi(40,30),prsl(40,30),prslk(40,30),tgrs(40,30),qgrs(40,30),&
+      !       tracer(40,30,2),vvl(40,30),slmsk(40),                &
+      !       xlon(40),xlat(40),tsfc(40),snowd(40),sncovr(40),snoalb(40),zorl(40),hprim(40),             &
+      !       alvsf(40),alnsf(40),alvwf(40),alnwf(40),facsf(40),facwf(40),fice(40),tisfc(40),            &
+      !       sinlat(40),coslat(40),solhr,jdate,solcon,                          &
+      !       cv(40),cvt(40),cvb(40),                                                &
+      !       icsdsw(40),icsdlw(40),ntcw,ncld,ntoz,ntrac,nfxr,                   &
+      !       dtlw,dtsw,lsswr,lslwr,lssav,                               &
+      !       ix,im,lm,me,lprnt,ipt,kdt,myrank,                          &
+      !       ntiw,ntrw,ntsw,ntgl,uni_cloud,lmfshal,lmfdeep2,            &
+      !       deltaq(40,30),sup,cnvw(40,30),cnvc(40,30),phy_f3d(40,30,2),                              &
+!  ---!  outputs:
+      !       htrsw(40,30),sfalb(40),coszen(40),coszdg(40),                                 &
+      !       htrlw(40,30),tsflw(40),semis(40),                                         &
+!  ---!  input/output:
+      !       cldcov(40,30),fluxr(40,30),                                              &
+!! ---!  optional outputs:
+      !       htrsw0(40,30),htrlw0(40,30),                                             &
+      !       fusl(40,30),fdsl(40,30),fuir(40,30),fdir(40,30),                                       &
+      !       fuslr(40,30),fdslr(40,30),fuirr(40,30),fdirr(40,30)
+      !end if
 !
       lp1 = lm + 1               ! num of in/out levels
 

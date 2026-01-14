@@ -164,13 +164,22 @@ if [ $JCAP = 639  ] ; then
   MODLST_RES='dt=450., hfilt=1., cgw=4.2e-5, cgwd=1.20, cmbk=1.00,spl2=50.,itter=2,'
   MODLST_PHY='isot=2,ivegsrc=2,'
   MODEL_BASIC='nco=640,'
+  if [ ${machine} = a100 ]; then
+    MODLST_PHY="nmgwcv=2, nmmiph=15"
+  fi
 elif [ $JCAP = 383  ] ; then
   MODLST_RES='dt=600., hfilt=1., cgw=2.6e-5, cgwd=2.40, cmbk=0.60,'
   MODLST_PHY="nmgwcv=1,"
   MODEL_BASIC='nco=384,'
+  if [ ${machine} = a100 ]; then
+    MODLST_PHY="nmgwcv=2, nmmiph=15"
+  fi
 elif [ $JCAP = 199  ] ; then
   MODLST_RES='dt=1200., hfilt=1., cgwd=2.40, cmbk=0.60, mom4ice=f, '
   MODEL_BASIC='nco=200,'
+  if [ ${machine} = a100 ]; then
+    MODLST_PHY="nmgwcv=2, nmmiph=15"
+  fi
 fi
 
 cat > ${GFSWRK}/namlsts << EOF
@@ -276,7 +285,7 @@ EOF
 
  if [ ${machine} = a100 ]; then
   export NVCOMPILER_ACC_CUDA_MEMALLOCASYNC="1"
-  export NVCOMPILER_ACC_CUDA_MEMALLOCASYNC_POOLSIZE="40G"
+  export NVCOMPILER_ACC_CUDA_MEMALLOCASYNC_POOLSIZE="60G"
   export NVCOMPILER_ACC_USE_GRAPH="1"
   export NVCOMPILER_ACC_CUDA_NOCOPY="1"
  fi

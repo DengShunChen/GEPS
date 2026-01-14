@@ -339,12 +339,59 @@
 
 !  ---  public accessable subprograms
 
-      public lwrad, rlwinit
+      public lwrad, rlwinit, taumol_interface, taumol, rtrnmr, setcoef, cldprop
 
 
 ! ================
       contains
 ! ================
+
+! ..................................
+      subroutine taumol_interface                                                 &
+! ..................................
+!  ---  inputs:
+     &     ( laytrop,pavel,coldry,colamt,colbrd,wx,tauaer,              &
+     &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
+     &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
+     &       minorfrac,scaleminor,scaleminorn2,indminor,                &
+     &       nlay,                                                      &
+!  ---  outputs:
+     &       fracs, tautot                                              &
+     &     )
+      implicit none
+!  ---  inputs:
+      integer, intent(in) :: nlay, laytrop
+
+      integer, dimension(nlay), intent(in) :: jp, jt, jt1, indself,     &
+     &       indfor, indminor
+
+      real (kind=kind_phys), dimension(nlay), intent(in) :: pavel,      &
+     &       coldry, colbrd, fac00, fac01, fac10, fac11, selffac,       &
+     &       selffrac, forfac, forfrac, minorfrac, scaleminor,          &
+     &       scaleminorn2
+
+      real (kind=kind_phys), dimension(nlay,maxgas), intent(in):: colamt
+      real (kind=kind_phys), dimension(nlay,maxxsec),intent(in):: wx
+
+      real (kind=kind_phys), dimension(nbands,nlay), intent(in):: tauaer
+
+      real (kind=kind_phys), dimension(nlay,nrates,2), intent(in) ::    &
+     &       rfrate
+
+!  ---  outputs:
+      real (kind=kind_phys), dimension(ngptlw,nlay), intent(out) ::     &
+     &       fracs, tautot
+
+     call taumol( laytrop,pavel,coldry,colamt,colbrd,wx,tauaer,              &
+     &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
+     &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
+     &       minorfrac,scaleminor,scaleminorn2,indminor,                &
+     &       nlay,                                                      &
+!  ---  outputs:
+     &       fracs, tautot)
+
+
+      end subroutine
 
 
 ! --------------------------------
@@ -3513,6 +3560,7 @@
       real (kind=kind_phys), dimension(ngptlw,nlay) :: taug
 
       integer :: ib, ig, k
+      taug = 0.
 !
 !===> ...  begin here
 !
