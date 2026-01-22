@@ -156,9 +156,8 @@
          !$acc&     fice, tisfc, sinlat, coslat, sfalb, coszen, coszdg, tsflw, &
          !$acc&     semis, icsdlw, icsdsw, phy3d, dummy1, dummy2, work1, work2, &
          !$acc&     work3, work4, csbl, fluxr, dummy3, dummy4, dummy5, work5, &
-         !$acc&     work6, work7, work8, asol, olr, ss_clr, rs_clr, asol_clr, &
-         !$acc&     olr_clr, sld_clr, rld_clr, chig, cmid, clow, ctot, fdirr, &
-         !$acc&     fuirr, fdslr, fuslr, fdir, fuir, fdsl, fusl) async(async_id)
+         !$acc&     work6, work7, work8, asol_clr, &
+         !$acc&     sld_clr, rld_clr) async(async_id)
          !$acc parallel loop private(j) async(async_id)
          do jj = 1, jlistnum
             j = jlist1(jj)
@@ -565,7 +564,7 @@
                      dtlw, dtsw, lsswr, lslwr, lssav, &
                      nx, myim, lev, me, lprnt, ipt, kdt, myrank, &
                      ntiw, ntrw, ntsw, ntgl, uni_cloud, lmfshal, lmfdeep2, &
-                     deltaq, sup, cnvw, cnvc, phy3d, -1, &
+                     deltaq, sup, cnvw, cnvc, phy3d, async_id, &
                      !  ---  outputs:
                      dummy1, sfalb, coszen, coszdg, &
                      dummy2, tsflw, semis, &

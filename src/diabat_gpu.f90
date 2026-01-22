@@ -627,14 +627,14 @@
          !$acc enter data create(ztenh, zqenh, rho, snow_flx, ptu, pqu, &
          !$acc&      cnvwn, kuo, rcup2, islimsk, kpbl, icsdsw, icsdlw, &
          !$acc&      rld_adj, sld_adj, ss_adj) async(async_id)
-         !$acc enter data create(qflux, hflux, utgwc, vtgwc, cnvw, cnvc, &
+         !$acc enter data create(utgwc, vtgwc, cnvw, cnvc, &
          !$acc&      qtr, qti) async(async_id)
          !$acc enter data create(rcup, rlsp, rlspi, rlsps, rlspg, cldwrk, &
          !$acc&      xmu, sr, asr, alr, xsr, xlr, dtcupz, dqcupz, nlcl, &
          !$acc&      nnegl, nosat) async(async_id)
          !$acc enter data create(nwork, ntcup, nflx, ilsp, nlsp, aflxd, aflxu, ijdg, &
          !$acc&      ncup, ndry, nshl, icupmx, ipblmx, xkmx, dtcupx) async(async_id)
-         !$acc enter data create(albx, albedo2, alb, slimsk, tem1, tem2, work1, dtradc, &
+         !$acc enter data create(albx, albedo2, slimsk, tem1, tem2, work1, dtradc, &
          !$acc&      work2, garea, rstd, dotc, ixseed, rs_adj, xlonr) async(async_id)
          !$acc enter data create(u0, v0, t0, q0, xkmd, hprime, oc, theta, &
          !$acc&      gamma, sigmaog) async(async_id)
@@ -645,6 +645,7 @@
          !$acc&      area, rhc_mp) async(async_id)
          !$acc enter data create(itlsp, nnlsp, dtcupd, dqcupd, dtcupl, dqcupl) async(async_id)
          !$acc enter data copyin(tbpvs) async(async_id)
+         !$acc enter data create(sstc, ls) async(async_id)
 #ifdef TIMCOMCPL
          !$acc enter data create(ice_cpl, ocean_cpl, z0_cpl) async(async_id)
 #endif
@@ -816,7 +817,7 @@
             !$acc wait(async_id)
             !$acc update device(land, ocean, ice, tgclim, gwclim, z0, alb, &
             !$acc&       sigmaf, istyp, ivegtyp, shdmax, shdmin, slopetyp, &
-            !$acc&       snoalb) &
+            !$acc&       snoalb, sstc, ls) &
             !$acc&       async(async_id)
             !$acc wait(async_id)
 !
@@ -942,6 +943,10 @@
             if ( myrank .eq. 0 ) print *, 'update aeroclx at tau= ', tau
             call readaeroclx(nx, my, my_max, lev, naero, julian, &
                              itimestep, monsave, ggdef, aeroclx)
+                             
+            !$acc wait(async_id)
+            !$acc update device(aeroclx) async(async_id)
+            !$acc wait(async_id)
          endif
 #endif
 
@@ -4125,14 +4130,14 @@
          !$acc exit data delete(ztenh, zqenh, rho, snow_flx, ptu, pqu, &
          !$acc&      cnvwn, kuo, rcup2, islimsk, kpbl, icsdsw, icsdlw, &
          !$acc&      rld_adj, sld_adj, ss_adj) async(async_id)
-         !$acc exit data delete(qflux, hflux, utgwc, vtgwc, cnvw, cnvc, &
+         !$acc exit data delete(utgwc, vtgwc, cnvw, cnvc, &
          !$acc&      qtr, qti) async(async_id)
          !$acc exit data delete(rcup, rlsp, rlspi, rlsps, rlspg, cldwrk, &
          !$acc&      xmu, sr, asr, alr, xsr, xlr, dtcupz, dqcupz, nlcl, &
          !$acc&      nnegl, nosat) async(async_id)
          !$acc exit data delete(nwork, ntcup, nflx, ilsp, nlsp, aflxd, aflxu, ijdg, &
          !$acc&      ncup, ndry, nshl, icupmx, ipblmx, xkmx, dtcupx) async(async_id)
-         !$acc exit data delete(albx, albedo2, alb, slimsk, tem1, tem2, work1, &
+         !$acc exit data delete(albx, albedo2, slimsk, tem1, tem2, work1, &
          !$acc&      work2, garea, rstd, dotc, ixseed, rs_adj, xlonr, dtradc) async(async_id)
          !$acc exit data delete(u0, v0, t0, q0, xkmd, hprime, oc, theta, &
          !$acc&      gamma, sigmaog) async(async_id)
@@ -4143,6 +4148,7 @@
          !$acc&     area, rhc_mp) async(async_id)
          !$acc exit data delete(itlsp, nnlsp, dtcupd, dqcupd, dtcupl, dqcupl) async(async_id)
          !$acc exit data delete(tbpvs) async(async_id)
+         !$acc exit data delete(sstc, ls) async(async_id)
 #ifdef TIMCOMCPL
          !$acc exit data delete(ice_cpl, ocean_cpl, z0_cpl) async(async_id)
 #endif

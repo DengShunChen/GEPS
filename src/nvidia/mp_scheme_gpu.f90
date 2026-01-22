@@ -1106,7 +1106,6 @@
 
 #ifdef Readaeroclx
       allocate ( aero4d(nx,lev,naero,my_max) )
-      !$acc enter data copyin(aeroclx) async(async_id)
       !$acc enter data create(aero4d) async(async_id)
 #endif
          !$acc enter data create(th3d, qv3d, qc3d, qr3d, &
@@ -1396,7 +1395,6 @@
          !$acc&     w3d, land2d) async(async_id)
 #ifdef Readaeroclx
          !$acc exit data delete(aero4d) async(async_id)
-         !$acc exit data delete(aeroclx) async(async_id)
          deallocate ( aero4d )
 #endif
          !$acc wait(async_id)
