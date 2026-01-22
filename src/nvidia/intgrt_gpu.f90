@@ -263,6 +263,13 @@
    !$acc&      sndepth, zice, cice, xtice, tstar, qstar, srflag, sncover, &
    !$acc&      plcl, cumtop, diss_dc, curate, t2, q2, rh2, rh10, u10, v10, &
    !$acc&      fm, fh, fm10, fh2, hpbl) async(async_id)
+   !$acc enter data copyin(alvsf, alvwf, alnsf, alnwf, facsf, facwf) async(async_id)
+   !$acc enter data copyin(alb, hflux, qflux, asol, deltaq, olr, ctot) async(async_id)
+   !$acc enter data copyin(fusl, fdsl, fuir, fdir, fuslr, fdslr, fuirr, fdirr, &
+   !$acc&      ss_clr, rs_clr, olr_clr, chig, cmid, clow) async(async_id)
+#ifdef Readaeroclx
+   !$acc enter data copyin(aeroclxm) async(async_id)
+#endif
    !$acc wait(async_id)
    ! ------------------------------------------------------------
 !      fsit=-99.             !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
@@ -1599,7 +1606,7 @@ endif
 ! 1994 11 11
 !
    !$acc wait(async_id)
-   !$acc update self(totalp, rs, ss, flash, totallp) async(async_id)
+   !$acc update self(totalp, rs, ss, flash, totallp, qflux, hflux, asol, olr) async(async_id)
    !$acc wait(async_id)
    do jj = 1, jlistnum
       j = jlist1(jj)
@@ -1852,12 +1859,6 @@ endif
 !       if(myrank.eq.0)print *,'chkltr dtaup,dt_trk,dtx_tau=',dtaup,dt_trk,dtx_tau
 
       if (myrank == 0) call system_clock(toutsrt)
-      !$acc update self(vorold, divold, temold, plold) async(async_id)
-      !$acc update self(vornow, divnow, temnow, plnow) async(async_id)
-      !$acc update self(rdiv, ut, vt, tt, qt, pt) async(async_id)
-      !$acc update self(vvel) async(async_id)
-      !$acc update self(phi, pk ,pk2, plt) async(async_id)
-      !$acc update self(ptend) async(async_id)
       !$acc wait(async_id)
       if (io_quilting) then
          write (keydoit, '(A6,I4.4,A4,I12.12,A8)') &
@@ -1868,11 +1869,6 @@ endif
 !
 !--- histim (start)
       if (histim .or. ltrack) then
-         !$acc wait(async_id)
-         !$acc update self(stc, smc, slc, gwclim, rs, land, ocean, ice, tg, &
-         !$acc&       sld, ss, rld, z0, snr, canopy, cice, xtice, sncover, &
-         !$acc&       t2, q2, rh2, rh10, u10, v10, hpbl, gfx, ugws, vgws, &
-         !$acc&       raincu, rainlp, raintot) async(async_id)
          !$acc wait(async_id)
          !itau = tau + 0.1
          itau = NINT(tau)
@@ -1889,7 +1885,7 @@ endif
 !
 ! xb119 may2022 not need to run every time step ,move to histim inside
          !$acc wait(async_id)
-         !$acc update self(istyp) async(async_id)
+         !$acc update self(istyp, smc) async(async_id)
          !$acc wait(async_id)
          do jj = 1, jlistnum
             j = jlist1(jj)
@@ -1913,11 +1909,7 @@ endif
 ! set write out restart at the end of integration
             if (mod(float(itau), float(itauezz)) .lt. 0.01) then
                !$acc wait(async_id)
-               !$acc update self(o3l, dtrad, asl, atl, cnvcr, cnvwr, &
-               !$acc&       ftp, fqp, ftp1, fqp1, clds, tgclim, totalp, sfalb, &
-               !$acc&       cosz, tsflw, std, sfemis, ustar, sndepth, zice, &
-               !$acc&       tstar, qstar, plcl, cumtop, curate) async(async_id)
-               !$acc update self(dtcup, ducup, dvcup) async(async_id)
+               
                !$acc wait(async_id)
                write (ctau, 800) itau
 800            format(i7.7)
@@ -1965,6 +1957,16 @@ endif
 !         if (myrank .eq. 0) &
 !           open (unit=10,file=rfile,form='unformatted')
                i = 200 + myrank
+               !$acc wait(async_id)
+               !$acc update self(land, ocean, ice, z0, tgclim, gwclim, sgeo, &
+               !$acc&       canopy, ustar, tstar, qstar, raincu, rainlp, totalp, &
+               !$acc&       curate, plcl, cumtop, snr, sncover, sndepth, tg, cice, &
+               !$acc&       xtice, zice, ss, rs, sld, rld, sfemis, sfalb, std, &
+               !$acc&       clds, tsflw, cosz, o3l, ftp, fqp, ftp1, fqp1, asl, &
+               !$acc&       atl, dtrad, cnvwr, cnvcr, dtcup, ducup, dvcup, dtshl, &
+               !$acc&       dushl, dvshl, dtlsp, hfiltx, alphax, qt, smc, stc, slc, &
+               !$acc&       alb, hflux, qflux, asol, deltaq, olr, ctot) async(async_id)
+               !$acc wait(async_id)
                open (i, file=rfile, form='unformatted')
 !jwhwu 202004 avoid undefined values.
                write (i) land
@@ -2073,13 +2075,18 @@ endif
 !jh        if( histim ) then
 #ifndef NO_OUT
             !$acc wait(async_id)
-            !$acc update self(zice) async(async_id)
+            !$acc update self(cosl, pt, sgeo, snr, tg, pk, pk2, ut, vt, tt, qt, &
+            !$acc&       phi, smc, slc, stc, canopy, zice) async(async_id)
             !$acc wait(async_id)
             call outsigs(itau, nx, my, my_max, lev, ncld &
                          , idtg, ptop, rad, grav &
                          , cp, cosl, pt, sgeo, snr, gwr, tg, pk, pk2 &
                          , ut, vt, tt, qt, phi, km_soil, smc &
                          , slc, stc, canopy, zice, ggdef, gmdef)
+            !$acc wait(async_id)
+            !!$acc update device(cosl, pt, sgeo, snr, tg, pk, pk2, ut, vt, tt, qt, &
+            !!$acc&       phi, smc, slc, stc, canopy, zice) async(async_id)
+            !$acc wait(async_id)
 #endif
          end if
 !-------------------------------------------------------------------------------
@@ -2087,7 +2094,10 @@ endif
 !      if (myrank .eq. 0) print *,'ioutsigr =',ioutsigr
          if (ioutsigr .eq. 0 .and. histim) then
             !$acc wait(async_id)
-            !$acc update self(dtrad, asl, atl, asl_clr, atl_clr, clds, rs, snoalb) async(async_id)
+            !$acc update self(asl, atl, asl_clr, atl_clr, dtrad, clds, vvel, ss, &
+            !$acc&       rs, olr, asol, sld, rld, cice, xtice, snr, sncover, snoalb, &
+            !$acc&       ctot, fusl, fdsl, fuir, fdir, fuslr, fdslr, fuirr, fdirr, &
+            !$acc&       ss_clr, rs_clr, olr_clr, chig, cmid, clow) async(async_id)
             !$acc wait(async_id)
             if (myrank .eq. 0) print *, 'outsigr start !!!'
 #ifndef NO_OUT
@@ -2105,8 +2115,11 @@ endif
                          , ggdef, gmdef)
 #endif
             !$acc wait(async_id)
-            !$acc update device(dtrad, asl, atl, asl_clr, atl_clr, clds, rs, snoalb) async(async_id)
-            !$acc wait(async_id)
+            !!$acc update device(asl, atl, asl_clr, atl_clr, dtrad, clds, vvel, ss, &
+            !!$acc&       rs, olr, asol, sld, rld, cice, xtice, snr, sncover, snoalb, &
+            !!$acc&       ctot, fusl, fdsl, fuir, fdir, fuslr, fdslr, fuirr, fdirr, &
+            !!$acc&       ss_clr, rs_clr, olr_clr, chig, cmid, clow) async(async_id)
+            !!$acc wait(async_id)
             if (myrank .eq. 0) print *, 'outsigr ok !!!'
          end if
 !-------------------------------------------------------------------------------
@@ -2137,6 +2150,13 @@ endif
 
          call transr(jtrun, jtmax, nx, my, my_max, levp, poly, vornow, cc, 1, nsizey)
          call ujoinsr(cc, rvor, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
+         !$acc wait(async_id)
+         !$acc update self(sigma, sgeo, ptend, pt, plt, pk, pk2, phi, ut, vt, vvel, &
+         !$acc&       tt, qt, rdiv, tg, z0, hflux, qflux, snr, raintot, raincu, rainlp, &
+         !$acc&       asol, olr, ss, rs, alb, gwclim, cosl, ugws, vgws, t2, q2, rh2, &
+         !$acc&       rh10, u10, v10, gfx, rld, sld, smc, slc, stc, canopy, ctot, &
+         !$acc&       chig, cmid, clow, hpbl) async(async_id)
+         !$acc wait(async_id)
          call outflds(itau, nx, my, my_max, lev, ncld &
                       , lmax, numout, idtg, outdir &
                       , ktrop, ptop, capa, cp, rgas, grav, sigma, sgeo &
@@ -2250,7 +2270,7 @@ endif
 #ifndef NO_OUT
             !$acc wait(async_id)
             !$acc update self(sld, rld, t2, q2, rh2, rh10, u10, v10, &
-            !$acc&       raincu1, rainlp1, raintot) async(async_id)
+            !$acc&       raincu1, rainlp1, raintot, ctot, pt) async(async_id)
             !$acc wait(async_id)
             call out2d_mfc(nx, lev, my, my_max, itau, idtg &
                            , raincu1, rainlp1, raintot, glob, t2, q2, rh2, rh10 &
@@ -2272,7 +2292,8 @@ endif
       if (out_green .and. mod(itau, nint(otgreen)) == 0) then
 #ifndef NO_OUT
          !$acc wait(async_id)
-         !$acc update self(ss, t2, u10, v10, raincu6, rainlp6) async(async_id)
+         !$acc update self(ss, t2, u10, v10, raincu6, rainlp6, pk, sgeo, pt, &
+         !$acc&       plt, ut, vt, tt, qt, cosl) async(async_id)
          !$acc wait(async_id)
          call outflds_green(nint(tau), nx, my, my_max, lev, ncld &
                             , idtg, cp, rgas, grav, t2, u10, v10, ss, pk &
@@ -2470,6 +2491,13 @@ endif
          !$acc&      t2, q2, rh2, rh10, u10, v10, fm, fh, fm10, fh2, hpbl, gfx, &
          !$acc&      ugws, vgws, totallp, raincu, rainlp, raincu1, rainlp1, &
          !$acc&      raincu6, rainlp6, raintot) async(async_id)
+         !$acc exit data delete(alvsf, alvwf, alnsf, alnwf, facsf, facwf) async(async_id)
+         !$acc exit data delete(alb, hflux, qflux, asol, deltaq, olr, ctot) async(async_id)
+         !$acc exit data delete(fusl, fdsl, fuir, fdir, fuslr, fdslr, fuirr, fdirr, &
+         !$acc&      ss_clr, rs_clr, olr_clr, chig, cmid, clow) async(async_id)
+#ifdef Readaeroclx
+         !$acc exit data delete(aeroclxm) async(async_id)
+#endif
          !$acc wait(async_id)
          ! for io quilting
          if (io_quilting) then
