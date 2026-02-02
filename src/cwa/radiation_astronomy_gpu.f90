@@ -118,12 +118,22 @@
       integer               :: iyr_sav =0   ! saved year  of data used
       integer               :: nstp    =6   ! total number of zenith angle iterations
 
-      public  sol_init_gpu, sol_update_gpu, coszmn_gpu
+      public  sol_init_gpu, sol_update_gpu, coszmn_gpu, copyin_radiation_astronomy_gpu
 
 
 ! =================
       contains
 ! =================
+      subroutine copyin_radiation_astronomy_gpu(async_id)
+      ! must be called after executing sol_init_gpu and before executing sol_update_gpu
+      implicit none
+      
+      integer, intent(in) :: async_id
+
+      !$acc enter data copyin(smon_sav) async(async_id)
+
+      return
+      end subroutine
 
 !-----------------------------------
       subroutine sol_init_gpu                                               &
@@ -366,6 +376,7 @@
 
       logical :: file_exist
       character :: cline*60
+      integer :: async_id = 1
 !
 !===>  ...  begin here
 !
@@ -590,6 +601,8 @@
 
       if (me == 0 .and. myrank == 0) print*,'in sol_update completed sr solar'
 !
+      !!$acc update device(smon_sav) async(async_id)
+      !!$acc wait(async_id)
 
       return
 !...................................

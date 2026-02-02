@@ -352,12 +352,25 @@
 
 !  ---  public accessable subprograms
 
-      public swrad_gpu, rswinit_gpu, cldprop, setcoef, taumol, spcvrtc
+      public swrad_gpu, rswinit_gpu, cldprop, setcoef, taumol, spcvrtc, &
+         copyin_radsw_main_gpu
 
 
 ! =================
       contains
 ! =================
+
+      subroutine copyin_radsw_main_gpu(async_id)
+      ! must be called after executing rswinit_gpu
+      implicit none
+      
+      integer, intent(in) :: async_id
+
+      !$acc enter data copyin(nspa, nspb, idxebc, idxsfc, exp_tbl, ng, ngs, ngb, &
+      !$acc&      wvnum1, wvnum2) async(async_id)
+
+      return
+      end subroutine
 
 
 !-----------------------------------
@@ -643,7 +656,7 @@
       real (kind=kind_phys), dimension(ngptsw) :: sfluxzen_im
       integer, dimension(ix) :: ipseed_im
       real (kind=kind_phys) ::  colamt_im(nlay,maxgas)
-      integer :: async_id, jf, jb,  jjoffset, jbs, jbe
+      integer :: async_id, jf, jb,  jjoffset, jbs, jbe, blocks_local, blockjj
 !
 !===> ... begin here
 !
@@ -677,11 +690,13 @@
       !$acc&     fsfcu0, fsfcuc, fsfcd0, fsfcdc, suvbfc, suvbf0, colamt, ipseed, &
       !$acc&     indfor, indself, jp, jt, jt1, laytrop) async(async_id)
       do jb = 1, blocks
-      jjoffset = (jb-1)*smalljj
+      jjoffset = (fulljj-1)*(jb-1)/blocks
       jbs = jjoffset+1
-      jbe = jjoffset+smalljj
+      jbe = (fulljj-1)*jb/blocks
+      blockjj = jbe - jbs + 1
+      !write(*,*) smalljj, jjoffset, jbs, jbe, jb
       !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-      do jj = 1, smalljj
+      do jj = 1, blockjj
          do k = 1, nlay
             jf = jjoffset+jj
             !$acc loop vector
@@ -691,7 +706,7 @@
          end do
       end do
       !$acc parallel loop collapse(2) private(jf) async(async_id)
-      do jj = 1, smalljj
+      do jj = 1, blockjj
          do i = 1, ix
             jf = jjoffset+jj
             if (i .le. myim(jf)) then
@@ -709,7 +724,7 @@
          !! --- ...  initial optional outputs
       if ( lflxprf ) then
          !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do k = 1, nlp1
                jf = jjoffset+jj
                !$acc loop vector
@@ -725,7 +740,7 @@
 
       if ( lfdncmp ) then
          !$acc parallel loop collapse(2) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do i = 1, ix
                jf = jjoffset+jj
                if (i .le. myim(jf)) then
@@ -742,7 +757,7 @@
 
       if ( lhsw0 ) then
          !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do k = 1, nlay
                jf = jjoffset+jj
                !$acc loop vector
@@ -755,7 +770,7 @@
 
       if ( lhswb ) then
          !$acc parallel loop gang collapse(3) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do ib = 1, nbdsw
                do k = 1, nlay
                   jf = jjoffset+jj
@@ -772,7 +787,7 @@
 
       if     ( isubcsw == 1 ) then     ! advance prescribed permutation seed
          !$acc parallel loop collapse(2) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do i = 1, ix
                jf = jjoffset+jj
                if (i .le. myim(jf)) then
@@ -782,7 +797,7 @@
          end do
       elseif ( isubcsw == 2 ) then     ! use input array of permutaion seeds
          !$acc parallel loop collapse(2) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do i = 1, ix
                jf = jjoffset+jj
                if (i .le. myim(jf)) then
@@ -799,7 +814,7 @@
 
          !  --- ...  loop over each daytime grid point
       !$acc parallel loop collapse(2) private(j1, jf) async(async_id)
-      do jj = 1, smalljj
+      do jj = 1, blockjj
          do ipt = 1, ix
             jf = jjoffset+jj
             if (ipt .le. nday(jf)) then ! lab_do_ipt
@@ -825,7 +840,7 @@
          tem1 = 100.0 * con_g
          tem2 = 1.0e-20 * 1.0e3 * con_avgd
          !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do k = 1, nlay
                jf = jjoffset+jj
                !$acc loop vector private(j1, kk, tem0)
@@ -863,7 +878,7 @@
 
          if (iswrgas > 0) then
             !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do k = 1, nlay
                   jf = jjoffset+jj
                   !$acc loop vector private(j1, kk)
@@ -879,7 +894,7 @@
             end do
          else
             !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do k = 1, nlay
                   jf = jjoffset+jj
                   !$acc loop vector private(j1)
@@ -896,7 +911,7 @@
 
                !  --- ...  set aerosol optical properties
          !$acc parallel loop gang collapse(3) private(kk, jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do ib = 1, nbdsw
                do k = 1, nlay
                   kk = nlp1 - k
@@ -914,7 +929,7 @@
 
          if (iswcliq > 0) then    ! use prognostic cloud method
             !$acc parallel loop gang collapse(2) private(kk, jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do k = 1, nlay
                   kk = nlp1 - k
                   jf = jjoffset+jj
@@ -935,7 +950,7 @@
             end do
          else                     ! use diagnostic cloud method
             !$acc parallel loop gang collapse(2) private(kk, jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do k = 1, nlay
                   kk = nlp1 - k
                   jf = jjoffset+jj
@@ -956,7 +971,7 @@
          tem1 = 100.0 * con_g
          tem2 = 1.0e-20 * 1.0e3 * con_avgd
          !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do k = 1, nlay
                jf = jjoffset+jj
                !$acc loop vector private(j1, tem0)
@@ -992,7 +1007,7 @@
 
          if (iswrgas > 0) then
             !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do k = 1, nlay
                   jf = jjoffset+jj
                   !$acc loop vector private(j1)
@@ -1007,7 +1022,7 @@
             end do
          else
             !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do k = 1, nlay
                   jf = jjoffset+jj
                   !$acc loop vector private(j1)
@@ -1024,7 +1039,7 @@
 
                !  --- ...  set aerosol optical properties
          !$acc parallel loop gang collapse(3) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do ib = 1, nbdsw
                do k = 1, nlay
                   jf = jjoffset+jj
@@ -1041,7 +1056,7 @@
 
          if (iswcliq > 0) then    ! use prognostic cloud method
             !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do k = 1, nlay
                   jf = jjoffset+jj
                   !$acc loop vector private(j1)
@@ -1061,7 +1076,7 @@
             end do
          else                     ! use diagnostic cloud method
             !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do k = 1, nlay
                   jf = jjoffset+jj
                   !$acc loop vector private(j1)
@@ -1079,7 +1094,7 @@
 
             !  --- ...  compute fractions of clear sky view
       !$acc parallel loop collapse(2) private(jf) async(async_id)
-      do jj = 1, smalljj
+      do jj = 1, blockjj
          do ipt = 1, ix
             jf = jjoffset+jj
             if (ipt .le. nday(jf)) then ! lab_do_ipt
@@ -1090,7 +1105,7 @@
       end do
       if (iovrsw == 0) then                    ! random overlapping
          !$acc parallel loop collapse(2) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do ipt = 1, ix
                jf = jjoffset+jj
                if (ipt .le. nday(jf)) then ! lab_do_ipt
@@ -1103,7 +1118,7 @@
          end do
       else if (iovrsw == 1) then               ! max/ran overlapping
          !$acc parallel loop collapse(2) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do ipt = 1, ix
                jf = jjoffset+jj
                if (ipt .le. nday(jf)) then ! lab_do_ipt
@@ -1120,7 +1135,7 @@
             end do
          end do
          !$acc parallel loop collapse(2) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do ipt = 1, ix
                jf = jjoffset+jj
                if (ipt .le. nday(jf)) then ! lab_do_ipt
@@ -1130,7 +1145,7 @@
          end do
       else if (iovrsw == 2) then               ! maximum overlapping
          !$acc parallel loop collapse(2) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do ipt = 1, ix
                jf = jjoffset+jj
                if (ipt .le. nday(jf)) then ! lab_do_ipt
@@ -1143,7 +1158,7 @@
          end do
       endif
       !$acc parallel loop collapse(2) private(jf) async(async_id)
-      do jj = 1, smalljj
+      do jj = 1, blockjj
          do ipt = 1, ix
             jf = jjoffset+jj
             if (ipt .le. nday(jf)) then ! lab_do_ipt
@@ -1159,14 +1174,15 @@
       call cldprop                                                  &
          !  ---  inputs:
          &     ( cfrac,cliqp,reliq,cicep,reice,cdat1,cdat2,cdat3,cdat4,     &
-         &       zcf1, nlay, ipseed, ix, nday(jbs:jbe), idxday(:,jbs:jbe), async_id, smalljj,                                    &
+         &       zcf1, nlay, ipseed, ix, nday(jbs:jbe), idxday(:,jbs:jbe), &
+                 async_id, smalljj, blockjj,                                    &
          !  ---  outputs:
          &       taucw, ssacw, asycw, cldfrc, cldfmc                        &
          &     )
       !call nvtxEndRange
       if (isubcsw > 0) then
          !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do k = 1, nlay
                jf = jjoffset+jj
                !$acc loop vector private(j1)
@@ -1185,7 +1201,7 @@
       !call nvtxStartRange("sw_setcoef")
       call setcoef                                                    &
          !  ---  inputs:
-         &     ( pavel,tavel,h2ovmr, nlay,nlp1, ix, nday(jbs:jbe), async_id, smalljj,                              &
+         &     ( pavel,tavel,h2ovmr, nlay,nlp1, ix, nday(jbs:jbe), async_id, smalljj, blockjj,                              &
          !  ---  outputs:
          &       laytrop,jp,jt,jt1,fac00,fac01,fac10,fac11,                 &
          &       selffac,selffrac,indself,forfac,forfrac,indfor             &
@@ -1199,7 +1215,7 @@
          !  ---  inputs:
          &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
          &       forfac,forfrac,indfor,selffac,selffrac,indself, &
-                 nlay, ix, nday(jbs:jbe), async_id, smalljj,     &
+                 nlay, ix, nday(jbs:jbe), async_id, smalljj, blockjj,     &
          !  ---  outputs:
          &       sfluxzen, taug, taur                                       &
          &     )
@@ -1214,7 +1230,7 @@
                      albdf,sfluxzen,cldfrc,            &
             &       zcf1,zcf0,taug,taur,tauae, &
                      ssaae,asyae,taucw,ssacw,asycw,   &
-            &       nlay, nlp1, ix, idxday(:,jbs:jbe), nday(jbs:jbe), async_id, smalljj,                                    &
+            &       nlay, nlp1, ix, idxday(:,jbs:jbe), nday(jbs:jbe), async_id, smalljj, blockjj,                                    &
             !  ---  outputs:
             &       fxupc,fxdnc,fxup0,fxdn0,                                   &
             &       ftoauc,ftoau0,ftoadc, &
@@ -1224,7 +1240,7 @@
          !call nvtxEndRange
 
       else                         ! use mcica cloud scheme
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             jf = jjoffset+jj
             do ipt = 1, nday(jf) ! lab_do_ipt
                j1 = idxday(ipt, jf)
@@ -1316,7 +1332,7 @@
 
          !  --- ...  sum up total spectral fluxes for total-sky
       !$acc parallel loop collapse(2) private(jf) async(async_id)
-      do jj = 1, smalljj
+      do jj = 1, blockjj
          do k = 1, nlp1
             jf = jjoffset+jj
             !$acc loop vector
@@ -1336,7 +1352,7 @@
 
       if ( lhsw0 .or. lflxprf ) then
          !$acc parallel loop collapse(2) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do k = 1, nlp1
                jf = jjoffset+jj
                !$acc loop vector
@@ -1355,7 +1371,7 @@
 
          !  --- ...  prepare for final outputs
       !$acc parallel loop collapse(2) private(jf) async(async_id)
-      do jj = 1, smalljj
+      do jj = 1, blockjj
          do k = 1, nlay
             jf = jjoffset+jj
             !$acc loop vector
@@ -1367,7 +1383,7 @@
 
       if ( lfdncmp ) then
          !$acc parallel loop collapse(2) private(j1, jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do ipt = 1, ix
                jf = jjoffset+jj
                if (ipt .le. nday(jf)) then ! lab_do_ipt
@@ -1388,7 +1404,7 @@
 
          !  --- ...  toa and sfc fluxes
       !$acc parallel loop collapse(2) private(j1, jf) async(async_id)
-      do jj = 1, smalljj
+      do jj = 1, blockjj
          do ipt = 1, ix
             jf = jjoffset+jj
             if (ipt .le. nday(jf)) then ! lab_do_ipt
@@ -1409,7 +1425,7 @@
 
                !  --- ...  compute heating rates
          !$acc parallel loop collapse(2) private(j1, kk, jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do ipt = 1, ix
                jf = jjoffset+jj
                if (ipt .le. nday(jf)) then ! lab_do_ipt
@@ -1429,7 +1445,7 @@
 
          if ( lflxprf ) then
             !$acc parallel loop collapse(2) private(kk, jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do k = 1, nlp1
                   jf = jjoffset+jj
                   kk = nlp1 - k + 1
@@ -1449,7 +1465,7 @@
 
          if ( lhsw0 ) then
             !$acc parallel loop collapse(2) private(j1, kk, jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do ipt = 1, ix 
                   jf = jjoffset+jj
                   if (ipt .le. nday(jf)) then ! lab_do_ipt
@@ -1470,7 +1486,7 @@
 
          if ( lhswb ) then
             !$acc parallel loop collapse(2) private(jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do mb = 1, nbdsw
                   jf = jjoffset+jj
                   !$acc loop vector private(j1, kk)
@@ -1492,7 +1508,7 @@
 
                !  --- ...  compute heating rates
          !$acc parallel loop collapse(2) private(j1, jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do ipt = 1, ix
                jf = jjoffset+jj
                if (ipt .le. nday(jf)) then ! lab_do_ipt
@@ -1511,7 +1527,7 @@
 
          if ( lflxprf ) then
             !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do k = 1, nlp1
                   jf = jjoffset+jj
                   !$acc loop vector private(j1)
@@ -1530,7 +1546,7 @@
 
          if ( lhsw0 ) then
             !$acc parallel loop collapse(2) private(j1, jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do ipt = 1, ix 
                   jf = jjoffset+jj
                   if (ipt .le. nday(jf)) then ! lab_do_ipt
@@ -1550,7 +1566,7 @@
 
          if ( lhswb ) then
             !$acc parallel loop collapse(2) private(jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do mb = 1, nbdsw
                   jf = jjoffset+jj
                   !$acc loop vector private(j1)
@@ -1750,7 +1766,7 @@
 !...................................
 !  ---  inputs:
      &     ( cfrac,cliqp,reliq,cicep,reice,cdat1,cdat2,cdat3,cdat4,     &
-     &       cf1, nlay, ipseed, ix, nday, idxday, async_id, fulljj,                                           &
+     &       cf1, nlay, ipseed, ix, nday, idxday, async_id, fulljj, blockjj,                                           &
 !  ---  output:
      &       taucw, ssacw, asycw, cldfrc, cldfmc                        &
      &     )
@@ -1834,7 +1850,7 @@
 
 !  ---  inputs:
       integer, intent(in) :: nlay, fulljj, ipseed(ix, fulljj), ix, &
-         nday(fulljj), idxday(ix, fulljj)
+         nday(fulljj), idxday(ix, fulljj), blockjj
       real (kind=kind_phys), intent(in) :: cf1(ix, fulljj)
 
       real (kind=kind_phys), dimension(ix, nlay, fulljj), intent(in) :: cliqp,      &
@@ -1867,7 +1883,7 @@
       !===> ...  begin here
       !
       !$acc parallel loop gang collapse(3) async(async_id) 
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do ib = 1, nbdsw
             do k = 1, nlay
                !$acc loop vector 
@@ -1888,7 +1904,7 @@
                !  --- ...  compute cloud radiative properties for a cloudy column
       if (iswcliq > 0) then ! lab_if_iswcliq
          !$acc parallel loop gang collapse(2) async(async_id)
-         do jj = 1, fulljj
+         do jj = 1, blockjj
             do k = 1, nlay ! lab_do_k
                !$acc loop vector private(cldran, cldsnw, refsnw, dgesnw, tauran, tausnw, &
                !$acc&     ssaran, ssasnw, asyran, asysnw, cldliq, cldice, refliq, refice, &
@@ -2063,7 +2079,7 @@
 
       else  ! lab_if_iswcliq
          !$acc parallel loop gang collapse(3) async(async_id)
-         do jj = 1, fulljj
+         do jj = 1, blockjj
             do ib = 1, nbdsw
                do k = 1, nlay
                   !$acc loop vector
@@ -2089,7 +2105,7 @@
          allocate(cldf_im(nlay))
          allocate(lcloudy_im(nlay,ngptsw))
          allocate(lcloudy(ix, nlay,ngptsw, fulljj))
-         do jj = 1, fulljj
+         do jj = 1, blockjj
             do ipt = 1, nday(jj) ! lab_do_ipt
                if (cf1(ipt, jj) > f_zero) then     ! cloudy sky column
                   cldf(ipt, :, jj) = cfrac(ipt, :, jj)
@@ -2137,7 +2153,7 @@
 
       else                         ! non-mcica, normalize cloud
          !$acc parallel loop gang collapse(2) async(async_id)
-         do jj = 1, fulljj
+         do jj = 1, blockjj
             do k = 1, nlay
                !$acc loop vector
                do ipt = 1, nday(jj) ! lab_do_ipt
@@ -2323,7 +2339,7 @@
       subroutine setcoef                                                &
 ! ..................................
 !  ---  inputs:
-     &     ( pavel,tavel,h2ovmr, nlay,nlp1, ix, nday, async_id, fulljj,                             &
+     &     ( pavel,tavel,h2ovmr, nlay,nlp1, ix, nday, async_id, fulljj, blockjj,                             &
 !  ---  outputs:
      &       laytrop,jp,jt,jt1,fac00,fac01,fac10,fac11,                 &
      &       selffac,selffrac,indself,forfac,forfrac,indfor             &
@@ -2331,7 +2347,7 @@
 
 
 !  ---  inputs:
-      integer, intent(in) :: nlay, nlp1, ix, nday(fulljj), fulljj
+      integer, intent(in) :: nlay, nlp1, ix, nday(fulljj), fulljj, blockjj
 
       real (kind=kind_phys), dimension(:,:,:), intent(in) :: pavel, tavel,  &
      &       h2ovmr
@@ -2352,7 +2368,7 @@
 !===> ... begin here
 !
       !$acc parallel loop collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do ipt = 1, ix
             if (ipt .le. nday(jj)) then
                laytrop(ipt, jj) = nlay
@@ -2364,7 +2380,7 @@
          end do
       end do
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !$acc loop vector private(plog, jp1, fp, tem1, tem2, ft, ft1, fp1)
             do ipt = 1, nday(jj)
@@ -2411,7 +2427,7 @@
          end do
       end do
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !$acc loop vector private(tem1, tem2)
             do ipt = 1, nday(jj)
@@ -2466,7 +2482,7 @@
 !  ---  inputs:
      &     ( ssolar,cosz,sntz,albbm,albdf,sfluxzen,cldfrc,              &
      &       cf1,cf0,taug,taur,tauae,ssaae,asyae,taucw,ssacw,asycw,     &
-     &       nlay, nlp1, ix, idxday, nday, async_id, fulljj,                                                &
+     &       nlay, nlp1, ix, idxday, nday, async_id, fulljj, blockjj,                                                &
 !  ---  outputs:
      &       fxupc,fxdnc,fxup0,fxdn0,                                   &
      &       ftoauc,ftoau0,ftoadc,fsfcuc,fsfcu0,fsfcdc,fsfcd0,          &
@@ -2572,7 +2588,7 @@
       integer, parameter :: small_ngptsw = int(ngptsw/small_factor)
 
 !  ---  inputs:
-      integer, intent(in) :: nlay, nlp1, ix, idxday(ix, fulljj), nday(fulljj), fulljj
+      integer, intent(in) :: nlay, nlp1, ix, idxday(ix, fulljj), nday(fulljj), fulljj, blockjj
 
       real (kind=kind_phys), dimension(ix, nlay,ngptsw, fulljj), intent(in) ::      &
      &       taug, taur
@@ -2624,7 +2640,7 @@
       !$acc&     ztdbt0, zsolar, zrdnd, ztdn, zfda, zfua) async(async_id)
 !  --- ... initialization of output fluxes
       !$acc parallel loop gang collapse(3) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do ib = 1, nbdsw
             do k = 1, nlp1
                !$acc loop vector
@@ -2638,7 +2654,7 @@
          end do
       end do
       !$acc parallel loop collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do ipt = 1, ix
             if (ipt .le. nday(jj)) then ! lab_do_ipt
                ftoadc(ipt, jj) = f_zero
@@ -2669,7 +2685,7 @@
             !  --- ...  loop over all g-points in each band
    do j2 = 1, small_factor
       !$acc parallel loop gang collapse(2) private(jg2, jb, ib, ibd) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do jg = 1, small_ngptsw ! lab_do_jg
             jg2 = jg + (j2-1)*small_ngptsw
             jb = ngb(jg2)
@@ -2871,7 +2887,7 @@
                ! call swflux
                !  --- ...  link lowest layer with surface
       !$acc parallel loop gang collapse(2) private(jg2, jb, ib, ibd) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do jg = 1, small_ngptsw ! lab_do_jg
             jg2 = jg + (j2-1)*small_ngptsw
             jb = ngb(jg2)
@@ -2946,7 +2962,7 @@
       end do
 
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlp1
             !$acc loop vector private(jg2, jb, ib)
             do ipt = 1, nday(jj) ! lab_do_ipt
@@ -2965,7 +2981,7 @@
 
                !! --- ...  surface downward beam/diffused flux components
       !$acc parallel loop collapse(2) private(jg2, jb, ib, ibd, zf1, zf2, zb1, zb2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do ipt = 1, ix
             if (ipt .le. nday(jj)) then ! lab_do_ipt
                !$acc loop seq 
@@ -2996,7 +3012,7 @@
 
                !  --- ...  compute total sky optical parameters, layer reflectance and transmittance
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do jg = 1, small_ngptsw ! lab_do_jg
             !$acc loop vector private(zb1, zb2, zf1, zf2, kp, zc0, zc1, ztau0, &
             !$acc&     zssa0, zasy0, zldbt0, ftind, itind, zssaw, zasyw, za1, za2, &
@@ -3222,7 +3238,7 @@
       end do
                   !  --- ...  perform vertical quadrature
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do jg = 1, small_ngptsw ! lab_do_jg
             !$acc loop vector private(j1, kp, zden1, zfu, zfd, jg2, jb, ib, zrupbr, zrupbr1, zrupdr, zrupdr1)
             do ipt = 1, nday(jj) ! lab_do_ipt
@@ -3302,7 +3318,7 @@
          end do
       end do
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlp1
             !$acc loop vector private(jg2, jb, ib)
             do ipt = 1, nday(jj) ! lab_do_ipt
@@ -3320,7 +3336,7 @@
       end do
                   !! --- ...  surface downward beam/diffused flux components
       !$acc parallel loop gang collapse(2) private(jg2, jb, ibd, zb1, zb2, zf1, zf2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do ipt = 1, ix
             if (ipt .le. nday(jj)) then ! lab_do_ipt
                !$acc loop seq
@@ -3357,7 +3373,7 @@
 
             !  --- ...  end of g-point loop
       !$acc parallel loop collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do ipt = 1, ix
             if (ipt .le. nday(jj)) then ! lab_do_ipt
                !$acc loop seq 
@@ -3373,7 +3389,7 @@
 
       !! --- ...  uv-b surface downward flux
       !$acc parallel loop gang collapse(3) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do ib = 1, nbdsw
             do k = 1, nlp1
                !$acc loop vector
@@ -3387,7 +3403,7 @@
          end do
       end do
       !$acc parallel loop collapse(2) private(ibd) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do ipt = 1, ix
             if (ipt .le. nday(jj)) then ! lab_do_ipt
                ibd = nuvb - nblow + 1
@@ -3410,7 +3426,7 @@
          end do
       end do
       !$acc parallel loop gang collapse(3) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do ib = 1, nbdsw
             do k = 1, nlp1
                !$acc loop vector 
@@ -3424,7 +3440,7 @@
          end do
       end do
       !$acc parallel loop collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do ipt = 1, ix
             if (ipt .le. nday(jj)) then ! lab_do_ipt
                !$acc loop seq
@@ -3439,7 +3455,7 @@
          end do
       end do
       !$acc parallel loop collapse(2) private(ibd) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do ipt = 1, ix
             if (ipt .le. nday(jj)) then ! lab_do_ipt
                if ( cf1(ipt, jj) > eps ) then                        ! cloudy column, compute total-sky fluxes
@@ -4254,7 +4270,7 @@
 !  ---  inputs:
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, &
-             nlay, ix, nday, async_id, fulljj,     &
+             nlay, ix, nday, async_id, fulljj, blockjj,     &
 !  ---  outputs:
      &       sfluxzen, taug, taur                                       &
      &     )
@@ -4356,7 +4372,7 @@
 !  ======================  end of description block  =================  !
 
 !  ---  inputs:
-      integer, intent(in) :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), fulljj
+      integer, intent(in) :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), fulljj, blockjj
 
       integer, dimension(ix, nlay, fulljj), intent(in) :: indfor, indself,          &
      &       jp, jt, jt1
@@ -4390,7 +4406,7 @@
       !  --- ...  indices for layer optical depth
       !$acc data create(id0, id1) async(async_id)
       !$acc parallel loop gang collapse(3) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do jb = nblow, nbhgh
             do k = 1, nlay
                !$acc loop vector
@@ -4411,7 +4427,7 @@
 
       !$acc parallel loop collapse(3) private(ks, colm1, colm2, speccomb, &
       !$acc&         specmult, jsa, fsa) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do jb = nblow, nbhgh
             do ipt = 1, ix
                if (ipt .le. nday(jj)) then ! lab_do_ipt
@@ -4484,59 +4500,59 @@
             !  --- ...  call taumol## to calculate layer optical depth
       call taumol16( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1)
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
 
       call taumol17( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1)
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
 
       call taumol18( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1)
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
 
       call taumol19( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1)
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
 
       call taumol20( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1)
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
 
       call taumol21( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1)
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
 
       call taumol22( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1)
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
 
       call taumol23( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1)
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
 
       call taumol24( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1)
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
 
       call taumol25( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1)
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
 
       call taumol26( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1)
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
 
       call taumol27( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1)
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
 
       call taumol28( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1)
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
 
       call taumol29( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1)
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
       !$acc end data
 
 
@@ -4549,7 +4565,7 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1                                        &
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
      &     )
 
 !  ------------------------------------------------------------------  !
@@ -4558,7 +4574,7 @@
 !
       use module_radsw_kgb16
 
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj)
+      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
       integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
      &       jp, jt, jt1
       real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
@@ -4586,7 +4602,7 @@
 !          temperature, and appropriate species.  below laytrop, the water
 !          vapor self-continuum is interpolated (in temperature) separately.
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !!$acc cache(absa, absb, selfref, forref)
             !$acc loop vector private(speccomb, specmult, js, fs, fs1, fac000, &
@@ -4666,7 +4682,7 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1                                        &
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
      &     )
 
 !  ------------------------------------------------------------------  !
@@ -4675,7 +4691,7 @@
 !
       use module_radsw_kgb17
 
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj)
+      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
       integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
      &       jp, jt, jt1
       real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
@@ -4703,7 +4719,7 @@
 !           vapor self-continuum is interpolated (in temperature) separately.
       
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !!$acc cache(selfref, forref)
             !$acc loop vector private(speccomb, specmult, js, fs, fs1, fac000, &
@@ -4810,7 +4826,7 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1                                        &
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
      &     )
      
 !  ------------------------------------------------------------------  !
@@ -4819,7 +4835,7 @@
 !
       use module_radsw_kgb18
 
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj)
+      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
       integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
      &       jp, jt, jt1
       real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
@@ -4846,7 +4862,7 @@
 !           temperature, and appropriate species.  below laytrop, the water
 !           vapor self-continuum is interpolated (in temperature) separately.
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !!$acc cache(absa, absb, selfref, forref)
             !$acc loop vector private(speccomb, specmult, js, fs, fs1, fac000, &
@@ -4927,7 +4943,7 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1                                        &
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
      &     )
      
 !  ------------------------------------------------------------------  !
@@ -4936,7 +4952,7 @@
 !
       use module_radsw_kgb19
 
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj)
+      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
       integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
      &       jp, jt, jt1
       real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
@@ -4964,7 +4980,7 @@
 !           vapor self-continuum is interpolated (in temperature) separately.
       
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !!$acc cache(absa, absb, selfref, forref)
             !$acc loop vector private(speccomb, specmult, js, fs, fs1, fac000, &
@@ -5044,7 +5060,7 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1                                        &
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
      &     )
      
 !  ------------------------------------------------------------------  !
@@ -5053,7 +5069,7 @@
 !
       use module_radsw_kgb20
 
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj)
+      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
       integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
      &       jp, jt, jt1
       real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
@@ -5080,7 +5096,7 @@
 !           vapor self-continuum is interpolated (in temperature) separately.
 
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !!$acc cache(absa, selfref, forref, absb, absch4)
             !$acc loop vector private(ind01, ind02, ind11, ind12, inds, indf, &
@@ -5145,7 +5161,7 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1                                        &
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
      &     )
      
 !  ------------------------------------------------------------------  !
@@ -5154,7 +5170,7 @@
 !
       use module_radsw_kgb21
 
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj)
+      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
       integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
      &       jp, jt, jt1
       real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
@@ -5182,7 +5198,7 @@
 !           vapor self-continuum is interpolated (in temperature) separately.
       
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !!$acc cache(absa, selfref, forref)
             !$acc loop vector private(speccomb, specmult, js, fs, fs1, fac000, &
@@ -5288,7 +5304,7 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1                                        &
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
      &     )
      
 !  ------------------------------------------------------------------  !
@@ -5297,7 +5313,7 @@
 !
       use module_radsw_kgb22
 
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj)
+      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
       integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
      &       jp, jt, jt1
       real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
@@ -5332,7 +5348,7 @@
 !           vapor self-continuum is interpolated (in temperature) separately.
       
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !!$acc cache(absa, selfref, forref, absb)
             !$acc loop vector private(speccomb, specmult, js, fs, fs1, fac000, &
@@ -5417,7 +5433,7 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1                                        &
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
      &     )
      
 !  ------------------------------------------------------------------  !
@@ -5426,7 +5442,7 @@
 !
       use module_radsw_kgb23
 
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj)
+      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
       integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
      &       jp, jt, jt1
       real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
@@ -5450,7 +5466,7 @@
 !           temperature, and appropriate species.  below laytrop, the water
 !           vapor self-continuum is interpolated (in temperature) separately.
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !!$acc cache(absa, selfref, forref, rayl)
             !$acc loop vector private(ind01, ind02, ind11, ind12, inds, indf, &
@@ -5499,7 +5515,7 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1                                        &
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
      &     )
      
 !  ------------------------------------------------------------------  !
@@ -5508,7 +5524,7 @@
 !
       use module_radsw_kgb24
 
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj)
+      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
       integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
      &       jp, jt, jt1
       real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
@@ -5535,7 +5551,7 @@
 !           temperature, and appropriate species.  below laytrop, the water
 !           vapor self-continuum is interpolated (in temperature) separately.
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !!$acc cache(rayla, absa, abso3a, selfref, forref, absb, raylb, abso3b)
             !$acc loop vector private(speccomb, specmult, js, fs, fs1, fac000, &
@@ -5620,7 +5636,7 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1                                        &
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
      &     )
      
 !  ------------------------------------------------------------------  !
@@ -5629,7 +5645,7 @@
 !
       use module_radsw_kgb25
 
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj)
+      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
       integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
      &       jp, jt, jt1
       real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
@@ -5654,7 +5670,7 @@
 !           vapor self-continuum is interpolated (in temperature) separately.
       
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !!$acc cache(absa, abso3a, rayl, abso3b)
             !$acc loop vector private(ind01, ind02, ind11, ind12)
@@ -5695,7 +5711,7 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1                                        &
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
      &     )
      
 !  ------------------------------------------------------------------  !
@@ -5704,7 +5720,7 @@
 !
       use module_radsw_kgb26
 
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj)
+      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
       integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
      &       jp, jt, jt1
       real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
@@ -5727,7 +5743,7 @@
 !           temperature, and appropriate species.  below laytrop, the water
 !           vapor self-continuum is interpolated (in temperature) separately.
       !$acc parallel loop gang collapse(3) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do j = 1, ng26
             do k = 1, nlay
                !!$acc cache(rayl)
@@ -5751,7 +5767,7 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1                                        &
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
      &     )
      
 !  ------------------------------------------------------------------  !
@@ -5760,7 +5776,7 @@
 !
       use module_radsw_kgb27
 !
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj)
+      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
       integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
      &       jp, jt, jt1
       real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
@@ -5786,7 +5802,7 @@
 !           vapor self-continuum is interpolated (in temperature) separately.
       
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !!$acc cache(rayl, absa, absb)
             !$acc loop vector private(ind01, ind02, ind11, ind12, abs01, abs02, abs11, abs12)
@@ -5829,7 +5845,7 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1                                        &
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
      &     )
      
 !  ------------------------------------------------------------------  !
@@ -5838,7 +5854,7 @@
 !
       use module_radsw_kgb28
 
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj)
+      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
       integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
      &       jp, jt, jt1
       real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
@@ -5866,7 +5882,7 @@
 !           vapor self-continuum is interpolated (in temperature) separately.
 
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !!$acc cache(absa)
             !$acc loop vector private(speccomb, specmult, js, fs, fs1, fac000, &
@@ -5958,7 +5974,7 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1                                        &
+     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
      &     )
      
 !  ------------------------------------------------------------------  !
@@ -5967,7 +5983,7 @@
 !
       use module_radsw_kgb29
 
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj)
+      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
       integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
      &       jp, jt, jt1
       real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
@@ -5994,7 +6010,7 @@
 !           vapor self-continuum is interpolated (in temperature) separately.
       
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !$acc loop vector private(ind01, ind02, ind11, ind12, inds, indf, &
             !$acc&     indsp, indfp, tauray)

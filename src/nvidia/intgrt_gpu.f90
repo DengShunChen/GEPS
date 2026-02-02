@@ -266,7 +266,7 @@
    !$acc enter data copyin(alvsf, alvwf, alnsf, alnwf, facsf, facwf) async(async_id)
    !$acc enter data copyin(alb, hflux, qflux, asol, deltaq, olr, ctot) async(async_id)
    !$acc enter data copyin(fusl, fdsl, fuir, fdir, fuslr, fdslr, fuirr, fdirr, &
-   !$acc&      ss_clr, rs_clr, olr_clr, chig, cmid, clow) async(async_id)
+   !$acc&      ss_clr, rs_clr, chig, cmid, clow) async(async_id)
 #ifdef Readaeroclx
    !$acc enter data copyin(aeroclxm) async(async_id)
 #endif
@@ -2097,7 +2097,7 @@ endif
             !$acc update self(asl, atl, asl_clr, atl_clr, dtrad, clds, vvel, ss, &
             !$acc&       rs, olr, asol, sld, rld, cice, xtice, snr, sncover, snoalb, &
             !$acc&       ctot, fusl, fdsl, fuir, fdir, fuslr, fdslr, fuirr, fdirr, &
-            !$acc&       ss_clr, rs_clr, olr_clr, chig, cmid, clow) async(async_id)
+            !$acc&       ss_clr, rs_clr, chig, cmid, clow) async(async_id)
             !$acc wait(async_id)
             if (myrank .eq. 0) print *, 'outsigr start !!!'
 #ifndef NO_OUT
@@ -2118,7 +2118,7 @@ endif
             !!$acc update device(asl, atl, asl_clr, atl_clr, dtrad, clds, vvel, ss, &
             !!$acc&       rs, olr, asol, sld, rld, cice, xtice, snr, sncover, snoalb, &
             !!$acc&       ctot, fusl, fdsl, fuir, fdir, fuslr, fdslr, fuirr, fdirr, &
-            !!$acc&       ss_clr, rs_clr, olr_clr, chig, cmid, clow) async(async_id)
+            !!$acc&       ss_clr, rs_clr, chig, cmid, clow) async(async_id)
             !!$acc wait(async_id)
             if (myrank .eq. 0) print *, 'outsigr ok !!!'
          end if
@@ -2494,7 +2494,7 @@ endif
          !$acc exit data delete(alvsf, alvwf, alnsf, alnwf, facsf, facwf) async(async_id)
          !$acc exit data delete(alb, hflux, qflux, asol, deltaq, olr, ctot) async(async_id)
          !$acc exit data delete(fusl, fdsl, fuir, fdir, fuslr, fdslr, fuirr, fdirr, &
-         !$acc&      ss_clr, rs_clr, olr_clr, chig, cmid, clow) async(async_id)
+         !$acc&      ss_clr, rs_clr, chig, cmid, clow) async(async_id)
 #ifdef Readaeroclx
          !$acc exit data delete(aeroclxm) async(async_id)
 #endif
