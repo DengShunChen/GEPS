@@ -30,7 +30,6 @@ contains
       call copyin_radlw_kgb14(async_id)
       call copyin_radlw_kgb15(async_id)
       call copyin_radlw_kgb16(async_id)
-      !$acc wait(async_id)
 
       end subroutine
 

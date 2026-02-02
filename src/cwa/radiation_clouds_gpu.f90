@@ -233,13 +233,23 @@
 
       public progcld1_gpu, progcld2_gpu, progcld3_gpu, progcld4_gpu, diagcld1_gpu, cld_init_gpu,&
              progcld5_gpu, progcld5o_gpu, progclduni_gpu, progcld6_gpu,                 &
-             progcld_thompson_gpu, progcld_gce_gpu
+             progcld_thompson_gpu, progcld_gce_gpu, copyin_radiation_clouds_gpu
 
 
 ! =================
       contains
 ! =================
 
+      subroutine copyin_radiation_clouds_gpu(async_id)
+      ! must be called after executing cld_init_gpu
+      implicit none
+      
+      integer, intent(in) :: async_id
+
+      !$acc enter data copyin(ptopc, xlabdy, xlobdy, retab) async(async_id)
+
+      return
+      end subroutine
 
 !-----------------------------------
       subroutine cld_init_gpu                                               &

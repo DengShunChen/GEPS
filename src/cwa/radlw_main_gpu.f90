@@ -343,58 +343,23 @@
 
 !  ---  public accessable subprograms
 
-      public lwrad_gpu, rlwinit_gpu, taumol_interface_gpu, taumol, rtrnmr, &
+      public lwrad_gpu, rlwinit_gpu, copyin_radlw_main_gpu, taumol, rtrnmr, &
          setcoef, cldprop
 
 
 ! ================
       contains
 ! ================
-      subroutine taumol_interface_gpu                                                 &
-! ..................................
-!  ---  inputs:
-     &     ( laytrop,pavel,coldry,colamt,colbrd,wx,tauaer,              &
-     &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
-     &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
-     &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, async_id, fulljj,                                                         &
-!  ---  outputs:
-     &       fracs, tautot                                              &
-     &     )
-     implicit none
-!  ---  inputs:
-      integer, intent(in) :: nlay, laytrop(ix, fulljj), ix, myim(fulljj), async_id, fulljj
+      subroutine copyin_radlw_main_gpu(async_id)
+      ! must be called after executing rlwinit_gpu
+      implicit none
+      
+      integer, intent(in) :: async_id
 
-      integer, dimension(ix, nlay, fulljj), intent(in) :: jp, jt, jt1, indself,     &
-     &       indfor, indminor
+      !$acc enter data copyin(nspa, nspb, a0, a1, a2, semiss0, tau_tbl, exp_tbl, &
+      !$acc&      tfn_tbl, ngb, wvnlw1, wvnlw2, delwave) async(async_id)
 
-      real (kind=kind_phys), dimension(ix, nlay, fulljj), intent(in) :: pavel,      &
-     &       coldry, colbrd, fac00, fac01, fac10, fac11, selffac,       &
-     &       selffrac, forfac, forfrac, minorfrac, scaleminor,          &
-     &       scaleminorn2
-
-      real (kind=kind_phys), dimension(ix, nlay,maxgas, fulljj), intent(in):: colamt
-      real (kind=kind_phys), dimension(ix, nlay,maxxsec, fulljj),intent(in):: wx
-
-      real (kind=kind_phys), dimension(ix, nlay, nbands, fulljj), intent(in):: tauaer
-
-      real (kind=kind_phys), dimension(ix, nlay,nrates,2, fulljj), intent(in) ::    &
-     &       rfrate
-
-!  ---  outputs:
-      real (kind=kind_phys), dimension(ix, nlay, ngptlw, fulljj), intent(out) ::     &
-     &       fracs, tautot
-
-     call taumol( laytrop,pavel,coldry,colamt,colbrd,wx,tauaer,              &
-     &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
-     &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
-     &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, async_id, fulljj,                                                         &
-!  ---  outputs:
-     &       fracs, tautot                                              &
-     &     )
-     
-
+      return
       end subroutine
 ! --------------------------------
       subroutine lwrad_gpu                                                  &
@@ -686,11 +651,10 @@
       logical,allocatable,dimension(:,:) :: lcloudy_im
 
       real (kind=kind_phys), dimension(:,:,:,:), allocatable :: cldfmc
-      integer :: jb, jf, jjoffset, jbs, jbe
+      integer :: jb, jf, jjoffset, jbs, jbe, blocks_local, blockjj
       
       if (isubclw > 0) allocate(cldfmc(ix, nlay,ngptlw, fulljj))
-
-
+      
       !
       !===> ... begin here
       !
@@ -715,11 +679,13 @@
       !$acc&     async(async_id)
 
       do jb = 1, blocks
-         jjoffset = (jb-1)*smalljj
+         jjoffset = (fulljj-1)*(jb-1)/blocks
          jbs = jjoffset+1
-         jbe = jjoffset+smalljj
+         jbe = (fulljj-1)*jb/blocks
+         blockjj = jbe - jbs + 1
+         !write(*,*) smalljj, jjoffset, jbs, jbe, jb
       !$acc parallel loop gang collapse(3) async(async_id)
-      do jj = 1, smalljj
+      do jj = 1, blockjj
          do j = 1, maxgas
             do k = 1, nlay
                !$acc loop vector private(jf)
@@ -735,7 +701,7 @@
 
       if     ( isubclw == 1 ) then     ! advance prescribed permutation seed
          !$acc parallel loop collapse(2) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do i = 1, ix
                jf = jjoffset+jj
                if (i .le. myim(jf)) then
@@ -745,7 +711,7 @@
          end do
       elseif ( isubclw == 2 ) then     ! use input array of permutaion seeds
          !$acc parallel loop collapse(2) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do i = 1, ix
                jf = jjoffset+jj
                if (i .le. myim(jf)) then
@@ -762,7 +728,7 @@
 
       !  --- ...  loop over horizontal npts profiles
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, smalljj
+      do jj = 1, blockjj
          do j = 1, nbands
             jf = jjoffset+jj
             !$acc loop vector private(jf)
@@ -790,7 +756,7 @@
          tem1 = 100.0 * con_g
          tem2 = 1.0e-20 * 1.0e3 * con_avgd
          !$acc parallel loop collapse(2) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do iplon = 1, ix
                jf = jjoffset+jj
                if (iplon .le. myim(jf)) then ! lab_do_iplon
@@ -800,7 +766,7 @@
          end do
 
          !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do k = 1, nlay
                jf = jjoffset+jj
                !$acc loop vector private(tem0)
@@ -860,7 +826,7 @@
 
                !  --- ...  set aerosol optical properties
          !$acc parallel loop gang collapse(3) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do j = 1, nbands
                do k = 1, nlay
                   jf = jjoffset+jj
@@ -875,7 +841,7 @@
          end do
          if (ilwcliq > 0) then    ! use prognostic cloud method
             !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do k = 1, nlay
                   jf = jjoffset+jj
                   !$acc loop vector private(k1)
@@ -895,7 +861,7 @@
             end do
          else                       ! use diagnostic cloud method
             !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do k = 1, nlay
                   jf = jjoffset+jj
                   !$acc loop vector private(k1)
@@ -908,7 +874,7 @@
             end do
          endif                      ! end if_ilwcliq
          !$acc parallel loop collapse(2) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do iplon = 1, ix
                jf = jjoffset+jj
                if (iplon .le. myim(jf)) then ! lab_do_iplon
@@ -920,7 +886,7 @@
 
          !  --- ...  compute precipitable water vapor for diffusivity angle adjustments
          !$acc parallel loop collapse(2) private(tem1, tem2, tem0, jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do iplon = 1, ix
                jf = jjoffset+jj
                if (iplon .le. myim(jf)) then ! lab_do_iplon
@@ -943,7 +909,7 @@
          tem1 = 100.0 * con_g
          tem2 = 1.0e-20 * 1.0e3 * con_avgd
          !$acc parallel loop collapse(2) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do iplon = 1, ix
                jf = jjoffset+jj
                if (iplon .le. myim(jf)) then ! lab_do_iplon
@@ -952,7 +918,7 @@
             end do
          end do
          !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do k = 1, nlay
                jf = jjoffset+jj
                !$acc loop vector private(tem0)
@@ -1012,7 +978,7 @@
 
                !  --- ...  set aerosol optical properties
          !$acc parallel loop gang collapse(3) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do j = 1, nbands
                do k = 1, nlay
                   jf = jjoffset+jj
@@ -1026,7 +992,7 @@
          end do
          if (ilwcliq > 0) then    ! use prognostic cloud method
             !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do k = 1, nlay
                   jf = jjoffset+jj
                   !$acc loop vector
@@ -1045,7 +1011,7 @@
             end do
          else                       ! use diagnostic cloud method
             !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do k = 1, nlay
                   jf = jjoffset+jj
                   !$acc loop vector
@@ -1060,7 +1026,7 @@
 
          !  --- ...  compute precipitable water vapor for diffusivity angle adjustments
          !$acc parallel loop collapse(2) private(tem1, tem2, tem0, jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do iplon = 1, ix
                jf = jjoffset+jj
                if (iplon .le. myim(jf)) then ! lab_do_iplon
@@ -1083,7 +1049,7 @@
 
             !  --- ...  compute column amount for broadening gases
       !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-      do jj = 1, smalljj
+      do jj = 1, blockjj
          do k = 1, nlay
             jf = jjoffset+jj
             !$acc loop vector private(summol)
@@ -1103,7 +1069,7 @@
       tem1 = 1.80
       tem2 = 1.50
       !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-      do jj = 1, smalljj
+      do jj = 1, blockjj
          do j = 1, nbands
             jf = jjoffset+jj
             !$acc loop vector
@@ -1135,7 +1101,7 @@
 
       !  --- ...  for cloudy atmosphere, use cldprop to set cloud optical properties
       !$acc parallel loop collapse(2) private(jf) async(async_id)
-      do jj = 1, smalljj
+      do jj = 1, blockjj
          do iplon = 1, ix
             jf = jjoffset+jj
             if (iplon .le. myim(jf)) then ! lab_do_iplon
@@ -1154,7 +1120,7 @@
       call cldprop                                                  &
          !  ---  inputs:
          &     ( cldfrc,clwp,relw,ciwp,reiw,cda1,cda2,cda3,cda4,            &
-         &       nlay, nlp1, ipseed, ix, myim(jbs:jbe), lcf1, async_id, smalljj,                                  &
+         &       nlay, nlp1, ipseed, ix, myim(jbs:jbe), lcf1, async_id, smalljj, blockjj,                                  &
          !  ---  outputs:
          &       taucld                                             &
          &     )
@@ -1164,7 +1130,7 @@
          allocate(lcloudy_im(ngptlw,nlay))
          allocate(cldf(ix, nlay, fulljj))
          !$acc parallel loop gang collapse(3) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do ig = 1, ngptlw
                do k = 1, nlay
                   jf = jjoffset+jj
@@ -1175,7 +1141,7 @@
                enddo
             end do
          end do
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             jf = jjoffset+jj
             do iplon = 1, myim(jf) ! lab_do_iplon
                if ( lcf1(iplon, jj) ) then
@@ -1241,7 +1207,7 @@
       call setcoef                                                    &
          !  ---  inputs:
          &     ( pavel,tavel,tz,sfgtmp(:,jbs:jbe),h2ovmr,colamt,coldry,colbrd,          &
-         &       nlay, nlp1, ix, myim(jbs:jbe), async_id, smalljj,                                               &
+         &       nlay, nlp1, ix, myim(jbs:jbe), async_id, smalljj, blockjj,                                               &
          !  ---  outputs:
          &       laytrop,pklay,pklev,jp,jt,jt1,                             &
          &       rfrate,fac00,fac01,fac10,fac11,                            &
@@ -1293,7 +1259,7 @@
          &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
          &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
          &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-         &       nlay, ix, myim(jbs:jbe), async_id, smalljj,                                                   &
+         &       nlay, ix, myim(jbs:jbe), async_id, smalljj, blockjj,                                                   &
          !  ---  outputs:
          &       fracs, tautot                                              &
          &     )
@@ -1316,7 +1282,7 @@
             !          selection. clear sky calculation is done at the same time.
       if (isubclw <= 0) then
          if (iovrlw <= 0) then
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                jf = jjoffset+jj
                do iplon = 1, myim(jf) ! lab_do_iplon
                   do k = 1, nlay
@@ -1379,7 +1345,7 @@
             call rtrnmr                                                 &
                !  ---  inputs:
                &     ( semiss,delp,cldfrc,taucld,tautot,pklay,pklev,              &
-               &       fracs,secdiff,nlay,nlp1, ix, myim(jbs:jbe), async_id, smalljj,                                  &
+               &       fracs,secdiff,nlay,nlp1, ix, myim(jbs:jbe), async_id, smalljj, blockjj,                                  &
                !  ---  outputs:
                &       totuflux,totdflux,htr, totuclfl,totdclfl,htrcl, htrb       &
                &     )
@@ -1387,7 +1353,7 @@
             !call nvtxEndRange
 
       else
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             jf = jjoffset+jj
             do iplon = 1, myim(jf) ! lab_do_iplon
                do k = 1, nlay
@@ -1459,7 +1425,7 @@
 
             !  --- ...  output total-sky and clear-sky fluxes and heating rates
       !$acc parallel loop collapse(2) private(jf) async(async_id)
-      do jj = 1, smalljj
+      do jj = 1, blockjj
          do iplon = 1, ix
             jf = jjoffset+jj
             if (iplon .le. myim(jf)) then ! lab_do_iplon
@@ -1478,7 +1444,7 @@
                !! --- ...  optional fluxes
          if ( lflxprf ) then
             !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do k = 0, nlay
                   jf = jjoffset+jj
                   !$acc loop vector private(k1)
@@ -1493,7 +1459,7 @@
             end do
          endif
          !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do k = 1, nlay
                jf = jjoffset+jj
                !$acc loop vector private(k1)
@@ -1507,7 +1473,7 @@
                !! --- ...  optional clear sky heating rate
          if ( lhlw0 ) then
             !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do k = 1, nlay
                   jf = jjoffset+jj
                   !$acc loop vector private(k1)
@@ -1523,7 +1489,7 @@
                !! --- ...  optional spectral band heating rate
          if ( lhlwb ) then
             !$acc parallel loop gang collapse(3) private(jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do j = 1, nbands
                   do k = 1, nlay
                      jf = jjoffset+jj
@@ -1541,7 +1507,7 @@
             !! --- ...  optional fluxes
          if ( lflxprf ) then
             !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do k = 0, nlay
                   jf = jjoffset+jj
                   !$acc loop vector
@@ -1555,7 +1521,7 @@
             end do
          endif
          !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-         do jj = 1, smalljj
+         do jj = 1, blockjj
             do k = 1, nlay
                jf = jjoffset+jj
                !$acc loop vector
@@ -1568,7 +1534,7 @@
                !! --- ...  optional clear sky heating rate
          if ( lhlw0 ) then
             !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do k = 1, nlay
                   jf = jjoffset+jj
                   !$acc loop vector
@@ -1582,7 +1548,7 @@
             !! --- ...  optional spectral band heating rate
          if ( lhlwb ) then
             !$acc parallel loop gang collapse(3) private(jf) async(async_id)
-            do jj = 1, smalljj
+            do jj = 1, blockjj
                do j = 1, nbands
                   do k = 1, nlay
                      jf = jjoffset+jj
@@ -1812,7 +1778,7 @@
 ! ............................
 !  ---  inputs:
      &     ( cfrac,cliqp,reliq,cicep,reice,cdat1,cdat2,cdat3,cdat4,     &
-     &       nlay, nlp1, ipseed, ix, myim, lcf1, async_id, fulljj,                                          &
+     &       nlay, nlp1, ipseed, ix, myim, lcf1, async_id, fulljj, blockjj,                                          &
 !  ---  outputs:
      &       taucld                                             &
      &     )
@@ -1911,7 +1877,7 @@
       use module_radlw_cldprlw
 
 !  ---  inputs:
-      integer, intent(in) :: nlay, nlp1, ipseed(ix, fulljj), ix, myim(fulljj), fulljj
+      integer, intent(in) :: nlay, nlp1, ipseed(ix, fulljj), ix, myim(fulljj), fulljj, blockjj
 
       real (kind=kind_phys), dimension(ix, 0:nlp1, fulljj), intent(in) :: cfrac
       real (kind=kind_phys), dimension(ix, nlay, fulljj),   intent(in) :: cliqp,    &
@@ -1939,7 +1905,7 @@
 !===> ...  begin here
 !
       !$acc parallel loop gang collapse(3) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do ib = 1, nbands
             do k = 1, nlay
                do iplon = 1, myim(jj) ! lab_do_iplon
@@ -1955,7 +1921,7 @@
 
          !  --- ...  calculation of absorption coefficients due to ice clouds.
          !$acc parallel loop gang collapse(2) async(async_id)
-         do jj = 1, fulljj
+         do jj = 1, blockjj
             do k = 1, nlay ! lab_do_k
                !$acc loop vector private(cldice, refice, dgeice, factor, index, &
                !$acc&     fint, tausnw, tauran, tauliq, tauice)
@@ -2053,7 +2019,7 @@
 
       else  ! lab_if_ilwcliq
          !$acc parallel loop gang collapse(2) async(async_id)
-         do jj = 1, fulljj
+         do jj = 1, blockjj
             do k = 1, nlay
                !$acc loop vector 
                do iplon = 1, myim(jj) ! lab_do_iplon
@@ -2242,7 +2208,7 @@
 ! ..................................
 !  ---  inputs:
      &     ( pavel,tavel,tz,stemp,h2ovmr,colamt,coldry,colbrd,          &
-     &       nlay, nlp1, ix, myim, async_id, fulljj,                                                 &
+     &       nlay, nlp1, ix, myim, async_id, fulljj, blockjj,                                                 &
 !  ---  outputs:
      &       laytrop,pklay,pklev,jp,jt,jt1,                             &
      &       rfrate,fac00,fac01,fac10,fac11,                            &
@@ -2303,7 +2269,7 @@
 !  ======================    end of definitions    ===================  !
 
 !  ---  inputs:
-      integer, intent(in) :: nlay, nlp1, ix,  myim(fulljj), fulljj
+      integer, intent(in) :: nlay, nlp1, ix,  myim(fulljj), fulljj, blockjj
 
       real (kind=kind_phys), dimension(ix, nlay,maxgas, fulljj),intent(in) :: colamt
       real (kind=kind_phys), dimension(ix, 0:nlay, fulljj),     intent(in):: tz
@@ -2343,7 +2309,7 @@
 
       !$acc parallel loop collapse(2) private(indlay, indlev, tlyrfr, tlvlfr, &
       !$acc&         tem1, tem2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do iplon = 1, ix ! lab_do_iplon
             if (iplon .le. myim(jj)) then
                indlay = min(180, max(1, int(stemp(iplon, jj)-159.0) ))
@@ -2366,7 +2332,7 @@
             !           surface, level, and layer temperatures.
 
       !$acc parallel loop collapse(2) private(jpr) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do iplon = 1, ix ! lab_do_iplon
             if (iplon .le. myim(jj)) then
                jpr = 0
@@ -2381,7 +2347,7 @@
 
 
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !$acc loop vector private(tavelr, tzr, indlay, tlyrfr, &
             !$acc&         indlev, tlvlfr)
@@ -2409,7 +2375,7 @@
       !$acc parallel loop collapse(3) private(plog, &
       !$acc&         jp1, fp, tem1, tem2, ft, ft1, tavelr, pavelr, jpr, jtr, jt1r, &
       !$acc&         forfacr, indminorr) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             do iplon = 1, ix
                !!$acc cache(chi_mls)
@@ -2917,7 +2883,7 @@
 ! ..................................
 !  ---  inputs:
      &     ( semiss,delp,cldfrc,taucld,tautot,pklay,pklev,              &
-     &       fracs,secdif, nlay,nlp1, ix, myim, async_id, fulljj,                                   &
+     &       fracs,secdif, nlay,nlp1, ix, myim, async_id, fulljj, blockjj,                                   &
 !  ---  outputs:
      &       totuflux,totdflux,htr, totuclfl,totdclfl,htrcl, htrb       &
      &     )
@@ -3020,7 +2986,7 @@
 !  ======================  end of description block  =================  !
 
 !  ---  inputs:
-      integer, intent(in) :: nlay, nlp1, ix, myim(fulljj), fulljj
+      integer, intent(in) :: nlay, nlp1, ix, myim(fulljj), fulljj, blockjj
 
       real (kind=kind_phys), dimension(ix, 0:nlp1, fulljj), intent(in) :: cldfrc
       real (kind=kind_phys), dimension(ix, nbands, fulljj), intent(in) :: semiss,   &
@@ -3100,7 +3066,7 @@
       !$acc&     trngas, trntot, radtotd_2, radtotu_2) async(async_id)
 
       !$acc parallel loop gang collapse(2) private(iplon) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlp1
             !$acc loop vector
             do iplon = 1, ix ! lab_do_iplon
@@ -3117,7 +3083,7 @@
       end do
       
       !$acc parallel loop gang collapse(2) private(iplon) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 0, nlay
             !$acc loop vector
             do iplon = 1, ix ! lab_do_iplon
@@ -3135,7 +3101,7 @@
 
       !$acc parallel loop collapse(2) private(iplon, rat1, rat2, fmax, fmin, &
       !$acc&         lstcldr, clfr, clfrp, clfrm) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do iplon = 1, ix ! lab_do_iplon
             if (iplon .le. myim(jj)) then
                clfr = cldfrc(iplon, 1, jj)
@@ -3296,7 +3262,7 @@
       
       !  --- ...  initialize for radiative transfer.
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do ib = 1, nbands
             !$acc loop vector
             do iplon = 1, myim(jj) ! lab_do_iplon
@@ -3306,7 +3272,7 @@
       end do
 
       !$acc parallel loop gang collapse(2) private(iplon) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 0, nlay
             !$acc loop vector
             do iplon = 1, ix ! lab_do_iplon
@@ -3325,7 +3291,7 @@
             faccmb2d, facclr2d, faccld2d, semiss, toturad, totuclfl, cldfrc, &
             facclr1u, faccld1u, faccmb1u, faccmb2u, facclr2u, faccld2u, taucld, &
             nlay, myim, ix, ngptlw, nlp1, nbands, &
-            ns_array(ib), ng_array(ib), ng00, async_id, fulljj, &
+            ns_array(ib), ng_array(ib), ng00, async_id, fulljj, blockjj, &
             gassrcu, totsrcu, &
             trngas, trntot, radtotd_2, radtotu_2)
       end do
@@ -3334,7 +3300,7 @@
       !  --- ...  process longwave output from band for total and clear streams.
       !           calculate upward, downward, and net flux.
       !$acc parallel loop collapse(2) async(async_id) 
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 0, nlay
             !$acc loop vector private(totufluxr, totdfluxr)
             do iplon = 1, myim(jj) ! lab_do_iplon
@@ -3352,7 +3318,7 @@
       end do
       
       !$acc parallel loop collapse(2) private(fnet, fnet1, rfdelp) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do iplon = 1, ix ! lab_do_iplon
             if (iplon .le. myim(jj)) then
                !  --- ...  calculate net fluxes and heating rates
@@ -3366,7 +3332,7 @@
       end do
       
       !$acc parallel loop collapse(2) private(fnet, fnet1, rfdelp, fnet4, fnet3) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do iplon = 1, ix ! lab_do_iplon
             if (iplon .le. myim(jj)) then
                !! --- ...  optional clear sky heating rates
@@ -3391,7 +3357,7 @@
       !! --- ...  optional spectral band heating rates
       if ( lhlwb ) then
          !$acc parallel loop collapse(3) private(rfdelp) async(async_id)
-         do jj = 1, fulljj
+         do jj = 1, blockjj
             do ib = 1, nbands
                do iplon = 1, ix ! lab_do_iplon
                   if (iplon .le. myim(jj)) then
@@ -3420,12 +3386,12 @@
          totdrad, totdclfl, facclr1d, faccld1d, faccmb1d, &
          faccmb2d, facclr2d, faccld2d, semiss, toturad, totuclfl, cldfrc, &
          facclr1u, faccld1u, faccmb1u, faccmb2u, facclr2u, faccld2u, taucld, &
-         nlay, myim, ix, ngptlw, nlp1, nbands, nslw, nglw, ng00, async_id, fulljj, &
+         nlay, myim, ix, ngptlw, nlp1, nbands, nslw, nglw, ng00, async_id, fulljj, blockjj, &
          gassrcu, totsrcu, &
          trngas, trntot, radtotd_2, radtotu_2)
 
       implicit none
-      integer :: nlay, nlp1, ix, myim(fulljj), ngptlw, nbands, nslw, nglw, fulljj
+      integer :: nlay, nlp1, ix, myim(fulljj), ngptlw, nbands, nslw, nglw, fulljj, blockjj
 
       real (kind=kind_phys), dimension(ix, 0:nlp1, fulljj) :: cldfrc
       real (kind=kind_phys), dimension(ix, nbands, fulljj) :: semiss,   &
@@ -3477,7 +3443,7 @@
       !$acc&         bbdtot, bbutot, totsrcd, radmod, reflct, rad0, radtotu, &
       !$acc&         radclru, gasu, totradu, clrradu, totu, ir, pklevr1, pklevr, &
       !$acc&         clfr1, lstcldr, secdifr, semissr) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do ig = nslw + 1, nslw + nglw
             do iplon = 1, ix
                if (iplon .le. myim(jj)) then ! lab_do_iplon
@@ -3675,7 +3641,7 @@
       end do
 
       !$acc parallel loop collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 0, nlay
             !$acc loop vector private(ir, radtotur, radtotdr)
             do iplon = 1, ix ! lab_do_iplon
@@ -4074,7 +4040,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, async_id, fulljj,                                                         &
+     &       nlay, ix, myim, async_id, fulljj, blockjj,                                                         &
 !  ---  outputs:
      &       fracs, tautot                                              &
      &     )
@@ -4193,7 +4159,7 @@
 !  ******************************************************************   !
 
 !  ---  inputs:
-      integer, intent(in) :: nlay, laytrop(ix, fulljj), ix, myim(fulljj), async_id, fulljj
+      integer, intent(in) :: nlay, laytrop(ix, fulljj), ix, myim(fulljj), async_id, fulljj, blockjj
 
       integer, dimension(ix, nlay, fulljj), intent(in) :: jp, jt, jt1, indself,     &
      &       indfor, indminor
@@ -4237,7 +4203,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                    &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -4248,7 +4214,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                     &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -4259,7 +4225,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                     &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -4270,7 +4236,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                     &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -4281,7 +4247,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                     &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -4292,7 +4258,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                     &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -4303,7 +4269,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                     &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -4314,7 +4280,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                     &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -4325,7 +4291,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                     &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -4336,7 +4302,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                     &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -4347,7 +4313,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                     &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -4358,7 +4324,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                     &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -4369,7 +4335,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                     &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -4380,7 +4346,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                     &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -4391,7 +4357,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                     &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -4402,7 +4368,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                     &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -4421,7 +4387,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                     &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -4441,7 +4407,7 @@
 
       use module_radlw_kgb01
       integer, intent(in) :: nlay, laytrop(ix, fulljj), ix, myim(fulljj), &
-         async_id, small_ix, i2, fulljj
+         async_id, small_ix, i2, blockjj, fulljj
 
       integer, dimension(ix, nlay, fulljj), intent(in) :: jp, jt, jt1, indself,     &
      &       indfor, indminor
@@ -4476,7 +4442,7 @@
 !     upper - n2, p = 142.5490 mbar, t = 215.70 k
 
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !$acc loop vector private(ind0, ind1, inds, indf, indm, &
             !$acc&         ind0p, ind1p, indsp, indfp, indmp, pp, scalen2, corradj, &
@@ -4568,7 +4534,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                    &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -4580,7 +4546,7 @@
 
       use module_radlw_kgb02
       integer, intent(in) :: nlay, laytrop(ix, fulljj), ix, myim(fulljj), &
-         async_id, small_ix, i2, fulljj
+         async_id, small_ix, i2, blockjj, fulljj
 
       integer, dimension(ix, nlay, fulljj), intent(in) :: jp, jt, jt1, indself,     &
      &       indfor, indminor
@@ -4610,7 +4576,7 @@
 !===> ...  begin here
 !
      !$acc parallel loop gang collapse(2) async(async_id)
-     do jj = 1, fulljj
+     do jj = 1, blockjj
          do k = 1, nlay
             !$acc loop vector private(iplon, ind0, ind1, inds, indf, ind0p, &
             !$acc&         ind1p, indsp, indfp, corradj, tauself, taufor, taug)
@@ -4682,7 +4648,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                    &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -4695,7 +4661,7 @@
 
       use module_radlw_kgb03
       integer, intent(in) :: nlay, laytrop(ix, fulljj), ix, myim(fulljj), &
-         async_id, small_ix, i2, fulljj
+         async_id, small_ix, i2, blockjj, fulljj
 
       integer, dimension(ix, nlay, fulljj), intent(in) :: jp, jt, jt1, indself,     &
      &       indfor, indminor
@@ -4745,7 +4711,7 @@
 
      
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !$acc loop vector private(iplon, speccomb, specparm, specmult, js, &
             !$acc&         fs, ind0, speccomb1, specparm1, specmult1, js1, fs1, ind1, &
@@ -5042,7 +5008,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                    &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -5054,7 +5020,7 @@
 
       use module_radlw_kgb04
       integer, intent(in) :: nlay, laytrop(ix, fulljj), ix, myim(fulljj), &
-         async_id, small_ix, i2, fulljj
+         async_id, small_ix, i2, blockjj, fulljj
 
       integer, dimension(ix, nlay, fulljj), intent(in) :: jp, jt, jt1, indself,     &
      &       indfor, indminor
@@ -5093,7 +5059,7 @@
       refrat_planck_a = chi_mls(1,11)/chi_mls(2,11)     ! p = 142.5940 mb
       refrat_planck_b = chi_mls(3,13)/chi_mls(2,13)     ! p = 95.58350 mb
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !$acc loop vector private(iplon, speccomb, specparm, specmult, js, &
             !$acc&         fs, ind0, speccomb1, specparm1, specmult1, js1, fs1, ind1, &
@@ -5328,7 +5294,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                    &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -5341,7 +5307,7 @@
 
       use module_radlw_kgb05
       integer, intent(in) :: nlay, laytrop(ix, fulljj), ix, myim(fulljj), &
-         async_id, small_ix, i2, fulljj
+         async_id, small_ix, i2, blockjj, fulljj
 
       integer, dimension(ix, nlay, fulljj), intent(in) :: jp, jt, jt1, indself,     &
      &       indfor, indminor
@@ -5391,7 +5357,7 @@
       refrat_m_a = chi_mls(1,7)/chi_mls(2,7)           ! p = 317.348 mb
 
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !$acc loop vector private(iplon, speccomb, specparm, specmult, js, &
             !$acc&         fs, ind0, speccomb1, specparm1, specmult1, js1, fs1, ind1, &
@@ -5634,7 +5600,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                    &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -5647,7 +5613,7 @@
 
       use module_radlw_kgb06
       integer, intent(in) :: nlay, laytrop(ix, fulljj), ix, myim(fulljj), &
-         async_id, small_ix, i2, fulljj
+         async_id, small_ix, i2, blockjj, fulljj
 
       integer, dimension(ix, nlay, fulljj), intent(in) :: jp, jt, jt1, indself,     &
      &       indfor, indminor
@@ -5682,7 +5648,7 @@
 !     upper - cfc11, cfc12
 
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !$acc loop vector private(iplon, ind0, ind1, inds, indf, &
             !$acc&         indm, indsp, indfp, indmp, ind0p, ind1p, temp,  ratco2, adjfac, &
@@ -5758,7 +5724,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                    &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -5771,7 +5737,7 @@
 
       use module_radlw_kgb07
       integer, intent(in) :: nlay, laytrop(ix, fulljj), ix, myim(fulljj), &
-         async_id, small_ix, i2, fulljj
+         async_id, small_ix, i2, blockjj, fulljj
 
       integer, dimension(ix, nlay, fulljj), intent(in) :: jp, jt, jt1, indself,     &
      &       indfor, indminor
@@ -5820,7 +5786,7 @@
       refrat_m_a = chi_mls(1,3)/chi_mls(3,3)          ! p = 706.2720 mb
 
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !$acc loop vector private(iplon, speccomb, specparm, specmult, js, &
             !$acc&         fs, ind0, speccomb1, specparm1, specmult1, js1, fs1, ind1, &
@@ -6056,7 +6022,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                    &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -6069,7 +6035,7 @@
 
       use module_radlw_kgb08
       integer, intent(in) :: nlay, laytrop(ix, fulljj), ix, myim(fulljj), &
-         async_id, small_ix, i2, fulljj
+         async_id, small_ix, i2, blockjj, fulljj
 
       integer, dimension(ix, nlay, fulljj), intent(in) :: jp, jt, jt1, indself,     &
      &       indfor, indminor
@@ -6108,7 +6074,7 @@
 !     upper - n2o, p = 8.716e-2 mb, t = 226.03 k
 
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !$acc loop vector private(iplon, ind0, ind1, inds, indf, indm, &
             !$acc&         ind0p, ind1p, indsp, indfp, indmp, temp, ratco2, adjfac, adjcolco2, &
@@ -6218,7 +6184,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                    &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -6231,7 +6197,7 @@
 
       use module_radlw_kgb09
       integer, intent(in) :: nlay, laytrop(ix, fulljj), ix, myim(fulljj), &
-         async_id, small_ix, i2, fulljj
+         async_id, small_ix, i2, blockjj, fulljj
 
       integer, dimension(ix, nlay, fulljj), intent(in) :: jp, jt, jt1, indself,     &
      &       indfor, indminor
@@ -6279,7 +6245,7 @@
       refrat_planck_a = chi_mls(1,9)/chi_mls(6,9)       ! p = 212 mb
       refrat_m_a = chi_mls(1,3)/chi_mls(6,3)            ! p = 706.272 mb
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !$acc loop vector private(iplon, speccomb, specparm, specmult, js, &
             !$acc&         fs, ind0, speccomb1, specparm1, specmult1, js1, fs1, ind1, &
@@ -6511,7 +6477,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                    &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -6523,7 +6489,7 @@
 
       use module_radlw_kgb10
       integer, intent(in) :: nlay, laytrop(ix, fulljj), ix, myim(fulljj), &
-         async_id, small_ix, i2, fulljj
+         async_id, small_ix, i2, blockjj, fulljj
 
       integer, dimension(ix, nlay, fulljj), intent(in) :: jp, jt, jt1, indself,     &
      &       indfor, indminor
@@ -6553,7 +6519,7 @@
 !===> ...  begin here
 !
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !$acc loop vector private(iplon, ind0, ind1, inds, indf, ind0p, &
             !$acc&         ind1p, indsp, indfp, tauself, taufor, taug)
@@ -6623,7 +6589,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                    &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -6636,7 +6602,7 @@
 
       use module_radlw_kgb11
       integer, intent(in) :: nlay, laytrop(ix, fulljj), ix, myim(fulljj), &
-         async_id, small_ix, i2, fulljj
+         async_id, small_ix, i2, blockjj, fulljj
 
       integer, dimension(ix, nlay, fulljj), intent(in) :: jp, jt, jt1, indself,     &
      &       indfor, indminor
@@ -6670,7 +6636,7 @@
 !     upper - o2, p = 4.758820 mbarm t = 250.85 k
 
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !$acc loop vector private(iplon, ind0, ind1, inds, indf, ind0p, &
             !$acc&         ind1p, indsp, indfp, tauself, taufor, indm, indmp, scaleo2, &
@@ -6753,7 +6719,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                    &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -6765,7 +6731,7 @@
 
       use module_radlw_kgb12
       integer, intent(in) :: nlay, laytrop(ix, fulljj), ix, myim(fulljj), &
-         async_id, small_ix, i2, fulljj
+         async_id, small_ix, i2, blockjj, fulljj
 
       integer, dimension(ix, nlay, fulljj), intent(in) :: jp, jt, jt1, indself,     &
      &       indfor, indminor
@@ -6805,7 +6771,7 @@
 !           fraction in lower/upper atmosphere.
       refrat_planck_a = chi_mls(1,10)/chi_mls(2,10)      ! p =   174.164 mb
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !$acc loop vector private(iplon, speccomb, specparm, specmult, js, &
             !$acc&         fs, ind0, speccomb1, specparm1, specmult1, js1, fs1, ind1, &
@@ -6982,7 +6948,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                    &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -6994,7 +6960,7 @@
 
       use module_radlw_kgb13
       integer, intent(in) :: nlay, laytrop(ix, fulljj), ix, myim(fulljj), &
-         async_id, small_ix, i2, fulljj
+         async_id, small_ix, i2, blockjj, fulljj
 
       integer, dimension(ix, nlay, fulljj), intent(in) :: jp, jt, jt1, indself,     &
      &       indfor, indminor
@@ -7046,7 +7012,7 @@
       refrat_m_a = chi_mls(1,1)/chi_mls(4,1)             ! p = 1053. (level 1)
       refrat_m_a3 = chi_mls(1,3)/chi_mls(4,3)            ! p = 706. (level 3)
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !$acc loop vector private(iplon, speccomb, specparm, specmult, js, &
             !$acc&         fs, ind0, speccomb1, specparm1, specmult1, js1, fs1, ind1, &
@@ -7275,7 +7241,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                    &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -7287,7 +7253,7 @@
 
       use module_radlw_kgb14
       integer, intent(in) :: nlay, laytrop(ix, fulljj), ix, myim(fulljj), &
-         async_id, small_ix, i2, fulljj
+         async_id, small_ix, i2, blockjj, fulljj
 
       integer, dimension(ix, nlay, fulljj), intent(in) :: jp, jt, jt1, indself,     &
      &       indfor, indminor
@@ -7317,7 +7283,7 @@
 !===> ...  begin here
 !
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !$acc loop vector private(iplon, ind0, ind1, inds, indf, ind0p, &
             !$acc&         ind1p, indsp, indfp, tauself, taufor, taug)
@@ -7382,7 +7348,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                    &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -7395,7 +7361,7 @@
 
       use module_radlw_kgb15
       integer, intent(in) :: nlay, laytrop(ix, fulljj), ix, myim(fulljj), &
-         async_id, small_ix, i2, fulljj
+         async_id, small_ix, i2, blockjj, fulljj
 
       integer, dimension(ix, nlay, fulljj), intent(in) :: jp, jt, jt1, indself,     &
      &       indfor, indminor
@@ -7442,7 +7408,7 @@
       refrat_planck_a = chi_mls(4,1)/chi_mls(2,1)      ! p = 1053. mb (level 1)
       refrat_m_a = chi_mls(4,1)/chi_mls(2,1)           ! p = 1053. mb
       !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !$acc loop vector private(iplon, speccomb, specparm, specmult, js, &
             !$acc&         fs, ind0, speccomb1, specparm1, specmult1, js1, fs1, ind1, &
@@ -7637,7 +7603,7 @@
      &       rfrate,fac00,fac01,fac10,fac11,jp,jt,jt1,                  &
      &       selffac,selffrac,indself,forfac,forfrac,indfor,            &
      &       minorfrac,scaleminor,scaleminorn2,indminor,                &
-     &       nlay, ix, myim, small_ix, i2, async_id, fulljj,                    &
+     &       nlay, ix, myim, small_ix, i2, async_id, fulljj, blockjj,                    &
 !  ---  outputs:
      &       fracs, tautot                                        &
      &     )
@@ -7649,7 +7615,7 @@
 
       use module_radlw_kgb16
       integer, intent(in) :: nlay, laytrop(ix, fulljj), ix, myim(fulljj), &
-         async_id, small_ix, i2, fulljj
+         async_id, small_ix, i2, blockjj, fulljj
 
       integer, dimension(ix, nlay, fulljj), intent(in) :: jp, jt, jt1, indself,     &
      &       indfor, indminor
@@ -7689,7 +7655,7 @@
 !           fraction in lower atmosphere.
       refrat_planck_a = chi_mls(1,6)/chi_mls(6,6)        ! p = 387. mb (level 6)
       !$acc parallel loop gang collapse(2)async(async_id)
-      do jj = 1, fulljj
+      do jj = 1, blockjj
          do k = 1, nlay
             !$acc loop vector private(iplon, speccomb, specparm, specmult, js, &
             !$acc&         fs, ind0, speccomb1, specparm1, specmult1, js1, fs1, ind1, &

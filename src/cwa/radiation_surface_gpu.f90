@@ -105,11 +105,22 @@
       integer, allocatable  ::  jdxems(:,:)
       integer :: iemslw = 0
 !
-      public  sfc_init_gpu, setalb_gpu, setemis_gpu
+      public  sfc_init_gpu, setalb_gpu, setemis_gpu, copyin_radiation_surface_gpu
 
 ! =================
       contains
 ! =================
+
+      subroutine copyin_radiation_surface_gpu(async_id)
+      ! must be called after executing sfc_init_gpu
+      implicit none
+      
+      integer, intent(in) :: async_id
+
+      !$acc enter data copyin(idxems, jdxems) async(async_id)
+
+      return
+      end subroutine
 
 
 !-----------------------------------

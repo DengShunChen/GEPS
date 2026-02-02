@@ -444,13 +444,14 @@
 ! =================
 
       subroutine copyin_radiation_aerosols_gpu(async_id)
+      ! must be called after executing aer_init_gpu and before first executing aer_update_gpu
       implicit none
       
       integer, intent(in) :: async_id
 
-      !$acc enter data copyin(kprfg, haer, denng, idxcg, cmixg, prsref, sigref, &
-      !$acc&      rhlev, extrhd, scarhd, ssarhd, asyrhd, extrhi, scarhi, ssarhi, &
-      !$acc&      asyrhi, extstra, ivolae) async(async_id)
+      !$acc enter data copyin(nwvns0, s0intv, rhlev, haer, prsref, sigref, extrhi, &
+      !$acc&      scarhi, ssarhi, asyrhi, extrhd, scarhd, ssarhd, asyrhd, extstra, &
+      !$acc&      ivolae, cmixg, denng, idxcg, kprfg) async(async_id)
       !$acc wait(async_id)
 
       return
@@ -1562,6 +1563,7 @@
 
 !  ---  inputs:
       integer,  intent(in) :: iyear, imon, me, myrank
+      integer :: async_id = 1
 
 !  ---  output: ( none )
 
@@ -1585,6 +1587,8 @@
       if ( lavoflg ) then              ! update yearly stratospheric volcanic aerosol data
         call volc_update
       endif
+      !!$acc update device(cmixg, denng, idxcg, kprfg, ivolae) async(async_id)
+      !!$acc wait(async_id)
 
 
 ! =================

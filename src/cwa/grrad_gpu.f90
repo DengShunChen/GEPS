@@ -1074,8 +1074,8 @@ contains
       integer, parameter :: swrad_block = 8
       integer :: swrad_smalljj, lwrad_smalljj
 !
-      swrad_smalljj = int((my_max-1)/swrad_block)
-      lwrad_smalljj = int((my_max-1)/lwrad_block)
+      swrad_smalljj = ceiling(float((my_max-1))/float(swrad_block))
+      lwrad_smalljj = ceiling(float((my_max-1))/float(lwrad_block))
       !$acc data create(topfsw, sfcfsw, topflw, sfcflw, htrswb, htrlwb, htrlw0, &
       !$acc&     plvl, tlvl, plyr, tlyr, qlyr, olyr, rhly, qstl, vvel, clw, prslk1, &
       !$acc&     tem2da, tem2db, tvly, qst2, rhly2, es2, qs2, qa, cnvw1, cnvc1, &

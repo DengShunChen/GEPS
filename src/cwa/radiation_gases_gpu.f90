@@ -177,12 +177,24 @@
 
 !  ---  public interfaces
 
-      public  gas_init_gpu, gas_update_gpu, getgases_gpu, getozn_gpu
+      public  gas_init_gpu, gas_update_gpu, getgases_gpu, getozn_gpu, &
+         copyin_radiation_gases_gpu
 
 
 ! =================
       contains
 ! =================
+      subroutine copyin_radiation_gases_gpu(async_id)
+      ! must be called after executing gas_init_gpu and before executing gas_update
+      implicit none
+      
+      integer, intent(in) :: async_id
+
+      !$acc enter data copyin(gco2cyc, pkstr, o3r, co2vmr_sav, co2cyc_sav) &
+      !$acc&      async(async_id)
+
+      return
+      end subroutine
 
 !-----------------------------------
       subroutine gas_init_gpu                                               &
@@ -587,6 +599,7 @@
       logical    :: file_exist, lextpl, change
       character  :: cline*100, cform*8, cfile1*26
       data  cform  / '(24f7.2)' /       !! data format in imxco2*f7.2
+      integer :: async_id = 1
 !
 !===>  ...  begin here
 !
@@ -896,6 +909,8 @@
         close ( nico2cn )
 
       endif  lab_if_idyr
+      !!$acc update device(co2vmr_sav, co2cyc_sav, gco2cyc) async(async_id)
+      !!$acc wait(async_id)
 
       return
 !
