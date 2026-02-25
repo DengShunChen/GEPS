@@ -120,7 +120,8 @@
 !!      real      tbar(lev),qbar(lev*ncld),qbrrow(ncld,my)
    integer, parameter :: ktop = 4
    real fac(ktop), wkj(my, 4), wkmf(jtrun), windmax3, wk4(4), &
-      loc_sum1, loc_sum2, loc_sum3, loc_sum4
+      loc_sum1, loc_sum2, loc_sum3, loc_sum4, &
+      wk4_1, wk4_2, wk4_3, wk4_4
    data windmax3/130./
 !
    logical histim, tchange, flag, forward, fwd
@@ -406,12 +407,12 @@
 !
 !  compute initial moisture and potential temperature
 !
-   do i = 1, 4
-      wk4(i) = 0.
-   end do
-!
-   !$acc enter data copyin(wk4) async(async_id)
-   !$acc parallel loop collapse(2) private(j, nxj, cosl_j, loc_sum1, loc_sum2, loc_sum3, loc_sum4) async(async_id)
+   wk4_1 = 0.
+   wk4_2 = 0.
+   wk4_3 = 0.
+   wk4_4 = 0.
+   !$acc parallel loop collapse(2) private(j, nxj, cosl_j, loc_sum1, loc_sum2, loc_sum3, loc_sum4) &
+   !$acc& reduction(+:wk4_1, wk4_2, wk4_3, wk4_4) async(async_id)
    do jj = 1, jlistnum
       do k = 1, lev
          j = jlist1(jj)
@@ -434,16 +435,19 @@
             loc_sum4 = loc_sum4 + cp*tt(i, k, jj)*pk(i, k, jj)*dsigp &
                        *cosl_j
          end do
-         !$acc atomic
-         wk4(1) = wk4(1) + loc_sum1
-         !$acc atomic
-         wk4(2) = wk4(2) + loc_sum2
-         !$acc atomic
-         wk4(3) = wk4(3) + loc_sum3
-         !$acc atomic
-         wk4(4) = wk4(4) + loc_sum4
+         wk4_1 = wk4_1 + loc_sum1
+         wk4_2 = wk4_2 + loc_sum2
+         wk4_3 = wk4_3 + loc_sum3
+         wk4_4 = wk4_4 + loc_sum4
       end do
    end do
+
+   wk4(1) = wk4_1
+   wk4(2) = wk4_2
+   wk4(3) = wk4_3
+   wk4(4) = wk4_4
+
+   !$acc enter data copyin(wk4) async(async_id)
 
    !$acc host_data use_device(wk4)
    NCCLCHECK(ncclAllReduce(wk4, wk4, 4, ncclFloat64, ncclSum, nccl_comm_gfs, stream))
