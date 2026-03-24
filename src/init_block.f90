@@ -161,8 +161,6 @@
       ntinc=7   ! tracer index for ice number concentration
       ntrnc=8   ! tracer index for rain number concentration
 !     ntlnc=9   ! tracer index for liquid number concentration
-! for using aerosol climatology
-      naero = 1
 ! for GCE 3ice
       SL_sedi = .false.
       sat_predict = .true.
@@ -510,22 +508,24 @@
       ccnorm=.false.
       norad_precip=.false.
 !---------------------------------------------------------------------------
+! for using aerosol climatology
+      naero = 15
 ! for aeroclx index
-      naso4 = 1  ! Sulphate
-      nadu1 = 2  ! Dust bin 001
-      nadu2 = 3  ! Dust bin 002
-      nadu3 = 4  ! Dust bin 003
-      nadu4 = 5  ! Dust bin 004
-      nadu5 = 6  ! Dust bin 005
-      nass1 = 7  ! Sea Salt bin 001
-      nass2 = 8  ! Sea Salt bin 002
-      nass3 = 9  ! Sea Salt bin 003
-      nass4 = 10 ! Sea Salt bin 004
-      nass5 = 11 ! Sea Salt bin 005
-      nablc = 12 ! Hydrophilic Black Carbon
-      nabbc = 13 ! Hydrophobic Black Carbon
-      naolc = 14 ! Hydrophilic Organic Carbon
-      naobc = 15 ! Hydrophobic Organic Carbon
+      nadu1 = 1  ! Dust bin 001
+      nadu2 = 2  ! Dust bin 002
+      nadu3 = 3  ! Dust bin 003
+      nadu4 = 4  ! Dust bin 004
+      nadu5 = 5  ! Dust bin 005
+      nass1 = 6  ! Sea Salt bin 001
+      nass2 = 7  ! Sea Salt bin 002
+      nass3 = 8  ! Sea Salt bin 003
+      nass4 = 9  ! Sea Salt bin 004
+      nass5 = 10 ! Sea Salt bin 005
+      naso4 = 11 ! Sulphate
+      nabbc = 12 ! Hydrophobic Black Carbon
+      nablc = 13 ! Hydrophilic Black Carbon
+      naobc = 14 ! Hydrophobic Organic Carbon
+      naolc = 15 ! Hydrophilic Organic Carbon
       namsa = 16 ! Methanesulphonic acid
       nadms = 17 ! Dimethylsulphide
       naso2 = 18 ! Sulphur dioxide

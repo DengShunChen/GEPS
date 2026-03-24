@@ -81,6 +81,8 @@
       integer   i,j,k,m,n,jul,nxj,mm,istat,monidex,lncrec,jj,ii,nm
       real      coef1,coef2
       real*8    tm_1, tm_2, tm_use, mpi_wtime
+      integer::aeroinit
+      real(kind=RTYPE) hld3(nx,levp,my_max)
 
       tm_1 = mpi_wtime()
 
@@ -147,16 +149,10 @@
 
       if ( jul .le. mon(1) ) jul = jul + 365
 
+      if(myrank == 0 )print*,'total num of aerosol = ',naero
       do n = 1, naero
 
         if ( myrank .eq. 0 ) print *, 'read aerotype : ',aerokey(n)
-
-        do m = 1, lev
-          if ( lev .lt. 100 ) then
-            write(typ,'("M",i2.2,a3)') m,aerokey(n)
-          else
-            write(typ,'("N",i2.2,a3)') mod(m,100),aerokey(n)
-          endif
 
           wrk = 0.
 
@@ -169,37 +165,33 @@
             ! read both mon=12 and mon=1 dmsfile -> aerosave1 and aerosave2
             if ( itimestep .lt. 1 ) then
               ! mon=12 :
-              write(ihdgi,15) typ,ggdef,12
-              call dmsread(nx,my,lncrec,'H',ifilin_aero,glob,istat)
-              call unify_reducepick(nx,my,my_max,glob,wrk(1,1,1))
-              ! mon=1 :
-              write(ihdgi,15) typ,ggdef,1
-              call dmsread(nx,my,lncrec,'H',ifilin_aero,glob,istat)
-              call unify_reducepick(nx,my,my_max,glob,wrk(1,1,2))
+            call Read3DAer_split(12)
+            call mpe2d_transpose_ndsl_f2p(hld3,aerosave1(1,1,1,n), &
+                   nxp,nx,levf,levp,1,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 
-              do j = 1, my_max
-                do i = 1, nxp
-                  aerosave1(i,m,j,n) = wrk(i,j,1)  !mon=12
-                  aerosave2(i,m,j,n) = wrk(i,j,2)  !mon=1
-                enddo
-              enddo
+              ! mon=1 :
+            call Read3DAer_split(1)
+            call mpe2d_transpose_ndsl_f2p(hld3,aerosave2(1,1,1,n), &
+                   nxp,nx,levf,levp,1,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 
             endif  !end of if itimestep<1
 
             ! if monsave=11 and monidex=12 :
             ! read only mon=12 dmsfile -> aerosave2
             if ( monsave .lt. monidex ) then
-              ! mon=12 :
-              write(ihdgi,15) typ,ggdef,12
-              call dmsread(nx,my,lncrec,'H',ifilin_aero,glob,istat)
-              call unify_reducepick(nx,my,my_max,glob,wrk(1,1,2))
 
               do j = 1, my_max
+               do m=1,lev
                 do i = 1, nxp
                   aerosave1(i,m,j,n) = aerosave2(i,m,j,n)  !mon=11
-                  aerosave2(i,m,j,n) = wrk(i,j,2)          !mon=12
                 enddo
+               enddo
               enddo
+
+              ! mon=12 :
+              call Read3DAer_split(12)
+              call mpe2d_transpose_ndsl_f2p(hld3,aerosave2(1,1,1,n), &
+                   nxp,nx,levf,levp,1,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 
             endif  !end of if monidex>monsave
 
@@ -207,10 +199,12 @@
             do jj = 1,jlistnum
               j = jlist1(jj)
               nxj = nxdef_2d(j)
+              do m=1,lev
+              nm = (n - 1)*lev + m
               do i = 1,nxj
-                nm = (n - 1)*lev + m
                 aeroclx(i,nm,jj) = max(0.0,coef1*aerosave2(i,m,jj,n)+ &
                                    coef2*aerosave2(i,m,jj,n))
+              enddo
               enddo
             enddo
 
@@ -226,37 +220,32 @@
               ! read both mon=k-1 and mon=k dmsfile -> aerosave1 and aerosave2
               if ( itimestep .lt. 1 ) then
                 ! mon=k-1 :
-                write(ihdgi,15) typ,ggdef,k-1
-                call dmsread(nx,my,lncrec,'H',ifilin_aero,glob,istat)
-                call unify_reducepick(nx,my,my_max,glob,wrk(1,1,1))
+                call Read3DAer_split( k-1 )
+                call mpe2d_transpose_ndsl_f2p(hld3,aerosave1(1,1,1,n), &
+                     nxp,nx,levf,levp,1,myf,my_max,jlistnum,jlen,nsizex,row_comm)
                 ! mon=k :
-                write(ihdgi,15) typ,ggdef,k
-                call dmsread(nx,my,lncrec,'H',ifilin_aero,glob,istat)
-                call unify_reducepick(nx,my,my_max,glob,wrk(1,1,2))
-
-                do j = 1, my_max
-                  do i = 1, nxp
-                    aerosave1(i,m,j,n) = wrk(i,j,1)  !mon=k-1
-                    aerosave2(i,m,j,n) = wrk(i,j,2)  !mon=k
-                  enddo
-                enddo
+                call Read3DAer_split( k )
+                call mpe2d_transpose_ndsl_f2p(hld3,aerosave2(1,1,1,n), &
+                     nxp,nx,levf,levp,1,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 
               endif  !end of if itimestep<1
 
               ! if monsave=k-2 and monidex=k-1 :
               ! read only mon=k dmsfile -> aerosave2
               if ( monsave .lt. monidex ) then
-                ! mm=k :
-                write(ihdgi,15) typ,ggdef,k
-                call dmsread(nx,my,lncrec,'H',ifilin_aero,glob,istat)
-                call unify_reducepick(nx,my,my_max,glob,wrk(1,1,2))
 
                 do j = 1, my_max
+                 do m=1,lev
                   do i = 1, nxp
-                    aerosave1(i,m,j,n) = aerosave2(i,m,j,n)  !mon=k-1
-                    aerosave2(i,m,j,n) = wrk(i,j,2)          !mon=k
+                    aerosave1(i,m,j,n) = aerosave2(i,m,j,n)  !mon=11
                   enddo
+                 enddo
                 enddo
+
+                ! mm=k :
+                call Read3DAer_split( k )
+                call mpe2d_transpose_ndsl_f2p(hld3,aerosave2(1,1,1,n), &
+                     nxp,nx,levf,levp,1,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 
               endif  !end of if monsave<monidex
 
@@ -264,10 +253,12 @@
               do jj = 1,jlistnum
                 j = jlist1(jj)
                 nxj = nxdef_2d(j)
+                do m=1,lev
+                nm = (n - 1)*lev + m
                 do i = 1,nxj
-                  nm = (n - 1)*lev + m
                   aeroclx(i,nm,jj) = max(0.0,coef1*aerosave2(i,m,jj,n)+ &
                                      coef2*aerosave2(i,m,jj,n))
+                enddo
                 enddo
               enddo
 
@@ -275,7 +266,7 @@
 
           enddo  !end of do k=2,12
 
-        enddo  !end of do m=1,lev
+        !enddo  !end of do m=1,lev
 
       enddo  !end of do n=1,naero
 
@@ -292,4 +283,33 @@
   265 format('readaeroclx Timing=',f8.3,' elapse seconds')
 
       return
-      end
+      contains
+       subroutine Read3DAer_split( imon )
+         integer :: imon
+         integer::KL
+         do m = 1, levp
+           KL=lev-Llist(m)+1
+           if ( lev .lt. 100 ) then
+             write(typ,'("M",i2.2,a3)') KL,aerokey(n)
+           else
+             write(typ,'("N",i2.2,a3)') mod(KL,100),aerokey(n)
+           endif
+           write(ihdgi,315) typ,ggdef, imon
+           call dmsread_split(nx,my,lncrec,'H',ifilin_aero,glob,istat)
+           do  jj = 1, jlistnum
+             j=jlist1(jj)
+             nxj=nxdef(j)
+             if( lreduce.eq.1 )call reducepick (glob(1,j),nxdef(j),nx,1)
+             do  i = 1, nxj
+               hld3(i,m,jj) = glob(i,j)
+           enddo
+           enddo
+         enddo !m=1,levp
+         #ifdef I38K
+           315  format(a6,'  gbck',a4,4x,i2.2,6x)
+         #else
+           315  format(a6,'gbck',a4,4x,i2.2,6x)
+         #endif
+       end subroutine Read3DAer_split
+
+      end subroutine readaeroclx
