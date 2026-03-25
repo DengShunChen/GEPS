@@ -148,6 +148,7 @@
 !
 !  read in temp at sigma levels
 !
+      if(myrank==0)print*,'read initial temperature'
       do 71 k = 1, levp
         KL=lev-Llist(k)+1
       if ( KL .lt. 100 ) then
@@ -169,6 +170,7 @@
 !
 !  read in q at sigma levels
 !
+      if(myrank==0)print*,'read initial qt'
       hld4=qmin
       do 73 k = 1, levp
         KL=lev-Llist(k)+1
@@ -255,6 +257,7 @@
         else
 !
           do ntrac=2,nclds
+            if(myrank==0)print*,'read initial tracert ntrac=',ntrac
             do k = 1, levp
               KL=lev-Llist(k)+1
             if ( KL .lt. 100 ) then
@@ -281,6 +284,7 @@
 !  read "observed ozone" at sigma levels for doing ozone forecast
 !
       if(ncld.eq.ntoz)then
+      if(myrank==0)print*,'read initial ozone'
       ntrac=ntoz
       do k = 1, levp
         KL=lev-Llist(k)+1
@@ -606,6 +610,7 @@
 !
 !  read in wind fields at sigma levels
 !
+      if(myrank==0)print*,'read initial U wind'
       do 320 k = 1, levp
         KL=lev-Llist(k)+1
         if ( KL .lt. 100 ) then
@@ -626,6 +631,7 @@
       call mpe2d_transpose_ndsl_f2p(hld3,ut, &
             nxp,nx,levf,levp,1,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
+      if(myrank==0)print*,'read initial V wind'
       do 321 k = 1, levp
         KL=lev-Llist(k)+1
         if ( KL .lt. 100 ) then
