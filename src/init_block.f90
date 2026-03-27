@@ -166,7 +166,7 @@
       sat_predict = .true.
       new_saturation = .true.
       use_cpm = .false.
-      use_declination = .false.
+      use_declination = .true.
 
 
 !
