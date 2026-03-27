@@ -568,12 +568,14 @@
           endif
           istat = istat + abs(istat6)+abs(istat7)
         endif
+      end if !myrank == 0
+
 #ifdef Readaeroclx
-        call dmsopn(ifilin_aero,"r",istat8)
+        !call dmsopn(ifilin_aero,"r",istat8)
+        if(col_rank .eq. 0) call dmsopn(ifilin_aero,"r",istat8)
         istat = istat + abs(istat8)
 #endif
 
-      end if
 !ch   call mpe_broadcast(istat,1,flag,mpe_integer)
       call mpe_bcast(istat,1,0,mpe_integer)
       if(istat.ne.0)then
