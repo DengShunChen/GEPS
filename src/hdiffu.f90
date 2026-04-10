@@ -246,8 +246,8 @@
         endif
         kfac = kfac*(1.+vd*dec)
         facd = max(1.,kfac)*amp
-        facv = max(1.,kfac)*amp
-        fact = max(1.,kfac)*amp
+        facv = 0.25*max(1.,kfac)*amp
+!        fact = max(1.,kfac)*amp
 !!        facd = 1. * amp * (kfac + 2.*max(float(hdk1-KL),0.))
 !!        facv = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
 !!        fact = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
@@ -268,7 +268,7 @@
 !            else
               c1=1.+dta*facv*hfilt*eps4(n,m)**powd
               c2=1.+dta*facd*hfilt*eps4(n,m)**powd
-              c3=1.+dta*fact*hfilt*eps4(n,m)**powd
+!              c3=1.+dta*fact*hfilt*eps4(n,m)**powd
 !            endif
 
 !  if doskeb = .true. estimate the dissipation of kinectic energy for SKEB
@@ -281,8 +281,8 @@
             vornow(k,2,n,m)=vornow(k,2,n,m)/c1
             divnow(k,1,n,m)=divnow(k,1,n,m)/c2
             divnow(k,2,n,m)=divnow(k,2,n,m)/c2
-            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
-            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
+!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
+!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
 !            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
 !            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
           enddo
@@ -549,8 +549,8 @@
 !        facd = mwhd * max(amp,kfac)
 !        facv = max(min(amp,1.),kfac)
         facd = max(1.,kfac)*amp
-        facv = max(1.,kfac)*amp
-        fact = max(1.,kfac)*amp
+        facv = 0.25*max(1.,kfac)*amp
+!        fact = max(1.,kfac)*amp
 !!        fact = amp * kfacv 
 !          endif
 
@@ -569,7 +569,7 @@
 !            else
               c1=1.+dta*facv*hfilt*eps4(n,m)**powd
               c2=1.+dta*facd*hfilt*eps4(n,m)**powd
-              c3=1.+dta*fact*hfilt*eps4(n,m)**powd
+!              c3=1.+dta*fact*hfilt*eps4(n,m)**powd
 !            endif
 
 
@@ -580,8 +580,8 @@
             vornow(k,2,n,m)=vornow(k,2,n,m)/c1
             divnow(k,1,n,m)=divnow(k,1,n,m)/c2
             divnow(k,2,n,m)=divnow(k,2,n,m)/c2
-            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
-            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
+!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
+!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
 !            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
 !            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
           enddo
