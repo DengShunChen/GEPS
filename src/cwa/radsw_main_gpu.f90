@@ -264,6 +264,7 @@
      &                             iswmode, kind_phys
       use physcons,         only : con_g, con_cp, con_avgd, con_amd,    &
      &                             con_amw, con_amo3
+     use module_radiation_aerosols_gpu,only : setaer_sw_gpu
 
       use module_radsw_parameters
       use mersenne_twister, only : random_setseed, random_number,       &
@@ -271,7 +272,8 @@
       use module_radsw_ref, only : preflog, tref
       use module_radsw_sflux
       use param,             only : my
-      use index,             only : jlistnum
+      use index,             only : jlistnum, nxptot, nxjp_acc
+      use rank,              only : myrank
       !use nvtx
 !
       implicit none
@@ -334,8 +336,19 @@
 
       logical :: lhswb  = .false.
       logical :: lhsw0  = .false.
-      logical :: lflxprf= .false.
-      logical :: lfdncmp= .false.
+      logical :: lflxprf = .false.
+      logical :: lflxprf_upfxc = .false.
+      logical :: lflxprf_dnfxc = .false.
+      logical :: lflxprf_upfx0 = .false.
+      logical :: lflxprf_dnfx0 = .false.
+      logical :: lfdncmp = .false.
+      logical :: lfdncmp_uvbfc = .false.
+      logical :: lfdncmp_uvbf0 = .false.
+      logical :: lfdncmp_nirbm = .false.
+      logical :: lfdncmp_nirdf = .false.
+      logical :: lfdncmp_visbm = .false.
+      logical :: lfdncmp_visdf = .false.
+      
 
 !  ---  those data will be set up only once by "rswinit"
 
@@ -350,7 +363,14 @@
 
       integer, parameter :: ipsdsw0 = 1          ! initial permutation seed
 
+!  ---  for ngptsw packing recipe
+
 !  ---  public accessable subprograms
+      integer, parameter :: npacks = 4
+      integer :: max_packs_nbands
+      integer, dimension(:), allocatable :: pack_size, packs_nbands_list
+      integer, dimension(:,:), allocatable :: pack_idx, recipe, reverse_recipe
+      integer :: small_ngpts
 
       public swrad_gpu, rswinit_gpu, cldprop, setcoef, taumol, spcvrtc, &
          copyin_radsw_main_gpu
@@ -360,6 +380,132 @@
       contains
 ! =================
 
+      subroutine ngptsw_packing_recipe_init(npacks, small_ngptsw)
+      implicit none
+      
+      integer, intent(in) :: npacks
+      integer, intent(out) :: small_ngptsw
+
+      integer, dimension(4:11) :: max_pack_size
+      integer :: np, nib
+      data max_pack_size(4:11) /28, 24, 20, 18, 16, 0, 0, 12/
+
+      small_ngptsw = max_pack_size(npacks)
+      allocate(pack_size(npacks))
+      allocate(packs_nbands_list(npacks))
+      allocate(pack_idx(small_ngptsw, npacks))
+      allocate(recipe(nbdsw, npacks))
+      allocate(reverse_recipe(small_ngptsw, npacks))
+      recipe = 0
+      pack_size = 0
+      pack_idx = 0
+
+      select case (npacks)
+      case (4)
+         recipe(1:3, 1) = (/17, 18, 19/)
+         recipe(1:3, 2) = (/24, 27, 29/)
+         recipe(1:4, 3) = (/16, 20, 21, 22/)
+         recipe(1:4, 4) = (/23, 25, 26, 28/)
+         max_packs_nbands = 4
+         packs_nbands_list = (/3, 3, 4, 4/)
+
+      case (5)
+         recipe(1:3, 1) = (/17, 18, 22/)
+         recipe(1:2, 2) = (/20, 29/)
+         recipe(1:3, 3) = (/16, 19, 21/)
+         recipe(1:3, 4) = (/23, 24, 25/)
+         recipe(1:3, 5) = (/26, 27, 28/)
+         max_packs_nbands = 3
+         packs_nbands_list = (/3, 2, 3, 3, 3/)
+
+      case (6)
+         recipe(1:2, 1) = (/17, 18/)
+         recipe(1:2, 2) = (/19, 29/)
+         recipe(1:2, 3) = (/20, 21/)
+         recipe(1:3, 4) = (/22, 23, 24/)
+         recipe(1:3, 5) = (/16, 25, 27/)
+         recipe(1:2, 6) = (/26, 28/)
+         max_packs_nbands = 3
+         packs_nbands_list = (/2, 2, 2, 3, 3, 2/)
+         
+      case (7)
+         recipe(1:2, 1) = (/16, 17/)
+         recipe(1:2, 2) = (/25, 29/)
+         recipe(1:2, 3) = (/18, 20/)
+         recipe(1:2, 4) = (/19, 21/)
+         recipe(1:3, 5) = (/22, 23, 26/)
+         recipe(1:2, 6) = (/24, 27/)
+         recipe(1:1, 7) = (/28/)
+         max_packs_nbands = 3
+         packs_nbands_list = (/2, 2, 2, 2, 3, 2, 1/)
+         
+      case (8)
+         recipe(1:1, 1) = (/17/)
+         recipe(1:1, 2) = (/29/)
+         recipe(1:2, 3) = (/16, 20/)
+         recipe(1:2, 4) = (/21, 25/)
+         recipe(1:2, 5) = (/23, 26/)
+         recipe(1:2, 6) = (/18, 19/)
+         recipe(1:2, 7) = (/24, 28/)
+         recipe(1:2, 8) = (/22, 27/)
+         max_packs_nbands = 2
+         packs_nbands_list = (/1, 1, 2, 2, 2, 2, 2, 2/)
+      
+      case (11)
+         recipe(1:1, 1) = (/17/)
+         recipe(1:1, 2) = (/29/)
+         recipe(1:1, 3) = (/20/)
+         recipe(1:1, 4) = (/21/)
+         recipe(1:1, 5) = (/23/)
+         recipe(1:2, 6) = (/18, 22/)
+         recipe(1:1, 7) = (/19/)
+         recipe(1:1, 8) = (/24/)
+         recipe(1:1, 9) = (/27/)
+         recipe(1:2, 10) = (/16, 25/)
+         recipe(1:2, 11) = (/26, 28/)
+         max_packs_nbands = 2
+         packs_nbands_list = (/1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 2/)
+
+      case default
+         if (myrank .eq. 0) write(*,*) "[GPU:radsw] Not support for npacks = ", npacks
+         stop
+         
+      end select
+
+      do np = 1, npacks
+         do nib = 1, nbdsw
+            if (recipe(nib, np) .eq. 0) exit
+            call add_ib_to_group(recipe(nib, np), np, nib)
+         end do
+      end do
+
+      !if (myrank .eq. 0) then
+      !   do np = 1, npacks
+      !      write(*,*) pack_size(np), sum(pack_size)
+      !      write(*,*) reverse_recipe(:,np)
+      !   end do
+      !end if
+
+      return
+
+      contains
+      !-------------------------
+      subroutine add_ib_to_group(ib, np, n)
+      implicit none
+      integer, intent(in) :: ib, np, n
+      integer :: i
+      
+      do i = 1, ng(ib)
+         pack_size(np)  = pack_size(np) + 1
+         pack_idx(pack_size(np), np) = ib
+         reverse_recipe(pack_size(np), np) = n
+      end do
+
+
+      end subroutine
+      !-------------------------
+      end subroutine
+
       subroutine copyin_radsw_main_gpu(async_id)
       ! must be called after executing rswinit_gpu
       implicit none
@@ -367,7 +513,8 @@
       integer, intent(in) :: async_id
 
       !$acc enter data copyin(nspa, nspb, idxebc, idxsfc, exp_tbl, ng, ngs, ngb, &
-      !$acc&      wvnum1, wvnum2) async(async_id)
+      !$acc&      wvnum1, wvnum2, pack_size, pack_idx, recipe, reverse_recipe, &
+      !$acc&      packs_nbands_list) async(async_id)
 
       return
       end subroutine
@@ -377,16 +524,22 @@
       subroutine swrad_gpu                                                  &
 !...................................
 
+!  ---  inputs for setaer_sw_gpu:
+           ( prslk1, tvly, rhly, slmsk, tracer1, xlon, xlat, lsswr, lslwr, &
+             me, map_jj, map_i, my_max, ntrac, &
 !  ---  inputs:
-     &     ( plyr,plvl,tlyr,tlvl,qlyr,olyr,gasvmr,                      &
-     &       clouds,icseed,aerosols,sfcalb,                             &
-     &       cosz,solcon,nday,idxday,                                   &
-     &       myim, nlay, nlp1, lprnt, myrank, ix,                           &
-     &       nf_clds, nf_vgas, nf_albd, nf_aesw, async_id, fulljj, blocks, smalljj, &
+     &       plyr,plvl,tlyr,tlvl,qlyr,olyr,gasvmr_co2, gasvmr_other,                      &
+     &       clouds,cfrac, cliqp, reliq, cicep, reice, cdat1, cdat2, cdat3, cdat4, &
+             icseed,sfcalb,                             &
+     &       cosz,solcon,nday,idxday, map_nday_ipt, map_nday_jj, offset_nday,                                   &
+     &       myim, nlay, nlp1, lprnt, myrank, ix, kd,                            &
+     &       nf_clds, nf_vgas, nf_albd, nf_aesw, max_nday_length, async_id, fulljj, blocks, smalljj, lhtrswb, &
 !  ---  outputs:
-     &       hswc,topflx,sfcflx                                         &
+     &       hswc,topflx_upfxc, topflx_dnfxc, topflx_upfx0, sfcflx_upfxc, &
+         sfcflx_dnfxc, sfcflx_upfx0, sfcflx_dnfx0,                              &
 !! ---  optional:
-     &,      hsw0,hswb,flxprf,fdncmp                                    &
+     &      hsw0,hswb,flxprf_upfxc, flxprf_dnfxc, flxprf_upfx0, flxprf_dnfx0, &
+            fdncmp_uvbfc, fdncmp_uvbf0, fdncmp_nirbm, fdncmp_nirdf, fdncmp_visbm, fdncmp_visdf &
      &     )
 
 !  ====================  defination of variables  ====================  !
@@ -565,31 +718,53 @@
 !  =====================    end of definitions    ====================  !
 
 !  ---  inputs:
+      integer,  intent(in) :: me, my_max, ntrac, max_nday_length
+      logical,  intent(in) :: lsswr, lslwr
+      real (kind=kind_phys), dimension(ix, my_max), intent(in) ::  slmsk,  &
+               xlon, xlat
+      real (kind=kind_phys), dimension(nxptot,nlay)  :: rhly, prslk1, tvly
+      real (kind=kind_phys), dimension(nxptot,nlay,ntrac)   :: tracer1
+      integer, dimension(nxptot) :: map_jj, map_i
+
+
       integer, intent(in) :: myim(fulljj), nlay, nlp1, nday(fulljj), myrank, ix, &
-         nf_clds, nf_vgas, nf_albd, nf_aesw, fulljj, blocks, smalljj
+         nf_clds, nf_vgas, nf_albd, nf_aesw, fulljj, blocks, smalljj, kd
+      integer, dimension(fulljj) :: offset_nday
+      integer, dimension(ix*fulljj) :: map_nday_ipt, map_nday_jj
 
-      integer, dimension(ix, fulljj), intent(in) :: idxday, icseed
+      integer, dimension(nxptot), intent(in) :: idxday
+      integer, dimension(ix, fulljj), intent(in) :: icseed
 
-      logical, intent(in) :: lprnt
+      logical, intent(in) :: lprnt, lhtrswb
 
-      real (kind=kind_phys), dimension(ix,nlp1, fulljj), intent(in) ::        &
+      real (kind=kind_phys), dimension(nxptot,nlp1), intent(in) ::        &
      &       plvl, tlvl
-      real (kind=kind_phys), dimension(ix,nlay, fulljj), intent(in) ::        &
+      real (kind=kind_phys), dimension(nxptot,nlay), intent(in) ::        &
      &       plyr, tlyr, qlyr, olyr
-      real (kind=kind_phys), dimension(ix,nf_albd, fulljj),    intent(in) :: sfcalb
+      real (kind=kind_phys), dimension(nxptot,nf_albd),    intent(in) :: sfcalb
 
-      real (kind=kind_phys), dimension(ix,nlay,nf_vgas, fulljj),intent(in):: gasvmr
-      real (kind=kind_phys), dimension(ix,nlay,nf_clds, fulljj),intent(in):: clouds
-      real (kind=kind_phys), dimension(ix,nlay,nbdsw,nf_aesw, fulljj),intent(in)::  &
-     &       aerosols
+      real (kind=kind_phys), dimension(nxptot,nlay),intent(in):: gasvmr_co2
+      real (kind=kind_phys), dimension(nf_vgas),intent(in):: gasvmr_other
+      real (kind=kind_phys), dimension(nxptot,nlay,nf_clds),intent(in):: clouds
+      real (kind=kind_phys), dimension(nxptot,nlay),intent(in):: &
+         cliqp, reliq, cicep, reice, cdat4
+      real (kind=kind_phys), dimension(nxptot,nlay),intent(inout):: cfrac
+      real (kind=kind_phys), dimension(nxptot,nlay),intent(inout):: cdat1, cdat2, cdat3
+
+!      real (kind=kind_phys), dimension(ix,nlay,nbdsw,nf_aesw, fulljj),intent(in)::  &
+!     &       aerosols
+
 
       real (kind=kind_phys), intent(in) :: cosz(ix, fulljj), solcon
 
 !  ---  outputs:
       real (kind=kind_phys), dimension(ix,nlay, fulljj), intent(out) :: hswc
 
-      real (kind=kind_phys),    dimension(ix, fulljj, 3), intent(out) :: topflx
-      real (kind=kind_phys),    dimension(ix, fulljj, 4), intent(out) :: sfcflx
+      !real (kind=kind_phys),    dimension(ix, fulljj, 3), intent(out) :: topflx
+      real (kind=kind_phys),    dimension(ix, fulljj), intent(out) :: topflx_upfxc, &
+         topflx_upfx0, topflx_dnfxc
+      real (kind=kind_phys),    dimension(ix, fulljj), intent(out) :: sfcflx_upfxc, &
+         sfcflx_dnfxc, sfcflx_upfx0, sfcflx_dnfx0
 
 !! ---  optional outputs:
       real (kind=kind_phys), dimension(ix,nlay,nbdsw, fulljj), optional,      &
@@ -597,47 +772,39 @@
 
       real (kind=kind_phys), dimension(ix,nlay, fulljj),       optional,      &
      &       intent(out) :: hsw0
-      real (kind=kind_phys),    dimension(ix,nlp1, fulljj, 4),       optional,      &
-     &       intent(out) :: flxprf
-      real (kind=kind_phys),    dimension(ix, fulljj, 6),            optional,      &
-     &       intent(out) :: fdncmp
+      real (kind=kind_phys),    dimension(ix,nlp1, fulljj),       optional,      &
+     &       intent(out) :: flxprf_upfxc, flxprf_dnfxc, flxprf_upfx0, flxprf_dnfx0
+      real (kind=kind_phys),    dimension(ix, fulljj),            optional,      &
+     &       intent(out) :: fdncmp_uvbfc, fdncmp_uvbf0, fdncmp_nirbm, fdncmp_nirdf, &
+        fdncmp_visbm, fdncmp_visdf
 
 !  ---  locals:
-      real (kind=kind_phys), dimension(ix, nlay,ngptsw, smalljj) :: taug, taur
       real (kind=kind_phys), dimension(:,:,:,:), allocatable :: cldfmc
-      real (kind=kind_phys), dimension(ix, nlp1,nbdsw, smalljj):: fxupc, fxdnc,      &
+      real (kind=kind_phys), dimension(max_nday_length, nlp1, nbdsw) :: fxupc, fxdnc,      &
      &       fxup0, fxdn0
 
-      real (kind=kind_phys), dimension(ix, nlay,nbdsw, smalljj)  ::                  &
-     &       tauae, ssaae, asyae, taucw, ssacw, asycw
 
-      real (kind=kind_phys), dimension(ix, ngptsw, smalljj) :: sfluxzen
+      real (kind=kind_phys), dimension(max_nday_length, nlay)   :: delp,     &
+     &       pavel, tavel, coldry, colmol, h2ovmr, o3vmr, temcol, rfdelp
 
-      real (kind=kind_phys), dimension(ix, nlay, smalljj)   :: cldfrc,     delp,     &
-     &       pavel, tavel, coldry, colmol, h2ovmr, o3vmr, temcol,       &
-     &       cliqp, reliq, cicep, reice, cdat1, cdat2, cdat3, cdat4,    &
-     &       cfrac, fac00, fac01, fac10, fac11, forfac, forfrac,        &
-     &       selffac, selffrac, rfdelp
-
-      real (kind=kind_phys), dimension(ix, nlp1, smalljj) :: fnet, flxdc, flxuc,     &
+      real (kind=kind_phys), dimension(max_nday_length, nlp1) :: fnet, flxdc, flxuc,     &
      &       flxd0, flxu0
-      real (kind=kind_phys), dimension(ix, nlp1, nbdsw, smalljj) :: fnetm
+      real (kind=kind_phys), dimension(max_nday_length, nlp1, nbdsw) :: fnetm
 
-      real (kind=kind_phys), dimension(ix, 2, smalljj) :: albbm, albdf, sfbmc,       &
+      real (kind=kind_phys), dimension(max_nday_length, 2) :: albbm, albdf, sfbmc,       &
      &       sfbm0, sfdfc, sfdf0
 
-      real (kind=kind_phys) :: cosz1, sntz1(ix, smalljj), tem0, tem1, tem2, s0fac
-      real (kind=kind_phys), dimension(ix, smalljj) :: ssolar, zcf0, zcf1, ftoau0, &
-         ftoauc, ftoadc, fsfcu0, fsfcuc, fsfcd0, fsfcdc, suvbfc, suvbf0
+      real (kind=kind_phys) :: cosz1, tem0, tem1, tem2, s0fac
+      real (kind=kind_phys), dimension(max_nday_length) :: ssolar, zcf0, zcf1, ftoau0, &
+         ftoauc, ftoadc, fsfcu0, fsfcuc, fsfcd0, fsfcdc, suvbfc, suvbf0, sntz1
 
 !  ---  column amount of absorbing gases:
 !       (:,m) m = 1-h2o, 2-co2, 3-o3, 4-n2o, 5-ch4, 6-o2, 7-co
-      real (kind=kind_phys) ::  colamt(ix, nlay,maxgas, smalljj)
+      real (kind=kind_phys), dimension(max_nday_length, nlay, maxgas) ::  colamt
 
       integer, dimension(ix, smalljj) :: ipseed
-      integer, dimension(ix, nlay, smalljj) :: indfor, indself, jp, jt, jt1
 
-      integer :: i, ib, ipt, j1, k, kk, laytrop(ix, smalljj), mb, jj
+      integer :: i, ib, ipt, j1, k, kk, mb, jj
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       real (kind=kind_phys), dimension(nlay)   :: cldfrc_im,     delp_im,     &
      &       pavel_im, tavel_im, coldry_im, colmol_im, h2ovmr_im, o3vmr_im, temcol_im,       &
@@ -656,15 +823,54 @@
       real (kind=kind_phys), dimension(ngptsw) :: sfluxzen_im
       integer, dimension(ix) :: ipseed_im
       real (kind=kind_phys) ::  colamt_im(nlay,maxgas)
-      integer :: async_id, jf, jb,  jjoffset, jbs, jbe, blocks_local, blockjj
+      integer :: async_id, jf, jb,  jjoffset, jbs, jbe, blocks_local, blockjj, &
+         nday_length, jbe_nday, jbs_nday, n, m, r
+
+
+      ! GPU: variable name changed: CPU - topflx%upfxc, GPU - topflx_upfxc
+      ! GPU: variable name changed: CPU - topflx%dnfxc, GPU - topflx_dnfxc
+      ! GPU: variable name changed: CPU - topflx%upfx0, GPU - topflx_upfx0
+      ! GPU: variable name changed: CPU - sfcflx%upfxc, GPU - sfcflx_upfxc
+      ! GPU: variable name changed: CPU - sfcflx%dnfxc, GPU - sfcflx_dnfxc
+      ! GPU: variable name changed: CPU - sfcflx%upfx0, GPU - sfcflx_upfx0
+      ! GPU: variable name changed: CPU - sfcflx%dnfx0, GPU - sfcflx_dnfx0
+      ! GPU: variable name changed: CPU - flxprf%upfxc, GPU - flxprf_upfxc
+      ! GPU: variable name changed: CPU - flxprf%dnfxc, GPU - flxprf_dnfxc
+      ! GPU: variable name changed: CPU - flxprf%upfx0, GPU - flxprf_upfx0
+      ! GPU: variable name changed: CPU - flxprf%dnfx0, GPU - flxprf_dnfx0
+      ! GPU: variable name changed: CPU - fdncmp%uvbfc, GPU - fdncmp_uvbfc
+      ! GPU: variable name changed: CPU - fdncmp%uvbf0, GPU - fdncmp_uvbf0
+      ! GPU: variable name changed: CPU - fdncmp%nirbm, GPU - fdncmp_nirbm
+      ! GPU: variable name changed: CPU - fdncmp%nirdf, GPU - fdncmp_nirdf
+      ! GPU: variable name changed: CPU - fdncmp%visbm, GPU - fdncmp_visbm
+      ! GPU: variable name changed: CPU - fdncmp%visdf, GPU - fdncmp_visdf
+      ! GPU: variable name changed: CPU - aerosols(:,:,:,1), GPU - tauae1
+      ! GPU: variable name changed: CPU - aerosols(:,:,:,2), GPU - ssaae1
+      ! GPU: variable name changed: CPU - aerosols(:,:,:,3), GPU - asyae1
 !
 !===> ... begin here
 !
+
       if (isubcsw > 0) allocate(cldfmc(ix, nlay,ngptsw, smalljj))
+
       lhswb  = present ( hswb )
       lhsw0  = present ( hsw0 )
-      lflxprf= present ( flxprf )
-      lfdncmp= present ( fdncmp )
+      lflxprf_upfxc= present ( flxprf_upfxc )
+      lflxprf_dnfxc= present ( flxprf_dnfxc )
+      lflxprf_upfx0= present ( flxprf_upfx0 )
+      lflxprf_dnfx0= present ( flxprf_upfxc )
+      lflxprf = ((lflxprf_upfxc .and. lflxprf_dnfxc) .and. &
+                 (lflxprf_upfx0 .and. lflxprf_dnfx0))
+      
+      lfdncmp_uvbfc= present ( fdncmp_uvbfc )
+      lfdncmp_uvbf0= present ( fdncmp_uvbf0 )
+      lfdncmp_nirbm= present ( fdncmp_nirbm )
+      lfdncmp_nirdf= present ( fdncmp_nirdf )
+      lfdncmp_visbm= present ( fdncmp_visbm )
+      lfdncmp_visdf= present ( fdncmp_visdf )
+      lfdncmp= (((lfdncmp_uvbfc .and. lfdncmp_uvbf0) .and. &
+                 (lfdncmp_nirbm .and. lfdncmp_nirdf)) .and. &
+                (lfdncmp_visbm .and. lfdncmp_visdf))
  
 !      if (myrank .eq. 0) print *,'$$$$ swrad start $$$$'
 !      if (myrank .eq. 0) print *,'$$$$ lhswb   =',lhswb
@@ -680,21 +886,19 @@
       s0fac = solcon / s0
 
          !  --- ...  initial output arrays
-      !$acc data create(taug, taur, fxupc, fxdnc, fxup0, fxdn0, tauae, ssaae, &
-      !$acc&     asyae, taucw, ssacw, asycw, sfluxzen, cldfrc, delp, pavel, &
-      !$acc&     tavel, coldry, colmol, h2ovmr, o3vmr, temcol, cliqp, reliq, &
-      !$acc&     cicep, reice, cdat1, cdat2, cdat3, cdat4, cfrac, fac00, fac01, &
-      !$acc&     fac10, fac11, forfac, forfrac, selffac, selffrac, rfdelp, fnet, &
+      !$acc data create(fxupc, fxdnc, fxup0, fxdn0, delp, pavel, &
+      !$acc&     tavel, coldry, colmol, h2ovmr, o3vmr, temcol, rfdelp, fnet, &
       !$acc&     flxdc, flxuc, flxd0, flxu0, fnetm, albbm, albdf, sfbmc, sfbm0, &
       !$acc&     sfdfc, sfdf0, sntz1, ssolar, zcf0, zcf1, ftoau0, ftoauc, ftoadc, &
-      !$acc&     fsfcu0, fsfcuc, fsfcd0, fsfcdc, suvbfc, suvbf0, colamt, ipseed, &
-      !$acc&     indfor, indself, jp, jt, jt1, laytrop) async(async_id)
+      !$acc&     fsfcu0, fsfcuc, fsfcd0, fsfcdc, suvbfc, suvbf0, colamt, ipseed) async(async_id)
       do jb = 1, blocks
       jjoffset = (fulljj-1)*(jb-1)/blocks
       jbs = jjoffset+1
       jbe = (fulljj-1)*jb/blocks
       blockjj = jbe - jbs + 1
-      !write(*,*) smalljj, jjoffset, jbs, jbe, jb
+      jbs_nday = offset_nday(jbs)+1
+      jbe_nday = offset_nday(jbe+1)
+      nday_length = jbe_nday - jbs_nday + 1
       !$acc parallel loop gang collapse(2) private(jf) async(async_id)
       do jj = 1, blockjj
          do k = 1, nlay
@@ -710,13 +914,13 @@
          do i = 1, ix
             jf = jjoffset+jj
             if (i .le. myim(jf)) then
-               topflx(i, jf, 1) = f_zero
-               topflx(i, jf, 2) = f_zero
-               topflx(i, jf, 3) = f_zero
-               sfcflx(i, jf, 1) = f_zero
-               sfcflx(i, jf, 2) = f_zero
-               sfcflx(i, jf, 3) = f_zero
-               sfcflx(i, jf, 4) = f_zero
+               topflx_upfxc(i, jf) = f_zero
+               topflx_upfx0(i, jf) = f_zero
+               topflx_dnfxc(i, jf) = f_zero
+               sfcflx_upfxc(i, jf) = f_zero
+               sfcflx_dnfxc(i, jf) = f_zero
+               sfcflx_upfx0(i, jf) = f_zero
+               sfcflx_dnfx0(i, jf) = f_zero
             end if
          end do
       end do
@@ -729,10 +933,10 @@
                jf = jjoffset+jj
                !$acc loop vector
                do i = 1, myim(jf)
-                  flxprf(i, k, jf, 1) = f_zero
-                  flxprf(i, k, jf, 2) = f_zero
-                  flxprf(i, k, jf, 3) = f_zero
-                  flxprf(i, k, jf, 4) = f_zero
+                  flxprf_upfxc(i, k, jf) = f_zero
+                  flxprf_dnfxc(i, k, jf) = f_zero
+                  flxprf_upfx0(i, k, jf) = f_zero
+                  flxprf_dnfx0(i, k, jf) = f_zero
                end do
             end do
          end do
@@ -744,12 +948,12 @@
             do i = 1, ix
                jf = jjoffset+jj
                if (i .le. myim(jf)) then
-                  fdncmp(i, jf, 1) = f_zero
-                  fdncmp(i, jf, 2) = f_zero
-                  fdncmp(i, jf, 3) = f_zero
-                  fdncmp(i, jf, 4) = f_zero
-                  fdncmp(i, jf, 5) = f_zero
-                  fdncmp(i, jf, 6) = f_zero
+                  fdncmp_uvbfc(i, jf) = f_zero
+                  fdncmp_uvbf0(i, jf) = f_zero
+                  fdncmp_nirbm(i, jf) = f_zero
+                  fdncmp_nirdf(i, jf) = f_zero
+                  fdncmp_visbm(i, jf) = f_zero
+                  fdncmp_visdf(i, jf) = f_zero
                end if
             end do
          end do
@@ -768,20 +972,21 @@
          end do
       endif
 
-      if ( lhswb ) then
-         !$acc parallel loop gang collapse(3) private(jf) async(async_id)
-         do jj = 1, blockjj
-            do ib = 1, nbdsw
-               do k = 1, nlay
-                  jf = jjoffset+jj
-                  !$acc loop vector
-                  do i = 1, myim(jf)
-                     hswb(i, k, ib, jf) = f_zero
-                  end do
-               end do
-            end do
-         end do
-      endif
+      ! GPU: hswb has already initialized just before calling swrad
+      !if ( lhswb ) then
+      !   !$acc parallel loop gang collapse(3) private(jf) async(async_id)
+      !   do jj = 1, blockjj
+      !      do ib = 1, nbdsw
+      !         do k = 1, nlay
+      !            jf = jjoffset+jj
+      !            !$acc loop vector
+      !            do i = 1, myim(jf)
+      !               hswb(i, k, ib, jf) = f_zero
+      !            end do
+      !         end do
+      !      end do
+      !   end do
+      !endif
 
       !  --- ...  change random number seed value for each radiation invocation
 
@@ -813,23 +1018,21 @@
          !     endif
 
          !  --- ...  loop over each daytime grid point
-      !$acc parallel loop collapse(2) private(j1, jf) async(async_id)
-      do jj = 1, blockjj
-         do ipt = 1, ix
-            jf = jjoffset+jj
-            if (ipt .le. nday(jf)) then ! lab_do_ipt
-               j1 = idxday(ipt, jf)
+      !$acc parallel loop private(j1, jf, jj, m, r) async(async_id)
+      do n = jbs_nday, nday_length + jbs_nday - 1
+         jj = map_nday_jj(n) - jjoffset
+         jf = jjoffset+jj
+         j1 = idxday(n)
+         m = n - jbs_nday + 1
+         r = j1 + nxjp_acc(jf) - 1
+         sntz1(m)  = f_one / cosz(j1, jf)
+         ssolar(m) = s0fac * cosz(j1, jf)
 
-               sntz1(ipt, jj)  = f_one / cosz(j1, jf)
-               ssolar(ipt, jj) = s0fac * cosz(j1, jf)
-
-               !  --- ...  surface albedo: bm,df - dir,dif;  1,2 - nir,uvv
-               albbm(ipt, 1, jj) = sfcalb(j1,1, jf)
-               albdf(ipt, 1, jj) = sfcalb(j1,2, jf)
-               albbm(ipt, 2, jj) = sfcalb(j1,3, jf)
-               albdf(ipt, 2, jj) = sfcalb(j1,4, jf)
-            end if
-         end do
+         !  --- ...  surface albedo: bm,df - dir,dif;  1,2 - nir,uvv
+         albbm(m, 1) = sfcalb(r,1)
+         albdf(m, 1) = sfcalb(r,2)
+         albbm(m, 2) = sfcalb(r,3)
+         albdf(m, 2) = sfcalb(r,4)
       end do
 
             !  --- ...  prepare atmospheric profile for use in rrtm
@@ -839,37 +1042,37 @@
 
          tem1 = 100.0 * con_g
          tem2 = 1.0e-20 * 1.0e3 * con_avgd
-         !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-         do jj = 1, blockjj
-            do k = 1, nlay
+         !$acc parallel loop collapse(2) private(jf, j1, kk, tem0, jj, m, r) async(async_id)
+         do k = 1, nlay
+            do n = jbs_nday, nday_length + jbs_nday - 1
+               jj = map_nday_jj(n) - jjoffset
                jf = jjoffset+jj
-               !$acc loop vector private(j1, kk, tem0)
-               do ipt = 1, nday(jf) ! lab_do_ipt
-                  j1 = idxday(ipt, jf)
-                  kk = nlp1 - k
-                  pavel(ipt, k, jj) = plyr(j1,kk, jf)
-                  tavel(ipt, k, jj) = tlyr(j1,kk, jf)
-                  delp (ipt, k, jj) = plvl(j1,kk+1, jf) - plvl(j1,kk, jf)
+               j1 = idxday(n)
+               m = n - jbs_nday + 1
+               r = j1 + nxjp_acc(jf) - 1
+               kk = nlp1 - k
+               pavel(m, k) = plyr(r,kk)
+               tavel(m, k) = tlyr(r,kk)
+               delp (m, k) = plvl(r,kk+1) - plvl(r,kk)
 
-                  !  --- ...  set absorber amount
-                  !test use
-                  !           h2ovmr(k)= max(f_zero,qlyr(j1,kk)*amdw)                     ! input mass mixing ratio
-                  !           h2ovmr(k)= max(f_zero,qlyr(j1,kk))                          ! input vol mixing ratio
-                  !           o3vmr (k)= max(f_zero,olyr(j1,kk))                          ! input vol mixing ratio
-                  !ncep model use
-                  h2ovmr(ipt, k, jj)= max(f_zero,qlyr(j1,kk, jf)*amdw/(f_one-qlyr(j1,kk, jf))) ! input specific humidity
-                  o3vmr (ipt, k, jj)= max(f_zero,olyr(j1,kk, jf)*amdo3)                    ! input mass mixing ratio
+               !  --- ...  set absorber amount
+               !test use
+               !           h2ovmr(k)= max(f_zero,qlyr(j1,kk)*amdw)                     ! input mass mixing ratio
+               !           h2ovmr(k)= max(f_zero,qlyr(j1,kk))                          ! input vol mixing ratio
+               !           o3vmr (k)= max(f_zero,olyr(j1,kk))                          ! input vol mixing ratio
+               !ncep model use
+               h2ovmr(m, k)= max(f_zero,qlyr(r,kk)*amdw/(f_one-qlyr(r,kk))) ! input specific humidity
+               o3vmr (m, k)= max(f_zero,olyr(r,kk)*amdo3)                    ! input mass mixing ratio
 
-                  tem0 = (f_one - h2ovmr(ipt, k, jj))*con_amd + h2ovmr(ipt, k, jj)*con_amw
-                  coldry(ipt, k, jj) = tem2 * delp(ipt, k, jj) / &
-                  (tem1*tem0*(f_one + h2ovmr(ipt, k, jj)))
-                  temcol(ipt, k, jj) = 1.0e-12 * coldry(ipt, k, jj)
+               tem0 = (f_one - h2ovmr(m, k))*con_amd + h2ovmr(m, k)*con_amw
+               coldry(m, k) = tem2 * delp(m, k) / &
+               (tem1*tem0*(f_one + h2ovmr(m, k)))
+               temcol(m, k) = 1.0e-12 * coldry(m, k)
 
-                  colamt(ipt, k,1, jj) = max(f_zero,    coldry(ipt, k, jj)*h2ovmr(ipt, k, jj))         ! h2o
-                  colamt(ipt, k,2, jj) = max(temcol(ipt, k, jj), coldry(ipt, k, jj)*gasvmr(j1,kk,1, jf))   ! co2
-                  colamt(ipt, k,3, jj) = max(f_zero,    coldry(ipt, k, jj)*o3vmr(ipt, k, jj))          ! o3
-                  colmol(ipt, k, jj)   = coldry(ipt, k, jj) + colamt(ipt, k,1, jj)
-               enddo
+               colamt(m, k,1) = max(f_zero,    coldry(m, k)*h2ovmr(m, k))         ! h2o
+               colamt(m, k,2) = max(temcol(m, k), coldry(m, k)*gasvmr_co2(r,kk))   ! co2
+               colamt(m, k,3) = max(f_zero,    coldry(m, k)*o3vmr(m, k))          ! o3
+               colmol(m, k)   = coldry(m, k) + colamt(m, k,1)
             end do
          end do
 
@@ -877,91 +1080,45 @@
                !           to molec/cm2 based on coldry (scaled to 1.0e-20)
 
          if (iswrgas > 0) then
-            !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-            do jj = 1, blockjj
-               do k = 1, nlay
-                  jf = jjoffset+jj
-                  !$acc loop vector private(j1, kk)
-                  do ipt = 1, nday(jf) ! lab_do_ipt
-                     j1 = idxday(ipt, jf)
-                     kk = nlp1 - k
-                     colamt(ipt, k,4, jj) = max(temcol(ipt, k, jj), coldry(ipt, k, jj)*gasvmr(j1,kk,2, jf))  ! n2o
-                     colamt(ipt, k,5, jj) = max(temcol(ipt, k, jj), coldry(ipt, k, jj)*gasvmr(j1,kk,3, jf))  ! ch4
-                     colamt(ipt, k,6, jj) = max(temcol(ipt, k, jj), coldry(ipt, k, jj)*gasvmr(j1,kk,4, jf))  ! o2
-                     !             colamt(k,7) = max(temcol(k), coldry(k)*gasvmr(j1,kk,5))  ! co - notused
-                  enddo
+            !$acc parallel loop collapse(2) private(jj, m) async(async_id)
+            do k = 1, nlay
+               do n = jbs_nday, nday_length + jbs_nday - 1
+                  jj = map_nday_jj(n) - jjoffset
+                  m = n - jbs_nday + 1
+                  colamt(m, k,4) = max(temcol(m, k), coldry(m, k)*gasvmr_other(2))  ! n2o
+                  colamt(m, k,5) = max(temcol(m, k), coldry(m, k)*gasvmr_other(3))  ! ch4
+                  colamt(m, k,6) = max(temcol(m, k), coldry(m, k)*gasvmr_other(4))  ! o2
+                  !             colamt(k,7) = max(temcol(k), coldry(k)*gasvmr(j1,kk,5))  ! co - notused
                end do
             end do
          else
-            !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-            do jj = 1, blockjj
-               do k = 1, nlay
-                  jf = jjoffset+jj
-                  !$acc loop vector private(j1)
-                  do ipt = 1, nday(jf) ! lab_do_ipt
-                     j1 = idxday(ipt, jf)
-                     colamt(ipt, k,4, jj) = temcol(ipt, k, jj)                                  ! n2o
-                     colamt(ipt, k,5, jj) = temcol(ipt, k, jj)                                  ! ch4
-                     colamt(ipt, k,6, jj) = temcol(ipt, k, jj)                                  ! o2
-                     !             colamt(k,7) = temcol(k)                                  ! co - notused
-                  enddo
+            !$acc parallel loop collapse(2) private(jj, m) async(async_id)
+            do k = 1, nlay
+               do n = 1, nday_length
+                  jj = map_nday_jj(n) - jjoffset
+                  m = n - jbs_nday + 1
+                  colamt(m, k,4) = temcol(m, k)                                  ! n2o
+                  colamt(m, k,5) = temcol(m, k)                                  ! ch4
+                  colamt(m, k,6) = temcol(m, k)                                  ! o2
+                  !             colamt(k,7) = temcol(k)                                  ! co - notused
                end do
             end do
          endif
 
                !  --- ...  set aerosol optical properties
-         !$acc parallel loop gang collapse(3) private(kk, jf) async(async_id)
-         do jj = 1, blockjj
-            do ib = 1, nbdsw
-               do k = 1, nlay
+         if (iswcliq <= 0) then    ! use prognostic cloud method
+            !$acc parallel loop collapse(2) private(kk, jf, jj) async(async_id)
+            do k = 1, nlay
+               do n = jbs_nday, nday_length + jbs_nday - 1
+                  jj = map_nday_jj(n) - jjoffset
                   kk = nlp1 - k
                   jf = jjoffset+jj
-                  !$acc loop vector private(j1)
-                  do ipt = 1, nday(jf) ! lab_do_ipt
-                     j1 = idxday(ipt, jf)
-                     tauae(ipt, k,ib, jj) = aerosols(j1,kk,ib,1, jf)
-                     ssaae(ipt, k,ib, jj) = aerosols(j1,kk,ib,2, jf)
-                     asyae(ipt, k,ib, jj) = aerosols(j1,kk,ib,3, jf)
-                  enddo
-               enddo
-            end do
-         end do
-
-         if (iswcliq > 0) then    ! use prognostic cloud method
-            !$acc parallel loop gang collapse(2) private(kk, jf) async(async_id)
-            do jj = 1, blockjj
-               do k = 1, nlay
-                  kk = nlp1 - k
-                  jf = jjoffset+jj
-                  !$acc loop vector private(j1)
-                  do ipt = 1, nday(jf) ! lab_do_ipt
-                     j1 = idxday(ipt, jf)
-                     cfrac(ipt, k, jj) = clouds(j1,kk,1, jf)      ! cloud fraction
-                     cliqp(ipt, k, jj) = clouds(j1,kk,2, jf)      ! cloud liq path
-                     reliq(ipt, k, jj) = clouds(j1,kk,3, jf)      ! liq partical effctive radius
-                     cicep(ipt, k, jj) = clouds(j1,kk,4, jf)      ! cloud ice path
-                     reice(ipt, k, jj) = clouds(j1,kk,5, jf)      ! ice partical effctive radius
-                     cdat1(ipt, k, jj) = clouds(j1,kk,6, jf)      ! cloud rain drop path
-                     cdat2(ipt, k, jj) = clouds(j1,kk,7, jf)      ! rain partical effctive radius
-                     cdat3(ipt, k, jj) = clouds(j1,kk,8, jf)      ! cloud snow path
-                     cdat4(ipt, k, jj) = clouds(j1,kk,9, jf)      ! snow partical effctive radius
-                  enddo
-               end do
-            end do
-         else                     ! use diagnostic cloud method
-            !$acc parallel loop gang collapse(2) private(kk, jf) async(async_id)
-            do jj = 1, blockjj
-               do k = 1, nlay
-                  kk = nlp1 - k
-                  jf = jjoffset+jj
-                  !$acc loop vector private(j1)
-                  do ipt = 1, nday(jf) ! lab_do_ipt
-                     j1 = idxday(ipt, jf)
-                     cfrac(ipt, k, jj) = clouds(j1,kk,1, jf)      ! cloud fraction
-                     cdat1(ipt, k, jj) = clouds(j1,kk,2, jf)      ! cloud optical depth
-                     cdat2(ipt, k, jj) = clouds(j1,kk,3, jf)      ! cloud single scattering albedo
-                     cdat3(ipt, k, jj) = clouds(j1,kk,4, jf)      ! cloud asymmetry factor
-                  enddo
+                  j1 = idxday(n)
+                  r = j1 + nxjp_acc(jf) - 1
+                  cfrac(n, k) = clouds(r,kk,1)      ! cloud fraction
+                  cdat1(n, k) = clouds(r,kk,2)      ! cloud optical depth
+                  cdat2(n, k) = clouds(r,kk,3)      ! cloud single scattering albedo
+                  cdat3(n, k) = clouds(r,kk,4)      ! cloud asymmetry factor
                end do
             end do
          endif                    ! end if_iswcliq
@@ -970,35 +1127,35 @@
 
          tem1 = 100.0 * con_g
          tem2 = 1.0e-20 * 1.0e3 * con_avgd
-         !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-         do jj = 1, blockjj
-            do k = 1, nlay
+         !$acc parallel loop collapse(2) private(jf, j1, tem0, jj, m, r) async(async_id)
+         do k = 1, nlay
+            do n = jbs_nday, nday_length + jbs_nday - 1
+               jj = map_nday_jj(n) - jjoffset
                jf = jjoffset+jj
-               !$acc loop vector private(j1, tem0)
-               do ipt = 1, nday(jf) ! lab_do_ipt
-                  j1 = idxday(ipt, jf)
-                  pavel(ipt, k, jj) = plyr(j1,k, jf)
-                  tavel(ipt, k, jj) = tlyr(j1,k, jf)
-                  delp (ipt, k, jj) = plvl(j1,k, jf) - plvl(j1,k+1, jf)
+               j1 = idxday(n)
+               m = n - jbs_nday + 1
+               r = j1 + nxjp_acc(jf) - 1
+               pavel(m, k) = plyr(r,k)
+               tavel(m, k) = tlyr(r,k)
+               delp (m, k) = plvl(r,k) - plvl(r,k+1)
 
-                  !  --- ...  set absorber amount
-                  !test use
-                  !           h2ovmr(k)= max(f_zero,qlyr(j1,k)*amdw)                    ! input mass mixing ratio
-                  !           h2ovmr(k)= max(f_zero,qlyr(j1,k))                         ! input vol mixing ratio
-                  !           o3vmr (k)= max(f_zero,olyr(j1,k))                         ! input vol mixing ratio
-                  !ncep model use
-                  h2ovmr(ipt, k, jj)= max(f_zero,qlyr(j1,k, jf)*amdw/(f_one-qlyr(j1,k, jf))) ! input specific humidity
-                  o3vmr (ipt, k, jj)= max(f_zero,olyr(j1,k, jf)*amdo3)                   ! input mass mixing ratio
+               !  --- ...  set absorber amount
+               !test use
+               !           h2ovmr(k)= max(f_zero,qlyr(j1,k)*amdw)                    ! input mass mixing ratio
+               !           h2ovmr(k)= max(f_zero,qlyr(j1,k))                         ! input vol mixing ratio
+               !           o3vmr (k)= max(f_zero,olyr(j1,k))                         ! input vol mixing ratio
+               !ncep model use
+               h2ovmr(m, k)= max(f_zero,qlyr(r,k)*amdw/(f_one-qlyr(r,k))) ! input specific humidity
+               o3vmr (m, k)= max(f_zero,olyr(r,k)*amdo3)                   ! input mass mixing ratio
 
-                  tem0 = (f_one - h2ovmr(ipt, k, jj))*con_amd + h2ovmr(ipt, k, jj)*con_amw
-                  coldry(ipt, k, jj) = tem2 * delp(ipt, k, jj) / (tem1*tem0*(f_one + h2ovmr(ipt, k, jj)))
-                  temcol(ipt, k, jj) = 1.0e-12 * coldry(ipt, k, jj)
+               tem0 = (f_one - h2ovmr(m, k))*con_amd + h2ovmr(m, k)*con_amw
+               coldry(m, k) = tem2 * delp(m, k) / (tem1*tem0*(f_one + h2ovmr(m, k)))
+               temcol(m, k) = 1.0e-12 * coldry(m, k)
 
-                  colamt(ipt, k,1, jj) = max(f_zero,    coldry(ipt, k, jj)*h2ovmr(ipt, k, jj))         ! h2o
-                  colamt(ipt, k,2, jj) = max(temcol(ipt, k, jj), coldry(ipt, k, jj)*gasvmr(j1,k,1, jf))    ! co2
-                  colamt(ipt, k,3, jj) = max(f_zero,    coldry(ipt, k, jj)*o3vmr(ipt, k, jj))          ! o3
-                  colmol(ipt, k, jj)   = coldry(ipt, k, jj) + colamt(ipt, k,1, jj)
-               enddo
+               colamt(m, k,1) = max(f_zero,    coldry(m, k)*h2ovmr(m, k))         ! h2o
+               colamt(m, k,2) = max(temcol(m, k), coldry(m, k)*gasvmr_co2(r,k))    ! co2
+               colamt(m, k,3) = max(f_zero,    coldry(m, k)*o3vmr(m, k))          ! o3
+               colmol(m, k)   = coldry(m, k) + colamt(m, k,1)
             end do
          end do
 
@@ -1006,219 +1163,183 @@
          !           to molec/cm2 based on coldry (scaled to 1.0e-20)
 
          if (iswrgas > 0) then
-            !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-            do jj = 1, blockjj
-               do k = 1, nlay
-                  jf = jjoffset+jj
-                  !$acc loop vector private(j1)
-                  do ipt = 1, nday(jf) ! lab_do_ipt
-                     j1 = idxday(ipt, jf)
-                     colamt(ipt, k,4, jj) = max(temcol(ipt, k, jj), coldry(ipt, k, jj)*gasvmr(j1,k,2, jf))  ! n2o
-                     colamt(ipt, k,5, jj) = max(temcol(ipt, k, jj), coldry(ipt, k, jj)*gasvmr(j1,k,3, jf))  ! ch4
-                     colamt(ipt, k,6, jj) = max(temcol(ipt, k, jj), coldry(ipt, k, jj)*gasvmr(j1,k,4, jf))  ! o2
-                     !             colamt(k,7) = max(temcol(k), coldry(k)*gasvmr(j1,k,5))  ! co - notused
-                  enddo
+            !$acc parallel loop collapse(2) private(jj, m) async(async_id)
+            do k = 1, nlay
+               do n = jbs_nday, nday_length + jbs_nday - 1
+                  jj = map_nday_jj(n) - jjoffset
+                  m = n - jbs_nday + 1
+                  colamt(m, k,4) = max(temcol(m, k), coldry(m, k)*gasvmr_other(2))  ! n2o
+                  colamt(m, k,5) = max(temcol(m, k), coldry(m, k)*gasvmr_other(3))  ! ch4
+                  colamt(m, k,6) = max(temcol(m, k), coldry(m, k)*gasvmr_other(4))  ! o2
+                  !             colamt(k,7) = max(temcol(k), coldry(k)*gasvmr(j1,k,5))  ! co - notused
                end do
             end do
          else
-            !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-            do jj = 1, blockjj
-               do k = 1, nlay
-                  jf = jjoffset+jj
-                  !$acc loop vector private(j1)
-                  do ipt = 1, nday(jf) ! lab_do_ipt
-                     j1 = idxday(ipt, jf)
-                     colamt(ipt, k,4, jj) = temcol(ipt, k, jj)                                 ! n2o
-                     colamt(ipt, k,5, jj) = temcol(ipt, k, jj)                                 ! ch4
-                     colamt(ipt, k,6, jj) = temcol(ipt, k, jj)                                 ! o2
-                     !             colamt(k,7) = temcol(k)                                 ! co - notused
-                  enddo
+            !$acc parallel loop collapse(2) private(jj, m) async(async_id)
+            do k = 1, nlay
+               do n = jbs_nday, nday_length + jbs_nday - 1
+                  jj = map_nday_jj(n) - jjoffset
+                  m = n - jbs_nday + 1
+                  colamt(m, k,4) = temcol(m, k)                                 ! n2o
+                  colamt(m, k,5) = temcol(m, k)                                 ! ch4
+                  colamt(m, k,6) = temcol(m, k)                                 ! o2
+                  !             colamt(k,7) = temcol(k)                                 ! co - notused
                end do
             end do
          endif
 
                !  --- ...  set aerosol optical properties
-         !$acc parallel loop gang collapse(3) private(jf) async(async_id)
-         do jj = 1, blockjj
-            do ib = 1, nbdsw
-               do k = 1, nlay
+         if (iswcliq <= 0) then    ! use prognostic cloud method
+            !$acc parallel loop collapse(2) private(jf, jj) async(async_id)
+            do k = 1, nlay
+               do n = jbs_nday, nday_length + jbs_nday - 1
+                  jj = map_nday_jj(n) - jjoffset
                   jf = jjoffset+jj
-                  !$acc loop vector private(j1)
-                  do ipt = 1, nday(jf) ! lab_do_ipt
-                     j1 = idxday(ipt, jf)
-                     tauae(ipt, k,ib, jj) = aerosols(j1,k,ib,1, jf)
-                     ssaae(ipt, k,ib, jj) = aerosols(j1,k,ib,2, jf)
-                     asyae(ipt, k,ib, jj) = aerosols(j1,k,ib,3, jf)
-                  enddo
-               enddo
-            end do
-         end do
-
-         if (iswcliq > 0) then    ! use prognostic cloud method
-            !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-            do jj = 1, blockjj
-               do k = 1, nlay
-                  jf = jjoffset+jj
-                  !$acc loop vector private(j1)
-                  do ipt = 1, nday(jf) ! lab_do_ipt
-                     j1 = idxday(ipt, jf)
-                     cfrac(ipt, k, jj) = clouds(j1,k,1, jf)       ! cloud fraction
-                     cliqp(ipt, k, jj) = clouds(j1,k,2, jf)       ! cloud liq path
-                     reliq(ipt, k, jj) = clouds(j1,k,3, jf)       ! liq partical effctive radius
-                     cicep(ipt, k, jj) = clouds(j1,k,4, jf)       ! cloud ice path
-                     reice(ipt, k, jj) = clouds(j1,k,5, jf)       ! ice partical effctive radius
-                     cdat1(ipt, k, jj) = clouds(j1,k,6, jf)       ! cloud rain drop path
-                     cdat2(ipt, k, jj) = clouds(j1,k,7, jf)       ! rain partical effctive radius
-                     cdat3(ipt, k, jj) = clouds(j1,k,8, jf)       ! cloud snow path
-                     cdat4(ipt, k, jj) = clouds(j1,k,9, jf)       ! snow partical effctive radius
-                  enddo
-               end do
-            end do
-         else                     ! use diagnostic cloud method
-            !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-            do jj = 1, blockjj
-               do k = 1, nlay
-                  jf = jjoffset+jj
-                  !$acc loop vector private(j1)
-                  do ipt = 1, nday(jf) ! lab_do_ipt
-                     j1 = idxday(ipt, jf)
-                     cfrac(ipt, k, jj) = clouds(j1,k,1, jf)       ! cloud fraction
-                     cdat1(ipt, k, jj) = clouds(j1,k,2, jf)       ! cloud optical depth
-                     cdat2(ipt, k, jj) = clouds(j1,k,3, jf)       ! cloud single scattering albedo
-                     cdat3(ipt, k, jj) = clouds(j1,k,4, jf)       ! cloud asymmetry factor
-                  enddo
+                  j1 = idxday(n)
+                  r = j1 + nxjp_acc(jf) - 1
+                  cfrac(n, k) = clouds(r,k,1)       ! cloud fraction
+                  cdat1(n, k) = clouds(r,k,2)       ! cloud optical depth
+                  cdat2(n, k) = clouds(r,k,3)       ! cloud single scattering albedo
+                  cdat3(n, k) = clouds(r,k,4)       ! cloud asymmetry factor
                end do
             end do
          endif                    ! end if_iswcliq
       endif                       ! if_ivflip
+      !!$acc exit data delete(tauae1, ssaae1, asyae1) async(async_id)
 
             !  --- ...  compute fractions of clear sky view
-      !$acc parallel loop collapse(2) private(jf) async(async_id)
-      do jj = 1, blockjj
-         do ipt = 1, ix
-            jf = jjoffset+jj
-            if (ipt .le. nday(jf)) then ! lab_do_ipt
-               zcf0(ipt, jj)   = f_one
-               zcf1(ipt, jj)   = f_one
-            end if
-         end do
+      !$acc parallel loop private(jj, m) async(async_id)
+      do n = jbs_nday, nday_length + jbs_nday - 1
+         jj = map_nday_jj(n) - jjoffset
+         m = n - jbs_nday + 1
+         zcf0(m)   = f_one
+         zcf1(m)   = f_one
       end do
       if (iovrsw == 0) then                    ! random overlapping
-         !$acc parallel loop collapse(2) private(jf) async(async_id)
-         do jj = 1, blockjj
-            do ipt = 1, ix
-               jf = jjoffset+jj
-               if (ipt .le. nday(jf)) then ! lab_do_ipt
-                  !$acc loop seq
-                  do k = 1, nlay
-                     zcf0(ipt, jj) = zcf0(ipt, jj) * (f_one - cfrac(ipt, k, jj))
-                  enddo
-               end if
-            end do
+         !$acc parallel loop private(jf, j1, jj, m, r) async(async_id)
+         do n = jbs_nday, nday_length + jbs_nday - 1
+            jj = map_nday_jj(n) - jjoffset
+            jf = jjoffset+jj
+            j1 = idxday(n)
+            m = n - jbs_nday + 1
+            r = j1 + nxjp_acc(jf) - 1
+            !$acc loop seq
+            do k = 1, nlay
+               zcf0(m) = zcf0(m) * (f_one - cfrac(r, k))
+            enddo
          end do
       else if (iovrsw == 1) then               ! max/ran overlapping
-         !$acc parallel loop collapse(2) private(jf) async(async_id)
-         do jj = 1, blockjj
-            do ipt = 1, ix
-               jf = jjoffset+jj
-               if (ipt .le. nday(jf)) then ! lab_do_ipt
-                  !$acc loop seq
-                  do k = 1, nlay
-                     if (cfrac(ipt, k, jj) > ftiny) then                ! cloudy layer
-                        zcf1(ipt, jj) = min ( zcf1(ipt, jj), f_one-cfrac(ipt, k, jj) )
-                     elseif (zcf1(ipt, jj) < f_one) then                ! clear layer
-                        zcf0(ipt, jj) = zcf0(ipt, jj) * zcf1(ipt, jj)
-                        zcf1(ipt, jj) = f_one
-                     endif
-                  enddo
-               end if
-            end do
+         !$acc parallel loop private(jf, j1, jj, m, r) async(async_id)
+         do n = jbs_nday, nday_length + jbs_nday - 1
+            jj = map_nday_jj(n) - jjoffset
+            jf = jjoffset+jj
+            j1 = idxday(n)
+            m = n - jbs_nday + 1
+            r = j1 + nxjp_acc(jf) - 1
+            !$acc loop seq
+            do k = 1, nlay
+               if (cfrac(r, k) > ftiny) then                ! cloudy layer
+                  zcf1(m) = min ( zcf1(m), f_one-cfrac(r, k) )
+               elseif (zcf1(m) < f_one) then                ! clear layer
+                  zcf0(m) = zcf0(m) * zcf1(m)
+                  zcf1(m) = f_one
+               endif
+            enddo
          end do
-         !$acc parallel loop collapse(2) private(jf) async(async_id)
-         do jj = 1, blockjj
-            do ipt = 1, ix
-               jf = jjoffset+jj
-               if (ipt .le. nday(jf)) then ! lab_do_ipt
-                  zcf0(ipt, jj) = zcf0(ipt, jj) * zcf1(ipt, jj)
-               end if
-            end do
+         !$acc parallel loop private(m) async(async_id)
+         do n = jbs_nday, nday_length + jbs_nday - 1
+            m = n - jbs_nday + 1
+            zcf0(m) = zcf0(m) * zcf1(m)
          end do
       else if (iovrsw == 2) then               ! maximum overlapping
-         !$acc parallel loop collapse(2) private(jf) async(async_id)
-         do jj = 1, blockjj
-            do ipt = 1, ix
-               jf = jjoffset+jj
-               if (ipt .le. nday(jf)) then ! lab_do_ipt
-                  !$acc loop seq
-                  do k = 1, nlay
-                     zcf0(ipt, jj) = min ( zcf0(ipt, jj), f_one-cfrac(ipt, k, jj) )
-                  enddo
-               end if
-            end do
+         !$acc parallel loop private(jf, j1, jj, m, r) async(async_id)
+         do n = jbs_nday, nday_length + jbs_nday - 1
+            jj = map_nday_jj(n) - jjoffset
+            jf = jjoffset+jj
+            j1 = idxday(n)
+            m = n - jbs_nday + 1
+            r = j1 + nxjp_acc(jf) - 1
+            !$acc loop seq
+            do k = 1, nlay
+               zcf0(m) = min ( zcf0(m), f_one-cfrac(r, k) )
+            enddo
          end do
       endif
-      !$acc parallel loop collapse(2) private(jf) async(async_id)
-      do jj = 1, blockjj
-         do ipt = 1, ix
-            jf = jjoffset+jj
-            if (ipt .le. nday(jf)) then ! lab_do_ipt
-               if (zcf0(ipt, jj) <= ftiny) zcf0(ipt, jj) = f_zero
-               if (zcf0(ipt, jj) > oneminus) zcf0(ipt, jj) = f_one
-               zcf1(ipt, jj) = f_one - zcf0(ipt, jj)
-            end if
-         end do
+      !$acc parallel loop private(m) async(async_id)
+      do n = jbs_nday, nday_length + jbs_nday - 1
+         m = n - jbs_nday + 1
+         if (zcf0(m) <= ftiny) zcf0(m) = f_zero
+         if (zcf0(m) > oneminus) zcf0(m) = f_one
+         zcf1(m) = f_one - zcf0(m)
       end do
 
             !  --- ...  compute cloud optical properties
       !call nvtxStartRange("sw_cldprop")
-      call cldprop                                                  &
-         !  ---  inputs:
-         &     ( cfrac,cliqp,reliq,cicep,reice,cdat1,cdat2,cdat3,cdat4,     &
-         &       zcf1, nlay, ipseed, ix, nday(jbs:jbe), idxday(:,jbs:jbe), &
-                 async_id, smalljj, blockjj,                                    &
-         !  ---  outputs:
-         &       taucw, ssacw, asycw, cldfrc, cldfmc                        &
-         &     )
+      !call cldprop                                                  &
+      !   !  ---  inputs:
+      !   &     ( cfrac,cliqp,reliq, &
+      !           cicep,reice,cdat1, &
+      !           cdat2,cdat3,cdat4,     &
+      !   &       zcf1, nlay, ipseed, ix, nday(jbs:jbe), idxday(jbs_nday:jbe_nday), &
+      !           map_nday_ipt(jbs_nday:jbe_nday), map_nday_jj(jbs_nday:jbe_nday), &
+      !           nday_length, max_nday_length, jjoffset, jbs_nday, &
+      !           async_id, smalljj, blockjj,                                    &
+      !   !  ---  outputs:
+      !   &       taucw, ssacw, asycw, cldfrc, cldfmc                        &
+      !   &     )
       !call nvtxEndRange
       if (isubcsw > 0) then
-         !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-         do jj = 1, blockjj
-            do k = 1, nlay
-               jf = jjoffset+jj
-               !$acc loop vector private(j1)
-               do ipt = 1, nday(jf) ! lab_do_ipt
-                  j1 = idxday(ipt, jf)
-                  if (zcf1(ipt, jj) <= 0.) then     ! clear sky column
-                     !$acc loop seq
-                     do ib = 1, ngptsw
-                        cldfmc(ipt, k,ib, jj)= f_zero
-                     end do
-                  endif   ! end if_zcf1_block
-               enddo
+         !$acc parallel loop gang collapse(2) private(jj, ipt, m) async(async_id)
+         do k = 1, nlay
+            do n = jbs_nday, nday_length + jbs_nday - 1
+               jj = map_nday_jj(n) - jjoffset
+               ipt = map_nday_ipt(n)
+               m = n - jbs_nday + 1
+               if (zcf1(m) <= 0.) then     ! clear sky column
+                  !$acc loop seq
+                  do ib = 1, ngptsw
+                     cldfmc(ipt, k,ib, jj)= f_zero
+                  end do
+               endif   ! end if_zcf1_block
             end do
          end do
       end if
       !call nvtxStartRange("sw_setcoef")
-      call setcoef                                                    &
-         !  ---  inputs:
-         &     ( pavel,tavel,h2ovmr, nlay,nlp1, ix, nday(jbs:jbe), async_id, smalljj, blockjj,                              &
-         !  ---  outputs:
-         &       laytrop,jp,jt,jt1,fac00,fac01,fac10,fac11,                 &
-         &       selffac,selffrac,indself,forfac,forfrac,indfor             &
-         &     )
+      !call setcoef                                                    &
+      !   !  ---  inputs:
+      !   &     ( pavel,tavel,h2ovmr, nlay,nlp1, ix, nday(jbs:jbe), async_id, smalljj, blockjj,                              &
+      !           map_nday_ipt(jbs_nday:jbe_nday), map_nday_jj(jbs_nday:jbe_nday), &
+      !           nday_length, max_nday_length, jjoffset, &
+      !   !  ---  outputs:
+      !   &       laytrop,jp,jt,jt1,fac00,fac01,fac10,fac11,                 &
+      !   &       selffac,selffrac,indself,forfac,forfrac,indfor             &
+      !   &     )
       !call nvtxEndRange
 
          !  --- ...  calculate optical depths for gaseous absorption and rayleigh
          !           scattering
       !call nvtxStartRange("sw_taumol")
-      call taumol                                                     &
-         !  ---  inputs:
-         &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
-         &       forfac,forfrac,indfor,selffac,selffrac,indself, &
-                 nlay, ix, nday(jbs:jbe), async_id, smalljj, blockjj,     &
-         !  ---  outputs:
-         &       sfluxzen, taug, taur                                       &
-         &     )
+      !call taumol                                                     &
+      !   !  ---  inputs:
+      !   &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
+      !   &       forfac,forfrac,indfor,selffac,selffrac,indself, &
+      !           nlay, ix, nday(jbs:jbe), async_id, smalljj, blockjj,     &
+      !   !  ---  outputs:
+      !   &       sfluxzen, taug, taur                                       &
+      !   &     )
+      !call nvtxEndRange
+      !call nvtxStartRange("sw_setaer")
+      !call setaer_sw_gpu                                                       &
+      !!  ---  inputs:
+      !&     ( plvl,plyr,prslk1,tvly,rhly,slmsk,tracer1, &
+      !xlon,xlat,        &
+      !&       myim,nlay,nlp1,lsswr,lslwr,me,myrank, ix, map_jj, map_i, nxptot, &
+      !        idxday(jbs_nday:jbe_nday), map_nday_jj(jbs_nday:jbe_nday), jbs_nday, &
+      !        nday_length, jjoffset, max_nday_length, async_id,                          &
+      !!  ---  outputs:
+      !&       tauae, ssaae, asyae                                              &
+      !!    &       faersw,faerlw,aerodp                                       &
+      !&     )
       !call nvtxEndRange
 
          !  --- ...  call the 2-stream radiation transfer model
@@ -1226,11 +1347,17 @@
          !call nvtxStartRange("sw_spcvrtc")
          call spcvrtc                                                  &
             !  ---  inputs:
-            &     ( ssolar,cosz(:,jbs:jbe),sntz1,albbm, &
-                     albdf,sfluxzen,cldfrc,            &
-            &       zcf1,zcf0,taug,taur,tauae, &
-                     ssaae,asyae,taucw,ssacw,asycw,   &
-            &       nlay, nlp1, ix, idxday(:,jbs:jbe), nday(jbs:jbe), async_id, smalljj, blockjj,                                    &
+                  ( plvl, plyr, prslk1, tvly, rhly, slmsk, tracer1, xlon, xlat, &
+                    myim, lsswr, lslwr, me, map_jj, map_i, ntrac, my_max, &
+                    cfrac, cliqp, reliq, cicep, reice, cdat1, cdat2, cdat3, cdat4, ipseed, &
+                    colamt,colmol, pavel, tavel, h2ovmr, &
+            &       ssolar,cosz(:,jbs:jbe),sntz1,albbm, &
+                    albdf,            &
+            &       zcf1,zcf0, &
+            &       nlay, nlp1, ix, idxday(jbs_nday:jbe_nday), nday(jbs:jbe), &
+                    map_nday_ipt(jbs_nday:jbe_nday), map_nday_jj(jbs_nday:jbe_nday), &
+                    nday_length, max_nday_length, jjoffset, jbs_nday, &
+                    async_id, smalljj, blockjj,                                    &
             !  ---  outputs:
             &       fxupc,fxdnc,fxup0,fxdn0,                                   &
             &       ftoauc,ftoau0,ftoadc, &
@@ -1240,110 +1367,61 @@
          !call nvtxEndRange
 
       else                         ! use mcica cloud scheme
-         do jj = 1, blockjj
-            jf = jjoffset+jj
-            do ipt = 1, nday(jf) ! lab_do_ipt
-               j1 = idxday(ipt, jf)
-               do k = 1, nlay
-                  do i = 1, nbdsw
-                     tauae_im(k, i) = tauae(ipt, k, i, jj)
-                     ssaae_im(k, i) = ssaae(ipt, k, i, jj)
-                     asyae_im(k, i) = asyae(ipt, k, i, jj)
-                     taucw_im(k, i) = taucw(ipt, k, i, jj)
-                     ssacw_im(k, i) = ssacw(ipt, k, i, jj)
-                     asycw_im(k, i) = asycw(ipt, k, i, jj)
-                  end do
-                  do i = 1, ngptsw
-                     cldfmc_im(k, i) = cldfmc(ipt, k, i, jj)
-                     taug_im(k, i) = taug(ipt, k, i, jj)
-                     taur_im(k, i) = taur(ipt, k, i, jj)
-                  end do
-               end do
-               do k = 1, 2
-                  albbm_im(k) = albbm(ipt, k, jj)
-                  albdf_im(k) = albdf(ipt, k, jj)
-                  sfbmc_im(k) = sfbmc(ipt, k, jj)
-                  sfdfc_im(k) = sfdfc(ipt, k, jj)
-                  sfbm0_im(k) = sfbm0(ipt, k, jj)
-                  sfdf0_im(k) = sfdf0(ipt, k, jj)
-               end do
-               do k = 1, nlp1
-                  do i = 1, nbdsw
-                     fxupc_im(k, i) = fxupc(ipt, k, i, jj)
-                     fxdnc_im(k, i) = fxdnc(ipt, k, i, jj)
-                     fxup0_im(k, i) = fxup0(ipt, k, i, jj)
-                     fxdn0_im(k, i) = fxdn0(ipt, k, i, jj)
-                  end do
-               end do
-               do i = 1, ngptsw
-                  sfluxzen_im(i) = sfluxzen(ipt, i, jj)
-               end do
-
-               call spcvrtm                                                  &
-                  !  ---  inputs:
-                  &     ( ssolar(ipt, jj),cosz(j1, jf),sntz1(ipt, jj),albbm_im, &
-                          albdf_im,sfluxzen_im,cldfmc_im,            &
-                  &       zcf1(ipt, jj),zcf0(ipt, jj),taug_im,taur_im,tauae_im, &
-                          ssaae_im,asyae_im,taucw_im,ssacw_im,asycw_im,   &
-                  &       nlay, nlp1,                                                &
-                  !  ---  outputs:
-                  &       fxupc_im,fxdnc_im,fxup0_im,fxdn0_im,                                   &
-                  &       ftoauc(ipt, jj),ftoau0(ipt, jj),ftoadc(ipt, jj), &
-                          fsfcuc(ipt, jj),fsfcu0(ipt, jj),fsfcdc(ipt, jj),fsfcd0(ipt, jj),          &
-                  &       sfbmc_im,sfdfc_im,sfbm0_im,sfdf0_im,suvbfc(ipt, jj),suvbf0(ipt, jj)                      &
-                  &     )
-               do k = 1, nlay
-                  do i = 1, nbdsw
-                     tauae(ipt, k, i, jj) = tauae_im(k, i)
-                     ssaae(ipt, k, i, jj) = ssaae_im(k, i)
-                     asyae(ipt, k, i, jj) = asyae_im(k, i)
-                     taucw(ipt, k, i, jj) = taucw_im(k, i)
-                     ssacw(ipt, k, i, jj) = ssacw_im(k, i)
-                     asycw(ipt, k, i, jj) = asycw_im(k, i)
-                  end do
-                  do i = 1, ngptsw
-                     cldfmc(ipt, k, i, jj) = cldfmc_im(k, i)
-                     taug(ipt, k, i, jj) = taug_im(k, i)
-                     taur(ipt, k, i, jj) = taur_im(k, i)
-                  end do
-               end do
-               do k = 1, 2
-                  albbm(ipt, k, jj) = albbm_im(k)
-                  albdf(ipt, k, jj) = albdf_im(k)
-                  sfbmc(ipt, k, jj) = sfbmc_im(k)
-                  sfdfc(ipt, k, jj) = sfdfc_im(k)
-                  sfbm0(ipt, k, jj) = sfbm0_im(k)
-                  sfdf0(ipt, k, jj) = sfdf0_im(k)
-               end do
-               do k = 1, nlp1
-                  do i = 1, nbdsw
-                     fxupc(ipt, k, i, jj) = fxupc_im(k, i)
-                     fxdnc(ipt, k, i, jj) = fxdnc_im(k, i)
-                     fxup0(ipt, k, i, jj) = fxup0_im(k, i)
-                     fxdn0(ipt, k, i, jj) = fxdn0_im(k, i)
-                  end do
-               end do
-               do i = 1, ngptsw
-                  sfluxzen(ipt, i, jj) = sfluxzen_im(i)
-               end do
-            end do
-         end do
+         !!!! GPU: spcvrtm is not ported to GPU. the indices of arguments should 
+         !!!! GPU: be revisited.
+         !do jj = 1, blockjj
+         !   jf = jjoffset+jj
+         !   do ipt = 1, nday(jf) ! lab_do_ipt
+         !      j1 = idxday(ipt, jf)
+         !      do k = 1, nlay
+         !         do i = 1, ngptsw
+         !            cldfmc_im(k, i) = cldfmc(ipt, k, i, jj)
+         !            taug_im(k, i) = taug(ipt, k, i, jj)
+         !            taur_im(k, i) = taur(ipt, k, i, jj)
+         !         end do
+         !      end do
+         !      do i = 1, ngptsw
+         !         sfluxzen_im(i) = sfluxzen(ipt, i, jj)
+         !      end do
+!
+         !      call spcvrtm                                                  &
+         !         !  ---  inputs:
+         !         &     ( ssolar(ipt, jj),cosz(j1, jf),sntz1(ipt, jj),albbm_im, &
+         !                 albdf_im,sfluxzen_im,cldfmc_im,            &
+         !         &       zcf1(ipt, jj),zcf0(ipt, jj),taug_im,taur_im,tauae_im, &
+         !                 ssaae_im,asyae_im,taucw_im,ssacw_im,asycw_im,   &
+         !         &       nlay, nlp1,                                                &
+         !         !  ---  outputs:
+         !         &       fxupc_im,fxdnc_im,fxup0_im,fxdn0_im,                                   &
+         !         &       ftoauc(ipt, jj),ftoau0(ipt, jj),ftoadc(ipt, jj), &
+         !                 fsfcuc(ipt, jj),fsfcu0(ipt, jj),fsfcdc(ipt, jj),fsfcd0(ipt, jj),          &
+         !         &       sfbmc_im,sfdfc_im,sfbm0_im,sfdf0_im,suvbfc(ipt, jj),suvbf0(ipt, jj)                      &
+         !         &     )
+         !      do k = 1, nlay
+         !         do i = 1, ngptsw
+         !            cldfmc(ipt, k, i, jj) = cldfmc_im(k, i)
+         !            taug(ipt, k, i, jj) = taug_im(k, i)
+         !            taur(ipt, k, i, jj) = taur_im(k, i)
+         !         end do
+         !      end do
+         !      do i = 1, ngptsw
+         !         sfluxzen(ipt, i, jj) = sfluxzen_im(i)
+         !      end do
+         !   end do
+         !end do
       endif
 
          !  --- ...  sum up total spectral fluxes for total-sky
-      !$acc parallel loop collapse(2) private(jf) async(async_id)
-      do jj = 1, blockjj
-         do k = 1, nlp1
-            jf = jjoffset+jj
-            !$acc loop vector
-            do ipt = 1, nday(jf) ! lab_do_ipt
-               flxuc(ipt, k, jj) = f_zero
-               flxdc(ipt, k, jj) = f_zero
-               !$acc loop seq
-               do ib = 1, nbdsw
-                  flxuc(ipt, k, jj) = flxuc(ipt, k, jj) + fxupc(ipt, k,ib, jj)
-                  flxdc(ipt, k, jj) = flxdc(ipt, k, jj) + fxdnc(ipt, k,ib, jj)
-               enddo
+      !$acc parallel loop collapse(2) private(m) async(async_id)
+      do k = 1, nlp1
+         do n = jbs_nday, nday_length + jbs_nday - 1
+            m = n - jbs_nday + 1
+            flxuc(m, k) = f_zero
+            flxdc(m, k) = f_zero
+            !$acc loop seq
+            do ib = 1, nbdsw
+               flxuc(m, k) = flxuc(m, k) + fxupc(m, k,ib)
+               flxdc(m, k) = flxdc(m, k) + fxdnc(m, k,ib)
             enddo
          end do
       end do
@@ -1351,112 +1429,99 @@
          !! --- ...  optional clear sky fluxes
 
       if ( lhsw0 .or. lflxprf ) then
-         !$acc parallel loop collapse(2) private(jf) async(async_id)
-         do jj = 1, blockjj
-            do k = 1, nlp1
-               jf = jjoffset+jj
-               !$acc loop vector
-               do ipt = 1, nday(jf) ! lab_do_ipt
-                  flxu0(ipt, k, jj) = f_zero
-                  flxd0(ipt, k, jj) = f_zero
-                  !$acc loop seq
-                  do ib = 1, nbdsw
-                     flxu0(ipt, k, jj) = flxu0(ipt, k, jj) + fxup0(ipt, k,ib, jj)
-                     flxd0(ipt, k, jj) = flxd0(ipt, k, jj) + fxdn0(ipt, k,ib, jj)
-                  enddo
+         !$acc parallel loop collapse(2) private(m) async(async_id)
+         do k = 1, nlp1
+            do n = jbs_nday, nday_length + jbs_nday - 1
+               m = n - jbs_nday + 1
+               flxu0(m, k) = f_zero
+               flxd0(m, k) = f_zero
+               !$acc loop seq
+               do ib = 1, nbdsw
+                  flxu0(m, k) = flxu0(m, k) + fxup0(m, k,ib)
+                  flxd0(m, k) = flxd0(m, k) + fxdn0(m, k,ib)
                enddo
             end do
          end do
       endif
 
          !  --- ...  prepare for final outputs
-      !$acc parallel loop collapse(2) private(jf) async(async_id)
-      do jj = 1, blockjj
-         do k = 1, nlay
-            jf = jjoffset+jj
-            !$acc loop vector
-            do ipt = 1, nday(jf) ! lab_do_ipt
-               rfdelp(ipt, k, jj) = heatfac / delp(ipt, k, jj)
-            enddo
+      !$acc parallel loop collapse(2) private(m) async(async_id)
+      do k = 1, nlay
+         do n = jbs_nday, nday_length + jbs_nday - 1
+            m = n - jbs_nday + 1
+            rfdelp(m, k) = heatfac / delp(m, k)
          end do
       end do
 
       if ( lfdncmp ) then
-         !$acc parallel loop collapse(2) private(j1, jf) async(async_id)
-         do jj = 1, blockjj
-            do ipt = 1, ix
-               jf = jjoffset+jj
-               if (ipt .le. nday(jf)) then ! lab_do_ipt
-                  j1 = idxday(ipt, jf)
-                  !! --- ...  optional uv-b surface downward flux
-                  fdncmp(j1, jf, 2) = suvbf0(ipt, jj)
-                  fdncmp(j1, jf, 1) = suvbfc(ipt, jj)
+         !$acc parallel loop private(j1, jf, jj) async(async_id)
+         do n = jbs_nday, nday_length + jbs_nday - 1
+            jj = map_nday_jj(n) - jjoffset
+            jf = jjoffset+jj
+            j1 = idxday(n)
+            m = n - jbs_nday + 1
+            !! --- ...  optional uv-b surface downward flux
+            fdncmp_uvbf0(j1, jf) = suvbf0(m)
+            fdncmp_uvbfc(j1, jf) = suvbfc(m)
 
-                  !! --- ...  optional beam and diffuse sfc fluxes
-                  fdncmp(j1, jf, 3) = sfbmc(ipt, 1, jj)
-                  fdncmp(j1, jf, 4) = sfdfc(ipt, 1, jj)
-                  fdncmp(j1, jf, 5) = sfbmc(ipt, 2, jj)
-                  fdncmp(j1, jf, 6) = sfdfc(ipt, 2, jj)
-               end if
-            end do
+            !! --- ...  optional beam and diffuse sfc fluxes
+            fdncmp_nirbm(j1, jf) = sfbmc(m, 1)
+            fdncmp_nirdf(j1, jf) = sfdfc(m, 1)
+            fdncmp_visbm(j1, jf) = sfbmc(m, 2)
+            fdncmp_visdf(j1, jf) = sfdfc(m, 2)
          end do
       endif    ! end if_lfdncmp
 
          !  --- ...  toa and sfc fluxes
-      !$acc parallel loop collapse(2) private(j1, jf) async(async_id)
-      do jj = 1, blockjj
-         do ipt = 1, ix
-            jf = jjoffset+jj
-            if (ipt .le. nday(jf)) then ! lab_do_ipt
-               j1 = idxday(ipt, jf)
-               topflx(j1, jf, 1) = ftoauc(ipt, jj)
-               topflx(j1, jf, 2) = ftoadc(ipt, jj)
-               topflx(j1, jf, 3) = ftoau0(ipt, jj)
+      !$acc parallel loop private(j1, jf, jj, m) async(async_id)
+      do n = jbs_nday, nday_length + jbs_nday - 1
+         jj = map_nday_jj(n) - jjoffset
+         jf = jjoffset+jj
+         j1 = idxday(n)
+         m = n - jbs_nday + 1
+         topflx_upfxc(j1, jf) = ftoauc(m)
+         topflx_dnfxc(j1, jf) = ftoadc(m)
+         topflx_upfx0(j1, jf) = ftoau0(m)
 
-               sfcflx(j1, jf, 1) = fsfcuc(ipt, jj)
-               sfcflx(j1, jf, 2) = fsfcdc(ipt, jj)
-               sfcflx(j1, jf, 3) = fsfcu0(ipt, jj)
-               sfcflx(j1, jf, 4) = fsfcd0(ipt, jj)
-            end if
-         end do
+         sfcflx_upfxc(j1, jf) = fsfcuc(m)
+         sfcflx_dnfxc(j1, jf) = fsfcdc(m)
+         sfcflx_upfx0(j1, jf) = fsfcu0(m)
+         sfcflx_dnfx0(j1, jf) = fsfcd0(m)
       end do
       
       if (ivflip == 0) then       ! output from toa to sfc
 
                !  --- ...  compute heating rates
-         !$acc parallel loop collapse(2) private(j1, kk, jf) async(async_id)
-         do jj = 1, blockjj
-            do ipt = 1, ix
-               jf = jjoffset+jj
-               if (ipt .le. nday(jf)) then ! lab_do_ipt
-                  j1 = idxday(ipt, jf)
-                  fnet(ipt, 1, jj) = flxdc(ipt, 1, jj) - flxuc(ipt, 1, jj)
-                  !$acc loop seq
-                  do k = 2, nlp1
-                     kk = nlp1 - k + 1
-                     fnet(ipt, k, jj) = flxdc(ipt, k, jj) - flxuc(ipt, k, jj)
-                     hswc(j1, kk, jf) = (fnet(ipt, k, jj)-fnet(ipt, k-1, jj)) * rfdelp(ipt, k-1, jj)
-                  enddo
-               end if
-            end do
+         !$acc parallel loop private(j1, kk, jf, jj, m) async(async_id)
+         do n = jbs_nday, nday_length + jbs_nday - 1
+            jj = map_nday_jj(n) - jjoffset
+            jf = jjoffset+jj
+            j1 = idxday(n)
+            m = n - jbs_nday + 1
+            fnet(m, 1) = flxdc(m, 1) - flxuc(m, 1)
+            !$acc loop seq
+            do k = 2, nlp1
+               kk = nlp1 - k + 1
+               fnet(m, k) = flxdc(m, k) - flxuc(m, k)
+               hswc(j1, kk-kd, jf) = (fnet(m, k)-fnet(m, k-1)) * rfdelp(m, k-1)
+            enddo
          end do
 
                !! --- ...  optional flux profiles
 
          if ( lflxprf ) then
-            !$acc parallel loop collapse(2) private(kk, jf) async(async_id)
-            do jj = 1, blockjj
-               do k = 1, nlp1
+            !$acc parallel loop collapse(2) private(kk, jf, jj, j1, m) async(async_id)
+            do k = 1, nlp1
+               do n = jbs_nday, nday_length + jbs_nday - 1
+                  jj = map_nday_jj(n) - jjoffset
                   jf = jjoffset+jj
                   kk = nlp1 - k + 1
-                  !$acc loop vector private(j1)
-                  do ipt = 1, nday(jf) ! lab_do_ipt
-                     j1 = idxday(ipt, jf)
-                     flxprf(j1,kk, jf, 1) = flxuc(ipt, k, jj)
-                     flxprf(j1,kk, jf, 2) = flxdc(ipt, k, jj)
-                     flxprf(j1,kk, jf, 3) = flxu0(ipt, k, jj)
-                     flxprf(j1,kk, jf, 4) = flxd0(ipt, k, jj)
-                  enddo
+                  j1 = idxday(n)
+                  m = n - jbs_nday + 1
+                  flxprf_upfxc(j1,kk-kd, jf) = flxuc(m, k)
+                  flxprf_dnfxc(j1,kk-kd, jf) = flxdc(m, k)
+                  flxprf_upfx0(j1,kk-kd, jf) = flxu0(m, k)
+                  flxprf_dnfx0(j1,kk-kd, jf) = flxd0(m, k)
                end do
             end do
          endif
@@ -1464,41 +1529,39 @@
                !! --- ...  optional clear sky heating rates
 
          if ( lhsw0 ) then
-            !$acc parallel loop collapse(2) private(j1, kk, jf) async(async_id)
-            do jj = 1, blockjj
-               do ipt = 1, ix 
-                  jf = jjoffset+jj
-                  if (ipt .le. nday(jf)) then ! lab_do_ipt
-                     j1 = idxday(ipt, jf)
-                     fnet(ipt, 1, jj) = flxd0(ipt, 1, jj) - flxu0(ipt, 1, jj)
-                     !$acc loop seq
-                     do k = 2, nlp1
-                        kk = nlp1 - k + 1
-                        fnet(ipt, k, jj) = flxd0(ipt, k, jj) - flxu0(ipt, k, jj)
-                        hsw0(j1,kk, jf) = (fnet(ipt, k, jj)-fnet(ipt, k-1, jj)) * rfdelp(ipt, k-1, jj)
-                     enddo
-                  end if
-               end do
+            !$acc parallel loop private(j1, kk, jf, jj, m) async(async_id)
+            do n = jbs_nday, nday_length + jbs_nday - 1
+               jj = map_nday_jj(n) - jjoffset
+               jf = jjoffset+jj
+               j1 = idxday(n)
+               m = n - jbs_nday + 1
+               fnet(m, 1) = flxd0(m, 1) - flxu0(m, 1)
+               !$acc loop seq
+               do k = 2, nlp1
+                  kk = nlp1 - k + 1
+                  fnet(m, k) = flxd0(m, k) - flxu0(m, k)
+                  hsw0(j1,kk-kd, jf) = (fnet(m, k)-fnet(m, k-1)) * rfdelp(m, k-1)
+               enddo
             end do
          endif
 
                !! --- ...  optional spectral band heating rates
 
          if ( lhswb ) then
-            !$acc parallel loop collapse(2) private(jf) async(async_id)
-            do jj = 1, blockjj
-               do mb = 1, nbdsw
+            !$acc parallel loop collapse(2) private(jf, j1, kk, jj, m) async(async_id)
+            do mb = 1, nbdsw
+               do n = jbs_nday, nday_length + jbs_nday - 1
+                  m = n - jbs_nday + 1
+                  jj = map_nday_jj(n) - jjoffset
                   jf = jjoffset+jj
-                  !$acc loop vector private(j1, kk)
-                  do ipt = 1, nday(jf) ! lab_do_ipt
-                     j1 = idxday(ipt, jf)
-                     fnetm(ipt, 1, mb, jj) = fxdnc(ipt, 1,mb, jj) - fxupc(ipt, 1,mb, jj)
-                     !$acc loop seq
-                     do k = 2, nlp1
-                        kk = nlp1 - k + 1
-                        fnetm(ipt, k, mb, jj) = fxdnc(ipt, k,mb, jj) - fxupc(ipt, k,mb, jj)
-                        hswb(j1,kk,mb, jf) = (fnetm(ipt, k, mb, jj) - fnetm(ipt, k-1, mb, jj)) * rfdelp(ipt, k-1, jj)
-                     enddo
+                  j1 = idxday(n)
+                  fnetm(m, 1, mb) = fxdnc(m, 1,mb) - fxupc(m, 1,mb)
+                  !$acc loop seq
+                  do k = 2, nlp1
+                     kk = nlp1 - k + 1
+                     fnetm(m, k, mb) = fxdnc(m, k,mb) - fxupc(m, k,mb)
+                     if (lhtrswb) hswb(j1,kk-kd,mb, jf) &
+                        = (fnetm(m, k, mb) - fnetm(m, k-1, mb)) * rfdelp(m, k-1)
                   enddo
                end do
             end do
@@ -1507,37 +1570,34 @@
       else                        ! output from sfc to toa
 
                !  --- ...  compute heating rates
-         !$acc parallel loop collapse(2) private(j1, jf) async(async_id)
-         do jj = 1, blockjj
-            do ipt = 1, ix
-               jf = jjoffset+jj
-               if (ipt .le. nday(jf)) then ! lab_do_ipt
-                  j1 = idxday(ipt, jf)
-                  fnet(ipt, 1, jj) = flxdc(ipt, 1, jj) - flxuc(ipt, 1, jj)
-                  !$acc loop seq
-                  do k = 2, nlp1
-                     fnet(ipt, k, jj) = flxdc(ipt, k, jj) - flxuc(ipt, k, jj)
-                     hswc(j1,k-1, jf) = (fnet(ipt, k, jj)-fnet(ipt, k-1, jj)) * rfdelp(ipt, k-1, jj)
-                  enddo
-               end if
-            end do
+         !$acc parallel loop private(j1, jf, jj, m) async(async_id)
+         do n = jbs_nday, nday_length + jbs_nday - 1
+            jj = map_nday_jj(n) - jjoffset
+            jf = jjoffset+jj
+            j1 = idxday(n)
+            m = n - jbs_nday + 1
+            fnet(m, 1) = flxdc(m, 1) - flxuc(m, 1)
+            !$acc loop seq
+            do k = 2, nlp1
+               fnet(m, k) = flxdc(m, k) - flxuc(m, k)
+               hswc(j1,k-1-kd, jf) = (fnet(m, k)-fnet(m, k-1)) * rfdelp(m, k-1)
+            enddo
          end do
 
                !! --- ...  optional flux profiles
 
          if ( lflxprf ) then
-            !$acc parallel loop gang collapse(2) private(jf) async(async_id)
-            do jj = 1, blockjj
-               do k = 1, nlp1
+            !$acc parallel loop collapse(2) private(jf, j1, jj, m) async(async_id)
+            do k = 1, nlp1
+               do n = jbs_nday, nday_length + jbs_nday - 1
+                  jj = map_nday_jj(n) - jjoffset
                   jf = jjoffset+jj
-                  !$acc loop vector private(j1)
-                  do ipt = 1, nday(jf) ! lab_do_ipt
-                     j1 = idxday(ipt, jf)
-                     flxprf(j1,k, jf, 1) = flxuc(ipt, k, jj)
-                     flxprf(j1,k, jf, 2) = flxdc(ipt, k, jj)
-                     flxprf(j1,k, jf, 3) = flxu0(ipt, k, jj)
-                     flxprf(j1,k, jf, 4) = flxd0(ipt, k, jj)
-                  enddo
+                  j1 = idxday(n)
+                  m = n - jbs_nday + 1
+                  flxprf_upfxc(j1,k-kd, jf) = flxuc(m, k)
+                  flxprf_dnfxc(j1,k-kd, jf) = flxdc(m, k)
+                  flxprf_upfx0(j1,k-kd, jf) = flxu0(m, k)
+                  flxprf_dnfx0(j1,k-kd, jf) = flxd0(m, k)
                end do
             end do
          endif
@@ -1545,41 +1605,40 @@
                !! --- ...  optional clear sky heating rates
 
          if ( lhsw0 ) then
-            !$acc parallel loop collapse(2) private(j1, jf) async(async_id)
-            do jj = 1, blockjj
-               do ipt = 1, ix 
-                  jf = jjoffset+jj
-                  if (ipt .le. nday(jf)) then ! lab_do_ipt
-                     j1 = idxday(ipt, jf)
-                     fnet(ipt, 1, jj) = flxd0(ipt, 1, jj) - flxu0(ipt, 1, jj)
-                     !$acc loop seq
-                     do k = 2, nlp1
-                        fnet(ipt, k, jj) = flxd0(ipt, k, jj) - flxu0(ipt, k, jj)
-                        hsw0(j1,k-1, jf) = (fnet(ipt, k, jj)-fnet(ipt, k-1, jj)) * rfdelp(ipt, k-1, jj)
-                     enddo
-                  end if
-               end do
+            !$acc parallel loop private(j1, jf, jj, m) async(async_id)
+            do n = jbs_nday, nday_length + jbs_nday - 1
+               jj = map_nday_jj(n) - jjoffset
+               jf = jjoffset+jj
+               m = n - jbs_nday + 1
+               j1 = idxday(n)
+               fnet(m, 1) = flxd0(m, 1) - flxu0(m, 1)
+               !$acc loop seq
+               do k = 2, nlp1
+                  fnet(m, k) = flxd0(m, k) - flxu0(m, k)
+                  hsw0(j1,k-1-kd, jf) = (fnet(m, k)-fnet(m, k-1)) * rfdelp(m, k-1)
+               enddo
             end do
          endif
 
                !! --- ...  optional spectral band heating rates
 
          if ( lhswb ) then
-            !$acc parallel loop collapse(2) private(jf) async(async_id)
-            do jj = 1, blockjj
-               do mb = 1, nbdsw
+            !$acc parallel loop collapse(2) private(jf, j1, jj, ipt, m) async(async_id)
+            do mb = 1, nbdsw
+               do n = jbs_nday, nday_length + jbs_nday - 1
+                  jj = map_nday_jj(n) - jjoffset
+                  ipt = map_nday_ipt(n)
                   jf = jjoffset+jj
-                  !$acc loop vector private(j1)
-                  do ipt = 1, nday(jf) ! lab_do_ipt
-                     j1 = idxday(ipt, jf)
-                     fnetm(ipt, 1, mb, jj) = fxdnc(ipt, 1,mb, jj) - fxupc(ipt, 1,mb, jj)
-                     !$acc loop seq
-                     do k = 1, nlay
-                        fnetm(ipt, k+1, mb, jj) = fxdnc(ipt, k+1,mb, jj) - fxupc(ipt, k+1,mb, jj)
-                        hswb(j1,k,mb, jf) = (fnetm(ipt, k+1, mb, jj) - fnetm(ipt, k, mb, jj)) * rfdelp(ipt, k, jj)
-                     enddo
+                  j1 = idxday(n)
+                  m = n - jbs_nday + 1
+                  fnetm(m, 1, mb) = fxdnc(ipt, 1,mb) - fxupc(ipt, 1,mb)
+                  !$acc loop seq
+                  do k = 1, nlay
+                     fnetm(m, k+1, mb) = fxdnc(ipt, k+1,mb) - fxupc(ipt, k+1,mb)
+                     if (lhtrswb) hswb(j1,k-kd,mb, jf) &
+                        = (fnetm(m, k+1, mb) - fnetm(m, k, mb)) * rfdelp(m, k)
                   enddo
-               end do
+               enddo
             end do
          endif
 
@@ -1599,6 +1658,7 @@
 !          print *,'$$$ SW : flxprf(1,1)%dnfx0 = ', flxprf(1,1)%dnfx0
 !      endif
       if (isubcsw > 0) deallocate(cldfmc)
+
       return
 !...................................
       end subroutine swrad_gpu
@@ -1755,6 +1815,8 @@
         exp_tbl(i) = exp( -tau )
       enddo
 
+      call ngptsw_packing_recipe_init(npacks, small_ngpts)
+
       return
 !...................................
       end subroutine rswinit_gpu
@@ -1766,7 +1828,10 @@
 !...................................
 !  ---  inputs:
      &     ( cfrac,cliqp,reliq,cicep,reice,cdat1,cdat2,cdat3,cdat4,     &
-     &       cf1, nlay, ipseed, ix, nday, idxday, async_id, fulljj, blockjj,                                           &
+     &       cf1, nlay, ipseed, ix, nday, idxday, map_nday_ipt, map_nday_jj, &
+             nday_length, max_nday_length, jjoffset, jbs_nday, &
+             jb, small_ngpts, packs_nbands, offset_ng, &
+             async_id, fulljj, blockjj,                                           &
 !  ---  output:
      &       taucw, ssacw, asycw, cldfrc, cldfmc                        &
      &     )
@@ -1849,19 +1914,21 @@
       use module_radsw_cldprtb
 
 !  ---  inputs:
-      integer, intent(in) :: nlay, fulljj, ipseed(ix, fulljj), ix, &
-         nday(fulljj), idxday(ix, fulljj), blockjj
-      real (kind=kind_phys), intent(in) :: cf1(ix, fulljj)
+      integer, intent(in) :: nlay, fulljj, ipseed(ix, fulljj), ix, jbs_nday, &
+         nday(fulljj), idxday(nday_length), blockjj, nday_length, jjoffset, &
+         max_nday_length, jb(nbdsw), small_ngpts, packs_nbands, offset_ng
+      real (kind=kind_phys), intent(in) :: cf1(max_nday_length)
+      integer, dimension(nday_length) :: map_nday_ipt, map_nday_jj
 
-      real (kind=kind_phys), dimension(ix, nlay, fulljj), intent(in) :: cliqp,      &
-     &       reliq, cicep, reice, cdat1, cdat2, cdat3, cdat4, cfrac
+      real (kind=kind_phys), dimension(nxptot, nlay), intent(in) :: cfrac, &
+         cliqp, reliq, cicep, reice, cdat1, cdat2, cdat3, cdat4
 
 !  ---  outputs:
       real (kind=kind_phys), dimension(ix, nlay,ngptsw, fulljj), intent(out) ::     &
      &       cldfmc
-      real (kind=kind_phys), dimension(ix, nlay,nbdsw, fulljj),  intent(out) ::     &
+      real (kind=kind_phys), dimension(nday_length, nlay, max_packs_nbands),  intent(out) ::     &
      &       taucw, ssacw, asycw
-      real (kind=kind_phys), dimension(ix, nlay, fulljj), intent(out) :: cldfrc
+      real (kind=kind_phys), dimension(max_nday_length, nlay), intent(out) :: cldfrc
 
 !  ---  locals:
       real (kind=kind_phys), dimension(nblow:nbhgh) :: tauliq, tauice,  &
@@ -1875,51 +1942,50 @@
      
       real (kind=kind_phys), dimension(:,:,:), allocatable       :: cldf
       logical, allocatable, dimension(:,:,:,:) :: lcloudy
-      integer :: ia, ib, ig, jb, k, index, ipt, jj, j1, async_id
+      integer :: ia, ib, ig, k, index, ipt, jj, j1, async_id, n, rr, nn
       real (kind=kind_phys), dimension(:), allocatable       :: cldf_im
       logical, allocatable, dimension(:,:) :: lcloudy_im
 
       !
       !===> ...  begin here
       !
-      !$acc parallel loop gang collapse(3) async(async_id) 
-      do jj = 1, blockjj
-         do ib = 1, nbdsw
-            do k = 1, nlay
-               !$acc loop vector 
-               do ipt = 1, nday(jj) ! lab_do_ipt
-                  taucw (ipt, k,ib, jj) = f_zero
-                  asycw (ipt, k,ib, jj) = f_zero
-                  if (cf1(ipt, jj) > f_zero) then
-                     ssacw (ipt, k,ib, jj) = f_one
-                  else
-                     ssacw (ipt, k,ib, jj) = f_zero
-                  end if
-               enddo
+      !$acc parallel loop collapse(3) async(async_id) 
+      do nn = 1, packs_nbands
+         do k = 1, nlay
+            do n = 1, nday_length
+               taucw (n, k,nn) = f_zero
+               asycw (n, k,nn) = f_zero
+               if (cf1(n) > f_zero) then
+                  ssacw (n, k,nn) = f_one
+               else
+                  ssacw (n, k,nn) = f_zero
+               end if
             enddo
-         end do
+         enddo
       end do
 
 
                !  --- ...  compute cloud radiative properties for a cloudy column
       if (iswcliq > 0) then ! lab_if_iswcliq
-         !$acc parallel loop gang collapse(2) async(async_id)
-         do jj = 1, blockjj
+         !$acc parallel loop collapse(3) private(cldran, cldsnw, refsnw, dgesnw, tauran, tausnw, &
+         !$acc&     ssaran, ssasnw, asyran, asysnw, cldliq, cldice, refliq, refice, &
+         !$acc&     tauliq, ssaliq, asyliq, factor, index, fint, extcoliq, ssacoliq, &
+         !$acc&     asycoliq, tauice, ssaice, asyice, ia, extcoice, ssacoice, asycoice, &
+         !$acc&     dgeice, j1, rr)async(async_id)
+         do nn = 1, packs_nbands
             do k = 1, nlay ! lab_do_k
-               !$acc loop vector private(cldran, cldsnw, refsnw, dgesnw, tauran, tausnw, &
-               !$acc&     ssaran, ssasnw, asyran, asysnw, cldliq, cldice, refliq, refice, &
-               !$acc&     tauliq, ssaliq, asyliq, factor, index, fint, extcoliq, ssacoliq, &
-               !$acc&     asycoliq, tauice, ssaice, asyice, ia, extcoice, ssacoice, asycoice, &
-               !$acc&     dgeice)
-               do ipt = 1, nday(jj) ! lab_do_ipt
-                  if (cf1(ipt, jj) > f_zero) then     ! cloudy sky column
-                     if (cfrac(ipt, k, jj) > ftiny) then ! lab_if_cld
+               do n = 1, nday_length
+                  j1 = idxday(n)
+                  ib = jb(nn)
+                  rr = j1 + nxjp_acc(map_nday_jj(n)) - 1
+                  if (cf1(n) > f_zero) then     ! cloudy sky column
+                     if (cfrac(rr, k) > ftiny) then ! lab_if_cld
 
                         !  --- ...  optical properties for rain and snow
-                        cldran = cdat1(ipt, k, jj)
+                        cldran = cdat1(rr, k)
                         !           refran = cdat2(k)
-                        cldsnw = cdat3(ipt, k, jj)
-                        refsnw = cdat4(ipt, k, jj)
+                        cldsnw = cdat3(rr, k)
+                        refsnw = cdat4(rr, k)
                         dgesnw = 1.0315 * refsnw        ! for fu's snow formula
 
                         tauran = cldran * a0r
@@ -1935,60 +2001,48 @@
                         else
                            tausnw = f_zero
                         endif
-                        !$acc loop seq
-                        do ib = nblow, nbhgh
-                           ssaran(ib) = tauran * (f_one - b0r(ib))
-                           ssasnw(ib) = tausnw * (f_one - (b0s(ib)+b1s(ib)*dgesnw))
-                           asyran(ib) = ssaran(ib) * c0r(ib)
-                           asysnw(ib) = ssasnw(ib) * c0s(ib)
-                        enddo
+                        ssaran(ib) = tauran * (f_one - b0r(ib))
+                        ssasnw(ib) = tausnw * (f_one - (b0s(ib)+b1s(ib)*dgesnw))
+                        asyran(ib) = ssaran(ib) * c0r(ib)
+                        asysnw(ib) = ssasnw(ib) * c0s(ib)
 
-                        cldliq = cliqp(ipt, k, jj)
-                        cldice = cicep(ipt, k, jj)
-                        refliq = reliq(ipt, k, jj)
-                        refice = reice(ipt, k, jj)
+                        cldliq = cliqp(rr, k)
+                        cldice = cicep(rr, k)
+                        refliq = reliq(rr, k)
+                        refice = reice(rr, k)
 
                         !  --- ...  calculation of absorption coefficients due to water clouds.
 
                         if ( cldliq <= f_zero ) then
-                           !$acc loop seq
-                           do ib = nblow, nbhgh
-                              tauliq(ib) = f_zero
-                              ssaliq(ib) = f_zero
-                              asyliq(ib) = f_zero
-                           enddo
+                           tauliq(ib) = f_zero
+                           ssaliq(ib) = f_zero
+                           asyliq(ib) = f_zero
                         else
                            if ( iswcliq == 1 ) then
                               factor = refliq - 1.5
                               index  = max( 1, min( 57, int( factor ) ))
                               fint   = factor - float(index)
-                              !$acc loop seq
-                              do ib = nblow, nbhgh
-                                 extcoliq = max(f_zero,            extliq1(index,ib)   &
-                                 &              + fint*(extliq1(index+1,ib)-extliq1(index,ib)) )
-                                 ssacoliq = max(f_zero, min(f_one, ssaliq1(index,ib)   &
-                                 &              + fint*(ssaliq1(index+1,ib)-ssaliq1(index,ib)) ))
+                              extcoliq = max(f_zero,            extliq1(index,ib)   &
+                              &              + fint*(extliq1(index+1,ib)-extliq1(index,ib)) )
+                              ssacoliq = max(f_zero, min(f_one, ssaliq1(index,ib)   &
+                              &              + fint*(ssaliq1(index+1,ib)-ssaliq1(index,ib)) ))
 
-                                 asycoliq = max(f_zero, min(f_one, asyliq1(index,ib)   &
-                                 &              + fint*(asyliq1(index+1,ib)-asyliq1(index,ib)) ))
-                                 !                 forcoliq = asycoliq * asycoliq
+                              asycoliq = max(f_zero, min(f_one, asyliq1(index,ib)   &
+                              &              + fint*(asyliq1(index+1,ib)-asyliq1(index,ib)) ))
+                              !                 forcoliq = asycoliq * asycoliq
 
-                                 tauliq(ib) = cldliq     * extcoliq
-                                 ssaliq(ib) = tauliq(ib) * ssacoliq
-                                 asyliq(ib) = ssaliq(ib) * asycoliq
-                              enddo
+                              tauliq(ib) = cldliq     * extcoliq
+                              ssaliq(ib) = tauliq(ib) * ssacoliq
+                              asyliq(ib) = ssaliq(ib) * asycoliq
                            endif   ! end if_iswcliq_block
                         endif   ! end if_cldliq_block
 
                         !  --- ...  calculation of absorption coefficients due to ice clouds.
 
                         if ( cldice <= f_zero ) then
-                           !$acc loop seq
-                           do ib = nblow, nbhgh
-                              tauice(ib) = f_zero
-                              ssaice(ib) = f_zero
-                              asyice(ib) = f_zero
-                           enddo
+                           tauice(ib) = f_zero
+                           ssaice(ib) = f_zero
+                           asyice(ib) = f_zero
                         else
 
                            !  --- ...  ebert and curry approach for all particle sizes though somewhat
@@ -1996,8 +2050,6 @@
 
                            if ( iswcice == 1 ) then
                               refice = min(130.0_kind_phys,max(13.0_kind_phys,refice))
-                              !$acc loop seq
-                              do ib = nblow, nbhgh
                                  ia = idxebc(ib)           ! eb_&_c band index for ice cloud coeff
 
                                  extcoice = max(f_zero, abari(ia)+bbari(ia)/refice )
@@ -2010,7 +2062,6 @@
                                  tauice(ib) = cldice     * extcoice
                                  ssaice(ib) = tauice(ib) * ssacoice
                                  asyice(ib) = ssaice(ib) * asycoice
-                              enddo
 
                               !  --- ...  streamer approach for ice effective radius between 5.0 and 131.0 microns
 
@@ -2020,20 +2071,17 @@
                               factor = (refice - 2.0) / 3.0
                               index  = max( 1, min( 42, int( factor ) ))
                               fint   = factor - float(index)
-                              !$acc loop seq
-                              do ib = nblow, nbhgh
-                                 extcoice = max(f_zero,            extice2(index,ib)   &
-                                 &                + fint*(extice2(index+1,ib)-extice2(index,ib)) )
-                                 ssacoice = max(f_zero, min(f_one, ssaice2(index,ib)   &
-                                 &                + fint*(ssaice2(index+1,ib)-ssaice2(index,ib)) ))
-                                 asycoice = max(f_zero, min(f_one, asyice2(index,ib)   &
-                                 &                + fint*(asyice2(index+1,ib)-asyice2(index,ib)) ))
-                                 !                 forcoice = asycoice * asycoice
+                              extcoice = max(f_zero,            extice2(index,ib)   &
+                              &                + fint*(extice2(index+1,ib)-extice2(index,ib)) )
+                              ssacoice = max(f_zero, min(f_one, ssaice2(index,ib)   &
+                              &                + fint*(ssaice2(index+1,ib)-ssaice2(index,ib)) ))
+                              asycoice = max(f_zero, min(f_one, asyice2(index,ib)   &
+                              &                + fint*(asyice2(index+1,ib)-asyice2(index,ib)) ))
+                              !                 forcoice = asycoice * asycoice
 
-                                 tauice(ib) = cldice     * extcoice
-                                 ssaice(ib) = tauice(ib) * ssacoice
-                                 asyice(ib) = ssaice(ib) * asycoice
-                              enddo
+                              tauice(ib) = cldice     * extcoice
+                              ssaice(ib) = tauice(ib) * ssacoice
+                              asyice(ib) = ssaice(ib) * asycoice
 
                               !  --- ...  fu's approach for ice effective radius between 4.8 and 135 microns
                               !           (generalized effective size from 5 to 140 microns)
@@ -2044,32 +2092,25 @@
                               factor = (dgeice - 2.0) / 3.0
                               index  = max( 1, min( 45, int( factor ) ))
                               fint   = factor - float(index)
-                              !$acc loop seq
-                              do ib = nblow, nbhgh
-                                 extcoice = max(f_zero,            extice3(index,ib)   &
-                                 &                + fint*(extice3(index+1,ib)-extice3(index,ib)) )
-                                 ssacoice = max(f_zero, min(f_one, ssaice3(index,ib)   &
-                                 &                + fint*(ssaice3(index+1,ib)-ssaice3(index,ib)) ))
-                                 asycoice = max(f_zero, min(f_one, asyice3(index,ib)   &
-                                 &                + fint*(asyice3(index+1,ib)-asyice3(index,ib)) ))
-                                 !                 fdelta   = max(f_zero, min(f_one, fdlice3(index,ib)   &
-                                 !    &                + fint*(fdlice3(index+1,ib)-fdlice3(index,ib)) ))
-                                 !                 forcoice = min( asycoice, fdelta+0.5/ssacoice )           ! see fu 1996 p. 2067
+                              extcoice = max(f_zero,            extice3(index,ib)   &
+                              &                + fint*(extice3(index+1,ib)-extice3(index,ib)) )
+                              ssacoice = max(f_zero, min(f_one, ssaice3(index,ib)   &
+                              &                + fint*(ssaice3(index+1,ib)-ssaice3(index,ib)) ))
+                              asycoice = max(f_zero, min(f_one, asyice3(index,ib)   &
+                              &                + fint*(asyice3(index+1,ib)-asyice3(index,ib)) ))
+                              !                 fdelta   = max(f_zero, min(f_one, fdlice3(index,ib)   &
+                              !    &                + fint*(fdlice3(index+1,ib)-fdlice3(index,ib)) ))
+                              !                 forcoice = min( asycoice, fdelta+0.5/ssacoice )           ! see fu 1996 p. 2067
 
-                                 tauice(ib) = cldice     * extcoice
-                                 ssaice(ib) = tauice(ib) * ssacoice
-                                 asyice(ib) = ssaice(ib) * asycoice
-                              enddo
+                              tauice(ib) = cldice     * extcoice
+                              ssaice(ib) = tauice(ib) * ssacoice
+                              asyice(ib) = ssaice(ib) * asycoice
 
                            endif   ! end if_iswcice_block
                         endif   ! end if_cldice_block
-                        !$acc loop seq
-                        do ib = 1, nbdsw
-                           jb = nblow + ib - 1
-                           taucw(ipt, k,ib, jj) = tauliq(jb)+tauice(jb)+tauran+tausnw
-                           ssacw(ipt, k,ib, jj) = ssaliq(jb)+ssaice(jb)+ssaran(jb)+ssasnw(jb)
-                           asycw(ipt, k,ib, jj) = asyliq(jb)+asyice(jb)+asyran(jb)+asysnw(jb)
-                        enddo
+                        taucw(n, k,nn) = tauliq(ib)+tauice(ib)+tauran+tausnw
+                        ssacw(n, k,nn) = ssaliq(ib)+ssaice(ib)+ssaran(ib)+ssasnw(ib)
+                        asycw(n, k,nn) = asyliq(ib)+asyice(ib)+asyran(ib)+asysnw(ib)
 
                      endif  ! lab_if_cld
                   end if
@@ -2078,20 +2119,19 @@
          end do
 
       else  ! lab_if_iswcliq
-         !$acc parallel loop gang collapse(3) async(async_id)
-         do jj = 1, blockjj
-            do ib = 1, nbdsw
-               do k = 1, nlay
-                  !$acc loop vector
-                  do ipt = 1, nday(jj) ! lab_do_ipt
-                     if (cf1(ipt, jj) > f_zero) then     ! cloudy sky column
-                        if (cfrac(ipt, k, jj) > ftiny) then
-                           taucw(ipt, k,ib, jj) = cdat1(ipt, k, jj)
-                           ssacw(ipt, k,ib, jj) = cdat1(ipt, k, jj)    * cdat2(ipt, k, jj)
-                           asycw(ipt, k,ib, jj) = ssacw(ipt, k,ib, jj) * cdat3(ipt, k, jj)
-                        endif
-                     end if
-                  enddo
+         !$acc parallel loop collapse(3) private(j1, rr) async(async_id)
+         do nn = 1, packs_nbands
+            do k = 1, nlay
+               do n = 1, nday_length
+                  j1 = idxday(n)
+                  rr = j1 + nxjp_acc(map_nday_jj(n)) - 1
+                  if (cf1(n) > f_zero) then     ! cloudy sky column
+                     if (cfrac(rr, k) > ftiny) then
+                        taucw(n, k,nn) = cdat1(rr, k)
+                        ssacw(n, k,nn) = cdat1(rr, k)    * cdat2(rr, k)
+                        asycw(n, k,nn) = ssacw(n, k,nn) * cdat3(rr, k)
+                     endif
+                  end if
                enddo
             end do
          end do
@@ -2105,46 +2145,47 @@
          allocate(cldf_im(nlay))
          allocate(lcloudy_im(nlay,ngptsw))
          allocate(lcloudy(ix, nlay,ngptsw, fulljj))
-         do jj = 1, blockjj
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               if (cf1(ipt, jj) > f_zero) then     ! cloudy sky column
-                  cldf(ipt, :, jj) = cfrac(ipt, :, jj)
-                  where (cldf(ipt, :, jj) < ftiny)
-                     cldf(ipt, :, jj) = f_zero
-                  end where
+         do n = 1, nday_length
+            jj = map_nday_jj(n) - jjoffset
+            ipt = map_nday_ipt(n)
+            j1 = idxday(n)
+            if (cf1(n) > f_zero) then     ! cloudy sky column
+               cldf(ipt, :, jj) = cfrac(n, :)
+               where (cldf(ipt, :, jj) < ftiny)
+                  cldf(ipt, :, jj) = f_zero
+               end where
 
-                  !  --- ...  call sub-column cloud generator
-                  do k = 1, nlay
-                     cldf_im(k) = cldf(ipt, k, jj)
-                     do ib = 1, ngptsw
-                        lcloudy_im(k,ig) = lcloudy(ipt, k,ig, jj)
-                     end do
+               !  --- ...  call sub-column cloud generator
+               do k = 1, nlay
+                  cldf_im(k) = cldf(ipt, k, jj)
+                  do ib = 1, ngptsw
+                     lcloudy_im(k,ig) = lcloudy(ipt, k,ig, jj)
                   end do
-                  j1 = idxday(ipt, jj)
-                  call mcica_subcol                                               &
-                  !  ---  inputs:
-                  &     ( cldf_im, nlay, ipseed(j1, jj),                                        &
-                  !  ---  outputs:
-                  &       lcloudy_im                                                    &
-                  &     )
-                  do k = 1, nlay
-                     cldf(ipt, k, jj) = cldf_im(k)
-                     do ib = 1, ngptsw
-                        lcloudy(ipt, k,ig, jj) = lcloudy_im(k,ig)
-                     end do
+               end do
+               
+               call mcica_subcol                                               &
+               !  ---  inputs:
+               &     ( cldf_im, nlay, ipseed(j1, jj),                                        &
+               !  ---  outputs:
+               &       lcloudy_im                                                    &
+               &     )
+               do k = 1, nlay
+                  cldf(ipt, k, jj) = cldf_im(k)
+                  do ib = 1, ngptsw
+                     lcloudy(ipt, k,ig, jj) = lcloudy_im(k,ig)
                   end do
+               end do
 
-                  do ig = 1, ngptsw
-                     do k = 1, nlay
-                        if ( lcloudy(ipt, k,ig, jj) ) then
-                           cldfmc(ipt, k,ig, jj) = f_one
-                        else
-                           cldfmc(ipt, k,ig, jj) = f_zero
-                        endif
-                     enddo
+               do ig = 1, ngptsw
+                  do k = 1, nlay
+                     if ( lcloudy(ipt, k,ig, jj) ) then
+                        cldfmc(ipt, k,ig, jj) = f_one
+                     else
+                        cldfmc(ipt, k,ig, jj) = f_zero
+                     endif
                   enddo
-               end if
-            end do
+               enddo
+            end if
          end do
          deallocate(cldf)
          deallocate(cldf_im)
@@ -2152,18 +2193,19 @@
          deallocate(lcloudy)
 
       else                         ! non-mcica, normalize cloud
-         !$acc parallel loop gang collapse(2) async(async_id)
-         do jj = 1, blockjj
-            do k = 1, nlay
-               !$acc loop vector
-               do ipt = 1, nday(jj) ! lab_do_ipt
-                  if (cf1(ipt, jj) > f_zero) then     ! cloudy sky column
-                     cldfrc(ipt, k, jj) = cfrac(ipt, k, jj) / cf1(ipt, jj)
-                  else
-                     cldfrc(ipt, k, jj) = f_zero
-                  end if
-               enddo
-            end do
+         !$acc parallel loop collapse(2) private(j1, jj, ipt, rr) async(async_id)
+         do k = 1, nlay
+            do n = 1, nday_length
+               jj = map_nday_jj(n) - jjoffset
+               ipt = map_nday_ipt(n)
+               j1 = idxday(n)
+               rr = j1 + nxjp_acc(map_nday_jj(n)) - 1
+               if (cf1(n) > f_zero) then     ! cloudy sky column
+                  cldfrc(n, k) = cfrac(rr, k) / cf1(n)
+               else
+                  cldfrc(n, k) = f_zero
+               end if
+            enddo
          end do
       endif   ! end if_isubcsw_block
 
@@ -2339,7 +2381,9 @@
       subroutine setcoef                                                &
 ! ..................................
 !  ---  inputs:
-     &     ( pavel,tavel,h2ovmr, nlay,nlp1, ix, nday, async_id, fulljj, blockjj,                             &
+     &     ( pavel,tavel,h2ovmr, nlay,nlp1, ix, nday, &
+             async_id, fulljj, blockjj,                             &
+             map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
 !  ---  outputs:
      &       laytrop,jp,jt,jt1,fac00,fac01,fac10,fac11,                 &
      &       selffac,selffrac,indself,forfac,forfrac,indfor             &
@@ -2347,127 +2391,119 @@
 
 
 !  ---  inputs:
-      integer, intent(in) :: nlay, nlp1, ix, nday(fulljj), fulljj, blockjj
+      integer, intent(in) :: nlay, nlp1, ix, nday(fulljj), fulljj, blockjj, &
+         nday_length, jjoffset, max_nday_length
+      integer, dimension(nday_length) :: map_nday_ipt, map_nday_jj
 
-      real (kind=kind_phys), dimension(:,:,:), intent(in) :: pavel, tavel,  &
+      real (kind=kind_phys), dimension(:,:), intent(in) :: pavel, tavel,  &
      &       h2ovmr
 
 !  ---  outputs:
-      integer, dimension(ix, nlay, fulljj), intent(out) :: indself, indfor,         &
+      integer, dimension(max_nday_length, nlay), intent(out) :: indself, indfor,         &
      &       jp, jt, jt1
-      integer, intent(out) :: laytrop(ix, fulljj)
+      integer, intent(out) :: laytrop(nday_length)
 
-      real (kind=kind_phys), dimension(ix, nlay, fulljj), intent(out) :: fac00,     &
+      real (kind=kind_phys), dimension(:, :), intent(out) :: fac00,     &
      &       fac01, fac10, fac11, selffac, selffrac, forfac, forfrac
 
 !  ---  locals:
       real (kind=kind_phys) :: plog, fp, fp1, ft, ft1, tem1, tem2
 
-      integer :: i, k, jp1, jj, ipt, async_id
+      integer :: i, k, jp1, jj, ipt, async_id, n
 !
 !===> ... begin here
 !
-      !$acc parallel loop collapse(2) async(async_id)
-      do jj = 1, blockjj
-         do ipt = 1, ix
-            if (ipt .le. nday(jj)) then
-               laytrop(ipt, jj) = nlay
-               !$acc loop seq
-               do k = 1, nlay
-                  if (log(pavel(ipt, k, jj)) > 4.56) laytrop(ipt, jj) =  k
-               end do
-            end if
+      !$acc parallel loop async(async_id)
+      do n = 1, nday_length
+         laytrop(n) = nlay
+         !$acc loop seq
+         do k = 1, nlay
+            if (log(pavel(n, k)) > 4.56) laytrop(n) =  k
          end do
       end do
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, blockjj
-         do k = 1, nlay
-            !$acc loop vector private(plog, jp1, fp, tem1, tem2, ft, ft1, fp1)
-            do ipt = 1, nday(jj)
+      !$acc parallel loop collapse(2) private(plog, jp1, fp, tem1, tem2, &
+      !$acc&         ft, ft1, fp1) async(async_id)
+      do k = 1, nlay
+         do n = 1, nday_length
+            forfac(n, k) = pavel(n, k)*stpfac / (tavel(n, k)*(f_one + h2ovmr(n, k)))
 
-               forfac(ipt, k, jj) = pavel(ipt, k, jj)*stpfac / (tavel(ipt, k, jj)*(f_one + h2ovmr(ipt, k, jj)))
+            !  --- ...  find the two reference pressures on either side of the
+            !           layer pressure.  store them in jp and jp1.  store in fp the
+            !           fraction of the difference (in ln(pressure)) between these
+            !           two values that the layer pressure lies.
 
-               !  --- ...  find the two reference pressures on either side of the
-               !           layer pressure.  store them in jp and jp1.  store in fp the
-               !           fraction of the difference (in ln(pressure)) between these
-               !           two values that the layer pressure lies.
+            plog  = log(pavel(n, k))
+            jp(n, k) = max(1, min(58, int(36.0 - 5.0*(plog+0.04)) ))
+            jp1   = jp(n, k) + 1
+            fp    = 5.0 * (preflog(jp(n, k)) - plog)
 
-               plog  = log(pavel(ipt, k, jj))
-               jp(ipt, k, jj) = max(1, min(58, int(36.0 - 5.0*(plog+0.04)) ))
-               jp1   = jp(ipt, k, jj) + 1
-               fp    = 5.0 * (preflog(jp(ipt, k, jj)) - plog)
+            !  --- ...  determine, for each reference pressure (jp and jp1), which
+            !          reference temperature (these are different for each reference
+            !          pressure) is nearest the layer temperature but does not exceed it.
+            !          store these indices in jt and jt1, resp. store in ft (resp. ft1)
+            !          the fraction of the way between jt (jt1) and the next highest
+            !          reference temperature that the layer temperature falls.
 
-               !  --- ...  determine, for each reference pressure (jp and jp1), which
-               !          reference temperature (these are different for each reference
-               !          pressure) is nearest the layer temperature but does not exceed it.
-               !          store these indices in jt and jt1, resp. store in ft (resp. ft1)
-               !          the fraction of the way between jt (jt1) and the next highest
-               !          reference temperature that the layer temperature falls.
+            tem1 = (tavel(n, k) - tref(jp(n, k))) / 15.0
+            tem2 = (tavel(n, k) - tref(jp1  )) / 15.0
+            jt (n, k) = max(1, min(4, int(3.0 + tem1) ))
+            jt1(n, k) = max(1, min(4, int(3.0 + tem2) ))
+            ft  = tem1 - float(jt (n, k) - 3)
+            ft1 = tem2 - float(jt1(n, k) - 3)
 
-               tem1 = (tavel(ipt, k, jj) - tref(jp(ipt, k, jj))) / 15.0
-               tem2 = (tavel(ipt, k, jj) - tref(jp1  )) / 15.0
-               jt (ipt, k, jj) = max(1, min(4, int(3.0 + tem1) ))
-               jt1(ipt, k, jj) = max(1, min(4, int(3.0 + tem2) ))
-               ft  = tem1 - float(jt (ipt, k, jj) - 3)
-               ft1 = tem2 - float(jt1(ipt, k, jj) - 3)
+            !  --- ...  we have now isolated the layer ln pressure and temperature,
+            !           between two reference pressures and two reference temperatures
+            !           (for each reference pressure).  we multiply the pressure
+            !           fraction fp with the appropriate temperature fractions to get
+            !           the factors that will be needed for the interpolation that yields
+            !           the optical depths (performed in routines taugbn for band n).
 
-               !  --- ...  we have now isolated the layer ln pressure and temperature,
-               !           between two reference pressures and two reference temperatures
-               !           (for each reference pressure).  we multiply the pressure
-               !           fraction fp with the appropriate temperature fractions to get
-               !           the factors that will be needed for the interpolation that yields
-               !           the optical depths (performed in routines taugbn for band n).
-
-               fp1 = f_one - fp
-               fac10(ipt, k, jj) = fp1 * ft
-               fac00(ipt, k, jj) = fp1 * (f_one - ft)
-               fac11(ipt, k, jj) = fp  * ft1
-               fac01(ipt, k, jj) = fp  * (f_one - ft1)
-            end do
+            fp1 = f_one - fp
+            fac10(n, k) = fp1 * ft
+            fac00(n, k) = fp1 * (f_one - ft)
+            fac11(n, k) = fp  * ft1
+            fac01(n, k) = fp  * (f_one - ft1)
          end do
       end do
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, blockjj
-         do k = 1, nlay
-            !$acc loop vector private(tem1, tem2)
-            do ipt = 1, nday(jj)
-               !  --- ...  if the pressure is less than ~100mb, perform a different
-               !           set of species interpolations.
+      !$acc parallel loop collapse(2) private(tem1, tem2) async(async_id)
+      do k = 1, nlay
+         do n = 1, nday_length
+            !  --- ...  if the pressure is less than ~100mb, perform a different
+            !           set of species interpolations.
 
-               if ( log(pavel(ipt, k, jj)) > 4.56 ) then
+            if ( log(pavel(n, k)) > 4.56 ) then
 
-                  !  --- ...  set up factors needed to separately include the water vapor
-                  !           foreign-continuum in the calculation of absorption coefficient.
+               !  --- ...  set up factors needed to separately include the water vapor
+               !           foreign-continuum in the calculation of absorption coefficient.
 
-                  tem1 = (332.0 - tavel(ipt, k, jj)) / 36.0
-                  indfor (ipt, k, jj) = min(2, max(1, int(tem1)))
-                  forfrac(ipt, k, jj) = tem1 - float(indfor(ipt, k, jj))
+               tem1 = (332.0 - tavel(n, k)) / 36.0
+               indfor (n, k) = min(2, max(1, int(tem1)))
+               forfrac(n, k) = tem1 - float(indfor(n, k))
 
-                  !  --- ...  set up factors needed to separately include the water vapor
-                  !           self-continuum in the calculation of absorption coefficient.
+               !  --- ...  set up factors needed to separately include the water vapor
+               !           self-continuum in the calculation of absorption coefficient.
 
-                  tem2 = (tavel(ipt, k, jj) - 188.0) / 7.2
-                  indself (ipt, k, jj) = min(9, max(1, int(tem2)-7))
-                  selffrac(ipt, k, jj) = tem2 - float(indself(ipt, k, jj) + 7)
-                  selffac (ipt, k, jj) = h2ovmr(ipt, k, jj) * forfac(ipt, k, jj)
+               tem2 = (tavel(n, k) - 188.0) / 7.2
+               indself (n, k) = min(9, max(1, int(tem2)-7))
+               selffrac(n, k) = tem2 - float(indself(n, k) + 7)
+               selffac (n, k) = h2ovmr(n, k) * forfac(n, k)
 
-               else
+            else
 
-                  !  --- ...  set up factors needed to separately include the water vapor
-                  !           foreign-continuum in the calculation of absorption coefficient.
+               !  --- ...  set up factors needed to separately include the water vapor
+               !           foreign-continuum in the calculation of absorption coefficient.
 
-                  tem1 = (tavel(ipt, k, jj) - 188.0) / 36.0
-                  indfor (ipt, k, jj) = 3
-                  forfrac(ipt, k, jj) = tem1 - f_one
+               tem1 = (tavel(n, k) - 188.0) / 36.0
+               indfor (n, k) = 3
+               forfrac(n, k) = tem1 - f_one
 
-                  indself (ipt, k, jj) = 0
-                  selffrac(ipt, k, jj) = f_zero
-                  selffac (ipt, k, jj) = f_zero
+               indself (n, k) = 0
+               selffrac(n, k) = f_zero
+               selffac (n, k) = f_zero
 
-               endif
+            endif
 
-            enddo    ! end_do_k_loop
-         end do
+         enddo    ! end_do_k_loop
       end do
 
       return
@@ -2480,9 +2516,15 @@
       subroutine spcvrtc                                                &
 !...................................
 !  ---  inputs:
-     &     ( ssolar,cosz,sntz,albbm,albdf,sfluxzen,cldfrc,              &
-     &       cf1,cf0,taug,taur,tauae,ssaae,asyae,taucw,ssacw,asycw,     &
-     &       nlay, nlp1, ix, idxday, nday, async_id, fulljj, blockjj,                                                &
+           ( plvl, plyr, prslk1, tvly, rhly, slmsk, tracer1, xlon, xlat, &
+             myim, lsswr, lslwr, me, map_jj, map_i, ntrac, my_max, &
+      &      cfrac, cliqp, reliq, cicep, reice, cdat1, cdat2, cdat3, cdat4, ipseed, &
+             colamt,colmol,pavel, tavel, h2ovmr, &
+     &       ssolar,cosz,sntz,albbm,albdf,              &
+     &       cf1,cf0,      &
+     &       nlay, nlp1, ix, idxday, nday, map_nday_ipt, map_nday_jj, &
+             nday_length, max_nday_length, jjoffset, jbs_nday, &
+             async_id, fulljj, blockjj,                                                &
 !  ---  outputs:
      &       fxupc,fxdnc,fxup0,fxdn0,                                   &
      &       ftoauc,ftoau0,ftoadc,fsfcuc,fsfcu0,fsfcdc,fsfcd0,          &
@@ -2584,38 +2626,68 @@
       real (kind=kind_phys), parameter :: zsr3  = sqrt(3.0)
       real (kind=kind_phys), parameter :: od_lo = 0.06
       real (kind=kind_phys), parameter :: eps1  = 1.0e-8
-      integer, parameter :: small_factor = 2
+      integer, parameter :: small_factor = 7
       integer, parameter :: small_ngptsw = int(ngptsw/small_factor)
 
 !  ---  inputs:
-      integer, intent(in) :: nlay, nlp1, ix, idxday(ix, fulljj), nday(fulljj), fulljj, blockjj
+      real (kind=kind_phys), dimension(nxptot,nlp1), intent(in) ::        &
+     &       plvl
+      real (kind=kind_phys), dimension(nxptot,nlay), intent(in) ::        &
+     &       plyr
+      integer,  intent(in) :: me, my_max, ntrac
+      logical,  intent(in) :: lsswr, lslwr
+      real (kind=kind_phys), dimension(ix, my_max), intent(in) ::  slmsk,  &
+               xlon, xlat
+      real (kind=kind_phys), dimension(nxptot,nlay)  :: rhly, prslk1, tvly
+      real (kind=kind_phys), dimension(nxptot,nlay,ntrac)   :: tracer1
+      integer, dimension(nxptot) :: map_jj, map_i
+      integer, intent(in) :: myim(fulljj)
+      real (kind=kind_phys), dimension(nxptot,nlay),intent(in):: &
+         cliqp, reliq, cicep, reice, cdat4
+      real (kind=kind_phys), dimension(nxptot,nlay),intent(inout):: cfrac
+      real (kind=kind_phys), dimension(nxptot,nlay),intent(inout):: cdat1, cdat2, cdat3
+      integer, dimension(ix, fulljj) :: ipseed
+      integer, intent(in) :: nday_length, jjoffset, max_nday_length, jbs_nday
+      integer, dimension(nday_length) :: map_nday_ipt, map_nday_jj
+      real (kind=kind_phys), dimension(max_nday_length, nlay), intent(in) :: colmol
+      real (kind=kind_phys), dimension(max_nday_length, nlay), intent(in) :: pavel, tavel, h2ovmr
 
-      real (kind=kind_phys), dimension(ix, nlay,ngptsw, fulljj), intent(in) ::      &
-     &       taug, taur
-      real (kind=kind_phys), dimension(ix, nlay,nbdsw, fulljj),  intent(in) ::      &
-     &       taucw, ssacw, asycw, tauae, ssaae, asyae
 
-      real (kind=kind_phys), dimension(ix, ngptsw, fulljj), intent(in) :: sfluxzen
-      real (kind=kind_phys), dimension(ix, nlay, fulljj),   intent(in) :: cldfrc
+      real (kind=kind_phys), dimension(max_nday_length, nlay, maxgas),intent(in) :: colamt
 
-      real (kind=kind_phys), dimension(ix, 2, fulljj),  intent(in) :: albbm, albdf
+      integer, intent(in) :: nlay, nlp1, ix, idxday(nday_length), nday(fulljj), fulljj, blockjj
 
-      real (kind=kind_phys), dimension(ix, fulljj), intent(in) :: cosz, sntz, &
+
+      
+
+      real (kind=kind_phys), dimension(max_nday_length, 2),  intent(in) :: albbm, albdf
+
+      real (kind=kind_phys), dimension(ix, fulljj), intent(in) :: cosz
+      real (kind=kind_phys), dimension(max_nday_length), intent(in) :: sntz, &
          cf1, cf0, ssolar
 
 !  ---  outputs:
-      real (kind=kind_phys), dimension(ix, nlp1,nbdsw, fulljj), intent(out) ::      &
+      real (kind=kind_phys), dimension(max_nday_length, nlp1,nbdsw), intent(out) ::      &
      &       fxupc, fxdnc, fxup0, fxdn0
 
-      real (kind=kind_phys), dimension(ix, 2, fulljj), intent(out) :: sfbmc, sfdfc, &
+      real (kind=kind_phys), dimension(max_nday_length, 2), intent(out) :: sfbmc, sfdfc, &
      &       sfbm0, sfdf0
 
-      real (kind=kind_phys), dimension(ix, fulljj), intent(out) :: suvbfc, suvbf0, ftoadc,     &
+      real (kind=kind_phys), dimension(max_nday_length), intent(out) :: suvbfc, suvbf0, ftoadc,     &
      &       ftoauc, ftoau0, fsfcuc, fsfcu0, fsfcdc, fsfcd0
 
 !  ---  locals:
-      real (kind=kind_phys), dimension(ix, nlp1, small_ngptsw, fulljj) :: zrefb, zrefd, ztrab,    &
-     &       ztrad, ztdbt, zldbt, zfua, zfda
+      real (kind=kind_phys), dimension(nday_length, nlay, max_packs_nbands) :: &
+         tauae, ssaae, asyae
+      real (kind=kind_phys), dimension(:,:,:,:), allocatable :: cldfmc
+      real (kind=kind_phys), dimension(nday_length, nlay, max_packs_nbands) :: taucw, ssacw, asycw
+      real (kind=kind_phys), dimension(max_nday_length, nlay) :: cldfrc     
+      integer, dimension(max_nday_length, nlay) :: indfor, indself,          &
+     &       jp, jt, jt1
+      integer :: laytrop(max_nday_length)
+      real (kind=kind_phys), dimension(max_nday_length, nlay) :: &
+     &       fac00, fac01, fac10, fac11, forfac, forfrac, selffac,      &
+     &       selffrac
 
       real (kind=kind_phys) :: ztau1, zssa1, zasy1, ztau0, zssa0,       &
      &       zasy0, zasy3, zssaw, zasyw, zgam1, zgam2, zgam3, zgam4,    &
@@ -2624,855 +2696,914 @@
      &       zrpp, zrkg1, zrkg3, zrkg4, zexp1, zexm1, zexp2, zexm2,     &
      &       zexp3, zexp4, zden1, ze1r45, ftind, zrefb1,        &
      &       zrefd1, ztrab1, ztrad1, zr1, zr2, zr3, zr4, zr5, ztdbt0r,    &
-     &       zt1, zt2, zt3, zf1, zf2, zldbt0, zfu, zfd, zrupbr, zrupbr1, zrupdr, zrupdr1
+     &       zt1, zt2, zt3, zf1, zf2, zldbt0, zfu, zfd, zrupbr, zrupbr1, zrupdr, zrupdr1, &
+             ztdbtr, zrefbr, taurr, tauaer, ssaaer, coszr, zrefdr, &
+             ztdnr, zrdndr, ztradr, ztrabr, zldbtr
 
-      real (kind=kind_phys), dimension(ix, small_ngptsw, fulljj) :: ztdbt0, zsolar, zfd0
+      !real (kind=kind_phys), dimension(ix, small_ngptsw, fulljj) :: ztdbt0, zsolar, zfd0
 
-      integer :: ib, ibd, jb, jg, k, kp, itind, ipt, jj, j1, j2, jg2
-      real (kind=kind_phys), dimension(ix, nlp1, small_ngptsw, fulljj) :: zrdnd, ztdn
+      integer :: ib, ibd, jb, jg, k, kp, itind, ipt, jj, j1, j2, jg2, i, j, n, nn
+      !real (kind=kind_phys), dimension(ix, nlp1, small_ngptsw, fulljj) :: zrdnd, ztdn
       integer :: async_id
+
+      integer :: ng00, offset_ng
+      real (kind=kind_phys), dimension(nday_length, nlay, small_ngpts) :: small_taur, &
+     &       small_taug
+      real (kind=kind_phys), dimension(nday_length, small_ngpts) :: small_sfluxzen
+      real (kind=kind_phys), dimension(nday_length, nlp1, small_ngpts) :: zrefb, zrefd, ztrab,    &
+     &       ztrad, zldbt, zfua, zfda, zrdnd, ztdn, ztdbt
+      real (kind=kind_phys), dimension(nday_length, small_ngpts) :: ztdbt0, zsolar, zfd0
+      integer, dimension(small_ngptsw, small_factor) :: ngbidx
+      ng00 = maxval(ng)
 
 !
 !===> ...  begin here
-!
-
-      !$acc data create(zrefb, zrefd, ztrab, ztrad, ztdbt, zldbt, zfd0, &
-      !$acc&     ztdbt0, zsolar, zrdnd, ztdn, zfda, zfua) async(async_id)
+!     
 !  --- ... initialization of output fluxes
-      !$acc parallel loop gang collapse(3) async(async_id)
-      do jj = 1, blockjj
-         do ib = 1, nbdsw
-            do k = 1, nlp1
-               !$acc loop vector
-               do ipt = 1, nday(jj) ! lab_do_ipt
-                  fxdnc(ipt, k,ib, jj) = f_zero
-                  fxupc(ipt, k,ib, jj) = f_zero
-                  fxdn0(ipt, k,ib, jj) = f_zero
-                  fxup0(ipt, k,ib, jj) = f_zero
-               enddo
+      !$acc parallel loop collapse(3) async(async_id)
+      do ib = 1, nbdsw
+         do k = 1, nlp1
+            do n = 1, nday_length
+               fxdnc(n, k,ib) = f_zero
+               fxupc(n, k,ib) = f_zero
+               fxdn0(n, k,ib) = f_zero
+               fxup0(n, k,ib) = f_zero
             enddo
          end do
       end do
-      !$acc parallel loop collapse(2) async(async_id)
-      do jj = 1, blockjj
-         do ipt = 1, ix
-            if (ipt .le. nday(jj)) then ! lab_do_ipt
-               ftoadc(ipt, jj) = f_zero
-               ftoauc(ipt, jj) = f_zero
-               ftoau0(ipt, jj) = f_zero
-               fsfcuc(ipt, jj) = f_zero
-               fsfcu0(ipt, jj) = f_zero
-               fsfcdc(ipt, jj) = f_zero
-               fsfcd0(ipt, jj) = f_zero
+      !$acc parallel loop async(async_id)
+      do n = 1, nday_length
+         ftoadc(n) = f_zero
+         ftoauc(n) = f_zero
+         ftoau0(n) = f_zero
+         fsfcuc(n) = f_zero
+         fsfcu0(n) = f_zero
+         fsfcdc(n) = f_zero
+         fsfcd0(n) = f_zero
 
-               !! --- ...  uv-b surface downward fluxes
-               suvbfc(ipt, jj)  = f_zero
-               suvbf0(ipt, jj)  = f_zero
+         !! --- ...  uv-b surface downward fluxes
+         suvbfc(n)  = f_zero
+         suvbf0(n)  = f_zero
 
-               !! --- ...  output surface flux components
-               sfbmc(ipt, 1, jj) = f_zero
-               sfbmc(ipt, 2, jj) = f_zero
-               sfdfc(ipt, 1, jj) = f_zero
-               sfdfc(ipt, 2, jj) = f_zero
-               sfbm0(ipt, 1, jj) = f_zero
-               sfbm0(ipt, 2, jj) = f_zero
-               sfdf0(ipt, 1, jj) = f_zero
-               sfdf0(ipt, 2, jj) = f_zero
-            end if
-         end do
+         !! --- ...  output surface flux components
+         sfbmc(n, 1) = f_zero
+         sfbmc(n, 2) = f_zero
+         sfdfc(n, 1) = f_zero
+         sfdfc(n, 2) = f_zero
+         sfbm0(n, 1) = f_zero
+         sfbm0(n, 2) = f_zero
+         sfdf0(n, 1) = f_zero
+         sfdf0(n, 2) = f_zero
       end do
 
-            !  --- ...  loop over all g-points in each band
-   do j2 = 1, small_factor
-      !$acc parallel loop gang collapse(2) private(jg2, jb, ib, ibd) async(async_id)
-      do jj = 1, blockjj
-         do jg = 1, small_ngptsw ! lab_do_jg
-            jg2 = jg + (j2-1)*small_ngptsw
-            jb = ngb(jg2)
+   do j2 = 1, npacks
+      !$acc enter data create(tauae, ssaae, asyae) async(async_id)
+
+      !$acc enter data create(taucw, ssacw, asycw, cldfrc) async(async_id)
+      !$acc enter data create(laytrop,jp,jt,jt1,fac00,fac01,fac10,fac11,   &
+      !$acc&     selffac,selffrac,indself,forfac,forfrac,indfor) async(async_id)
+
+
+      !$acc enter data create(small_sfluxzen, small_taug, small_taur) async(async_id)
+      !  --- ...  loop over all g-points in each band
+      !call nvtxStartRange("sw_setcoef")
+      call setcoef                                                    &
+         !  ---  inputs:
+         &     ( pavel,tavel,h2ovmr, nlay,nlp1, ix, nday, async_id, fulljj, blockjj,                              &
+               map_nday_ipt, map_nday_jj, &
+               nday_length, max_nday_length, jjoffset, &
+         !  ---  outputs:
+         &       laytrop,jp,jt,jt1,fac00,fac01,fac10,fac11,                 &
+         &       selffac,selffrac,indself,forfac,forfrac,indfor             &
+         &     )
+      !call nvtxEndRange
+      !call nvtxStartRange("sw_taumol")
+      do n = 1, nbdsw
+         jb = recipe(n, j2) ! jb is serial numbers of nbands
+         if (jb .eq. 0) exit
+
+         do i = 1, small_ngpts
+            if (jb .eq. pack_idx(i, j2)) then
+               offset_ng = i-1
+               exit
+            end if
+         end do
+         call taumol                                                     &
+            !  ---  inputs:
+            &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
+            &       forfac,forfrac,indfor,selffac,selffrac,indself, map_nday_ipt, map_nday_jj, &
+                  nlay, ix, nday, async_id, fulljj, blockjj, jb, small_ngpts, j2, &
+                  offset_ng, nday_length, max_nday_length, jjoffset,     &
+            !  ---  outputs:
+            &       small_sfluxzen, small_taug, small_taur                                       &
+            &     )
+         end do
+         !call nvtxEndRange
+         call cldprop                                                  &
+            !  ---  inputs:
+            &     ( cfrac,cliqp,reliq, &
+                  cicep,reice,cdat1, &
+                  cdat2,cdat3,cdat4,     &
+            &       cf1, nlay, ipseed, ix, nday, idxday, &
+                  map_nday_ipt, map_nday_jj, &
+                  nday_length, max_nday_length, jjoffset, jbs_nday, &
+                  recipe(:, j2), small_ngpts, packs_nbands_list(j2), offset_ng, &
+                  async_id, fulljj, blockjj,                                    &
+            !  ---  outputs:
+            &       taucw, ssacw, asycw, cldfrc, cldfmc                        &
+            &     )
+      !$acc exit data delete(laytrop,jp,jt,jt1,fac00,fac01,fac10,fac11,   &
+      !$acc&     selffac,selffrac,indself,forfac,forfrac,indfor) async(async_id)
+      !call nvtxStartRange("sw_setaer")
+      call setaer_sw_gpu                                                       &
+      !  ---  inputs:
+      &     ( plvl,plyr,prslk1,tvly,rhly,slmsk,tracer1, &
+      xlon,xlat,        &
+      &       myim,nlay,nlp1,lsswr,lslwr,me,myrank, ix, map_jj, map_i, nxptot, &
+            idxday, map_nday_jj, jbs_nday, &
+            nday_length, jjoffset, max_nday_length, recipe(:, j2), small_ngpts, packs_nbands_list(j2), offset_ng, max_packs_nbands, async_id,        &
+      !  ---  outputs:
+      &       tauae, ssaae, asyae                                              &
+      !    &       faersw,faerlw,aerodp                                       &
+      &     )
+      !call nvtxEndRange
+      !$acc enter data create(zrefb, zrefd, ztrab, ztrad, ztdbt, zldbt, zfd0, &
+      !$acc&     ztdbt0, zsolar, zrdnd, ztdn, zfda, zfua) async(async_id)
+
+      !call nvtxStartRange("sw_spcvrtc")
+      !$acc parallel loop collapse(2) private(jj, jb, ib, ibd, za1, za2, &
+      !$acc&         ztau1, zssa1, zasy1, zasy3, zgam1, zgam2, zgam3, &
+      !$acc&         zgam4, zb1, zb2, ftind, itind, zrk, zrk2, zrp, zrp1, zrm1, &
+      !$acc&         zrpp, zrkg1, zrkg3, zrkg4, zr1, zr2, zr3, zr4, zr5, zt1, &
+      !$acc&         zt2, zt3, zexm1, zexp1, zexm2, zexp2, ze1r45, zden1, zexp3, &
+      !$acc&         zexp4, ztdbtr, zrefdr, taurr, tauaer, ssaaer, coszr, zrefbr) async(async_id)
+      do jg = 1, pack_size(j2) ! lab_do_jg
+         do n = 1, nday_length
+            jj = map_nday_jj(n) - jjoffset
+            jb = pack_idx(jg, j2)
             ib = jb + 1 - nblow
+            nn = reverse_recipe(jg, j2)
             ibd = idxsfc(jb)
-            !$acc loop vector private(j1, kp, ztau0, zssa0, zasy0, zssaw, zasyw, &
-            !$acc&     za1, za2, ztau1, zssa1, zasy1, zasy3, zgam1, zgam2, zgam3, &
-            !$acc&     zgam4, zb1, zb2, ftind, itind, zrk, zrk2, zrp, zrp1, zrm1, &
-            !$acc&     zrpp, zrkg1, zrkg3, zrkg4, zr1, zr2, zr3, zr4, zr5, zt1, &
-            !$acc&     zt2, zt3, zexm1, zexp1, zexm2, zexp2, ze1r45, zden1, zexp3, zexp4)
-            do ipt = 1, nday(jj) ! lab_do_ipt
+            zsolar(n, jg) = ssolar(n) * small_sfluxzen(n, jg)
 
-               zsolar(ipt, jg, jj) = ssolar(ipt, jj) * sfluxzen(ipt, jg2, jj)
+            !  --- ...  set up toa direct beam and surface values (beam and diff)
+            ztdbtr = f_one
+            ztdbt(n, nlp1, jg) = ztdbtr
 
-               !  --- ...  set up toa direct beam and surface values (beam and diff)
+            zldbt(n, 1, jg) = f_zero
+            if (ibd /= 0) then
+               zrefb(n, 1, jg) = albbm(n, ibd)
+               zrefd(n, 1, jg) = albdf(n, ibd)
+            else
+               zrefb(n, 1, jg) = 0.5 * (albbm(n, 1) + albbm(n, 2))
+               zrefd(n, 1, jg) = 0.5 * (albdf(n, 1) + albdf(n, 2))
+            endif
+            ztrab(n, 1, jg) = f_zero
+            ztrad(n, 1, jg) = f_zero
 
-               ztdbt(ipt, nlp1, jg, jj) = f_one
+         !  --- ...  compute clear-sky optical parameters, layer reflectance and transmittance
+            j1 = idxday(n)
+            coszr = cosz(j1, jj)
+            ztdbt0r = f_one
+            !$acc loop seq
+            do k = nlay, 1, -1
+               kp = k + 1
+               taurr = small_taur(n, k,jg)
+               tauaer = tauae(n, k,nn)
+               ssaaer = ssaae(n, k,nn)
 
-               zldbt(ipt, 1, jg, jj) = f_zero
-               if (ibd /= 0) then
-                  zrefb(ipt, 1, jg, jj) = albbm(ipt, ibd, jj)
-                  zrefd(ipt, 1, jg, jj) = albdf(ipt, ibd, jj)
-               else
-                  zrefb(ipt, 1, jg, jj) = 0.5 * (albbm(ipt, 1, jj) + albbm(ipt, 2, jj))
-                  zrefd(ipt, 1, jg, jj) = 0.5 * (albdf(ipt, 1, jj) + albdf(ipt, 2, jj))
+               ztau0 = max( ftiny, taurr+small_taug(n, k,jg)+tauaer )
+               zssa0 = taurr + tauaer*ssaaer
+               zasy0 = asyae(n, k,nn)*ssaaer*tauaer
+               zssaw = min( oneminus, zssa0 / ztau0 )
+               zasyw = zasy0 / max( ftiny, zssa0 )
+
+
+               !  --- ...  delta scaling for clear-sky condition
+               za1 = zasyw * zasyw
+               za2 = zssaw * za1
+
+               ztau1 = (f_one - za2) * ztau0
+               zssa1 = (zssaw - za2) / (f_one - za2)
+               !org      zasy1 = (zasyw - za1) / (f_one - za1)   ! this line is replaced by the next
+               zasy1 = zasyw / (f_one + zasyw)         ! to reduce truncation error
+               zasy3 = 0.75 * zasy1
+
+               !  --- ...  general two-stream expressions
+               if ( iswmode == 1 ) then
+                  zgam1 = 1.75 - zssa1 * (f_one + zasy3)
+                  zgam2 =-0.25 + zssa1 * (f_one - zasy3)
+                  zgam3 = 0.5  - zasy3 * coszr
+               elseif ( iswmode == 2 ) then               ! pifm
+                  zgam1 = 2.0 - zssa1 * (1.25 + zasy3)
+                  zgam2 = 0.75* zssa1 * (f_one- zasy1)
+                  zgam3 = 0.5 - zasy3 * coszr
+               elseif ( iswmode == 3 ) then               ! discrete ordinates
+                  zgam1 = zsr3 * (2.0 - zssa1 * (1.0 + zasy1)) * 0.5
+                  zgam2 = zsr3 * zssa1 * (1.0 - zasy1) * 0.5
+                  zgam3 = (1.0 - zsr3 * zasy1 * coszr) * 0.5
                endif
-               ztrab(ipt, 1, jg, jj) = f_zero
-               ztrad(ipt, 1, jg, jj) = f_zero
+               zgam4 = f_one - zgam3
 
-            !  --- ...  compute clear-sky optical parameters, layer reflectance and transmittance
-               j1 = idxday(ipt, jj)
-               ztdbt0r = f_one
-               !$acc loop seq
-               do k = nlay, 1, -1
-                  kp = k + 1
+               !  --- ...  compute homogeneous reflectance and transmittance
 
-                  ztau0 = max( ftiny, taur(ipt, k,jg2, jj)+taug(ipt, k,jg2, jj)+tauae(ipt, k,ib, jj) )
-                  zssa0 = taur(ipt, k,jg2, jj) + tauae(ipt, k,ib, jj)*ssaae(ipt, k,ib, jj)
-                  zasy0 = asyae(ipt, k,ib, jj)*ssaae(ipt, k,ib, jj)*tauae(ipt, k,ib, jj)
-                  zssaw = min( oneminus, zssa0 / ztau0 )
-                  zasyw = zasy0 / max( ftiny, zssa0 )
+               if ( zssaw >= zcrit ) then    ! for conservative scattering
+                  za1 = zgam1 * coszr - zgam3
+                  za2 = zgam1 * ztau1
 
+                  !  --- ...  use exponential lookup table for transmittance, or expansion
+                  !           of exponential for low optical depth
 
-                  !  --- ...  delta scaling for clear-sky condition
-                  za1 = zasyw * zasyw
-                  za2 = zssaw * za1
-
-                  ztau1 = (f_one - za2) * ztau0
-                  zssa1 = (zssaw - za2) / (f_one - za2)
-                  !org      zasy1 = (zasyw - za1) / (f_one - za1)   ! this line is replaced by the next
-                  zasy1 = zasyw / (f_one + zasyw)         ! to reduce truncation error
-                  zasy3 = 0.75 * zasy1
-
-                  !  --- ...  general two-stream expressions
-                  if ( iswmode == 1 ) then
-                     zgam1 = 1.75 - zssa1 * (f_one + zasy3)
-                     zgam2 =-0.25 + zssa1 * (f_one - zasy3)
-                     zgam3 = 0.5  - zasy3 * cosz(j1, jj)
-                  elseif ( iswmode == 2 ) then               ! pifm
-                     zgam1 = 2.0 - zssa1 * (1.25 + zasy3)
-                     zgam2 = 0.75* zssa1 * (f_one- zasy1)
-                     zgam3 = 0.5 - zasy3 * cosz(j1, jj)
-                  elseif ( iswmode == 3 ) then               ! discrete ordinates
-                     zgam1 = zsr3 * (2.0 - zssa1 * (1.0 + zasy1)) * 0.5
-                     zgam2 = zsr3 * zssa1 * (1.0 - zasy1) * 0.5
-                     zgam3 = (1.0 - zsr3 * zasy1 * cosz(j1, jj)) * 0.5
-                  endif
-                  zgam4 = f_one - zgam3
-
-                  !  --- ...  compute homogeneous reflectance and transmittance
-
-                  if ( zssaw >= zcrit ) then    ! for conservative scattering
-                     za1 = zgam1 * cosz(j1, jj) - zgam3
-                     za2 = zgam1 * ztau1
-
-                     !  --- ...  use exponential lookup table for transmittance, or expansion
-                     !           of exponential for low optical depth
-
-                     zb1 = min ( ztau1*sntz(ipt, jj) , 500.0 )
-                     if ( zb1 <= od_lo ) then
-                        zb2 = f_one - zb1 + 0.5*zb1*zb1
-                     else
-                        ftind = zb1 / (bpade + zb1)
-                        itind = ftind*ntbmx + 0.5
-                        zb2 = exp_tbl(itind)
-                     endif
-
-                     !      ...  collimated beam
-                     zrefb(ipt, kp, jg, jj) = max(f_zero, min(f_one,                          &
-                     &                  (za2 - za1*(f_one - zb2))/(f_one + za2) ))
-                     ztrab(ipt, kp, jg, jj) = max(f_zero, min(f_one, f_one-zrefb(ipt, kp, jg, jj) ))
-
-                     !      ...  isotropic incidence
-                     zrefd(ipt, kp, jg, jj) = max(f_zero, min(f_one, za2/(f_one + za2) ))
-                     ztrad(ipt, kp, jg, jj) = max(f_zero, min(f_one, f_one-zrefd(ipt, kp, jg, jj) ))
-
-                  else                          ! for non-conservative scattering
-                     za1 = zgam1*zgam4 + zgam2*zgam3
-                     za2 = zgam1*zgam3 + zgam2*zgam4
-                     zrk = sqrt ( (zgam1 - zgam2) * (zgam1 + zgam2) )
-                     zrk2= 2.0 * zrk
-
-                     zrp  = zrk * cosz(j1, jj)
-                     zrp1 = f_one + zrp
-                     zrm1 = f_one - zrp
-                     zrpp = f_one - zrp*zrp
-                     zrkg1= zrk + zgam1
-                     zrkg3= zrk * zgam3
-                     zrkg4= zrk * zgam4
-
-                     zr1  = zrm1 * (za2 + zrkg3)
-                     zr2  = zrp1 * (za2 - zrkg3)
-                     zr3  = zrk2 * (zgam3 - za2*cosz(j1, jj))
-                     zr4  = zrpp * zrkg1
-                     zr5  = zrpp * (zrk - zgam1)
-
-                     zt1  = zrp1 * (za1 + zrkg4)
-                     zt2  = zrm1 * (za1 - zrkg4)
-                     zt3  = zrk2 * (zgam4 + za1*cosz(j1, jj))
-
-                     !  --- ...  use exponential lookup table for transmittance, or expansion
-                     !           of exponential for low optical depth
-
-                     zb1 = min ( zrk*ztau1, 500.0 )
-                     if ( zb1 <= od_lo ) then
-                        zexm1 = f_one - zb1 + 0.5*zb1*zb1
-                     else
-                        ftind = zb1 / (bpade + zb1)
-                        itind = ftind*ntbmx + 0.5
-                        zexm1 = exp_tbl(itind)
-                     endif
-                     zexp1 = f_one / zexm1
-
-                     zb2 = min ( sntz(ipt, jj)*ztau1, 500.0 )
-                     if ( zb2 <= od_lo ) then
-                        zexm2 = f_one - zb2 + 0.5*zb2*zb2
-                     else
-                        ftind = zb2 / (bpade + zb2)
-                        itind = ftind*ntbmx + 0.5
-                        zexm2 = exp_tbl(itind)
-                     endif
-                     zexp2 = f_one / zexm2
-                     ze1r45 = zr4*zexp1 + zr5*zexm1
-
-                     !      ...  collimated beam
-                     if (ze1r45>=-eps1 .and. ze1r45<=eps1) then
-                        zrefb(ipt, kp, jg, jj) = eps1
-                        ztrab(ipt, kp, jg, jj) = zexm2
-                     else
-                        zden1 = zssa1 / ze1r45
-                        zrefb(ipt, kp, jg, jj) = max(f_zero, min(f_one,                        &
-                        &                    (zr1*zexp1 - zr2*zexm1 - zr3*zexm2)*zden1 ))
-                        ztrab(ipt, kp, jg, jj) = max(f_zero, min(f_one, zexm2*(f_one           &
-                        &                  - (zt1*zexp1 - zt2*zexm1 - zt3*zexp2)*zden1) ))
-                     endif
-
-                     !      ...  diffuse beam
-                     zden1 = zr4 / (ze1r45 * zrkg1)
-                     zrefd(ipt, kp, jg, jj) = max(f_zero, min(f_one,                          &
-                     &                  zgam2*(zexp1 - zexm1)*zden1 ))
-                     ztrad(ipt, kp, jg, jj) = max(f_zero, min(f_one, zrk2*zden1 ))
-                  endif    ! end if_zssaw_block
-
-                  !  --- ...  direct beam transmittance. use exponential lookup table
-                  !           for transmittance, or expansion of exponential for low
-                  !           optical depth
-
-                  zr1 = ztau1 * sntz(ipt, jj)
-                  if ( zr1 <= od_lo ) then
-                     zexp3 = f_one - zr1 + 0.5*zr1*zr1
+                  zb1 = min ( ztau1*sntz(n) , 500.0 )
+                  if ( zb1 <= od_lo ) then
+                     zb2 = f_one - zb1 + 0.5*zb1*zb1
                   else
-                     ftind = zr1 / (bpade + zr1)
-                     itind = max(0, min(ntbmx, int(0.5+ntbmx*ftind) ))
-                     zexp3 = exp_tbl(itind)
+                     ftind = zb1 / (bpade + zb1)
+                     itind = ftind*ntbmx + 0.5
+                     zb2 = exp_tbl(itind)
                   endif
 
-                  ztdbt(ipt, k, jg, jj)  = zexp3 * ztdbt(ipt, kp, jg, jj)
-                  zldbt(ipt, kp, jg, jj) = zexp3
+                  !      ...  collimated beam
+                  zrefbr = max(f_zero, min(f_one,                          &
+                  &                  (za2 - za1*(f_one - zb2))/(f_one + za2) ))
+                  ztrab(n, kp, jg) = max(f_zero, min(f_one, f_one-zrefbr ))
+                  zrefb(n, kp, jg) = zrefbr
 
-                  !  --- ...  pre-delta-scaling clear and cloudy direct beam transmittance
-                  !           (must use 'orig', unscaled cloud optical depth)
+                  !      ...  isotropic incidence
+                  zrefdr = max(f_zero, min(f_one, za2/(f_one + za2) ))
+                  ztrad(n, kp, jg) = max(f_zero, min(f_one, f_one-zrefdr ))
+                  zrefd(n, kp, jg) = zrefdr
 
-                  zr1 = ztau0 * sntz(ipt, jj)
-                  if ( zr1 <= od_lo ) then
-                     zexp4 = f_one - zr1 + 0.5*zr1*zr1
+               else                          ! for non-conservative scattering
+                  za1 = zgam1*zgam4 + zgam2*zgam3
+                  za2 = zgam1*zgam3 + zgam2*zgam4
+                  zrk = sqrt ( (zgam1 - zgam2) * (zgam1 + zgam2) )
+                  zrk2= 2.0 * zrk
+
+                  zrp  = zrk * coszr
+                  zrp1 = f_one + zrp
+                  zrm1 = f_one - zrp
+                  zrpp = f_one - zrp*zrp
+                  zrkg1= zrk + zgam1
+                  zrkg3= zrk * zgam3
+                  zrkg4= zrk * zgam4
+
+                  zr1  = zrm1 * (za2 + zrkg3)
+                  zr2  = zrp1 * (za2 - zrkg3)
+                  zr3  = zrk2 * (zgam3 - za2*coszr)
+                  zr4  = zrpp * zrkg1
+                  zr5  = zrpp * (zrk - zgam1)
+
+                  zt1  = zrp1 * (za1 + zrkg4)
+                  zt2  = zrm1 * (za1 - zrkg4)
+                  zt3  = zrk2 * (zgam4 + za1*coszr)
+
+                  !  --- ...  use exponential lookup table for transmittance, or expansion
+                  !           of exponential for low optical depth
+
+                  zb1 = min ( zrk*ztau1, 500.0 )
+                  if ( zb1 <= od_lo ) then
+                     zexm1 = f_one - zb1 + 0.5*zb1*zb1
                   else
-                     ftind = zr1 / (bpade + zr1)
-                     itind = max(0, min(ntbmx, int(0.5+ntbmx*ftind) ))
-                     zexp4 = exp_tbl(itind)
+                     ftind = zb1 / (bpade + zb1)
+                     itind = ftind*ntbmx + 0.5
+                     zexm1 = exp_tbl(itind)
+                  endif
+                  zexp1 = f_one / zexm1
+
+                  zb2 = min ( sntz(n)*ztau1, 500.0 )
+                  if ( zb2 <= od_lo ) then
+                     zexm2 = f_one - zb2 + 0.5*zb2*zb2
+                  else
+                     ftind = zb2 / (bpade + zb2)
+                     itind = ftind*ntbmx + 0.5
+                     zexm2 = exp_tbl(itind)
+                  endif
+                  zexp2 = f_one / zexm2
+                  ze1r45 = zr4*zexp1 + zr5*zexm1
+
+                  !      ...  collimated beam
+                  if (ze1r45>=-eps1 .and. ze1r45<=eps1) then
+                     zrefb(n, kp, jg) = eps1
+                     ztrab(n, kp, jg) = zexm2
+                  else
+                     zden1 = zssa1 / ze1r45
+                     zrefb(n, kp, jg) = max(f_zero, min(f_one,                        &
+                     &                    (zr1*zexp1 - zr2*zexm1 - zr3*zexm2)*zden1 ))
+                     ztrab(n, kp, jg) = max(f_zero, min(f_one, zexm2*(f_one           &
+                     &                  - (zt1*zexp1 - zt2*zexm1 - zt3*zexp2)*zden1) ))
                   endif
 
-                  ztdbt0r = zexp4 * ztdbt0r
-               enddo    ! end do_k_loop
-               ztdbt0(ipt, jg, jj) = ztdbt0r
-            end do
+                  !      ...  diffuse beam
+                  zden1 = zr4 / (ze1r45 * zrkg1)
+                  zrefd(n, kp, jg) = max(f_zero, min(f_one,                          &
+                  &                  zgam2*(zexp1 - zexm1)*zden1 ))
+                  ztrad(n, kp, jg) = max(f_zero, min(f_one, zrk2*zden1 ))
+               endif    ! end if_zssaw_block
+
+               !  --- ...  direct beam transmittance. use exponential lookup table
+               !           for transmittance, or expansion of exponential for low
+               !           optical depth
+
+               zr1 = ztau1 * sntz(n)
+               if ( zr1 <= od_lo ) then
+                  zexp3 = f_one - zr1 + 0.5*zr1*zr1
+               else
+                  ftind = zr1 / (bpade + zr1)
+                  itind = max(0, min(ntbmx, int(0.5+ntbmx*ftind) ))
+                  zexp3 = exp_tbl(itind)
+               endif
+
+               ztdbtr  = zexp3 * ztdbtr
+               ztdbt(n, k, jg) = ztdbtr
+               zldbt(n, kp, jg) = zexp3
+
+               !  --- ...  pre-delta-scaling clear and cloudy direct beam transmittance
+               !           (must use 'orig', unscaled cloud optical depth)
+
+               zr1 = ztau0 * sntz(n)
+               if ( zr1 <= od_lo ) then
+                  zexp4 = f_one - zr1 + 0.5*zr1*zr1
+               else
+                  ftind = zr1 / (bpade + zr1)
+                  itind = max(0, min(ntbmx, int(0.5+ntbmx*ftind) ))
+                  zexp4 = exp_tbl(itind)
+               endif
+
+               ztdbt0r = zexp4 * ztdbt0r
+            enddo    ! end do_k_loop
+            ztdbt0(n, jg) = ztdbt0r
          end do
       end do
                
                ! call swflux
                !  --- ...  link lowest layer with surface
-      !$acc parallel loop gang collapse(2) private(jg2, jb, ib, ibd) async(async_id)
-      do jj = 1, blockjj
-         do jg = 1, small_ngptsw ! lab_do_jg
-            jg2 = jg + (j2-1)*small_ngptsw
-            jb = ngb(jg2)
+      !$acc parallel loop collapse(2) private(jb, ib, ibd, kp, zden1, ztdbtr, &
+      !$acc&         zfu, zfd, zrupbr, zrupbr1, zrupdr, zrupdr1, ztdnr, zrdndr, ztradr, zrefdr) async(async_id)
+      do jg = 1, pack_size(j2) ! lab_do_jg
+         do n = 1, nday_length
+            jb = pack_idx(jg, j2)
             ib = jb + 1 - nblow
             ibd = idxsfc(jb)
-            !$acc loop vector private(kp, zden1, zfu, zfd, zrupbr, zrupbr1, zrupdr, zrupdr1)
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               !  --- ...  upper boundary conditions
+            !  --- ...  upper boundary conditions
 
-               ztdn (ipt, nlp1, jg, jj) = f_one
-               zrdnd(ipt, nlp1, jg, jj) = f_zero
-               ztdn (ipt, nlay, jg, jj) = ztrab(ipt, nlp1, jg, jj)
-               zrdnd(ipt, nlay, jg, jj) = zrefd(ipt, nlp1, jg, jj)
-
-               !  --- ...  pass from top to bottom
-               !$acc loop seq
-               do k = nlay, 2, -1
-                  zden1 = f_one / (f_one - zrefd(ipt, k, jg, jj)*zrdnd(ipt, k, jg, jj))
-                  ztdn (ipt, k-1, jg, jj) = ztdbt(ipt, k, jg, jj)*ztrab(ipt, k, jg, jj) &
-                                    + ( ztrad(ipt, k, jg, jj) *                 &
-                  &                 ( (ztdn(ipt, k, jg, jj) - ztdbt(ipt, k, jg, jj)) + ztdbt(ipt, k, jg, jj) *              &
-                  &                 zrefb(ipt, k, jg, jj)*zrdnd(ipt, k, jg, jj) )) * zden1
-                  zrdnd(ipt, k-1, jg, jj) = zrefd(ipt, k, jg, jj) + ztrad(ipt, k, jg, jj) &
-                                   *ztrad(ipt, k, jg, jj)*zrdnd(ipt, k, jg, jj)*zden1
-               enddo
+            ztdn (n, nlp1, jg) = f_one
+            zrdnd(n, nlp1, jg) = f_zero
+            ztdnr = ztrab(n, nlp1, jg)
+            ztdn (n, nlay, jg) = ztdnr
+            zrdndr = zrefd(n, nlp1, jg)
+            zrdnd(n, nlay, jg) = zrdndr
+            !  --- ...  pass from top to bottom
+            !$acc loop seq
+            do k = nlay, 2, -1
+               ztdbtr = ztdbt(n, k, jg)
+               ztradr = ztrad(n, k, jg)
+               zrefdr = zrefd(n, k, jg)
+               zden1 = f_one / (f_one - zrefdr*zrdndr)
+               ztdnr = ztdbtr*ztrab(n, k, jg) &
+                                 + ( ztradr *                 &
+               &                 ( (ztdnr - ztdbtr) + ztdbtr *              &
+               &                 zrefb(n, k, jg)*zrdndr )) * zden1
+               ztdn (n, k-1, jg) = ztdnr
+               zrdndr = zrefdr + ztradr &
+                              *ztradr*zrdndr*zden1
+               zrdnd(n, k-1, jg) =zrdndr
+            enddo
+            
+            zrupbr = zrefb(n, 1, jg)        ! direct beam
+            zrupdr = zrefd(n, 1, jg)        ! diffused
+            ztdbtr = ztdbt(n, 1, jg)
+            !  --- ...  up and down-welling fluxes at levels
+            zden1 = f_one / (f_one - zrdndr*zrupdr)
+            zfu = ( ztdbtr*zrupbr +                                &
+            &             (ztdnr - ztdbtr) &
+                           *zrupdr ) * zden1
+            zfd = ztdbtr + ( ztdnr &
+                           - ztdbtr +                    &
+            &             ztdbtr*zrupbr &
+                           *zrdndr ) * zden1
+            ! end call swflux
+            zfua(n, 1, jg) = zfu
+            zfda(n, 1, jg) = zfd
+            zfd0(n, jg) = zfd
+            !  --- ...  pass from bottom to top
+            !$acc loop seq
+            do k = 1, nlay
+               kp = k + 1
+               ztdnr = ztdn(n, kp, jg)
+               zrdndr = zrdnd(n, kp, jg)
+               ztdbtr = ztdbt(n, kp, jg)
+               ztradr = ztrad(n, kp, jg)
+               zrefdr = zrefd(n, kp, jg)
+               zden1 = f_one / ( f_one - zrupdr*zrefdr )
+               zrupbr1 = zrefb(n, kp, jg) + ( ztradr *                         &
+               &                ( (ztrab(n, kp, jg) - zldbt(n, kp, jg)) &
+                              *zrupdr +              &
+               &                zldbt(n, kp, jg)*zrupbr) ) * zden1
+               zrupdr1 = zrefdr + ztradr &
+                              *ztradr*zrupdr*zden1
                
-               zrupbr = zrefb(ipt, 1, jg, jj)        ! direct beam
-               zrupdr = zrefd(ipt, 1, jg, jj)        ! diffused
-               !  --- ...  up and down-welling fluxes at levels
-               zden1 = f_one / (f_one - zrdnd(ipt, 1, jg, jj)*zrupdr)
-               zfu = ( ztdbt(ipt, 1, jg, jj)*zrupbr +                                &
-               &             (ztdn(ipt, 1, jg, jj) - ztdbt(ipt, 1, jg, jj)) &
-                              *zrupdr ) * zden1
-               zfd = ztdbt(ipt, 1, jg, jj) + ( ztdn(ipt, 1, jg, jj) &
-                              - ztdbt(ipt, 1, jg, jj) +                    &
-               &             ztdbt(ipt, 1, jg, jj)*zrupbr &
-                              *zrdnd(ipt, 1, jg, jj) ) * zden1
+               zden1 = f_one / (f_one - zrdndr*zrupdr1)
+               zfu = ( ztdbtr*zrupbr1 +                                &
+               &             (ztdnr - ztdbtr) &
+                           *zrupdr1 ) * zden1
+               zfd = ztdbtr + ( ztdnr &
+                           - ztdbtr +                    &
+               &             ztdbtr*zrupbr1 &
+                           *zrdndr ) * zden1
+               zfua(n, kp, jg) = zfu
+               zfda(n, kp, jg) = zfd
                ! end call swflux
-               zfua(ipt, 1, jg, jj) = zfu
-               zfda(ipt, 1, jg, jj) = zfd
-               zfd0(ipt, jg, jj) = zfd
-               !  --- ...  pass from bottom to top
-               !$acc loop seq
-               do k = 1, nlay
-                  kp = k + 1
-
-                  zden1 = f_one / ( f_one - zrupdr*zrefd(ipt, kp, jg, jj) )
-                  zrupbr1 = zrefb(ipt, kp, jg, jj) + ( ztrad(ipt, kp, jg, jj) *                         &
-                  &                ( (ztrab(ipt, kp, jg, jj) - zldbt(ipt, kp, jg, jj)) &
-                                   *zrupdr +              &
-                  &                zldbt(ipt, kp, jg, jj)*zrupbr) ) * zden1
-                  zrupdr1 = zrefd(ipt, kp, jg, jj) + ztrad(ipt, kp, jg, jj) &
-                                   *ztrad(ipt, kp, jg, jj)*zrupdr*zden1
-                  
-                  zden1 = f_one / (f_one - zrdnd(ipt, kp, jg, jj)*zrupdr1)
-                  zfu = ( ztdbt(ipt, kp, jg, jj)*zrupbr1 +                                &
-                  &             (ztdn(ipt, kp, jg, jj) - ztdbt(ipt, kp, jg, jj)) &
-                                *zrupdr1 ) * zden1
-                  zfd = ztdbt(ipt, kp, jg, jj) + ( ztdn(ipt, kp, jg, jj) &
-                                - ztdbt(ipt, kp, jg, jj) +                    &
-                  &             ztdbt(ipt, kp, jg, jj)*zrupbr1 &
-                                *zrdnd(ipt, kp, jg, jj) ) * zden1
-                  zfua(ipt, kp, jg, jj) = zfu
-                  zfda(ipt, kp, jg, jj) = zfd
-                  ! end call swflux
-                  !  --- ...  compute upward and downward fluxes at levels
-                  zrupbr = zrupbr1
-                  zrupdr = zrupdr1
-               end do
+               !  --- ...  compute upward and downward fluxes at levels
+               zrupbr = zrupbr1
+               zrupdr = zrupdr1
             end do
          end do
       end do
 
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, blockjj
-         do k = 1, nlp1
-            !$acc loop vector private(jg2, jb, ib)
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               !$acc loop seq
-               do jg = 1, small_ngptsw ! lab_do_jg
-                  jg2 = jg + (j2-1)*small_ngptsw
-                  jb = ngb(jg2)
-                  ib = jb + 1 - nblow
-                  !  --- ...  compute upward and downward fluxes at levels
-                  fxup0(ipt, k,ib, jj) = fxup0(ipt, k,ib, jj) + zsolar(ipt, jg, jj)*zfua(ipt, k, jg, jj)
-                  fxdn0(ipt, k,ib, jj) = fxdn0(ipt, k,ib, jj) + zsolar(ipt, jg, jj)*zfda(ipt, k, jg, jj)
-               end do
+      !$acc parallel loop collapse(2) private(jb, ib) async(async_id)
+      do k = 1, nlp1
+         do n = 1, nday_length
+            !$acc loop seq
+            do jg = 1, pack_size(j2) ! lab_do_jg
+               jb = pack_idx(jg, j2)
+               ib = jb + 1 - nblow
+               !  --- ...  compute upward and downward fluxes at levels
+               fxup0(n, k,ib) = fxup0(n, k,ib) + zsolar(n, jg)*zfua(n, k, jg)
+               fxdn0(n, k,ib) = fxdn0(n, k,ib) + zsolar(n, jg)*zfda(n, k, jg)
             end do
          end do
       end do
 
                !! --- ...  surface downward beam/diffused flux components
-      !$acc parallel loop collapse(2) private(jg2, jb, ib, ibd, zf1, zf2, zb1, zb2) async(async_id)
-      do jj = 1, blockjj
-         do ipt = 1, ix
-            if (ipt .le. nday(jj)) then ! lab_do_ipt
-               !$acc loop seq 
-               do jg = 1, small_ngptsw ! lab_do_jg
-                  jg2 = jg + (j2-1)*small_ngptsw
-                  jb = ngb(jg2)
-                  ib = jb + 1 - nblow
-                  ibd = idxsfc(jb)
-                  zb1 = zsolar(ipt, jg, jj)*ztdbt0(ipt, jg, jj)
-                  zb2 = zsolar(ipt, jg, jj)*(zfd0(ipt, jg, jj) - ztdbt0(ipt, jg, jj))
-                  if (ibd /= 0) then
-                     sfbm0(ipt, ibd, jj) = sfbm0(ipt, ibd, jj) + zb1
-                     sfdf0(ipt, ibd, jj) = sfdf0(ipt, ibd, jj) + zb2
-                  else
-                     zf1 = 0.5 * zb1
-                     zf2 = 0.5 * zb2
-                     sfbm0(ipt, 1, jj) = sfbm0(ipt, 1, jj) + zf1
-                     sfdf0(ipt, 1, jj) = sfdf0(ipt, 1, jj) + zf2
-                     sfbm0(ipt, 2, jj) = sfbm0(ipt, 2, jj) + zf1
-                     sfdf0(ipt, 2, jj) = sfdf0(ipt, 2, jj) + zf2
-                  endif
-                  !       sfbm0(ibd) = sfbm0(ibd) + zsolar*ztdbt0
-                  !       sfdf0(ibd) = sfdf0(ibd) + zsolar*(zfd(1) - ztdbt0)
-               end do
-            end if
+      !$acc parallel loop private(jb, ib, ibd, zf1, zf2, zb1, zb2) async(async_id)
+      do n = 1, nday_length
+         !$acc loop seq 
+         do jg = 1, pack_size(j2) ! lab_do_jg
+            jb = pack_idx(jg, j2)
+            ib = jb + 1 - nblow
+            ibd = idxsfc(jb)
+            zb1 = zsolar(n, jg)*ztdbt0(n, jg)
+            zb2 = zsolar(n, jg)*(zfd0(n, jg) - ztdbt0(n, jg))
+            if (ibd /= 0) then
+               sfbm0(n, ibd) = sfbm0(n, ibd) + zb1
+               sfdf0(n, ibd) = sfdf0(n, ibd) + zb2
+            else
+               zf1 = 0.5 * zb1
+               zf2 = 0.5 * zb2
+               sfbm0(n, 1) = sfbm0(n, 1) + zf1
+               sfdf0(n, 1) = sfdf0(n, 1) + zf2
+               sfbm0(n, 2) = sfbm0(n, 2) + zf1
+               sfdf0(n, 2) = sfdf0(n, 2) + zf2
+            endif
+            !       sfbm0(ibd) = sfbm0(ibd) + zsolar*ztdbt0
+            !       sfdf0(ibd) = sfdf0(ibd) + zsolar*(zfd(1) - ztdbt0)
          end do
       end do
 
                !  --- ...  compute total sky optical parameters, layer reflectance and transmittance
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, blockjj
-         do jg = 1, small_ngptsw ! lab_do_jg
-            !$acc loop vector private(zb1, zb2, zf1, zf2, kp, zc0, zc1, ztau0, &
-            !$acc&     zssa0, zasy0, zldbt0, ftind, itind, zssaw, zasyw, za1, za2, &
-            !$acc&     ztau1, zssa1, zasy1, zasy3, zgam1, zgam2, zgam3, zgam4, &
-            !$acc&     zrefb1, zrefd1, ztrab1, ztrad1, zrk, zrk2, zrp, zrp1, zrm1, &
-            !$acc&     zrpp, zrkg1, zrkg3, zrkg4, zr1, zr2, zr3, zr4, zr5, &
-            !$acc&     zt1, zt2, zt3, zexm1, zexp1, zexm2, zexp2, ze1r45, zden1, &
-            !$acc&     zexp3, zexp4, j1, jg2, jb, ib, ibd, ztdbt0r)
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               jg2 = jg + (j2-1)*small_ngptsw
-               jb = ngb(jg2)
-               ib = jb + 1 - nblow
-               ibd = idxsfc(jb)
-               j1 = idxday(ipt, jj)
-               if ( cf1(ipt, jj) > eps ) then
+      !$acc parallel loop collapse(2) private(jj, zb1, zb2, zf1, zf2, kp, zc0, zc1, ztau0, &
+      !$acc&         zssa0, zasy0, zldbt0, ftind, itind, zssaw, zasyw, za1, za2, &
+      !$acc&         ztau1, zssa1, zasy1, zasy3, zgam1, zgam2, zgam3, zgam4, &
+      !$acc&         zrefb1, zrefd1, ztrab1, ztrad1, zrk, zrk2, zrp, zrp1, zrm1, &
+      !$acc&         zrpp, zrkg1, zrkg3, zrkg4, zr1, zr2, zr3, zr4, zr5, &
+      !$acc&         zt1, zt2, zt3, zexm1, zexp1, zexm2, zexp2, ze1r45, zden1, &
+      !$acc&         zexp3, zexp4, j1, jb, ib, ibd, ztdbt0r, zrefbr, zrefdr, ztrabr, &
+      !$acc&         ztradr, zldbtr, taurr, tauaer, ssaaer) async(async_id)
+      do jg = 1, pack_size(j2) ! lab_do_jg
+         do n = 1, nday_length
+            jj = map_nday_jj(n) - jjoffset
+            jb = pack_idx(jg, j2)
+            ib = jb + 1 - nblow
+            nn = reverse_recipe(jg, j2)
+            ibd = idxsfc(jb)
+            j1 = idxday(n)
+            if ( cf1(n) > eps ) then
 
-                  !  --- ...  set up toa direct beam and surface values (beam and diff)
-                  ztdbt0r = f_one
-                  zldbt(ipt, 1, jg, jj) = f_zero
-                  !$acc loop seq
-                  do k = nlay, 1, -1
-                     kp = k + 1
-                     zc0 = f_one - cldfrc(ipt, k, jj)
-                     zc1 = cldfrc(ipt, k, jj)
+               !  --- ...  set up toa direct beam and surface values (beam and diff)
+               ztdbt0r = f_one
+               zldbt(n, 1, jg) = f_zero
+               ztdbtr = ztdbt(n, nlp1, jg)
+               !$acc loop seq
+               do k = nlay, 1, -1
+                  kp = k + 1
+                  zc0 = f_one - cldfrc(n, k)
+                  zc1 = cldfrc(n, k)
+                  taurr = small_taur(n, k,jg)
+                  tauaer = tauae(n, k,nn)
+                  ssaaer = ssaae(n, k,nn)
 
-                     !  --- ...  saving clear-sky quantities for later total-sky usage
-                     ztau0 = max( ftiny, taur(ipt, k,jg2, jj)+taug(ipt, k,jg2, jj)+tauae(ipt, k,ib, jj) )
-                     zssa0 = taur(ipt, k,jg2, jj) + tauae(ipt, k,ib, jj)*ssaae(ipt, k,ib, jj)
-                     zasy0 = asyae(ipt, k,ib, jj)*ssaae(ipt, k,ib, jj)*tauae(ipt, k,ib, jj)
-                     zr1 = ztau0 * sntz(ipt, jj)
+                  !  --- ...  saving clear-sky quantities for later total-sky usage
+                  ztau0 = max( ftiny, taurr+small_taug(n, k,jg)+tauaer )
+                  zssa0 = taurr + tauaer*ssaaer
+                  zasy0 = asyae(n, k,nn)*ssaaer*tauaer
+                  zr1 = ztau0 * sntz(n)
+                  if ( zr1 <= od_lo ) then
+                     zldbt0 = f_one - zr1 + 0.5*zr1*zr1
+                  else
+                     ftind = zr1 / (bpade + zr1)
+                     itind = max(0, min(ntbmx, int(0.5+ntbmx*ftind) ))
+                     zldbt0 = exp_tbl(itind)
+                  endif
+
+                  zldbtr = zldbt(n, kp, jg)
+                  if ( zc1 > ftiny ) then          ! it is a cloudy-layer
+                     ztau0 = ztau0 + taucw(n, k,nn)
+                     zssa0 = zssa0 + ssacw(n, k,nn)
+                     zasy0 = zasy0 + asycw(n, k,nn)
+                     zssaw = min(oneminus, zssa0 / ztau0)
+                     zasyw = zasy0 / max(ftiny, zssa0)
+
+                     !  --- ...  delta scaling for total-sky condition
+                     za1 = zasyw * zasyw
+                     za2 = zssaw * za1
+
+                     ztau1 = (f_one - za2) * ztau0
+                     zssa1 = (zssaw - za2) / (f_one - za2)
+                     !org          zasy1 = (zasyw - za1) / (f_one - za1)
+                     zasy1 = zasyw / (f_one + zasyw)
+                     zasy3 = 0.75 * zasy1
+
+                     !  --- ...  general two-stream expressions
+                     if ( iswmode == 1 ) then
+                        zgam1 = 1.75 - zssa1 * (f_one + zasy3)
+                        zgam2 =-0.25 + zssa1 * (f_one - zasy3)
+                        zgam3 = 0.5  - zasy3 * cosz(j1, jj)
+                     elseif ( iswmode == 2 ) then               ! pifm
+                        zgam1 = 2.0 - zssa1 * (1.25 + zasy3)
+                        zgam2 = 0.75* zssa1 * (f_one- zasy1)
+                        zgam3 = 0.5 - zasy3 * cosz(j1, jj)
+                     elseif ( iswmode == 3 ) then               ! discrete ordinates
+                        zgam1 = zsr3 * (2.0 - zssa1 * (1.0 + zasy1)) * 0.5
+                        zgam2 = zsr3 * zssa1 * (1.0 - zasy1) * 0.5
+                        zgam3 = (1.0 - zsr3 * zasy1 * cosz(j1, jj)) * 0.5
+                     endif
+                     zgam4 = f_one - zgam3
+
+                     zrefb1 = zrefb(n, kp, jg)
+                     zrefd1 = zrefd(n, kp, jg)
+                     ztrab1 = ztrab(n, kp, jg)
+                     ztrad1 = ztrad(n, kp, jg)
+
+                     !  --- ...  compute homogeneous reflectance and transmittance
+
+                     if ( zssaw >= zcrit ) then    ! for conservative scattering
+                        za1 = zgam1 * cosz(j1, jj) - zgam3
+                        za2 = zgam1 * ztau1
+
+                        !  --- ...  use exponential lookup table for transmittance, or expansion
+                        !           of exponential for low optical depth
+
+                        zb1 = min ( ztau1*sntz(n) , 500.0 )
+                        if ( zb1 <= od_lo ) then
+                           zb2 = f_one - zb1 + 0.5*zb1*zb1
+                        else
+                           ftind = zb1 / (bpade + zb1)
+                           itind = ftind*ntbmx + 0.5
+                           zb2 = exp_tbl(itind)
+                        endif
+
+                        !      ...  collimated beam
+                        zrefbr = max(f_zero, min(f_one,                      &
+                        &                      (za2 - za1*(f_one - zb2))/(f_one + za2) ))
+                        ztrabr = max(f_zero, min(f_one, f_one-zrefbr))
+
+                        !      ...  isotropic incidence
+                        zrefdr = max(f_zero, min(f_one, za2 / (f_one+za2) ))
+                        ztradr = max(f_zero, min(f_one, f_one - zrefdr ))
+
+                     else                          ! for non-conservative scattering
+                        za1 = zgam1*zgam4 + zgam2*zgam3
+                        za2 = zgam1*zgam3 + zgam2*zgam4
+                        zrk = sqrt ( (zgam1 - zgam2) * (zgam1 + zgam2) )
+                        zrk2= 2.0 * zrk
+
+                        zrp  = zrk * cosz(j1, jj)
+                        zrp1 = f_one + zrp
+                        zrm1 = f_one - zrp
+                        zrpp = f_one - zrp*zrp
+                        zrkg1= zrk + zgam1
+                        zrkg3= zrk * zgam3
+                        zrkg4= zrk * zgam4
+
+                        zr1  = zrm1 * (za2 + zrkg3)
+                        zr2  = zrp1 * (za2 - zrkg3)
+                        zr3  = zrk2 * (zgam3 - za2*cosz(j1, jj))
+                        zr4  = zrpp * zrkg1
+                        zr5  = zrpp * (zrk - zgam1)
+
+                        zt1  = zrp1 * (za1 + zrkg4)
+                        zt2  = zrm1 * (za1 - zrkg4)
+                        zt3  = zrk2 * (zgam4 + za1*cosz(j1, jj))
+
+                        !  --- ...  use exponential lookup table for transmittance, or expansion
+                        !           of exponential for low optical depth
+
+                        zb1 = min ( zrk*ztau1, 500.0 )
+                        if ( zb1 <= od_lo ) then
+                           zexm1 = f_one - zb1 + 0.5*zb1*zb1
+                        else
+                           ftind = zb1 / (bpade + zb1)
+                           itind = ftind*ntbmx + 0.5
+                           zexm1 = exp_tbl(itind)
+                        endif
+                        zexp1 = f_one / zexm1
+
+                        zb2 = min ( ztau1*sntz(n), 500.0 )
+                        if ( zb2 <= od_lo ) then
+                           zexm2 = f_one - zb2 + 0.5*zb2*zb2
+                        else
+                           ftind = zb2 / (bpade + zb2)
+                           itind = ftind*ntbmx + 0.5
+                           zexm2 = exp_tbl(itind)
+                        endif
+                        zexp2 = f_one / zexm2
+                        ze1r45 = zr4*zexp1 + zr5*zexm1
+
+                        !      ...  collimated beam
+                        if ( ze1r45>=-eps1 .and. ze1r45<=eps1 ) then
+                           zrefbr = eps1
+                           ztrabr = zexm2
+                        else
+                           zden1 = zssa1 / ze1r45
+                           zrefbr = max(f_zero, min(f_one,                    &
+                           &                        (zr1*zexp1-zr2*zexm1-zr3*zexm2)*zden1 ))
+                           ztrabr = max(f_zero, min(f_one, zexm2*(f_one -     &
+                           &                        (zt1*zexp1-zt2*zexm1-zt3*zexp2)*zden1) ))
+                        endif
+
+                        !      ...  diffuse beam
+                        zden1 = zr4 / (ze1r45 * zrkg1)
+                        zrefdr = max(f_zero, min(f_one,                      &
+                        &                      zgam2*(zexp1 - zexm1)*zden1 ))
+                        ztradr = max(f_zero, min(f_one, zrk2*zden1 ))
+                     endif    ! end if_zssaw_block
+
+                     !  --- ...  combine clear and cloudy contributions for total sky
+                     !           and calculate direct beam transmittances
+
+                     zrefb(n, kp, jg) = zc0*zrefb1 + zc1*zrefbr
+                     zrefd(n, kp, jg) = zc0*zrefd1 + zc1*zrefdr
+                     ztrab(n, kp, jg) = zc0*ztrab1 + zc1*ztrabr
+                     ztrad(n, kp, jg) = zc0*ztrad1 + zc1*ztradr
+
+                     !  --- ...  direct beam transmittance. use exponential lookup table
+                     !           for transmittance, or expansion of exponential for low
+                     !           optical depth
+
+                     zr1 = ztau1 * sntz(n)
                      if ( zr1 <= od_lo ) then
-                        zldbt0 = f_one - zr1 + 0.5*zr1*zr1
+                        zexp3 = f_one - zr1 + 0.5*zr1*zr1
                      else
                         ftind = zr1 / (bpade + zr1)
                         itind = max(0, min(ntbmx, int(0.5+ntbmx*ftind) ))
-                        zldbt0 = exp_tbl(itind)
+                        zexp3 = exp_tbl(itind)
                      endif
                      
-                     if ( zc1 > ftiny ) then          ! it is a cloudy-layer
-                        ztau0 = ztau0 + taucw(ipt, k,ib, jj)
-                        zssa0 = zssa0 + ssacw(ipt, k,ib, jj)
-                        zasy0 = zasy0 + asycw(ipt, k,ib, jj)
-                        zssaw = min(oneminus, zssa0 / ztau0)
-                        zasyw = zasy0 / max(ftiny, zssa0)
+                     zldbtr = zc0*zldbtr + zc1*zexp3
+                     ztdbtr = zldbtr * ztdbtr
+                     zldbt(n, kp, jg) = zldbtr
 
-                        !  --- ...  delta scaling for total-sky condition
-                        za1 = zasyw * zasyw
-                        za2 = zssaw * za1
+                     !  --- ...  pre-delta-scaling clear and cloudy direct beam transmittance
+                     !           (must use 'orig', unscaled cloud optical depth)
 
-                        ztau1 = (f_one - za2) * ztau0
-                        zssa1 = (zssaw - za2) / (f_one - za2)
-                        !org          zasy1 = (zasyw - za1) / (f_one - za1)
-                        zasy1 = zasyw / (f_one + zasyw)
-                        zasy3 = 0.75 * zasy1
+                     zr1 = ztau0 * sntz(n)
+                     if ( zr1 <= od_lo ) then
+                        zexp4 = f_one - zr1 + 0.5*zr1*zr1
+                     else
+                        ftind = zr1 / (bpade + zr1)
+                        itind = max(0, min(ntbmx, int(0.5+ntbmx*ftind) ))
+                        zexp4 = exp_tbl(itind)
+                     endif
 
-                        !  --- ...  general two-stream expressions
-                        if ( iswmode == 1 ) then
-                           zgam1 = 1.75 - zssa1 * (f_one + zasy3)
-                           zgam2 =-0.25 + zssa1 * (f_one - zasy3)
-                           zgam3 = 0.5  - zasy3 * cosz(j1, jj)
-                        elseif ( iswmode == 2 ) then               ! pifm
-                           zgam1 = 2.0 - zssa1 * (1.25 + zasy3)
-                           zgam2 = 0.75* zssa1 * (f_one- zasy1)
-                           zgam3 = 0.5 - zasy3 * cosz(j1, jj)
-                        elseif ( iswmode == 3 ) then               ! discrete ordinates
-                           zgam1 = zsr3 * (2.0 - zssa1 * (1.0 + zasy1)) * 0.5
-                           zgam2 = zsr3 * zssa1 * (1.0 - zasy1) * 0.5
-                           zgam3 = (1.0 - zsr3 * zasy1 * cosz(j1, jj)) * 0.5
-                        endif
-                        zgam4 = f_one - zgam3
+                     ztdbt0r = (zc0*zldbt0 + zc1*zexp4) * ztdbt0r
 
-                        zrefb1 = zrefb(ipt, kp, jg, jj)
-                        zrefd1 = zrefd(ipt, kp, jg, jj)
-                        ztrab1 = ztrab(ipt, kp, jg, jj)
-                        ztrad1 = ztrad(ipt, kp, jg, jj)
+                  else     ! if_zc1_block  ---  it is a clear layer
 
-                        !  --- ...  compute homogeneous reflectance and transmittance
+                     !  --- ...  direct beam transmittance
+                     ztdbtr = zldbtr * ztdbtr
 
-                        if ( zssaw >= zcrit ) then    ! for conservative scattering
-                           za1 = zgam1 * cosz(j1, jj) - zgam3
-                           za2 = zgam1 * ztau1
+                     !  --- ...  pre-delta-scaling clear and cloudy direct beam transmittance
+                     ztdbt0r = zldbt0 * ztdbt0r
 
-                           !  --- ...  use exponential lookup table for transmittance, or expansion
-                           !           of exponential for low optical depth
-
-                           zb1 = min ( ztau1*sntz(ipt, jj) , 500.0 )
-                           if ( zb1 <= od_lo ) then
-                              zb2 = f_one - zb1 + 0.5*zb1*zb1
-                           else
-                              ftind = zb1 / (bpade + zb1)
-                              itind = ftind*ntbmx + 0.5
-                              zb2 = exp_tbl(itind)
-                           endif
-
-                           !      ...  collimated beam
-                           zrefb(ipt, kp, jg, jj) = max(f_zero, min(f_one,                      &
-                           &                      (za2 - za1*(f_one - zb2))/(f_one + za2) ))
-                           ztrab(ipt, kp, jg, jj) = max(f_zero, min(f_one, f_one-zrefb(ipt, kp, jg, jj)))
-
-                           !      ...  isotropic incidence
-                           zrefd(ipt, kp, jg, jj) = max(f_zero, min(f_one, za2 / (f_one+za2) ))
-                           ztrad(ipt, kp, jg, jj) = max(f_zero, min(f_one, f_one - zrefd(ipt, kp, jg, jj) ))
-
-                        else                          ! for non-conservative scattering
-                           za1 = zgam1*zgam4 + zgam2*zgam3
-                           za2 = zgam1*zgam3 + zgam2*zgam4
-                           zrk = sqrt ( (zgam1 - zgam2) * (zgam1 + zgam2) )
-                           zrk2= 2.0 * zrk
-
-                           zrp  = zrk * cosz(j1, jj)
-                           zrp1 = f_one + zrp
-                           zrm1 = f_one - zrp
-                           zrpp = f_one - zrp*zrp
-                           zrkg1= zrk + zgam1
-                           zrkg3= zrk * zgam3
-                           zrkg4= zrk * zgam4
-
-                           zr1  = zrm1 * (za2 + zrkg3)
-                           zr2  = zrp1 * (za2 - zrkg3)
-                           zr3  = zrk2 * (zgam3 - za2*cosz(j1, jj))
-                           zr4  = zrpp * zrkg1
-                           zr5  = zrpp * (zrk - zgam1)
-
-                           zt1  = zrp1 * (za1 + zrkg4)
-                           zt2  = zrm1 * (za1 - zrkg4)
-                           zt3  = zrk2 * (zgam4 + za1*cosz(j1, jj))
-
-                           !  --- ...  use exponential lookup table for transmittance, or expansion
-                           !           of exponential for low optical depth
-
-                           zb1 = min ( zrk*ztau1, 500.0 )
-                           if ( zb1 <= od_lo ) then
-                              zexm1 = f_one - zb1 + 0.5*zb1*zb1
-                           else
-                              ftind = zb1 / (bpade + zb1)
-                              itind = ftind*ntbmx + 0.5
-                              zexm1 = exp_tbl(itind)
-                           endif
-                           zexp1 = f_one / zexm1
-
-                           zb2 = min ( ztau1*sntz(ipt, jj), 500.0 )
-                           if ( zb2 <= od_lo ) then
-                              zexm2 = f_one - zb2 + 0.5*zb2*zb2
-                           else
-                              ftind = zb2 / (bpade + zb2)
-                              itind = ftind*ntbmx + 0.5
-                              zexm2 = exp_tbl(itind)
-                           endif
-                           zexp2 = f_one / zexm2
-                           ze1r45 = zr4*zexp1 + zr5*zexm1
-
-                           !      ...  collimated beam
-                           if ( ze1r45>=-eps1 .and. ze1r45<=eps1 ) then
-                              zrefb(ipt, kp, jg, jj) = eps1
-                              ztrab(ipt, kp, jg, jj) = zexm2
-                           else
-                              zden1 = zssa1 / ze1r45
-                              zrefb(ipt, kp, jg, jj) = max(f_zero, min(f_one,                    &
-                              &                        (zr1*zexp1-zr2*zexm1-zr3*zexm2)*zden1 ))
-                              ztrab(ipt, kp, jg, jj) = max(f_zero, min(f_one, zexm2*(f_one -     &
-                              &                        (zt1*zexp1-zt2*zexm1-zt3*zexp2)*zden1) ))
-                           endif
-
-                           !      ...  diffuse beam
-                           zden1 = zr4 / (ze1r45 * zrkg1)
-                           zrefd(ipt, kp, jg, jj) = max(f_zero, min(f_one,                      &
-                           &                      zgam2*(zexp1 - zexm1)*zden1 ))
-                           ztrad(ipt, kp, jg, jj) = max(f_zero, min(f_one, zrk2*zden1 ))
-                        endif    ! end if_zssaw_block
-
-                        !  --- ...  combine clear and cloudy contributions for total sky
-                        !           and calculate direct beam transmittances
-
-                        zrefb(ipt, kp, jg, jj) = zc0*zrefb1 + zc1*zrefb(ipt, kp, jg, jj)
-                        zrefd(ipt, kp, jg, jj) = zc0*zrefd1 + zc1*zrefd(ipt, kp, jg, jj)
-                        ztrab(ipt, kp, jg, jj) = zc0*ztrab1 + zc1*ztrab(ipt, kp, jg, jj)
-                        ztrad(ipt, kp, jg, jj) = zc0*ztrad1 + zc1*ztrad(ipt, kp, jg, jj)
-
-                        !  --- ...  direct beam transmittance. use exponential lookup table
-                        !           for transmittance, or expansion of exponential for low
-                        !           optical depth
-
-                        zr1 = ztau1 * sntz(ipt, jj)
-                        if ( zr1 <= od_lo ) then
-                           zexp3 = f_one - zr1 + 0.5*zr1*zr1
-                        else
-                           ftind = zr1 / (bpade + zr1)
-                           itind = max(0, min(ntbmx, int(0.5+ntbmx*ftind) ))
-                           zexp3 = exp_tbl(itind)
-                        endif
-
-                        zldbt(ipt, kp, jg, jj) = zc0*zldbt(ipt, kp, jg, jj) + zc1*zexp3
-                        ztdbt(ipt, k, jg, jj) = zldbt(ipt, kp, jg, jj) * ztdbt(ipt, kp, jg, jj)
-
-                        !  --- ...  pre-delta-scaling clear and cloudy direct beam transmittance
-                        !           (must use 'orig', unscaled cloud optical depth)
-
-                        zr1 = ztau0 * sntz(ipt, jj)
-                        if ( zr1 <= od_lo ) then
-                           zexp4 = f_one - zr1 + 0.5*zr1*zr1
-                        else
-                           ftind = zr1 / (bpade + zr1)
-                           itind = max(0, min(ntbmx, int(0.5+ntbmx*ftind) ))
-                           zexp4 = exp_tbl(itind)
-                        endif
-
-                        ztdbt0r = (zc0*zldbt0 + zc1*zexp4) * ztdbt0r
-
-                     else     ! if_zc1_block  ---  it is a clear layer
-
-                        !  --- ...  direct beam transmittance
-                        ztdbt(ipt, k, jg, jj) = zldbt(ipt, kp, jg, jj) * ztdbt(ipt, kp, jg, jj)
-
-                        !  --- ...  pre-delta-scaling clear and cloudy direct beam transmittance
-                        ztdbt0r = zldbt0 * ztdbt0r
-
-                     endif    ! end if_zc1_block
-                  enddo   ! end do_k_loop
-                  ztdbt0(ipt, jg, jj) = ztdbt0r
-               end if
-            end do
+                  endif    ! end if_zc1_block
+                  ztdbt(n, k, jg) = ztdbtr
+               enddo   ! end do_k_loop
+               ztdbt0(n, jg) = ztdbt0r
+            end if
          end do
       end do
+      !$acc exit data delete(small_sfluxzen, small_taug, small_taur) async(async_id)
+
                   !  --- ...  perform vertical quadrature
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, blockjj
-         do jg = 1, small_ngptsw ! lab_do_jg
-            !$acc loop vector private(j1, kp, zden1, zfu, zfd, jg2, jb, ib, zrupbr, zrupbr1, zrupdr, zrupdr1)
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               jg2 = jg + (j2-1)*small_ngptsw
-               jb = ngb(jg2)
-               ib = jb + 1 - nblow
-               if ( cf1(ipt, jj) > eps ) then
-                  ! call swflux
+      !$acc parallel loop collapse(2) private(j1, kp, zden1, zfu, zfd, &
+      !$acc&         jb, ib, zrupbr, zrupbr1, zrupdr, zrupdr1, ztdnr, zrdndr, &
+      !$acc&         ztdbtr, ztradr, zrefdr, zldbtr) async(async_id)
+      do jg = 1, pack_size(j2) ! lab_do_jg
+         do n = 1, nday_length
+            jb = pack_idx(jg, j2)
+            ib = jb + 1 - nblow
+            if ( cf1(n) > eps ) then
+               ! call swflux
 
-                  !  --- ...  upper boundary conditions
+               !  --- ...  upper boundary conditions
 
-                  ztdn (ipt, nlp1, jg, jj) = f_one
-                  zrdnd(ipt, nlp1, jg, jj) = f_zero
-                  ztdn (ipt, nlay, jg, jj) = ztrab(ipt, nlp1, jg, jj)
-                  zrdnd(ipt, nlay, jg, jj) = zrefd(ipt, nlp1, jg, jj)
+               ztdn (n, nlp1, jg) = f_one
+               zrdnd(n, nlp1, jg) = f_zero
+               ztdnr = ztrab(n, nlp1, jg)
+               ztdn (n, nlay, jg) = ztdnr
+               zrdndr = zrefd(n, nlp1, jg)
+               zrdnd(n, nlay, jg) = zrdndr
 
-                  !  --- ...  pass from top to bottom
-                  !$acc loop seq
-                  do k = nlay, 2, -1
-                     zden1 = f_one / (f_one - zrefd(ipt, k, jg, jj)*zrdnd(ipt, k, jg, jj))
-                     ztdn (ipt, k-1, jg, jj) = ztdbt(ipt, k, jg, jj)*ztrab(ipt, k, jg, jj) &
-                                       + ( ztrad(ipt, k, jg, jj) *                 &
-                     &                 ( (ztdn(ipt, k, jg, jj) - ztdbt(ipt, k, jg, jj)) &
-                                       + ztdbt(ipt, k, jg, jj) *              &
-                     &                 zrefb(ipt, k, jg, jj)*zrdnd(ipt, k, jg, jj) )) * zden1
-                     zrdnd(ipt, k-1, jg, jj) = zrefd(ipt, k, jg, jj) + ztrad(ipt, k, jg, jj) &
-                                       *ztrad(ipt, k, jg, jj)*zrdnd(ipt, k, jg, jj)*zden1
-                  enddo
+               !  --- ...  pass from top to bottom
+               !$acc loop seq
+               do k = nlay, 2, -1
+                  ztdbtr = ztdbt(n, k, jg)
+                  ztradr = ztrad(n, k, jg)
+                  zrefdr = zrefd(n, k, jg)
+                  zden1 = f_one / (f_one - zrefdr*zrdndr)
+                  ztdnr = ztdbtr*ztrab(n, k, jg) &
+                                    + ( ztradr *                 &
+                  &                 ( (ztdnr - ztdbtr) &
+                                    + ztdbtr *              &
+                  &                 zrefb(n, k, jg)*zrdndr )) * zden1
+                  ztdn (n, k-1, jg) = ztdnr
+                  zrdndr = zrefdr + ztradr &
+                                    *ztradr*zrdndr*zden1
+                  zrdnd(n, k-1, jg) = zrdndr
+               enddo
 
-                  !  --- ...  link lowest layer with surface
+               !  --- ...  link lowest layer with surface
 
-                  zrupbr = zrefb(ipt, 1, jg, jj)        ! direct beam
-                  zrupdr = zrefd(ipt, 1, jg, jj)        ! diffused
-                  
-                  zden1 = f_one / (f_one - zrdnd(ipt, 1, jg, jj)*zrupdr)
-                  zfu = ( ztdbt(ipt, 1, jg, jj)*zrupbr +                                &
-                  &             (ztdn(ipt, 1, jg, jj) - ztdbt(ipt, 1, jg, jj)) &
-                                 *zrupdr ) * zden1
-                  zfd = ztdbt(ipt, 1, jg, jj) + ( ztdn(ipt, 1, jg, jj) &
-                                 - ztdbt(ipt, 1, jg, jj) +                    &
-                  &             ztdbt(ipt, 1, jg, jj)*zrupbr &
-                                 *zrdnd(ipt, 1, jg, jj) ) * zden1
+               zrupbr = zrefb(n, 1, jg)        ! direct beam
+               zrupdr = zrefd(n, 1, jg)        ! diffused
+               ztdbtr = ztdbt(n, 1, jg)
+               
+               zden1 = f_one / (f_one - zrdndr*zrupdr)
+               zfu = ( ztdbtr*zrupbr +                                &
+               &             (ztdnr - ztdbtr) &
+                              *zrupdr ) * zden1
+               zfd = ztdbtr + ( ztdnr &
+                              - ztdbtr +                    &
+               &             ztdbtr*zrupbr &
+                              *zrdndr ) * zden1
+                              ! end call swflux
+               zfua(n, 1, jg) = zfu
+               zfda(n, 1, jg) = zfd
+
+               zfd0(n, jg) = zfd
+               !  --- ...  pass from bottom to top
+               !$acc loop seq
+               do k = 1, nlay
+                  kp = k + 1
+                  zrdndr = zrdnd(n, kp, jg)
+                  ztdnr = ztdn(n, kp, jg)
+                  ztdbtr = ztdbt(n, kp, jg)
+                  ztradr = ztrad(n, kp, jg)
+                  zrefdr = zrefd(n, kp, jg)
+                  zldbtr = zldbt(n, kp, jg)
+                  zden1 = f_one / ( f_one - zrupdr*zrefdr )
+                  zrupbr1 = zrefb(n, kp, jg) + ( ztradr *                         &
+                  &                ( (ztrab(n, kp, jg) - zldbtr)*zrupdr +              &
+                  &                zldbtr*zrupbr) ) * zden1
+                  zrupdr1 = zrefdr + ztradr &
+                                 *ztradr*zrupdr*zden1
+
+               !  --- ...  up and down-welling fluxes at levels
+                  zden1 = f_one / (f_one - zrdndr*zrupdr1)
+                  zfu = ( ztdbtr*zrupbr1 +                                &
+                  &             (ztdnr - ztdbtr) &
+                                 *zrupdr1 ) * zden1
+                  zfd = ztdbtr + ( ztdnr &
+                                 - ztdbtr +                    &
+                  &             ztdbtr*zrupbr1 &
+                                 *zrdndr ) * zden1
                                  ! end call swflux
-                  zfua(ipt, 1, jg, jj) = zfu
-                  zfda(ipt, 1, jg, jj) = zfd
-
-                  zfd0(ipt, jg, jj) = zfd
-                  !  --- ...  pass from bottom to top
-                  !$acc loop seq
-                  do k = 1, nlay
-                     kp = k + 1
-
-                     zden1 = f_one / ( f_one - zrupdr*zrefd(ipt, kp, jg, jj) )
-                     zrupbr1 = zrefb(ipt, kp, jg, jj) + ( ztrad(ipt, kp, jg, jj) *                         &
-                     &                ( (ztrab(ipt, kp, jg, jj) - zldbt(ipt, kp, jg, jj))*zrupdr +              &
-                     &                zldbt(ipt, kp, jg, jj)*zrupbr) ) * zden1
-                     zrupdr1 = zrefd(ipt, kp, jg, jj) + ztrad(ipt, kp, jg, jj) &
-                                      *ztrad(ipt, kp, jg, jj)*zrupdr*zden1
-
-                  !  --- ...  up and down-welling fluxes at levels
-                     zden1 = f_one / (f_one - zrdnd(ipt, kp, jg, jj)*zrupdr1)
-                     zfu = ( ztdbt(ipt, kp, jg, jj)*zrupbr1 +                                &
-                     &             (ztdn(ipt, kp, jg, jj) - ztdbt(ipt, kp, jg, jj)) &
-                                    *zrupdr1 ) * zden1
-                     zfd = ztdbt(ipt, kp, jg, jj) + ( ztdn(ipt, kp, jg, jj) &
-                                    - ztdbt(ipt, kp, jg, jj) +                    &
-                     &             ztdbt(ipt, kp, jg, jj)*zrupbr1 &
-                                    *zrdnd(ipt, kp, jg, jj) ) * zden1
-                                    ! end call swflux
-                     zfua(ipt, kp, jg, jj) = zfu
-                     zfda(ipt, kp, jg, jj) = zfd
-                     zrupbr = zrupbr1
-                     zrupdr = zrupdr1
-                  end do
-               end if
-            end do
+                  zfua(n, kp, jg) = zfu
+                  zfda(n, kp, jg) = zfd
+                  zrupbr = zrupbr1
+                  zrupdr = zrupdr1
+               end do
+            end if
          end do
       end do
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, blockjj
-         do k = 1, nlp1
-            !$acc loop vector private(jg2, jb, ib)
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               !$acc loop seq
-               do jg = 1, small_ngptsw ! lab_do_jg
-                  jg2 = jg + (j2-1)*small_ngptsw
-                  jb = ngb(jg2)
-                  ib = jb + 1 - nblow
-                  !  --- ...  compute upward and downward fluxes at levels
-                  fxupc(ipt, k,ib, jj) = fxupc(ipt, k,ib, jj) + zsolar(ipt, jg, jj)*zfua(ipt, k, jg, jj)
-                  fxdnc(ipt, k,ib, jj) = fxdnc(ipt, k,ib, jj) + zsolar(ipt, jg, jj)*zfda(ipt, k, jg, jj)
-               end do
+      !$acc parallel loop collapse(2) private(jb, ib) async(async_id)
+      do k = 1, nlp1
+         do n = 1, nday_length
+            !$acc loop seq
+            do jg = 1, pack_size(j2) ! lab_do_jg
+               jb = pack_idx(jg, j2)
+               ib = jb + 1 - nblow
+               !  --- ...  compute upward and downward fluxes at levels
+               fxupc(n, k,ib) = fxupc(n, k,ib) + zsolar(n, jg)*zfua(n, k, jg)
+               fxdnc(n, k,ib) = fxdnc(n, k,ib) + zsolar(n, jg)*zfda(n, k, jg)
             end do
          end do
       end do
                   !! --- ...  surface downward beam/diffused flux components
-      !$acc parallel loop gang collapse(2) private(jg2, jb, ibd, zb1, zb2, zf1, zf2) async(async_id)
-      do jj = 1, blockjj
-         do ipt = 1, ix
-            if (ipt .le. nday(jj)) then ! lab_do_ipt
-               !$acc loop seq
-               do jg = 1, small_ngptsw ! lab_do_jg
-                  jg2 = jg + (j2-1)*small_ngptsw
-                  jb = ngb(jg2)
-                  ibd = idxsfc(jb)
-                  if ( cf1(ipt, jj) > eps ) then
-                     zb1 = zsolar(ipt, jg, jj)*ztdbt0(ipt, jg, jj)
-                     zb2 = zsolar(ipt, jg, jj)*(zfd0(ipt, jg, jj) - ztdbt0(ipt, jg, jj))
+      !$acc parallel loop private(jb, ibd, zb1, zb2, zf1, zf2) async(async_id)
+      do n = 1, nday_length
+         !$acc loop seq
+         do jg = 1, pack_size(j2) ! lab_do_jg
+            jb = pack_idx(jg, j2)
+            ibd = idxsfc(jb)
+            if ( cf1(n) > eps ) then
+               zb1 = zsolar(n, jg)*ztdbt0(n, jg)
+               zb2 = zsolar(n, jg)*(zfd0(n, jg) - ztdbt0(n, jg))
 
-                     if (ibd /= 0) then
-                        sfbmc(ipt, ibd, jj) = sfbmc(ipt, ibd, jj) + zb1
-                        sfdfc(ipt, ibd, jj) = sfdfc(ipt, ibd, jj) + zb2
-                     else
-                        zf1 = 0.5 * zb1
-                        zf2 = 0.5 * zb2
-                        sfbmc(ipt, 1, jj) = sfbmc(ipt, 1, jj) + zf1
-                        sfdfc(ipt, 1, jj) = sfdfc(ipt, 1, jj) + zf2
-                        sfbmc(ipt, 2, jj) = sfbmc(ipt, 2, jj) + zf1
-                        sfdfc(ipt, 2, jj) = sfdfc(ipt, 2, jj) + zf2
-                     endif
-                     !         sfbmc(ibd) = sfbmc(ibd) + zsolar*ztdbt0
-                     !         sfdfc(ibd) = sfdfc(ibd) + zsolar*(zfd(1) - ztdbt0)
+               if (ibd /= 0) then
+                  sfbmc(n, ibd) = sfbmc(n, ibd) + zb1
+                  sfdfc(n, ibd) = sfdfc(n, ibd) + zb2
+               else
+                  zf1 = 0.5 * zb1
+                  zf2 = 0.5 * zb2
+                  sfbmc(n, 1) = sfbmc(n, 1) + zf1
+                  sfdfc(n, 1) = sfdfc(n, 1) + zf2
+                  sfbmc(n, 2) = sfbmc(n, 2) + zf1
+                  sfdfc(n, 2) = sfdfc(n, 2) + zf2
+               endif
+               !         sfbmc(ibd) = sfbmc(ibd) + zsolar*ztdbt0
+               !         sfdfc(ibd) = sfdfc(ibd) + zsolar*(zfd(1) - ztdbt0)
 
-                  endif      ! end if_cf1_block
+            endif      ! end if_cf1_block
 
-               enddo  ! lab_do_jg
-            end if
-         end do
+         enddo  ! lab_do_jg
       end do
+      !call nvtxEndRange
+      !$acc exit data delete(tauae, ssaae, asyae) async(async_id)
+      !$acc exit data delete(taucw, ssacw, asycw, cldfrc) async(async_id)
+      !$acc exit data delete(zrefb, zrefd, ztrab, ztrad, ztdbt, zldbt, zfd0, &
+      !$acc&     ztdbt0, zsolar, zrdnd, ztdn, zfda, zfua) async(async_id)
    end do
 
 
             !  --- ...  end of g-point loop
-      !$acc parallel loop collapse(2) async(async_id)
-      do jj = 1, blockjj
-         do ipt = 1, ix
-            if (ipt .le. nday(jj)) then ! lab_do_ipt
-               !$acc loop seq 
-               do ib = 1, nbdsw
-                  ftoadc(ipt, jj) = ftoadc(ipt, jj) + fxdn0(ipt, nlp1,ib, jj)
-                  ftoau0(ipt, jj) = ftoau0(ipt, jj) + fxup0(ipt, nlp1,ib, jj)
-                  fsfcu0(ipt, jj) = fsfcu0(ipt, jj) + fxup0(ipt, 1,ib, jj)
-                  fsfcd0(ipt, jj) = fsfcd0(ipt, jj) + fxdn0(ipt, 1,ib, jj)
-               enddo
-            end if
-         end do
+      !$acc parallel loop async(async_id)
+      do n = 1, nday_length
+         !$acc loop seq 
+         do ib = 1, nbdsw
+            ftoadc(n) = ftoadc(n) + fxdn0(n, nlp1,ib)
+            ftoau0(n) = ftoau0(n) + fxup0(n, nlp1,ib)
+            fsfcu0(n) = fsfcu0(n) + fxup0(n, 1,ib)
+            fsfcd0(n) = fsfcd0(n) + fxdn0(n, 1,ib)
+         enddo
       end do
 
       !! --- ...  uv-b surface downward flux
-      !$acc parallel loop gang collapse(3) async(async_id)
-      do jj = 1, blockjj
-         do ib = 1, nbdsw
-            do k = 1, nlp1
-               !$acc loop vector
-               do ipt = 1, nday(jj) ! lab_do_ipt
-                  if ( cf1(ipt, jj) <= eps ) then       ! clear column, set total-sky=clear-sky fluxes
-                     fxupc(ipt, k,ib, jj) = fxup0(ipt, k,ib, jj)
-                     fxdnc(ipt, k,ib, jj) = fxdn0(ipt, k,ib, jj)
-                  end if
-               enddo
-            enddo
-         end do
-      end do
-      !$acc parallel loop collapse(2) private(ibd) async(async_id)
-      do jj = 1, blockjj
-         do ipt = 1, ix
-            if (ipt .le. nday(jj)) then ! lab_do_ipt
-               ibd = nuvb - nblow + 1
-               suvbf0(ipt, jj) = fxdn0(ipt, 1,ibd, jj)
-               if ( cf1(ipt, jj) <= eps ) then       ! clear column, set total-sky=clear-sky fluxes
-                  ftoauc(ipt, jj) = ftoau0(ipt, jj)
-                  fsfcuc(ipt, jj) = fsfcu0(ipt, jj)
-                  fsfcdc(ipt, jj) = fsfcd0(ipt, jj)
-
-                  !! --- ...  surface downward beam/diffused flux components
-                  sfbmc(ipt, 1, jj) = sfbm0(ipt, 1, jj)
-                  sfdfc(ipt, 1, jj) = sfdf0(ipt, 1, jj)
-                  sfbmc(ipt, 2, jj) = sfbm0(ipt, 2, jj)
-                  sfdfc(ipt, 2, jj) = sfdf0(ipt, 2, jj)
-
-                  !! --- ...  uv-b surface downward flux
-                  suvbfc(ipt, jj) = suvbf0(ipt, jj)
+      !$acc parallel loop collapse(3) async(async_id)
+      do ib = 1, nbdsw
+         do k = 1, nlp1
+            do n = 1, nday_length
+               if ( cf1(n) <= eps ) then       ! clear column, set total-sky=clear-sky fluxes
+                  fxupc(n, k,ib) = fxup0(n, k,ib)
+                  fxdnc(n, k,ib) = fxdn0(n, k,ib)
+               else                             ! cloudy column, compute total-sky fluxes
+                  fxupc(n, k,ib) = cf1(n)*fxupc(n, k,ib) + cf0(n)*fxup0(n, k,ib)
+                  fxdnc(n, k,ib) = cf1(n)*fxdnc(n, k,ib) + cf0(n)*fxdn0(n, k,ib)
                end if
-            end if
-         end do
-      end do
-      !$acc parallel loop gang collapse(3) async(async_id)
-      do jj = 1, blockjj
-         do ib = 1, nbdsw
-            do k = 1, nlp1
-               !$acc loop vector 
-               do ipt = 1, nday(jj) ! lab_do_ipt
-                  if ( cf1(ipt, jj) > eps ) then                        ! cloudy column, compute total-sky fluxes
-                     fxupc(ipt, k,ib, jj) = cf1(ipt, jj)*fxupc(ipt, k,ib, jj) + cf0(ipt, jj)*fxup0(ipt, k,ib, jj)
-                     fxdnc(ipt, k,ib, jj) = cf1(ipt, jj)*fxdnc(ipt, k,ib, jj) + cf0(ipt, jj)*fxdn0(ipt, k,ib, jj)
-                  end if
-               enddo
             enddo
          end do
       end do
-      !$acc parallel loop collapse(2) async(async_id)
-      do jj = 1, blockjj
-         do ipt = 1, ix
-            if (ipt .le. nday(jj)) then ! lab_do_ipt
-               !$acc loop seq
-               do ib = 1, nbdsw
-                  if ( cf1(ipt, jj) > eps ) then                        ! cloudy column, compute total-sky fluxes
-                     ftoauc(ipt, jj) = ftoauc(ipt, jj) + fxupc(ipt, nlp1,ib, jj)
-                     fsfcuc(ipt, jj) = fsfcuc(ipt, jj) + fxupc(ipt, 1,ib, jj)
-                     fsfcdc(ipt, jj) = fsfcdc(ipt, jj) + fxdnc(ipt, 1,ib, jj)
-                  end if
-               enddo
-            end if
-         end do
-      end do
-      !$acc parallel loop collapse(2) private(ibd) async(async_id)
-      do jj = 1, blockjj
-         do ipt = 1, ix
-            if (ipt .le. nday(jj)) then ! lab_do_ipt
-               if ( cf1(ipt, jj) > eps ) then                        ! cloudy column, compute total-sky fluxes
-                  !! --- ...  uv-b surface downward flux
-                  ibd = nuvb - nblow + 1
-                  suvbfc(ipt, jj) = fxdnc(ipt, 1,ibd, jj)
+      !$acc parallel loop private(ibd) async(async_id)
+      do n = 1, nday_length
+         ibd = nuvb - nblow + 1
+         suvbf0(n) = fxdn0(n, 1,ibd)
+         if ( cf1(n) <= eps ) then       ! clear column, set total-sky=clear-sky fluxes
+            ftoauc(n) = ftoau0(n)
+            fsfcuc(n) = fsfcu0(n)
+            fsfcdc(n) = fsfcd0(n)
 
-                  !! --- ...  surface downward beam/diffused flux components
-                  sfbmc(ipt, 1, jj) = cf1(ipt, jj)*sfbmc(ipt, 1, jj) + cf0(ipt, jj)*sfbm0(ipt, 1, jj)
-                  sfbmc(ipt, 2, jj) = cf1(ipt, jj)*sfbmc(ipt, 2, jj) + cf0(ipt, jj)*sfbm0(ipt, 2, jj)
-                  sfdfc(ipt, 1, jj) = cf1(ipt, jj)*sfdfc(ipt, 1, jj) + cf0(ipt, jj)*sfdf0(ipt, 1, jj)
-                  sfdfc(ipt, 2, jj) = cf1(ipt, jj)*sfdfc(ipt, 2, jj) + cf0(ipt, jj)*sfdf0(ipt, 2, jj)
-               endif    ! end if_cf1_block
-            end if
-         end do
+            !! --- ...  surface downward beam/diffused flux components
+            sfbmc(n, 1) = sfbm0(n, 1)
+            sfdfc(n, 1) = sfdf0(n, 1)
+            sfbmc(n, 2) = sfbm0(n, 2)
+            sfdfc(n, 2) = sfdf0(n, 2)
+
+            !! --- ...  uv-b surface downward flux
+            suvbfc(n) = suvbf0(n)
+         else                        ! cloudy column, compute total-sky fluxes
+            !! --- ...  uv-b surface downward flux
+            ibd = nuvb - nblow + 1
+            suvbfc(n) = fxdnc(n, 1,ibd)
+
+            !! --- ...  surface downward beam/diffused flux components
+            sfbmc(n, 1) = cf1(n)*sfbmc(n, 1) + cf0(n)*sfbm0(n, 1)
+            sfbmc(n, 2) = cf1(n)*sfbmc(n, 2) + cf0(n)*sfbm0(n, 2)
+            sfdfc(n, 1) = cf1(n)*sfdfc(n, 1) + cf0(n)*sfdf0(n, 1)
+            sfdfc(n, 2) = cf1(n)*sfdfc(n, 2) + cf0(n)*sfdf0(n, 2)
+         endif    ! end if_cf1_block
       end do
-      !$acc end data
+      !$acc parallel loop  async(async_id)
+      do n = 1, nday_length
+         !$acc loop seq
+         do ib = 1, nbdsw
+            if ( cf1(n) > eps ) then                        ! cloudy column, compute total-sky fluxes
+               ftoauc(n) = ftoauc(n) + fxupc(n, nlp1,ib)
+               fsfcuc(n) = fsfcuc(n) + fxupc(n, 1,ib)
+               fsfcdc(n) = fsfcdc(n) + fxdnc(n, 1,ib)
+            end if
+         enddo
+      end do
 
       return
 !...................................
@@ -4269,10 +4400,11 @@
 !...................................
 !  ---  inputs:
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
-     &       forfac,forfrac,indfor,selffac,selffrac,indself, &
-             nlay, ix, nday, async_id, fulljj, blockjj,     &
+     &       forfac,forfrac,indfor,selffac,selffrac,indself, map_nday_ipt, map_nday_jj, &
+             nlay, ix, nday, async_id, fulljj, blockjj, jb, ng00, np, &
+             offset_ng, nday_length, max_nday_length, jjoffset,    &
 !  ---  outputs:
-     &       sfluxzen, taug, taur                                       &
+     &       small_sfluxzen, small_taug, small_taur                                       &
      &     )
 
 !  ==================   program usage description   ==================  !
@@ -4372,31 +4504,31 @@
 !  ======================  end of description block  =================  !
 
 !  ---  inputs:
-      integer, intent(in) :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), fulljj, blockjj
+      integer, intent(in) :: nlay, laytrop(max_nday_length), ix, nday(fulljj), fulljj, &
+         blockjj, jb, ng00, np, offset_ng, nday_length, jjoffset, max_nday_length
 
-      integer, dimension(ix, nlay, fulljj), intent(in) :: indfor, indself,          &
+      integer, dimension(nday_length) :: map_nday_ipt, map_nday_jj
+      integer, dimension(max_nday_length, nlay), intent(in) :: indfor, indself,          &
      &       jp, jt, jt1
 
-      real (kind=kind_phys), dimension(ix, nlay, fulljj),  intent(in) :: colmol,    &
+      real (kind=kind_phys), dimension(max_nday_length, nlay),  intent(in) :: colmol,    &
      &       fac00, fac01, fac10, fac11, forfac, forfrac, selffac,      &
      &       selffrac
 
-      real (kind=kind_phys), dimension(ix, nlay,maxgas, fulljj),intent(in) :: colamt
+      real (kind=kind_phys), dimension(max_nday_length, nlay, maxgas),intent(in) :: colamt
 
 !  ---  outputs:
-      real (kind=kind_phys), dimension(ix, ngptsw, fulljj), intent(out) :: sfluxzen
-
-      real (kind=kind_phys), dimension(ix, nlay,ngptsw, fulljj), intent(out) ::     &
-     &       taug, taur
+      real (kind=kind_phys), dimension(nday_length, nlay, ng00) :: small_taur, small_taug
+      real (kind=kind_phys), dimension(nday_length, ng00) :: small_sfluxzen
 
 !  ---  locals:
       !integer, parameter :: small_factor = 10
       !integer, parameter :: small_ix = int(ix/small_factor)
       real (kind=kind_phys) :: fsa, speccomb, specmult, colm1, colm2
 
-      integer, dimension(ix, nlay,nblow:nbhgh, fulljj) :: id0, id1
+      integer, dimension(nday_length, nlay,nblow:nbhgh) :: id0, id1
 
-      integer :: ibd, j, jb, jsa, k, klow, khgh, klim, ks, njb, ns, ipt, jj, i2, i3
+      integer :: ibd, j, jsa, k, klow, khgh, klim, ks, njb, ns, ipt, jj, i2, i3, n
       integer :: async_id
 !
 !===> ... begin here
@@ -4405,156 +4537,195 @@
       !do i2 = small_factor
       !  --- ...  indices for layer optical depth
       !$acc data create(id0, id1) async(async_id)
-      !$acc parallel loop gang collapse(3) async(async_id)
-      do jj = 1, blockjj
-         do jb = nblow, nbhgh
-            do k = 1, nlay
-               !$acc loop vector
-               do ipt = 1, nday(jj) ! lab_do_ipt
-                  if (k .le. laytrop(ipt, jj)) then
-                     id0(ipt, k,jb, jj) = ((jp(ipt, k, jj)-1)*5 + (jt (ipt, k, jj)-1)) * nspa(jb)
-                     id1(ipt, k,jb, jj) = ( jp(ipt, k, jj)   *5 + (jt1(ipt, k, jj)-1)) * nspa(jb)
-                  else
-                     id0(ipt, k,jb, jj) = ((jp(ipt, k, jj)-13)*5 + (jt (ipt, k, jj)-1)) * nspb(jb)
-                     id1(ipt, k,jb, jj) = ((jp(ipt, k, jj)-12)*5 + (jt1(ipt, k, jj)-1)) * nspb(jb)
-                  end if
-               enddo
-            end do
-         end do
+      !$acc parallel loop collapse(2) async(async_id)
+      do k = 1, nlay
+         do n = 1, nday_length
+            if (k .le. laytrop(n)) then
+               id0(n, k,jb) = ((jp(n, k)-1)*5 + (jt (n, k)-1)) * nspa(jb)
+               id1(n, k,jb) = ( jp(n, k)   *5 + (jt1(n, k)-1)) * nspa(jb)
+            else
+               id0(n, k,jb) = ((jp(n, k)-13)*5 + (jt (n, k)-1)) * nspb(jb)
+               id1(n, k,jb) = ((jp(n, k)-12)*5 + (jt1(n, k)-1)) * nspb(jb)
+            end if
+         enddo
       end do
 
       !  --- ...  calculate spectral flux at toa
 
-      !$acc parallel loop collapse(3) private(ks, colm1, colm2, speccomb, &
+      !$acc parallel loop private(ks, colm1, colm2, speccomb, &
       !$acc&         specmult, jsa, fsa) async(async_id)
-      do jj = 1, blockjj
-         do jb = nblow, nbhgh
-            do ipt = 1, ix
-               if (ipt .le. nday(jj)) then ! lab_do_ipt
-                  ibd = ibx(jb)
-                  njb = ng (jb)
-                  ns  = ngs(jb)
-                  if ((jb .eq. 16) .or. (jb .eq. 20) .or. (jb .eq. 23) .or. &
-                        (jb .eq. 25) .or. (jb .eq. 26) .or. (jb .eq. 29)) then
-                     !$acc loop seq
-                     do j = 1, njb
-                        sfluxzen(ipt, ngs(jb)+j, jj) = sfluxref01(j,1,ibx(jb))
-                     enddo
+      do n = 1, nday_length
+         ibd = ibx(jb)
+         njb = ng (jb)
+         ns  = ngs(jb)
+         if ((jb .eq. 16) .or. (jb .eq. 20) .or. (jb .eq. 23) .or. &
+               (jb .eq. 25) .or. (jb .eq. 26) .or. (jb .eq. 29)) then
+            !$acc loop seq
+            do j = 1, njb
+               !sfluxzen(ipt, ngs(jb)+j, jj) = sfluxref01(j,1,ibx(jb))
+               small_sfluxzen(n, j + offset_ng) = sfluxref01(j,1,ibx(jb))
+            enddo
 
-                  elseif (jb .eq. 27) then
-                     !$acc loop seq
-                     do j = 1, njb
-                        sfluxzen(ipt, ngs(jb)+j, jj) = scalekur * sfluxref01(j,1,ibx(jb))
-                     enddo
+         elseif (jb .eq. 27) then
+            !$acc loop seq
+            do j = 1, njb
+               !sfluxzen(ipt, ngs(jb)+j, jj) = scalekur * sfluxref01(j,1,ibx(jb))
+               small_sfluxzen(n, j + offset_ng) = scalekur * sfluxref01(j,1,ibx(jb))
+            enddo
 
-                  elseif ((jb .eq. 17) .or. (jb .eq. 28)) then
-                     ks = nlay
-                     !$acc loop seq
-                     do k = laytrop(ipt, jj), nlay-1 ! lab_do_k1
-                        if (jp(ipt, k, jj)<layreffr(jb) .and. jp(ipt, k+1, jj)>=layreffr(jb)) then
-                           ks = k + 1
-                           exit ! lab_do_k1
-                        endif
-                     enddo  ! lab_do_k1
+         elseif ((jb .eq. 17) .or. (jb .eq. 28)) then
+            ks = nlay
+            !$acc loop seq
+            do k = laytrop(n), nlay-1 ! lab_do_k1
+               if (jp(n, k)<layreffr(jb) .and. jp(n, k+1)>=layreffr(jb)) then
+                  ks = k + 1
+                  exit ! lab_do_k1
+               endif
+            enddo  ! lab_do_k1
 
-                     colm1 = colamt(ipt, ks,ix1(jb), jj)
-                     colm2 = colamt(ipt, ks,ix2(jb), jj)
-                     speccomb = colm1 + strrat(jb)*colm2
-                     specmult = specwt(jb) * min( oneminus, colm1/speccomb )
-                     jsa = 1 + int( specmult )
-                     fsa = mod(specmult, f_one)
-                     !$acc loop seq
-                     do j = 1, njb
-                        sfluxzen(ipt, ngs(jb)+j, jj) = sfluxref02(j,jsa,ibd)                   &
-                        &           + fsa * (sfluxref02(j,jsa+1,ibd) - sfluxref02(j,jsa,ibd))
-                     enddo
+            colm1 = colamt(n, ks,ix1(jb))
+            colm2 = colamt(n, ks,ix2(jb))
+            speccomb = colm1 + strrat(jb)*colm2
+            specmult = specwt(jb) * min( oneminus, colm1/speccomb )
+            jsa = 1 + int( specmult )
+            fsa = mod(specmult, f_one)
+            !$acc loop seq
+            do j = 1, njb
+               !sfluxzen(ipt, ngs(jb)+j, jj) = sfluxref02(j,jsa,ibd)                   &
+               !&           + fsa * (sfluxref02(j,jsa+1,ibd) - sfluxref02(j,jsa,ibd))
+               small_sfluxzen(n, j + offset_ng) = sfluxref02(j,jsa,ibd)                   &
+               &           + fsa * (sfluxref02(j,jsa+1,ibd) - sfluxref02(j,jsa,ibd))
+            enddo
 
-                  else
-                     ks = laytrop(ipt, jj)
-                     !$acc loop seq
-                     do k = 1, laytrop(ipt, jj)-1 ! lab_do_k2
-                        if (jp(ipt, k, jj)<layreffr(jb) .and. jp(ipt, k+1, jj)>=layreffr(jb)) then
-                           ks = k + 1
-                           exit ! lab_do_k2
-                        endif
-                     enddo  ! lab_do_k2
+         else
+            ks = laytrop(n)
+            !$acc loop seq
+            do k = 1, laytrop(n)-1 ! lab_do_k2
+               if (jp(n, k)<layreffr(jb) .and. jp(n, k+1)>=layreffr(jb)) then
+                  ks = k + 1
+                  exit ! lab_do_k2
+               endif
+            enddo  ! lab_do_k2
 
-                     colm1 = colamt(ipt, ks,ix1(jb), jj)
-                     colm2 = colamt(ipt, ks,ix2(jb), jj)
-                     speccomb = colm1 + strrat(jb)*colm2
-                     specmult = specwt(jb) * min( oneminus, colm1/speccomb )
-                     jsa = 1 + int( specmult )
-                     fsa = mod(specmult, f_one)
-                     !$acc loop seq
-                     do j = 1, njb
-                        sfluxzen(ipt, ngs(jb)+j, jj) = sfluxref03(j,jsa,ibd)                   &
-                        &           + fsa * (sfluxref03(j,jsa+1,ibd) - sfluxref03(j,jsa,ibd))
-                     enddo
-                  end if
-               end if
-            end do
-         end do
+            colm1 = colamt(n, ks,ix1(jb))
+            colm2 = colamt(n, ks,ix2(jb))
+            speccomb = colm1 + strrat(jb)*colm2
+            specmult = specwt(jb) * min( oneminus, colm1/speccomb )
+            jsa = 1 + int( specmult )
+            fsa = mod(specmult, f_one)
+            !$acc loop seq
+            do j = 1, njb
+               !sfluxzen(ipt, ngs(jb)+j, jj) = sfluxref03(j,jsa,ibd)                   &
+               !&           + fsa * (sfluxref03(j,jsa+1,ibd) - sfluxref03(j,jsa,ibd))
+               small_sfluxzen(n, j + offset_ng) = sfluxref03(j,jsa,ibd)                   &
+               &           + fsa * (sfluxref03(j,jsa+1,ibd) - sfluxref03(j,jsa,ibd))
+            enddo
+         end if
       enddo
 
+      select case (jb)
 
-            !  --- ...  call taumol## to calculate layer optical depth
-      call taumol16( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
-     &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
-
-      call taumol17( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
-     &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
-
+         !  --- ...  call taumol## to calculate layer optical depth
+      case(16)
+         call taumol16( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
+      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
+     
+      case(17)
+         call taumol17( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
+      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
+      
+      case(18)
       call taumol18( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
-
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
+     
+      case(19)
       call taumol19( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
+     
+      case(20)
+         call taumol20( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
+      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
+      
+      case(21)
+         call taumol21( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
+      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
+      
+      case(22)
+         call taumol22( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
+      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
+      
+      case(23)
+         call taumol23( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
+      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
+      
+      case(24)
+         call taumol24( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
+      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
+      
+      case(25)
+         call taumol25( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
+      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
+      
+      case(26)
+         call taumol26( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
+      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
+      
+      case(27)
+         call taumol27( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
+      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
+      
+      case(28)
+         call taumol28( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
+      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
 
-      call taumol20( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
-     &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
-
-      call taumol21( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
-     &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
-
-      call taumol22( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
-     &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
-
-      call taumol23( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
-     &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
-
-      call taumol24( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
-     &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
-
-      call taumol25( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
-     &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
-
-      call taumol26( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
-     &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
-
-      call taumol27( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
-     &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
-
-      call taumol28( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
-     &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
-
+      case(29)
       call taumol29( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj)
-      !$acc end data
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
 
+      end select
+      !$acc end data
 
 !...................................
       end subroutine taumol
@@ -4565,26 +4736,28 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
-     &     )
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
 
 !  ------------------------------------------------------------------  !
 !     band 16:  2600-3250 cm-1 (low - h2o,ch4; high - ch4)             !
 !  ------------------------------------------------------------------  !
 !
       use module_radsw_kgb16
-
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
-      integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
+      
+      integer, dimension(nday_length) :: map_nday_ipt, map_nday_jj
+      integer :: ng00, np, offset_ng, nday_length, jjoffset, max_nday_length
+      real (kind=kind_phys), dimension(nday_length, nlay, ng00) :: small_taur, small_taug
+      real (kind=kind_phys), dimension(nday_length, ng00) :: small_sfluxzen
+      integer :: nlay, laytrop(max_nday_length), ix, nday(fulljj), blockjj
+      integer, dimension(max_nday_length, nlay) :: indfor, indself,          &
      &       jp, jt, jt1
-      real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
+      real (kind=kind_phys), dimension(max_nday_length, nlay) :: colmol,    &
      &       fac00, fac01, fac10, fac11, forfac, forfrac, selffac,      &
      &       selffrac
-      real (kind=kind_phys), dimension(ix, nlay,maxgas, fulljj) :: colamt
-      real (kind=kind_phys), dimension(ix, ngptsw, fulljj) :: sfluxzen
-      real (kind=kind_phys), dimension(ix, nlay,ngptsw, fulljj) ::     &
-     &       taug, taur
-      integer, dimension(ix, nlay,nblow:nbhgh, fulljj) :: id0, id1
+      real (kind=kind_phys), dimension(max_nday_length, nlay, maxgas) :: colamt
+      integer, dimension(nday_length, nlay,nblow:nbhgh) :: id0, id1
 !  ---  locals:
       integer :: ipt, jj, async_id, fulljj
 
@@ -4592,7 +4765,7 @@
      &       fac000,fac001,fac010,fac011, fac100,fac101,fac110,fac111
 
       integer :: ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14
-      integer :: inds, indf, indsp, indfp, j, js, k
+      integer :: inds, indf, indsp, indfp, j, js, k, n
 
 !
 !===> ... begin here
@@ -4601,73 +4774,83 @@
 !  --- ... compute the optical depth by interpolating in ln(pressure),
 !          temperature, and appropriate species.  below laytrop, the water
 !          vapor self-continuum is interpolated (in temperature) separately.
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, blockjj
-         do k = 1, nlay
-            !!$acc cache(absa, absb, selfref, forref)
-            !$acc loop vector private(speccomb, specmult, js, fs, fs1, fac000, &
-            !$acc&     fac010, fac100, fac110, fac001, fac011, fac101, fac111, &
-            !$acc&     ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14, &
-            !$acc&     inds, indf, indsp, indfp, tauray)
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               tauray = colmol(ipt, k, jj) * rayl
-               if (k .le. laytrop(ipt, jj)) then
-                  speccomb = colamt(ipt, k,1, jj) + strrat(16)*colamt(ipt, k,5, jj)
-                  specmult = 8.0 * min( oneminus, colamt(ipt, k,1, jj)/speccomb )
+      !$acc parallel loop collapse(2) private(speccomb, specmult, js, fs, fs1, fac000, &
+      !$acc&     fac010, fac100, fac110, fac001, fac011, fac101, fac111, &
+      !$acc&     ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14, &
+      !$acc&     inds, indf, indsp, indfp, tauray) async(async_id)
+      do k = 1, nlay
+         do n = 1, nday_length
+            tauray = colmol(n, k) * rayl
+            if (k .le. laytrop(n)) then
+               speccomb = colamt(n, k,1) + strrat(16)*colamt(n, k,5)
+               specmult = 8.0 * min( oneminus, colamt(n, k,1)/speccomb )
 
-                  js = 1 + int( specmult )
-                  fs = mod( specmult, f_one )
-                  fs1= f_one - fs
-                  fac000 = fs1 * fac00(ipt, k, jj)
-                  fac010 = fs1 * fac10(ipt, k, jj)
-                  fac100 = fs  * fac00(ipt, k, jj)
-                  fac110 = fs  * fac10(ipt, k, jj)
-                  fac001 = fs1 * fac01(ipt, k, jj)
-                  fac011 = fs1 * fac11(ipt, k, jj)
-                  fac101 = fs  * fac01(ipt, k, jj)
-                  fac111 = fs  * fac11(ipt, k, jj)
+               js = 1 + int( specmult )
+               fs = mod( specmult, f_one )
+               fs1= f_one - fs
+               fac000 = fs1 * fac00(n, k)
+               fac010 = fs1 * fac10(n, k)
+               fac100 = fs  * fac00(n, k)
+               fac110 = fs  * fac10(n, k)
+               fac001 = fs1 * fac01(n, k)
+               fac011 = fs1 * fac11(n, k)
+               fac101 = fs  * fac01(n, k)
+               fac111 = fs  * fac11(n, k)
 
-                  ind01 = id0(ipt, k,16, jj) + js
-                  ind02 = ind01 + 1
-                  ind03 = ind01 + 9
-                  ind04 = ind01 + 10
-                  ind11 = id1(ipt, k,16, jj) + js
-                  ind12 = ind11 + 1
-                  ind13 = ind11 + 9
-                  ind14 = ind11 + 10
-                  inds = indself(ipt, k, jj)
-                  indf = indfor (ipt, k, jj)
-                  indsp= inds + 1
-                  indfp= indf + 1
-                  
-                  !$acc loop seq
-                  do j = 1, ng16
-                     taug(ipt, k,ns16+j, jj) = speccomb                                     &
-                     &        *( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)        &
-                     &        +  fac010 * absa(ind03,j) + fac110 * absa(ind04,j)        &
-                     &        +  fac001 * absa(ind11,j) + fac101 * absa(ind12,j)        &
-                     &        +  fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )      &
-                     &        + colamt(ipt, k,1, jj) * (selffac(ipt, k, jj) * (selfref(inds,j)            &
-                     &        + selffrac(ipt, k, jj) * (selfref(indsp,j)-selfref(inds,j)))       &
-                     &        + forfac(ipt, k, jj) * (forref(indf,j) + forfrac(ipt, k, jj)                &
-                     &        * (forref(indfp,j) - forref(indf,j))))
-                     taur(ipt, k,ns16+j, jj) = tauray
-                  enddo
-               else
-                  ind01 = id0(ipt, k,16, jj) + 1
-                  ind02 = ind01 + 1
-                  ind11 = id1(ipt, k,16, jj) + 1
-                  ind12 = ind11 + 1
-                  
-                  !$acc loop seq
-                  do j = 1, ng16
-                     taug(ipt, k,ns16+j, jj) = colamt(ipt, k,5, jj)                                  &
-                     &      * ( fac00(ipt, k, jj)*absb(ind01,j) + fac10(ipt, k, jj)*absb(ind02,j)         &
-                     &      +   fac01(ipt, k, jj)*absb(ind11,j) + fac11(ipt, k, jj)*absb(ind12,j) )
-                     taur(ipt, k,ns16+j, jj) = tauray
-                  enddo
-               end if
-            enddo
+               ind01 = id0(n, k,16) + js
+               ind02 = ind01 + 1
+               ind03 = ind01 + 9
+               ind04 = ind01 + 10
+               ind11 = id1(n, k,16) + js
+               ind12 = ind11 + 1
+               ind13 = ind11 + 9
+               ind14 = ind11 + 10
+               inds = indself(n, k)
+               indf = indfor (n, k)
+               indsp= inds + 1
+               indfp= indf + 1
+               
+               !$acc loop seq
+               do j = 1, ng16
+                  !taug(ipt, k,ns16+j, jj) = speccomb                                     &
+                  !&        *( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)        &
+                  !&        +  fac010 * absa(ind03,j) + fac110 * absa(ind04,j)        &
+                  !&        +  fac001 * absa(ind11,j) + fac101 * absa(ind12,j)        &
+                  !&        +  fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )      &
+                  !&        + colamt(ipt, k,1, jj) * (selffac(ipt, k, jj) * (selfref(inds,j)            &
+                  !&        + selffrac(ipt, k, jj) * (selfref(indsp,j)-selfref(inds,j)))       &
+                  !&        + forfac(ipt, k, jj) * (forref(indf,j) + forfrac(ipt, k, jj)                &
+                  !&        * (forref(indfp,j) - forref(indf,j))))
+                  !taur(ipt, k,ns16+j, jj) = tauray
+                  small_taug(n, k,j + offset_ng) = speccomb                                     &
+                  &        *( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)        &
+                  &        +  fac010 * absa(ind03,j) + fac110 * absa(ind04,j)        &
+                  &        +  fac001 * absa(ind11,j) + fac101 * absa(ind12,j)        &
+                  &        +  fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )      &
+                  &        + colamt(n, k,1) * (selffac(n, k) * (selfref(inds,j)            &
+                  &        + selffrac(n, k) * (selfref(indsp,j)-selfref(inds,j)))       &
+                  &        + forfac(n, k) * (forref(indf,j) + forfrac(n, k)                &
+                  &        * (forref(indfp,j) - forref(indf,j))))
+                  small_taur(n, k,j + offset_ng) = tauray
+               enddo
+            else
+               ind01 = id0(n, k,16) + 1
+               ind02 = ind01 + 1
+               ind11 = id1(n, k,16) + 1
+               ind12 = ind11 + 1
+               
+               !$acc loop seq
+               do j = 1, ng16
+                  !taug(ipt, k,ns16+j, jj) = colamt(ipt, k,5, jj)                                  &
+                  !&      * ( fac00(ipt, k, jj)*absb(ind01,j) + fac10(ipt, k, jj)*absb(ind02,j)         &
+                  !&      +   fac01(ipt, k, jj)*absb(ind11,j) + fac11(ipt, k, jj)*absb(ind12,j) )
+                  !taur(ipt, k,ns16+j, jj) = tauray
+                  small_taug(n, k,j + offset_ng) = colamt(n, k,5)                                  &
+                  &      * ( fac00(n, k)*absb(ind01,j) + fac10(n, k)*absb(ind02,j)         &
+                  &      +   fac01(n, k)*absb(ind11,j) + fac11(n, k)*absb(ind12,j) )
+                  small_taur(n, k,j + offset_ng) = tauray
+               enddo
+            end if
          end do
       end do
 
@@ -4682,33 +4865,35 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
-     &     )
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
 
 !  ------------------------------------------------------------------  !
 !     band 17:  3250-4000 cm-1 (low - h2o,co2; high - h2o,co2)         !
 !  ------------------------------------------------------------------  !
 !
       use module_radsw_kgb17
-
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
-      integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
+      
+      integer, dimension(nday_length) :: map_nday_ipt, map_nday_jj
+      integer :: ng00, np, offset_ng, nday_length, jjoffset, max_nday_length
+      real (kind=kind_phys), dimension(nday_length, nlay, ng00) :: small_taur, small_taug
+      real (kind=kind_phys), dimension(nday_length, ng00) :: small_sfluxzen
+      integer :: nlay, laytrop(max_nday_length), ix, nday(fulljj), blockjj
+      integer, dimension(max_nday_length, nlay) :: indfor, indself,          &
      &       jp, jt, jt1
-      real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
+      real (kind=kind_phys), dimension(max_nday_length, nlay) :: colmol,    &
      &       fac00, fac01, fac10, fac11, forfac, forfrac, selffac,      &
      &       selffrac
-      real (kind=kind_phys), dimension(ix, nlay,maxgas, fulljj) :: colamt
-      real (kind=kind_phys), dimension(ix, ngptsw, fulljj) :: sfluxzen
-      real (kind=kind_phys), dimension(ix, nlay,ngptsw, fulljj) ::     &
-     &       taug, taur
-      integer, dimension(ix, nlay,nblow:nbhgh, fulljj) :: id0, id1
+      real (kind=kind_phys), dimension(max_nday_length, nlay, maxgas) :: colamt
+      integer, dimension(nday_length, nlay,nblow:nbhgh) :: id0, id1
 !  ---  locals:
       integer :: ipt, jj, async_id, fulljj
       real (kind=kind_phys) :: speccomb, specmult, tauray, fs, fs1,     &
      &       fac000,fac001,fac010,fac011, fac100,fac101,fac110,fac111
 
       integer :: ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14
-      integer :: inds, indf, indsp, indfp, j, js, k
+      integer :: inds, indf, indsp, indfp, j, js, k, n
 
 !
 !===> ... begin here
@@ -4718,101 +4903,115 @@
 !           temperature, and appropriate species.  below laytrop, the water
 !           vapor self-continuum is interpolated (in temperature) separately.
       
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, blockjj
-         do k = 1, nlay
-            !!$acc cache(selfref, forref)
-            !$acc loop vector private(speccomb, specmult, js, fs, fs1, fac000, &
-            !$acc&     fac010, fac100, fac110, fac001, fac011, fac101, fac111, &
-            !$acc&     ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14, &
-            !$acc&     inds, indf, indsp, indfp, tauray)
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               tauray = colmol(ipt, k, jj) * rayl
-               if (k .le. laytrop(ipt, jj)) then
-                  speccomb = colamt(ipt, k,1, jj) + strrat(17)*colamt(ipt, k,2, jj)
-                  specmult = 8.0 * min(oneminus, colamt(ipt, k,1, jj) / speccomb)
+      !$acc parallel loop collapse(2) private(speccomb, specmult, js, fs, fs1, fac000, &
+      !$acc&     fac010, fac100, fac110, fac001, fac011, fac101, fac111, &
+      !$acc&     ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14, &
+      !$acc&     inds, indf, indsp, indfp, tauray) async(async_id)
+      do k = 1, nlay
+         do n = 1, nday_length
+            tauray = colmol(n, k) * rayl
+            if (k .le. laytrop(n)) then
+               speccomb = colamt(n, k,1) + strrat(17)*colamt(n, k,2)
+               specmult = 8.0 * min(oneminus, colamt(n, k,1) / speccomb)
 
-                  js = 1 + int(specmult)
-                  fs = mod(specmult, f_one)
-                  fs1= f_one - fs
-                  fac000 = fs1 * fac00(ipt, k, jj)
-                  fac010 = fs1 * fac10(ipt, k, jj)
-                  fac100 = fs  * fac00(ipt, k, jj)
-                  fac110 = fs  * fac10(ipt, k, jj)
-                  fac001 = fs1 * fac01(ipt, k, jj)
-                  fac011 = fs1 * fac11(ipt, k, jj)
-                  fac101 = fs  * fac01(ipt, k, jj)
-                  fac111 = fs  * fac11(ipt, k, jj)
+               js = 1 + int(specmult)
+               fs = mod(specmult, f_one)
+               fs1= f_one - fs
+               fac000 = fs1 * fac00(n, k)
+               fac010 = fs1 * fac10(n, k)
+               fac100 = fs  * fac00(n, k)
+               fac110 = fs  * fac10(n, k)
+               fac001 = fs1 * fac01(n, k)
+               fac011 = fs1 * fac11(n, k)
+               fac101 = fs  * fac01(n, k)
+               fac111 = fs  * fac11(n, k)
 
-                  ind01 = id0(ipt, k,17, jj) + js
-                  ind02 = ind01 + 1
-                  ind03 = ind01 + 9
-                  ind04 = ind01 + 10
-                  ind11 = id1(ipt, k,17, jj) + js
-                  ind12 = ind11 + 1
-                  ind13 = ind11 + 9
-                  ind14 = ind11 + 10
+               ind01 = id0(n, k,17) + js
+               ind02 = ind01 + 1
+               ind03 = ind01 + 9
+               ind04 = ind01 + 10
+               ind11 = id1(n, k,17) + js
+               ind12 = ind11 + 1
+               ind13 = ind11 + 9
+               ind14 = ind11 + 10
 
-                  inds = indself(ipt, k, jj)
-                  indf = indfor (ipt, k, jj)
-                  indsp= inds + 1
-                  indfp= indf + 1
-                  
-                  !$acc loop seq
-                  do j = 1, ng17
-                     taug(ipt, k,ns17+j, jj) = speccomb                                     &
-                     &        * ( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)       &
-                     &        +   fac010 * absa(ind03,j) + fac110 * absa(ind04,j)       &
-                     &        +   fac001 * absa(ind11,j) + fac101 * absa(ind12,j)       &
-                     &        +   fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )     &
-                     &        + colamt(ipt, k,1, jj) * (selffac(ipt, k, jj) * (selfref(inds,j)            &
-                     &        + selffrac(ipt, k, jj) * (selfref(indsp,j)-selfref(inds,j)))       &
-                     &        + forfac(ipt, k, jj) * (forref(indf,j) + forfrac(ipt, k, jj)                &
-                     &        * (forref(indfp,j) - forref(indf,j))))
-                     taur(ipt, k,ns17+j, jj) = tauray
-                  enddo
-               else
-                  speccomb = colamt(ipt, k,1, jj) + strrat(17)*colamt(ipt, k,2, jj)
-                  specmult = 4.0 * min(oneminus, colamt(ipt, k,1, jj) / speccomb)
+               inds = indself(n, k)
+               indf = indfor (n, k)
+               indsp= inds + 1
+               indfp= indf + 1
+               
+               !$acc loop seq
+               do j = 1, ng17
+                  !taug(ipt, k,ns17+j, jj) = speccomb                                     &
+                  !&        * ( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)       &
+                  !&        +   fac010 * absa(ind03,j) + fac110 * absa(ind04,j)       &
+                  !&        +   fac001 * absa(ind11,j) + fac101 * absa(ind12,j)       &
+                  !&        +   fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )     &
+                  !&        + colamt(ipt, k,1, jj) * (selffac(ipt, k, jj) * (selfref(inds,j)            &
+                  !&        + selffrac(ipt, k, jj) * (selfref(indsp,j)-selfref(inds,j)))       &
+                  !&        + forfac(ipt, k, jj) * (forref(indf,j) + forfrac(ipt, k, jj)                &
+                  !&        * (forref(indfp,j) - forref(indf,j))))
+                  !taur(ipt, k,ns17+j, jj) = tauray
+                  small_taug(n, k,j + offset_ng) = speccomb                                     &
+                  &        * ( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)       &
+                  &        +   fac010 * absa(ind03,j) + fac110 * absa(ind04,j)       &
+                  &        +   fac001 * absa(ind11,j) + fac101 * absa(ind12,j)       &
+                  &        +   fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )     &
+                  &        + colamt(n, k,1) * (selffac(n, k) * (selfref(inds,j)            &
+                  &        + selffrac(n, k) * (selfref(indsp,j)-selfref(inds,j)))       &
+                  &        + forfac(n, k) * (forref(indf,j) + forfrac(n, k)                &
+                  &        * (forref(indfp,j) - forref(indf,j))))
+                  small_taur(n, k,j + offset_ng) = tauray
+               enddo
+            else
+               speccomb = colamt(n, k,1) + strrat(17)*colamt(n, k,2)
+               specmult = 4.0 * min(oneminus, colamt(n, k,1) / speccomb)
 
-                  js = 1 + int(specmult)
-                  fs = mod(specmult, f_one)
-                  fs1= f_one - fs
-                  fac000 = fs1 * fac00(ipt, k, jj)
-                  fac010 = fs1 * fac10(ipt, k, jj)
-                  fac100 = fs  * fac00(ipt, k, jj)
-                  fac110 = fs  * fac10(ipt, k, jj)
-                  fac001 = fs1 * fac01(ipt, k, jj)
-                  fac011 = fs1 * fac11(ipt, k, jj)
-                  fac101 = fs  * fac01(ipt, k, jj)
-                  fac111 = fs  * fac11(ipt, k, jj)
+               js = 1 + int(specmult)
+               fs = mod(specmult, f_one)
+               fs1= f_one - fs
+               fac000 = fs1 * fac00(n, k)
+               fac010 = fs1 * fac10(n, k)
+               fac100 = fs  * fac00(n, k)
+               fac110 = fs  * fac10(n, k)
+               fac001 = fs1 * fac01(n, k)
+               fac011 = fs1 * fac11(n, k)
+               fac101 = fs  * fac01(n, k)
+               fac111 = fs  * fac11(n, k)
 
-                  ind01 = id0(ipt, k,17, jj) + js
-                  ind02 = ind01 + 1
-                  ind03 = ind01 + 5
-                  ind04 = ind01 + 6
-                  ind11 = id1(ipt, k,17, jj) + js
-                  ind12 = ind11 + 1
-                  ind13 = ind11 + 5
-                  ind14 = ind11 + 6
+               ind01 = id0(n, k,17) + js
+               ind02 = ind01 + 1
+               ind03 = ind01 + 5
+               ind04 = ind01 + 6
+               ind11 = id1(n, k,17) + js
+               ind12 = ind11 + 1
+               ind13 = ind11 + 5
+               ind14 = ind11 + 6
 
-                  indf = indfor(ipt, k, jj)
-                  indfp= indf + 1
-                  
-                  !$acc loop seq
-                  do j = 1, ng17
-                     taug(ipt, k,ns17+j, jj) = speccomb                                     &
-                     &        * ( fac000 * absb(ind01,j) + fac100 * absb(ind02,j)       &
-                     &        +   fac010 * absb(ind03,j) + fac110 * absb(ind04,j)       &
-                     &        +   fac001 * absb(ind11,j) + fac101 * absb(ind12,j)       &
-                     &        +   fac011 * absb(ind13,j) + fac111 * absb(ind14,j) )     &
-                     &        + colamt(ipt, k,1, jj) * forfac(ipt, k, jj) * (forref(indf,j)               &
-                     &        + forfrac(ipt, k, jj) * (forref(indfp,j) - forref(indf,j)))
-                     taur(ipt, k,ns17+j, jj) = tauray
-                  enddo
-               end if
-            enddo
-         end do
+               indf = indfor(n, k)
+               indfp= indf + 1
+               
+               !$acc loop seq
+               do j = 1, ng17
+                  !taug(ipt, k,ns17+j, jj) = speccomb                                     &
+                  !&        * ( fac000 * absb(ind01,j) + fac100 * absb(ind02,j)       &
+                  !&        +   fac010 * absb(ind03,j) + fac110 * absb(ind04,j)       &
+                  !&        +   fac001 * absb(ind11,j) + fac101 * absb(ind12,j)       &
+                  !&        +   fac011 * absb(ind13,j) + fac111 * absb(ind14,j) )     &
+                  !&        + colamt(ipt, k,1, jj) * forfac(ipt, k, jj) * (forref(indf,j)               &
+                  !&        + forfrac(ipt, k, jj) * (forref(indfp,j) - forref(indf,j)))
+                  !taur(ipt, k,ns17+j, jj) = tauray
+                  small_taug(n, k,j + offset_ng) = speccomb                                     &
+                  &        * ( fac000 * absb(ind01,j) + fac100 * absb(ind02,j)       &
+                  &        +   fac010 * absb(ind03,j) + fac110 * absb(ind04,j)       &
+                  &        +   fac001 * absb(ind11,j) + fac101 * absb(ind12,j)       &
+                  &        +   fac011 * absb(ind13,j) + fac111 * absb(ind14,j) )     &
+                  &        + colamt(n, k,1) * forfac(n, k) * (forref(indf,j)               &
+                  &        + forfrac(n, k) * (forref(indfp,j) - forref(indf,j)))
+                  small_taur(n, k,j + offset_ng) = tauray
+               enddo
+            end if
+         enddo
       end do
 
       return
@@ -4826,33 +5025,35 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
-     &     )
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
      
 !  ------------------------------------------------------------------  !
 !     band 18:  4000-4650 cm-1 (low - h2o,ch4; high - ch4)             !
 !  ------------------------------------------------------------------  !
 !
       use module_radsw_kgb18
-
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
-      integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
+      
+      integer, dimension(nday_length) :: map_nday_ipt, map_nday_jj
+      integer :: ng00, np, offset_ng, nday_length, jjoffset, max_nday_length
+      real (kind=kind_phys), dimension(nday_length, nlay, ng00) :: small_taur, small_taug
+      real (kind=kind_phys), dimension(nday_length, ng00) :: small_sfluxzen
+      integer :: nlay, laytrop(max_nday_length), ix, nday(fulljj), blockjj
+      integer, dimension(max_nday_length, nlay) :: indfor, indself,          &
      &       jp, jt, jt1
-      real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
+      real (kind=kind_phys), dimension(max_nday_length, nlay) :: colmol,    &
      &       fac00, fac01, fac10, fac11, forfac, forfrac, selffac,      &
      &       selffrac
-      real (kind=kind_phys), dimension(ix, nlay,maxgas, fulljj) :: colamt
-      real (kind=kind_phys), dimension(ix, ngptsw, fulljj) :: sfluxzen
-      real (kind=kind_phys), dimension(ix, nlay,ngptsw, fulljj) ::     &
-     &       taug, taur
-      integer, dimension(ix, nlay,nblow:nbhgh, fulljj) :: id0, id1
+      real (kind=kind_phys), dimension(max_nday_length, nlay, maxgas) :: colamt
+      integer, dimension(nday_length, nlay,nblow:nbhgh) :: id0, id1
 !  ---  locals:
       integer :: ipt, jj, async_id, fulljj
       real (kind=kind_phys) :: speccomb, specmult, tauray, fs, fs1,     &
      &       fac000,fac001,fac010,fac011, fac100,fac101,fac110,fac111
 
       integer :: ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14
-      integer :: inds, indf, indsp, indfp, j, js, k
+      integer :: inds, indf, indsp, indfp, j, js, k, n
 
 !
 !===> ... begin here
@@ -4861,74 +5062,84 @@
 !  --- ...  compute the optical depth by interpolating in ln(pressure),
 !           temperature, and appropriate species.  below laytrop, the water
 !           vapor self-continuum is interpolated (in temperature) separately.
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, blockjj
-         do k = 1, nlay
-            !!$acc cache(absa, absb, selfref, forref)
-            !$acc loop vector private(speccomb, specmult, js, fs, fs1, fac000, &
-            !$acc&     fac010, fac100, fac110, fac001, fac011, fac101, fac111, &
-            !$acc&     ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14, &
-            !$acc&     inds, indf, indsp, indfp, tauray)
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               tauray = colmol(ipt, k, jj) * rayl
-               if (k .le. laytrop(ipt, jj)) then
-                  speccomb = colamt(ipt, k,1, jj) + strrat(18)*colamt(ipt, k,5, jj)
-                  specmult = 8.0 * min(oneminus, colamt(ipt, k,1, jj) / speccomb)
+      !$acc parallel loop collapse(2) private(speccomb, specmult, js, fs, fs1, fac000, &
+      !$acc&     fac010, fac100, fac110, fac001, fac011, fac101, fac111, &
+      !$acc&     ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14, &
+      !$acc&     inds, indf, indsp, indfp, tauray) async(async_id)
+      do k = 1, nlay
+         do n = 1, nday_length
+            tauray = colmol(n, k) * rayl
+            if (k .le. laytrop(n)) then
+               speccomb = colamt(n, k,1) + strrat(18)*colamt(n, k,5)
+               specmult = 8.0 * min(oneminus, colamt(n, k,1) / speccomb)
 
-                  js = 1 + int(specmult)
-                  fs = mod(specmult, f_one)
-                  fs1= f_one - fs
-                  fac000 = fs1 * fac00(ipt, k, jj)
-                  fac010 = fs1 * fac10(ipt, k, jj)
-                  fac100 = fs  * fac00(ipt, k, jj)
-                  fac110 = fs  * fac10(ipt, k, jj)
-                  fac001 = fs1 * fac01(ipt, k, jj)
-                  fac011 = fs1 * fac11(ipt, k, jj)
-                  fac101 = fs  * fac01(ipt, k, jj)
-                  fac111 = fs  * fac11(ipt, k, jj)
+               js = 1 + int(specmult)
+               fs = mod(specmult, f_one)
+               fs1= f_one - fs
+               fac000 = fs1 * fac00(n, k)
+               fac010 = fs1 * fac10(n, k)
+               fac100 = fs  * fac00(n, k)
+               fac110 = fs  * fac10(n, k)
+               fac001 = fs1 * fac01(n, k)
+               fac011 = fs1 * fac11(n, k)
+               fac101 = fs  * fac01(n, k)
+               fac111 = fs  * fac11(n, k)
 
-                  ind01 = id0(ipt, k,18, jj) + js
-                  ind02 = ind01 + 1
-                  ind03 = ind01 + 9
-                  ind04 = ind01 + 10
-                  ind11 = id1(ipt, k,18, jj) + js
-                  ind12 = ind11 + 1
-                  ind13 = ind11 + 9
-                  ind14 = ind11 + 10
+               ind01 = id0(n, k,18) + js
+               ind02 = ind01 + 1
+               ind03 = ind01 + 9
+               ind04 = ind01 + 10
+               ind11 = id1(n, k,18) + js
+               ind12 = ind11 + 1
+               ind13 = ind11 + 9
+               ind14 = ind11 + 10
 
-                  inds = indself(ipt, k, jj)
-                  indf = indfor (ipt, k, jj)
-                  indsp= inds + 1
-                  indfp= indf + 1
-                  
-                  !$acc loop seq
-                  do j = 1, ng18
-                     taug(ipt, k,ns18+j, jj) = speccomb                                     &
-                     &        * ( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)       &
-                     &        +   fac010 * absa(ind03,j) + fac110 * absa(ind04,j)       &
-                     &        +   fac001 * absa(ind11,j) + fac101 * absa(ind12,j)       &
-                     &        +   fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )     &
-                     &        + colamt(ipt, k,1, jj) * (selffac(ipt, k, jj) * (selfref(inds,j)            &
-                     &        + selffrac(ipt, k, jj) * (selfref(indsp,j)-selfref(inds,j)))       &
-                     &        + forfac(ipt, k, jj) * (forref(indf,j) + forfrac(ipt, k, jj)                &
-                     &        * (forref(indfp,j) - forref(indf,j))))
-                     taur(ipt, k,ns18+j, jj) = tauray
-                  enddo
-               else
-                  ind01 = id0(ipt, k,18, jj) + 1
-                  ind02 = ind01 + 1
-                  ind11 = id1(ipt, k,18, jj) + 1
-                  ind12 = ind11 + 1
-                  
-                  !$acc loop seq
-                  do j = 1, ng18
-                     taug(ipt, k,ns18+j, jj) = colamt(ipt, k,5, jj)                                  &
-                     &        * ( fac00(ipt, k, jj)*absb(ind01,j) + fac10(ipt, k, jj)*absb(ind02,j)       &
-                     &        +   fac01(ipt, k, jj)*absb(ind11,j) + fac11(ipt, k, jj)*absb(ind12,j) )
-                     taur(ipt, k,ns18+j, jj) = tauray
-                  enddo
-               end if
-            enddo
+               inds = indself(n, k)
+               indf = indfor (n, k)
+               indsp= inds + 1
+               indfp= indf + 1
+               
+               !$acc loop seq
+               do j = 1, ng18
+                  !taug(ipt, k,ns18+j, jj) = speccomb                                     &
+                  !&        * ( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)       &
+                  !&        +   fac010 * absa(ind03,j) + fac110 * absa(ind04,j)       &
+                  !&        +   fac001 * absa(ind11,j) + fac101 * absa(ind12,j)       &
+                  !&        +   fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )     &
+                  !&        + colamt(ipt, k,1, jj) * (selffac(ipt, k, jj) * (selfref(inds,j)            &
+                  !&        + selffrac(ipt, k, jj) * (selfref(indsp,j)-selfref(inds,j)))       &
+                  !&        + forfac(ipt, k, jj) * (forref(indf,j) + forfrac(ipt, k, jj)                &
+                  !&        * (forref(indfp,j) - forref(indf,j))))
+                  !taur(ipt, k,ns18+j, jj) = tauray
+                  small_taug(n, k,j + offset_ng) = speccomb                                     &
+                  &        * ( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)       &
+                  &        +   fac010 * absa(ind03,j) + fac110 * absa(ind04,j)       &
+                  &        +   fac001 * absa(ind11,j) + fac101 * absa(ind12,j)       &
+                  &        +   fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )     &
+                  &        + colamt(n, k,1) * (selffac(n, k) * (selfref(inds,j)            &
+                  &        + selffrac(n, k) * (selfref(indsp,j)-selfref(inds,j)))       &
+                  &        + forfac(n, k) * (forref(indf,j) + forfrac(n, k)                &
+                  &        * (forref(indfp,j) - forref(indf,j))))
+                  small_taur(n, k,j + offset_ng) = tauray
+               enddo
+            else
+               ind01 = id0(n, k,18) + 1
+               ind02 = ind01 + 1
+               ind11 = id1(n, k,18) + 1
+               ind12 = ind11 + 1
+               
+               !$acc loop seq
+               do j = 1, ng18
+                  !taug(ipt, k,ns18+j, jj) = colamt(ipt, k,5, jj)                                  &
+                  !&        * ( fac00(ipt, k, jj)*absb(ind01,j) + fac10(ipt, k, jj)*absb(ind02,j)       &
+                  !&        +   fac01(ipt, k, jj)*absb(ind11,j) + fac11(ipt, k, jj)*absb(ind12,j) )
+                  !taur(ipt, k,ns18+j, jj) = tauray
+                  small_taug(n, k,j + offset_ng) = colamt(n, k,5)                                  &
+                  &        * ( fac00(n, k)*absb(ind01,j) + fac10(n, k)*absb(ind02,j)       &
+                  &        +   fac01(n, k)*absb(ind11,j) + fac11(n, k)*absb(ind12,j) )
+                  small_taur(n, k,j + offset_ng) = tauray
+               enddo
+            end if
          end do
       end do
 
@@ -4943,33 +5154,35 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
-     &     )
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
      
 !  ------------------------------------------------------------------  !
 !     band 19:  4650-5150 cm-1 (low - h2o,co2; high - co2)             !
 !  ------------------------------------------------------------------  !
 !
       use module_radsw_kgb19
-
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
-      integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
+      
+      integer, dimension(nday_length) :: map_nday_ipt, map_nday_jj
+      integer :: ng00, np, offset_ng, nday_length, jjoffset, max_nday_length
+      real (kind=kind_phys), dimension(nday_length, nlay, ng00) :: small_taur, small_taug
+      real (kind=kind_phys), dimension(nday_length, ng00) :: small_sfluxzen
+      integer :: nlay, laytrop(max_nday_length), ix, nday(fulljj), blockjj
+      integer, dimension(max_nday_length, nlay) :: indfor, indself,          &
      &       jp, jt, jt1
-      real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
+      real (kind=kind_phys), dimension(max_nday_length, nlay) :: colmol,    &
      &       fac00, fac01, fac10, fac11, forfac, forfrac, selffac,      &
      &       selffrac
-      real (kind=kind_phys), dimension(ix, nlay,maxgas, fulljj) :: colamt
-      real (kind=kind_phys), dimension(ix, ngptsw, fulljj) :: sfluxzen
-      real (kind=kind_phys), dimension(ix, nlay,ngptsw, fulljj) ::     &
-     &       taug, taur
-      integer, dimension(ix, nlay,nblow:nbhgh, fulljj) :: id0, id1
+      real (kind=kind_phys), dimension(max_nday_length, nlay, maxgas) :: colamt
+      integer, dimension(nday_length, nlay,nblow:nbhgh) :: id0, id1
 !  ---  locals:
       integer :: ipt, jj, async_id, fulljj
       real (kind=kind_phys) :: speccomb, specmult, tauray, fs, fs1,     &
      &       fac000,fac001,fac010,fac011, fac100,fac101,fac110,fac111
 
       integer :: ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14
-      integer :: inds, indf, indsp, indfp, j, js, k
+      integer :: inds, indf, indsp, indfp, j, js, k, n
 
 !
 !===> ... begin here
@@ -4979,74 +5192,84 @@
 !           temperature, and appropriate species.  below laytrop, the water
 !           vapor self-continuum is interpolated (in temperature) separately.
       
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, blockjj
-         do k = 1, nlay
-            !!$acc cache(absa, absb, selfref, forref)
-            !$acc loop vector private(speccomb, specmult, js, fs, fs1, fac000, &
-            !$acc&     fac010, fac100, fac110, fac001, fac011, fac101, fac111, &
-            !$acc&     ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14, &
-            !$acc&     indsp, indfp, tauray)
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               tauray = colmol(ipt, k, jj) * rayl
-               if (k .le. laytrop(ipt, jj)) then
-                  speccomb = colamt(ipt, k,1, jj) + strrat(19)*colamt(ipt, k,2, jj)
-                  specmult = 8.0 * min(oneminus, colamt(ipt, k,1, jj) / speccomb)
+      !$acc parallel loop gang collapse(2) private(speccomb, specmult, js, fs, fs1, fac000, &
+      !$acc&     fac010, fac100, fac110, fac001, fac011, fac101, fac111, &
+      !$acc&     ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14, &
+      !$acc&     indsp, indfp, tauray) async(async_id)
+      do k = 1, nlay
+         do n = 1, nday_length
+            tauray = colmol(n, k) * rayl
+            if (k .le. laytrop(n)) then
+               speccomb = colamt(n, k,1) + strrat(19)*colamt(n, k,2)
+               specmult = 8.0 * min(oneminus, colamt(n, k,1) / speccomb)
 
-                  js = 1 + int(specmult)
-                  fs = mod(specmult, f_one)
-                  fs1= f_one - fs
-                  fac000 = fs1 * fac00(ipt, k, jj)
-                  fac010 = fs1 * fac10(ipt, k, jj)
-                  fac100 = fs  * fac00(ipt, k, jj)
-                  fac110 = fs  * fac10(ipt, k, jj)
-                  fac001 = fs1 * fac01(ipt, k, jj)
-                  fac011 = fs1 * fac11(ipt, k, jj)
-                  fac101 = fs  * fac01(ipt, k, jj)
-                  fac111 = fs  * fac11(ipt, k, jj)
+               js = 1 + int(specmult)
+               fs = mod(specmult, f_one)
+               fs1= f_one - fs
+               fac000 = fs1 * fac00(n, k)
+               fac010 = fs1 * fac10(n, k)
+               fac100 = fs  * fac00(n, k)
+               fac110 = fs  * fac10(n, k)
+               fac001 = fs1 * fac01(n, k)
+               fac011 = fs1 * fac11(n, k)
+               fac101 = fs  * fac01(n, k)
+               fac111 = fs  * fac11(n, k)
 
-                  ind01 = id0(ipt, k,19, jj) + js
-                  ind02 = ind01 + 1
-                  ind03 = ind01 + 9
-                  ind04 = ind01 + 10
-                  ind11 = id1(ipt, k,19, jj) + js
-                  ind12 = ind11 + 1
-                  ind13 = ind11 + 9
-                  ind14 = ind11 + 10
+               ind01 = id0(n, k,19) + js
+               ind02 = ind01 + 1
+               ind03 = ind01 + 9
+               ind04 = ind01 + 10
+               ind11 = id1(n, k,19) + js
+               ind12 = ind11 + 1
+               ind13 = ind11 + 9
+               ind14 = ind11 + 10
 
-                  inds = indself(ipt, k, jj)
-                  indf = indfor (ipt, k, jj)
-                  indsp= inds + 1
-                  indfp= indf + 1
-                  
-                  !$acc loop seq
-                  do j = 1, ng19
-                     taug(ipt, k,ns19+j, jj) = speccomb                                     &
-                     &        * ( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)       &
-                     &        +   fac010 * absa(ind03,j) + fac110 * absa(ind04,j)       &
-                     &        +   fac001 * absa(ind11,j) + fac101 * absa(ind12,j)       &
-                     &        +   fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )     &
-                     &        + colamt(ipt, k,1, jj) * (selffac(ipt, k, jj) * (selfref(inds,j)            &
-                     &        + selffrac(ipt, k, jj) * (selfref(indsp,j)-selfref(inds,j)))       &
-                     &        + forfac(ipt, k, jj) * (forref(indf,j) + forfrac(ipt, k, jj)                &
-                     &        * (forref(indfp,j) - forref(indf,j))))
-                     taur(ipt, k,ns19+j, jj) = tauray
-                  enddo
-               else
-                  ind01 = id0(ipt, k,19, jj) + 1
-                  ind02 = ind01 + 1
-                  ind11 = id1(ipt, k,19, jj) + 1
-                  ind12 = ind11 + 1
-                  
-                  !$acc loop seq
-                  do j = 1, ng19
-                     taug(ipt, k,ns19+j, jj) = colamt(ipt, k,2, jj)                                  &
-                     &        * ( fac00(ipt, k, jj)*absb(ind01,j) + fac10(ipt, k, jj)*absb(ind02,j)       &
-                     &        +   fac01(ipt, k, jj)*absb(ind11,j) + fac11(ipt, k, jj)*absb(ind12,j) ) 
-                     taur(ipt, k,ns19+j, jj) = tauray
-                  enddo
-               end if
-            enddo
+               inds = indself(n, k)
+               indf = indfor (n, k)
+               indsp= inds + 1
+               indfp= indf + 1
+               
+               !$acc loop seq
+               do j = 1, ng19
+                  !taug(ipt, k,ns19+j, jj) = speccomb                                     &
+                  !&        * ( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)       &
+                  !&        +   fac010 * absa(ind03,j) + fac110 * absa(ind04,j)       &
+                  !&        +   fac001 * absa(ind11,j) + fac101 * absa(ind12,j)       &
+                  !&        +   fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )     &
+                  !&        + colamt(ipt, k,1, jj) * (selffac(ipt, k, jj) * (selfref(inds,j)            &
+                  !&        + selffrac(ipt, k, jj) * (selfref(indsp,j)-selfref(inds,j)))       &
+                  !&        + forfac(ipt, k, jj) * (forref(indf,j) + forfrac(ipt, k, jj)                &
+                  !&        * (forref(indfp,j) - forref(indf,j))))
+                  !taur(ipt, k,ns19+j, jj) = tauray
+                  small_taug(n, k,j + offset_ng) = speccomb                                     &
+                  &        * ( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)       &
+                  &        +   fac010 * absa(ind03,j) + fac110 * absa(ind04,j)       &
+                  &        +   fac001 * absa(ind11,j) + fac101 * absa(ind12,j)       &
+                  &        +   fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )     &
+                  &        + colamt(n, k,1) * (selffac(n, k) * (selfref(inds,j)            &
+                  &        + selffrac(n, k) * (selfref(indsp,j)-selfref(inds,j)))       &
+                  &        + forfac(n, k) * (forref(indf,j) + forfrac(n, k)                &
+                  &        * (forref(indfp,j) - forref(indf,j))))
+                  small_taur(n, k,j + offset_ng) = tauray
+               enddo
+            else
+               ind01 = id0(n, k,19) + 1
+               ind02 = ind01 + 1
+               ind11 = id1(n, k,19) + 1
+               ind12 = ind11 + 1
+               
+               !$acc loop seq
+               do j = 1, ng19
+                  !taug(ipt, k,ns19+j, jj) = colamt(ipt, k,2, jj)                                  &
+                  !&        * ( fac00(ipt, k, jj)*absb(ind01,j) + fac10(ipt, k, jj)*absb(ind02,j)       &
+                  !&        +   fac01(ipt, k, jj)*absb(ind11,j) + fac11(ipt, k, jj)*absb(ind12,j) ) 
+                  !taur(ipt, k,ns19+j, jj) = tauray
+                  small_taug(n, k,j + offset_ng) = colamt(n, k,2)                                  &
+                  &        * ( fac00(n, k)*absb(ind01,j) + fac10(n, k)*absb(ind02,j)       &
+                  &        +   fac01(n, k)*absb(ind11,j) + fac11(n, k)*absb(ind12,j) ) 
+                  small_taur(n, k,j + offset_ng) = tauray
+               enddo
+            end if
          end do
       end do
 
@@ -5060,32 +5283,34 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
-     &     )
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
      
 !  ------------------------------------------------------------------  !
 !     band 20:  5150-6150 cm-1 (low - h2o; high - h2o)                 !
 !  ------------------------------------------------------------------  !
 !
       use module_radsw_kgb20
-
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
-      integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
+      
+      integer, dimension(nday_length) :: map_nday_ipt, map_nday_jj
+      integer :: ng00, np, offset_ng, nday_length, jjoffset, max_nday_length
+      real (kind=kind_phys), dimension(nday_length, nlay, ng00) :: small_taur, small_taug
+      real (kind=kind_phys), dimension(nday_length, ng00) :: small_sfluxzen
+      integer :: nlay, laytrop(max_nday_length), ix, nday(fulljj), blockjj
+      integer, dimension(max_nday_length, nlay) :: indfor, indself,          &
      &       jp, jt, jt1
-      real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
+      real (kind=kind_phys), dimension(max_nday_length, nlay) :: colmol,    &
      &       fac00, fac01, fac10, fac11, forfac, forfrac, selffac,      &
      &       selffrac
-      real (kind=kind_phys), dimension(ix, nlay,maxgas, fulljj) :: colamt
-      real (kind=kind_phys), dimension(ix, ngptsw, fulljj) :: sfluxzen
-      real (kind=kind_phys), dimension(ix, nlay,ngptsw, fulljj) ::     &
-     &       taug, taur
-      integer, dimension(ix, nlay,nblow:nbhgh, fulljj) :: id0, id1
+      real (kind=kind_phys), dimension(max_nday_length, nlay, maxgas) :: colamt
+      integer, dimension(nday_length, nlay,nblow:nbhgh) :: id0, id1
 !  ---  locals:
       integer :: ipt, jj, async_id, fulljj
       real (kind=kind_phys) :: tauray
 
       integer :: ind01, ind02, ind11, ind12
-      integer :: inds, indf, indsp, indfp, j, k
+      integer :: inds, indf, indsp, indfp, j, k, n
 
 !
 !===> ... begin here
@@ -5095,58 +5320,70 @@
 !           temperature, and appropriate species.  below laytrop, the water
 !           vapor self-continuum is interpolated (in temperature) separately.
 
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, blockjj
-         do k = 1, nlay
-            !!$acc cache(absa, selfref, forref, absb, absch4)
-            !$acc loop vector private(ind01, ind02, ind11, ind12, inds, indf, &
-            !$acc&     indsp, indfp, tauray)
-            do ipt = 1, nday(jj)
-               tauray = colmol(ipt, k, jj) * rayl
-               if (k .le. laytrop(ipt, jj)) then
-                  ind01 = id0(ipt, k,20, jj) + 1
-                  ind02 = ind01 + 1
-                  ind11 = id1(ipt, k,20, jj) + 1
-                  ind12 = ind11 + 1
+      !$acc parallel loop gang collapse(2) private(ind01, ind02, ind11, ind12, inds, indf, &
+      !$acc&     indsp, indfp, tauray) async(async_id)
+      do k = 1, nlay
+         do n = 1, nday_length
+            tauray = colmol(n, k) * rayl
+            if (k .le. laytrop(n)) then
+               ind01 = id0(n, k,20) + 1
+               ind02 = ind01 + 1
+               ind11 = id1(n, k,20) + 1
+               ind12 = ind11 + 1
 
-                  inds = indself(ipt, k, jj)
-                  indf = indfor (ipt, k, jj)
-                  indsp= inds + 1
-                  indfp= indf + 1
-                  
-                  !$acc loop seq
-                  do j = 1, ng20
-                     taug(ipt, k,ns20+j, jj) = colamt(ipt, k,1, jj)                                  &
-                     &        * ( (fac00(ipt, k, jj)*absa(ind01,j) + fac10(ipt, k, jj)*absa(ind02,j)      &
-                     &        +    fac01(ipt, k, jj)*absa(ind11,j) + fac11(ipt, k, jj)*absa(ind12,j))     &
-                     &        +   selffac(ipt, k, jj) * (selfref(inds,j) + selffrac(ipt, k, jj)           &
-                     &        *   (selfref(indsp,j) - selfref(inds,j)))                 &
-                     &        +   forfac(ipt, k, jj) * (forref(indf,j) + forfrac(ipt, k, jj)              &
-                     &        *   (forref(indfp,j) - forref(indf,j))) )                 &
-                     &        + colamt(ipt, k,5, jj) * absch4(j)
-                     taur(ipt, k,ns20+j, jj) = tauray
-                  enddo
-               else
-                  ind01 = id0(ipt, k,20, jj) + 1
-                  ind02 = ind01 + 1
-                  ind11 = id1(ipt, k,20, jj) + 1
-                  ind12 = ind11 + 1
+               inds = indself(n, k)
+               indf = indfor (n, k)
+               indsp= inds + 1
+               indfp= indf + 1
+               
+               !$acc loop seq
+               do j = 1, ng20
+                  !taug(ipt, k,ns20+j, jj) = colamt(ipt, k,1, jj)                                  &
+                  !&        * ( (fac00(ipt, k, jj)*absa(ind01,j) + fac10(ipt, k, jj)*absa(ind02,j)      &
+                  !&        +    fac01(ipt, k, jj)*absa(ind11,j) + fac11(ipt, k, jj)*absa(ind12,j))     &
+                  !&        +   selffac(ipt, k, jj) * (selfref(inds,j) + selffrac(ipt, k, jj)           &
+                  !&        *   (selfref(indsp,j) - selfref(inds,j)))                 &
+                  !&        +   forfac(ipt, k, jj) * (forref(indf,j) + forfrac(ipt, k, jj)              &
+                  !&        *   (forref(indfp,j) - forref(indf,j))) )                 &
+                  !&        + colamt(ipt, k,5, jj) * absch4(j)
+                  !taur(ipt, k,ns20+j, jj) = tauray
+                  small_taug(n, k,j + offset_ng) = colamt(n, k,1)                                  &
+                  &        * ( (fac00(n, k)*absa(ind01,j) + fac10(n, k)*absa(ind02,j)      &
+                  &        +    fac01(n, k)*absa(ind11,j) + fac11(n, k)*absa(ind12,j))     &
+                  &        +   selffac(n, k) * (selfref(inds,j) + selffrac(n, k)           &
+                  &        *   (selfref(indsp,j) - selfref(inds,j)))                 &
+                  &        +   forfac(n, k) * (forref(indf,j) + forfrac(n, k)              &
+                  &        *   (forref(indfp,j) - forref(indf,j))) )                 &
+                  &        + colamt(n, k,5) * absch4(j)
+                  small_taur(n, k,j + offset_ng) = tauray
+               enddo
+            else
+               ind01 = id0(n, k,20) + 1
+               ind02 = ind01 + 1
+               ind11 = id1(n, k,20) + 1
+               ind12 = ind11 + 1
 
-                  indf = indfor(ipt, k, jj)
-                  indfp= indf + 1
+               indf = indfor(n, k)
+               indfp= indf + 1
 
-                  !$acc loop seq
-                  do j = 1, ng20
-                     taug(ipt, k,ns20+j, jj) = colamt(ipt, k,1, jj)                                  &
-                     &        * ( fac00(ipt, k, jj)*absb(ind01,j) + fac10(ipt, k, jj)*absb(ind02,j)       &
-                     &        +   fac01(ipt, k, jj)*absb(ind11,j) + fac11(ipt, k, jj)*absb(ind12,j)       &
-                     &        +   forfac(ipt, k, jj) * (forref(indf,j) + forfrac(ipt, k, jj)              &
-                     &        *   (forref(indfp,j) - forref(indf,j))) )                 &
-                     &        + colamt(ipt, k,5, jj) * absch4(j)
-                     taur(ipt, k,ns20+j, jj) = tauray
-                  enddo
-               end if
-            enddo
+               !$acc loop seq
+               do j = 1, ng20
+                  !taug(ipt, k,ns20+j, jj) = colamt(ipt, k,1, jj)                                  &
+                  !&        * ( fac00(ipt, k, jj)*absb(ind01,j) + fac10(ipt, k, jj)*absb(ind02,j)       &
+                  !&        +   fac01(ipt, k, jj)*absb(ind11,j) + fac11(ipt, k, jj)*absb(ind12,j)       &
+                  !&        +   forfac(ipt, k, jj) * (forref(indf,j) + forfrac(ipt, k, jj)              &
+                  !&        *   (forref(indfp,j) - forref(indf,j))) )                 &
+                  !&        + colamt(ipt, k,5, jj) * absch4(j)
+                  !taur(ipt, k,ns20+j, jj) = tauray
+                  small_taug(n, k,j + offset_ng) = colamt(n, k,1)                                  &
+                  &        * ( fac00(n, k)*absb(ind01,j) + fac10(n, k)*absb(ind02,j)       &
+                  &        +   fac01(n, k)*absb(ind11,j) + fac11(n, k)*absb(ind12,j)       &
+                  &        +   forfac(n, k) * (forref(indf,j) + forfrac(n, k)              &
+                  &        *   (forref(indfp,j) - forref(indf,j))) )                 &
+                  &        + colamt(n, k,5) * absch4(j)
+                  small_taur(n, k,j + offset_ng) = tauray
+               enddo
+            end if
          end do
       end do
 
@@ -5161,33 +5398,35 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
-     &     )
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
      
 !  ------------------------------------------------------------------  !
 !     band 21:  6150-7700 cm-1 (low - h2o,co2; high - h2o,co2)         !
 !  ------------------------------------------------------------------  !
 !
       use module_radsw_kgb21
-
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
-      integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
+      
+      integer, dimension(nday_length) :: map_nday_ipt, map_nday_jj
+      integer :: ng00, np, offset_ng, nday_length, jjoffset, max_nday_length
+      real (kind=kind_phys), dimension(nday_length, nlay, ng00) :: small_taur, small_taug
+      real (kind=kind_phys), dimension(nday_length, ng00) :: small_sfluxzen
+      integer :: nlay, laytrop(max_nday_length), ix, nday(fulljj), blockjj
+      integer, dimension(max_nday_length, nlay) :: indfor, indself,          &
      &       jp, jt, jt1
-      real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
+      real (kind=kind_phys), dimension(max_nday_length, nlay) :: colmol,    &
      &       fac00, fac01, fac10, fac11, forfac, forfrac, selffac,      &
      &       selffrac
-      real (kind=kind_phys), dimension(ix, nlay,maxgas, fulljj) :: colamt
-      real (kind=kind_phys), dimension(ix, ngptsw, fulljj) :: sfluxzen
-      real (kind=kind_phys), dimension(ix, nlay,ngptsw, fulljj) ::     &
-     &       taug, taur
-      integer, dimension(ix, nlay,nblow:nbhgh, fulljj) :: id0, id1
+      real (kind=kind_phys), dimension(max_nday_length, nlay, maxgas) :: colamt
+      integer, dimension(nday_length, nlay,nblow:nbhgh) :: id0, id1
 !  ---  locals:
       integer :: ipt, jj, async_id, fulljj
       real (kind=kind_phys) :: speccomb, specmult, tauray, fs, fs1,     &
      &       fac000,fac001,fac010,fac011, fac100,fac101,fac110,fac111
 
       integer :: ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14
-      integer :: inds, indf, indsp, indfp, j, js, k
+      integer :: inds, indf, indsp, indfp, j, js, k, n
 
 !
 !===> ... begin here
@@ -5197,101 +5436,115 @@
 !           temperature, and appropriate species.  below laytrop, the water
 !           vapor self-continuum is interpolated (in temperature) separately.
       
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, blockjj
-         do k = 1, nlay
-            !!$acc cache(absa, selfref, forref)
-            !$acc loop vector private(speccomb, specmult, js, fs, fs1, fac000, &
-            !$acc&     fac010, fac100, fac110, fac001, fac011, fac101, fac111, &
-            !$acc&     ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14, &
-            !$acc&     inds, indf, indsp, indfp, tauray)
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               tauray = colmol(ipt, k, jj) * rayl
-               if (k .le. laytrop(ipt, jj)) then
-                  speccomb = colamt(ipt, k,1, jj) + strrat(21)*colamt(ipt, k,2, jj)
-                  specmult = 8.0 * min(oneminus, colamt(ipt, k,1, jj) / speccomb)
+      !$acc parallel loop gang collapse(2) private(speccomb, specmult, js, fs, fs1, fac000, &
+      !$acc&     fac010, fac100, fac110, fac001, fac011, fac101, fac111, &
+      !$acc&     ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14, &
+      !$acc&     inds, indf, indsp, indfp, tauray) async(async_id)
+      do k = 1, nlay
+         do n = 1, nday_length
+            tauray = colmol(n, k) * rayl
+            if (k .le. laytrop(n)) then
+               speccomb = colamt(n, k,1) + strrat(21)*colamt(n, k,2)
+               specmult = 8.0 * min(oneminus, colamt(n, k,1) / speccomb)
 
-                  js = 1 + int(specmult)
-                  fs = mod(specmult, f_one)
-                  fs1= f_one - fs
-                  fac000 = fs1 * fac00(ipt, k, jj)
-                  fac010 = fs1 * fac10(ipt, k, jj)
-                  fac100 = fs  * fac00(ipt, k, jj)
-                  fac110 = fs  * fac10(ipt, k, jj)
-                  fac001 = fs1 * fac01(ipt, k, jj)
-                  fac011 = fs1 * fac11(ipt, k, jj)
-                  fac101 = fs  * fac01(ipt, k, jj)
-                  fac111 = fs  * fac11(ipt, k, jj)
+               js = 1 + int(specmult)
+               fs = mod(specmult, f_one)
+               fs1= f_one - fs
+               fac000 = fs1 * fac00(n, k)
+               fac010 = fs1 * fac10(n, k)
+               fac100 = fs  * fac00(n, k)
+               fac110 = fs  * fac10(n, k)
+               fac001 = fs1 * fac01(n, k)
+               fac011 = fs1 * fac11(n, k)
+               fac101 = fs  * fac01(n, k)
+               fac111 = fs  * fac11(n, k)
 
-                  ind01 = id0(ipt, k,21, jj) + js
-                  ind02 = ind01 + 1
-                  ind03 = ind01 + 9
-                  ind04 = ind01 + 10
-                  ind11 = id1(ipt, k,21, jj) + js
-                  ind12 = ind11 + 1
-                  ind13 = ind11 + 9
-                  ind14 = ind11 + 10
+               ind01 = id0(n, k,21) + js
+               ind02 = ind01 + 1
+               ind03 = ind01 + 9
+               ind04 = ind01 + 10
+               ind11 = id1(n, k,21) + js
+               ind12 = ind11 + 1
+               ind13 = ind11 + 9
+               ind14 = ind11 + 10
 
-                  inds = indself(ipt, k, jj)
-                  indf = indfor (ipt, k, jj)
-                  indsp= inds + 1
-                  indfp= indf + 1
-                  
-                  !$acc loop seq
-                  do j = 1, ng21
-                     taug(ipt, k,ns21+j, jj) = speccomb                                     &
-                     &        * ( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)       &
-                     &        +   fac010 * absa(ind03,j) + fac110 * absa(ind04,j)       &
-                     &        +   fac001 * absa(ind11,j) + fac101 * absa(ind12,j)       &
-                     &        +   fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )     &
-                     &        + colamt(ipt, k,1, jj) * (selffac(ipt, k, jj) * (selfref(inds,j)            &
-                     &        + selffrac(ipt, k, jj) * (selfref(indsp,j) - selfref(inds,j)))     &
-                     &        + forfac(ipt, k, jj) * (forref(indf,j) + forfrac(ipt, k, jj)                &
-                     &        * (forref(indfp,j) - forref(indf,j))))
-                     taur(ipt, k,ns21+j, jj) = tauray
-                  enddo
-               else
-                  speccomb = colamt(ipt, k,1, jj) + strrat(21)*colamt(ipt, k,2, jj)
-                  specmult = 4.0 * min(oneminus, colamt(ipt, k,1, jj) / speccomb)
+               inds = indself(n, k)
+               indf = indfor (n, k)
+               indsp= inds + 1
+               indfp= indf + 1
+               
+               !$acc loop seq
+               do j = 1, ng21
+                  !taug(ipt, k,ns21+j, jj) = speccomb                                     &
+                  !&        * ( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)       &
+                  !&        +   fac010 * absa(ind03,j) + fac110 * absa(ind04,j)       &
+                  !&        +   fac001 * absa(ind11,j) + fac101 * absa(ind12,j)       &
+                  !&        +   fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )     &
+                  !&        + colamt(ipt, k,1, jj) * (selffac(ipt, k, jj) * (selfref(inds,j)            &
+                  !&        + selffrac(ipt, k, jj) * (selfref(indsp,j) - selfref(inds,j)))     &
+                  !&        + forfac(ipt, k, jj) * (forref(indf,j) + forfrac(ipt, k, jj)                &
+                  !&        * (forref(indfp,j) - forref(indf,j))))
+                  !taur(ipt, k,ns21+j, jj) = tauray
+                  small_taug(n, k,j + offset_ng) = speccomb                                     &
+                  &        * ( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)       &
+                  &        +   fac010 * absa(ind03,j) + fac110 * absa(ind04,j)       &
+                  &        +   fac001 * absa(ind11,j) + fac101 * absa(ind12,j)       &
+                  &        +   fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )     &
+                  &        + colamt(n, k,1) * (selffac(n, k) * (selfref(inds,j)            &
+                  &        + selffrac(n, k) * (selfref(indsp,j) - selfref(inds,j)))     &
+                  &        + forfac(n, k) * (forref(indf,j) + forfrac(n, k)                &
+                  &        * (forref(indfp,j) - forref(indf,j))))
+                  small_taur(n, k,j + offset_ng) = tauray
+               enddo
+            else
+               speccomb = colamt(n, k,1) + strrat(21)*colamt(n, k,2)
+               specmult = 4.0 * min(oneminus, colamt(n, k,1) / speccomb)
 
-                  js = 1 + int(specmult)
-                  fs = mod(specmult, f_one)
-                  fs1= f_one - fs
-                  fac000 = fs1 * fac00(ipt, k, jj)
-                  fac010 = fs1 * fac10(ipt, k, jj)
-                  fac100 = fs  * fac00(ipt, k, jj)
-                  fac110 = fs  * fac10(ipt, k, jj)
-                  fac001 = fs1 * fac01(ipt, k, jj)
-                  fac011 = fs1 * fac11(ipt, k, jj)
-                  fac101 = fs  * fac01(ipt, k, jj)
-                  fac111 = fs  * fac11(ipt, k, jj)
+               js = 1 + int(specmult)
+               fs = mod(specmult, f_one)
+               fs1= f_one - fs
+               fac000 = fs1 * fac00(n, k)
+               fac010 = fs1 * fac10(n, k)
+               fac100 = fs  * fac00(n, k)
+               fac110 = fs  * fac10(n, k)
+               fac001 = fs1 * fac01(n, k)
+               fac011 = fs1 * fac11(n, k)
+               fac101 = fs  * fac01(n, k)
+               fac111 = fs  * fac11(n, k)
 
-                  ind01 = id0(ipt, k,21, jj) + js
-                  ind02 = ind01 + 1
-                  ind03 = ind01 + 5
-                  ind04 = ind01 + 6
-                  ind11 = id1(ipt, k,21, jj) + js
-                  ind12 = ind11 + 1
-                  ind13 = ind11 + 5
-                  ind14 = ind11 + 6
+               ind01 = id0(n, k,21) + js
+               ind02 = ind01 + 1
+               ind03 = ind01 + 5
+               ind04 = ind01 + 6
+               ind11 = id1(n, k,21) + js
+               ind12 = ind11 + 1
+               ind13 = ind11 + 5
+               ind14 = ind11 + 6
 
-                  indf = indfor(ipt, k, jj)
-                  indfp= indf + 1
-                  
-                  !$acc loop seq
-                  do j = 1, ng21
-                     taug(ipt, k,ns21+j, jj) = speccomb                                     &
-                     &        * ( fac000 * absb(ind01,j) + fac100 * absb(ind02,j)       &
-                     &        +   fac010 * absb(ind03,j) + fac110 * absb(ind04,j)       &
-                     &        +   fac001 * absb(ind11,j) + fac101 * absb(ind12,j)       &
-                     &        +   fac011 * absb(ind13,j) + fac111 * absb(ind14,j) )     &
-                     &        + colamt(ipt, k,1, jj) * forfac(ipt, k, jj) * (forref(indf,j)               &
-                     &        + forfrac(ipt, k, jj) * (forref(indfp,j) - forref(indf,j)))
-                     taur(ipt, k,ns21+j, jj) = tauray
-                  enddo
-               end if
-            enddo
-         end do
+               indf = indfor(n, k)
+               indfp= indf + 1
+               
+               !$acc loop seq
+               do j = 1, ng21
+                  !taug(ipt, k,ns21+j, jj) = speccomb                                     &
+                  !&        * ( fac000 * absb(ind01,j) + fac100 * absb(ind02,j)       &
+                  !&        +   fac010 * absb(ind03,j) + fac110 * absb(ind04,j)       &
+                  !&        +   fac001 * absb(ind11,j) + fac101 * absb(ind12,j)       &
+                  !&        +   fac011 * absb(ind13,j) + fac111 * absb(ind14,j) )     &
+                  !&        + colamt(ipt, k,1, jj) * forfac(ipt, k, jj) * (forref(indf,j)               &
+                  !&        + forfrac(ipt, k, jj) * (forref(indfp,j) - forref(indf,j)))
+                  !taur(ipt, k,ns21+j, jj) = tauray
+                  small_taug(n, k,j + offset_ng) = speccomb                                     &
+                  &        * ( fac000 * absb(ind01,j) + fac100 * absb(ind02,j)       &
+                  &        +   fac010 * absb(ind03,j) + fac110 * absb(ind04,j)       &
+                  &        +   fac001 * absb(ind11,j) + fac101 * absb(ind12,j)       &
+                  &        +   fac011 * absb(ind13,j) + fac111 * absb(ind14,j) )     &
+                  &        + colamt(n, k,1) * forfac(n, k) * (forref(indf,j)               &
+                  &        + forfrac(n, k) * (forref(indfp,j) - forref(indf,j)))
+                  small_taur(n, k,j + offset_ng) = tauray
+               enddo
+            end if
+         enddo
       end do
 
 !...................................
@@ -5304,26 +5557,28 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
-     &     )
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
      
 !  ------------------------------------------------------------------  !
 !     band 22:  7700-8050 cm-1 (low - h2o,o2; high - o2)               !
 !  ------------------------------------------------------------------  !
 !
       use module_radsw_kgb22
-
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
-      integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
+      
+      integer, dimension(nday_length) :: map_nday_ipt, map_nday_jj
+      integer :: ng00, np, offset_ng, nday_length, jjoffset, max_nday_length
+      real (kind=kind_phys), dimension(nday_length, nlay, ng00) :: small_taur, small_taug
+      real (kind=kind_phys), dimension(nday_length, ng00) :: small_sfluxzen
+      integer :: nlay, laytrop(max_nday_length), ix, nday(fulljj), blockjj
+      integer, dimension(max_nday_length, nlay) :: indfor, indself,          &
      &       jp, jt, jt1
-      real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
+      real (kind=kind_phys), dimension(max_nday_length, nlay) :: colmol,    &
      &       fac00, fac01, fac10, fac11, forfac, forfrac, selffac,      &
      &       selffrac
-      real (kind=kind_phys), dimension(ix, nlay,maxgas, fulljj) :: colamt
-      real (kind=kind_phys), dimension(ix, ngptsw, fulljj) :: sfluxzen
-      real (kind=kind_phys), dimension(ix, nlay,ngptsw, fulljj) ::     &
-     &       taug, taur
-      integer, dimension(ix, nlay,nblow:nbhgh, fulljj) :: id0, id1
+      real (kind=kind_phys), dimension(max_nday_length, nlay, maxgas) :: colamt
+      integer, dimension(nday_length, nlay,nblow:nbhgh) :: id0, id1
 !  ---  locals:
       integer :: ipt, jj, async_id, fulljj
       real (kind=kind_phys) :: speccomb, specmult, tauray, fs, fs1,     &
@@ -5331,7 +5586,7 @@
      &       o2adj, o2cont, o2tem
 
       integer :: ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14
-      integer :: inds, indf, indsp, indfp, j, js, k
+      integer :: inds, indf, indsp, indfp, j, js, k, n
 
 !
 !===> ... begin here
@@ -5347,79 +5602,90 @@
 !           temperature, and appropriate species.  below laytrop, the water
 !           vapor self-continuum is interpolated (in temperature) separately.
       
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, blockjj
-         do k = 1, nlay
-            !!$acc cache(absa, selfref, forref, absb)
-            !$acc loop vector private(speccomb, specmult, js, fs, fs1, fac000, &
-            !$acc&     fac010, fac100, fac110, fac001, fac011, fac101, fac111, &
-            !$acc&     ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14, &
-            !$acc&     inds, indf, indsp, indfp, o2cont, tauray)
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               tauray = colmol(ipt, k, jj) * rayl
-               if (k .le. laytrop(ipt, jj)) then
-                  o2cont   = o2tem * colamt(ipt, k,6, jj)
-                  speccomb = colamt(ipt, k,1, jj) + strrat(22)*colamt(ipt, k,6, jj)
-                  specmult = 8.0 * min(oneminus, colamt(ipt, k,1, jj) / speccomb)
+      !$acc parallel loop gang collapse(2) private(speccomb, specmult, js, fs, fs1, fac000, &
+      !$acc&     fac010, fac100, fac110, fac001, fac011, fac101, fac111, &
+      !$acc&     ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14, &
+      !$acc&     inds, indf, indsp, indfp, o2cont, tauray) async(async_id)
+      do k = 1, nlay
+         do n = 1, nday_length
+            tauray = colmol(n, k) * rayl
+            if (k .le. laytrop(n)) then
+               o2cont   = o2tem * colamt(n, k,6)
+               speccomb = colamt(n, k,1) + strrat(22)*colamt(n, k,6)
+               specmult = 8.0 * min(oneminus, colamt(n, k,1) / speccomb)
 
-                  js = 1 + int(specmult)
-                  fs = mod(specmult, f_one)
-                  fs1= f_one - fs
-                  fac000 = fs1 * fac00(ipt, k, jj)
-                  fac010 = fs1 * fac10(ipt, k, jj)
-                  fac100 = fs  * fac00(ipt, k, jj)
-                  fac110 = fs  * fac10(ipt, k, jj)
-                  fac001 = fs1 * fac01(ipt, k, jj)
-                  fac011 = fs1 * fac11(ipt, k, jj)
-                  fac101 = fs  * fac01(ipt, k, jj)
-                  fac111 = fs  * fac11(ipt, k, jj)
+               js = 1 + int(specmult)
+               fs = mod(specmult, f_one)
+               fs1= f_one - fs
+               fac000 = fs1 * fac00(n, k)
+               fac010 = fs1 * fac10(n, k)
+               fac100 = fs  * fac00(n, k)
+               fac110 = fs  * fac10(n, k)
+               fac001 = fs1 * fac01(n, k)
+               fac011 = fs1 * fac11(n, k)
+               fac101 = fs  * fac01(n, k)
+               fac111 = fs  * fac11(n, k)
 
-                  ind01 = id0(ipt, k,22, jj) + js
-                  ind02 = ind01 + 1
-                  ind03 = ind01 + 9
-                  ind04 = ind01 + 10
-                  ind11 = id1(ipt, k,22, jj) + js
-                  ind12 = ind11 + 1
-                  ind13 = ind11 + 9
-                  ind14 = ind11 + 10
+               ind01 = id0(n, k,22) + js
+               ind02 = ind01 + 1
+               ind03 = ind01 + 9
+               ind04 = ind01 + 10
+               ind11 = id1(n, k,22) + js
+               ind12 = ind11 + 1
+               ind13 = ind11 + 9
+               ind14 = ind11 + 10
 
-                  inds = indself(ipt, k, jj)
-                  indf = indfor (ipt, k, jj)
-                  indsp= inds + 1
-                  indfp= indf + 1
-                  
-                  !$acc loop seq
-                  do j = 1, ng22
-                     taug(ipt, k,ns22+j, jj) = speccomb                                     &
-                     &        * ( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)       &
-                     &        +   fac010 * absa(ind03,j) + fac110 * absa(ind04,j)       &
-                     &        +   fac001 * absa(ind11,j) + fac101 * absa(ind12,j)       &
-                     &        +   fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )     &
-                     &        + colamt(ipt, k,1, jj) * (selffac(ipt, k, jj) * (selfref(inds,j)            &
-                     &        + selffrac(ipt, k, jj) * (selfref(indsp,j)-selfref(inds,j)))       &
-                     &        + forfac(ipt, k, jj) * (forref(indf,j) + forfrac(ipt, k, jj)                &
-                     &        * (forref(indfp,j) - forref(indf,j)))) + o2cont
-                     taur(ipt, k,ns22+j, jj) = tauray
-                  enddo
-               else
-                  o2cont = o2tem * colamt(ipt, k,6, jj)
+               inds = indself(n, k)
+               indf = indfor (n, k)
+               indsp= inds + 1
+               indfp= indf + 1
+               
+               !$acc loop seq
+               do j = 1, ng22
+                  !taug(ipt, k,ns22+j, jj) = speccomb                                     &
+                  !&        * ( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)       &
+                  !&        +   fac010 * absa(ind03,j) + fac110 * absa(ind04,j)       &
+                  !&        +   fac001 * absa(ind11,j) + fac101 * absa(ind12,j)       &
+                  !&        +   fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )     &
+                  !&        + colamt(ipt, k,1, jj) * (selffac(ipt, k, jj) * (selfref(inds,j)            &
+                  !&        + selffrac(ipt, k, jj) * (selfref(indsp,j)-selfref(inds,j)))       &
+                  !&        + forfac(ipt, k, jj) * (forref(indf,j) + forfrac(ipt, k, jj)                &
+                  !&        * (forref(indfp,j) - forref(indf,j)))) + o2cont
+                  !taur(ipt, k,ns22+j, jj) = tauray
+                  small_taug(n, k,j + offset_ng) = speccomb                                     &
+                  &        * ( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)       &
+                  &        +   fac010 * absa(ind03,j) + fac110 * absa(ind04,j)       &
+                  &        +   fac001 * absa(ind11,j) + fac101 * absa(ind12,j)       &
+                  &        +   fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )     &
+                  &        + colamt(n, k,1) * (selffac(n, k) * (selfref(inds,j)            &
+                  &        + selffrac(n, k) * (selfref(indsp,j)-selfref(inds,j)))       &
+                  &        + forfac(n, k) * (forref(indf,j) + forfrac(n, k)                &
+                  &        * (forref(indfp,j) - forref(indf,j)))) + o2cont
+                  small_taur(n, k,j + offset_ng) = tauray
+               enddo
+            else
+               o2cont = o2tem * colamt(n, k,6)
 
-                  ind01 = id0(ipt, k,22, jj) + 1
-                  ind02 = ind01 + 1
-                  ind11 = id1(ipt, k,22, jj) + 1
-                  ind12 = ind11 + 1
-                  
-                  !$acc loop seq
-                  do j = 1, ng22
-                     taug(ipt, k,ns22+j, jj) = colamt(ipt, k,6, jj) * o2adj                          &
-                     &        * ( fac00(ipt, k, jj)*absb(ind01,j) + fac10(ipt, k, jj)*absb(ind02,j)       &
-                     &        +   fac01(ipt, k, jj)*absb(ind11,j) + fac11(ipt, k, jj)*absb(ind12,j) )     &
-                     &        + o2cont
-                     taur(ipt, k,ns22+j, jj) = tauray
-                  enddo
-               end if
-            enddo
-         end do
+               ind01 = id0(n, k,22) + 1
+               ind02 = ind01 + 1
+               ind11 = id1(n, k,22) + 1
+               ind12 = ind11 + 1
+               
+               !$acc loop seq
+               do j = 1, ng22
+                  !taug(ipt, k,ns22+j, jj) = colamt(ipt, k,6, jj) * o2adj                          &
+                  !&        * ( fac00(ipt, k, jj)*absb(ind01,j) + fac10(ipt, k, jj)*absb(ind02,j)       &
+                  !&        +   fac01(ipt, k, jj)*absb(ind11,j) + fac11(ipt, k, jj)*absb(ind12,j) )     &
+                  !&        + o2cont
+                  !taur(ipt, k,ns22+j, jj) = tauray
+                  small_taug(n, k,j + offset_ng) = colamt(n, k,6) * o2adj                          &
+                  &        * ( fac00(n, k)*absb(ind01,j) + fac10(n, k)*absb(ind02,j)       &
+                  &        +   fac01(n, k)*absb(ind11,j) + fac11(n, k)*absb(ind12,j) )     &
+                  &        + o2cont
+                  small_taur(n, k,j + offset_ng) = tauray
+               enddo
+            end if
+         enddo
       end do
 
       return
@@ -5433,30 +5699,32 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
-     &     )
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
      
 !  ------------------------------------------------------------------  !
 !     band 23:  8050-12850 cm-1 (low - h2o; high - nothing)            !
 !  ------------------------------------------------------------------  !
 !
       use module_radsw_kgb23
-
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
-      integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
+      
+      integer, dimension(nday_length) :: map_nday_ipt, map_nday_jj
+      integer :: ng00, np, offset_ng, nday_length, jjoffset, max_nday_length
+      real (kind=kind_phys), dimension(nday_length, nlay, ng00) :: small_taur, small_taug
+      real (kind=kind_phys), dimension(nday_length, ng00) :: small_sfluxzen
+      integer :: nlay, laytrop(max_nday_length), ix, nday(fulljj), blockjj
+      integer, dimension(max_nday_length, nlay) :: indfor, indself,          &
      &       jp, jt, jt1
-      real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
+      real (kind=kind_phys), dimension(max_nday_length, nlay) :: colmol,    &
      &       fac00, fac01, fac10, fac11, forfac, forfrac, selffac,      &
      &       selffrac
-      real (kind=kind_phys), dimension(ix, nlay,maxgas, fulljj) :: colamt
-      real (kind=kind_phys), dimension(ix, ngptsw, fulljj) :: sfluxzen
-      real (kind=kind_phys), dimension(ix, nlay,ngptsw, fulljj) ::     &
-     &       taug, taur
-      integer, dimension(ix, nlay,nblow:nbhgh, fulljj) :: id0, id1
+      real (kind=kind_phys), dimension(max_nday_length, nlay, maxgas) :: colamt
+      integer, dimension(nday_length, nlay,nblow:nbhgh) :: id0, id1
 !  ---  locals:
       integer :: ipt, jj, async_id, fulljj
       integer :: ind01, ind02, ind11, ind12
-      integer :: inds, indf, indsp, indfp, j, k
+      integer :: inds, indf, indsp, indfp, j, k, n
 
 !
 !===> ... begin here
@@ -5465,43 +5733,49 @@
 !  --- ...  compute the optical depth by interpolating in ln(pressure),
 !           temperature, and appropriate species.  below laytrop, the water
 !           vapor self-continuum is interpolated (in temperature) separately.
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, blockjj
-         do k = 1, nlay
-            !!$acc cache(absa, selfref, forref, rayl)
-            !$acc loop vector private(ind01, ind02, ind11, ind12, inds, indf, &
-            !$acc&     indsp, indfp)
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               if (k .le. laytrop(ipt, jj)) then
-                  ind01 = id0(ipt, k,23, jj) + 1
-                  ind02 = ind01 + 1
-                  ind11 = id1(ipt, k,23, jj) + 1
-                  ind12 = ind11 + 1
+      !$acc parallel loop gang collapse(2) private(ind01, ind02, ind11, ind12, inds, indf, &
+      !$acc&     indsp, indfp) async(async_id)
+      do k = 1, nlay
+         do n = 1, nday_length
+            if (k .le. laytrop(n)) then
+               ind01 = id0(n, k,23) + 1
+               ind02 = ind01 + 1
+               ind11 = id1(n, k,23) + 1
+               ind12 = ind11 + 1
 
-                  inds = indself(ipt, k, jj)
-                  indf = indfor (ipt, k, jj)
-                  indsp= inds + 1
-                  indfp= indf + 1
-                  
-                  !$acc loop seq
-                  do j = 1, ng23
-                     taug(ipt, k,ns23+j, jj) = colamt(ipt, k,1, jj) * (givfac                        &
-                     &        * ( fac00(ipt, k, jj)*absa(ind01,j) + fac10(ipt, k, jj)*absa(ind02,j)       &
-                     &        +   fac01(ipt, k, jj)*absa(ind11,j) + fac11(ipt, k, jj)*absa(ind12,j) )     &
-                     &        + selffac(ipt, k, jj) * (selfref(inds,j) + selffrac(ipt, k, jj)             &
-                     &        * (selfref(indsp,j) - selfref(inds,j)))                   &
-                     &        + forfac(ipt, k, jj) * (forref(indf,j) + forfrac(ipt, k, jj)                &
-                     &        * (forref(indfp,j) - forref(indf,j))))
-                     taur(ipt, k,ns23+j, jj) = colmol(ipt, k, jj) * rayl(j)
-                  enddo
-               else
-                  !$acc loop seq
-                  do j = 1, ng23
-                     taug(ipt, k,ns23+j, jj) = f_zero
-                     taur(ipt, k,ns23+j, jj) = colmol(ipt, k, jj) * rayl(j)
-                  enddo
-               end if
-            enddo
+               inds = indself(n, k)
+               indf = indfor (n, k)
+               indsp= inds + 1
+               indfp= indf + 1
+               
+               !$acc loop seq
+               do j = 1, ng23
+                  !taug(ipt, k,ns23+j, jj) = colamt(ipt, k,1, jj) * (givfac                        &
+                  !&        * ( fac00(ipt, k, jj)*absa(ind01,j) + fac10(ipt, k, jj)*absa(ind02,j)       &
+                  !&        +   fac01(ipt, k, jj)*absa(ind11,j) + fac11(ipt, k, jj)*absa(ind12,j) )     &
+                  !&        + selffac(ipt, k, jj) * (selfref(inds,j) + selffrac(ipt, k, jj)             &
+                  !&        * (selfref(indsp,j) - selfref(inds,j)))                   &
+                  !&        + forfac(ipt, k, jj) * (forref(indf,j) + forfrac(ipt, k, jj)                &
+                  !&        * (forref(indfp,j) - forref(indf,j))))
+                  !taur(ipt, k,ns23+j, jj) = colmol(ipt, k, jj) * rayl(j)
+                  small_taug(n, k,j + offset_ng) = colamt(n, k,1) * (givfac                        &
+                  &        * ( fac00(n, k)*absa(ind01,j) + fac10(n, k)*absa(ind02,j)       &
+                  &        +   fac01(n, k)*absa(ind11,j) + fac11(n, k)*absa(ind12,j) )     &
+                  &        + selffac(n, k) * (selfref(inds,j) + selffrac(n, k)             &
+                  &        * (selfref(indsp,j) - selfref(inds,j)))                   &
+                  &        + forfac(n, k) * (forref(indf,j) + forfrac(n, k)                &
+                  &        * (forref(indfp,j) - forref(indf,j))))
+                  small_taur(n, k,j + offset_ng) = colmol(n, k) * rayl(j)
+               enddo
+            else
+               !$acc loop seq
+               do j = 1, ng23
+                  !taug(ipt, k,ns23+j, jj) = f_zero
+                  !taur(ipt, k,ns23+j, jj) = colmol(ipt, k, jj) * rayl(j)
+                  small_taug(n, k,j + offset_ng) = f_zero
+                  small_taur(n, k,j + offset_ng) = colmol(n, k) * rayl(j)
+               enddo
+            end if
          end do
       end do
 
@@ -5515,33 +5789,35 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
-     &     )
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
      
 !  ------------------------------------------------------------------  !
 !     band 24:  12850-16000 cm-1 (low - h2o,o2; high - o2)             !
 !  ------------------------------------------------------------------  !
 !
       use module_radsw_kgb24
-
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
-      integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
+      
+      integer, dimension(nday_length) :: map_nday_ipt, map_nday_jj
+      integer :: ng00, np, offset_ng, nday_length, jjoffset, max_nday_length
+      real (kind=kind_phys), dimension(nday_length, nlay, ng00) :: small_taur, small_taug
+      real (kind=kind_phys), dimension(nday_length, ng00) :: small_sfluxzen
+      integer :: nlay, laytrop(max_nday_length), ix, nday(fulljj), blockjj
+      integer, dimension(max_nday_length, nlay) :: indfor, indself,          &
      &       jp, jt, jt1
-      real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
+      real (kind=kind_phys), dimension(max_nday_length, nlay) :: colmol,    &
      &       fac00, fac01, fac10, fac11, forfac, forfrac, selffac,      &
      &       selffrac
-      real (kind=kind_phys), dimension(ix, nlay,maxgas, fulljj) :: colamt
-      real (kind=kind_phys), dimension(ix, ngptsw, fulljj) :: sfluxzen
-      real (kind=kind_phys), dimension(ix, nlay,ngptsw, fulljj) ::     &
-     &       taug, taur
-      integer, dimension(ix, nlay,nblow:nbhgh, fulljj) :: id0, id1
+      real (kind=kind_phys), dimension(max_nday_length, nlay, maxgas) :: colamt
+      integer, dimension(nday_length, nlay,nblow:nbhgh) :: id0, id1
 !  ---  locals:
       integer :: ipt, jj, async_id, fulljj
       real (kind=kind_phys) :: speccomb, specmult, fs, fs1,             &
      &       fac000,fac001,fac010,fac011, fac100,fac101,fac110,fac111
 
       integer :: ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14
-      integer :: inds, indf, indsp, indfp, j, js, k
+      integer :: inds, indf, indsp, indfp, j, js, k, n
 
 !
 !===> ... begin here
@@ -5550,78 +5826,93 @@
 !  --- ...  compute the optical depth by interpolating in ln(pressure),
 !           temperature, and appropriate species.  below laytrop, the water
 !           vapor self-continuum is interpolated (in temperature) separately.
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, blockjj
-         do k = 1, nlay
-            !!$acc cache(rayla, absa, abso3a, selfref, forref, absb, raylb, abso3b)
-            !$acc loop vector private(speccomb, specmult, js, fs, fs1, fac000, &
-            !$acc&     fac010, fac100, fac110, fac001, fac011, fac101, fac111, &
-            !$acc&     ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14, &
-            !$acc&     inds, indf, indsp, indfp)
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               if (k .le. laytrop(ipt, jj)) then
-                  speccomb = colamt(ipt, k,1, jj) + strrat(24)*colamt(ipt, k,6, jj)
-                  specmult = 8.0 * min(oneminus, colamt(ipt, k,1, jj) / speccomb)
+      !$acc parallel loop gang collapse(2) private(speccomb, specmult, js, fs, fs1, fac000, &
+      !$acc&     fac010, fac100, fac110, fac001, fac011, fac101, fac111, &
+      !$acc&     ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14, &
+      !$acc&     inds, indf, indsp, indfp) async(async_id)
+      do k = 1, nlay
+         do n = 1, nday_length
+            if (k .le. laytrop(n)) then
+               speccomb = colamt(n, k,1) + strrat(24)*colamt(n, k,6)
+               specmult = 8.0 * min(oneminus, colamt(n, k,1) / speccomb)
 
-                  js = 1 + int(specmult)
-                  fs = mod(specmult, f_one)
-                  fs1= f_one - fs
-                  fac000 = fs1 * fac00(ipt, k, jj)
-                  fac010 = fs1 * fac10(ipt, k, jj)
-                  fac100 = fs  * fac00(ipt, k, jj)
-                  fac110 = fs  * fac10(ipt, k, jj)
-                  fac001 = fs1 * fac01(ipt, k, jj)
-                  fac011 = fs1 * fac11(ipt, k, jj)
-                  fac101 = fs  * fac01(ipt, k, jj)
-                  fac111 = fs  * fac11(ipt, k, jj)
+               js = 1 + int(specmult)
+               fs = mod(specmult, f_one)
+               fs1= f_one - fs
+               fac000 = fs1 * fac00(n, k)
+               fac010 = fs1 * fac10(n, k)
+               fac100 = fs  * fac00(n, k)
+               fac110 = fs  * fac10(n, k)
+               fac001 = fs1 * fac01(n, k)
+               fac011 = fs1 * fac11(n, k)
+               fac101 = fs  * fac01(n, k)
+               fac111 = fs  * fac11(n, k)
 
-                  ind01 = id0(ipt, k,24, jj) + js
-                  ind02 = ind01 + 1
-                  ind03 = ind01 + 9
-                  ind04 = ind01 + 10
-                  ind11 = id1(ipt, k,24, jj) + js
-                  ind12 = ind11 + 1
-                  ind13 = ind11 + 9
-                  ind14 = ind11 + 10
+               ind01 = id0(n, k,24) + js
+               ind02 = ind01 + 1
+               ind03 = ind01 + 9
+               ind04 = ind01 + 10
+               ind11 = id1(n, k,24) + js
+               ind12 = ind11 + 1
+               ind13 = ind11 + 9
+               ind14 = ind11 + 10
 
-                  inds = indself(ipt, k, jj)
-                  indf = indfor (ipt, k, jj)
-                  indsp= inds + 1
-                  indfp= indf + 1
-                  
-                  !$acc loop seq
-                  do j = 1, ng24
-                     taug(ipt, k,ns24+j, jj) = speccomb                                     &
-                     &        * ( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)       &
-                     &        +   fac010 * absa(ind03,j) + fac110 * absa(ind04,j)       &
-                     &        +   fac001 * absa(ind11,j) + fac101 * absa(ind12,j)       &
-                     &        +   fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )     &
-                     &        + colamt(ipt, k,3, jj) * abso3a(j) + colamt(ipt, k,1, jj)                   &
-                     &        * (selffac(ipt, k, jj) * (selfref(inds,j) + selffrac(ipt, k, jj)            &
-                     &        * (selfref(indsp,j) - selfref(inds,j)))                   &
-                     &        + forfac(ipt, k, jj) * (forref(indf,j) + forfrac(ipt, k, jj)                &
-                     &        * (forref(indfp,j) - forref(indf,j))))
+               inds = indself(n, k)
+               indf = indfor (n, k)
+               indsp= inds + 1
+               indfp= indf + 1
+               
+               !$acc loop seq
+               do j = 1, ng24
+                  !taug(ipt, k,ns24+j, jj) = speccomb                                     &
+                  !&        * ( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)       &
+                  !&        +   fac010 * absa(ind03,j) + fac110 * absa(ind04,j)       &
+                  !&        +   fac001 * absa(ind11,j) + fac101 * absa(ind12,j)       &
+                  !&        +   fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )     &
+                  !&        + colamt(ipt, k,3, jj) * abso3a(j) + colamt(ipt, k,1, jj)                   &
+                  !&        * (selffac(ipt, k, jj) * (selfref(inds,j) + selffrac(ipt, k, jj)            &
+                  !&        * (selfref(indsp,j) - selfref(inds,j)))                   &
+                  !&        + forfac(ipt, k, jj) * (forref(indf,j) + forfrac(ipt, k, jj)                &
+                  !&        * (forref(indfp,j) - forref(indf,j))))
+!
+                  !taur(ipt, k,ns24+j, jj) = colmol(ipt, k, jj)                                    &
+                  !&           * (rayla(j,js) + fs*(rayla(j,js+1) - rayla(j,js)))
+                  small_taug(n, k,j + offset_ng) = speccomb                                     &
+                  &        * ( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)       &
+                  &        +   fac010 * absa(ind03,j) + fac110 * absa(ind04,j)       &
+                  &        +   fac001 * absa(ind11,j) + fac101 * absa(ind12,j)       &
+                  &        +   fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )     &
+                  &        + colamt(n, k,3) * abso3a(j) + colamt(n, k,1)                   &
+                  &        * (selffac(n, k) * (selfref(inds,j) + selffrac(n, k)            &
+                  &        * (selfref(indsp,j) - selfref(inds,j)))                   &
+                  &        + forfac(n, k) * (forref(indf,j) + forfrac(n, k)                &
+                  &        * (forref(indfp,j) - forref(indf,j))))
 
-                     taur(ipt, k,ns24+j, jj) = colmol(ipt, k, jj)                                    &
-                     &           * (rayla(j,js) + fs*(rayla(j,js+1) - rayla(j,js)))
-                  enddo
-               else
-                  ind01 = id0(ipt, k,24, jj) + 1
-                  ind02 = ind01 + 1
-                  ind11 = id1(ipt, k,24, jj) + 1
-                  ind12 = ind11 + 1
-                  
-                  !$acc loop seq
-                  do j = 1, ng24
-                     taug(ipt, k,ns24+j, jj) = colamt(ipt, k,6, jj)                                  &
-                     &        * ( fac00(ipt, k, jj)*absb(ind01,j) + fac10(ipt, k, jj)*absb(ind02,j)       &
-                     &        +   fac01(ipt, k, jj)*absb(ind11,j) + fac11(ipt, k, jj)*absb(ind12,j) )     &
-                     &        + colamt(ipt, k,3, jj) * abso3b(j)
+                  small_taur(n, k,j + offset_ng) = colmol(n, k)                                    &
+                  &           * (rayla(j,js) + fs*(rayla(j,js+1) - rayla(j,js)))
+               enddo
+            else
+               ind01 = id0(n, k,24) + 1
+               ind02 = ind01 + 1
+               ind11 = id1(n, k,24) + 1
+               ind12 = ind11 + 1
+               
+               !$acc loop seq
+               do j = 1, ng24
+                  !taug(ipt, k,ns24+j, jj) = colamt(ipt, k,6, jj)                                  &
+                  !&        * ( fac00(ipt, k, jj)*absb(ind01,j) + fac10(ipt, k, jj)*absb(ind02,j)       &
+                  !&        +   fac01(ipt, k, jj)*absb(ind11,j) + fac11(ipt, k, jj)*absb(ind12,j) )     &
+                  !&        + colamt(ipt, k,3, jj) * abso3b(j)
+!
+                  !taur(ipt, k,ns24+j, jj) = colmol(ipt, k, jj) * raylb(j)
+                  small_taug(n, k,j + offset_ng) = colamt(n, k,6)                                  &
+                  &        * ( fac00(n, k)*absb(ind01,j) + fac10(n, k)*absb(ind02,j)       &
+                  &        +   fac01(n, k)*absb(ind11,j) + fac11(n, k)*absb(ind12,j) )     &
+                  &        + colamt(n, k,3) * abso3b(j)
 
-                     taur(ipt, k,ns24+j, jj) = colmol(ipt, k, jj) * raylb(j)
-                  enddo
-               end if
-            enddo
+                  small_taur(n, k,j + offset_ng) = colmol(n, k) * raylb(j)
+               enddo
+            end if
          end do
       end do
 
@@ -5636,30 +5927,32 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
-     &     )
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
      
 !  ------------------------------------------------------------------  !
 !     band 25:  16000-22650 cm-1 (low - h2o; high - nothing)           !
 !  ------------------------------------------------------------------  !
 !
       use module_radsw_kgb25
-
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
-      integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
+      
+      integer, dimension(nday_length) :: map_nday_ipt, map_nday_jj
+      integer :: ng00, np, offset_ng, nday_length, jjoffset, max_nday_length
+      real (kind=kind_phys), dimension(nday_length, nlay, ng00) :: small_taur, small_taug
+      real (kind=kind_phys), dimension(nday_length, ng00) :: small_sfluxzen
+      integer :: nlay, laytrop(max_nday_length), ix, nday(fulljj), blockjj
+      integer, dimension(max_nday_length, nlay) :: indfor, indself,          &
      &       jp, jt, jt1
-      real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
+      real (kind=kind_phys), dimension(max_nday_length, nlay) :: colmol,    &
      &       fac00, fac01, fac10, fac11, forfac, forfrac, selffac,      &
      &       selffrac
-      real (kind=kind_phys), dimension(ix, nlay,maxgas, fulljj) :: colamt
-      real (kind=kind_phys), dimension(ix, ngptsw, fulljj) :: sfluxzen
-      real (kind=kind_phys), dimension(ix, nlay,ngptsw, fulljj) ::     &
-     &       taug, taur
-      integer, dimension(ix, nlay,nblow:nbhgh, fulljj) :: id0, id1
+      real (kind=kind_phys), dimension(max_nday_length, nlay, maxgas) :: colamt
+      integer, dimension(nday_length, nlay,nblow:nbhgh) :: id0, id1
 !  ---  locals:
       integer :: ipt, jj, async_id, fulljj
       integer :: ind01, ind02, ind11, ind12
-      integer :: j, k
+      integer :: j, k, n
 
 !
 !===> ... begin here
@@ -5669,34 +5962,37 @@
 !           temperature, and appropriate species.  below laytrop, the water
 !           vapor self-continuum is interpolated (in temperature) separately.
       
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, blockjj
-         do k = 1, nlay
-            !!$acc cache(absa, abso3a, rayl, abso3b)
-            !$acc loop vector private(ind01, ind02, ind11, ind12)
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               if (k .le. laytrop(ipt, jj)) then
-                  ind01 = id0(ipt, k,25, jj) + 1
-                  ind02 = ind01 + 1
-                  ind11 = id1(ipt, k,25, jj) + 1
-                  ind12 = ind11 + 1
-                  
-                  !$acc loop seq
-                  do j = 1, ng25
-                     taug(ipt, k,ns25+j, jj) = colamt(ipt, k,1, jj)                                  &
-                     &        * ( fac00(ipt, k, jj)*absa(ind01,j) + fac10(ipt, k, jj)*absa(ind02,j)       &
-                     &        +   fac01(ipt, k, jj)*absa(ind11,j) + fac11(ipt, k, jj)*absa(ind12,j) )     &
-                     &        + colamt(ipt, k,3, jj) * abso3a(j) 
-                     taur(ipt, k,ns25+j, jj) = colmol(ipt, k, jj) * rayl(j)
-                  enddo
-               else
-                  !$acc loop seq
-                  do j = 1, ng25
-                     taug(ipt, k,ns25+j, jj) = colamt(ipt, k,3, jj) * abso3b(j) 
-                     taur(ipt, k,ns25+j, jj) = colmol(ipt, k, jj) * rayl(j)
-                  enddo
-               end if
-            enddo
+      !$acc parallel loop gang collapse(2) private(ind01, ind02, ind11, ind12) async(async_id)
+      do k = 1, nlay
+         do n = 1, nday_length
+            if (k .le. laytrop(n)) then
+               ind01 = id0(n, k,25) + 1
+               ind02 = ind01 + 1
+               ind11 = id1(n, k,25) + 1
+               ind12 = ind11 + 1
+               
+               !$acc loop seq
+               do j = 1, ng25
+                  !taug(ipt, k,ns25+j, jj) = colamt(ipt, k,1, jj)                                  &
+                  !&        * ( fac00(ipt, k, jj)*absa(ind01,j) + fac10(ipt, k, jj)*absa(ind02,j)       &
+                  !&        +   fac01(ipt, k, jj)*absa(ind11,j) + fac11(ipt, k, jj)*absa(ind12,j) )     &
+                  !&        + colamt(ipt, k,3, jj) * abso3a(j) 
+                  !taur(ipt, k,ns25+j, jj) = colmol(ipt, k, jj) * rayl(j)
+                  small_taug(n, k,j + offset_ng) = colamt(n, k,1)                                  &
+                  &        * ( fac00(n, k)*absa(ind01,j) + fac10(n, k)*absa(ind02,j)       &
+                  &        +   fac01(n, k)*absa(ind11,j) + fac11(n, k)*absa(ind12,j) )     &
+                  &        + colamt(n, k,3) * abso3a(j) 
+                  small_taur(n, k,j + offset_ng) = colmol(n, k) * rayl(j)
+               enddo
+            else
+               !$acc loop seq
+               do j = 1, ng25
+                  !taug(ipt, k,ns25+j, jj) = colamt(ipt, k,3, jj) * abso3b(j) 
+                  !taur(ipt, k,ns25+j, jj) = colmol(ipt, k, jj) * rayl(j)
+                  small_taug(n, k,j + offset_ng) = colamt(n, k,3) * abso3b(j) 
+                  small_taur(n, k,j + offset_ng) = colmol(n, k) * rayl(j)
+               enddo
+            end if
          end do
       end do
 
@@ -5711,29 +6007,31 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
-     &     )
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
      
 !  ------------------------------------------------------------------  !
 !     band 26:  22650-29000 cm-1 (low - nothing; high - nothing)       !
 !  ------------------------------------------------------------------  !
 !
       use module_radsw_kgb26
-
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
-      integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
+      
+      integer, dimension(nday_length) :: map_nday_ipt, map_nday_jj
+      integer :: ng00, np, offset_ng, nday_length, jjoffset, max_nday_length
+      real (kind=kind_phys), dimension(nday_length, nlay, ng00) :: small_taur, small_taug
+      real (kind=kind_phys), dimension(nday_length, ng00) :: small_sfluxzen
+      integer :: nlay, laytrop(max_nday_length), ix, nday(fulljj), blockjj
+      integer, dimension(max_nday_length, nlay) :: indfor, indself,          &
      &       jp, jt, jt1
-      real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
+      real (kind=kind_phys), dimension(max_nday_length, nlay) :: colmol,    &
      &       fac00, fac01, fac10, fac11, forfac, forfrac, selffac,      &
      &       selffrac
-      real (kind=kind_phys), dimension(ix, nlay,maxgas, fulljj) :: colamt
-      real (kind=kind_phys), dimension(ix, ngptsw, fulljj) :: sfluxzen
-      real (kind=kind_phys), dimension(ix, nlay,ngptsw, fulljj) ::     &
-     &       taug, taur
-      integer, dimension(ix, nlay,nblow:nbhgh, fulljj) :: id0, id1
+      real (kind=kind_phys), dimension(max_nday_length, nlay, maxgas) :: colamt
+      integer, dimension(nday_length, nlay,nblow:nbhgh) :: id0, id1
 !  ---  locals:
       integer :: ipt, jj, async_id, fulljj
-      integer :: j, k
+      integer :: j, k, n
 
 !
 !===> ... begin here
@@ -5742,16 +6040,14 @@
 !  --- ...  compute the optical depth by interpolating in ln(pressure),
 !           temperature, and appropriate species.  below laytrop, the water
 !           vapor self-continuum is interpolated (in temperature) separately.
-      !$acc parallel loop gang collapse(3) async(async_id)
-      do jj = 1, blockjj
-         do j = 1, ng26
-            do k = 1, nlay
-               !!$acc cache(rayl)
-               !$acc loop vector
-               do ipt = 1, nday(jj) ! lab_do_ipt
-                  taug(ipt, k,ns26+j, jj) = f_zero
-                  taur(ipt, k,ns26+j, jj) = colmol(ipt, k, jj) * rayl(j) 
-               enddo
+      !$acc parallel loop collapse(3) async(async_id)
+      do j = 1, ng26
+         do k = 1, nlay
+            do n = 1, nday_length
+               !taug(ipt, k,ns26+j, jj) = f_zero
+               !taur(ipt, k,ns26+j, jj) = colmol(ipt, k, jj) * rayl(j) 
+               small_taug(n, k,j + offset_ng) = f_zero
+               small_taur(n, k,j + offset_ng) = colmol(n, k) * rayl(j) 
             enddo
          end do
       end do
@@ -5767,30 +6063,32 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
-     &     )
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
      
 !  ------------------------------------------------------------------  !
 !     band 27:  29000-38000 cm-1 (low - o3; high - o3)                 !
 !  ------------------------------------------------------------------  !
 !
       use module_radsw_kgb27
-!
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
-      integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
+      
+      integer, dimension(nday_length) :: map_nday_ipt, map_nday_jj
+      integer :: ng00, np, offset_ng, nday_length, jjoffset, max_nday_length
+      real (kind=kind_phys), dimension(nday_length, nlay, ng00) :: small_taur, small_taug
+      real (kind=kind_phys), dimension(nday_length, ng00) :: small_sfluxzen
+      integer :: nlay, laytrop(max_nday_length), ix, nday(fulljj), blockjj
+      integer, dimension(max_nday_length, nlay) :: indfor, indself,          &
      &       jp, jt, jt1
-      real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
+      real (kind=kind_phys), dimension(max_nday_length, nlay) :: colmol,    &
      &       fac00, fac01, fac10, fac11, forfac, forfrac, selffac,      &
      &       selffrac
-      real (kind=kind_phys), dimension(ix, nlay,maxgas, fulljj) :: colamt
-      real (kind=kind_phys), dimension(ix, ngptsw, fulljj) :: sfluxzen
-      real (kind=kind_phys), dimension(ix, nlay,ngptsw, fulljj) ::     &
-     &       taug, taur
-      integer, dimension(ix, nlay,nblow:nbhgh, fulljj) :: id0, id1
+      real (kind=kind_phys), dimension(max_nday_length, nlay, maxgas) :: colamt
+      integer, dimension(nday_length, nlay,nblow:nbhgh) :: id0, id1
 !  ---  locals:
       integer :: ipt, jj, async_id, fulljj
       integer :: ind01, ind02, ind11, ind12
-      integer :: j, k
+      integer :: j, k, n
       real (kind=kind_phys) :: abs01, abs02, abs11, abs12
 
 !
@@ -5801,35 +6099,36 @@
 !           temperature, and appropriate species.  below laytrop, the water
 !           vapor self-continuum is interpolated (in temperature) separately.
       
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, blockjj
-         do k = 1, nlay
-            !!$acc cache(rayl, absa, absb)
-            !$acc loop vector private(ind01, ind02, ind11, ind12, abs01, abs02, abs11, abs12)
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               ind01 = id0(ipt, k,27, jj) + 1
-               ind02 = ind01 + 1
-               ind11 = id1(ipt, k,27, jj) + 1
-               ind12 = ind11 + 1
-                  
-               !$acc loop seq
-               do j = 1, ng27
-                  if (k .le. laytrop(ipt, jj)) then
-                     abs01 = absa(ind01,j)
-                     abs02 = absa(ind02,j)
-                     abs11 = absa(ind11,j)
-                     abs12 = absa(ind12,j)
-                  else
-                     abs01 = absb(ind01,j)
-                     abs02 = absb(ind02,j)
-                     abs11 = absb(ind11,j)
-                     abs12 = absb(ind12,j)
-                  end if
-                  taug(ipt, k,ns27+j, jj) = colamt(ipt, k,3, jj)                                  &
-                  &        * ( fac00(ipt, k, jj)*abs01 + fac10(ipt, k, jj)*abs02       &
-                  &        +   fac01(ipt, k, jj)*abs11 + fac11(ipt, k, jj)*abs12 )
-                  taur(ipt, k,ns27+j, jj) = colmol(ipt, k, jj) * rayl(j)
-               enddo
+      !$acc parallel loop collapse(2) private(ind01, ind02, ind11, ind12, &
+      !$acc&         abs01, abs02, abs11, abs12) async(async_id)
+      do k = 1, nlay
+         do n = 1, nday_length
+            ind01 = id0(n, k,27) + 1
+            ind02 = ind01 + 1
+            ind11 = id1(n, k,27) + 1
+            ind12 = ind11 + 1
+               
+            !$acc loop seq
+            do j = 1, ng27
+               if (k .le. laytrop(n)) then
+                  abs01 = absa(ind01,j)
+                  abs02 = absa(ind02,j)
+                  abs11 = absa(ind11,j)
+                  abs12 = absa(ind12,j)
+               else
+                  abs01 = absb(ind01,j)
+                  abs02 = absb(ind02,j)
+                  abs11 = absb(ind11,j)
+                  abs12 = absb(ind12,j)
+               end if
+               !taug(ipt, k,ns27+j, jj) = colamt(ipt, k,3, jj)                                  &
+               !&        * ( fac00(ipt, k, jj)*abs01 + fac10(ipt, k, jj)*abs02       &
+               !&        +   fac01(ipt, k, jj)*abs11 + fac11(ipt, k, jj)*abs12 )
+               !taur(ipt, k,ns27+j, jj) = colmol(ipt, k, jj) * rayl(j)
+               small_taug(n, k,j + offset_ng) = colamt(n, k,3)                                  &
+               &        * ( fac00(n, k)*abs01 + fac10(n, k)*abs02       &
+               &        +   fac01(n, k)*abs11 + fac11(n, k)*abs12 )
+               small_taur(n, k,j + offset_ng) = colmol(n, k) * rayl(j)
             enddo
          end do
       end do
@@ -5845,33 +6144,35 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
-     &     )
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
      
 !  ------------------------------------------------------------------  !
 !     band 28:  38000-50000 cm-1 (low - o3,o2; high - o3,o2)           !
 !  ------------------------------------------------------------------  !
 !
       use module_radsw_kgb28
-
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
-      integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
+      
+      integer, dimension(nday_length) :: map_nday_ipt, map_nday_jj
+      integer :: ng00, np, offset_ng, nday_length, jjoffset, max_nday_length
+      real (kind=kind_phys), dimension(nday_length, nlay, ng00) :: small_taur, small_taug
+      real (kind=kind_phys), dimension(nday_length, ng00) :: small_sfluxzen
+      integer :: nlay, laytrop(max_nday_length), ix, nday(fulljj), blockjj
+      integer, dimension(max_nday_length, nlay) :: indfor, indself,          &
      &       jp, jt, jt1
-      real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
+      real (kind=kind_phys), dimension(max_nday_length, nlay) :: colmol,    &
      &       fac00, fac01, fac10, fac11, forfac, forfrac, selffac,      &
      &       selffrac
-      real (kind=kind_phys), dimension(ix, nlay,maxgas, fulljj) :: colamt
-      real (kind=kind_phys), dimension(ix, ngptsw, fulljj) :: sfluxzen
-      real (kind=kind_phys), dimension(ix, nlay,ngptsw, fulljj) ::     &
-     &       taug, taur
-      integer, dimension(ix, nlay,nblow:nbhgh, fulljj) :: id0, id1
+      real (kind=kind_phys), dimension(max_nday_length, nlay, maxgas) :: colamt
+      integer, dimension(nday_length, nlay,nblow:nbhgh) :: id0, id1
 !  ---  locals:
       integer :: ipt, jj, async_id, fulljj
       real (kind=kind_phys) :: speccomb, specmult, tauray, fs, fs1,     &
      &       fac000,fac001,fac010,fac011, fac100,fac101,fac110,fac111
 
       integer :: ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14
-      integer :: j, js, k
+      integer :: j, js, k, n
 
 !
 !===> ... begin here
@@ -5881,85 +6182,93 @@
 !           temperature, and appropriate species.  below laytrop, the water
 !           vapor self-continuum is interpolated (in temperature) separately.
 
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, blockjj
-         do k = 1, nlay
-            !!$acc cache(absa)
-            !$acc loop vector private(speccomb, specmult, js, fs, fs1, fac000, &
-            !$acc&     fac010, fac100, fac110, fac001, fac011, fac101, fac111, &
-            !$acc&     ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14, tauray)
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               tauray = colmol(ipt, k, jj) * rayl
-               if (k .le. laytrop(ipt, jj)) then
-                  speccomb = colamt(ipt, k,3, jj) + strrat(28)*colamt(ipt, k,6, jj)
-                  specmult = 8.0 * min(oneminus, colamt(ipt, k,3, jj) / speccomb)
+      !$acc parallel loop gang collapse(2) private(speccomb, specmult, js, fs, fs1, fac000, &
+      !$acc&     fac010, fac100, fac110, fac001, fac011, fac101, fac111, &
+      !$acc&     ind01, ind02, ind03, ind04, ind11, ind12, ind13, ind14, tauray) async(async_id)
+      do k = 1, nlay
+         do n = 1, nday_length
+            tauray = colmol(n, k) * rayl
+            if (k .le. laytrop(n)) then
+               speccomb = colamt(n, k,3) + strrat(28)*colamt(n, k,6)
+               specmult = 8.0 * min(oneminus, colamt(n, k,3) / speccomb)
 
-                  js = 1 + int(specmult)
-                  fs = mod(specmult, f_one)
-                  fs1= f_one - fs
-                  fac000 = fs1 * fac00(ipt, k, jj)
-                  fac010 = fs1 * fac10(ipt, k, jj)
-                  fac100 = fs  * fac00(ipt, k, jj)
-                  fac110 = fs  * fac10(ipt, k, jj)
-                  fac001 = fs1 * fac01(ipt, k, jj)
-                  fac011 = fs1 * fac11(ipt, k, jj)
-                  fac101 = fs  * fac01(ipt, k, jj)
-                  fac111 = fs  * fac11(ipt, k, jj)
+               js = 1 + int(specmult)
+               fs = mod(specmult, f_one)
+               fs1= f_one - fs
+               fac000 = fs1 * fac00(n, k)
+               fac010 = fs1 * fac10(n, k)
+               fac100 = fs  * fac00(n, k)
+               fac110 = fs  * fac10(n, k)
+               fac001 = fs1 * fac01(n, k)
+               fac011 = fs1 * fac11(n, k)
+               fac101 = fs  * fac01(n, k)
+               fac111 = fs  * fac11(n, k)
 
-                  ind01 = id0(ipt, k,28, jj) + js
-                  ind02 = ind01 + 1
-                  ind03 = ind01 + 9
-                  ind04 = ind01 + 10
-                  ind11 = id1(ipt, k,28, jj) + js
-                  ind12 = ind11 + 1
-                  ind13 = ind11 + 9
-                  ind14 = ind11 + 10
-                  
-                  !$acc loop seq
-                  do j = 1, ng28
-                     taug(ipt, k,ns28+j, jj) = speccomb                                     &
-                     &        * ( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)       &
-                     &        +   fac010 * absa(ind03,j) + fac110 * absa(ind04,j)       &
-                     &        +   fac001 * absa(ind11,j) + fac101 * absa(ind12,j)       &
-                     &        +   fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )
-                     taur(ipt, k,ns28+j, jj) = tauray
-                  enddo
-               else
-                  speccomb = colamt(ipt, k,3, jj) + strrat(28)*colamt(ipt, k,6, jj)
-                  specmult = 4.0 * min(oneminus, colamt(ipt, k,3, jj) / speccomb)
+               ind01 = id0(n, k,28) + js
+               ind02 = ind01 + 1
+               ind03 = ind01 + 9
+               ind04 = ind01 + 10
+               ind11 = id1(n, k,28) + js
+               ind12 = ind11 + 1
+               ind13 = ind11 + 9
+               ind14 = ind11 + 10
+               
+               !$acc loop seq
+               do j = 1, ng28
+                  !taug(ipt, k,ns28+j, jj) = speccomb                                     &
+                  !&        * ( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)       &
+                  !&        +   fac010 * absa(ind03,j) + fac110 * absa(ind04,j)       &
+                  !&        +   fac001 * absa(ind11,j) + fac101 * absa(ind12,j)       &
+                  !&        +   fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )
+                  !taur(ipt, k,ns28+j, jj) = tauray
+                  small_taug(n, k,j + offset_ng) = speccomb                                     &
+                  &        * ( fac000 * absa(ind01,j) + fac100 * absa(ind02,j)       &
+                  &        +   fac010 * absa(ind03,j) + fac110 * absa(ind04,j)       &
+                  &        +   fac001 * absa(ind11,j) + fac101 * absa(ind12,j)       &
+                  &        +   fac011 * absa(ind13,j) + fac111 * absa(ind14,j) )
+                  small_taur(n, k,j + offset_ng) = tauray
+               enddo
+            else
+               speccomb = colamt(n, k,3) + strrat(28)*colamt(n, k,6)
+               specmult = 4.0 * min(oneminus, colamt(n, k,3) / speccomb)
 
-                  js = 1 + int(specmult)
-                  fs = mod(specmult, f_one)
-                  fs1= f_one - fs
-                  fac000 = fs1 * fac00(ipt, k, jj)
-                  fac010 = fs1 * fac10(ipt, k, jj)
-                  fac100 = fs  * fac00(ipt, k, jj)
-                  fac110 = fs  * fac10(ipt, k, jj)
-                  fac001 = fs1 * fac01(ipt, k, jj)
-                  fac011 = fs1 * fac11(ipt, k, jj)
-                  fac101 = fs  * fac01(ipt, k, jj)
-                  fac111 = fs  * fac11(ipt, k, jj)
+               js = 1 + int(specmult)
+               fs = mod(specmult, f_one)
+               fs1= f_one - fs
+               fac000 = fs1 * fac00(n, k)
+               fac010 = fs1 * fac10(n, k)
+               fac100 = fs  * fac00(n, k)
+               fac110 = fs  * fac10(n, k)
+               fac001 = fs1 * fac01(n, k)
+               fac011 = fs1 * fac11(n, k)
+               fac101 = fs  * fac01(n, k)
+               fac111 = fs  * fac11(n, k)
 
-                  ind01 = id0(ipt, k,28, jj) + js
-                  ind02 = ind01 + 1
-                  ind03 = ind01 + 5
-                  ind04 = ind01 + 6
-                  ind11 = id1(ipt, k,28, jj) + js
-                  ind12 = ind11 + 1
-                  ind13 = ind11 + 5
-                  ind14 = ind11 + 6
-                  
-                  !$acc loop seq
-                  do j = 1, ng28
-                     taug(ipt, k,ns28+j, jj) = speccomb                                     &
-                     &        * ( fac000 * absb(ind01,j) + fac100 * absb(ind02,j)       &
-                     &        +   fac010 * absb(ind03,j) + fac110 * absb(ind04,j)       &
-                     &        +   fac001 * absb(ind11,j) + fac101 * absb(ind12,j)       &
-                     &        +   fac011 * absb(ind13,j) + fac111 * absb(ind14,j) )
-                     taur(ipt, k,ns28+j, jj) = tauray
-                  enddo
-               end if
-            enddo
+               ind01 = id0(n, k,28) + js
+               ind02 = ind01 + 1
+               ind03 = ind01 + 5
+               ind04 = ind01 + 6
+               ind11 = id1(n, k,28) + js
+               ind12 = ind11 + 1
+               ind13 = ind11 + 5
+               ind14 = ind11 + 6
+               
+               !$acc loop seq
+               do j = 1, ng28
+                  !taug(ipt, k,ns28+j, jj) = speccomb                                     &
+                  !&        * ( fac000 * absb(ind01,j) + fac100 * absb(ind02,j)       &
+                  !&        +   fac010 * absb(ind03,j) + fac110 * absb(ind04,j)       &
+                  !&        +   fac001 * absb(ind11,j) + fac101 * absb(ind12,j)       &
+                  !&        +   fac011 * absb(ind13,j) + fac111 * absb(ind14,j) )
+                  !taur(ipt, k,ns28+j, jj) = tauray
+                  small_taug(n, k,j + offset_ng) = speccomb                                     &
+                  &        * ( fac000 * absb(ind01,j) + fac100 * absb(ind02,j)       &
+                  &        +   fac010 * absb(ind03,j) + fac110 * absb(ind04,j)       &
+                  &        +   fac001 * absb(ind11,j) + fac101 * absb(ind12,j)       &
+                  &        +   fac011 * absb(ind13,j) + fac111 * absb(ind14,j) )
+                  small_taur(n, k,j + offset_ng) = tauray
+               enddo
+            end if
          end do
       end do
 
@@ -5974,8 +6283,9 @@
 !...................................
      &     ( colamt,colmol,fac00,fac01,fac10,fac11,jp,jt,jt1,laytrop,   &
      &       forfac,forfrac,indfor,selffac,selffrac,indself, nlay, ix, nday,     &
-     &       sfluxzen, taug, taur, async_id, fulljj, id0, id1, blockjj                                        &
-     &     )
+      &       async_id, fulljj, id0, id1, blockjj, ng00, &
+      &       map_nday_ipt, map_nday_jj, nday_length, max_nday_length, jjoffset, &
+      &       small_sfluxzen, small_taug, small_taur, np, offset_ng)
      
 !  ------------------------------------------------------------------  !
 !     band 29:  820-2600 cm-1 (low - h2o; high - co2)                  !
@@ -5983,23 +6293,25 @@
 !
       use module_radsw_kgb29
 
-      integer :: nlay, laytrop(ix, fulljj), ix, nday(fulljj), blockjj
-      integer, dimension(ix, nlay, fulljj) :: indfor, indself,          &
+      integer, dimension(nday_length) :: map_nday_ipt, map_nday_jj
+      integer :: ng00, np, offset_ng, nday_length, jjoffset, max_nday_length
+      real (kind=kind_phys), dimension(nday_length, nlay, ng00) :: small_taur, small_taug
+      real (kind=kind_phys), dimension(nday_length, ng00) :: small_sfluxzen
+      integer :: nlay, laytrop(max_nday_length), ix, nday(fulljj), blockjj
+      integer, dimension(max_nday_length, nlay) :: indfor, indself,          &
      &       jp, jt, jt1
-      real (kind=kind_phys), dimension(ix, nlay, fulljj) :: colmol,    &
+      real (kind=kind_phys), dimension(max_nday_length, nlay) :: colmol,    &
      &       fac00, fac01, fac10, fac11, forfac, forfrac, selffac,      &
      &       selffrac
-      real (kind=kind_phys), dimension(ix, nlay,maxgas, fulljj) :: colamt
-      real (kind=kind_phys), dimension(ix, ngptsw, fulljj) :: sfluxzen
-      real (kind=kind_phys), dimension(ix, nlay,ngptsw, fulljj) ::     &
-     &       taug, taur
-      integer, dimension(ix, nlay,nblow:nbhgh, fulljj) :: id0, id1
+      real (kind=kind_phys), dimension(max_nday_length, nlay, maxgas) :: colamt
+      integer, dimension(nday_length, nlay,nblow:nbhgh) :: id0, id1
 !  ---  locals:
       integer :: ipt, jj, async_id, fulljj
       real (kind=kind_phys) :: tauray
 
       integer :: ind01, ind02, ind11, ind12
-      integer :: inds, indf, indsp, indfp, j, k
+      integer :: inds, indf, indsp, indfp, j, k, n
+      
 
 !
 !===> ... begin here
@@ -6009,1050 +6321,69 @@
 !           temperature, and appropriate species.  below laytrop, the water
 !           vapor self-continuum is interpolated (in temperature) separately.
       
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, blockjj
-         do k = 1, nlay
-            !$acc loop vector private(ind01, ind02, ind11, ind12, inds, indf, &
-            !$acc&     indsp, indfp, tauray)
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               !!$acc cache(absa, selfref, forref, absco2, absh2o, absb)
-               tauray = colmol(ipt, k, jj) * rayl
-               if (k .le. laytrop(ipt, jj)) then
-                  ind01 = id0(ipt, k,29, jj) + 1
-                  ind02 = ind01 + 1
-                  ind11 = id1(ipt, k,29, jj) + 1
-                  ind12 = ind11 + 1
+      !$acc parallel loop collapse(2) private(ind01, ind02, ind11, ind12, inds, indf, &
+      !$acc&     indsp, indfp, tauray) async(async_id)
+      do k = 1, nlay
+         do n = 1, nday_length
+            tauray = colmol(n, k) * rayl
+            if (k .le. laytrop(n)) then
+               ind01 = id0(n, k,29) + 1
+               ind02 = ind01 + 1
+               ind11 = id1(n, k,29) + 1
+               ind12 = ind11 + 1
 
-                  inds = indself(ipt, k, jj)
-                  indf = indfor (ipt, k, jj)
-                  indsp= inds + 1
-                  indfp= indf + 1
-                  
-                  !$acc loop seq
-                  do j = 1, ng29
-                     taug(ipt, k,ns29+j, jj) = colamt(ipt, k,1, jj)                                  &
-                     &        * ( (fac00(ipt, k, jj)*absa(ind01,j) + fac10(ipt, k, jj)*absa(ind02,j)      &
-                     &        +    fac01(ipt, k, jj)*absa(ind11,j) + fac11(ipt, k, jj)*absa(ind12,j) )    &
-                     &        +  selffac(ipt, k, jj) * (selfref(inds,j) + selffrac(ipt, k, jj)            &
-                     &        *  (selfref(indsp,j) - selfref(inds,j)))                  &
-                     &        +  forfac(ipt, k, jj) * (forref(indf,j) + forfrac(ipt, k, jj)               &
-                     &        *  (forref(indfp,j) - forref(indf,j))))                   &
-                     &        +  colamt(ipt, k,2, jj) * absco2(j)
-                     taur(ipt, k,ns29+j, jj) = tauray
-                  enddo
-               else
-                  ind01 = id0(ipt, k,29, jj) + 1
-                  ind02 = ind01 + 1
-                  ind11 = id1(ipt, k,29, jj) + 1
-                  ind12 = ind11 + 1
-                  
-                  !$acc loop seq
-                  do j = 1, ng29
-                     taug(ipt, k,ns29+j, jj) = colamt(ipt, k,2, jj)                                  &
-                     &        * ( fac00(ipt, k, jj)*absb(ind01,j) + fac10(ipt, k, jj)*absb(ind02,j)       &
-                     &        +   fac01(ipt, k, jj)*absb(ind11,j) + fac11(ipt, k, jj)*absb(ind12,j) )     &
-                     &        + colamt(ipt, k,1, jj) * absh2o(j) 
-                     taur(ipt, k,ns29+j, jj) = tauray
-                  enddo
-               end if
-            enddo
+               inds = indself(n, k)
+               indf = indfor (n, k)
+               indsp= inds + 1
+               indfp= indf + 1
+               
+               !$acc loop seq
+               do j = 1, ng29
+                  !taug(ipt, k,ns29+j, jj) = colamt(ipt, k,1, jj)                                  &
+                  !&        * ( (fac00(ipt, k, jj)*absa(ind01,j) + fac10(ipt, k, jj)*absa(ind02,j)      &
+                  !&        +    fac01(ipt, k, jj)*absa(ind11,j) + fac11(ipt, k, jj)*absa(ind12,j) )    &
+                  !&        +  selffac(ipt, k, jj) * (selfref(inds,j) + selffrac(ipt, k, jj)            &
+                  !&        *  (selfref(indsp,j) - selfref(inds,j)))                  &
+                  !&        +  forfac(ipt, k, jj) * (forref(indf,j) + forfrac(ipt, k, jj)               &
+                  !&        *  (forref(indfp,j) - forref(indf,j))))                   &
+                  !&        +  colamt(ipt, k,2, jj) * absco2(j)
+                  !taur(ipt, k,ns29+j, jj) = tauray
+                  small_taug(n, k,j + offset_ng) = colamt(n, k,1)                                  &
+                  &        * ( (fac00(n, k)*absa(ind01,j) + fac10(n, k)*absa(ind02,j)      &
+                  &        +    fac01(n, k)*absa(ind11,j) + fac11(n, k)*absa(ind12,j) )    &
+                  &        +  selffac(n, k) * (selfref(inds,j) + selffrac(n, k)            &
+                  &        *  (selfref(indsp,j) - selfref(inds,j)))                  &
+                  &        +  forfac(n, k) * (forref(indf,j) + forfrac(n, k)               &
+                  &        *  (forref(indfp,j) - forref(indf,j))))                   &
+                  &        +  colamt(n, k,2) * absco2(j)
+                  small_taur(n, k,j + offset_ng) = tauray
+               enddo
+            else
+               ind01 = id0(n, k,29) + 1
+               ind02 = ind01 + 1
+               ind11 = id1(n, k,29) + 1
+               ind12 = ind11 + 1
+               
+               !$acc loop seq
+               do j = 1, ng29
+                  !taug(ipt, k,ns29+j, jj) = colamt(ipt, k,2, jj)                                  &
+                  !&        * ( fac00(ipt, k, jj)*absb(ind01,j) + fac10(ipt, k, jj)*absb(ind02,j)       &
+                  !&        +   fac01(ipt, k, jj)*absb(ind11,j) + fac11(ipt, k, jj)*absb(ind12,j) )     &
+                  !&        + colamt(ipt, k,1, jj) * absh2o(j) 
+                  !taur(ipt, k,ns29+j, jj) = tauray
+                  small_taug(n, k,j + offset_ng) = colamt(n, k,2)                                  &
+                  &        * ( fac00(n, k)*absb(ind01,j) + fac10(n, k)*absb(ind02,j)       &
+                  &        +   fac01(n, k)*absb(ind11,j) + fac11(n, k)*absb(ind12,j) )     &
+                  &        + colamt(n, k,1) * absh2o(j) 
+                  small_taur(n, k,j + offset_ng) = tauray
+               enddo
+            end if
          end do
       end do
 
       return
 !...................................
       end subroutine taumol29
-!-----------------------------------
-!-----------------------------------
-      subroutine spcvrtc_atomic                                                &
-!...................................
-!  ---  inputs:
-     &     ( ssolar,cosz,sntz,albbm,albdf,sfluxzen,cldfrc,              &
-     &       cf1,cf0,taug,taur,tauae,ssaae,asyae,taucw,ssacw,asycw,     &
-     &       nlay, nlp1, ix, idxday, nday, async_id, fulljj,                                                &
-!  ---  outputs:
-     &       fxupc,fxdnc,fxup0,fxdn0,                                   &
-     &       ftoauc,ftoau0,ftoadc,fsfcuc,fsfcu0,fsfcdc,fsfcd0,          &
-     &       sfbmc,sfdfc,sfbm0,sfdf0,suvbfc,suvbf0                      &
-     &     )
-
-!  ===================  program usage description  ===================  !
-!                                                                       !
-!   purpose:  computes the shortwave radiative fluxes using two-stream  !
-!             method                                                    !
-!                                                                       !
-!   subprograms called:  swflux                                         !
-!                                                                       !
-!  ====================  defination of variables  ====================  !
-!                                                                       !
-!  inputs:                                                        size  !
-!    ssolar  - real, incoming solar flux at top                    1    !
-!    cosz    - real, cosine solar zenith angle                     1    !
-!    sntz    - real, secant solar zenith angle                     1    !
-!    albbm   - real, surface albedo for direct beam radiation      2    !
-!    albdf   - real, surface albedo for diffused radiation         2    !
-!    sfluxzen- real, spectral distribution of incoming solar flux ngptsw!
-!    cldfrc  - real, layer cloud fraction                         nlay  !
-!    cf1     - real, >0: cloudy sky, otherwise: clear sky          1    !
-!    cf0     - real, =1-cf1                                        1    !
-!    taug    - real, spectral optical depth for gases        nlay*ngptsw!
-!    taur    - real, optical depth for rayleigh scattering   nlay*ngptsw!
-!    tauae   - real, aerosols optical depth                  nlay*nbdsw !
-!    ssaae   - real, aerosols single scattering albedo       nlay*nbdsw !
-!    asyae   - real, aerosols asymmetry factor               nlay*nbdsw !
-!    taucw   - real, weighted cloud optical depth            nlay*nbdsw !
-!    ssacw   - real, weighted cloud single scat albedo       nlay*nbdsw !
-!    asycw   - real, weighted cloud asymmetry factor         nlay*nbdsw !
-!    nlay,nlp1 - integer,  number of layers/levels                 1    !
-!                                                                       !
-!  output variables:                                                    !
-!    fxupc   - real, tot sky upward flux                     nlp1*nbdsw !
-!    fxdnc   - real, tot sky downward flux                   nlp1*nbdsw !
-!    fxup0   - real, clr sky upward flux                     nlp1*nbdsw !
-!    fxdn0   - real, clr sky downward flux                   nlp1*nbdsw !
-!    ftoauc  - real, tot sky toa upwd flux                         1    !
-!    ftoau0  - real, clr sky toa upwd flux                         1    !
-!    ftoadc  - real, toa downward (incoming) solar flux            1    !
-!    fsfcuc  - real, tot sky sfc upwd flux                         1    !
-!    fsfcu0  - real, clr sky sfc upwd flux                         1    !
-!    fsfcdc  - real, tot sky sfc dnwd flux                         1    !
-!    fsfcd0  - real, clr sky sfc dnwd flux                         1    !
-!    sfbmc   - real, tot sky sfc dnwd beam flux (nir/uv+vis)       2    !
-!    sfdfc   - real, tot sky sfc dnwd diff flux (nir/uv+vis)       2    !
-!    sfbm0   - real, clr sky sfc dnwd beam flux (nir/uv+vis)       2    !
-!    sfdf0   - real, clr sky sfc dnwd diff flux (nir/uv+vis)       2    !
-!    suvbfc  - real, tot sky sfc dnwd uv-b flux                    1    !
-!    suvbf0  - real, clr sky sfc dnwd uv-b flux                    1    !
-!                                                                       !
-!  internal variables:                                                  !
-!    zrefb   - real, direct beam reflectivity for clear/cloudy    nlp1  !
-!    zrefd   - real, diffuse reflectivity for clear/cloudy        nlp1  !
-!    ztrab   - real, direct beam transmissivity for clear/cloudy  nlp1  !
-!    ztrad   - real, diffuse transmissivity for clear/cloudy      nlp1  !
-!    zldbt   - real, layer beam transmittance for clear/cloudy    nlp1  !
-!    ztdbt   - real, lev total beam transmittance for clr/cld     nlp1  !
-!                                                                       !
-!  control parameters in module "physpara"                              !
-!    iswmode - control flag for 2-stream transfer schemes               !
-!              = 1 delta-eddington    (joseph et al., 1976)             !
-!              = 2 pifm               (zdunkowski et al., 1980)         !
-!              = 3 discrete ordinates (liou, 1973)                      !
-!                                                                       !
-!  *******************************************************************  !
-!  original code description                                            !
-!                                                                       !
-!  method:                                                              !
-!  -------                                                              !
-!     standard delta-eddington, p.i.f.m., or d.o.m. layer calculations. !
-!     kmodts  = 1 eddington (joseph et al., 1976)                       !
-!             = 2 pifm (zdunkowski et al., 1980)                        !
-!             = 3 discrete ordinates (liou, 1973)                       !
-!                                                                       !
-!  modifications:                                                       !
-!  --------------                                                       !
-!   original: h. barker                                                 !
-!   revision: merge with rrtmg_sw: j.-j.morcrette, ecmwf, feb 2003      !
-!   revision: add adjustment for earth/sun distance:mjiacono,aer,oct2003!
-!   revision: bug fix for use of palbp and palbd: mjiacono, aer, nov2003!
-!   revision: bug fix to apply delta scaling to clear sky: aer, dec2004 !
-!   revision: code modified so that delta scaling is not done in cloudy !
-!             profiles if routine cldprop is used; delta scaling can be !
-!             applied by swithcing code below if cldprop is not used to !
-!             get cloud properties. aer, jan 2005                       !
-!   revision: uniform formatting for rrtmg: mjiacono, aer, jul 2006     !
-!   revision: use exponential lookup table for transmittance: mjiacono, !
-!             aer, aug 2007                                             !
-!                                                                       !
-!  *******************************************************************  !
-!  ======================  end of description block  =================  !
-
-!  ---  constant parameters:
-      real (kind=kind_phys), parameter :: zcrit = 0.9999995 ! thresold for conservative scattering
-      real (kind=kind_phys), parameter :: zsr3  = sqrt(3.0)
-      real (kind=kind_phys), parameter :: od_lo = 0.06
-      real (kind=kind_phys), parameter :: eps1  = 1.0e-8
-      integer, parameter :: small_factor = 112
-      integer, parameter :: small_ngptsw = int(ngptsw/small_factor)
-
-!  ---  inputs:
-      integer, intent(in) :: nlay, nlp1, ix, idxday(ix, fulljj), nday(fulljj), fulljj
-
-      real (kind=kind_phys), dimension(ix, nlay,ngptsw, fulljj), intent(in) ::      &
-     &       taug, taur
-      real (kind=kind_phys), dimension(ix, nlay,nbdsw, fulljj),  intent(in) ::      &
-     &       taucw, ssacw, asycw, tauae, ssaae, asyae
-
-      real (kind=kind_phys), dimension(ix, ngptsw, fulljj), intent(in) :: sfluxzen
-      real (kind=kind_phys), dimension(ix, nlay, fulljj),   intent(in) :: cldfrc
-
-      real (kind=kind_phys), dimension(ix, 2, fulljj),  intent(in) :: albbm, albdf
-
-      real (kind=kind_phys), dimension(ix, fulljj), intent(in) :: cosz, sntz, &
-         cf1, cf0, ssolar
-
-!  ---  outputs:
-      real (kind=kind_phys), dimension(ix, nlp1,nbdsw, fulljj), intent(out) ::      &
-     &       fxupc, fxdnc, fxup0, fxdn0
-
-      real (kind=kind_phys), dimension(ix, 2, fulljj), intent(out) :: sfbmc, sfdfc, &
-     &       sfbm0, sfdf0
-
-      real (kind=kind_phys), dimension(ix, fulljj), intent(out) :: suvbfc, suvbf0, ftoadc,     &
-     &       ftoauc, ftoau0, fsfcuc, fsfcu0, fsfcdc, fsfcd0
-
-!  ---  locals:
-      real (kind=kind_phys), dimension(ix, nlp1, small_ngptsw, fulljj) :: zrefb, zrefd, ztrab,    &
-     &       ztrad, ztdbt, zldbt
-
-      real (kind=kind_phys) :: ztau1, zssa1, zasy1, ztau0, zssa0,       &
-     &       zasy0, zasy3, zssaw, zasyw, zgam1, zgam2, zgam3, zgam4,    &
-     &       zc0, zc1, za1, za2, &
-     &       zrk, zrk2, zrp, zrp1, zrm1, zb1, zb2, &
-     &       zrpp, zrkg1, zrkg3, zrkg4, zexp1, zexm1, zexp2, zexm2,     &
-     &       zexp3, zexp4, zden1, ze1r45, ftind, zrefb1,        &
-     &       zrefd1, ztrab1, ztrad1, zr1, zr2, zr3, zr4, zr5, ztdbt0r,    &
-     &       zt1, zt2, zt3, zf1, zf2, zldbt0, zfu, zfd, zrupbr, zrupbr1, zrupdr, zrupdr1
-
-      real (kind=kind_phys), dimension(ix, small_ngptsw, fulljj) :: ztdbt0, zsolar, zfd0
-
-      integer :: ib, ibd, jb, jg, k, kp, itind, ipt, jj, j1, j2, jg2
-      real (kind=kind_phys), dimension(ix, nlp1, small_ngptsw, fulljj) :: zrdnd, ztdn
-      integer :: async_id
-
-!
-!===> ...  begin here
-!
-
-      !$acc data create(zrefb, zrefd, ztrab, ztrad, ztdbt, zldbt, zfd0, &
-      !$acc&     ztdbt0, zsolar, zrdnd, ztdn) async(async_id)
-!  --- ... initialization of output fluxes
-      !$acc parallel loop gang collapse(3) async(async_id)
-      do jj = 1, fulljj
-         do ib = 1, nbdsw
-            do k = 1, nlp1
-               !$acc loop vector
-               do ipt = 1, nday(jj) ! lab_do_ipt
-                  fxdnc(ipt, k,ib, jj) = f_zero
-                  fxupc(ipt, k,ib, jj) = f_zero
-                  fxdn0(ipt, k,ib, jj) = f_zero
-                  fxup0(ipt, k,ib, jj) = f_zero
-               enddo
-            enddo
-         end do
-      end do
-      !$acc parallel loop collapse(2) async(async_id)
-      do jj = 1, fulljj
-         do ipt = 1, ix
-            if (ipt .le. nday(jj)) then ! lab_do_ipt
-               ftoadc(ipt, jj) = f_zero
-               ftoauc(ipt, jj) = f_zero
-               ftoau0(ipt, jj) = f_zero
-               fsfcuc(ipt, jj) = f_zero
-               fsfcu0(ipt, jj) = f_zero
-               fsfcdc(ipt, jj) = f_zero
-               fsfcd0(ipt, jj) = f_zero
-
-               !! --- ...  uv-b surface downward fluxes
-               suvbfc(ipt, jj)  = f_zero
-               suvbf0(ipt, jj)  = f_zero
-
-               !! --- ...  output surface flux components
-               sfbmc(ipt, 1, jj) = f_zero
-               sfbmc(ipt, 2, jj) = f_zero
-               sfdfc(ipt, 1, jj) = f_zero
-               sfdfc(ipt, 2, jj) = f_zero
-               sfbm0(ipt, 1, jj) = f_zero
-               sfbm0(ipt, 2, jj) = f_zero
-               sfdf0(ipt, 1, jj) = f_zero
-               sfdf0(ipt, 2, jj) = f_zero
-            end if
-         end do
-      end do
-
-            !  --- ...  loop over all g-points in each band
-   do j2 = 1, small_factor
-      !$acc parallel loop gang collapse(2) private(jg2, jb, ib, ibd) async(async_id)
-      do jj = 1, fulljj
-         do jg = 1, small_ngptsw ! lab_do_jg
-            jg2 = jg + (j2-1)*small_ngptsw
-            jb = ngb(jg2)
-            ib = jb + 1 - nblow
-            ibd = idxsfc(jb)
-            !$acc loop vector private(j1, kp, ztau0, zssa0, zasy0, zssaw, zasyw, &
-            !$acc&     za1, za2, ztau1, zssa1, zasy1, zasy3, zgam1, zgam2, zgam3, &
-            !$acc&     zgam4, zb1, zb2, ftind, itind, zrk, zrk2, zrp, zrp1, zrm1, &
-            !$acc&     zrpp, zrkg1, zrkg3, zrkg4, zr1, zr2, zr3, zr4, zr5, zt1, &
-            !$acc&     zt2, zt3, zexm1, zexp1, zexm2, zexp2, ze1r45, zden1, zexp3, zexp4)
-            do ipt = 1, nday(jj) ! lab_do_ipt
-
-               zsolar(ipt, jg, jj) = ssolar(ipt, jj) * sfluxzen(ipt, jg2, jj)
-
-               !  --- ...  set up toa direct beam and surface values (beam and diff)
-
-               ztdbt(ipt, nlp1, jg, jj) = f_one
-
-               zldbt(ipt, 1, jg, jj) = f_zero
-               if (ibd /= 0) then
-                  zrefb(ipt, 1, jg, jj) = albbm(ipt, ibd, jj)
-                  zrefd(ipt, 1, jg, jj) = albdf(ipt, ibd, jj)
-               else
-                  zrefb(ipt, 1, jg, jj) = 0.5 * (albbm(ipt, 1, jj) + albbm(ipt, 2, jj))
-                  zrefd(ipt, 1, jg, jj) = 0.5 * (albdf(ipt, 1, jj) + albdf(ipt, 2, jj))
-               endif
-               ztrab(ipt, 1, jg, jj) = f_zero
-               ztrad(ipt, 1, jg, jj) = f_zero
-
-            !  --- ...  compute clear-sky optical parameters, layer reflectance and transmittance
-               j1 = idxday(ipt, jj)
-               ztdbt0r = f_one
-               !$acc loop seq
-               do k = nlay, 1, -1
-                  kp = k + 1
-
-                  ztau0 = max( ftiny, taur(ipt, k,jg2, jj)+taug(ipt, k,jg2, jj)+tauae(ipt, k,ib, jj) )
-                  zssa0 = taur(ipt, k,jg2, jj) + tauae(ipt, k,ib, jj)*ssaae(ipt, k,ib, jj)
-                  zasy0 = asyae(ipt, k,ib, jj)*ssaae(ipt, k,ib, jj)*tauae(ipt, k,ib, jj)
-                  zssaw = min( oneminus, zssa0 / ztau0 )
-                  zasyw = zasy0 / max( ftiny, zssa0 )
-
-
-                  !  --- ...  delta scaling for clear-sky condition
-                  za1 = zasyw * zasyw
-                  za2 = zssaw * za1
-
-                  ztau1 = (f_one - za2) * ztau0
-                  zssa1 = (zssaw - za2) / (f_one - za2)
-                  !org      zasy1 = (zasyw - za1) / (f_one - za1)   ! this line is replaced by the next
-                  zasy1 = zasyw / (f_one + zasyw)         ! to reduce truncation error
-                  zasy3 = 0.75 * zasy1
-
-                  !  --- ...  general two-stream expressions
-                  if ( iswmode == 1 ) then
-                     zgam1 = 1.75 - zssa1 * (f_one + zasy3)
-                     zgam2 =-0.25 + zssa1 * (f_one - zasy3)
-                     zgam3 = 0.5  - zasy3 * cosz(j1, jj)
-                  elseif ( iswmode == 2 ) then               ! pifm
-                     zgam1 = 2.0 - zssa1 * (1.25 + zasy3)
-                     zgam2 = 0.75* zssa1 * (f_one- zasy1)
-                     zgam3 = 0.5 - zasy3 * cosz(j1, jj)
-                  elseif ( iswmode == 3 ) then               ! discrete ordinates
-                     zgam1 = zsr3 * (2.0 - zssa1 * (1.0 + zasy1)) * 0.5
-                     zgam2 = zsr3 * zssa1 * (1.0 - zasy1) * 0.5
-                     zgam3 = (1.0 - zsr3 * zasy1 * cosz(j1, jj)) * 0.5
-                  endif
-                  zgam4 = f_one - zgam3
-
-                  !  --- ...  compute homogeneous reflectance and transmittance
-
-                  if ( zssaw >= zcrit ) then    ! for conservative scattering
-                     za1 = zgam1 * cosz(j1, jj) - zgam3
-                     za2 = zgam1 * ztau1
-
-                     !  --- ...  use exponential lookup table for transmittance, or expansion
-                     !           of exponential for low optical depth
-
-                     zb1 = min ( ztau1*sntz(ipt, jj) , 500.0 )
-                     if ( zb1 <= od_lo ) then
-                        zb2 = f_one - zb1 + 0.5*zb1*zb1
-                     else
-                        ftind = zb1 / (bpade + zb1)
-                        itind = ftind*ntbmx + 0.5
-                        zb2 = exp_tbl(itind)
-                     endif
-
-                     !      ...  collimated beam
-                     zrefb(ipt, kp, jg, jj) = max(f_zero, min(f_one,                          &
-                     &                  (za2 - za1*(f_one - zb2))/(f_one + za2) ))
-                     ztrab(ipt, kp, jg, jj) = max(f_zero, min(f_one, f_one-zrefb(ipt, kp, jg, jj) ))
-
-                     !      ...  isotropic incidence
-                     zrefd(ipt, kp, jg, jj) = max(f_zero, min(f_one, za2/(f_one + za2) ))
-                     ztrad(ipt, kp, jg, jj) = max(f_zero, min(f_one, f_one-zrefd(ipt, kp, jg, jj) ))
-
-                  else                          ! for non-conservative scattering
-                     za1 = zgam1*zgam4 + zgam2*zgam3
-                     za2 = zgam1*zgam3 + zgam2*zgam4
-                     zrk = sqrt ( (zgam1 - zgam2) * (zgam1 + zgam2) )
-                     zrk2= 2.0 * zrk
-
-                     zrp  = zrk * cosz(j1, jj)
-                     zrp1 = f_one + zrp
-                     zrm1 = f_one - zrp
-                     zrpp = f_one - zrp*zrp
-                     zrkg1= zrk + zgam1
-                     zrkg3= zrk * zgam3
-                     zrkg4= zrk * zgam4
-
-                     zr1  = zrm1 * (za2 + zrkg3)
-                     zr2  = zrp1 * (za2 - zrkg3)
-                     zr3  = zrk2 * (zgam3 - za2*cosz(j1, jj))
-                     zr4  = zrpp * zrkg1
-                     zr5  = zrpp * (zrk - zgam1)
-
-                     zt1  = zrp1 * (za1 + zrkg4)
-                     zt2  = zrm1 * (za1 - zrkg4)
-                     zt3  = zrk2 * (zgam4 + za1*cosz(j1, jj))
-
-                     !  --- ...  use exponential lookup table for transmittance, or expansion
-                     !           of exponential for low optical depth
-
-                     zb1 = min ( zrk*ztau1, 500.0 )
-                     if ( zb1 <= od_lo ) then
-                        zexm1 = f_one - zb1 + 0.5*zb1*zb1
-                     else
-                        ftind = zb1 / (bpade + zb1)
-                        itind = ftind*ntbmx + 0.5
-                        zexm1 = exp_tbl(itind)
-                     endif
-                     zexp1 = f_one / zexm1
-
-                     zb2 = min ( sntz(ipt, jj)*ztau1, 500.0 )
-                     if ( zb2 <= od_lo ) then
-                        zexm2 = f_one - zb2 + 0.5*zb2*zb2
-                     else
-                        ftind = zb2 / (bpade + zb2)
-                        itind = ftind*ntbmx + 0.5
-                        zexm2 = exp_tbl(itind)
-                     endif
-                     zexp2 = f_one / zexm2
-                     ze1r45 = zr4*zexp1 + zr5*zexm1
-
-                     !      ...  collimated beam
-                     if (ze1r45>=-eps1 .and. ze1r45<=eps1) then
-                        zrefb(ipt, kp, jg, jj) = eps1
-                        ztrab(ipt, kp, jg, jj) = zexm2
-                     else
-                        zden1 = zssa1 / ze1r45
-                        zrefb(ipt, kp, jg, jj) = max(f_zero, min(f_one,                        &
-                        &                    (zr1*zexp1 - zr2*zexm1 - zr3*zexm2)*zden1 ))
-                        ztrab(ipt, kp, jg, jj) = max(f_zero, min(f_one, zexm2*(f_one           &
-                        &                  - (zt1*zexp1 - zt2*zexm1 - zt3*zexp2)*zden1) ))
-                     endif
-
-                     !      ...  diffuse beam
-                     zden1 = zr4 / (ze1r45 * zrkg1)
-                     zrefd(ipt, kp, jg, jj) = max(f_zero, min(f_one,                          &
-                     &                  zgam2*(zexp1 - zexm1)*zden1 ))
-                     ztrad(ipt, kp, jg, jj) = max(f_zero, min(f_one, zrk2*zden1 ))
-                  endif    ! end if_zssaw_block
-
-                  !  --- ...  direct beam transmittance. use exponential lookup table
-                  !           for transmittance, or expansion of exponential for low
-                  !           optical depth
-
-                  zr1 = ztau1 * sntz(ipt, jj)
-                  if ( zr1 <= od_lo ) then
-                     zexp3 = f_one - zr1 + 0.5*zr1*zr1
-                  else
-                     ftind = zr1 / (bpade + zr1)
-                     itind = max(0, min(ntbmx, int(0.5+ntbmx*ftind) ))
-                     zexp3 = exp_tbl(itind)
-                  endif
-
-                  ztdbt(ipt, k, jg, jj)  = zexp3 * ztdbt(ipt, kp, jg, jj)
-                  zldbt(ipt, kp, jg, jj) = zexp3
-
-                  !  --- ...  pre-delta-scaling clear and cloudy direct beam transmittance
-                  !           (must use 'orig', unscaled cloud optical depth)
-
-                  zr1 = ztau0 * sntz(ipt, jj)
-                  if ( zr1 <= od_lo ) then
-                     zexp4 = f_one - zr1 + 0.5*zr1*zr1
-                  else
-                     ftind = zr1 / (bpade + zr1)
-                     itind = max(0, min(ntbmx, int(0.5+ntbmx*ftind) ))
-                     zexp4 = exp_tbl(itind)
-                  endif
-
-                  ztdbt0r = zexp4 * ztdbt0r
-               enddo    ! end do_k_loop
-               ztdbt0(ipt, jg, jj) = ztdbt0r
-            end do
-         end do
-      end do
-               
-               ! call swflux
-               !  --- ...  link lowest layer with surface
-      !$acc parallel loop gang collapse(2) private(jg2, jb, ib, ibd) async(async_id)
-      do jj = 1, fulljj
-         do jg = 1, small_ngptsw ! lab_do_jg
-            jg2 = jg + (j2-1)*small_ngptsw
-            jb = ngb(jg2)
-            ib = jb + 1 - nblow
-            ibd = idxsfc(jb)
-            !$acc loop vector private(kp, zden1, zfu, zfd, zrupbr, zrupbr1, zrupdr, zrupdr1)
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               !  --- ...  upper boundary conditions
-
-               ztdn (ipt, nlp1, jg, jj) = f_one
-               zrdnd(ipt, nlp1, jg, jj) = f_zero
-               ztdn (ipt, nlay, jg, jj) = ztrab(ipt, nlp1, jg, jj)
-               zrdnd(ipt, nlay, jg, jj) = zrefd(ipt, nlp1, jg, jj)
-
-               !  --- ...  pass from top to bottom
-               !$acc loop seq
-               do k = nlay, 2, -1
-                  zden1 = f_one / (f_one - zrefd(ipt, k, jg, jj)*zrdnd(ipt, k, jg, jj))
-                  ztdn (ipt, k-1, jg, jj) = ztdbt(ipt, k, jg, jj)*ztrab(ipt, k, jg, jj) &
-                                    + ( ztrad(ipt, k, jg, jj) *                 &
-                  &                 ( (ztdn(ipt, k, jg, jj) - ztdbt(ipt, k, jg, jj)) + ztdbt(ipt, k, jg, jj) *              &
-                  &                 zrefb(ipt, k, jg, jj)*zrdnd(ipt, k, jg, jj) )) * zden1
-                  zrdnd(ipt, k-1, jg, jj) = zrefd(ipt, k, jg, jj) + ztrad(ipt, k, jg, jj) &
-                                   *ztrad(ipt, k, jg, jj)*zrdnd(ipt, k, jg, jj)*zden1
-               enddo
-               
-               zrupbr = zrefb(ipt, 1, jg, jj)        ! direct beam
-               zrupdr = zrefd(ipt, 1, jg, jj)        ! diffused
-               !  --- ...  up and down-welling fluxes at levels
-               zden1 = f_one / (f_one - zrdnd(ipt, 1, jg, jj)*zrupdr)
-               zfu = ( ztdbt(ipt, 1, jg, jj)*zrupbr +                                &
-               &             (ztdn(ipt, 1, jg, jj) - ztdbt(ipt, 1, jg, jj)) &
-                              *zrupdr ) * zden1
-               zfd = ztdbt(ipt, 1, jg, jj) + ( ztdn(ipt, 1, jg, jj) &
-                              - ztdbt(ipt, 1, jg, jj) +                    &
-               &             ztdbt(ipt, 1, jg, jj)*zrupbr &
-                              *zrdnd(ipt, 1, jg, jj) ) * zden1
-               ! end call swflux
-               !  --- ...  compute upward and downward fluxes at levels
-               !$acc atomic
-               fxup0(ipt, 1,ib, jj) = fxup0(ipt, 1,ib, jj) + zsolar(ipt, jg, jj)*zfu
-               !$acc atomic
-               fxdn0(ipt, 1,ib, jj) = fxdn0(ipt, 1,ib, jj) + zsolar(ipt, jg, jj)*zfd
-               zfd0(ipt, jg, jj) = zfd
-               !  --- ...  pass from bottom to top
-               !$acc loop seq
-               do k = 1, nlay
-                  kp = k + 1
-
-                  zden1 = f_one / ( f_one - zrupdr*zrefd(ipt, kp, jg, jj) )
-                  zrupbr1 = zrefb(ipt, kp, jg, jj) + ( ztrad(ipt, kp, jg, jj) *                         &
-                  &                ( (ztrab(ipt, kp, jg, jj) - zldbt(ipt, kp, jg, jj)) &
-                                   *zrupdr +              &
-                  &                zldbt(ipt, kp, jg, jj)*zrupbr) ) * zden1
-                  zrupdr1 = zrefd(ipt, kp, jg, jj) + ztrad(ipt, kp, jg, jj) &
-                                   *ztrad(ipt, kp, jg, jj)*zrupdr*zden1
-                  
-                  zden1 = f_one / (f_one - zrdnd(ipt, kp, jg, jj)*zrupdr1)
-                  zfu = ( ztdbt(ipt, kp, jg, jj)*zrupbr1 +                                &
-                  &             (ztdn(ipt, kp, jg, jj) - ztdbt(ipt, kp, jg, jj)) &
-                                *zrupdr1 ) * zden1
-                  zfd = ztdbt(ipt, kp, jg, jj) + ( ztdn(ipt, kp, jg, jj) &
-                                - ztdbt(ipt, kp, jg, jj) +                    &
-                  &             ztdbt(ipt, kp, jg, jj)*zrupbr1 &
-                                *zrdnd(ipt, kp, jg, jj) ) * zden1
-                  ! end call swflux
-                  !  --- ...  compute upward and downward fluxes at levels
-                  !$acc atomic
-                  fxup0(ipt, kp,ib, jj) = fxup0(ipt, kp,ib, jj) + zsolar(ipt, jg, jj)*zfu
-                  !$acc atomic
-                  fxdn0(ipt, kp,ib, jj) = fxdn0(ipt, kp,ib, jj) + zsolar(ipt, jg, jj)*zfd
-                  zrupbr = zrupbr1
-                  zrupdr = zrupdr1
-               end do
-            end do
-         end do
-      end do
-
-               !! --- ...  surface downward beam/diffused flux components
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
-         do jg = 1, small_ngptsw ! lab_do_jg
-            !$acc loop vector private(jg2, jb, ib, ibd, zf1, zf2, zb1, zb2)
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               jg2 = jg + (j2-1)*small_ngptsw
-               jb = ngb(jg2)
-               ib = jb + 1 - nblow
-               ibd = idxsfc(jb)
-               zb1 = zsolar(ipt, jg, jj)*ztdbt0(ipt, jg, jj)
-               zb2 = zsolar(ipt, jg, jj)*(zfd0(ipt, jg, jj) - ztdbt0(ipt, jg, jj))
-               if (ibd /= 0) then
-                  !$acc atomic
-                  sfbm0(ipt, ibd, jj) = sfbm0(ipt, ibd, jj) + zb1
-                  !$acc atomic
-                  sfdf0(ipt, ibd, jj) = sfdf0(ipt, ibd, jj) + zb2
-               else
-                  zf1 = 0.5 * zb1
-                  zf2 = 0.5 * zb2
-                  !$acc atomic
-                  sfbm0(ipt, 1, jj) = sfbm0(ipt, 1, jj) + zf1
-                  !$acc atomic
-                  sfdf0(ipt, 1, jj) = sfdf0(ipt, 1, jj) + zf2
-                  !$acc atomic
-                  sfbm0(ipt, 2, jj) = sfbm0(ipt, 2, jj) + zf1
-                  !$acc atomic
-                  sfdf0(ipt, 2, jj) = sfdf0(ipt, 2, jj) + zf2
-               endif
-               !       sfbm0(ibd) = sfbm0(ibd) + zsolar*ztdbt0
-               !       sfdf0(ibd) = sfdf0(ibd) + zsolar*(zfd(1) - ztdbt0)
-            end do
-         end do
-      end do
-
-               !  --- ...  compute total sky optical parameters, layer reflectance and transmittance
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
-         do jg = 1, small_ngptsw ! lab_do_jg
-            !$acc loop vector private(zb1, zb2, zf1, zf2, kp, zc0, zc1, ztau0, &
-            !$acc&     zssa0, zasy0, zldbt0, ftind, itind, zssaw, zasyw, za1, za2, &
-            !$acc&     ztau1, zssa1, zasy1, zasy3, zgam1, zgam2, zgam3, zgam4, &
-            !$acc&     zrefb1, zrefd1, ztrab1, ztrad1, zrk, zrk2, zrp, zrp1, zrm1, &
-            !$acc&     zrpp, zrkg1, zrkg3, zrkg4, zr1, zr2, zr3, zr4, zr5, &
-            !$acc&     zt1, zt2, zt3, zexm1, zexp1, zexm2, zexp2, ze1r45, zden1, &
-            !$acc&     zexp3, zexp4, j1, jg2, jb, ib, ibd, ztdbt0r)
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               jg2 = jg + (j2-1)*small_ngptsw
-               jb = ngb(jg2)
-               ib = jb + 1 - nblow
-               ibd = idxsfc(jb)
-               j1 = idxday(ipt, jj)
-               if ( cf1(ipt, jj) > eps ) then
-
-                  !  --- ...  set up toa direct beam and surface values (beam and diff)
-                  ztdbt0r = f_one
-                  zldbt(ipt, 1, jg, jj) = f_zero
-                  !$acc loop seq
-                  do k = nlay, 1, -1
-                     kp = k + 1
-                     zc0 = f_one - cldfrc(ipt, k, jj)
-                     zc1 = cldfrc(ipt, k, jj)
-
-                     !  --- ...  saving clear-sky quantities for later total-sky usage
-                     ztau0 = max( ftiny, taur(ipt, k,jg2, jj)+taug(ipt, k,jg2, jj)+tauae(ipt, k,ib, jj) )
-                     zssa0 = taur(ipt, k,jg2, jj) + tauae(ipt, k,ib, jj)*ssaae(ipt, k,ib, jj)
-                     zasy0 = asyae(ipt, k,ib, jj)*ssaae(ipt, k,ib, jj)*tauae(ipt, k,ib, jj)
-                     zr1 = ztau0 * sntz(ipt, jj)
-                     if ( zr1 <= od_lo ) then
-                        zldbt0 = f_one - zr1 + 0.5*zr1*zr1
-                     else
-                        ftind = zr1 / (bpade + zr1)
-                        itind = max(0, min(ntbmx, int(0.5+ntbmx*ftind) ))
-                        zldbt0 = exp_tbl(itind)
-                     endif
-                     
-                     if ( zc1 > ftiny ) then          ! it is a cloudy-layer
-                        ztau0 = ztau0 + taucw(ipt, k,ib, jj)
-                        zssa0 = zssa0 + ssacw(ipt, k,ib, jj)
-                        zasy0 = zasy0 + asycw(ipt, k,ib, jj)
-                        zssaw = min(oneminus, zssa0 / ztau0)
-                        zasyw = zasy0 / max(ftiny, zssa0)
-
-                        !  --- ...  delta scaling for total-sky condition
-                        za1 = zasyw * zasyw
-                        za2 = zssaw * za1
-
-                        ztau1 = (f_one - za2) * ztau0
-                        zssa1 = (zssaw - za2) / (f_one - za2)
-                        !org          zasy1 = (zasyw - za1) / (f_one - za1)
-                        zasy1 = zasyw / (f_one + zasyw)
-                        zasy3 = 0.75 * zasy1
-
-                        !  --- ...  general two-stream expressions
-                        if ( iswmode == 1 ) then
-                           zgam1 = 1.75 - zssa1 * (f_one + zasy3)
-                           zgam2 =-0.25 + zssa1 * (f_one - zasy3)
-                           zgam3 = 0.5  - zasy3 * cosz(j1, jj)
-                        elseif ( iswmode == 2 ) then               ! pifm
-                           zgam1 = 2.0 - zssa1 * (1.25 + zasy3)
-                           zgam2 = 0.75* zssa1 * (f_one- zasy1)
-                           zgam3 = 0.5 - zasy3 * cosz(j1, jj)
-                        elseif ( iswmode == 3 ) then               ! discrete ordinates
-                           zgam1 = zsr3 * (2.0 - zssa1 * (1.0 + zasy1)) * 0.5
-                           zgam2 = zsr3 * zssa1 * (1.0 - zasy1) * 0.5
-                           zgam3 = (1.0 - zsr3 * zasy1 * cosz(j1, jj)) * 0.5
-                        endif
-                        zgam4 = f_one - zgam3
-
-                        zrefb1 = zrefb(ipt, kp, jg, jj)
-                        zrefd1 = zrefd(ipt, kp, jg, jj)
-                        ztrab1 = ztrab(ipt, kp, jg, jj)
-                        ztrad1 = ztrad(ipt, kp, jg, jj)
-
-                        !  --- ...  compute homogeneous reflectance and transmittance
-
-                        if ( zssaw >= zcrit ) then    ! for conservative scattering
-                           za1 = zgam1 * cosz(j1, jj) - zgam3
-                           za2 = zgam1 * ztau1
-
-                           !  --- ...  use exponential lookup table for transmittance, or expansion
-                           !           of exponential for low optical depth
-
-                           zb1 = min ( ztau1*sntz(ipt, jj) , 500.0 )
-                           if ( zb1 <= od_lo ) then
-                              zb2 = f_one - zb1 + 0.5*zb1*zb1
-                           else
-                              ftind = zb1 / (bpade + zb1)
-                              itind = ftind*ntbmx + 0.5
-                              zb2 = exp_tbl(itind)
-                           endif
-
-                           !      ...  collimated beam
-                           zrefb(ipt, kp, jg, jj) = max(f_zero, min(f_one,                      &
-                           &                      (za2 - za1*(f_one - zb2))/(f_one + za2) ))
-                           ztrab(ipt, kp, jg, jj) = max(f_zero, min(f_one, f_one-zrefb(ipt, kp, jg, jj)))
-
-                           !      ...  isotropic incidence
-                           zrefd(ipt, kp, jg, jj) = max(f_zero, min(f_one, za2 / (f_one+za2) ))
-                           ztrad(ipt, kp, jg, jj) = max(f_zero, min(f_one, f_one - zrefd(ipt, kp, jg, jj) ))
-
-                        else                          ! for non-conservative scattering
-                           za1 = zgam1*zgam4 + zgam2*zgam3
-                           za2 = zgam1*zgam3 + zgam2*zgam4
-                           zrk = sqrt ( (zgam1 - zgam2) * (zgam1 + zgam2) )
-                           zrk2= 2.0 * zrk
-
-                           zrp  = zrk * cosz(j1, jj)
-                           zrp1 = f_one + zrp
-                           zrm1 = f_one - zrp
-                           zrpp = f_one - zrp*zrp
-                           zrkg1= zrk + zgam1
-                           zrkg3= zrk * zgam3
-                           zrkg4= zrk * zgam4
-
-                           zr1  = zrm1 * (za2 + zrkg3)
-                           zr2  = zrp1 * (za2 - zrkg3)
-                           zr3  = zrk2 * (zgam3 - za2*cosz(j1, jj))
-                           zr4  = zrpp * zrkg1
-                           zr5  = zrpp * (zrk - zgam1)
-
-                           zt1  = zrp1 * (za1 + zrkg4)
-                           zt2  = zrm1 * (za1 - zrkg4)
-                           zt3  = zrk2 * (zgam4 + za1*cosz(j1, jj))
-
-                           !  --- ...  use exponential lookup table for transmittance, or expansion
-                           !           of exponential for low optical depth
-
-                           zb1 = min ( zrk*ztau1, 500.0 )
-                           if ( zb1 <= od_lo ) then
-                              zexm1 = f_one - zb1 + 0.5*zb1*zb1
-                           else
-                              ftind = zb1 / (bpade + zb1)
-                              itind = ftind*ntbmx + 0.5
-                              zexm1 = exp_tbl(itind)
-                           endif
-                           zexp1 = f_one / zexm1
-
-                           zb2 = min ( ztau1*sntz(ipt, jj), 500.0 )
-                           if ( zb2 <= od_lo ) then
-                              zexm2 = f_one - zb2 + 0.5*zb2*zb2
-                           else
-                              ftind = zb2 / (bpade + zb2)
-                              itind = ftind*ntbmx + 0.5
-                              zexm2 = exp_tbl(itind)
-                           endif
-                           zexp2 = f_one / zexm2
-                           ze1r45 = zr4*zexp1 + zr5*zexm1
-
-                           !      ...  collimated beam
-                           if ( ze1r45>=-eps1 .and. ze1r45<=eps1 ) then
-                              zrefb(ipt, kp, jg, jj) = eps1
-                              ztrab(ipt, kp, jg, jj) = zexm2
-                           else
-                              zden1 = zssa1 / ze1r45
-                              zrefb(ipt, kp, jg, jj) = max(f_zero, min(f_one,                    &
-                              &                        (zr1*zexp1-zr2*zexm1-zr3*zexm2)*zden1 ))
-                              ztrab(ipt, kp, jg, jj) = max(f_zero, min(f_one, zexm2*(f_one -     &
-                              &                        (zt1*zexp1-zt2*zexm1-zt3*zexp2)*zden1) ))
-                           endif
-
-                           !      ...  diffuse beam
-                           zden1 = zr4 / (ze1r45 * zrkg1)
-                           zrefd(ipt, kp, jg, jj) = max(f_zero, min(f_one,                      &
-                           &                      zgam2*(zexp1 - zexm1)*zden1 ))
-                           ztrad(ipt, kp, jg, jj) = max(f_zero, min(f_one, zrk2*zden1 ))
-                        endif    ! end if_zssaw_block
-
-                        !  --- ...  combine clear and cloudy contributions for total sky
-                        !           and calculate direct beam transmittances
-
-                        zrefb(ipt, kp, jg, jj) = zc0*zrefb1 + zc1*zrefb(ipt, kp, jg, jj)
-                        zrefd(ipt, kp, jg, jj) = zc0*zrefd1 + zc1*zrefd(ipt, kp, jg, jj)
-                        ztrab(ipt, kp, jg, jj) = zc0*ztrab1 + zc1*ztrab(ipt, kp, jg, jj)
-                        ztrad(ipt, kp, jg, jj) = zc0*ztrad1 + zc1*ztrad(ipt, kp, jg, jj)
-
-                        !  --- ...  direct beam transmittance. use exponential lookup table
-                        !           for transmittance, or expansion of exponential for low
-                        !           optical depth
-
-                        zr1 = ztau1 * sntz(ipt, jj)
-                        if ( zr1 <= od_lo ) then
-                           zexp3 = f_one - zr1 + 0.5*zr1*zr1
-                        else
-                           ftind = zr1 / (bpade + zr1)
-                           itind = max(0, min(ntbmx, int(0.5+ntbmx*ftind) ))
-                           zexp3 = exp_tbl(itind)
-                        endif
-
-                        zldbt(ipt, kp, jg, jj) = zc0*zldbt(ipt, kp, jg, jj) + zc1*zexp3
-                        ztdbt(ipt, k, jg, jj) = zldbt(ipt, kp, jg, jj) * ztdbt(ipt, kp, jg, jj)
-
-                        !  --- ...  pre-delta-scaling clear and cloudy direct beam transmittance
-                        !           (must use 'orig', unscaled cloud optical depth)
-
-                        zr1 = ztau0 * sntz(ipt, jj)
-                        if ( zr1 <= od_lo ) then
-                           zexp4 = f_one - zr1 + 0.5*zr1*zr1
-                        else
-                           ftind = zr1 / (bpade + zr1)
-                           itind = max(0, min(ntbmx, int(0.5+ntbmx*ftind) ))
-                           zexp4 = exp_tbl(itind)
-                        endif
-
-                        ztdbt0r = (zc0*zldbt0 + zc1*zexp4) * ztdbt0r
-
-                     else     ! if_zc1_block  ---  it is a clear layer
-
-                        !  --- ...  direct beam transmittance
-                        ztdbt(ipt, k, jg, jj) = zldbt(ipt, kp, jg, jj) * ztdbt(ipt, kp, jg, jj)
-
-                        !  --- ...  pre-delta-scaling clear and cloudy direct beam transmittance
-                        ztdbt0r = zldbt0 * ztdbt0r
-
-                     endif    ! end if_zc1_block
-                  enddo   ! end do_k_loop
-                  ztdbt0(ipt, jg, jj) = ztdbt0r
-               end if
-            end do
-         end do
-      end do
-                  !  --- ...  perform vertical quadrature
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
-         do jg = 1, small_ngptsw ! lab_do_jg
-            !$acc loop vector private(j1, kp, zden1, zfu, zfd, jg2, jb, ib, zrupbr, zrupbr1, zrupdr, zrupdr1)
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               jg2 = jg + (j2-1)*small_ngptsw
-               jb = ngb(jg2)
-               ib = jb + 1 - nblow
-               if ( cf1(ipt, jj) > eps ) then
-                  ! call swflux
-
-                  !  --- ...  upper boundary conditions
-
-                  ztdn (ipt, nlp1, jg, jj) = f_one
-                  zrdnd(ipt, nlp1, jg, jj) = f_zero
-                  ztdn (ipt, nlay, jg, jj) = ztrab(ipt, nlp1, jg, jj)
-                  zrdnd(ipt, nlay, jg, jj) = zrefd(ipt, nlp1, jg, jj)
-
-                  !  --- ...  pass from top to bottom
-                  !$acc loop seq
-                  do k = nlay, 2, -1
-                     zden1 = f_one / (f_one - zrefd(ipt, k, jg, jj)*zrdnd(ipt, k, jg, jj))
-                     ztdn (ipt, k-1, jg, jj) = ztdbt(ipt, k, jg, jj)*ztrab(ipt, k, jg, jj) &
-                                       + ( ztrad(ipt, k, jg, jj) *                 &
-                     &                 ( (ztdn(ipt, k, jg, jj) - ztdbt(ipt, k, jg, jj)) &
-                                       + ztdbt(ipt, k, jg, jj) *              &
-                     &                 zrefb(ipt, k, jg, jj)*zrdnd(ipt, k, jg, jj) )) * zden1
-                     zrdnd(ipt, k-1, jg, jj) = zrefd(ipt, k, jg, jj) + ztrad(ipt, k, jg, jj) &
-                                       *ztrad(ipt, k, jg, jj)*zrdnd(ipt, k, jg, jj)*zden1
-                  enddo
-
-                  !  --- ...  link lowest layer with surface
-
-                  zrupbr = zrefb(ipt, 1, jg, jj)        ! direct beam
-                  zrupdr = zrefd(ipt, 1, jg, jj)        ! diffused
-                  
-                  zden1 = f_one / (f_one - zrdnd(ipt, 1, jg, jj)*zrupdr)
-                  zfu = ( ztdbt(ipt, 1, jg, jj)*zrupbr +                                &
-                  &             (ztdn(ipt, 1, jg, jj) - ztdbt(ipt, 1, jg, jj)) &
-                                 *zrupdr ) * zden1
-                  zfd = ztdbt(ipt, 1, jg, jj) + ( ztdn(ipt, 1, jg, jj) &
-                                 - ztdbt(ipt, 1, jg, jj) +                    &
-                  &             ztdbt(ipt, 1, jg, jj)*zrupbr &
-                                 *zrdnd(ipt, 1, jg, jj) ) * zden1
-                                 ! end call swflux
-
-                  !  --- ...  compute upward and downward fluxes at levels
-                  !$acc atomic
-                  fxupc(ipt, 1,ib, jj) = fxupc(ipt, 1,ib, jj) + zsolar(ipt, jg, jj)*zfu
-                  !$acc atomic
-                  fxdnc(ipt, 1,ib, jj) = fxdnc(ipt, 1,ib, jj) + zsolar(ipt, jg, jj)*zfd
-                  zfd0(ipt, jg, jj) = zfd
-                  !  --- ...  pass from bottom to top
-                  !$acc loop seq
-                  do k = 1, nlay
-                     kp = k + 1
-
-                     zden1 = f_one / ( f_one - zrupdr*zrefd(ipt, kp, jg, jj) )
-                     zrupbr1 = zrefb(ipt, kp, jg, jj) + ( ztrad(ipt, kp, jg, jj) *                         &
-                     &                ( (ztrab(ipt, kp, jg, jj) - zldbt(ipt, kp, jg, jj))*zrupdr +              &
-                     &                zldbt(ipt, kp, jg, jj)*zrupbr) ) * zden1
-                     zrupdr1 = zrefd(ipt, kp, jg, jj) + ztrad(ipt, kp, jg, jj) &
-                                      *ztrad(ipt, kp, jg, jj)*zrupdr*zden1
-
-                  !  --- ...  up and down-welling fluxes at levels
-                     zden1 = f_one / (f_one - zrdnd(ipt, kp, jg, jj)*zrupdr1)
-                     zfu = ( ztdbt(ipt, kp, jg, jj)*zrupbr1 +                                &
-                     &             (ztdn(ipt, kp, jg, jj) - ztdbt(ipt, kp, jg, jj)) &
-                                    *zrupdr1 ) * zden1
-                     zfd = ztdbt(ipt, kp, jg, jj) + ( ztdn(ipt, kp, jg, jj) &
-                                    - ztdbt(ipt, kp, jg, jj) +                    &
-                     &             ztdbt(ipt, kp, jg, jj)*zrupbr1 &
-                                    *zrdnd(ipt, kp, jg, jj) ) * zden1
-                                    ! end call swflux
-
-                     !  --- ...  compute upward and downward fluxes at levels
-                     !$acc atomic
-                     fxupc(ipt, kp,ib, jj) = fxupc(ipt, kp,ib, jj) + zsolar(ipt, jg, jj)*zfu
-                     !$acc atomic
-                     fxdnc(ipt, kp,ib, jj) = fxdnc(ipt, kp,ib, jj) + zsolar(ipt, jg, jj)*zfd
-                     zrupbr = zrupbr1
-                     zrupdr = zrupdr1
-                  end do
-               end if
-            end do
-         end do
-      end do
-
-                  !! --- ...  surface downward beam/diffused flux components
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
-         do jg = 1, small_ngptsw ! lab_do_jg
-            !$acc loop vector private(jg2, jb, ibd, zb1, zb2, zf1, zf2)
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               jg2 = jg + (j2-1)*small_ngptsw
-               jb = ngb(jg2)
-               ibd = idxsfc(jb)
-               if ( cf1(ipt, jj) > eps ) then
-                  zb1 = zsolar(ipt, jg, jj)*ztdbt0(ipt, jg, jj)
-                  zb2 = zsolar(ipt, jg, jj)*(zfd0(ipt, jg, jj) - ztdbt0(ipt, jg, jj))
-
-                  if (ibd /= 0) then
-                     !$acc atomic
-                     sfbmc(ipt, ibd, jj) = sfbmc(ipt, ibd, jj) + zb1
-                     !$acc atomic
-                     sfdfc(ipt, ibd, jj) = sfdfc(ipt, ibd, jj) + zb2
-                  else
-                     zf1 = 0.5 * zb1
-                     zf2 = 0.5 * zb2
-                     !$acc atomic
-                     sfbmc(ipt, 1, jj) = sfbmc(ipt, 1, jj) + zf1
-                     !$acc atomic
-                     sfdfc(ipt, 1, jj) = sfdfc(ipt, 1, jj) + zf2
-                     !$acc atomic
-                     sfbmc(ipt, 2, jj) = sfbmc(ipt, 2, jj) + zf1
-                     !$acc atomic
-                     sfdfc(ipt, 2, jj) = sfdfc(ipt, 2, jj) + zf2
-                  endif
-                  !         sfbmc(ibd) = sfbmc(ibd) + zsolar*ztdbt0
-                  !         sfdfc(ibd) = sfdfc(ibd) + zsolar*(zfd(1) - ztdbt0)
-
-               endif      ! end if_cf1_block
-
-            enddo  ! lab_do_jg
-         end do
-      end do
-   end do
-
-
-            !  --- ...  end of g-point loop
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
-         do ib = 1, nbdsw
-            !$acc loop vector 
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               !$acc atomic
-               ftoadc(ipt, jj) = ftoadc(ipt, jj) + fxdn0(ipt, nlp1,ib, jj)
-               !$acc atomic
-               ftoau0(ipt, jj) = ftoau0(ipt, jj) + fxup0(ipt, nlp1,ib, jj)
-               !$acc atomic
-               fsfcu0(ipt, jj) = fsfcu0(ipt, jj) + fxup0(ipt, 1,ib, jj)
-               !$acc atomic
-               fsfcd0(ipt, jj) = fsfcd0(ipt, jj) + fxdn0(ipt, 1,ib, jj)
-            enddo
-         end do
-      end do
-
-      !! --- ...  uv-b surface downward flux
-      !$acc parallel loop gang collapse(3) async(async_id)
-      do jj = 1, fulljj
-         do ib = 1, nbdsw
-            do k = 1, nlp1
-               !$acc loop vector
-               do ipt = 1, nday(jj) ! lab_do_ipt
-                  if ( cf1(ipt, jj) <= eps ) then       ! clear column, set total-sky=clear-sky fluxes
-                     fxupc(ipt, k,ib, jj) = fxup0(ipt, k,ib, jj)
-                     fxdnc(ipt, k,ib, jj) = fxdn0(ipt, k,ib, jj)
-                  end if
-               enddo
-            enddo
-         end do
-      end do
-      !$acc parallel loop collapse(2) private(ibd) async(async_id)
-      do jj = 1, fulljj
-         do ipt = 1, ix
-            if (ipt .le. nday(jj)) then ! lab_do_ipt
-               ibd = nuvb - nblow + 1
-               suvbf0(ipt, jj) = fxdn0(ipt, 1,ibd, jj)
-               if ( cf1(ipt, jj) <= eps ) then       ! clear column, set total-sky=clear-sky fluxes
-                  ftoauc(ipt, jj) = ftoau0(ipt, jj)
-                  fsfcuc(ipt, jj) = fsfcu0(ipt, jj)
-                  fsfcdc(ipt, jj) = fsfcd0(ipt, jj)
-
-                  !! --- ...  surface downward beam/diffused flux components
-                  sfbmc(ipt, 1, jj) = sfbm0(ipt, 1, jj)
-                  sfdfc(ipt, 1, jj) = sfdf0(ipt, 1, jj)
-                  sfbmc(ipt, 2, jj) = sfbm0(ipt, 2, jj)
-                  sfdfc(ipt, 2, jj) = sfdf0(ipt, 2, jj)
-
-                  !! --- ...  uv-b surface downward flux
-                  suvbfc(ipt, jj) = suvbf0(ipt, jj)
-               end if
-            end if
-         end do
-      end do
-      !$acc parallel loop gang collapse(3) async(async_id)
-      do jj = 1, fulljj
-         do ib = 1, nbdsw
-            do k = 1, nlp1
-               !$acc loop vector 
-               do ipt = 1, nday(jj) ! lab_do_ipt
-                  if ( cf1(ipt, jj) > eps ) then                        ! cloudy column, compute total-sky fluxes
-                     fxupc(ipt, k,ib, jj) = cf1(ipt, jj)*fxupc(ipt, k,ib, jj) + cf0(ipt, jj)*fxup0(ipt, k,ib, jj)
-                     fxdnc(ipt, k,ib, jj) = cf1(ipt, jj)*fxdnc(ipt, k,ib, jj) + cf0(ipt, jj)*fxdn0(ipt, k,ib, jj)
-                  end if
-               enddo
-            enddo
-         end do
-      end do
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, fulljj
-         do ib = 1, nbdsw
-            !$acc loop vector
-            do ipt = 1, nday(jj) ! lab_do_ipt
-               if ( cf1(ipt, jj) > eps ) then                        ! cloudy column, compute total-sky fluxes
-                  !$acc atomic
-                  ftoauc(ipt, jj) = ftoauc(ipt, jj) + fxupc(ipt, nlp1,ib, jj)
-                  !$acc atomic
-                  fsfcuc(ipt, jj) = fsfcuc(ipt, jj) + fxupc(ipt, 1,ib, jj)
-                  !$acc atomic
-                  fsfcdc(ipt, jj) = fsfcdc(ipt, jj) + fxdnc(ipt, 1,ib, jj)
-               end if
-            enddo
-         end do
-      end do
-      !$acc parallel loop collapse(2) private(ibd) async(async_id)
-      do jj = 1, fulljj
-         do ipt = 1, ix
-            if (ipt .le. nday(jj)) then ! lab_do_ipt
-               if ( cf1(ipt, jj) > eps ) then                        ! cloudy column, compute total-sky fluxes
-                  !! --- ...  uv-b surface downward flux
-                  ibd = nuvb - nblow + 1
-                  suvbfc(ipt, jj) = fxdnc(ipt, 1,ibd, jj)
-
-                  !! --- ...  surface downward beam/diffused flux components
-                  sfbmc(ipt, 1, jj) = cf1(ipt, jj)*sfbmc(ipt, 1, jj) + cf0(ipt, jj)*sfbm0(ipt, 1, jj)
-                  sfbmc(ipt, 2, jj) = cf1(ipt, jj)*sfbmc(ipt, 2, jj) + cf0(ipt, jj)*sfbm0(ipt, 2, jj)
-                  sfdfc(ipt, 1, jj) = cf1(ipt, jj)*sfdfc(ipt, 1, jj) + cf0(ipt, jj)*sfdf0(ipt, 1, jj)
-                  sfdfc(ipt, 2, jj) = cf1(ipt, jj)*sfdfc(ipt, 2, jj) + cf0(ipt, jj)*sfdf0(ipt, 2, jj)
-               endif    ! end if_cf1_block
-            end if
-         end do
-      end do
-      !$acc end data
-
-      return
-!...................................
-      end subroutine spcvrtc_atomic
 !-----------------------------------
 
 

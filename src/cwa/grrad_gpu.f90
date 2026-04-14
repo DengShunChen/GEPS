@@ -175,31 +175,36 @@ module module_radiation_driver_gpu     !
    use physcons,                 only : con_eps, con_epsm1, con_fvirt&
    &,                                   rocp => con_rocp
 !  use funcphys,                 only : fpvs
-
-   use module_radiation_astronomy_gpu,only: sol_init_gpu, sol_update_gpu, coszmn_gpu
+   use radsw_copyin_gpu, only : copyin_radsw_datatb_gpu
+   use radlw_copyin_gpu, only : copyin_radlw_datatb_gpu
+   use module_radiation_astronomy_gpu,only: sol_init_gpu, sol_update_gpu, coszmn_gpu, &
+                                         copyin_radiation_astronomy_gpu
    use module_radiation_gases_gpu,   only : nf_vgas, getgases_gpu, getozn_gpu,   &
-   &                                    gas_init_gpu, gas_update_gpu
-   use module_radiation_aerosols_gpu,only : nf_aesw, nf_aelw, setaer_gpu,    &
-   &                                    aer_init_gpu, aer_update_gpu
+   &                                    gas_init_gpu, gas_update_gpu, &
+                                        copyin_radiation_gases_gpu
+   use module_radiation_aerosols_gpu,only : nf_aesw, nf_aelw, setaer_sw_gpu, setaer_lw_gpu,    &
+   &                                    aer_init_gpu, aer_update_gpu, &
+                                        copyin_radiation_aerosols_gpu
 !    &,                                    nspc1                        ! optn for aod output
    use module_radiation_surface_gpu, only : nf_albd, sfc_init_gpu, setalb_gpu,   &
-   &                                    setemis_gpu
+   &                                    setemis_gpu, copyin_radiation_surface_gpu
    use module_radiation_clouds_gpu,  only : nf_clds, cld_init_gpu,           &
    &                                    progcld1_gpu, progcld2_gpu, progcld3_gpu,&
    &					                      progcld4_gpu, diagcld1_gpu,          &
                                         progcld5_gpu, progcld5o_gpu,         &
                                         progclduni_gpu, progcld6_gpu,        &
-                                        progcld_thompson_gpu, progcld_gce_gpu
+                                        progcld_thompson_gpu, progcld_gce_gpu, &
+                                        copyin_radiation_clouds_gpu
 
    use module_radsw_parameters,  only : topfsw_type, sfcfsw_type,    &
    &                                    profsw_type,cmpfsw_type,nbdsw
 
    use module_radlw_parameters,  only : topflw_type, sfcflw_type,    &
    &                                    proflw_type, nbdlw
-   use module_radlw_main_gpu,        only : rlwinit_gpu,  lwrad_gpu
-   use module_radsw_main_gpu,        only : rswinit_gpu,  swrad_gpu
+   use module_radlw_main_gpu,        only : rlwinit_gpu,  lwrad_gpu, copyin_radlw_main_gpu
+   use module_radsw_main_gpu,        only : rswinit_gpu,  swrad_gpu, copyin_radsw_main_gpu
    use param,                    only : my, my_max
-   use index,                    only : jlistnum, nxjp, jlist1
+   use index,                    only : jlistnum, nxjp, jlist1, nxptot, nxjp_acc
    !use nvtx
 !
 !    implicit   none
@@ -461,6 +466,16 @@ contains
 
       if (me == 0 .and. myrank == 0)print *,'call rsw_init' 
       call rswinit_gpu ( me ,myrank)
+      
+      call copyin_radiation_clouds_gpu(1)
+      call copyin_radiation_surface_gpu(1)
+      call copyin_radiation_gases_gpu(1)
+      call copyin_radiation_aerosols_gpu(1)
+      call copyin_radiation_astronomy_gpu(1)
+      call copyin_radsw_datatb_gpu(1)
+      call copyin_radlw_datatb_gpu(1)
+      call copyin_radlw_main_gpu(1)
+      call copyin_radsw_main_gpu(1)
 !
       return
 !...................................
@@ -976,20 +991,20 @@ contains
 !     type (topfsw_type), dimension(im), intent(out) :: topfsw
 !     type (sfcfsw_type), dimension(im), intent(out) :: sfcfsw
 ! --- cmy
-      real (kind=kind_phys), dimension(ix, my_max, 3) :: topfsw
-      real (kind=kind_phys), dimension(ix, my_max, 4) :: sfcfsw
+      !real (kind=kind_phys), dimension(ix, my_max, 3) :: topfsw
+      !real (kind=kind_phys), dimension(ix, my_max, 4) :: sfcfsw
 ! --- cmy
 
 !     type (topflw_type), dimension(im), intent(out) :: topflw
 !     type (sfcflw_type), dimension(im), intent(out) :: sfcflw
 ! --- cmy
-      type (topflw_type), dimension(ix, my_max) :: topflw
-      type (sfcflw_type), dimension(ix, my_max) :: sfcflw
+      !type (topflw_type), dimension(ix, my_max) :: topflw
+      !type (sfcflw_type), dimension(ix, my_max) :: sfcflw
 ! --- cmy
 
 !  ---  variables are for both input and output:
       real (kind=kind_phys), intent(inout) :: cldcov(ix,lm+ltp, my_max)
-      real (kind=kind_phys), intent(out) :: fluxr(ix,nfxr, my_max)
+      real (kind=kind_phys), intent(out) :: fluxr(ix, my_max, nfxr)
 
 !! ---  optional outputs:
 !     real (kind=kind_phys), dimension(ix,lm,nbdsw), optional,          &
@@ -1001,88 +1016,151 @@ contains
 !     real (kind=kind_phys), dimension(ix,lm), optional,                &
 !    &                       intent(out) :: htrsw0
 
-      real (kind=kind_phys), dimension(ix,lm,nbdsw, my_max) :: htrswb
-      real (kind=kind_phys), dimension(ix,lm,nbdlw, my_max) :: htrlwb
       real (kind=kind_phys), dimension(ix,lm, my_max) :: htrlw0
       real (kind=kind_phys), dimension(ix,lm, my_max) :: htrsw0
+      real (kind=kind_phys), dimension(ix,lm+ltp,5,  my_max)   :: phy_f3d
+      logical uni_cloud,lmfshal,lmfdeep2
+      integer :: async_id
+
 
 !  ---  local variables: (horizontal dimensioned by im)
-      real (kind=kind_phys), dimension(ix,lm+1+ltp, my_max):: plvl, tlvl
+      real (kind=kind_phys), dimension(:,:,:,:), allocatable :: htrswb
+      real (kind=kind_phys), dimension(:,:,:,:), allocatable :: htrlwb
+      real (kind=kind_phys), dimension(nxptot,lm+1+ltp):: plvl, tlvl
 
-      real (kind=kind_phys), dimension(ix,lm+ltp, my_max)  :: plyr, tlyr, qlyr, &
-         olyr, rhly, qstl, vvel, clw, prslk1, tem2da, tem2db, tvly
-      real (kind=kind_phys), dimension(ix,lm+ltp, my_max)  :: qst2, rhly2
-      real (kind=kind_phys), dimension(ix,lm+ltp, my_max)  :: es2, qs2
-      real (kind=kind_phys), dimension(ix,lm+ltp, my_max)  :: qa
-      real (kind=kind_phys), dimension(ix,lm+ltp, my_max)  :: cnvw1, cnvc1
+      real (kind=kind_phys), dimension(nxptot,lm+ltp)  :: rhly, qstl, prslk1, tvly
+      real (kind=kind_phys), dimension(nxptot,lm+ltp)  :: plyr, tlyr, qlyr, &
+         olyr, vvel, clw, tem2da, tem2db
+      !real (kind=kind_phys), dimension(ix,lm+ltp, my_max)  :: qst2, rhly2
+      !real (kind=kind_phys), dimension(ix,lm+ltp, my_max)  :: es2, qs2
+      real (kind=kind_phys), dimension(nxptot,lm+ltp)  :: qa
+      real (kind=kind_phys), dimension(nxptot,lm+ltp)  :: cnvw1, cnvc1
 
-      real (kind=kind_phys), dimension(ix, my_max) :: tsfa, cvt1, cvb1, tem1d,  &
+      real (kind=kind_phys), dimension(nxptot) :: tsfa, cvt1, cvb1, tem1d,  &
          sfcemis, tsfg, tskn
 
-      real (kind=kind_phys), dimension(ix,lm+ltp,nf_clds, my_max) :: clouds
-      real (kind=kind_phys), dimension(ix,lm+ltp,nf_vgas, my_max) :: gasvmr
-      real (kind=kind_phys), dimension(ix,       nf_albd, my_max) :: sfcalb
+      real (kind=kind_phys), dimension(nxptot,lm+ltp,nf_clds) :: clouds
+      real (kind=kind_phys), dimension(nxptot,lm+ltp) :: cldfrc
+      real (kind=kind_phys), dimension(nxptot,lm+ltp) :: cwp, rew, &
+         cip, rei, crp, rer, csp, res 
+      real (kind=kind_phys), dimension(nxptot,lm+ltp) :: gasvmr_co2
+      real (kind=kind_phys), dimension(nf_vgas) :: gasvmr_other
+      real (kind=kind_phys), dimension(nxptot,nf_albd) :: sfcalb
 !     real (kind=kind_phys), dimension(im,       nspc1)   :: aerodp      ! optn for aod output
-      real (kind=kind_phys), dimension(ix,lm+ltp,ntrac, my_max)   :: tracer1
+      real (kind=kind_phys), dimension(nxptot,lm+ltp,ntrac) :: tracer1
 
-      real (kind=kind_phys), dimension(ix,lm+ltp,nbdsw,nf_aesw, my_max) :: faersw
-      real (kind=kind_phys), dimension(ix,lm+ltp,nbdlw,nf_aelw, my_max) :: faerlw
+      !real (kind=kind_phys), dimension(ix,lm+ltp,nbdsw,nf_aesw, my_max) :: faersw
+      !real (kind=kind_phys), dimension(ix,lm+ltp,nbdlw,nf_aelw, my_max) :: faerlw
+      !real (kind=kind_phys), dimension(:,:,:), allocatable :: tauaer
+      !real (kind=kind_phys), dimension(ix,lm+ltp, my_max) :: htswc
+      !real (kind=kind_phys), dimension(ix,lm+ltp, my_max) :: htlwc
 
-      real (kind=kind_phys), dimension(ix,lm+ltp, my_max) :: htswc
-      real (kind=kind_phys), dimension(ix,lm+ltp, my_max) :: htlwc
-
-      real (kind=kind_phys), dimension(ix,lm+ltp, my_max) :: gcice, grain, grime
+      !real (kind=kind_phys), dimension(ix,lm+ltp, my_max) :: gcice, grain, grime
 
 !! ---  may be used for optional sw/lw outputs:
 !!      take out "!!" as needed
-      real (kind=kind_phys), dimension(ix,lm+ltp, my_max)   :: htsw0
-      real (kind=kind_phys),    dimension(ix,lm+1+ltp, my_max, 4) :: fswprf
-      real (kind=kind_phys),    dimension(ix, my_max, 6)          :: scmpsw
-      real (kind=kind_phys), dimension(ix,lm+ltp,nbdsw, my_max) :: htswb
+      !real (kind=kind_phys), dimension(ix,lm+ltp, my_max)   :: htsw0
+      !real (kind=kind_phys),    dimension(ix,lm+1+ltp, my_max, 4) :: fswprf
+      !real (kind=kind_phys),    dimension(ix, my_max, 6)          :: scmpsw
+      !real (kind=kind_phys), dimension(ix,lm+ltp,nbdsw, my_max) :: htswb
 
-      real (kind=kind_phys), dimension(ix,lm+ltp, my_max)   :: htlw0
-      type (proflw_type),    dimension(ix,lm+1+ltp, my_max) :: flwprf
-      real (kind=kind_phys), dimension(ix,lm+ltp,nbdlw, my_max) :: htlwb
+      !real (kind=kind_phys), dimension(ix,lm+ltp, my_max)   :: htlw0
+      !type (proflw_type),    dimension(ix,lm+1+ltp, my_max) :: flwprf
+      !real (kind=kind_phys), dimension(ix,lm+ltp,nbdlw, my_max) :: htlwb
 
-      real (kind=kind_phys) :: raddt, es, qs, tem0d, cldsa(ix,5, my_max),qss
+      real (kind=kind_phys) :: raddt, es, qs, tem0d, cldsa(nxptot,5),qss
 
-      integer :: i, j, k, k1, lv, itop, ibtc, nday(my_max), idxday(ix, my_max), kc,        &
-         mbota(ix,3, my_max), mtopa(ix,3, my_max), lp1, nb, lmk, lmp, kd, lla, llb, &
+      integer :: i, j, k, k1, lv, itop, ibtc, nday(my_max), idxday(nxptot), kc,        &
+         mbota(nxptot,3), mtopa(nxptot,3), lp1, nb, lmk, lmp, kd, lla, llb, &
          lya, lyb, kt, kb, jj
 !effective radius for liquid, ice, snow, rain
-      real (kind=kind_phys), dimension(ix,lm+ltp,5,  my_max)   :: phy_f3d
-      logical uni_cloud,lmfshal,lmfdeep2
       real (kind=kind_phys), dimension(:,:), allocatable :: plvl_im, tlvl_im, &
          plyr_im, tlyr_im, qlyr_im, olyr_im, rhly_im, qstl_im, vvel_im, clw_im, &
          prslk1_im, tem2da_im, tem2db_im, tvly_im, qst2_im, rhly2_im, es2_im, &
          qs2_im, qa_im, cnvw1_im, cnvc1_im, sfcalb_im, htswc_im, htlwc_im, &
          gcice_im, grain_im, grime_im, htsw0_im, htlw0_im, cldsa_im
       integer, dimension(:,:), allocatable :: mbota_im, mtopa_im
-      type (profsw_type), dimension(:,:), allocatable :: fswprf_im
       type (proflw_type), dimension(:,:), allocatable :: flwprf_im
       real (kind=kind_phys), dimension(:,:,:,:), allocatable :: faersw_im, faerlw_im
       real (kind=kind_phys), dimension(:,:,:), allocatable :: clouds_im, gasvmr_im, &
          tracer1_im, htswb_im, htlwb_im
-      ! fore inlined qsatq
+      ! for inlined qsatq
       real :: epsm2, qqq, fpvs_gpu
       character(len=4) :: myrank_str
-      integer :: async_id
+      integer :: n, m
       integer, parameter :: nxpvs = 7501
       real :: c1xpvs,c2xpvs,tbpvs(nxpvs)
       common/fpvscom/ c1xpvs,c2xpvs,tbpvs(nxpvs)
       integer, parameter :: lwrad_block = 4
       integer, parameter :: swrad_block = 8
       integer :: swrad_smalljj, lwrad_smalljj
+      ! for GPU register
+      real :: tem2dar
+      integer, dimension(my_max) :: offset_nday
+      integer, dimension(ix*my_max) :: map_nday_ipt, map_nday_jj
+      integer, dimension(nxptot) :: map_jj, map_i
+      integer :: local_count
+      integer :: max_nxjp_acc_length, jjoffset, jbs, jbe, nxjp_acc_length, jb, &
+         max_nday_length, jbs_nday, jbe_nday, nday_length
+
+
+      ! GPU: htrswb and htrlwb are computed but not used outside RRTMG. GPU version
+      ! GPU: switch off to save memory.
+      logical :: lhtrswb = .false., lhtrlwb = .false.
+
+      ! GPU: variable name changed: CPU - faersw(:,:,:,1), GPU - tauae
+      ! GPU: variable name changed: CPU - faersw(:,:,:,2), GPU - ssaae
+      ! GPU: variable name changed: CPU - faersw(:,:,:,3), GPU - asyae
+      ! GPU: variable name changed: CPU - faerlw(:,:,:,1), GPU - tauaer*
+      ! GPU: variable name changed: CPU - faerlw(:,:,:,2), GPU - tauaer*
+      ! GPU: variable name changed: CPU - faerlw(:,:,:,3), GPU - <dismissed>
+      ! GPU: variable name changed: CPU - tem2da, GPU - <dismissed>
+      ! GPU: variable name changed: CPU - tem2db, GPU - <dismissed>
+      ! GPU: *: tauaer is computed from faerlw(:,:,:,1) and faerlw(:,:,:,2).
+      ! GPU:    tauaer is computed at lwrad in the CPU version, but is computed
+      ! GPU:    at setaer_gpu in this GPU verison and passed into subroutine 
+      ! GPU:    lwrad_gpu.
+      ! GPU: the following variable name changed when using icmphys = 15 or 16 
+      ! GPU: (GCE microphysics)
+      ! GPU:                        CPU - clouds(:,:,1), GPU - cldfrc
+      ! GPU:                        CPU - clouds(:,:,2), GPU - cwp
+      ! GPU:                        CPU - clouds(:,:,3), GPU - rew
+      ! GPU:                        CPU - clouds(:,:,4), GPU - cip
+      ! GPU:                        CPU - clouds(:,:,5), GPU - rei
+      ! GPU:                        CPU - clouds(:,:,6), GPU - crp
+      ! GPU:                        CPU - clouds(:,:,7), GPU - rer
+      ! GPU:                        CPU - clouds(:,:,8), GPU - csp
+      ! GPU:                        CPU - clouds(:,:,9), GPU - res
+      ! GPU: if you use other microphysics option (icmphys != 15 or 16), modify
+      ! GPU: the corresponding cloud information subroutine (progcld*). As 
+      ! GPU: the subroutine progcld_gce_gpu, replace variable 'clouds' as the 
+      ! GPU: above GPU variables in the subroutine passing argument list, 
+      ! GPU: declaration executing and zone inside the subroutine.
+      ! GPU: 
 !
+
       swrad_smalljj = ceiling(float((my_max-1))/float(swrad_block))
       lwrad_smalljj = ceiling(float((my_max-1))/float(lwrad_block))
-      !$acc data create(topfsw, sfcfsw, topflw, sfcflw, htrswb, htrlwb, htrlw0, &
-      !$acc&     plvl, tlvl, plyr, tlyr, qlyr, olyr, rhly, qstl, vvel, clw, prslk1, &
-      !$acc&     tem2da, tem2db, tvly, qst2, rhly2, es2, qs2, qa, cnvw1, cnvc1, &
-      !$acc&     qst2, rhly2, es2, qs2, qa, cnvw1, cnvc1, tsfa, cvt1, cvb1, tem1d, &
-      !$acc&     sfcemis, tsfg, tskn, clouds, gasvmr, sfcalb, tracer1, faersw, &
-      !$acc&     faerlw, htswc, htlwc, gcice, grain, grime, htsw0, fswprf, scmpsw, &
-      !$acc&     htswb, htlw0, flwprf, htlwb, cldsa, nday, idxday, mbota, mtopa) async(async_id)
+      !$acc data create(plvl, tlvl, plyr, tlyr, qlyr, olyr, &
+      !$acc&     tsfa, tem1d, cldfrc, cwp, rew, cip, rei, crp, rer, csp, res, &
+      !$acc&     sfcemis, tsfg, tskn, gasvmr_co2, gasvmr_other, sfcalb, &
+      !$acc&     map_jj, map_i, &
+      !$acc&     cldsa, nday, idxday, mbota, mtopa, map_nday_ipt, map_nday_jj, offset_nday) async(async_id)
+      
+      
+      ! GPU: compute max_nxjp_acc_length using in lwrad_gpu
+      max_nxjp_acc_length = 0
+      do jb = 1, lwrad_block
+         jjoffset = (my_max-1)*(jb-1)/lwrad_block
+         jbs = jjoffset+1
+         jbe = (my_max-1)*jb/lwrad_block
+         nxjp_acc_length = nxjp_acc(jbe+1) - nxjp_acc(jbs)
+         if (nxjp_acc_length .gt. max_nxjp_acc_length) max_nxjp_acc_length = nxjp_acc_length
+      end do
+
+
+
+
 !  ---  for debug test use
 !     real (kind=kind_phys) :: temlon, temlat, alon, alat
 !     integer :: ipt
@@ -1159,76 +1237,160 @@ contains
       raddt = min(dtsw, dtlw)
 
 ! ---------------------------------------------------------------------
+      !$acc parallel loop collapse(2) private(n) async(async_id)
       do jj = 1, jlistnum
-         if ( me == 0 .and. myrank == 0) then
-            print *,'###################################################' 
-            print *,'### In grrad start !! ###' 
-            print *,'###################################################' 
-            print *,'### ix=',ix,' im=',myim(jj),' lm=',lm,' me=',me
-            print *,'### ipt=',ipt
-            print *,'### iter=',kdt
-            print *,'### solhr=',solhr
-            print *,'###################################################' 
-            print *,'### ncld=',ncld
-            print *,'### ntoz=',ntoz
-            print *,'### ntcw=',ntcw
-            print *,'### ntrac=',ntrac
-            print *,'### nfxr=',nfxr
-            print *,'### dtsw=',dtsw
-            print *,'### dtlw=',dtlw
-            print *,'###################################################' 
-            print *,'### lsswr=',lsswr
-            print *,'### lslwr=',lslwr
-            print *,'### lssav=',lssav
-            print *,'### lprnt=',lprnt
-            print *,'###################################################' 
-            print *,'### solcon=',solcon
-            print *,'###################################################' 
-            print *,'### xlon(ipt)=',xlon(ipt, jj)
-            print *,'### xlat(ipt)=',xlat(ipt, jj)
-            print *,'### sinlat(ipt)=',sinlat(ipt, jj)
-            print *,'### coslat(ipt)=',coslat(ipt, jj)
-            print *,'###################################################' 
-            print *,'### jdate(1-4)=',jdate(1),jdate(2),jdate(3),jdate(4) 
-            print *,'### jdate(5-8)=',jdate(5),jdate(6),jdate(7),jdate(8)
-            print *,'###################################################' 
-            print *,'### cv(ipt)=',cv(ipt, jj)
-            print *,'### cvb(ipt)=',cvb(ipt, jj)
-            print *,'### cvt(ipt)=',cvt(ipt, jj)
-            print *,'###################################################' 
-            print *,'### prsi(ipt,lm+1)=',prsi(ipt,lm+1, my_max)
-            print *,'### prsl(ipt,lm)=',prsl(ipt,lm, my_max)
-            print *,'### prslk(ipt,lm)=',prslk(ipt,lm, my_max)
-            print *,'### vvl(ipt,lm)=',vvl(ipt,lm, my_max)
-            print *,'###################################################' 
-            print *,'### tsfc(ipt)=',tsfc(ipt, jj)
-            print *,'### tgrs(ipt,lm)=',tgrs(ipt,lm, my_max)
-            print *,'### qgrs(ipt,lm)=',qgrs(ipt,lm, my_max)
-            print *,'##############################################'
-            print *,'### tracer(ipt,lm,3) =',tracer(ipt,lm,3, jj)
-            print *,'###################################################' 
-            print *,'### slmsk(ipt)=',slmsk(ipt, jj)
-            print *,'### fice(ipt)=',fice(ipt, jj)
-            print *,'### tisfc(ipt)=',tisfc(ipt, jj)
-            print *,'###################################################' 
-            print *,'### snowd(ipt)=',snowd(ipt, jj)
-            print *,'### sncovr(ipt)=',sncovr(ipt, jj)
-            print *,'### snoalb(ipt)=',snoalb(ipt, jj)
-            print *,'###################################################' 
-            print *,'### zorl(ipt)=',zorl(ipt, jj)
-            print *,'### hprim(ipt)=',hprim(ipt, jj)
-            print *,'###################################################' 
-            print *,'### alvsf(ipt)=',alvsf(ipt, jj)
-            print *,'### alnsf(ipt)=',alnsf(ipt, jj)
-            print *,'### alvwf(ipt)=',alvwf(ipt, jj)
-            print *,'### alnwf(ipt)=',alnwf(ipt, jj)
-            print *,'### facsf(ipt)=',facsf(ipt, jj)
-            print *,'### facwf(ipt)=',facwf(ipt, jj)
-            print *,'###################################################' 
-            print *,'### icsdsw(ipt)=',icsdsw(ipt, jj)
-            print *,'### icsdlw(ipt)=',icsdlw(ipt, jj)
-            print *,'###################################################' 
-         endif
+         do i = 1, ix
+            if (i .le. myim(jj)) then
+               n = i + nxjp_acc(jj) - 1
+               map_jj(n) = jj
+               map_i(n) = i
+            end if
+         end do
+      end do
+!  --- ...  compute cosin of zenith angle
+
+      if (me == 0 .and. myrank ==0) print *,'### call coszmn'
+      !call nvtxStartRange("coszmn")
+      call coszmn_gpu                                                       &
+      !  ---  inputs:
+      &     ( xlon,sinlat,coslat, &
+              solhr, myim, me, ix, map_jj, map_i, nxptot, async_id,                          &
+      !  ---  outputs:
+      &       coszen, coszdg                                             &
+      &      )
+      !call nvtxEndRange
+
+!  --- ...  check for daytime points
+      !$acc parallel loop gang private(local_count) async(async_id)
+      do jj = 1, jlistnum
+         local_count = 0
+         !$acc loop vector reduction(+:local_count)
+         do i = 1, myim(jj)
+            if (coszen(i, jj) >= 0.0001) then
+               local_count = local_count + 1
+            endif
+         enddo
+         nday(jj) = local_count
+      end do
+
+      !$acc serial async(async_id)
+      n = 0
+      do jj = 1, jlistnum
+         offset_nday(jj) = n
+         n = n + nday(jj)
+      end do
+      offset_nday(my_max) = n
+      !$acc end serial
+      
+      !$acc parallel loop gang private(n, m) async(async_id)
+      do jj = 1, jlistnum
+         n = offset_nday(jj)
+         m = 0
+         !$acc loop seq
+         do i = 1, myim(jj)
+            if (coszen(i, jj) >= 0.0001) then
+               n = n + 1
+               m = m + 1
+               idxday(n) = i
+               map_nday_ipt(n) = m
+               map_nday_jj(n) = jj
+            endif
+         enddo
+      end do
+      
+      !$acc update self(nday, offset_nday) async(async_id)
+      !$acc wait(async_id)
+      !if (me .eq. 0) then
+         !$acc update self(map_jj, map_i, map_nday_ipt, map_nday_jj) async(async_id)
+         !$acc wait(async_id)
+      !end if
+      ! GPU: compute max_nday_length using in swrad_gpu
+      max_nday_length = 0
+      do jb = 1, swrad_block
+         jjoffset = (my_max-1)*(jb-1)/swrad_block
+         jbs = jjoffset+1
+         jbe = (my_max-1)*jb/swrad_block
+         jbs_nday = offset_nday(jbs)+1
+         jbe_nday = offset_nday(jbe+1)
+         nday_length = jbe_nday - jbs_nday + 1
+         if (nday_length .gt. max_nday_length) max_nday_length = nday_length
+      end do
+      
+
+      do n = 1, nxptot
+         jj = map_jj(n)
+         i = map_i(n)
+         if (i .eq. ipt) then
+            if ( me == 0 .and. myrank == 0) then
+               print *,'###################################################' 
+               print *,'### In grrad start !! ###' 
+               print *,'###################################################' 
+               print *,'### ix=',ix,' im=',myim(jj),' lm=',lm,' me=',me
+               print *,'### ipt=',ipt
+               print *,'### iter=',kdt
+               print *,'### solhr=',solhr
+               print *,'###################################################' 
+               print *,'### ncld=',ncld
+               print *,'### ntoz=',ntoz
+               print *,'### ntcw=',ntcw
+               print *,'### ntrac=',ntrac
+               print *,'### nfxr=',nfxr
+               print *,'### dtsw=',dtsw
+               print *,'### dtlw=',dtlw
+               print *,'###################################################' 
+               print *,'### lsswr=',lsswr
+               print *,'### lslwr=',lslwr
+               print *,'### lssav=',lssav
+               print *,'### lprnt=',lprnt
+               print *,'###################################################' 
+               print *,'### solcon=',solcon
+               print *,'###################################################' 
+               print *,'### xlon(ipt)=',xlon(ipt, jj)
+               print *,'### xlat(ipt)=',xlat(ipt, jj)
+               print *,'### sinlat(ipt)=',sinlat(ipt, jj)
+               print *,'### coslat(ipt)=',coslat(ipt, jj)
+               print *,'###################################################' 
+               print *,'### jdate(1-4)=',jdate(1),jdate(2),jdate(3),jdate(4) 
+               print *,'### jdate(5-8)=',jdate(5),jdate(6),jdate(7),jdate(8)
+               print *,'###################################################' 
+               print *,'### cv(ipt)=',cv(ipt, jj)
+               print *,'### cvb(ipt)=',cvb(ipt, jj)
+               print *,'### cvt(ipt)=',cvt(ipt, jj)
+               print *,'###################################################' 
+               print *,'### prsi(ipt,lm+1)=',prsi(ipt,lm+1, my_max)
+               print *,'### prsl(ipt,lm)=',prsl(ipt,lm, my_max)
+               print *,'### prslk(ipt,lm)=',prslk(ipt,lm, my_max)
+               print *,'### vvl(ipt,lm)=',vvl(ipt,lm, my_max)
+               print *,'###################################################' 
+               print *,'### tsfc(ipt)=',tsfc(ipt, jj)
+               print *,'### tgrs(ipt,lm)=',tgrs(ipt,lm, my_max)
+               print *,'### qgrs(ipt,lm)=',qgrs(ipt,lm, my_max)
+               print *,'##############################################'
+               print *,'### tracer(ipt,lm,3) =',tracer(ipt,lm,3, jj)
+               print *,'###################################################' 
+               print *,'### slmsk(ipt)=',slmsk(ipt, jj)
+               print *,'### fice(ipt)=',fice(ipt, jj)
+               print *,'### tisfc(ipt)=',tisfc(ipt, jj)
+               print *,'###################################################' 
+               print *,'### snowd(ipt)=',snowd(ipt, jj)
+               print *,'### sncovr(ipt)=',sncovr(ipt, jj)
+               print *,'### snoalb(ipt)=',snoalb(ipt, jj)
+               print *,'###################################################' 
+               print *,'### zorl(ipt)=',zorl(ipt, jj)
+               print *,'### hprim(ipt)=',hprim(ipt, jj)
+               print *,'###################################################' 
+               print *,'### alvsf(ipt)=',alvsf(ipt, jj)
+               print *,'### alnsf(ipt)=',alnsf(ipt, jj)
+               print *,'### alvwf(ipt)=',alvwf(ipt, jj)
+               print *,'### alnwf(ipt)=',alnwf(ipt, jj)
+               print *,'### facsf(ipt)=',facsf(ipt, jj)
+               print *,'### facwf(ipt)=',facwf(ipt, jj)
+               print *,'###################################################' 
+               print *,'### icsdsw(ipt)=',icsdsw(ipt, jj)
+               print *,'### icsdlw(ipt)=',icsdlw(ipt, jj)
+               print *,'###################################################' 
+            endif
+         end if
       end do
 ! ---------------------------------------------------------------------
 !  --- ...  for debug test
@@ -1252,48 +1414,51 @@ contains
 !  --- ...  setup surface ground temp and ground/air skin temp if required
 
       if ( itsfc == 0 ) then            ! use same sfc skin-air/ground temp
-         !$acc parallel loop collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               if (i .le. myim(jj)) then
-                  tskn(i, jj) = tsfc(i, jj)
-                  tsfg(i, jj) = tsfc(i, jj)
-               end if
-            enddo
+         !$acc parallel loop private(jj, i) async(async_id)
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            tskn(n) = tsfc(i, jj)
+            tsfg(n) = tsfc(i, jj)
          end do
 
       else                              ! use diff sfc skin-air/ground temp
-         !$acc parallel loop collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               if (i .le. myim(jj)) then
+         !$acc parallel loop private(jj, i) async(async_id)
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
             !!        tskn(i) = ta  (i)               ! not yet
             !!        tsfg(i) = tg  (i)               ! not yet
-                  tskn(i, jj) = tsfc(i, jj)
-                  tsfg(i, jj) = tsfc(i, jj)
-               end if
-            enddo
+            tskn(n) = tsfc(i, jj)
+            tsfg(n) = tsfc(i, jj)
          end do
       endif
-      if (me == 0 .and. myrank ==0) print *,'### tskn(ipt)=',tskn(ipt, jj),' ipt=',ipt
-      if (me == 0 .and. myrank ==0) print *,'### tsfg(ipt)=',tsfg(ipt, jj),' ipt=',ipt
+      do n = 1, nxptot
+         jj = map_jj(n)
+         i = map_i(n)
+         if (i .eq. ipt) then
+            if (me == 0 .and. myrank ==0) print *,'### tskn(ipt)=',tskn(n),' ipt=',ipt
+            if (me == 0 .and. myrank ==0) print *,'### tsfg(ipt)=',tsfg(n),' ipt=',ipt
+         end if
+         end do
 
 !  --- ...  prepare atmospheric profiles for radiation input
 !           convert pressure unit from cb to mb
-      !$acc parallel loop gang collapse(2) private(k1) async(async_id)
-      do jj = 1, jlistnum
-         do k = 1, lm
+      !$acc enter data create(tracer1, rhly, qstl, prslk1, tvly) async(async_id)
+      !$acc parallel loop collapse(2) private(k1, jj, i, epsm2, qqq, qss) async(async_id)
+      do k = 1, lm
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
             k1 = k + kd
-            !$acc loop vector private(epsm2, qqq, qss)
-            do i = 1, myim(jj)
-               plvl(i,k1, jj)   = 10.0 * prsi(i,k, jj)   ! cb (kpa) to mb (hpa)
-               plyr(i,k1, jj)   = 10.0 * prsl(i,k, jj)   ! cb (kpa) to mb (hpa)
-               !         plvl(i,k1)   = 0.01 * prsi(i,k)   ! pa to mb (hpa)
-               !         plyr(i,k1)   = 0.01 * prsl(i,k)   ! pa to mb (hpa)
-               tlyr(i,k1, jj)   = tgrs(i,k, jj)
-               prslk1(i,k1, jj) = prslk(i,k, jj)
-               cnvw1(i,k1, jj)  = cnvw(i,k, jj)
-               cnvc1(i,k1, jj)  = cnvc(i,k, jj)
+            plvl(n,k1)   = 10.0 * prsi(i,k, jj)   ! cb (kpa) to mb (hpa)
+            plyr(n,k1)   = 10.0 * prsl(i,k, jj)   ! cb (kpa) to mb (hpa)
+            !         plvl(i,k1)   = 0.01 * prsi(i,k)   ! pa to mb (hpa)
+            !         plyr(i,k1)   = 0.01 * prsl(i,k)   ! pa to mb (hpa)
+            tlyr(n,k1)   = tgrs(i,k, jj)
+            prslk1(n,k1) = prslk(i,k, jj)
+            !cnvw1(n,k1)  = cnvw(i,k, jj)
+            !cnvc1(n,k1)  = cnvc(i,k, jj)
 
 !  --- ...  compute relative humidity
 !         es  = min( prsl(i,k), 0.001 * fpvs( tgrs(i,k) ) )   ! fpvs in pa
@@ -1301,79 +1466,78 @@ contains
 !         rhly(i,k1) = max( 0.0, min( 1.0, max(qmin, qgrs(i,k))/qs ) )
 !         qstl(i,k1) = qs
 !--------------------------------------------------------------------------
-               qlyr(i,k1, jj) = max( qme6, qgrs(i,k, jj) )
-               !call qsatq(1,tlyr(i,k1, jj),plyr(i,k1, jj),qss) !plyr in mb
-               epsm2=0.622-1.
-               qqq = min ( plyr(i,k1, jj) , 0.01*fpvs_gpu(tlyr(i,k1, jj),c1xpvs,c2xpvs,tbpvs) )
-               qss = 0.622*qqq/(plyr(i,k1, jj)+epsm2*qqq)
-               ! end call qsatq (inlined)
-               rhly(i,k1, jj)= max( 0.0, min( 1.0, max(qmin, qlyr(i,k1, jj))/qss ) )
-               qstl(i,k1, jj) = qss
+            qlyr(n,k1) = max( qme6, qgrs(i,k, jj) )
+            !call qsatq(1,tlyr(i,k1, jj),plyr(i,k1, jj),qss) !plyr in mb
+            epsm2=0.622-1.
+            qqq = min ( plyr(n,k1) , 0.01*fpvs_gpu(tlyr(n,k1),c1xpvs,c2xpvs,tbpvs) )
+            qss = 0.622*qqq/(plyr(n,k1)+epsm2*qqq)
+            ! end call qsatq (inlined)
+            rhly(n,k1)= max( 0.0, min( 1.0, max(qmin, qlyr(n,k1))/qss ) )
+            qstl(n,k1) = qss
 !---------------------------------------------------------------------------
-               !$acc loop seq
-               do j = 1, ntrac
-                  tracer1(i,k1,j, jj) = tracer(i,k,j, jj)
-               enddo
+            !$acc loop seq
+            do j = 1, ntrac
+               tracer1(n,k1,j) = tracer(i,k,j, jj)
             enddo
          enddo
       end do
       
-      do jj = 1, jlistnum
-         if ( me == 0 .and. myrank == 0) then
-            print *,'###################################################' 
-            print *,'### prsl(ipt,1) =',prsl(ipt,1, jj)*10.,' in mb ###'
-            print *,'### tgrs(ipt,1) =',tgrs(ipt,1, jj)
-            print *,'### qgrs(ipt,1) =',qgrs(ipt,1, jj)
-            print *,'### qlyr(ipt,1) =',qlyr(ipt,1, jj)
-            print *,'### rhly(ipt,1) =',rhly(ipt,1, jj)
-            print *,'### qstl(ipt,1) =',qstl(ipt,1, jj)
-            print *,'###################################################' 
-            print *,'### prsl(ipt,lm) =',prsl(ipt,lm, jj)*10.,' in mb ###'
-            print *,'### tgrs(ipt,lm) =',tgrs(ipt,lm, jj)
-            print *,'### qgrs(ipt,lm) =',qgrs(ipt,lm, jj)
-            print *,'### qlyr(ipt,lm) =',qlyr(ipt,lm, jj)
-            print *,'### rhly(ipt,lm) =',rhly(ipt,lm, jj)
-            print *,'### qstl(ipt,lm) =',qstl(ipt,lm, jj)
-            print *,'###################################################' 
-         endif
+      do n = 1, nxptot
+         jj = map_jj(n)
+         i = map_i(n)
+         if (i .eq. ipt) then
+            if ( me == 0 .and. myrank == 0) then
+               print *,'###################################################' 
+               print *,'### prsl(ipt,1) =',prsl(ipt,1, jj)*10.,' in mb ###'
+               print *,'### tgrs(ipt,1) =',tgrs(ipt,1, jj)
+               print *,'### qgrs(ipt,1) =',qgrs(ipt,1, jj)
+               print *,'### qlyr(ipt,1) =',qlyr(n,1)
+               print *,'### rhly(ipt,1) =',rhly(n,1)
+               print *,'### qstl(ipt,1) =',qstl(n,1)
+               print *,'###################################################' 
+               print *,'### prsl(ipt,lm) =',prsl(ipt,lm, jj)*10.,' in mb ###'
+               print *,'### tgrs(ipt,lm) =',tgrs(ipt,lm, jj)
+               print *,'### qgrs(ipt,lm) =',qgrs(ipt,lm, jj)
+               print *,'### qlyr(ipt,lm) =',qlyr(n,lm)
+               print *,'### rhly(ipt,lm) =',rhly(n,lm)
+               print *,'### qstl(ipt,lm) =',qstl(n,lm)
+               print *,'###################################################' 
+            endif
+         end if
       end do
 
-      !$acc parallel loop collapse(2) async(async_id)
-      do jj = 1, jlistnum
-         do i = 1, ix
-            if (i .le. myim(jj)) then
-               plvl(i,lp1+kd, jj) = 10.0 * prsi(i,lp1, jj)  ! cb (kpa) to mb (hpa)
-               !       plvl(i,lp1+kd) = 0.01 * prsi(i,lp1)  ! pa to mb (hpa)
-            end if
-         enddo
+      !$acc parallel loop private(jj, i) async(async_id)
+      do n = 1, nxptot
+         jj = map_jj(n)
+         i = map_i(n)
+         plvl(n,lp1+kd) = 10.0 * prsi(i,lp1, jj)  ! cb (kpa) to mb (hpa)
+         !       plvl(i,lp1+kd) = 0.01 * prsi(i,lp1)  ! pa to mb (hpa)
       end do
 
       if ( lextop ) then                 ! values for extra top layer
-         !$acc parallel loop collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               if (i .le. myim(jj)) then
-                  plvl(i,llb, jj) = prsmin
-                  if ( plvl(i,lla, jj) <= prsmin ) plvl(i,lla, jj) = 2.0*prsmin
-                  plyr(i,lyb, jj)   = 0.5 * plvl(i,lla, jj)
-                  tlyr(i,lyb, jj)   = tlyr(i,lya, jj)
-                  prslk1(i,lyb, jj) = (plyr(i,lyb, jj)*0.001) ** rocp ! plyr in hpa
+         !$acc parallel loop private(jj, i) async(async_id)
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            plvl(n,llb) = prsmin
+            if ( plvl(n,lla) <= prsmin ) plvl(n,lla) = 2.0*prsmin
+            plyr(n,lyb)   = 0.5 * plvl(n,lla)
+            tlyr(n,lyb)   = tlyr(n,lya)
+            prslk1(n,lyb) = (plyr(n,lyb)*0.001) ** rocp ! plyr in hpa
 
-                  rhly(i,lyb, jj)   = rhly(i,lya, jj)
-                  qstl(i,lyb, jj)   = qstl(i,lya, jj)
-               end if
-            enddo
+            rhly(n,lyb)   = rhly(n,lya)
+            qstl(n,lyb)   = qstl(n,lya)
          end do
 
-         !$acc parallel loop collapse(3) async(async_id)
-         do jj = 1, jlistnum
-            do j = 1, ntrac
-               do i = 1, ix
-                  if (i .le. myim(jj)) then
-                     !  ---  note: may need to take care the top layer amount
-                     tracer1(i,lyb,j, jj) = tracer1(i,lya,j, jj)
-                  end if
-               enddo
+         !$acc parallel loop collapse(2) private(jj, i) async(async_id)
+         do j = 1, ntrac
+            do n = 1, nxptot
+               jj = map_jj(n)
+               i = map_i(n)
+               if (i .le. myim(jj)) then
+                  !  ---  note: may need to take care the top layer amount
+                  tracer1(n,lyb,j) = tracer1(n,lya,j)
+               end if
             enddo
          end do
       endif
@@ -1401,20 +1565,23 @@ contains
 !  --- ...  get layer ozone mass mixing ratio
 
       if (ntoz > 0) then            ! interactive ozone generation
-         !$acc parallel loop gang collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, lmk
-               !$acc loop vector 
-               do i = 1, myim(jj)
-                  olyr(i,k, jj) = max( qmin, tracer1(i,k,ntoz, jj) )
-               enddo
+         !$acc parallel loop gang collapse(2) private(jj, i) async(async_id)
+         do k = 1, lmk
+            do n = 1, nxptot
+               jj = map_jj(n)
+               i = map_i(n)
+               olyr(n,k) = max( qmin, tracer1(n,k,ntoz) )
             enddo
          end do
 
-         do jj = 1, jlistnum
-            if (me == 0 .and. myrank ==0) print *, '### ntoz=',ntoz,' ipt=',ipt
-            if (me == 0 .and. myrank ==0) print *, '### olyr(i,k)>= qmin, qmin=',qmin
-            if (me == 0 .and. myrank ==0) print *, '### olyr(ipt,lm)=',olyr(ipt,lm, jj)
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            if (i .eq. ipt) then
+               if (me == 0 .and. myrank ==0) print *, '### ntoz=',ntoz,' ipt=',ipt
+               if (me == 0 .and. myrank ==0) print *, '### olyr(i,k)>= qmin, qmin=',qmin
+               if (me == 0 .and. myrank ==0) print *, '### olyr(ipt,lm)=',olyr(n,lm)
+            end if
          end do
 
 !     else                          ! climatological ozone
@@ -1430,29 +1597,21 @@ contains
 
       endif                            ! end_if_ntoz
 
-!  --- ...  compute cosin of zenith angle
-
-      if (me == 0 .and. myrank ==0) print *,'### call coszmn'
-      !call nvtxStartRange("coszmn")
-      call coszmn_gpu                                                       &
-      !  ---  inputs:
-      &     ( xlon,sinlat,coslat, &
-              solhr, myim, me, ix, async_id,                          &
-      !  ---  outputs:
-      &       coszen, coszdg                                             &
-      &      )
-      !call nvtxEndRange
 
       if ( myrank == 0 .and. me == 0) print *,'### call coszmn ok ! ###'
-      do jj = 1, jlistnum
-         if ( myrank == 0 .and. me == 0) then 
-            print *,'solhr=',solhr,' ipt=',ipt                          
-            print *,'xlon(ipt)=',xlon(ipt, jj)
-            print *,'sinlat(ipt)=',sinlat(ipt, jj)
-            print *,'coslat(ipt)=',coslat(ipt, jj)
-            print *,'coszen(ipt)=',coszen(ipt, jj)
-            print *,'coszdg(ipt)=',coszdg(ipt, jj)
-         endif
+      do n = 1, nxptot
+         jj = map_jj(n)
+         i = map_i(n)
+         if (i .eq. ipt) then
+            if ( myrank == 0 .and. me == 0) then 
+               print *,'solhr=',solhr,' ipt=',ipt                          
+               print *,'xlon(ipt)=',xlon(ipt, jj)
+               print *,'sinlat(ipt)=',sinlat(ipt, jj)
+               print *,'coslat(ipt)=',coslat(ipt, jj)
+               print *,'coszen(ipt)=',coszen(ipt, jj)
+               print *,'coszdg(ipt)=',coszdg(ipt, jj)
+            endif
+         end if
       end do
 !
 !  --- ...  set up non-prognostic gas volume mixing ratioes
@@ -1462,156 +1621,143 @@ contains
       call getgases_gpu                                                     &
       !  ---  inputs:
       &    ( plvl, xlon, xlat,                                           &
-      &      myim, lmk, async_id,                                                    &
+      &      myim, lmk, map_jj, map_i, nxptot, async_id,                                                    &
       !  ---  outputs:
-      &      gasvmr                                                      &
+      &      gasvmr_co2, gasvmr_other                                                      &
       &     )
       !call nvtxEndRange
       
-      do jj = 1, jlistnum
-         if (me == 0 .and. myrank ==0) then
-            print *,'###################################################' 
-            print *,'### call getgase ok !!'
-            print *,'### plvl(ipt,1)=',plvl(ipt,1, jj)
-            print *,'### plvl(ipt,2)=',plvl(ipt,2, jj)
-            print *,'### plvl(ipt,lm)=',plvl(ipt,lm, jj)
-            print *,'### plvl(ipt,lm+1)=',plvl(ipt,lm+1, jj)
-            print *,'### xlon(ipt)=',xlon(ipt, jj)
-            print *,'### xlat(ipt)=',xlat(ipt, jj)
-            print *,'### lmk=',lmk,' im=',myim(jj),' ltp=',ltp
-            print *,'### gasvmr(ipt,lm,1)_co2 =',gasvmr(ipt,lm,1, jj)
-            print *,'### gasvmr(ipt,lm,2)_n2o =',gasvmr(ipt,lm,2, jj)
-            print *,'### gasvmr(ipt,lm,3)_ch4 =',gasvmr(ipt,lm,3, jj)
-            print *,'### gasvmr(ipt,lm,4)_o2  =',gasvmr(ipt,lm,4, jj)
-            print *,'### gasvmr(ipt,lm,5)_co  =',gasvmr(ipt,lm,5, jj)
-            print *,'### gasvmr(ipt,lm,6)_cf11=',gasvmr(ipt,lm,6, jj)
-            print *,'### gasvmr(ipt,lm,7)_cf12=',gasvmr(ipt,lm,7, jj)
-            print *,'### gasvmr(ipt,lm,8)_cf22=',gasvmr(ipt,lm,8, jj)
-            print *,'### gasvmr(ipt,lm,9)_ccl4=',gasvmr(ipt,lm,9, jj)
-            print *,'###################################################' 
+      do n = 1, nxptot
+         jj = map_jj(n)
+         i = map_i(n)
+         if (i .eq. ipt) then
+            if (me == 0 .and. myrank ==0) then
+               print *,'###################################################' 
+               print *,'### call getgase ok !!'
+               print *,'### plvl(ipt,1)=',plvl(n,1)
+               print *,'### plvl(ipt,2)=',plvl(n,2)
+               print *,'### plvl(ipt,lm)=',plvl(n,lm)
+               print *,'### plvl(ipt,lm+1)=',plvl(n,lm+1)
+               print *,'### xlon(ipt)=',xlon(ipt, jj)
+               print *,'### xlat(ipt)=',xlat(ipt, jj)
+               print *,'### lmk=',lmk,' im=',myim(jj),' ltp=',ltp
+               print *,'### gasvmr(ipt,lm,1)_co2 =',gasvmr_co2(n,lm)
+               print *,'### gasvmr(ipt,lm,2)_n2o =',gasvmr_other(2)
+               print *,'### gasvmr(ipt,lm,3)_ch4 =',gasvmr_other(3)
+               print *,'### gasvmr(ipt,lm,4)_o2  =',gasvmr_other(4)
+               print *,'### gasvmr(ipt,lm,5)_co  =',gasvmr_other(5)
+               print *,'### gasvmr(ipt,lm,6)_cf11=',gasvmr_other(6)
+               print *,'### gasvmr(ipt,lm,7)_cf12=',gasvmr_other(7)
+               print *,'### gasvmr(ipt,lm,8)_cf22=',gasvmr_other(8)
+               print *,'### gasvmr(ipt,lm,9)_ccl4=',gasvmr_other(9)
+               print *,'###################################################' 
+            end if
          endif  
       end do
 !
 !  --- ...  get temperature at layer interface, and layer moisture
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, jlistnum
-         do k = 2, lmk
-            !$acc loop vector
-            do i = 1, myim(jj)
-               tem2da(i,k, jj) = log( plyr(i,k, jj) )
-               tem2db(i,k, jj) = log( plvl(i,k, jj) )
-            enddo
-         enddo
-      end do
 
       if (ivflip == 0) then              ! input data from toa to sfc
-         !$acc parallel loop collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               if (i .le. myim(jj)) then
-                  tem1d (i, jj)   = qme6
-                  tem2da(i,1, jj) = log( plyr(i,1, jj) )
-                  tem2db(i,1, jj) = 1.0
-                  tsfa  (i, jj)   = tlyr(i,lmk, jj)                  ! sfc layer air temp
-                  tlvl(i,1, jj)   = tlyr(i,1, jj)
-                  tlvl(i,lmp, jj) = tskn(i, jj)
-               end if
+         !$acc parallel loop collapse(2) private(jj, i) async(async_id)
+         do k = 2, lmk
+            do n = 1, nxptot
+               jj = map_jj(n)
+               i = map_i(n)
+               tem2da(n,k) = log( plyr(n,k) )
+               tem2db(n,k) = log( plvl(n,k) )
             enddo
          end do
 
-         !$acc parallel loop collapse(2) private(k1) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               if (i .le. myim(jj)) then
-                  !$acc loop seq
-                  do k = 1, lm
-                     k1 = k + kd
-                     qlyr(i,k1, jj) = max( tem1d(i, jj), qgrs(i,k, jj) )
-                     tem1d(i, jj)   = min( qme5, qlyr(i,k1, jj) )
-                     tvly(i,k1, jj) = tgrs(i,k, jj) * (1.0 + con_fvirt*qlyr(i,k1, jj))! virtual temp in k
-                  enddo
-               end if
+         !$acc parallel loop private(jj, i) async(async_id)
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            tem1d (n)   = qme6
+            tem2da(n,1) = log( plyr(n,1) )
+            tem2db(n,1) = 1.0
+            tsfa  (n)   = tlyr(n,lmk)                  ! sfc layer air temp
+            tlvl(n,1)   = tlyr(n,1)
+            tlvl(n,lmp) = tskn(n)
+         end do
+
+         !$acc parallel loop private(k1, jj, i) async(async_id)
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            !$acc loop seq
+            do k = 1, lm
+               k1 = k + kd
+               qlyr(n,k1) = max( tem1d(n), qgrs(i,k, jj) )
+               tem1d(n)   = min( qme5, qlyr(n,k1) )
+               tvly(n,k1) = tgrs(i,k, jj) * (1.0 + con_fvirt*qlyr(n,k1))! virtual temp in k
             enddo
          end do
 
+         !$acc parallel loop collapse(2) private(jj, i) async(async_id)
+         do k = 2, lmk
+            do n = 1, nxptot
+               jj = map_jj(n)
+               i = map_i(n)
+               tlvl(n,k) = tlyr(n,k) + (tlyr(n,k-1) - tlyr(n,k))           &
+               &                * (tem2db(n,k)   - tem2da(n,k))                   &
+               &                / (tem2da(n,k-1) - tem2da(n,k))
+            enddo
+         end do
+         
          if ( lextop ) then
-            !$acc parallel loop collapse(2) private(k1) async(async_id)
-            do jj = 1, jlistnum
-               do i = 1, ix
-                  if (i .le. myim(jj)) then
-                     qlyr(i,lyb, jj) = qlyr(i,lya, jj)
-                     tvly(i,lyb, jj) = tvly(i,lya, jj)
-                  end if
-               enddo
+            !$acc parallel loop private(k1, jj, i) async(async_id)
+            do n = 1, nxptot
+               jj = map_jj(n)
+               i = map_i(n)
+               qlyr(n,lyb) = qlyr(n,lya)
+               tvly(n,lyb) = tvly(n,lya)
             end do
          endif
-
-         !$acc parallel loop gang collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do k = 2, lmk
-               !$acc loop vector
-               do i = 1, myim(jj)
-                  tlvl(i,k, jj) = tlyr(i,k, jj) + (tlyr(i,k-1, jj) - tlyr(i,k, jj))           &
-                  &                * (tem2db(i,k, jj)   - tem2da(i,k, jj))                   &
-                  &                / (tem2da(i,k-1, jj) - tem2da(i,k, jj))
-               enddo
-            enddo
-         end do
-
       else                               ! input data from sfc to toa
 
-         !$acc parallel loop collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               if (i .le. myim(jj)) then
-                  tem1d (i, jj)   = qme6
-                  tem2da(i,1, jj) = log( plyr(i,1, jj) )
-                  tem2db(i,1, jj) = log( plvl(i,1, jj) )
-                  tsfa  (i, jj)   = tlyr(i,1, jj)                    ! sfc layer air temp
-                  tlvl(i,1, jj)   = tskn(i, jj)
-                  tlvl(i,lmp, jj) = tlyr(i,lmk, jj)
-               end if
+         !$acc parallel loop private(jj, i) async(async_id)
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            tem1d (n)   = qme6
+            tsfa  (n)   = tlyr(n,1)                    ! sfc layer air temp
+            tlvl(n,1)   = tskn(n)
+            tlvl(n,lmp) = tlyr(n,lmk)
+         end do
+
+         !$acc parallel loop private(jj, i) async(async_id)
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            !$acc loop seq
+            do k = lm, 1, -1
+               qlyr(n,k) = max( tem1d(n), qgrs(i,k, jj) )
+               tem1d(n)  = min( qme5, qlyr(n,k) )
+               tvly(n,k) = tgrs(i,k, jj) * (1.0 + con_fvirt*qlyr(n,k)) ! virtual temp in k
             enddo
          end do
 
-         !$acc parallel loop collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               if (i .le. myim(jj)) then
-                  !$acc loop seq
-                  do k = lm, 1, -1
-                     qlyr(i,k, jj) = max( tem1d(i, jj), qgrs(i,k, jj) )
-                     tem1d(i, jj)  = min( qme5, qlyr(i,k, jj) )
-                     tvly(i,k, jj) = tgrs(i,k, jj) * (1.0 + con_fvirt*qlyr(i,k, jj)) ! virtual temp in k
-                  enddo
-               end if
+         !$acc parallel loop gang collapse(2) private(tem2dar, jj, i) async(async_id)
+         do k = 1, lmk-1
+            do n = 1, nxptot
+               jj = map_jj(n)
+               i = map_i(n)
+               tem2dar = log(plyr(n,k))
+               tlvl(n,k+1) = tlyr(n,k) + (tlyr(n,k+1) - tlyr(n,k))         &
+               &                  * (log(plvl(n,k+1)) - tem2dar)                 &
+               &                  / (log(plyr(n,k+1)) - tem2dar)
             enddo
          end do
-
          if ( lextop ) then
-            !$acc parallel loop collapse(2) async(async_id)
-            do jj = 1, jlistnum
-               do i = 1, ix
-                  if (i .le. myim(jj)) then
-                     qlyr(i,lyb, jj) = qlyr(i,lya, jj)
-                     tvly(i,lyb, jj) = tvly(i,lya, jj)
-                  end if
-               enddo
+            !$acc parallel loop private(jj, i) async(async_id)
+            do n = 1, nxptot
+               jj = map_jj(n)
+               i = map_i(n)
+               qlyr(n,lyb) = qlyr(n,lya)
+               tvly(n,lyb) = tvly(n,lya)
             end do
          endif
-
-         !$acc parallel loop gang collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, lmk-1
-               !$acc loop vector
-               do i = 1, myim(jj)
-                  tlvl(i,k+1, jj) = tlyr(i,k, jj) + (tlyr(i,k+1, jj) - tlyr(i,k, jj))         &
-                  &                  * (tem2db(i,k+1, jj) - tem2da(i,k, jj))                 &
-                  &                  / (tem2da(i,k+1, jj) - tem2da(i,k, jj))
-               enddo
-            enddo
-         end do
-      endif                              ! end_if_ivflip
+      endif                 ! end_if_ivflip
       
       !$acc parallel loop collapse(3) async(async_id)
       do jj = 1, jlistnum
@@ -1625,82 +1771,61 @@ contains
          end do
       end do
 
-!  --- ...  check for daytime points
-      !$acc parallel loop async(async_id)
-      do jj = 1, jlistnum
-         nday(jj) = 0
-         !$acc loop seq
-         do i = 1, myim(jj)
-            if (coszen(i, jj) >= 0.0001) then
-               nday(jj) = nday(jj) + 1
-               idxday(nday(jj), jj) = i
-            endif
-         enddo
-      end do
 !      if (myrank == 0 ) print *,'nday=',nday
 
 !  --- ...  setup aerosols property profile for radiation
 
       if (me == 0 .and. myrank ==0) print *,'### before setaer ###'
-         do jj = 1, jlistnum
+      do n = 1, nxptot
+         jj = map_jj(n)
+         i = map_i(n)
+         if (i .eq. ipt) then
             if (myrank == 0 .and. me == 0)then
                print *,'###################################################' 
-               print *,'### plvl(ipt,lm+1)=',plvl(ipt,lm+1, jj)
-               print *,'### plyr(ipt,lm)=',plyr(ipt,lm, jj)
-               print *,'### prslk1(ipt,lm)=',prslk1(ipt,lm, jj)
-               print *,'### tvly(ipt,lm)=',tvly(ipt,lm, jj)
-               print *,'### tlyr(ipt,lm)=',tlyr(ipt,lm, jj)
-               print *,'### qlyr(ipt,lm)=',qlyr(ipt,lm, jj)
-               print *,'### rhly(ipt,lm)=',rhly(ipt,lm, jj)
+               print *,'### plvl(ipt,lm+1)=',plvl(n,lm+1)
+               print *,'### plyr(ipt,lm)=',plyr(n,lm)
+               print *,'### prslk1(ipt,lm)=',prslk1(n,lm)
+               print *,'### tvly(ipt,lm)=',tvly(n,lm)
+               print *,'### tlyr(ipt,lm)=',tlyr(n,lm)
+               print *,'### qlyr(ipt,lm)=',qlyr(n,lm)
+               print *,'### rhly(ipt,lm)=',rhly(n,lm)
                print *,'###################################################' 
             endif
-         end do
-         !call nvtxStartRange("setaer")
-         !write(myrank_str,'(I3)') myrank
-         !open(unit=1000, file='setaer_input.'//trim(adjustl(myrank_str)), form='unformatted', &
-         !   access='stream', status='replace')
-         !write(1000) plvl,plyr,prslk1,tvly,rhly,slmsk,tracer1,     &
-         !   xlon,xlat, myim,lmk,lmp,lsswr,lslwr,me,myrank, ix
-         !close(1000)
-
-         call setaer_gpu                                                       &
-         !  ---  inputs:
-         &     ( plvl,plyr,prslk1,tvly,rhly,slmsk,tracer1, &
-         xlon,xlat,        &
-         &       myim,lmk,lmp,lsswr,lslwr,me,myrank, ix, async_id,                          &
-         !  ---  outputs:
-         &       faersw,faerlw                                              &
-         !    &       faersw,faerlw,aerodp                                       &
-         &     )
-         !call nvtxEndRange
+         end if
+      end do
 
       if (me == 0 .and. myrank ==0) then
-         do jj = 1, jlistnum
-            print *,'###################################################' 
-            print *,'### after call setaer ###'
-            print *,'###################################################' 
-            print *,'### im=',myim(jj),' lmk=',lmk,' lmp=',lmp,' ipt=',ipt
-            print *,'### xlon(ipt)=', xlon(ipt, jj)
-            print *,'### xlat(ipt)=', xlat(ipt, jj)
-            print *,'### slmsk(ipt)=',slmsk(ipt, jj)
-            print *,'### plvl(ipt,lm+1)=',plvl(ipt,lm+1, jj)
-            print *,'### plyr(ipt,lm)=',plyr(ipt,lm, jj)
-            print *,'### prslk1(ipt,lm)=',prslk1(ipt,lm, jj)
-            print *,'### tvly(ipt,lm)=',tvly(ipt,lm, jj)
-            print *,'### rhly(ipt,lm)=',rhly(ipt,lm, jj)
-            print *,'### tracer1(ipt,lm,1)=',tracer1(ipt,lm,1, jj)
-            print *,'### tracer1(ipt,lm,2)=',tracer1(ipt,lm,2, jj)
-            print *,'### tracer1(ipt,lm,3)=',tracer1(ipt,lm,3, jj)
-            print *,'###################################################' 
-            print *,'### faersw(ipt,lm,1,1)=sw#1-opd =',faersw(ipt,lm,1,1, jj)
-            print *,'### faersw(ipt,lm,1,2)=sw#1-ssa =',faersw(ipt,lm,1,2, jj)
-            print *,'### faersw(ipt,lm,1,3)=sw#1-asy =',faersw(ipt,lm,1,3, jj)
-            print *,'### faerlw(ipt,lm,1,1)=lw#1-opd =',faerlw(ipt,lm,1,1, jj)
-            print *,'### faerlw(ipt,lm,1,2)=lw#1-ssa =',faerlw(ipt,lm,1,2, jj)
-            print *,'### faerlw(ipt,lm,1,3)=lw#1-asy =',faerlw(ipt,lm,1,3, jj)
-            print *,'###################################################' 
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            if (i .eq. ipt) then
+               print *,'###################################################' 
+               print *,'### after call setaer ###'
+               print *,'###################################################' 
+               print *,'### im=',myim(jj),' lmk=',lmk,' lmp=',lmp,' ipt=',ipt
+               print *,'### xlon(ipt)=', xlon(ipt, jj)
+               print *,'### xlat(ipt)=', xlat(ipt, jj)
+               print *,'### slmsk(ipt)=',slmsk(ipt, jj)
+               print *,'### plvl(ipt,lm+1)=',plvl(n,lm+1)
+               print *,'### plyr(ipt,lm)=',plyr(n,lm)
+               print *,'### prslk1(ipt,lm)=',prslk1(n,lm)
+               print *,'### tvly(ipt,lm)=',tvly(n,lm)
+               print *,'### rhly(ipt,lm)=',rhly(n,lm)
+               print *,'### tracer1(ipt,lm,1)=',tracer1(n,lm,1)
+               print *,'### tracer1(ipt,lm,2)=',tracer1(n,lm,2)
+               print *,'### tracer1(ipt,lm,3)=',tracer1(n,lm,3)
+               print *,'###################################################' 
+               !print *,'### faersw(ipt,lm,1,1)=sw#1-opd =',tauae(n,lm,1)
+               !print *,'### faersw(ipt,lm,1,2)=sw#1-ssa =',ssaae(n,lm,1)
+               !print *,'### faersw(ipt,lm,1,3)=sw#1-asy =',asyae(n,lm,1)
+               !print *,'### faerlw(ipt,lm,1,1)=lw#1-opd =',tauae(ipt,lm,1,jj)
+               !print *,'### faerlw(ipt,lm,1,2)=lw#1-ssa =',ssaae(ipt,lm,1,jj)
+               !print *,'### faerlw(ipt,lm,1,3)=lw#1-asy =',asyae(ipt,lm,1,jj)
+               print *,'###################################################' 
+            end if
          end do
       endif
+      
 
 
 !  --- ...  obtain cloud information for radiation calculations
@@ -1708,28 +1833,26 @@ contains
       !
          if (icmphys == 1) then           ! zhao/moorthi's prognostic cloud scheme
          !
-            !$acc parallel loop gang collapse(2) async(async_id)
-            do jj = 1, jlistnum
-               do k = 1, lmk
-                  !$acc loop vector private(lv)
-                  do i = 1, myim(jj)
-                     clw(i,k, jj) = 0.0
-                     !$acc loop seq
-                     do j = 1, ncld
-                     lv = ntcw + j - 1
-   !byl                 clw(i,k) = clw(i,k) + tracer1(i,k,lv)   ! cloud condensate amount
-                        clw(i,k, jj) = clw(i,k, jj) + tracer1(i,k,lv, jj) + cnvw(i,k, jj)  ! cloud condensate amount
-                     enddo
+            !$acc parallel loop collapse(2) private(jj, i) async(async_id)
+            do k = 1, lmk
+               do n = 1, nxptot
+                  jj = map_jj(n)
+                  i = map_i(n)
+                  clw(n,k) = 0.0
+                  !$acc loop seq
+                  do j = 1, ncld
+                  lv = ntcw + j - 1
+!byl                 clw(i,k) = clw(i,k) + tracer1(i,k,lv)   ! cloud condensate amount
+                     clw(n,k) = clw(n,k) + tracer1(n,k,lv) + cnvw(i,k, jj)  ! cloud condensate amount
                   enddo
                enddo
             end do
-            !$acc parallel loop gang collapse(2) async(async_id)
-            do jj = 1, jlistnum
-               do k = 1, lmk
-                  !$acc loop vector
-                  do i = 1, myim(jj)
-                     if ( clw(i,k, jj) < epsq ) clw(i,k, jj) = 0.0
-                  enddo
+            !$acc parallel loop gang collapse(2) private(jj, i) async(async_id)
+            do k = 1, lmk
+               do n = 1, nxptot
+                  jj = map_jj(n)
+                  i = map_i(n)
+                  if ( clw(n,k) < epsq ) clw(n,k) = 0.0
                enddo
             end do
 
@@ -1748,61 +1871,63 @@ contains
                allocate(clouds_im(myim(jj),lm+ltp,nf_clds))
                
                do i = 1, myim(jj)
+                  n = i + nxjp_acc(jj) - 1
                   do k = 1, 3
-                     mtopa_im(i, k) = mtopa(i, k, jj)
-                     mbota_im(i, k) = mbota(i, k, jj)
+                     mtopa_im(i, k) = mtopa(n, k)
+                     mbota_im(i, k) = mbota(n, k)
                   end do
                   do k = 1, 5
-                     cldsa_im(i, k) = cldsa(i, k, jj)
+                     cldsa_im(i, k) = cldsa(n, k)
                   end do
                   do k = 1, lm+ltp
-                     clw_im(i, k) = clw(i, k, jj)
-                     rhly_im(i, k) = rhly(i, k, jj)
-                     qstl_im(i, k) = qstl(i, k, jj)
-                     qlyr_im(i, k) = qlyr(i, k, jj)
-                     tvly_im(i, k) = tvly(i, k, jj)
-                     tlyr_im(i, k) = tlyr(i, k, jj)
-                     plyr_im(i, k) = plyr(i, k, jj)
+                     clw_im(i, k) = clw(n, k)
+                     rhly_im(i, k) = rhly(n, k)
+                     qstl_im(i, k) = qstl(n, k)
+                     qlyr_im(i, k) = qlyr(n, k)
+                     tvly_im(i, k) = tvly(n, k)
+                     tlyr_im(i, k) = tlyr(n, k)
+                     plyr_im(i, k) = plyr(n, k)
                      do j = 1, nf_clds
-                        clouds_im(i, k, j) = clouds(i, k, j, jj)
+                        clouds_im(i, k, j) = clouds(n, k, j)
                      end do
                   end do
                   do k = 1, lm+1+ltp
-                     plvl_im(i, k) = plvl(i, k, jj)
+                     plvl_im(i, k) = plvl(n, k)
                   end do
                end do
                if ( me == 0 .and. myrank == 0 )                              &
                   print *,'### call progcld1 -zhao/moorhi ###' 
                call progcld1_gpu                                                 &
                !  ---  inputs:
-               &     ( plyr_im,plvl_im,tlyr_im,tvly_im,qlyr_im,qstl_im,rhly_im,clw_im,                    &
-               &       xlat(1:myim(jj), jj),xlon(1:myim(jj), jj),slmsk(1:myim(jj), jj),                                           &
+               &     ( plyr_im,plvl_im,tlyr_im,tvly_im,qlyr_im,qstl_im,rhly_im,clw_im,        &
+               &       xlat(1:myim(jj), jj),xlon(1:myim(jj), jj),slmsk(1:myim(jj), jj),      &
                &       myim(jj), lmk, lmp, myrank,                                      &
                !  ---  outputs:
                &       clouds_im,cldsa_im,mtopa_im,mbota_im                                   &
                &      )
                do i = 1, myim(jj)
+                  n = i + nxjp_acc(jj) - 1
                   do k = 1, 3
-                     mtopa(i, k, jj) = mtopa_im(i, k)
-                     mbota(i, k, jj) = mbota_im(i, k)
+                     mtopa(n, k) = mtopa_im(i, k)
+                     mbota(n, k) = mbota_im(i, k)
                   end do
                   do k = 1, 5
-                     cldsa(i, k, jj) = cldsa_im(i, k)
+                     cldsa(n, k) = cldsa_im(i, k)
                   end do
                   do k = 1, lm+ltp
-                     clw(i, k, jj) = clw_im(i, k)
-                     rhly(i, k, jj) = rhly_im(i, k)
-                     qstl(i, k, jj) = qstl_im(i, k)
-                     qlyr(i, k, jj) = qlyr_im(i, k)
-                     tvly(i, k, jj) = tvly_im(i, k)
-                     tlyr(i, k, jj) = tlyr_im(i, k)
-                     plyr(i, k, jj) = plyr_im(i, k)
+                     clw(n, k) = clw_im(i, k)
+                     rhly(n, k) = rhly_im(i, k)
+                     qstl(n, k) = qstl_im(i, k)
+                     qlyr(n, k) = qlyr_im(i, k)
+                     tvly(n, k) = tvly_im(i, k)
+                     tlyr(n, k) = tlyr_im(i, k)
+                     plyr(n, k) = plyr_im(i, k)
                      do j = 1, nf_clds
-                        clouds(i, k, j, jj) = clouds_im(i, k, j)
+                        clouds(n, k, j) = clouds_im(i, k, j)
                      end do
                   end do
                   do k = 1, lm+1+ltp
-                     plvl_im(i, k) = plvl(i, k, jj)
+                     plvl_im(i, k) = plvl(n, k)
                   end do
                end do
                deallocate(plyr_im,plvl_im,tlyr_im,tvly_im,qlyr_im,qstl_im,rhly_im,&
@@ -1827,13 +1952,15 @@ contains
             do jj = 1, jlistnum
                do k = 1, lmk
                   do i = 1, myim(jj)
-                     clw(i,k, jj) = 0.0
+                     n = i + nxjp_acc(jj) - 1
+                     clw(n,k) = 0.0
                   enddo
 
                   do j = 1, ncld
                      lv = ntcw + j - 1
                      do i = 1, myim(jj)
-                        clw(i,k, jj) = clw(i,k, jj) + tracer1(i,k,lv, jj)   ! cloud condensate amount
+                        n = i + nxjp_acc(jj) - 1
+                        clw(n,k) = clw(n,k) + tracer1(n,k,lv)   ! cloud condensate amount
                      enddo
                   enddo
                enddo
@@ -1842,7 +1969,8 @@ contains
             do jj = 1, jlistnum
                do k = 1, lmk
                   do i = 1, myim(jj)
-                     if ( clw(i,k, jj) < epsq ) clw(i,k, jj) = 0.0
+                     n = i + nxjp_acc(jj) - 1
+                     if ( clw(n,k) < epsq ) clw(n,k) = 0.0
                   enddo
                enddo
             end do
@@ -1861,27 +1989,28 @@ contains
                allocate(mbota_im(myim(jj), 3))
                allocate(clouds_im(myim(jj),lm+ltp,nf_clds))
                do i = 1, myim(jj)
+                  n = i + nxjp_acc(jj) - 1
                   do k = 1, 3
-                     mtopa_im(i, k) = mtopa(i, k, jj)
-                     mbota_im(i, k) = mbota(i, k, jj)
+                     mtopa_im(i, k) = mtopa(n, k)
+                     mbota_im(i, k) = mbota(n, k)
                   end do
                   do k = 1, 5
-                     cldsa_im(i, k) = cldsa(i, k, jj)
+                     cldsa_im(i, k) = cldsa(n, k)
                   end do
                   do k = 1, lm+ltp
-                     clw_im(i, k) = clw(i, k, jj)
-                     rhly_im(i, k) = rhly(i, k, jj)
-                     qstl_im(i, k) = qstl(i, k, jj)
-                     qlyr_im(i, k) = qlyr(i, k, jj)
-                     tvly_im(i, k) = tvly(i, k, jj)
-                     tlyr_im(i, k) = tlyr(i, k, jj)
-                     plyr_im(i, k) = plyr(i, k, jj)
+                     clw_im(i, k) = clw(n, k)
+                     rhly_im(i, k) = rhly(n, k)
+                     qstl_im(i, k) = qstl(n, k)
+                     qlyr_im(i, k) = qlyr(n, k)
+                     tvly_im(i, k) = tvly(n, k)
+                     tlyr_im(i, k) = tlyr(n, k)
+                     plyr_im(i, k) = plyr(n, k)
                      do j = 1, nf_clds
-                        clouds_im(i, k, j) = clouds(i, k, j, jj)
+                        clouds_im(i, k, j) = clouds(n, k, j)
                      end do
                   end do
                   do k = 1, lm+1+ltp
-                     plvl_im(i, k) = plvl(i, k, jj)
+                     plvl_im(i, k) = plvl(n, k)
                   end do
                end do
                if ( me == 0 .and. myrank == 0 )                               &
@@ -1890,34 +2019,35 @@ contains
                !  ---  inputs:
                &     ( plyr_im,plvl_im,tlyr_im,tvly_im,qlyr_im,qstl_im,rhly_im,clw_im,&
                cnvw(:, :, jj),cnvc(:, :, jj),          &
-               &       xlat(1:myim(jj), jj),xlon(1:myim(jj), jj),slmsk(1:myim(jj), jj),                                           &
+               &       xlat(1:myim(jj), jj),xlon(1:myim(jj), jj),slmsk(1:myim(jj), jj),    &
                &       myim(jj), lmk, lmp,                                              &
                &       deltaq(:, :, jj), sup,kdt,me,                                        &
                !  ---  outputs:
                &       clouds_im,cldsa_im,mtopa_im,mbota_im                                   &
                &      )
                do i = 1, myim(jj)
+                  n = i + nxjp_acc(jj) - 1
                   do k = 1, 3
-                     mtopa(i, k, jj) = mtopa_im(i, k)
-                     mbota(i, k, jj) = mbota_im(i, k)
+                     mtopa(n, k) = mtopa_im(i, k)
+                     mbota(n, k) = mbota_im(i, k)
                   end do
                   do k = 1, 5
-                     cldsa(i, k, jj) = cldsa_im(i, k)
+                     cldsa(n, k) = cldsa_im(i, k)
                   end do
                   do k = 1, lm+ltp
-                     clw(i, k, jj) = clw_im(i, k)
-                     rhly(i, k, jj) = rhly_im(i, k)
-                     qstl(i, k, jj) = qstl_im(i, k)
-                     qlyr(i, k, jj) = qlyr_im(i, k)
-                     tvly(i, k, jj) = tvly_im(i, k)
-                     tlyr(i, k, jj) = tlyr_im(i, k)
-                     plyr(i, k, jj) = plyr_im(i, k)
+                     clw(n, k) = clw_im(i, k)
+                     rhly(n, k) = rhly_im(i, k)
+                     qstl(n, k) = qstl_im(i, k)
+                     qlyr(n, k) = qlyr_im(i, k)
+                     tvly(n, k) = tvly_im(i, k)
+                     tlyr(n, k) = tlyr_im(i, k)
+                     plyr(n, k) = plyr_im(i, k)
                      do j = 1, nf_clds
-                        clouds(i, k, j, jj) = clouds_im(i, k, j)
+                        clouds(n, k, j) = clouds_im(i, k, j)
                      end do
                   end do
                   do k = 1, lm+1+ltp
-                     plvl_im(i, k) = plvl(i, k, jj)
+                     plvl_im(i, k) = plvl(n, k)
                   end do
                end do
                deallocate(plyr_im,plvl_im,tlyr_im,tvly_im,qlyr_im,qstl_im,rhly_im,&
@@ -1951,34 +2081,35 @@ contains
                allocate(clouds_im(myim(jj),lm+ltp,nf_clds))
                allocate(tracer1_im(myim(jj),lm+ltp,ntrac))
                do i = 1, myim(jj)
+                  n = i + nxjp_acc(jj) - 1
                   do k = 1, 3
-                     mtopa_im(i, k) = mtopa(i, k, jj)
-                     mbota_im(i, k) = mbota(i, k, jj)
+                     mtopa_im(i, k) = mtopa(n, k)
+                     mbota_im(i, k) = mbota(n, k)
                   end do
                   do k = 1, 5
-                     cldsa_im(i, k) = cldsa(i, k, jj)
+                     cldsa_im(i, k) = cldsa(n, k)
                   end do
                   do k = 1, lm+ltp
-                     rhly_im(i, k) = rhly(i, k, jj)
-                     qstl_im(i, k) = qstl(i, k, jj)
-                     qlyr_im(i, k) = qlyr(i, k, jj)
-                     tlyr_im(i, k) = tlyr(i, k, jj)
-                     plyr_im(i, k) = plyr(i, k, jj)
+                     rhly_im(i, k) = rhly(n, k)
+                     qstl_im(i, k) = qstl(n, k)
+                     qlyr_im(i, k) = qlyr(n, k)
+                     tlyr_im(i, k) = tlyr(n, k)
+                     plyr_im(i, k) = plyr(n, k)
                      do j = 1, nf_clds
-                        clouds_im(i, k, j) = clouds(i, k, j, jj)
+                        clouds_im(i, k, j) = clouds(n, k, j)
                      end do
                      do j = 1, ntrac
-                        tracer1_im(i, k, j) = tracer1(i, k, j, jj)
+                        tracer1_im(i, k, j) = tracer1(n, k, j)
                      end do
                   end do
                   do k = 1, lm+1+ltp
-                     plvl_im(i, k) = plvl(i, k, jj)
+                     plvl_im(i, k) = plvl(n, k)
                   end do
                end do
                call progcld4_gpu                               &
                   !  --- inputs
                   ( plyr_im,plvl_im,tlyr_im,qlyr_im,qstl_im,rhly_im,tracer1_im,   &
-                  xlat(1:myim(jj), jj),xlon(1:myim(jj), jj),slmsk(1:myim(jj), jj),                         &
+                  xlat(1:myim(jj), jj),xlon(1:myim(jj), jj),slmsk(1:myim(jj), jj),     &
                   ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,          &
                   myim(jj), lmk, lmp,                            &
                   uni_cloud,lmfshal,lmfdeep2,              &
@@ -1988,30 +2119,30 @@ contains
                   clouds_im,cldsa_im,mtopa_im,mbota_im                 &
                   )
                do i = 1, myim(jj)
+                  n = i + nxjp_acc(jj) - 1
                   do k = 1, 3
-                     mtopa(i, k, jj) = mtopa_im(i, k)
-                     mbota(i, k, jj) = mbota_im(i, k)
+                     mtopa(n, k) = mtopa_im(i, k)
+                     mbota(n, k) = mbota_im(i, k)
                   end do
                   do k = 1, 5
-                     cldsa(i, k, jj) = cldsa_im(i, k)
+                     cldsa(n, k) = cldsa_im(i, k)
                   end do
                   do k = 1, lm+ltp
-                     clw(i, k, jj) = clw_im(i, k)
-                     rhly(i, k, jj) = rhly_im(i, k)
-                     qstl(i, k, jj) = qstl_im(i, k)
-                     qlyr(i, k, jj) = qlyr_im(i, k)
-                     tvly(i, k, jj) = tvly_im(i, k)
-                     tlyr(i, k, jj) = tlyr_im(i, k)
-                     plyr(i, k, jj) = plyr_im(i, k)
+                     rhly(n, k) = rhly_im(i, k)
+                     qstl(n, k) = qstl_im(i, k)
+                     qlyr(n, k) = qlyr_im(i, k)
+                     tvly(n, k) = tvly_im(i, k)
+                     tlyr(n, k) = tlyr_im(i, k)
+                     plyr(n, k) = plyr_im(i, k)
                      do j = 1, nf_clds
-                        clouds(i, k, j, jj) = clouds_im(i, k, j)
+                        clouds(n, k, j) = clouds_im(i, k, j)
                      end do
                      do j = 1, ntrac
-                        tracer1(i, k, j, jj) = tracer1_im(i, k, j)
+                        tracer1(n, k, j) = tracer1_im(i, k, j)
                      end do
                   end do
                   do k = 1, lm+1+ltp
-                     plvl_im(i, k) = plvl(i, k, jj)
+                     plvl_im(i, k) = plvl(n, k)
                   end do
                end do
                deallocate(plyr_im,plvl_im,tlyr_im,qlyr_im,qstl_im,rhly_im,cldsa_im, &
@@ -2047,34 +2178,35 @@ contains
                allocate(clouds_im(myim(jj),lm+ltp,nf_clds))
                allocate(tracer1_im(myim(jj),lm+ltp,ntrac))
                do i = 1, myim(jj)
+                  n = i + nxjp_acc(jj) - 1
                   do k = 1, 3
-                     mtopa_im(i, k) = mtopa(i, k, jj)
-                     mbota_im(i, k) = mbota(i, k, jj)
+                     mtopa_im(i, k) = mtopa(n, k)
+                     mbota_im(i, k) = mbota(n, k)
                   end do
                   do k = 1, 5
-                     cldsa_im(i, k) = cldsa(i, k, jj)
+                     cldsa_im(i, k) = cldsa(n, k)
                   end do
                   do k = 1, lm+ltp
-                     rhly_im(i, k) = rhly(i, k, jj)
-                     qstl_im(i, k) = qstl(i, k, jj)
-                     qlyr_im(i, k) = qlyr(i, k, jj)
-                     tlyr_im(i, k) = tlyr(i, k, jj)
-                     plyr_im(i, k) = plyr(i, k, jj)
+                     rhly_im(i, k) = rhly(n, k)
+                     qstl_im(i, k) = qstl(n, k)
+                     qlyr_im(i, k) = qlyr(n, k)
+                     tlyr_im(i, k) = tlyr(n, k)
+                     plyr_im(i, k) = plyr(n, k)
                      do j = 1, nf_clds
-                        clouds_im(i, k, j) = clouds(i, k, j, jj)
+                        clouds_im(i, k, j) = clouds(n, k, j)
                      end do
                      do j = 1, ntrac
-                        tracer1_im(i, k, j) = tracer1(i, k, j, jj)
+                        tracer1_im(i, k, j) = tracer1(n, k, j)
                      end do
                   end do
                   do k = 1, lm+1+ltp
-                     plvl_im(i, k) = plvl(i, k, jj)
+                     plvl_im(i, k) = plvl(n, k)
                   end do
                end do
                call progcld_thompson_gpu                                          &
                   !  --- inputs
                   ( plyr_im, plvl_im, tlyr_im, qlyr_im, qstl_im, rhly_im, tracer1_im,                &
-                  xlat(1:myim(jj), jj), xlon(1:myim(jj), jj), slmsk(1:myim(jj), jj),                                          &
+                  xlat(1:myim(jj), jj), xlon(1:myim(jj), jj), slmsk(1:myim(jj), jj),     &
                   ntrac, ntcw, ntiw, ntrw, ntsw, ntgl,                        &
                   myim(jj), lmk, lmp,                                               &
                   uni_cloud, lmfshal, lmfdeep2, cldcov(:, :, jj),                       &
@@ -2086,30 +2218,30 @@ contains
                   !            cld_reice, cld_rwp, cld_rerain, cld_swp, cld_resnow)
                   clouds_im, cldsa_im, mtopa_im, mbota_im )
                do i = 1, myim(jj)
+                  n = i + nxjp_acc(jj) - 1
                   do k = 1, 3
-                     mtopa(i, k, jj) = mtopa_im(i, k)
-                     mbota(i, k, jj) = mbota_im(i, k)
+                     mtopa(n, k) = mtopa_im(i, k)
+                     mbota(n, k) = mbota_im(i, k)
                   end do
                   do k = 1, 5
-                     cldsa(i, k, jj) = cldsa_im(i, k)
+                     cldsa(n, k) = cldsa_im(i, k)
                   end do
                   do k = 1, lm+ltp
-                     clw(i, k, jj) = clw_im(i, k)
-                     rhly(i, k, jj) = rhly_im(i, k)
-                     qstl(i, k, jj) = qstl_im(i, k)
-                     qlyr(i, k, jj) = qlyr_im(i, k)
-                     tvly(i, k, jj) = tvly_im(i, k)
-                     tlyr(i, k, jj) = tlyr_im(i, k)
-                     plyr(i, k, jj) = plyr_im(i, k)
+                     rhly(n, k) = rhly_im(i, k)
+                     qstl(n, k) = qstl_im(i, k)
+                     qlyr(n, k) = qlyr_im(i, k)
+                     tvly(n, k) = tvly_im(i, k)
+                     tlyr(n, k) = tlyr_im(i, k)
+                     plyr(n, k) = plyr_im(i, k)
                      do j = 1, nf_clds
-                        clouds(i, k, j, jj) = clouds_im(i, k, j)
+                        clouds(n, k, j) = clouds_im(i, k, j)
                      end do
                      do j = 1, ntrac
-                        tracer1(i, k, j, jj) = tracer1_im(i, k, j)
+                        tracer1(n, k, j) = tracer1_im(i, k, j)
                      end do
                   end do
                   do k = 1, lm+1+ltp
-                     plvl_im(i, k) = plvl(i, k, jj)
+                     plvl_im(i, k) = plvl(n, k)
                   end do
                end do
                deallocate(plyr_im,plvl_im,tlyr_im,qlyr_im,qstl_im,rhly_im,cldsa_im, &
@@ -2124,7 +2256,8 @@ contains
             do jj = 1, jlistnum
                do k = 1, lm+ltp
                   do i = 1, myim(jj)
-                     clw(i, k, jj) = 0.0
+                     n = i + nxjp_acc(jj) - 1
+                     clw(n, k) = 0.0
                   end do
                end do
             end do
@@ -2133,10 +2266,11 @@ contains
                   do k = 1, lmk
                      do i = 1, myim(jj)
                         do j = 1, ncld - 1
+                           n = i + nxjp_acc(jj) - 1
                            lv = ntcw + j - 1
-                           clw(i,k, jj) = clw(i,k, jj) + tracer1(i,k,lv, jj)  ! cloud condensate amount
+                           clw(n,k) = clw(n,k) + tracer1(n,k,lv)  ! cloud condensate amount
                         enddo
-                        if ( clw(i,k, jj) < epsq ) clw(i,k, jj) = 0.0
+                        if ( clw(n,k) < epsq ) clw(n,k) = 0.0
                      enddo
                   enddo
                end do
@@ -2166,60 +2300,62 @@ contains
                   allocate(mbota_im(myim(jj), 3))
                   allocate(clouds_im(myim(jj),lm+ltp,nf_clds))
                   do i = 1, myim(jj)
+                     n = i + nxjp_acc(jj) - 1
                      do k = 1, 3
-                        mtopa_im(i, k) = mtopa(i, k, jj)
-                        mbota_im(i, k) = mbota(i, k, jj)
+                        mtopa_im(i, k) = mtopa(n, k)
+                        mbota_im(i, k) = mbota(n, k)
                      end do
                      do k = 1, 5
-                        cldsa_im(i, k) = cldsa(i, k, jj)
+                        cldsa_im(i, k) = cldsa(n, k)
                      end do
                      do k = 1, lm+ltp
-                        clw_im(i, k) = clw(i, k, jj)
-                        rhly_im(i, k) = rhly(i, k, jj)
-                        qstl_im(i, k) = qstl(i, k, jj)
-                        qlyr_im(i, k) = qlyr(i, k, jj)
-                        tvly_im(i, k) = tvly(i, k, jj)
-                        tlyr_im(i, k) = tlyr(i, k, jj)
-                        plyr_im(i, k) = plyr(i, k, jj)
+                        clw_im(i, k) = clw(n, k)
+                        rhly_im(i, k) = rhly(n, k)
+                        qstl_im(i, k) = qstl(n, k)
+                        qlyr_im(i, k) = qlyr(n, k)
+                        tvly_im(i, k) = tvly(n, k)
+                        tlyr_im(i, k) = tlyr(n, k)
+                        plyr_im(i, k) = plyr(n, k)
                         do j = 1, nf_clds
-                           clouds_im(i, k, j) = clouds(i, k, j, jj)
+                           clouds_im(i, k, j) = clouds(n, k, j)
                         end do
                      end do
                      do k = 1, lm+1+ltp
-                        plvl_im(i, k) = plvl(i, k, jj)
+                        plvl_im(i, k) = plvl(n, k)
                      end do
                   end do
                   call progcld5_gpu                                                &
                      !    ---  inputs:
                      ( plyr_im,plvl_im,tlyr_im,tvly_im,qlyr_im,qstl_im,rhly_im,clw_im, &
                      cnvw(:, :, jj),cnvc(:, :, jj),        &
-                     xlat(1:myim(jj), jj),xlon(1:myim(jj), jj),slmsk(1:myim(jj), jj),myim(jj),lmk,lmp,                              &
+                     xlat(1:myim(jj), jj),xlon(1:myim(jj), jj),slmsk(1:myim(jj), jj),myim(jj),lmk,lmp,   &
                      cldcov(:, :, jj),                                                  &
                      !    ---  outputs:
                      clouds_im,cldsa_im,mtopa_im,mbota_im                                 &
                      ) 
                   do i = 1, myim(jj)
+                     n = i + nxjp_acc(jj) - 1
                      do k = 1, 3
-                        mtopa(i, k, jj) = mtopa_im(i, k)
-                        mbota(i, k, jj) = mbota_im(i, k)
+                        mtopa(n, k) = mtopa_im(i, k)
+                        mbota(n, k) = mbota_im(i, k)
                      end do
                      do k = 1, 5
-                        cldsa(i, k, jj) = cldsa_im(i, k)
+                        cldsa(n, k) = cldsa_im(i, k)
                      end do
                      do k = 1, lm+ltp
-                        clw(i, k, jj) = clw_im(i, k)
-                        rhly(i, k, jj) = rhly_im(i, k)
-                        qstl(i, k, jj) = qstl_im(i, k)
-                        qlyr(i, k, jj) = qlyr_im(i, k)
-                        tvly(i, k, jj) = tvly_im(i, k)
-                        tlyr(i, k, jj) = tlyr_im(i, k)
-                        plyr(i, k, jj) = plyr_im(i, k)
+                        clw(n, k) = clw_im(i, k)
+                        rhly(n, k) = rhly_im(i, k)
+                        qstl(n, k) = qstl_im(i, k)
+                        qlyr(n, k) = qlyr_im(i, k)
+                        tvly(n, k) = tvly_im(i, k)
+                        tlyr(n, k) = tlyr_im(i, k)
+                        plyr(n, k) = plyr_im(i, k)
                         do j = 1, nf_clds
-                           clouds(i, k, j, jj) = clouds_im(i, k, j)
+                           clouds(n, k, j) = clouds_im(i, k, j)
                         end do
                      end do
                      do k = 1, lm+1+ltp
-                        plvl_im(i, k) = plvl(i, k, jj)
+                        plvl_im(i, k) = plvl(n, k)
                      end do
                   end do
                   deallocate(plyr_im,plvl_im,tlyr_im,tvly_im,qlyr_im,qstl_im,rhly_im,&
@@ -2240,35 +2376,36 @@ contains
                   allocate(clouds_im(myim(jj),lm+ltp,nf_clds))
                   allocate(tracer1_im(myim(jj),lm+ltp,ntrac))
                   do i = 1, myim(jj)
+                     n = i + nxjp_acc(jj) - 1
                      do k = 1, 3
-                        mtopa_im(i, k) = mtopa(i, k, jj)
-                        mbota_im(i, k) = mbota(i, k, jj)
+                        mtopa_im(i, k) = mtopa(n, k)
+                        mbota_im(i, k) = mbota(n, k)
                      end do
                      do k = 1, 5
-                        cldsa_im(i, k) = cldsa(i, k, jj)
+                        cldsa_im(i, k) = cldsa(n, k)
                      end do
                      do k = 1, lm+ltp
-                        rhly_im(i, k) = rhly(i, k, jj)
-                        qstl_im(i, k) = qstl(i, k, jj)
-                        qlyr_im(i, k) = qlyr(i, k, jj)
-                        tvly_im(i, k) = tvly(i, k, jj)
-                        tlyr_im(i, k) = tlyr(i, k, jj)
-                        plyr_im(i, k) = plyr(i, k, jj)
+                        rhly_im(i, k) = rhly(n, k)
+                        qstl_im(i, k) = qstl(n, k)
+                        qlyr_im(i, k) = qlyr(n, k)
+                        tvly_im(i, k) = tvly(n, k)
+                        tlyr_im(i, k) = tlyr(n, k)
+                        plyr_im(i, k) = plyr(n, k)
                         do j = 1, nf_clds
-                           clouds_im(i, k, j) = clouds(i, k, j, jj)
+                           clouds_im(i, k, j) = clouds(n, k, j)
                         end do
                         do j = 1, ntrac
-                           tracer1_im(i, k, j) = tracer1(i, k, j, jj)
+                           tracer1_im(i, k, j) = tracer1(n, k, j)
                         end do
                      end do
                      do k = 1, lm+1+ltp
-                        plvl_im(i, k) = plvl(i, k, jj)
+                        plvl_im(i, k) = plvl(n, k)
                      end do
                   end do
                   call progcld5o_gpu                                               &
                      !    ---  inputs:
                      ( plyr_im,plvl_im,tlyr_im,tvly_im,qlyr_im,qstl_im,rhly_im,tracer1_im,              &
-                     xlat(1:myim(jj), jj),xlon(1:myim(jj), jj),slmsk(1:myim(jj), jj),                                         &
+                     xlat(1:myim(jj), jj),xlon(1:myim(jj), jj),slmsk(1:myim(jj), jj),        &
                      ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,cldcov(:, :, jj),                   &
                      phy_f3d(:,:,1, jj),phy_f3d(:,:,2, jj),phy_f3d(:,:,3, jj),            &
                      phy_f3d(:,:,4, jj),effr_in,                                  &
@@ -2277,29 +2414,30 @@ contains
                      clouds_im,cldsa_im,mtopa_im,mbota_im                                 &
                      ) 
                   do i = 1, myim(jj)
+                     n = i + nxjp_acc(jj) - 1
                      do k = 1, 3
-                        mtopa(i, k, jj) = mtopa_im(i, k)
-                        mbota(i, k, jj) = mbota_im(i, k)
+                        mtopa(n, k) = mtopa_im(i, k)
+                        mbota(n, k) = mbota_im(i, k)
                      end do
                      do k = 1, 5
-                        cldsa(i, k, jj) = cldsa_im(i, k)
+                        cldsa(n, k) = cldsa_im(i, k)
                      end do
                      do k = 1, lm+ltp
-                        rhly(i, k, jj) = rhly_im(i, k)
-                        qstl(i, k, jj) = qstl_im(i, k)
-                        qlyr(i, k, jj) = qlyr_im(i, k)
-                        tvly(i, k, jj) = tvly_im(i, k)
-                        tlyr(i, k, jj) = tlyr_im(i, k)
-                        plyr(i, k, jj) = plyr_im(i, k)
+                        rhly(n, k) = rhly_im(i, k)
+                        qstl(n, k) = qstl_im(i, k)
+                        qlyr(n, k) = qlyr_im(i, k)
+                        tvly(n, k) = tvly_im(i, k)
+                        tlyr(n, k) = tlyr_im(i, k)
+                        plyr(n, k) = plyr_im(i, k)
                         do j = 1, nf_clds
-                           clouds(i, k, j, jj) = clouds_im(i, k, j)
+                           clouds(n, k, j) = clouds_im(i, k, j)
                         end do
                         do j = 1, ntrac
-                           tracer1(i, k, j, jj) = tracer1_im(i, k, j)
+                           tracer1(n, k, j) = tracer1_im(i, k, j)
                         end do
                      end do
                      do k = 1, lm+1+ltp
-                        plvl_im(i, k) = plvl(i, k, jj)
+                        plvl_im(i, k) = plvl(n, k)
                      end do
                   end do
                   deallocate(plyr_im,plvl_im,tlyr_im,tvly_im,qlyr_im,qstl_im,rhly_im, &
@@ -2318,7 +2456,8 @@ contains
             do jj = 1, jlistnum
                do k = 1, lm+ltp
                   do i = 1, myim(jj)
-                     qa(i, k, jj) = 0.  !aerosol mixing ratio (kg/kg)
+                     n = i + nxjp_acc(jj) - 1
+                     qa(n, k) = 0.  !aerosol mixing ratio (kg/kg)
                   end do
                end do
             end do
@@ -2339,31 +2478,32 @@ contains
                allocate(clouds_im(myim(jj),lm+ltp,nf_clds))
                allocate(tracer1_im(myim(jj),lm+ltp,ntrac))
                do i = 1, myim(jj)
+                  n = i + nxjp_acc(jj) - 1
                   do k = 1, 3
-                     mtopa_im(i, k) = mtopa(i, k, jj)
-                     mbota_im(i, k) = mbota(i, k, jj)
+                     mtopa_im(i, k) = mtopa(n, k)
+                     mbota_im(i, k) = mbota(n, k)
                   end do
                   do k = 1, 5
-                     cldsa_im(i, k) = cldsa(i, k, jj)
+                     cldsa_im(i, k) = cldsa(n, k)
                   end do
                   do k = 1, lm+ltp
-                     cnvc1_im(i, k) = cnvc1(i, k, jj)
-                     cnvw1_im(i, k) = cnvw1(i, k, jj)
-                     rhly_im(i, k) = rhly(i, k, jj)
-                     qstl_im(i, k) = qstl(i, k, jj)
-                     qlyr_im(i, k) = qlyr(i, k, jj)
-                     tvly_im(i, k) = tvly(i, k, jj)
-                     tlyr_im(i, k) = tlyr(i, k, jj)
-                     plyr_im(i, k) = plyr(i, k, jj)
+                     cnvc1_im(i, k) = cnvc1(n, k)
+                     cnvw1_im(i, k) = cnvw1(n, k)
+                     rhly_im(i, k) = rhly(n, k)
+                     qstl_im(i, k) = qstl(n, k)
+                     qlyr_im(i, k) = qlyr(n, k)
+                     tvly_im(i, k) = tvly(n, k)
+                     tlyr_im(i, k) = tlyr(n, k)
+                     plyr_im(i, k) = plyr(n, k)
                      do j = 1, nf_clds
-                        clouds_im(i, k, j) = clouds(i, k, j, jj)
+                        clouds_im(i, k, j) = clouds(n, k, j)
                      end do
                      do j = 1, ntrac
-                        tracer1_im(i, k, j) = tracer1(i, k, j, jj)
+                        tracer1_im(i, k, j) = tracer1(n, k, j)
                      end do
                   end do
                   do k = 1, lm+1+ltp
-                     plvl_im(i, k) = plvl(i, k, jj)
+                     plvl_im(i, k) = plvl(n, k)
                   end do
                end do
                call progcld6_gpu                                                  &
@@ -2374,36 +2514,37 @@ contains
                   cldcov(:, :, jj),slmsk(1:myim(jj), jj),                                            &
                   phy_f3d(:,:,1, jj),phy_f3d(:,:,2, jj),phy_f3d(:,:,3, jj),            &
                   phy_f3d(:,:,4, jj),effr_in,                                  &
-                  xlat(1:myim(jj), jj),xlon(1:myim(jj), jj),myim(jj),lmk,lmp,                                    &
+                  xlat(1:myim(jj), jj),xlon(1:myim(jj), jj),myim(jj),lmk,lmp,       &
                   !    ---  outputs:
                   clouds_im,cldsa_im,mtopa_im,mbota_im                                 &
                   ) 
                do i = 1, myim(jj)
+                  n = i + nxjp_acc(jj) - 1
                   do k = 1, 3
-                     mtopa(i, k, jj) = mtopa_im(i, k)
-                     mbota(i, k, jj) = mbota_im(i, k)
+                     mtopa(n, k) = mtopa_im(i, k)
+                     mbota(n, k) = mbota_im(i, k)
                   end do
                   do k = 1, 5
-                     cldsa(i, k, jj) = cldsa_im(i, k)
+                     cldsa(n, k) = cldsa_im(i, k)
                   end do
                   do k = 1, lm+ltp
-                     cnvc1(i, k, jj) = cnvc1_im(i, k)
-                     cnvw1(i, k, jj) = cnvw1_im(i, k)
-                     rhly(i, k, jj) = rhly_im(i, k)
-                     qstl(i, k, jj) = qstl_im(i, k)
-                     qlyr(i, k, jj) = qlyr_im(i, k)
-                     tvly(i, k, jj) = tvly_im(i, k)
-                     tlyr(i, k, jj) = tlyr_im(i, k)
-                     plyr(i, k, jj) = plyr_im(i, k)
+                     cnvc1(n, k) = cnvc1_im(i, k)
+                     cnvw1(n, k) = cnvw1_im(i, k)
+                     rhly(n, k) = rhly_im(i, k)
+                     qstl(n, k) = qstl_im(i, k)
+                     qlyr(n, k) = qlyr_im(i, k)
+                     tvly(n, k) = tvly_im(i, k)
+                     tlyr(n, k) = tlyr_im(i, k)
+                     plyr(n, k) = plyr_im(i, k)
                      do j = 1, nf_clds
-                        clouds(i, k, j, jj) = clouds_im(i, k, j)
+                        clouds(n, k, j) = clouds_im(i, k, j)
                      end do
                      do j = 1, ntrac
-                        tracer1(i, k, j, jj) = tracer1_im(i, k, j)
+                        tracer1(n, k, j) = tracer1_im(i, k, j)
                      end do
                   end do
                   do k = 1, lm+1+ltp
-                     plvl_im(i, k) = plvl(i, k, jj)
+                     plvl_im(i, k) = plvl(n, k)
                   end do
                end do
                deallocate(plyr_im,plvl_im,tlyr_im,tvly_im,qlyr_im,qstl_im,rhly_im, &
@@ -2429,48 +2570,54 @@ contains
             if ( me == 0 .and. myrank == 0 )                               &
                print *,'### call Goddard (GCE) cloud ###'
             !call nvtxStartRange("progcld_gce")
+            ! GPU: the following variable name changed when using icmphys = 15 or 16 
+            ! GPU: (GCE microphysics)
+            ! GPU:                        CPU - clouds(:,:,1), GPU - cldfrc
+            ! GPU:                        CPU - clouds(:,:,2), GPU - cwp
+            ! GPU:                        CPU - clouds(:,:,3), GPU - rew
+            ! GPU:                        CPU - clouds(:,:,4), GPU - cip
+            ! GPU:                        CPU - clouds(:,:,5), GPU - rei
+            ! GPU:                        CPU - clouds(:,:,6), GPU - crp
+            ! GPU:                        CPU - clouds(:,:,7), GPU - rer
+            ! GPU:                        CPU - clouds(:,:,8), GPU - csp
+            ! GPU:                        CPU - clouds(:,:,9), GPU - res
             call progcld_gce_gpu                                             &
                !    ---  inputs:
                ( plyr, plvl, tlyr, tvly, qlyr, qstl, rhly, tracer1,       &
                xlat, xlon, slmsk, ntrac,                                &
                phy_f3d, effr_in,                                 &
-               myim, ix, lmk, lmp, lmfshal, lmfdeep2, async_id,                         &
+               myim, ix, lmk, lmp, lmfshal, lmfdeep2, map_jj, map_i, nxptot, async_id,                         &
                !    ---  outputs:
-               clouds, cldsa, mtopa, mbota, cldcov                      &
+               cldfrc, cwp, rew, cip, rei, crp, rer, csp, res, cldsa, mtopa, mbota, cldcov     &
                )
             !call nvtxEndRange
          endif                            ! end if_icmphys
       else                                 ! diagnostic cloud scheme
 
-         !$acc parallel loop collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               if (i .le. myim(jj)) then
-                  cvt1(i, jj) = 10.0 * cvt(i, jj)
-                  cvb1(i, jj) = 10.0 * cvb(i, jj)
-               end if
-            enddo
+         !$acc parallel loop private(jj, i) async(async_id)
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            cvt1(n) = 10.0 * cvt(i, jj)
+            cvb1(n) = 10.0 * cvb(i, jj)
          end do
 
-         !$acc parallel loop gang collapse(2) private(k1) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, lm
+         !$acc parallel loop gang collapse(2) private(k1, jj, i) async(async_id)
+         do k = 1, lm
+            do n = 1, nxptot
+               jj = map_jj(n)
+               i = map_i(n)
                k1 = k + kd
-               !$acc loop vector
-               do i = 1, myim(jj)
-                  vvel(i,k1, jj) = 10.0 * vvl(i,k, jj)
-               enddo
+               vvel(n,k1) = 10.0 * vvl(i,k, jj)
             enddo
          end do
 
          if ( lextop ) then
-         !$acc parallel loop gang collapse(2) async(async_id)
-            do jj = 1, jlistnum
-               do i = 1, ix
-                  if (i .le. myim(jj)) then
-                     vvel(i,lyb, jj) = vvel(i,lya, jj)
-                  end if
-               enddo
+            !$acc parallel loop private(jj, i) async(async_id)
+            do n = 1, nxptot
+               jj = map_jj(n)
+               i = map_i(n)
+               vvel(n,lyb) = vvel(n,lya)
             end do
          endif
 
@@ -2490,55 +2637,57 @@ contains
             allocate(clouds_im(myim(jj),lm+ltp,nf_clds))
             
             do i = 1, myim(jj)
+               n = i + nxjp_acc(jj) - 1
                do k = 1, 3
-                  mtopa_im(i, k) = mtopa(i, k, jj)
-                  mbota_im(i, k) = mbota(i, k, jj)
+                  mtopa_im(i, k) = mtopa(n, k)
+                  mbota_im(i, k) = mbota(n, k)
                end do
                do k = 1, 5
-                  cldsa_im(i, k) = cldsa(i, k, jj)
+                  cldsa_im(i, k) = cldsa(n, k)
                end do
                do k = 1, lm+ltp
-                  vvel_im(i, k) = vvel(i, k, jj)
-                  rhly_im(i, k) = rhly(i, k, jj)
-                  tlyr_im(i, k) = tlyr(i, k, jj)
-                  plyr_im(i, k) = plyr(i, k, jj)
+                  vvel_im(i, k) = vvel(n, k)
+                  rhly_im(i, k) = rhly(n, k)
+                  tlyr_im(i, k) = tlyr(n, k)
+                  plyr_im(i, k) = plyr(n, k)
                   do j = 1, nf_clds
-                     clouds_im(i, k, j) = clouds(i, k, j, jj)
+                     clouds_im(i, k, j) = clouds(n, k, j)
                   end do
                end do
                do k = 1, lm+1+ltp
-                  plvl_im(i, k) = plvl(i, k, jj)
+                  plvl_im(i, k) = plvl(n, k)
                end do
             end do
             if (myrank .eq. 0) write(*,*) "run diagcld1"
             call diagcld1_gpu                                                   &
                !  ---  inputs:
                &     ( plyr_im,plvl_im,tlyr_im,rhly_im,vvel_im,cv(1:myim(jj), jj), &
-               cvt1(1:myim(jj), jj),cvb1(1:myim(jj), jj),                     &
-               &       xlat(1:myim(jj), jj),xlon(1:myim(jj), jj),slmsk(1:myim(jj), jj),                                           &
+               cvt1(nxjp_acc(jj):nxjp_acc(jj+1)-1),cvb1(nxjp_acc(jj):nxjp_acc(jj+1)-1),                     &
+               &       xlat(1:myim(jj), jj),xlon(1:myim(jj), jj),slmsk(1:myim(jj), jj),      &
                &       myim(jj), lmk, lmp,                                              &
                !  ---  outputs:
                &       clouds_im,cldsa_im,mtopa_im,mbota_im                                   &
                &      )
             do i = 1, myim(jj)
+               n = i + nxjp_acc(jj) - 1
                do k = 1, 3
-                  mtopa(i, k, jj) = mtopa_im(i, k)
-                  mbota(i, k, jj) = mbota_im(i, k)
+                  mtopa(n, k) = mtopa_im(i, k)
+                  mbota(n, k) = mbota_im(i, k)
                end do
                do k = 1, 5
-                  cldsa(i, k, jj) = cldsa_im(i, k)
+                  cldsa(n, k) = cldsa_im(i, k)
                end do
                do k = 1, lm+ltp
-                  vvel(i, k, jj) = vvel_im(i, k)
-                  rhly(i, k, jj) = rhly_im(i, k)
-                  tlyr(i, k, jj) = tlyr_im(i, k)
-                  plyr(i, k, jj) = plyr_im(i, k)
+                  vvel(n, k) = vvel_im(i, k)
+                  rhly(n, k) = rhly_im(i, k)
+                  tlyr(n, k) = tlyr_im(i, k)
+                  plyr(n, k) = plyr_im(i, k)
                   do j = 1, nf_clds
-                     clouds(i, k, j, jj) = clouds_im(i, k, j)
+                     clouds(n, k, j) = clouds_im(i, k, j)
                   end do
                end do
                do k = 1, lm+1+ltp
-                  plvl_im(i, k) = plvl(i, k, jj)
+                  plvl_im(i, k) = plvl(n, k)
                end do
             end do
             deallocate(plyr_im,plvl_im,tlyr_im,rhly_im,vvel_im,cldsa_im,mtopa_im, &
@@ -2547,58 +2696,62 @@ contains
 
       endif                                ! end_if_ntcw
 
-      do jj = 1, jlistnum
-         if (me == 0 .and. myrank ==0) then
-            print *,'###################################################' 
-            print *,'###  after diagcld1'
-            print *,'###################################################' 
-            print *,'### im=',myim(jj),' lmk=',lmk,' lmp=',lmp
-            print *,'### ntcw=',ntcw
-            print *,'### ncld=',ncld
-            print *,'###################################################' 
-            print *,'### xlon(ipt)=', xlon(ipt, jj)
-            print *,'### xlat(ipt)=', xlat(ipt, jj)
-            print *,'### slmsk(ipt)=',slmsk(ipt, jj)
-            print *,'###################################################' 
-            print *,'### plvl(ipt,lm)=',plvl(ipt,lm, jj)
-            print *,'### plyr(ipt,lm)=',plyr(ipt,lm, jj)
-            print *,'###################################################' 
-            print *,'### tlyr(ipt,lm)=',tlyr(ipt,lm, jj)
-            print *,'### tvly(ipt,lm)=',tvly(ipt,lm, jj)
-            print *,'###################################################' 
-            print *,'### qlyr(ipt,lm)=',qlyr(ipt,lm, jj)
-            print *,'### qstl(ipt,lm)=',qstl(ipt,lm, jj)
-            print *,'### rhly(ipt,lm)=',rhly(ipt,lm, jj)
-            print *,'### clw(ipt,lm) =',clw(ipt,lm, jj)
-            print *,'###################################################' 
-            print *,'### tracer1(ipt,lm,1)=',tracer1(ipt,lm,1, jj)
-            print *,'### tracer1(ipt,lm,2)=',tracer1(ipt,lm,2, jj)
-            print *,'### tracer1(ipt,lm,3)=',tracer1(ipt,lm,3, jj)
-            print *,'###################################################' 
-            print *,'### clouds(ipt,lm,1)-total cloud fraction =',clouds(ipt,lm,1, jj)
-            print *,'### clouds(ipt,lm,2)-liq water path       =',clouds(ipt,lm,2, jj)
-            print *,'### clouds(ipt,lm,3)-liq effective radius =',clouds(ipt,lm,3, jj)
-            print *,'### clouds(ipt,lm,4)-ice water path       =',clouds(ipt,lm,4, jj)
-            print *,'### clouds(ipt,lm,5)-ice effective radius =',clouds(ipt,lm,5, jj)
-            print *,'### clouds(ipt,lm,6)-rain water path      =',clouds(ipt,lm,6, jj)
-            print *,'### clouds(ipt,lm,7)-rain effective radius=',clouds(ipt,lm,7, jj)
-            print *,'### clouds(ipt,lm,8)-snow water path      =',clouds(ipt,lm,8, jj)
-            print *,'### clouds(ipt,lm,9)-snow effective radius=',clouds(ipt,lm,9, jj)
-            print *,'###################################################' 
-            print *,'### cldsa(ipt,1)-low clouds fraction=',cldsa(ipt,1, jj)
-            print *,'### cldsa(ipt,2)-mid clouds fraction=',cldsa(ipt,2, jj)
-            print *,'### cldsa(ipt,3)-hig clouds fraction=',cldsa(ipt,3, jj)
-            print *,'### cldsa(ipt,4)-tot clouds fraction=',cldsa(ipt,4, jj)
-            print *,'### cldsa(ipt,5)-bl  clouds fraction=',cldsa(ipt,5, jj)
-            print *,'###################################################' 
-            print *,'### mtopa(ipt,1)-low clouds top =',mtopa(ipt,1, jj)
-            print *,'### mtopa(ipt,2)-mid clouds top =',mtopa(ipt,2, jj)
-            print *,'### mtopa(ipt,3)-hig clouds top =',mtopa(ipt,3, jj)
-            print *,'###################################################' 
-            print *,'### mbota(ipt,1)-low clouds bottom =',mbota(ipt,1, jj)
-            print *,'### mbota(ipt,2)-mid clouds bottom =',mbota(ipt,2, jj)
-            print *,'### mbota(ipt,3)-hig clouds bottom =',mbota(ipt,3, jj)
-            print *,'###################################################' 
+      do n = 1, nxptot
+         jj = map_jj(n)
+         i = map_i(n)
+         if (i .eq. ipt) then
+            if (me == 0 .and. myrank ==0) then
+               print *,'###################################################' 
+               print *,'###  after diagcld1'
+               print *,'###################################################' 
+               print *,'### im=',myim(jj),' lmk=',lmk,' lmp=',lmp
+               print *,'### ntcw=',ntcw
+               print *,'### ncld=',ncld
+               print *,'###################################################' 
+               print *,'### xlon(ipt)=', xlon(ipt, jj)
+               print *,'### xlat(ipt)=', xlat(ipt, jj)
+               print *,'### slmsk(ipt)=',slmsk(ipt, jj)
+               print *,'###################################################' 
+               print *,'### plvl(ipt,lm)=',plvl(n,lm)
+               print *,'### plyr(ipt,lm)=',plyr(n,lm)
+               print *,'###################################################' 
+               print *,'### tlyr(ipt,lm)=',tlyr(n,lm)
+               print *,'### tvly(ipt,lm)=',tvly(n,lm)
+               print *,'###################################################' 
+               print *,'### qlyr(ipt,lm)=',qlyr(n,lm)
+               print *,'### qstl(ipt,lm)=',qstl(n,lm)
+               print *,'### rhly(ipt,lm)=',rhly(n,lm)
+               print *,'### clw(ipt,lm) =',clw(n,lm)
+               print *,'###################################################' 
+               print *,'### tracer1(ipt,lm,1)=',tracer1(n,lm,1)
+               print *,'### tracer1(ipt,lm,2)=',tracer1(n,lm,2)
+               print *,'### tracer1(ipt,lm,3)=',tracer1(n,lm,3)
+               print *,'###################################################' 
+               print *,'### clouds(ipt,lm,1)-total cloud fraction =',clouds(n,lm,1)
+               print *,'### clouds(ipt,lm,2)-liq water path       =',clouds(n,lm,2)
+               print *,'### clouds(ipt,lm,3)-liq effective radius =',clouds(n,lm,3)
+               print *,'### clouds(ipt,lm,4)-ice water path       =',clouds(n,lm,4)
+               print *,'### clouds(ipt,lm,5)-ice effective radius =',clouds(n,lm,5)
+               print *,'### clouds(ipt,lm,6)-rain water path      =',clouds(n,lm,6)
+               print *,'### clouds(ipt,lm,7)-rain effective radius=',clouds(n,lm,7)
+               print *,'### clouds(ipt,lm,8)-snow water path      =',clouds(n,lm,8)
+               print *,'### clouds(ipt,lm,9)-snow effective radius=',clouds(n,lm,9)
+               print *,'###################################################' 
+               print *,'### cldsa(ipt,1)-low clouds fraction=',cldsa(n,1)
+               print *,'### cldsa(ipt,2)-mid clouds fraction=',cldsa(n,2)
+               print *,'### cldsa(ipt,3)-hig clouds fraction=',cldsa(n,3)
+               print *,'### cldsa(ipt,4)-tot clouds fraction=',cldsa(n,4)
+               print *,'### cldsa(ipt,5)-bl  clouds fraction=',cldsa(n,5)
+               print *,'###################################################' 
+               print *,'### mtopa(ipt,1)-low clouds top =',mtopa(n,1)
+               print *,'### mtopa(ipt,2)-mid clouds top =',mtopa(n,2)
+               print *,'### mtopa(ipt,3)-hig clouds top =',mtopa(n,3)
+               print *,'###################################################' 
+               print *,'### mbota(ipt,1)-low clouds bottom =',mbota(n,1)
+               print *,'### mbota(ipt,2)-mid clouds bottom =',mbota(n,2)
+               print *,'### mbota(ipt,3)-hig clouds bottom =',mbota(n,3)
+               print *,'###################################################' 
+            end if
          endif
       end do
 
@@ -2610,12 +2763,6 @@ contains
 !  ---  setup surface albedo for sw radiation, incl xw (nov04) sea-ice
 
          if (me == 0 .and. myrank ==0)print *,'### call setalb ###' 
-         !call nvtxStartRange("setalb")
-         !write(myrank_str,'(I3)') myrank
-         !open(unit=1000, file='setalb_input.'//trim(adjustl(myrank_str)), form='unformatted', &
-         !   access='stream', status='replace')
-         !write(1000) slmsk,snowd,sncovr,snoalb,zorl,coszen,tsfg,tsfa,hprim,     &
-         !   alvsf,alnsf,alvwf,alnwf,facsf,facwf,fice,tisfc,myim
          call setalb_gpu                                                     &
             !  ---  inputs:
             &     ( slmsk,snowd,sncovr,snoalb,&
@@ -2623,106 +2770,173 @@ contains
             tsfa,hprim,     &
             &       alvsf,alnsf,alvwf,alnwf,&
             facsf,facwf,fice,tisfc,            &
-            &       myim, ix, async_id,                                                       &
+            &       myim, ix, map_jj, map_i, nxptot, async_id,                                                       &
             !  ---  outputs:
             &       sfcalb                                                     &
             &     )
          !call nvtxEndRange
 
 !  --- lu [+4l]: derive sfalb from vis- and nir- diffuse surface albedo
-         !$acc parallel loop gang collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               if (i .le. myim(jj)) then
-                  sfalb(i, jj) = max(0.01, 0.5 * (sfcalb(i,2, jj) + sfcalb(i,4, jj)))
-               end if
-            enddo
+         !$acc parallel loop private(jj, i) async(async_id)
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            sfalb(i, jj) = max(0.01, 0.5 * (sfcalb(n,2) + sfcalb(n,4)))
          end do
       
-         do jj = 1, jlistnum
-            if (me == 0 .and. myrank ==0) then
-               print *,'###################################################' 
-               print *,'### call setalb ok !!'
-               print *,'###################################################' 
-               print *,'### slmsk(ipt)=',slmsk(ipt, jj)
-               print *,'### fice(ipt)=',fice(ipt, jj)
-               print *,'### tisfc(ipt)=',tisfc(ipt, jj)
-               print *,'###################################################' 
-               print *,'### snowd(ipt)=',snowd(ipt, jj)
-               print *,'### sncovr(ipt)=',sncovr(ipt, jj)
-               print *,'### snoalb(ipt)=',snoalb(ipt, jj)
-               print *,'###################################################' 
-               print *,'### zorl(ipt)=',zorl(ipt, jj)
-               print *,'### hprim(ipt)=',hprim(ipt, jj)
-               print *,'###################################################' 
-               print *,'### alvsf(ipt)=',alvsf(ipt, jj)
-               print *,'### alnsf(ipt)=',alnsf(ipt, jj)
-               print *,'### alvwf(ipt)=',alvwf(ipt, jj)
-               print *,'### alnwf(ipt)=',alnwf(ipt, jj)
-               print *,'### facsf(ipt)=',facsf(ipt, jj)
-               print *,'### facwf(ipt)=',facwf(ipt, jj)
-               print *,'###################################################' 
-               print *,'### coszen(ipt)=',coszen(ipt, jj)
-               print *,'### tsfg(ipt)=',tsfg(ipt, jj)
-               print *,'### tsfa(ipt)=',tsfa(ipt, jj)
-               print *,'###################################################' 
-               print *,'### sfcalb(ipt,1)-near ir direct beam albedo'
-               print *,'### sfcalb(ipt,2)-near ir diffused beam albedo'
-               print *,'### sfcalb(ipt,3)-uv+vis direct beam albedo'
-               print *,'### sfcalb(ipt,4)-uv+vis diffused beam albedo'
-               print *,'###################################################' 
-               print *,'### sfcalb(ipt,1)=',sfcalb(ipt,1, jj)
-               print *,'### sfcalb(ipt,2)=',sfcalb(ipt,2, jj)
-               print *,'### sfcalb(ipt,3)=',sfcalb(ipt,3, jj)
-               print *,'### sfcalb(ipt,4)=',sfcalb(ipt,4, jj)
-               print *,'###################################################' 
-               print *,'# sfalb(i)-average diffused beam albedo for sw&lw'
-               print *,'# sfalb(i)=max(0.01,0.5*(sfcalb(i,2)+sfcalb(i,4)))'
-               print *,'###################################################' 
-               print *,'### sfalb(ipt)=',sfalb(ipt, jj)
-               print *,'###################################################' 
-            endif
-         end do
-         do jj = 1, jlistnum
-            if (nday(jj) > 0) then
-               if (me == 0 .and. myrank ==0) print *,' #### call swrad ####'
-               if (me == 0 .and. myrank ==0) print *,' #### nday=',nday(jj)
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            if (i .eq. ipt) then
+               if (me == 0 .and. myrank ==0) then
+                  print *,'###################################################' 
+                  print *,'### call setalb ok !!'
+                  print *,'###################################################' 
+                  print *,'### slmsk(ipt)=',slmsk(ipt, jj)
+                  print *,'### fice(ipt)=',fice(ipt, jj)
+                  print *,'### tisfc(ipt)=',tisfc(ipt, jj)
+                  print *,'###################################################' 
+                  print *,'### snowd(ipt)=',snowd(ipt, jj)
+                  print *,'### sncovr(ipt)=',sncovr(ipt, jj)
+                  print *,'### snoalb(ipt)=',snoalb(ipt, jj)
+                  print *,'###################################################' 
+                  print *,'### zorl(ipt)=',zorl(ipt, jj)
+                  print *,'### hprim(ipt)=',hprim(ipt, jj)
+                  print *,'###################################################' 
+                  print *,'### alvsf(ipt)=',alvsf(ipt, jj)
+                  print *,'### alnsf(ipt)=',alnsf(ipt, jj)
+                  print *,'### alvwf(ipt)=',alvwf(ipt, jj)
+                  print *,'### alnwf(ipt)=',alnwf(ipt, jj)
+                  print *,'### facsf(ipt)=',facsf(ipt, jj)
+                  print *,'### facwf(ipt)=',facwf(ipt, jj)
+                  print *,'###################################################' 
+                  print *,'### coszen(ipt)=',coszen(ipt, jj)
+                  print *,'### tsfg(ipt)=',tsfg(n)
+                  print *,'### tsfa(ipt)=',tsfa(n)
+                  print *,'###################################################' 
+                  print *,'### sfcalb(ipt,1)-near ir direct beam albedo'
+                  print *,'### sfcalb(ipt,2)-near ir diffused beam albedo'
+                  print *,'### sfcalb(ipt,3)-uv+vis direct beam albedo'
+                  print *,'### sfcalb(ipt,4)-uv+vis diffused beam albedo'
+                  print *,'###################################################' 
+                  print *,'### sfcalb(ipt,1)=',sfcalb(n,1)
+                  print *,'### sfcalb(ipt,2)=',sfcalb(n,2)
+                  print *,'### sfcalb(ipt,3)=',sfcalb(n,3)
+                  print *,'### sfcalb(ipt,4)=',sfcalb(n,4)
+                  print *,'###################################################' 
+                  print *,'# sfalb(i)-average diffused beam albedo for sw&lw'
+                  print *,'# sfalb(i)=max(0.01,0.5*(sfcalb(i,2)+sfcalb(i,4)))'
+                  print *,'###################################################' 
+                  print *,'### sfalb(ipt)=',sfalb(ipt, jj)
+                  print *,'###################################################' 
+               endif
             end if
          end do
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            if (i .eq. 1) then
+               if (nday(jj) > 0) then
+                  if (me == 0 .and. myrank ==0) print *,' #### call swrad ####'
+                  if (me == 0 .and. myrank ==0) print *,' #### nday=',nday(jj)
+               end if
+            end if
+         end do
+
+         if (lhtrswb) then
+            allocate(htrswb(ix,lm,nbdsw, my_max))
+            !$acc enter data create(htrswb) async(async_id)
+         end if
+
+         if (lhtrswb) then
+            !$acc parallel loop collapse(3) private(k1, jj, i) async(async_id)
+            do k = 1, lm
+               do j = 1, nbdsw
+                  do n = 1, nxptot
+                     jj = map_jj(n)
+                     i = map_i(n)
+                     k1 = k + kd
+                     !htrswb(i,k,j, jj) = htswb(i,k1,j, jj)
+                     htrswb(i,k,j, jj) = 0
+                  enddo
+               end do
+            enddo
+         end if
 
 !         if ( present(htrswb) .and. present(htrsw0) ) then
 !         if ( present(htrsw0) .and. present(fswprf) ) then
          !call nvtxStartRange("swrad")
+         ! GPU: variable name changed: CPU - htswb, GPU - htrswb
+         ! GPU: variable name changed: CPU - htswc, GPU - htrsw
+         ! GPU: variable name changed: CPU - htsw0, GPU - htrsw0
+         ! GPU: variable name changed: CPU - topfsw%upfxc, GPU - fluxr(i, jj, 2 )
+         ! GPU: variable name changed: CPU - topfsw%dnfxc, GPU - fluxr(i, jj, 1 )
+         ! GPU: variable name changed: CPU - topfsw%upfx0, GPU - fluxr(i, jj, 22)
+         ! GPU: variable name changed: CPU - sfcfsw%upfxc, GPU - fluxr(i, jj, 5 )
+         ! GPU: variable name changed: CPU - sfcfsw%dnfxc, GPU - fluxr(i, jj, 4 )
+         ! GPU: variable name changed: CPU - sfcfsw%upfx0, GPU - fluxr(i, jj, 25)
+         ! GPU: variable name changed: CPU - sfcfsw%dnfx0, GPU - fluxr(i, jj, 24)
+         ! GPU: variable name changed: CPU - fswprf%upfxc, GPU - fusl
+         ! GPU: variable name changed: CPU - fswprf%dnfxc, GPU - fdsl
+         ! GPU: variable name changed: CPU - fswprf%upfx0, GPU - fuslr
+         ! GPU: variable name changed: CPU - fswprf%dnfx0, GPU - fdslr
+         ! GPU: variable name changed: CPU - scmpsw%uvbfc, GPU - fluxr(i, jj, 28)
+         ! GPU: variable name changed: CPU - scmpsw%uvbf0, GPU - fluxr(i, jj, 29)
+         ! GPU: variable name changed: CPU - scmpsw%nirbm, GPU - fluxr(i, jj, 32)
+         ! GPU: variable name changed: CPU - scmpsw%nirdf, GPU - fluxr(i, jj, 33)
+         ! GPU: variable name changed: CPU - scmpsw%visbm, GPU - fluxr(i, jj, 30)
+         ! GPU: variable name changed: CPU - scmpsw%visdf, GPU - fluxr(i, jj, 31)
+         ! GPU: the following variable name changed when using icmphys = 15 or 16 
+         ! GPU: (GCE microphysics)
+         ! GPU:                        CPU - clouds(:,:,1), GPU - cldfrc
+         ! GPU:                        CPU - clouds(:,:,2), GPU - cwp
+         ! GPU:                        CPU - clouds(:,:,3), GPU - rew
+         ! GPU:                        CPU - clouds(:,:,4), GPU - cip
+         ! GPU:                        CPU - clouds(:,:,5), GPU - rei
+         ! GPU:                        CPU - clouds(:,:,6), GPU - crp
+         ! GPU:                        CPU - clouds(:,:,7), GPU - rer
+         ! GPU:                        CPU - clouds(:,:,8), GPU - csp
+         ! GPU:                        CPU - clouds(:,:,9), GPU - res
+         !allocate(tauae(nxptot, lm+ltp,nbdsw))
+         !allocate(ssaae(nxptot, lm+ltp,nbdsw))
+         !allocate(asyae(nxptot, lm+ltp,nbdsw))
+         !!$acc enter data create(tauae, ssaae, asyae) async(async_id)
          call swrad_gpu                                                  &
+            !  ---  inputs for setaer_sw_gpu:
+                  ( prslk1, tvly, rhly, slmsk, tracer1, xlon, xlat, lsswr, lslwr, &
+                    me, map_jj, map_i, my_max, ntrac, &
             !  ---  inputs:
-            &     ( plyr,plvl,tlyr,tlvl,qlyr,olyr,gasvmr,                      &
-            &       clouds,icsdsw,faersw,sfcalb,                               &
-            &       coszen,solcon, nday,idxday,                                &
-            &       myim, lmk, lmp, lprnt, myrank, ix,                              &
-                    nf_clds, nf_vgas, nf_albd, nf_aesw, async_id, &
-                    my_max, swrad_block, swrad_smalljj, &
+            &       plyr,plvl,tlyr,tlvl,qlyr,olyr,gasvmr_co2, gasvmr_other,                      &
+            &       clouds, cldfrc, cwp, rew, cip, rei, crp, rer, csp, res,icsdsw,&
+                    sfcalb,       &
+            &       coszen,solcon, nday,idxday, map_nday_ipt, map_nday_jj, offset_nday,   &
+            &       myim, lmk, lmp, lprnt, myrank, ix, kd,                              &
+                    nf_clds, nf_vgas, nf_albd, nf_aesw, max_nday_length, async_id, &
+                    my_max, swrad_block, swrad_smalljj, lhtrswb, &
             !  ---  outputs:
-            &       htswc,topfsw,sfcfsw,                                        &
+            &       htrsw, fluxr(:, :, 2 ), fluxr(:, :, 1 ), fluxr(:, :, 22), &
+                    fluxr(:, :, 5 ), fluxr(:, :, 4 ), fluxr(:, :, 25), fluxr(:, :, 24), &
             !! ---  optional:
-            &       hsw0=htsw0,hswb=htswb,                                     &
-            &       flxprf=fswprf,fdncmp=scmpsw                                &
+            &       hsw0=htrsw0,hswb=htrswb,                                     &
+            &       flxprf_upfxc=fusl, flxprf_dnfxc=fdsl, flxprf_upfx0=fuslr, flxprf_dnfx0=fdslr, &
+                    fdncmp_uvbfc=fluxr(:, :, 28), fdncmp_uvbf0=fluxr(:, :, 29), &
+                    fdncmp_nirbm=fluxr(:, :, 32), fdncmp_nirdf=fluxr(:, :, 33), &
+                    fdncmp_visbm=fluxr(:, :, 30), fdncmp_visdf=fluxr(:, :, 31)  &
             &     )
          !call nvtxEndRange
+         if (lhtrswb) then
+            !$acc exit data delete(htrswb) async(async_id)
+            deallocate(htrswb)
+         end if
+      !!$acc exit data delete(tauae, ssaae, asyae) async(async_id)
+      !deallocate(tauae)
+      !deallocate(ssaae)
+      !deallocate(asyae)
+
+      !$acc exit data delete(qstl) async(async_id)
+      !$acc exit data delete(prslk1, tracer1, rhly) async(async_id)
+      
                
-         !$acc parallel loop gang collapse(3) private(k1) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, lm
-               do j = 1, nbdsw
-                  k1 = k + kd
-                  !$acc loop vector
-                  do i = 1, myim(jj)
-                     if (nday(jj) > 0) then
-                        htrswb(i,k,j, jj) = htswb(i,k1,j, jj)
-                     end if
-                  enddo
-               enddo
-            end do
-         enddo
 
 !         else if ( present(htrswb) .and. .not. present(htrsw0) ) then
 
@@ -2779,212 +2993,136 @@ contains
 !    &     )
 
 !         endif
-         !$acc parallel loop gang collapse(2) private(k1) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, lm
-               k1 = k + kd
-               !$acc loop vector
-               do i = 1, myim(jj)
-                  if (nday(jj) > 0) then
-                     htrsw(i,k, jj) = htswc(i,k1, jj)
-                     htrsw0(i,k, jj) = htsw0(i,k1, jj)
-                  end if
-               enddo
-            enddo
-         end do
 !         if (present(htrsw0)) then
 !         endif
 !         if (present(fswprf)) then
-         !$acc parallel loop gang collapse(2) private(k1) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, lm+1
-               k1 = k + kd
-               !$acc loop vector
-               do i = 1, myim(jj)
-                  if (nday(jj) > 0) then
-                     fusl(i,k, jj)  = fswprf(i,k1, jj, 1)
-                     fdsl(i,k, jj)  = fswprf(i,k1, jj, 2)
-                     fuslr(i,k, jj) = fswprf(i,k1, jj, 3)
-                     fdslr(i,k, jj) = fswprf(i,k1, jj, 4)
-                  end if
-               enddo
-            enddo
-         end do
 !         endif
 
-         !$acc parallel loop gang collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, lm
-               !$acc loop vector
-               do i = 1, myim(jj)
-                  if (nday(jj) <= 0) then ! if_nday_block
-                     htrsw(i,k, jj) = 0.0
-                  end if
-               enddo
+         !$acc parallel loop gang collapse(2) private(jj, i) async(async_id)
+         do k = 1, lm
+            do n = 1, nxptot
+               jj = map_jj(n)
+               i = map_i(n)
+               if (nday(jj) <= 0) then ! if_nday_block
+                  htrsw(i,k, jj) = 0.0
+               end if
             enddo
          end do
       
-         !$acc parallel loop collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               if (i .le. myim(jj)) then
-                  if (nday(jj) <= 0) then ! if_nday_block
-                     sfcfsw(i, jj, 1) = 0.0
-                     sfcfsw(i, jj, 2) = 0.0
-                     sfcfsw(i, jj, 3) = 0.0
-                     sfcfsw(i, jj, 4) = 0.0
-                     topfsw(i, jj, 1) = 0.0
-                     topfsw(i, jj, 2) = 0.0
-                     topfsw(i, jj, 3) = 0.0
-                     scmpsw(i, jj, 1) = 0.0
-                     scmpsw(i, jj, 2) = 0.0
-                     scmpsw(i, jj, 3) = 0.0
-                     scmpsw(i, jj, 4) = 0.0
-                     scmpsw(i, jj, 5) = 0.0
-                     scmpsw(i, jj, 6) = 0.0
-                  end if
-               end if
-            end do
-         end do
-
 !! ---  optional:
-         !$acc parallel loop gang collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, lm+1+ltp
-               !$acc loop vector
-               do i = 1, myim(jj)
-                  if (nday(jj) <= 0) then ! if_nday_block
-                     fswprf(i, k, jj, 1) = 0.0
-                     fswprf(i, k, jj, 2) = 0.0
-                     fswprf(i, k, jj, 3) = 0.0
-                     fswprf(i, k, jj, 4) = 0.0
-                  end if
-               end do
-            end do
-         end do
 
 !         if ( present(htrswb) ) then
-         !$acc parallel loop gang collapse(3) async(async_id)
-         do jj = 1, jlistnum
-            do j = 1, nbdsw
-               do k = 1, lm
-                  !$acc loop vector
-                  do i = 1, myim(jj)
-                     if (nday(jj) <= 0) then ! if_nday_block
-                        htrswb(i,k,j, jj) = 0.0
-                     end if
-                  enddo
-               enddo
-            enddo
-         end do
 !         endif
 
 !         if ( present(htrsw0) ) then
-         !$acc parallel loop gang collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, lm
-               !$acc loop vector
-               do i = 1, myim(jj)
-                  if (nday(jj) <= 0) then ! if_nday_block
-                     htrsw0(i,k, jj) = 0.0
-   !         endif
-                     
-                  endif                  ! end_if_nday
-               enddo
+         !$acc parallel loop collapse(2) private(jj, i) async(async_id)
+         do k = 1, lm
+            do n = 1, nxptot
+               jj = map_jj(n)
+               i = map_i(n)
+               if (nday(jj) <= 0) then ! if_nday_block
+                  htrsw0(i,k, jj) = 0.0
+!         endif
+                  
+               endif                  ! end_if_nday
             enddo
-         end do
+         enddo
       endif                                ! end_if_lsswr
 
-      do jj = 1, jlistnum
-         if (me == 0 .and. myrank ==0) then
-            print *,'###################################################' 
-            print *,'### call swrad ok!!'
-            print *,'###################################################' 
-            print *,'### im=',myim(jj),' lmk=',lmk,' lmp=',lmp
-            print *,'### nday=',nday(jj)
-            print *,'### solcon=',solcon
-            print *,'###################################################' 
-            print *,'### icsdsw(ipt)=',icsdsw(ipt, jj)
-            print *,'###################################################' 
-            print *,'### plvl(ipt,lm)=',plvl(ipt,lm, jj)
-            print *,'### plyr(ipt,lm)=',plyr(ipt,lm, jj)
-            print *,'###################################################' 
-            print *,'### tlyr(ipt,lm)=',tlyr(ipt,lm, jj)
-            print *,'### tlvl(ipt,lm)=',tlvl(ipt,lm, jj)
-            print *,'###################################################' 
-            print *,'### qlyr(ipt,lm)=',qlyr(ipt,lm, jj)
-            print *,'### olyr(ipt,lm)=',olyr(ipt,lm, jj)
-            print *,'###################################################' 
-            print *,'### gasvmr(ipt,lm,1)_co2 =',gasvmr(ipt,lm,1, jj)
-            print *,'### gasvmr(ipt,lm,2)_n2o =',gasvmr(ipt,lm,2, jj)
-            print *,'### gasvmr(ipt,lm,3)_ch4 =',gasvmr(ipt,lm,3, jj)
-            print *,'### gasvmr(ipt,lm,4)_o2  =',gasvmr(ipt,lm,4, jj)
-            print *,'### gasvmr(ipt,lm,5)_co  =',gasvmr(ipt,lm,5, jj)
-            print *,'### gasvmr(ipt,lm,6)_cf11=',gasvmr(ipt,lm,6, jj)
-            print *,'### gasvmr(ipt,lm,7)_cf12=',gasvmr(ipt,lm,7, jj)
-            print *,'### gasvmr(ipt,lm,8)_cf22=',gasvmr(ipt,lm,8, jj)
-            print *,'### gasvmr(ipt,lm,9)_ccl4=',gasvmr(ipt,lm,9, jj)
-            print *,'###################################################' 
-            print *,'### clouds(ipt,lm,1)-total cloud fraction=',clouds(ipt,lm,1, jj)
-            print *,'### clouds(ipt,lm,2)-liq water path=',clouds(ipt,lm,2, jj)
-            print *,'### clouds(ipt,lm,3)-liq effective radius=',clouds(ipt,lm,3, jj)
-            print *,'### clouds(ipt,lm,4)-ice water path=',clouds(ipt,lm,4, jj)
-            print *,'### clouds(ipt,lm,5)-ice effective radius=',clouds(ipt,lm,5, jj)
-            print *,'### clouds(ipt,lm,6)-rain water path=',clouds(ipt,lm,6, jj)
-            print *,'### clouds(ipt,lm,7)-rain effective radius=',clouds(ipt,lm,7, jj)
-            print *,'### clouds(ipt,lm,8)-snow water path=',clouds(ipt,lm,8, jj)
-            print *,'### clouds(ipt,lm,9)-snow effective radius=',clouds(ipt,lm,9, jj)
-            print *,'###################################################' 
-            print *,'### faersw(ipt,lm,1,1)=sw#1-opd',faersw(ipt,lm,1,1, jj)
-            print *,'### faersw(ipt,lm,1,2)=sw#1-ssa',faersw(ipt,lm,1,2, jj)
-            print *,'### faersw(ipt,lm,1,3)=sw#1-asy',faersw(ipt,lm,1,3, jj)
-            print *,'###################################################' 
-            print *,'### sfcalb(ipt,1)=',sfcalb(ipt,1, jj)
-            print *,'### sfcalb(ipt,2)=',sfcalb(ipt,2, jj)
-            print *,'### sfcalb(ipt,3)=',sfcalb(ipt,3, jj)
-            print *,'### sfcalb(ipt,4)=',sfcalb(ipt,4, jj)
-            print *,'###################################################' 
-            print *,'### htswc(ipt,lm) =',htswc(ipt,lm, jj)
-            print *,'### htrsw(ipt,lm) =',htrsw(ipt,lm, jj)
-            print *,'### htrsw0(ipt,lm)=',htrsw0(ipt,lm, jj)
-            print *,'###################################################' 
-            print *,'### sfcfsw(ipt)%upfxc=',sfcfsw(ipt, jj, 1)
-            print *,'### sfcfsw(ipt)%dnfxc=',sfcfsw(ipt, jj, 2)
-            print *,'### sfcfsw(ipt)%upfx0=',sfcfsw(ipt, jj, 3)
-            print *,'### sfcfsw(ipt)%dnfx0=',sfcfsw(ipt, jj, 4)
-            print *,'###################################################' 
-            print *,'### topfsw(ipt)%upfxc=',topfsw(ipt, jj, 1)
-            print *,'### topfsw(ipt)%dnfxc=',topfsw(ipt, jj, 2)
-            print *,'### topfsw(ipt)%upfx0=',topfsw(ipt, jj, 3)
-            print *,'###################################################' 
-            print *,'### scmpsw(ipt)%uvbfc=',scmpsw(ipt, jj, 1)
-            print *,'### scmpsw(ipt)%uvbf0=',scmpsw(ipt, jj, 2)
-            print *,'### scmpsw(ipt)%nirbm=',scmpsw(ipt, jj, 3)
-            print *,'### scmpsw(ipt)%nirdf=',scmpsw(ipt, jj, 4)
-            print *,'### scmpsw(ipt)%visbm=',scmpsw(ipt, jj, 5)
-            print *,'### scmpsw(ipt)%visdf=',scmpsw(ipt, jj, 6)
-            print *,'###################################################' 
-            print *,'### fswprf(ipt,1)%upfxc=',fswprf(ipt,1, jj, 1)
-            print *,'### fswprf(ipt,1)%dnfxc=',fswprf(ipt,1, jj, 2)
-            print *,'### fswprf(ipt,1)%upfx0=',fswprf(ipt,1, jj, 3)
-            print *,'### fswprf(ipt,1)%dnfx0=',fswprf(ipt,1, jj, 4)
-            print *,'###################################################' 
-            print *,'### fswprf(ipt,61)%upfxc=',fswprf(ipt,61, jj, 1)
-            print *,'### fswprf(ipt,61)%dnfxc=',fswprf(ipt,61, jj, 2)
-            print *,'### fswprf(ipt,61)%upfx0=',fswprf(ipt,61, jj, 3)
-            print *,'### fswprf(ipt,61)%dnfx0=',fswprf(ipt,61, jj, 4)
-            print *,'###################################################' 
-            print *,'### fusl(ipt,1)=',fusl(ipt,1, jj)
-            print *,'### fdsl(ipt,1)=',fdsl(ipt,1, jj)
-            print *,'### fuslr(ipt,1)=',fuslr(ipt,1, jj)
-            print *,'### fdslr(ipt,1)=',fdslr(ipt,1, jj)
-            print *,'###################################################' 
-            print *,'### fusl(ipt,61)=',fusl(ipt,61, jj)
-            print *,'### fdsl(ipt,61)=',fdsl(ipt,61, jj)
-            print *,'### fuslr(ipt,61)=',fuslr(ipt,61, jj)
-            print *,'### fdslr(ipt,61)=',fdslr(ipt,61, jj)
-            print *,'###################################################' 
-         endif
+      do n = 1, nxptot
+         jj = map_jj(n)
+         i = map_i(n)
+         if (i .eq. ipt) then
+            if (me == 0 .and. myrank ==0) then
+               print *,'###################################################' 
+               print *,'### call swrad ok!!'
+               print *,'###################################################' 
+               print *,'### im=',myim(jj),' lmk=',lmk,' lmp=',lmp
+               print *,'### nday=',nday(jj)
+               print *,'### solcon=',solcon
+               print *,'###################################################' 
+               print *,'### icsdsw(ipt)=',icsdsw(ipt, jj)
+               print *,'###################################################' 
+               print *,'### plvl(ipt,lm)=',plvl(n,lm)
+               print *,'### plyr(ipt,lm)=',plyr(n,lm)
+               print *,'###################################################' 
+               print *,'### tlyr(ipt,lm)=',tlyr(n,lm)
+               print *,'### tlvl(ipt,lm)=',tlvl(n,lm)
+               print *,'###################################################' 
+               print *,'### qlyr(ipt,lm)=',qlyr(n,lm)
+               print *,'### olyr(ipt,lm)=',olyr(n,lm)
+               print *,'###################################################' 
+               print *,'### gasvmr(ipt,lm,1)_co2 =',gasvmr_co2(n,lm)
+               print *,'### gasvmr(ipt,lm,2)_n2o =',gasvmr_other(2)
+               print *,'### gasvmr(ipt,lm,3)_ch4 =',gasvmr_other(3)
+               print *,'### gasvmr(ipt,lm,4)_o2  =',gasvmr_other(4)
+               print *,'### gasvmr(ipt,lm,5)_co  =',gasvmr_other(5)
+               print *,'### gasvmr(ipt,lm,6)_cf11=',gasvmr_other(6)
+               print *,'### gasvmr(ipt,lm,7)_cf12=',gasvmr_other(7)
+               print *,'### gasvmr(ipt,lm,8)_cf22=',gasvmr_other(8)
+               print *,'### gasvmr(ipt,lm,9)_ccl4=',gasvmr_other(9)
+               print *,'###################################################' 
+               print *,'### clouds(ipt,lm,1)-total cloud fraction=',clouds(n,lm,1)
+               print *,'### clouds(ipt,lm,2)-liq water path=',clouds(n,lm,2)
+               print *,'### clouds(ipt,lm,3)-liq effective radius=',clouds(n,lm,3)
+               print *,'### clouds(ipt,lm,4)-ice water path=',clouds(n,lm,4)
+               print *,'### clouds(ipt,lm,5)-ice effective radius=',clouds(n,lm,5)
+               print *,'### clouds(ipt,lm,6)-rain water path=',clouds(n,lm,6)
+               print *,'### clouds(ipt,lm,7)-rain effective radius=',clouds(n,lm,j)
+               print *,'### clouds(ipt,lm,8)-snow water path=',clouds(n,lm,8)
+               print *,'### clouds(ipt,lm,9)-snow effective radius=',clouds(n,lm,j)
+               print *,'###################################################' 
+               !print *,'### faersw(ipt,lm,1,1)=sw#1-opd',tauae(n,lm,1)
+               !print *,'### faersw(ipt,lm,1,2)=sw#1-ssa',ssaae(n,lm,1)
+               !print *,'### faersw(ipt,lm,1,3)=sw#1-asy',asyae(n,lm,1)
+               print *,'###################################################' 
+               print *,'### sfcalb(ipt,1)=',sfcalb(n,1)
+               print *,'### sfcalb(ipt,2)=',sfcalb(n,2)
+               print *,'### sfcalb(ipt,3)=',sfcalb(n,3)
+               print *,'### sfcalb(ipt,4)=',sfcalb(n,4)
+               print *,'###################################################' 
+               print *,'### htswc(ipt,lm) =',htrsw(ipt,lm, jj)
+               print *,'### htrsw(ipt,lm) =',htrsw(ipt,lm, jj)
+               print *,'### htrsw0(ipt,lm)=',htrsw0(ipt,lm, jj)
+               print *,'###################################################' 
+               print *,'### sfcfsw(ipt)%upfxc=',fluxr(i, jj, 5)
+               print *,'### sfcfsw(ipt)%dnfxc=',fluxr(i, jj, 4)
+               print *,'### sfcfsw(ipt)%upfx0=',fluxr(i, jj, 25)
+               print *,'### sfcfsw(ipt)%dnfx0=',fluxr(i, jj, 24)
+               print *,'###################################################' 
+               print *,'### topfsw(ipt)%upfxc=',fluxr(i, jj, 2 )
+               print *,'### topfsw(ipt)%dnfxc=',fluxr(i, jj, 1 )
+               print *,'### topfsw(ipt)%upfx0=',fluxr(i, jj, 22)
+               print *,'###################################################' 
+               print *,'### scmpsw(ipt)%uvbfc=',fluxr(i, jj, 28)
+               print *,'### scmpsw(ipt)%uvbf0=',fluxr(i, jj, 29)
+               print *,'### scmpsw(ipt)%nirbm=',fluxr(i, jj, 32)
+               print *,'### scmpsw(ipt)%nirdf=',fluxr(i, jj, 33)
+               print *,'### scmpsw(ipt)%visbm=',fluxr(i, jj, 30)
+               print *,'### scmpsw(ipt)%visdf=',fluxr(i, jj, 31)
+               print *,'###################################################' 
+               print *,'### fswprf(ipt,1)%upfxc=',fusl(ipt,1+kd, jj)
+               print *,'### fswprf(ipt,1)%dnfxc=',fdsl(ipt,1+kd, jj)
+               print *,'### fswprf(ipt,1)%upfx0=',fuslr(ipt,1+kd, jj)
+               print *,'### fswprf(ipt,1)%dnfx0=',fdslr(ipt,1+kd, jj)
+               print *,'###################################################' 
+               print *,'### fswprf(ipt,61)%upfxc=',fusl(ipt,61+kd, jj)
+               print *,'### fswprf(ipt,61)%dnfxc=',fdsl(ipt,61+kd, jj)
+               print *,'### fswprf(ipt,61)%upfx0=',fuslr(ipt,61+kd, jj)
+               print *,'### fswprf(ipt,61)%dnfx0=',fdslr(ipt,61+kd, jj)
+               print *,'###################################################' 
+               print *,'### fusl(ipt,1)=',fusl(ipt,1, jj)
+               print *,'### fdsl(ipt,1)=',fdsl(ipt,1, jj)
+               print *,'### fuslr(ipt,1)=',fuslr(ipt,1, jj)
+               print *,'### fdslr(ipt,1)=',fdslr(ipt,1, jj)
+               print *,'###################################################' 
+               print *,'### fusl(ipt,61)=',fusl(ipt,61, jj)
+               print *,'### fdsl(ipt,61)=',fdsl(ipt,61, jj)
+               print *,'### fuslr(ipt,61)=',fuslr(ipt,61, jj)
+               print *,'### fdslr(ipt,61)=',fdslr(ipt,61, jj)
+               print *,'###################################################' 
+            endif
+         end if
       end do
 
 !----------------------------------------------------------------------
@@ -2998,66 +3136,120 @@ contains
             &     ( xlon,xlat,slmsk,&
             snowd,sncovr, &
             zorl,tsfg,tsfa,hprim,         &
-            &       myim, ix, async_id,                                                       &
+            &       myim, ix, map_jj, map_i, nxptot, async_id,                                                       &
             !  ---  outputs:
             &       sfcemis                                                    &
             &     )
          !call nvtxEndRange
 !
-         do jj = 1, jlistnum
-            if (me == 0 .and. myrank ==0) then
-               print *,'###################################################' 
-               print *,'### call setemis ok!!'
-               print *,'###################################################' 
-               print *,'### im=',myim(jj),' ipt=',ipt
-               print *,'###################################################' 
-               print *,'### xlon(ipt)=',xlon(ipt, jj)
-               print *,'### xlat(ipt)=',xlat(ipt, jj)
-               print *,'###################################################' 
-               print *,'### slmsk(ipt)=',slmsk(ipt, jj)
-               print *,'### snowd(ipt)=',snowd(ipt, jj)
-               print *,'### sncovr(ipt)=',sncovr(ipt, jj)
-               print *,'### zorl(ipt)=',zorl(ipt, jj)
-               print *,'###################################################' 
-               print *,'### tsfg(ipt)=',tsfg(ipt, jj)
-               print *,'### tsfa(ipt)=',tsfa(ipt, jj)
-               print *,'### hprim(ipt)=',hprim(ipt, jj)
-               print *,'###################################################' 
-               print *,'### sfcemis(ipt)=',sfcemis(ipt, jj)
-               print *,'###################################################' 
-            endif
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            if (i .eq. ipt) then
+               if (me == 0 .and. myrank ==0) then
+                  print *,'###################################################' 
+                  print *,'### call setemis ok!!'
+                  print *,'###################################################' 
+                  print *,'### im=',myim(jj),' ipt=',ipt
+                  print *,'###################################################' 
+                  print *,'### xlon(ipt)=',xlon(ipt, jj)
+                  print *,'### xlat(ipt)=',xlat(ipt, jj)
+                  print *,'###################################################' 
+                  print *,'### slmsk(ipt)=',slmsk(ipt, jj)
+                  print *,'### snowd(ipt)=',snowd(ipt, jj)
+                  print *,'### sncovr(ipt)=',sncovr(ipt, jj)
+                  print *,'### zorl(ipt)=',zorl(ipt, jj)
+                  print *,'###################################################' 
+                  print *,'### tsfg(ipt)=',tsfg(n)
+                  print *,'### tsfa(ipt)=',tsfa(n)
+                  print *,'### hprim(ipt)=',hprim(ipt, jj)
+                  print *,'###################################################' 
+                  print *,'### sfcemis(ipt)=',sfcemis(n)
+                  print *,'###################################################' 
+               endif
+            end if
          end do
+
+         if (lhtrlwb) then
+            allocate(htrlwb(ix,lm,nbdlw, my_max))
+            !$acc enter data create(htrlwb) async(async_id)
+         end if
+         !$acc enter data create(tracer1, rhly, qstl, prslk1) async(async_id)
+         !$acc parallel loop collapse(2) private(k1, jj, i, epsm2, qqq, qss) async(async_id)
+         do k = 1, lm
+            do n = 1, nxptot
+               jj = map_jj(n)
+               i = map_i(n)
+               k1 = k + kd
+               plyr(n,k1)   = 10.0 * prsl(i,k, jj)   ! cb (kpa) to mb (hpa)
+               tlyr(n,k1)   = tgrs(i,k, jj)
+               prslk1(n,k1) = prslk(i,k, jj)
+               qlyr(n,k1) = max( qme6, qgrs(i,k, jj) )
+               epsm2=0.622-1.
+               qqq = min ( plyr(n,k1) , 0.01*fpvs_gpu(tlyr(n,k1),c1xpvs,c2xpvs,tbpvs) )
+               qss = 0.622*qqq/(plyr(n,k1)+epsm2*qqq)
+               rhly(n,k1)= max( 0.0, min( 1.0, max(qmin, qlyr(n,k1))/qss ) )
+               qstl(n,k1) = qss
+               !$acc loop seq
+               do j = 1, ntrac
+                  tracer1(n,k1,j) = tracer(i,k,j, jj)
+               enddo
+            enddo
+         end do
+         if ( lextop ) then                 ! values for extra top layer
+            !$acc parallel loop private(jj, i) async(async_id)
+            do n = 1, nxptot
+               prslk1(n,lyb) = (plyr(n,lyb)*0.001) ** rocp ! plyr in hpa
+
+               rhly(n,lyb)   = rhly(n,lya)
+               qstl(n,lyb)   = qstl(n,lya)
+               !$acc loop seq
+               do j = 1, ntrac
+                  tracer1(n,lyb,j) = tracer1(n,lya,j)
+               end do
+            end do
+         end if
 
 
 !       if ( present(htrlw0) .and. present(flwprf) ) then
          if (me == 0 .and. myrank ==0) print *,'#### call lwrad ####'
          !call nvtxStartRange("lwrad")
+         ! GPU: variable name changed: CPU - htlwb, GPU - htrlwb
+         ! GPU: variable name changed: CPU - htlw0, GPU - htrlw0
+         ! GPU: variable name changed: CPU - htlwc, GPU - htrlw
+         ! GPU: variable name changed: CPU - topflw%upfxc, GPU - fluxr(i, jj, 3)
+         ! GPU: variable name changed: CPU - topflw%upfx0, GPU - fluxr(i, jj, 23)
+         ! GPU: variable name changed: CPU - sfcflw%upfxc, GPU - fluxr(i, jj, 7)
+         ! GPU: variable name changed: CPU - sfcflw%upfx0, GPU - fluxr(i, jj, 27)
+         ! GPU: variable name changed: CPU - sfcflw%dnfxc, GPU - fluxr(i, jj, 6)
+         ! GPU: variable name changed: CPU - sfcflw%dnfx0, GPU - fluxr(i, jj, 26)
+         ! GPU: variable name changed: CPU - flwprf%upfxc, GPU - fuir
+         ! GPU: variable name changed: CPU - flwprf%dnfxc, GPU - fdir
+         ! GPU: variable name changed: CPU - flwprf%upfx0, GPU - fuirr
+         ! GPU: variable name changed: CPU - flwprf%dnfx0, GPU - fdirr
          call lwrad_gpu                                                    &
+            !  ---  inputs for setaer_lw_gpu:
+            &     ( prslk1, tvly, rhly, slmsk, tracer1, xlon, xlat, lsswr, lslwr, me, ntrac, my_max,        &
             !  ---  inputs:
-            &     ( plyr,plvl,tlyr,tlvl,qlyr,olyr,gasvmr,                      &
-            &       clouds,icsdlw,faerlw,sfcemis,tsfg,                         &
-            &       myim, lmk, lmp, lprnt,myrank, ix,                                &
-                     nf_vgas, nf_clds, nf_aelw, async_id, &
-                     my_max, lwrad_block, lwrad_smalljj, &
+            &       plyr,plvl,tlyr,tlvl,qlyr,olyr,gasvmr_co2, gasvmr_other,                      &
+            &       clouds, cldfrc, cwp, rew, cip, rei, crp, rer, csp, res,icsdlw, sfcemis,tsfg,  &
+            &       myim, map_jj, map_i, lmk, lmp, lprnt,myrank, ix, kd,                                &
+                     nf_vgas, nf_clds, nf_aelw, max_nxjp_acc_length, async_id, &
+                     my_max, lwrad_block, lwrad_smalljj, lhtrlwb, &
             !  ---  outputs:
-            &       htlwc,topflw,sfcflw                                        &
+            &       htrlw,fluxr(:, :, 3), fluxr(:, :, 23), fluxr(:, :, 7), &
+                    fluxr(:, :, 27), fluxr(:, :, 6), fluxr(:, :, 26)                                        &
             !! ---  optional:
-            &,      hlw0=htlw0,hlwb=htlwb,flxprf=flwprf                        &
+            &,      hlw0=htrlw0,hlwb=htrlwb, flxprf_upfxc=fuir, flxprf_dnfxc=fdir, &
+                    flxprf_upfx0=fuirr, flxprf_dnfx0=fdirr                        &
             &     )
          !call nvtxEndRange
+         if (lhtrlwb) then
+            !$acc exit data delete(htrlwb) async(async_id)
+            deallocate(htrlwb)
+         end if
+         !$acc exit data delete(prslk1, tracer1, rhly, tvly, qstl) async(async_id)
 
-         !$acc parallel loop gang collapse(3) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, lm
-               do j = 1, nbdlw
-                  !$acc loop vector private(k1)
-                  do i = 1, myim(jj)
-                     k1 = k + kd
-                     htrlwb(i,k,j, jj) = htlwb(i,k1,j, jj)
-                  enddo
-               enddo
-            enddo
-         end do
 
 !       else if ( present(htrlwb) .and. .not. present(htrlw0) ) then
 
@@ -3113,256 +3305,169 @@ contains
 
 !       endif
 
-         !$acc parallel loop collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               if (i .le. myim(jj)) then
-                  semis (i, jj) = sfcemis(i, jj)
-                  !  ---  save surface air temp for diurnal adjustment at model t-steps
-                  tsflw (i, jj) = tsfa(i, jj)
-               end if
-            enddo
-         end do
-
-         !$acc parallel loop gang collapse(2) private(k1) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, lm
-               k1 = k + kd
-               !$acc loop vector
-               do i = 1, myim(jj)
-                  htrlw(i,k, jj) = htlwc(i,k1, jj)
-                  htrlw0(i,k, jj) = htlw0(i,k1, jj)
-               enddo
-            enddo
+         !$acc parallel loop private(jj, i) async(async_id)
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            semis (i, jj) = sfcemis(n)
+            !  ---  save surface air temp for diurnal adjustment at model t-steps
+            tsflw (i, jj) = tsfa(n)
          end do
 
 !       if (present(htrlw0)) then
 !       endif
 !         if (present(flwprf)) then
-         !$acc parallel loop gang collapse(2) private(k1) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, lm+1
-               k1 = k + kd
-               !$acc loop vector
-               do i = 1, myim(jj)
-                  fuir(i,k, jj)  = flwprf(i,k1, jj)%upfxc
-                  fdir(i,k, jj)  = flwprf(i,k1, jj)%dnfxc
-                  fuirr(i,k, jj) = flwprf(i,k1, jj)%upfx0
-                  fdirr(i,k, jj) = flwprf(i,k1, jj)%dnfx0
-               enddo
-            enddo
 !          endif
 
-         end do
       endif                                ! end_if_lslwr
 
 !----------------------------------------------------------------------
-      do jj = 1, jlistnum
-         if (me == 0 .and. myrank ==0) then
-            print *,'###################################################' 
-            print *,'### call lwrad ok!!'
-            print *,'###################################################' 
-            print *,'### im=',myim(jj),' lmk=',lmk,' lmp=',lmp,' kd=',kd
-            print *,'###################################################' 
-            print *,'### icsdlw(ipt)=',icsdlw(ipt, jj)
-            print *,'###################################################' 
-            print *,'### plvl(ipt,lm)=',plvl(ipt,lm, jj)
-            print *,'### plyr(ipt,lm)=',plyr(ipt,lm, jj)
-            print *,'###################################################' 
-            print *,'### tlyr(ipt,lm)=',tlyr(ipt,lm, jj)
-            print *,'### tlvl(ipt,lm)=',tlvl(ipt,lm, jj)
-            print *,'###################################################' 
-            print *,'### qlyr(ipt,lm)=',qlyr(ipt,lm, jj)
-            print *,'### olyr(ipt,lm)=',olyr(ipt,lm, jj)
-            print *,'###################################################' 
-            print *,'### gasvmr(ipt,lm,1)_co2 =',gasvmr(ipt,lm,1, jj)
-            print *,'### gasvmr(ipt,lm,2)_n2o =',gasvmr(ipt,lm,2, jj)
-            print *,'### gasvmr(ipt,lm,3)_ch4 =',gasvmr(ipt,lm,3, jj)
-            print *,'### gasvmr(ipt,lm,4)_o2  =',gasvmr(ipt,lm,4, jj)
-            print *,'### gasvmr(ipt,lm,5)_co  =',gasvmr(ipt,lm,5, jj)
-            print *,'### gasvmr(ipt,lm,6)_cf11=',gasvmr(ipt,lm,6, jj)
-            print *,'### gasvmr(ipt,lm,7)_cf12=',gasvmr(ipt,lm,7, jj)
-            print *,'### gasvmr(ipt,lm,8)_cf22=',gasvmr(ipt,lm,8, jj)
-            print *,'### gasvmr(ipt,lm,9)_ccl4=',gasvmr(ipt,lm,9, jj)
-            print *,'###################################################' 
-            print *,'### clouds(ipt,lm,1)-total cloud fraction=',clouds(ipt,lm,1, jj)
-            print *,'### clouds(ipt,lm,2)-liq water path=',clouds(ipt,lm,2, jj)
-            print *,'### clouds(ipt,lm,3)-liq effective radius=',clouds(ipt,lm,3, jj)
-            print *,'### clouds(ipt,lm,4)-ice water path=',clouds(ipt,lm,4, jj)
-            print *,'### clouds(ipt,lm,5)-ice effective radius=',clouds(ipt,lm,5, jj)
-            print *,'### clouds(ipt,lm,6)-rain water path=',clouds(ipt,lm,6, jj)
-            print *,'### clouds(ipt,lm,7)-rain effective radius=',clouds(ipt,lm,7, jj)
-            print *,'### clouds(ipt,lm,8)-snow water path=',clouds(ipt,lm,8, jj)
-            print *,'### clouds(ipt,lm,9)-snow effective radius=',clouds(ipt,lm,9, jj)
-            print *,'###################################################' 
-            print *,'### faerlw(ipt,lm,1,1)=lw#1-opd',faerlw(ipt,lm,1,1, jj)
-            print *,'### faerlw(ipt,lm,1,2)=lw#1-ssa',faerlw(ipt,lm,1,2, jj)
-            print *,'### faerlw(ipt,lm,1,3)=lw#1-asy',faerlw(ipt,lm,1,3, jj)
-            print *,'###################################################' 
-            print *,'### sfcemis(ipt)=',sfcemis(ipt, jj)
-            print *,'###################################################' 
-            print *,'### tsfg(ipt) =',tsfg(ipt, jj)
-            print *,'### tsfa(ipt) =',tsfa(ipt, jj)
-            print *,'### tsflw(ipt)=',tsflw(ipt, jj)
-            print *,'###################################################' 
-            print *,'### htswc(ipt,lm) =',htswc(ipt,lm, jj)
-            print *,'### htsw0(ipt,lm) =',htsw0(ipt,lm, jj)
-            print *,'### htrsw(ipt,lm) =',htrsw(ipt,lm, jj)
-            print *,'### htrsw0(ipt,lm)=',htrsw0(ipt,lm, jj)
-            print *,'###################################################' 
-            print *,'### htlwc(ipt,lm) =',htlwc(ipt,lm, jj)
-            print *,'### htlw0(ipt,lm) =',htlw0(ipt,lm, jj)
-            print *,'### htrlw(ipt,lm) =',htrlw(ipt,lm, jj)
-            print *,'### htrlw0(ipt,lm)=',htrlw0(ipt,lm, jj)
-            print *,'###################################################' 
-            print *,'### topflw(ipt)%upfxc=',topflw(ipt, jj)%upfxc
-            print *,'### topflw(ipt)%upfx0=',topflw(ipt, jj)%upfx0
-            print *,'###################################################' 
-            print *,'### topfsw(ipt)%upfxc=',topfsw(ipt, jj, 1)
-            print *,'### topfsw(ipt)%upfx0=',topfsw(ipt, jj, 2)
-            print *,'### topfsw(ipt)%dnfxc=',topfsw(ipt, jj, 3)
-            print *,'###################################################' 
-            print *,'### sfcflw(ipt)%upfxc=',sfcflw(ipt, jj)%upfxc
-            print *,'### sfcflw(ipt)%upfx0=',sfcflw(ipt, jj)%upfx0
-            print *,'### sfcflw(ipt)%dnfxc=',sfcflw(ipt, jj)%dnfxc
-            print *,'### sfcflw(ipt)%dnfx0=',sfcflw(ipt, jj)%dnfx0
-            print *,'###################################################' 
-            print *,'### sfcfsw(ipt)%upfxc=',sfcfsw(ipt, jj, 1)
-            print *,'### sfcfsw(ipt)%upfx0=',sfcfsw(ipt, jj, 2)
-            print *,'### sfcfsw(ipt)%dnfxc=',sfcfsw(ipt, jj, 3)
-            print *,'### sfcfsw(ipt)%dnfx0=',sfcfsw(ipt, jj, 4)
-            print *,'###################################################' 
-            print *,'### flwprf(ipt,1)%upfxc=',flwprf(ipt,1, jj)%upfxc
-            print *,'### flwprf(ipt,1)%dnfxc=',flwprf(ipt,1, jj)%dnfxc
-            print *,'### flwprf(ipt,1)%upfx0=',flwprf(ipt,1, jj)%upfx0
-            print *,'### flwprf(ipt,1)%dnfx0=',flwprf(ipt,1, jj)%dnfx0
-            print *,'###################################################' 
-            print *,'### flwprf(ipt,61)%upfxc=',flwprf(ipt,61, jj)%upfxc
-            print *,'### flwprf(ipt,61)%dnfxc=',flwprf(ipt,61, jj)%dnfxc
-            print *,'### flwprf(ipt,61)%upfx0=',flwprf(ipt,61, jj)%upfx0
-            print *,'### flwprf(ipt,61)%dnfx0=',flwprf(ipt,61, jj)%dnfx0
-            print *,'###################################################' 
-            print *,'### fuir(ipt,1)=',fuir(ipt,1, jj)
-            print *,'### fdir(ipt,1)=',fdir(ipt,1, jj)
-            print *,'### fuirr(ipt,1)=',fuirr(ipt,1, jj)
-            print *,'### fdirr(ipt,1)=',fdirr(ipt,1, jj)
-            print *,'###################################################' 
-            print *,'### fuir(ipt,61)=',fuir(ipt,61, jj)
-            print *,'### fdir(ipt,61)=',fdir(ipt,61, jj)
-            print *,'### fuirr(ipt,61)=',fuirr(ipt,61, jj)
-            print *,'### fdirr(ipt,61)=',fdirr(ipt,61, jj)
-            print *,'###################################################' 
-         endif
+      do n = 1, nxptot
+         jj = map_jj(n)
+         i = map_i(n)
+         if (i .eq. ipt) then
+            if (me == 0 .and. myrank ==0) then
+               print *,'###################################################' 
+               print *,'### call lwrad ok!!'
+               print *,'###################################################' 
+               print *,'### im=',myim(jj),' lmk=',lmk,' lmp=',lmp,' kd=',kd
+               print *,'###################################################' 
+               print *,'### icsdlw(ipt)=',icsdlw(ipt, jj)
+               print *,'###################################################' 
+               print *,'### plvl(ipt,lm)=',plvl(n,lm)
+               print *,'### plyr(ipt,lm)=',plyr(n,lm)
+               print *,'###################################################' 
+               print *,'### tlyr(ipt,lm)=',tlyr(n,lm)
+               print *,'### tlvl(ipt,lm)=',tlvl(n,lm)
+               print *,'###################################################' 
+               print *,'### qlyr(ipt,lm)=',qlyr(n,lm)
+               print *,'### olyr(ipt,lm)=',olyr(n,lm)
+               print *,'###################################################' 
+               print *,'### gasvmr(ipt,lm,1)_co2 =',gasvmr_co2(n,lm)
+               print *,'### gasvmr(ipt,lm,2)_n2o =',gasvmr_other(2)
+               print *,'### gasvmr(ipt,lm,3)_ch4 =',gasvmr_other(3)
+               print *,'### gasvmr(ipt,lm,4)_o2  =',gasvmr_other(4)
+               print *,'### gasvmr(ipt,lm,5)_co  =',gasvmr_other(5)
+               print *,'### gasvmr(ipt,lm,6)_cf11=',gasvmr_other(6)
+               print *,'### gasvmr(ipt,lm,7)_cf12=',gasvmr_other(7)
+               print *,'### gasvmr(ipt,lm,8)_cf22=',gasvmr_other(8)
+               print *,'### gasvmr(ipt,lm,9)_ccl4=',gasvmr_other(9)
+               print *,'###################################################' 
+               print *,'### clouds(ipt,lm,1)-total cloud fraction=',clouds(n,lm,1)
+               print *,'### clouds(ipt,lm,2)-liq water path=',clouds(n,lm,2)
+               print *,'### clouds(ipt,lm,3)-liq effective radius=',clouds(n,lm,3)
+               print *,'### clouds(ipt,lm,4)-ice water path=',clouds(n,lm,4)
+               print *,'### clouds(ipt,lm,5)-ice effective radius=',clouds(n,lm,5)
+               print *,'### clouds(ipt,lm,6)-rain water path=',clouds(n,lm,6)
+               print *,'### clouds(ipt,lm,7)-rain effective radius=',clouds(n,lm,7)
+               print *,'### clouds(ipt,lm,8)-snow water path=',clouds(n,lm,8)
+               print *,'### clouds(ipt,lm,9)-snow effective radius=',clouds(n,lm,9)
+               print *,'###################################################' 
+               !print *,'### faerlw(ipt,lm,1,1)=lw#1-opd',faerlw(ipt,lm,1,1, jj)
+               !print *,'### faerlw(ipt,lm,1,2)=lw#1-ssa',faerlw(ipt,lm,1,2, jj)
+               !print *,'### faerlw(ipt,lm,1,3)=lw#1-asy',faerlw(ipt,lm,1,3, jj)
+               print *,'###################################################' 
+               print *,'### sfcemis(ipt)=',sfcemis(n)
+               print *,'###################################################' 
+               print *,'### tsfg(ipt) =',tsfg(n)
+               print *,'### tsfa(ipt) =',tsfa(n)
+               print *,'### tsflw(ipt)=',tsflw(ipt, jj)
+               print *,'###################################################' 
+               print *,'### htswc(ipt,lm) =',htrsw(ipt,lm, jj)
+               print *,'### htsw0(ipt,lm) =',htrsw0(ipt,lm, jj)
+               print *,'### htrsw(ipt,lm) =',htrsw(ipt,lm, jj)
+               print *,'### htrsw0(ipt,lm)=',htrsw0(ipt,lm, jj)
+               print *,'###################################################' 
+               print *,'### htlwc(ipt,lm) =',htrlw(ipt,lm+kd, jj)
+               print *,'### htlw0(ipt,lm) =',htrlw0(ipt,lm+kd, jj)
+               print *,'### htrlw(ipt,lm) =',htrlw(ipt,lm, jj)
+               print *,'### htrlw0(ipt,lm)=',htrlw0(ipt,lm, jj)
+               print *,'###################################################' 
+               print *,'### topflw(ipt)%upfxc=',fluxr(i, jj, 3)
+               print *,'### topflw(ipt)%upfx0=',fluxr(i, jj, 23)
+               print *,'###################################################' 
+               print *,'### topfsw(ipt)%upfxc=',fluxr(i, jj, 2 )
+               print *,'### topfsw(ipt)%upfx0=',fluxr(i, jj, 1 )
+               print *,'### topfsw(ipt)%dnfxc=',fluxr(i, jj, 22)
+               print *,'###################################################' 
+               print *,'### sfcflw(ipt)%upfxc=',fluxr(i, jj, 7)
+               print *,'### sfcflw(ipt)%upfx0=',fluxr(i, jj, 27)
+               print *,'### sfcflw(ipt)%dnfxc=',fluxr(i, jj, 6)
+               print *,'### sfcflw(ipt)%dnfx0=',fluxr(i, jj, 26)
+               print *,'###################################################' 
+               print *,'### sfcfsw(ipt)%upfxc=',fluxr(i, jj, 5)
+               print *,'### sfcfsw(ipt)%upfx0=',fluxr(i, jj, 4)
+               print *,'### sfcfsw(ipt)%dnfxc=',fluxr(i, jj, 25)
+               print *,'### sfcfsw(ipt)%dnfx0=',fluxr(i, jj, 24)
+               print *,'###################################################' 
+               print *,'### flwprf(ipt,1)%upfxc=',fuir(ipt,1+kd, jj)
+               print *,'### flwprf(ipt,1)%dnfxc=',fdir(ipt,1+kd, jj)
+               print *,'### flwprf(ipt,1)%upfx0=',fuirr(ipt,1+kd, jj)
+               print *,'### flwprf(ipt,1)%dnfx0=',fdirr(ipt,1+kd, jj)
+               print *,'###################################################' 
+               print *,'### flwprf(ipt,61)%upfxc=',fuir(ipt,61+kd, jj)
+               print *,'### flwprf(ipt,61)%dnfxc=',fdir(ipt,61+kd, jj)
+               print *,'### flwprf(ipt,61)%upfx0=',fuirr(ipt,61+kd, jj)
+               print *,'### flwprf(ipt,61)%dnfx0=',fdirr(ipt,61+kd, jj)
+               print *,'###################################################' 
+               print *,'### fuir(ipt,1)=',fuir(ipt,1, jj)
+               print *,'### fdir(ipt,1)=',fdir(ipt,1, jj)
+               print *,'### fuirr(ipt,1)=',fuirr(ipt,1, jj)
+               print *,'### fdirr(ipt,1)=',fdirr(ipt,1, jj)
+               print *,'###################################################' 
+               print *,'### fuir(ipt,61)=',fuir(ipt,61, jj)
+               print *,'### fdir(ipt,61)=',fdir(ipt,61, jj)
+               print *,'### fuirr(ipt,61)=',fuirr(ipt,61, jj)
+               print *,'### fdirr(ipt,61)=',fdirr(ipt,61, jj)
+               print *,'###################################################' 
+            endif
+         end if
       end do
 !
 !
-      !$acc parallel loop collapse(2) async(async_id)
-      do jj = 1, jlistnum
-!  ---  save total-sky TOA and SFC fluxes
-         do i = 1, ix
-            if (i .le. myim(jj)) then
-               !  ---  TOA total-sky SW DOWN fluxes
-               fluxr(i,1 , jj) = topfsw(i, jj, 2)   ! total sky top sw dn
-
-               !  ---  TOA total-sky SW UP fluxes
-               fluxr(i,2 , jj) = topfsw(i, jj, 1)   ! total sky top sw up
-
-               !  ---  TOA total-sky LW(OLR) fluxes
-               fluxr(i,3 , jj) = topflw(i, jj)%upfxc   ! total sky top lw up
-
-               !  ---  SFC total-sky SW DN/UP fluxes
-               fluxr(i,4 , jj) = sfcfsw(i, jj, 2)   ! total sky sfc sw dn
-               fluxr(i,5 , jj) = sfcfsw(i, jj, 1)   ! total sky sfc sw up
-
-               !  ---  SFC total-sky LW DN/UP fluxes
-               fluxr(i,6 , jj) = sfcflw(i, jj)%dnfxc  ! total sky sfc lw dn
-               fluxr(i,7 , jj) = sfcflw(i, jj)%upfxc  ! total sky sfc lw up
-            end if
-         enddo
-      end do
 
 
 !  ---  save cld frac,toplyr,botlyr and top temp, note that the order
 !       of h,m,l cloud is reversed for the fluxr output.
 !  ---  save interface pressure (cb) of top/bot
 
-      !$acc parallel loop collapse(2) private(tem0d, itop, ibtc) async(async_id)
-      do jj = 1, jlistnum
-         do j = 1, 3
-            do i = 1, ix
-               if (i .le. myim(jj)) then
-                  tem0d = cldsa(i,j, jj)
-                  itop  = mtopa(i,j, jj) - kd
-                  ibtc  = mbota(i,j, jj) - kd
-                  fluxr(i,11-j, jj) = tem0d  ! cloud fraction(h,m,l,j=3,2,1)
-                  fluxr(i,14-j, jj) = prsi(i,itop+kt, jj) ! cloud top pressure
-                  fluxr(i,17-j, jj) = prsi(i,ibtc+kb, jj) ! cloud bot pressure
-                  fluxr(i,20-j, jj) = tgrs(i,itop, jj)    ! cloud top temp
-               end if
-            enddo
+      !$acc parallel loop collapse(2) private(tem0d, itop, ibtc, jj, i) async(async_id)
+      do j = 1, 3
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            tem0d = cldsa(n,j)
+            itop  = mtopa(n,j) - kd
+            ibtc  = mbota(n,j) - kd
+            fluxr(i, jj, 11-j) = tem0d  ! cloud fraction(h,m,l,j=3,2,1)
+            fluxr(i, jj, 14-j) = prsi(i,itop+kt, jj) ! cloud top pressure
+            fluxr(i, jj, 17-j) = prsi(i,ibtc+kb, jj) ! cloud bot pressure
+            fluxr(i, jj, 20-j) = tgrs(i,itop, jj)    ! cloud top temp
          enddo
       end do
 
 !  ---  save total cloud and bl cloud fraction
-      !$acc parallel loop collapse(2) async(async_id)
-      do jj = 1, jlistnum
-         do i = 1, ix
-            if (i .le. myim(jj)) then
-               fluxr(i,20, jj) = cldsa(i,4, jj) ! total cloud fraction
-               fluxr(i,21, jj) = cldsa(i,5, jj) ! BL domain cloud fraction
-            end if
-         enddo
+      !$acc parallel loop private(jj, i) async(async_id)
+      do n = 1, nxptot
+         jj = map_jj(n)
+         i = map_i(n)
+         fluxr(i, jj, 20) = cldsa(n,4) ! total cloud fraction
+         fluxr(i, jj, 21) = cldsa(n,5) ! BL domain cloud fraction
       end do
 
-!  ---  save clear-sky TOA and SFC fluxes
-      !$acc parallel loop collapse(2) async(async_id)
-      do jj = 1, jlistnum
-         do i = 1, ix
-            if (i .le. myim(jj)) then
-               !  ---  TOA clear-sky SW/LW UP fluxes
-               fluxr(i,22, jj) = topfsw(i, jj, 3)   ! clear sky top sw up
-               fluxr(i,23, jj) = topflw(i, jj)%upfx0   ! clear sky top lw up
-
-               !  ---  SFC clear-sky SW fluxes
-               fluxr(i,24, jj) = sfcfsw(i, jj, 4)   ! clear sky sfc sw dn
-               fluxr(i,25, jj) = sfcfsw(i, jj, 3)   ! clear sky sfc sw up
-               !
-               !  ---  SFC clear-sky LW fluxes
-               fluxr(i,26, jj) = sfcflw(i, jj)%dnfx0   ! clear sky sfc lw dn
-               fluxr(i,27, jj) = sfcflw(i, jj)%upfx0   ! clear sky sfc lw up
-               !
-            end if
-         enddo
-      end do
 !
 !  ---  sw uv-b fluxes
-      !$acc parallel loop collapse(2) async(async_id)
-      do jj = 1, jlistnum
-         do i = 1, ix
-            if (i .le. myim(jj)) then
-               fluxr(i,28, jj) = scmpsw(i, jj, 1)  ! total sky uv-b sw dn
-               fluxr(i,29, jj) = scmpsw(i, jj, 2)  ! clear sky uv-b sw dn
 
-               !  ---  sw sfc flux components
-               !
-               fluxr(i,30, jj) = scmpsw(i, jj, 5)  ! uv/vis beam sw dn
-               fluxr(i,31, jj) = scmpsw(i, jj, 6)  ! uv/vis diff sw dn
-               fluxr(i,32, jj) = scmpsw(i, jj, 3)  ! nir beam sw dn
-               fluxr(i,33, jj) = scmpsw(i, jj, 4)  ! nir diff sw dn
-            end if
-         enddo
-      end do
-
-      !$acc parallel loop gang collapse(2) private(k1) async(async_id)
-      do jj = 1, jlistnum
-         do k = 1, lm
-            k1 = k + kd
-               !$acc loop vector
-            do i = 1, myim(jj)
-               cldcov(i,k, jj) = clouds(i,k1,1, jj)
-            enddo
-         enddo
-      end do ! jj-loop
+      !!$acc parallel loop gang collapse(2) private(k1) async(async_id)
+      !do jj = 1, jlistnum
+      !   do k = 1, lm
+      !      k1 = k + kd
+      !         !$acc loop vector
+      !      do i = 1, myim(jj)
+      !         cldcov(i,k, jj) = clouds(i,k1,1, jj)
+      !      enddo
+      !   enddo
+      !end do ! jj-loop
 
 
 !  ---  save optional vertically integrated aerosol optical depth at

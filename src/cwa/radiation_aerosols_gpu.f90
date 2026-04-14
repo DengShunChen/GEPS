@@ -119,10 +119,10 @@
 
       use module_iounitdef,        only : niaercm
       use module_radsw_parameters, only : nbdsw,  wvnsw1=>wvnum1,       &
-     &                                    nswstr, wvnsw2=>wvnum2
+     &                                    nswstr, wvnsw2=>wvnum2, nblow
       use module_radlw_parameters, only : nbdlw,  wvnlw1, wvnlw2
-      use param,             only : my, my_max
-      use index,             only : jlistnum
+      use param,                   only : my, my_max
+      use index,                   only : jlistnum, nxjp, jlist1, nxptot, nxjp_acc
 !
       implicit   none
 !
@@ -436,7 +436,7 @@
 
 !  ---  public interfaces
 
-      public aer_init_gpu, aer_update_gpu, setaer_gpu, copyin_radiation_aerosols_gpu
+      public aer_init_gpu, aer_update_gpu, setaer_lw_gpu, setaer_sw_gpu, copyin_radiation_aerosols_gpu
 
 
 ! =================
@@ -1587,8 +1587,8 @@
       if ( lavoflg ) then              ! update yearly stratospheric volcanic aerosol data
         call volc_update
       endif
-      !!$acc update device(cmixg, denng, idxcg, kprfg, ivolae) async(async_id)
-      !!$acc wait(async_id)
+      !$acc update device(cmixg, denng, idxcg, kprfg, ivolae) async(async_id)
+      !$acc wait(async_id)
 
 
 ! =================
@@ -1884,16 +1884,17 @@
 !-----------------------------------
 
 
-
 !-----------------------------------
-      subroutine setaer_gpu                                                 &
+      subroutine setaer_sw_gpu                                                 &
 !...................................
 
 !  ---  inputs:
      &     ( prsi,prsl,prslk,tvly,rhlay,slmsk,tracer,xlon,xlat,         &
-     &       myim,nlay,nlp1,lsswr,lslwr,me,myrank,ix, async_id,                      &
+     &       myim,nlay,nlp1,lsswr,lslwr,me,myrank,ix, map_jj, map_i, nxptot, &
+             idxday, map_nday_jj, jbs_nday, nday_length, jjoffset, max_nday_length, &
+             jb, small_ngpts, packs_nbands, offset_ng, max_packs_nbands, async_id,                      &
 !  ---  outputs:
-     &       aerosw,aerolw                                              &
+     &       tauae, ssaae, asyae                                              &
 !    &       aerosw,aerolw,aerodp                                       &
      &     )
 
@@ -1951,31 +1952,35 @@
 !  ==================================================================  !
 
 !  ---  inputs:
-      integer, intent(in) :: myim(my_max), nlay, nlp1,me,myrank, ix
+      integer, intent(in) :: myim(my_max), nlay, nlp1,me,myrank, ix, nxptot, max_nday_length, &
+         jb(nbdsw), small_ngpts, packs_nbands, offset_ng, max_packs_nbands
+      integer :: idxday(nday_length), map_nday_jj(nday_length), jbs_nday, nday_length, jjoffset
 
-      real (kind=kind_phys), dimension(:,:,:), intent(in) :: prsi, prsl,  &
+      integer, dimension(nxptot) :: map_jj, map_i
+
+      real (kind=kind_phys), dimension(:,:), intent(in) :: prsi, prsl,  &
      &       prslk, tvly, rhlay
       real (kind=kind_phys), dimension(:,:),   intent(in) :: xlon, xlat,  &
      &       slmsk
-      real (kind=kind_phys), dimension(:,:,:,:),intent(in):: tracer
+      real (kind=kind_phys), dimension(:,:,:),intent(in):: tracer
 
       logical, intent(in) :: lsswr, lslwr
 
 !  ---  outputs:
-      real (kind=kind_phys), dimension(:,:,:,:,:), intent(out) ::         &
-     &       aerosw, aerolw
+      real (kind=kind_phys), dimension(nday_length, nlay,max_packs_nbands), intent(out):: &
+               tauae, ssaae, asyae
 !     real (kind=kind_phys), dimension(:,:)    , intent(out) :: aerodp
 
 !  ---  locals:
       real (kind=kind_phys), parameter :: psrfh = 5.0    ! ref press (mb) for upper bound
-
-      real (kind=kind_phys), dimension(ix, my_max) :: alon,alat,volcae,rdelp
+      real (kind=kind_phys), dimension(nxptot, nlay,nbdlw) :: &
+               ssaaer
+      real (kind=kind_phys), dimension(nxptot) :: alon,alat,volcae,rdelp
 !     real (kind=kind_phys), dimension(imax) :: sumodp
-      real (kind=kind_phys) :: prsln(ix, nlp1, my_max),hz(ix,nlp1, my_max),dz(ix,nlay, my_max)
+      real (kind=kind_phys) :: hz(nxptot,nlp1),dz(nxptot,nlay)
       real (kind=kind_phys) :: tmp1, tmp2, psrfl
-
-      integer               :: kcutl(ix, my_max), kcuth(ix, my_max)
-      integer               :: i, i1, j, k, m, mb, kh, kl, jj
+      integer               :: kcutl(nxptot), kcuth(nxptot)
+      integer               :: i, i1, j, k, m, mb, kh, kl, jj, k1, r, jf, j1, mm, nn
 
       logical               :: laddsw=.false.,  laersw=.false.
       logical               :: laddlw=.false.,  laerlw=.false.
@@ -1983,35 +1988,36 @@
 !  ---  conversion constants
       real (kind=kind_phys), parameter :: rdg  = 180.0 / con_pi
       real (kind=kind_phys), parameter :: rovg = 0.001 * con_rd / con_g
-      integer :: async_id
+      integer :: async_id, n
+      real (kind=kind_phys) :: prslnr1, prslnr
+
+      ! GPU: variable name changed: CPU - aerosw(:,:,:,1), GPU - tauae
+      ! GPU: variable name changed: CPU - aerosw(:,:,:,2), GPU - ssaae
+      ! GPU: variable name changed: CPU - aerosw(:,:,:,3), GPU - asyae
+      ! GPU: variable name changed: CPU - aerolw(:,:,:,1), GPU - tauaer*
+      ! GPU: variable name changed: CPU - aerolw(:,:,:,2), GPU - ssaaer*
+      ! GPU: variable name changed: CPU - aerolw(:,:,:,3), GPU - <dismissed>
+      ! GPU: Before the mark !==++GPU++==lwrad!, tauaer correspned to aerolw(:,:,:,1).
+      ! GPU: After this mark, tauaer is the combination of aerolw(:,:,:,1) and 
+      ! GPU: aerolw(:,:,:,2), which can be used directly in subroutine lwrad_gpu.
 
 !===>  ...  begin here
-      !$acc enter data create(alon, alat, volcae, rdelp, prsln, hz, dz, kcutl, kcuth) &
+      !$acc enter data create(alon, alat, volcae, rdelp, hz, dz, kcutl, kcuth, ssaaer) &
       !$acc&     async(async_id)
-      !$acc parallel loop gang collapse(4) async(async_id)      
-      do jj = 1, jlistnum
-         do m = 1, nf_aesw
-            do j = 1, nbdsw
-               do k = 1, nlay
-                  !$acc loop vector
-                  do i = 1, myim(jj)
-                     aerosw(i,k,j,m, jj) = f_zero
-                  enddo
-               enddo
-            enddo
-         enddo
-      end do
 
-      !$acc parallel loop gang collapse(4) async(async_id)
-      do jj = 1, jlistnum
-         do m = 1, nf_aelw
-            do j = 1, nbdlw
-               do k = 1, nlay
-                  !$acc loop vector
-                  do i = 1, myim(jj)
-                     aerolw(i,k,j,m, jj) = f_zero
-                  enddo
-               enddo
+      
+      !$acc parallel loop collapse(3) async(async_id)
+      do nn = 1, packs_nbands
+         do k = 1, nlay
+            do n = 1, nday_length
+               jj = map_nday_jj(n) - jjoffset
+               jf = jjoffset+jj
+               j1 = idxday(n)
+               r = j1 + nxjp_acc(jf) - 1
+               !if (myrank .eq. 0) write(*,*) r, map_nday_jj(n), jjoffset, jj, jf, nxjp_acc(jf), j1
+               tauae(n, k,nn) = f_zero
+               ssaae(n, k,nn) = f_one
+               asyae(n, k,nn) = f_zero
             enddo
          enddo
       end do
@@ -2032,18 +2038,18 @@
 
 !  ---  ...  convert lat/lon from radiance to degree
 
-      !$acc parallel loop collapse(2) async(async_id)
-      do jj = 1, jlistnum
-         do i = 1, ix
-            if (i .le. myim(jj)) then
-               alon(i, jj) = xlon(i, jj) * rdg
-               !       if (myrank == 0) print *,i,'alon=',alon(i),' xlon=',xlon(i),rdg
-               if (alon(i, jj) < f_zero) alon(i, jj) = alon(i, jj) + 360.0
-               alat(i, jj) = xlat(i, jj) * rdg          ! if xlat in pi/2 -> -pi/2 range
-               !       if (myrank == 0) print *,i,'alat=',alat(i),' xlat=',xlat(i),rdg
-               !       alat(i) = 90.0 - xlat(i)*rdg     ! if xlat in 0 -> pi range
-            end if
-         enddo
+      !$acc parallel loop private(jj, i) async(async_id)
+      do n = 1, nday_length
+         jj = map_nday_jj(n) - jjoffset
+         jf = jjoffset+jj
+         j1 = idxday(n)
+         r = j1 + nxjp_acc(jf) - 1
+         alon(r) = xlon(j1, jf) * rdg
+         !       if (myrank == 0) print *,i,'alon=',alon(i),' xlon=',xlon(i),rdg
+         if (alon(r) < f_zero) alon(r) = alon(r) + 360.0
+         alat(r) = xlat(j1, jf) * rdg          ! if xlat in pi/2 -> -pi/2 range
+         !       if (myrank == 0) print *,i,'alat=',alat(i),' xlat=',xlat(i),rdg
+         !       alat(i) = 90.0 - xlat(i)*rdg     ! if xlat in 0 -> pi range
       end do
 
 !  ---  ...  compute level height and layer thickness
@@ -2051,99 +2057,79 @@
       if ( laswflg .or. lalwflg ) then
 
          if (ivflip == 1) then ! lab_if_flip      ! input from sfc to toa
-            !$acc parallel loop gang collapse(2) async(async_id)
-            do jj = 1, jlistnum ! start lab_do_imax
+            !$acc parallel loop collapse(2) async(async_id)
+            do k = 1, nlay
+               do n = 1, nday_length
+                  jj = map_nday_jj(n) - jjoffset
+                  jf = jjoffset+jj
+                  j1 = idxday(n)
+                  r = j1 + nxjp_acc(jf) - 1
+                  prslnr = log(prsi(r,k))
+                  if (k .eq. nlay) then
+                     prslnr1 = log(prsl(r,nlay))
+                  else
+                     prslnr1 = log(prsi(r,k+1))
+                  end if
+                  dz(r,k) = rovg * (prslnr - prslnr1) * tvly(r,k)
+               end do
+            end do
+            !$acc parallel loop async(async_id)
+            do n = 1, nday_length
+               jj = map_nday_jj(n) - jjoffset
+               jf = jjoffset+jj
+               j1 = idxday(n)
+               r = j1 + nxjp_acc(jf) - 1
+               dz(r,nlay)  = 2.0 * dz(r,nlay)
+               hz(r,1) = f_zero
+            end do
+            !$acc parallel loop async(async_id)
+            do n = 1, nday_length
+               jj = map_nday_jj(n) - jjoffset
+               jf = jjoffset+jj
+               j1 = idxday(n)
+               r = j1 + nxjp_acc(jf) - 1
+               !$acc loop seq
                do k = 1, nlay
-                  !$acc loop vector
-                  do i = 1, myim(jj)
-                     prsln(i, k, jj) = log(prsi(i,k, jj))
-                  enddo
-               end do
-            end do
-            !$acc parallel loop collapse(2) async(async_id)
-            do jj = 1, jlistnum
-               do i = 1, ix
-                  if (i .le. myim(jj)) then
-                     prsln(i, nlp1, jj)= log(prsl(i,nlay, jj))
-                  end if
-               end do
-            end do
-            !$acc parallel loop gang collapse(2) async(async_id)
-            do jj = 1, jlistnum
-               do k = 1, nlay
-                  !$acc loop vector
-                  do i = 1, myim(jj)
-                     dz(i,k, jj) = rovg * (prsln(i, k, jj) - prsln(i, k+1, jj)) * tvly(i,k, jj)
-                  enddo
-               end do
-            end do
-            !$acc parallel loop collapse(2) async(async_id)
-            do jj = 1, jlistnum
-               do i = 1, ix
-                  if (i .le. myim(jj)) then
-                     dz(i,nlay, jj)  = 2.0 * dz(i,nlay, jj)
-                     hz(i,1, jj) = f_zero
-                  end if
-               end do
-            end do
-            !$acc parallel loop collapse(2) async(async_id)
-            do jj = 1, jlistnum
-               do i = 1, ix
-                  if (i .le. myim(jj)) then
-                     !$acc loop seq
-                     do k = 1, nlay
-                        hz(i,k+1, jj) = hz(i,k, jj) + dz(i,k, jj)
-                     enddo
-                  end if
-               end do
+                  hz(r,k+1) = hz(r,k) + dz(r,k)
+               enddo
             end do
 
          else    !lab_if_flip                     ! input from toa to sfc
             !$acc parallel loop collapse(2) async(async_id)
-            do jj = 1, jlistnum
-               do i = 1, ix
-                  if (i .le. myim(jj)) then
-                     prsln(i, 1, jj) = log(prsl(i,1, jj))
+            do k = 1, nlay
+               do n = 1, nday_length
+                  jj = map_nday_jj(n) - jjoffset
+                  jf = jjoffset+jj
+                  j1 = idxday(n)
+                  r = j1 + nxjp_acc(jf) - 1
+                  prslnr1 = log(prsi(r,k+1))
+                  if (k .eq. 1) then
+                     prslnr = log(prsl(r,1))
+                  else
+                     prslnr = log(prsi(r,k))
                   end if
+                  dz(r,k) = rovg * (prslnr1 - prslnr) * tvly(r,k)
                end do
             end do
-            !$acc parallel loop gang collapse(2) async(async_id)
-            do jj = 1, jlistnum
-               do k = 2, nlp1
-                  !$acc loop vector
-                  do i = 1, myim(jj)
-                     prsln(i, k, jj) = log(prsi(i,k, jj))
-                  enddo
-               end do
+            !$acc parallel loop async(async_id)
+            do n = 1, nday_length
+               jj = map_nday_jj(n) - jjoffset
+               jf = jjoffset+jj
+               j1 = idxday(n)
+               r = j1 + nxjp_acc(jf) - 1
+               dz(r,1) = 2.0 * dz(r,1)
+               hz(r,nlp1) = f_zero
             end do
-            !$acc parallel loop gang collapse(2) async(async_id)
-            do jj = 1, jlistnum
-               do k = 1, nlay
-                  !$acc loop vector
-                  do i = 1, myim(jj)
-                     dz(i,k, jj) = rovg * (prsln(i, k+1, jj) - prsln(i, k, jj)) * tvly(i,k, jj)
-                  enddo
-               end do
-            end do
-            !$acc parallel loop collapse(2) async(async_id)
-            do jj = 1, jlistnum
-               do i = 1, ix
-                  if (i .le. myim(jj)) then
-                     dz(i,1, jj) = 2.0 * dz(i,1, jj)
-                     hz(i,nlp1, jj) = f_zero
-                  end if
-               end do
-            end do
-            !$acc parallel loop collapse(2) async(async_id)
-            do jj = 1, jlistnum
-               do i = 1, ix
-                  if (i .le. myim(jj)) then
-                     !$acc loop seq
-                     do k = nlay, 1, -1
-                        hz(i,k, jj) = hz(i,k+1, jj) + dz(i,k, jj)
-                     enddo
-                  end if
-               end do
+            !$acc parallel loop async(async_id)
+            do n = 1, nday_length
+               jj = map_nday_jj(n) - jjoffset
+               jf = jjoffset+jj
+               j1 = idxday(n)
+               r = j1 + nxjp_acc(jf) - 1
+               !$acc loop seq
+               do k = nlay, 1, -1
+                  hz(r,k) = hz(r,k+1) + dz(r,k)
+               enddo
             end do ! end lab_do_imax
 
          endif ! lab_if_flip
@@ -2151,15 +2137,17 @@
 
 !  ---  ...  calculate sw aerosol optical properties for the corresponding
 !            frequency bands
-            call aer_property                                               &
+            call aer_property_sw                                               &
             !  ---  inputs:
             &     ( prsi,prsl,prslk,tvly,rhlay, &
                     dz,hz,tracer,                   &
             &       alon,alat,slmsk, laersw,laerlw,                            &
-            &       myim,nlay,nlp1, ix, async_id,                                           &
+            &       myim,nlay,nlp1, ix, map_jj, map_i, nxptot, idxday, &
+                    map_nday_jj, jbs_nday, nday_length, jjoffset, max_nday_length, &
+                    jb, small_ngpts, packs_nbands, offset_ng, max_packs_nbands, async_id,                                           &
             !    &       imax,nlay,nlp1,nspc1,                                      &
             !  ---  outputs:
-            &       aerosw,aerolw                                              &
+            &       tauae, ssaae, asyae, ssaaer                                              &
             !    &       aerosw,aerolw,aerodp                                       &
             &     )
 
@@ -2217,72 +2205,72 @@
 !  ---  select data in 4 lat bands, interpolation at the boundaires
 
       if ( lavoflg ) then
-         !$acc parallel loop collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               if (i .le. myim(jj)) then
-                  if      ( alat(i, jj) > 46.0 ) then
-                     volcae(i, jj) = 1.0e-4 * ivolae(kmonsav,1,i1)
-                  else if ( alat(i, jj) > 44.0 ) then
-                     volcae(i, jj) = 5.0e-5                                          &
-                     &                * (ivolae(kmonsav,1,i1) + ivolae(kmonsav,2,i1))
-                  else if ( alat(i, jj) >  1.0 ) then
-                     volcae(i, jj) = 1.0e-4 * ivolae(kmonsav,2,i1)
-                  else if ( alat(i, jj) > -1.0 ) then
-                     volcae(i, jj) = 5.0e-5                                          &
-                     &                * (ivolae(kmonsav,2,i1) + ivolae(kmonsav,3,i1))
-                  else if ( alat(i, jj) >-44.0 ) then
-                     volcae(i, jj) = 1.0e-4 * ivolae(kmonsav,3,i1)
-                  else if ( alat(i, jj) >-46.0 ) then
-                     volcae(i, jj) = 5.0e-5                                          &
-                     &                * (ivolae(kmonsav,3,i1) + ivolae(kmonsav,4,i1))
-                  else
-                     volcae(i, jj) = 1.0e-4 * ivolae(kmonsav,4,i1)
-                  endif
-               end if
-            enddo
+         !$acc parallel loop async(async_id)
+         do n = 1, nday_length
+            jj = map_nday_jj(n) - jjoffset
+            jf = jjoffset+jj
+            j1 = idxday(n)
+            r = j1 + nxjp_acc(jf) - 1
+            if      ( alat(r) > 46.0 ) then
+               volcae(r) = 1.0e-4 * ivolae(kmonsav,1,i1)
+            else if ( alat(r) > 44.0 ) then
+               volcae(r) = 5.0e-5                                          &
+               &                * (ivolae(kmonsav,1,i1) + ivolae(kmonsav,2,i1))
+            else if ( alat(r) >  1.0 ) then
+               volcae(r) = 1.0e-4 * ivolae(kmonsav,2,i1)
+            else if ( alat(r) > -1.0 ) then
+               volcae(r) = 5.0e-5                                          &
+               &                * (ivolae(kmonsav,2,i1) + ivolae(kmonsav,3,i1))
+            else if ( alat(r) >-44.0 ) then
+               volcae(r) = 1.0e-4 * ivolae(kmonsav,3,i1)
+            else if ( alat(r) >-46.0 ) then
+               volcae(r) = 5.0e-5                                          &
+               &                * (ivolae(kmonsav,3,i1) + ivolae(kmonsav,4,i1))
+            else
+               volcae(r) = 1.0e-4 * ivolae(kmonsav,4,i1)
+            endif
          end do
       end if
 
       if ( lavoflg ) then
          if ( ivflip == 0 ) then         ! input data from toa to sfc
 
-!  ---  find lower boundary of stratosphere
-         !$acc parallel loop collapse(2) private(tmp1, psrfl) async(async_id)
-            do jj = 1, jlistnum
-               do i = 1, ix
-                  if (i .le. myim(jj)) then
+   !  ---  find lower boundary of stratosphere
+            !$acc parallel loop private(tmp1, psrfl) async(async_id)
+            do n = 1, nday_length
+               jj = map_nday_jj(n) - jjoffset
+               jf = jjoffset+jj
+               j1 = idxday(n)
+               r = j1 + nxjp_acc(jf) - 1
 
-                     tmp1 = abs( alat(i, jj) )
-                     if ( tmp1 > 70.0 ) then          ! polar, fixed at 25000pa (250mb)
-                        psrfl = 250.0
-                     elseif ( tmp1 < 20.0 ) then      ! tropic, fixed at 15000pa (150mb)
-                        psrfl = 150.0
-                     else                             ! mid-lat, interpolation
-                        psrfl = 110.0 + 2.0*tmp1
-                     endif
+               tmp1 = abs( alat(r) )
+               if ( tmp1 > 70.0 ) then          ! polar, fixed at 25000pa (250mb)
+                  psrfl = 250.0
+               elseif ( tmp1 < 20.0 ) then      ! tropic, fixed at 15000pa (150mb)
+                  psrfl = 150.0
+               else                             ! mid-lat, interpolation
+                  psrfl = 110.0 + 2.0*tmp1
+               endif
 
-                     kcuth(i, jj) = nlay - 1
-                     kcutl(i, jj) = 2
-                     rdelp(i, jj) = f_one / prsi(i,2, jj)
-                     !$acc loop seq
-                     do k = 2, nlay-2 ! lab_do_kcuth0
-                        if ( prsi(i,k, jj) >= psrfh ) then
-                           kcuth(i, jj) = k - 1
-                           exit ! lab_do_kcuth0
-                        endif
-                     enddo  ! lab_do_kcuth0
-                     !$acc loop seq
-                     do k = 2, nlay-2 ! lab_do_kcutl0
-                        if ( prsi(i,k, jj) >= psrfl ) then
-                           kcutl(i, jj) = k - 1
-                           rdelp(i, jj) = f_one / (prsi(i,k, jj) - prsi(i,kcuth(i, jj), jj))
-                           exit ! lab_do_kcutl0
-                        endif
-                     enddo  ! lab_do_kcutl0
-                  end if
-               enddo
-            end do
+               kcuth(r) = nlay - 1
+               kcutl(r) = 2
+               rdelp(r) = f_one / prsi(r,2)
+               !$acc loop seq
+               do k = 2, nlay-2 ! lab_do_kcuth0
+                  if ( prsi(r,k) >= psrfh ) then
+                     kcuth(r) = k - 1
+                     exit ! lab_do_kcuth0
+                  endif
+               enddo  ! lab_do_kcuth0
+               !$acc loop seq
+               do k = 2, nlay-2 ! lab_do_kcutl0
+                  if ( prsi(r,k) >= psrfl ) then
+                     kcutl(r) = k - 1
+                     rdelp(r) = f_one / (prsi(r,k) - prsi(r,kcuth(r)))
+                     exit ! lab_do_kcutl0
+                  endif
+               enddo  ! lab_do_kcutl0
+            enddo
          end if
       end if
 
@@ -2290,39 +2278,41 @@
       if ( lavoflg ) then
          if ( ivflip == 0 ) then         ! input data from toa to sfc
             if ( laddsw ) then
-               !$acc parallel loop gang collapse(2) private(mb) async(async_id)
-               do jj = 1, jlistnum
-                  do m = 1, nbdsw
+               !$acc parallel loop collapse(2) private(mb, tmp2, tmp1, kh, kl, m) async(async_id)
+               do nn = 1, packs_nbands
+                  do n = 1, nday_length
+                     jj = map_nday_jj(n) - jjoffset
+                     jf = jjoffset+jj
+                     j1 = idxday(n)
+                     r = j1 + nxjp_acc(jf) - 1
+                     m = jb(nn) - nblow + 1
                      mb = nswstr + m - 1
 
-                     !$acc loop vector private(tmp2, tmp1, kh, kl)
-                     do i = 1, myim(jj)
 
-                        if     ( wvnsw1(mb) > 20000 ) then   ! range of wvlth < 0.5mu
-                           tmp2 = 0.74
-                        elseif ( wvnsw2(mb) < 20000 ) then   ! range of wvlth > 0.5mu
-                           tmp2 = 1.14
-                        else                                 ! range of wvlth in btwn
-                           tmp2 = 0.94
-                        endif
-                        tmp1 = (0.275e-4 * (wvnsw2(mb)+wvnsw1(mb))) ** tmp2
+                     if     ( wvnsw1(mb) > 20000 ) then   ! range of wvlth < 0.5mu
+                        tmp2 = 0.74
+                     elseif ( wvnsw2(mb) < 20000 ) then   ! range of wvlth > 0.5mu
+                        tmp2 = 1.14
+                     else                                 ! range of wvlth in btwn
+                        tmp2 = 0.94
+                     endif
+                     tmp1 = (0.275e-4 * (wvnsw2(mb)+wvnsw1(mb))) ** tmp2
 
-                        kh = kcuth(i, jj)
-                        kl = kcutl(i, jj)
-                        !$acc loop seq
-                        do k = kh, kl
-                           tmp2 = tmp1 * ((prsi(i,k+1, jj) - prsi(i,k, jj)) * rdelp(i, jj))
-                           aerosw(i,k,m,1, jj) = aerosw(i,k,m,1, jj) + tmp2*volcae(i, jj)
-                        enddo
+                     kh = kcuth(r)
+                     kl = kcutl(r)
+                     !$acc loop seq
+                     do k = kh, kl
+                        tmp2 = tmp1 * ((prsi(r,k+1) - prsi(r,k)) * rdelp(r))
+                        tauae(n,k,nn) = tauae(n,k,nn) + tmp2*volcae(r)
+                     enddo
 
    !  ---  smoothing profile at boundary if needed
 
-                        if ( aerosw(i,kl,m,1, jj) > 10.*aerosw(i,kl+1,m,1, jj) ) then
-                           tmp2 = aerosw(i,kl,m,1, jj) + aerosw(i,kl+1,m,1, jj)
-                           aerosw(i,kl  ,m,1, jj) = 0.8 * tmp2
-                           aerosw(i,kl+1,m,1, jj) = 0.2 * tmp2
-                        endif
-                     enddo    ! end do_i_block
+                     if ( tauae(n,kl,nn) > 10.*tauae(n,kl+1,nn) ) then
+                        tmp2 = tauae(n,kl,nn) + tauae(n,kl+1,nn)
+                        tauae(n,kl  ,nn) = 0.8 * tmp2
+                        tauae(n,kl+1,nn) = 0.2 * tmp2
+                     endif
                   enddo      ! end do_m_block
                end do
 
@@ -2342,136 +2332,84 @@
          end if
       end if
 
-   !  ---  lw: add volcanic aerosol optical depth to the background value
-      if ( lavoflg ) then
-         if ( ivflip == 0 ) then         ! input data from toa to sfc
-            if ( laddlw ) then
-               if ( nlwbnd == 1 ) then
 
-                  tmp1 = (0.55 / 11.0) ** 1.2
-                  !$acc parallel loop gang collapse(2) private(mb) async(async_id)
-                  do jj = 1, jlistnum
-                     do m = 1, nbdlw
-                        !$acc loop vector private(kh, kl, tmp2)
-                        do i = 1, myim(jj)
-                           kh = kcuth(i, jj)
-                           kl = kcutl(i, jj)
-                           !$acc loop seq
-                           do k = kh, kl
-                              tmp2 = tmp1 * ((prsi(i,k+1, jj) - prsi(i,k, jj)) * rdelp(i, jj))  &
-                              &                 * volcae(i, jj)
-                              aerolw(i,k,m,1, jj) = aerolw(i,k,m,1, jj) + tmp2
-                           enddo
-                        enddo
-                     enddo    ! end do_i_block
-                  end do
-               end if
-            end if
-         end if
-      end if
-
-      if ( lavoflg ) then
-         if ( ivflip == 0 ) then         ! input data from toa to sfc
-            if ( laddlw ) then
-               if ( nlwbnd .ne. 1 ) then
-                  !$acc parallel loop gang collapse(2) private(mb) async(async_id)
-                  do jj = 1, jlistnum
-                     do m = 1, nbdlw
-                        !$acc loop vector private(kh, kl, tmp1, tmp2)
-                        do i = 1, myim(jj)
-                           tmp1 = (0.275e-4 * (wvnlw2(m) + wvnlw1(m))) ** 1.2
-                           kh = kcuth(i, jj)
-                           kl = kcutl(i, jj)
-                           !$acc loop seq
-                           do k = kh, kl
-                              tmp2 = tmp1 * ((prsi(i,k+1, jj)-prsi(i,k, jj)) * rdelp(i, jj))
-                              aerolw(i,k,m,1, jj) = aerolw(i,k,m,1, jj) + tmp2*volcae(i, jj)
-                           enddo
-                        enddo    ! end do_i_block
-                     enddo      ! end do_m_block
-                  end do
-               endif      ! end if_nlwbnd_block
-            endif        ! end if_laddlw_block
-         end if
-      end if
       
       if ( lavoflg ) then
          if ( ivflip .ne. 0 ) then         ! input data from toa to sfc
 
    !  ---  find lower boundary of stratosphere
-            !$acc parallel loop collapse(2) private(psrfl, tmp1) async(async_id)
-            do jj = 1, jlistnum
-               do i = 1, ix
-                  if (i .le. myim(jj)) then
+            !$acc parallel loop private(psrfl, tmp1) async(async_id)
+            do n = 1, nday_length
+               jj = map_nday_jj(n) - jjoffset
+               jf = jjoffset+jj
+               j1 = idxday(n)
+               r = j1 + nxjp_acc(jf) - 1
+               tmp1 = abs( alat(r) )
+               if ( tmp1 > 70.0 ) then          ! polar, fixed at 25000pa (250mb)
+                  psrfl = 250.0
+               elseif ( tmp1 < 20.0 ) then      ! tropic, fixed at 15000pa (150mb)
+                  psrfl = 150.0
+               else                             ! mid-lat, interpolation
+                  psrfl = 110.0 + 2.0*tmp1
+               endif
 
-                     tmp1 = abs( alat(i, jj) )
-                     if ( tmp1 > 70.0 ) then          ! polar, fixed at 25000pa (250mb)
-                        psrfl = 250.0
-                     elseif ( tmp1 < 20.0 ) then      ! tropic, fixed at 15000pa (150mb)
-                        psrfl = 150.0
-                     else                             ! mid-lat, interpolation
-                        psrfl = 110.0 + 2.0*tmp1
-                     endif
-
-                     kcuth(i, jj) = 2
-                     kcutl(i, jj) = nlay - 1
-                     rdelp(i, jj) = f_one / prsi(i,nlay-1, jj)
-                     !$acc loop seq
-                     do k = nlay-1, 2, -1 ! lab_do_kcuth1
-                        if ( prsi(i,k, jj) >= psrfh ) then
-                           kcuth(i, jj) = k
-                           exit ! lab_do_kcuth1
-                        endif
-                     enddo  ! lab_do_kcuth1
-                     !$acc loop seq
-                     do k = nlay, 2, -1 ! lab_do_kcutl1
-                        if ( prsi(i,k, jj) >= psrfl ) then
-                           kcutl(i, jj) = k
-                           rdelp(i, jj) = f_one / (prsi(i,k, jj) - prsi(i,kcuth(i, jj)+1, jj))
-                           exit ! lab_do_kcutl1
-                        endif
-                     enddo  ! lab_do_kcutl1
-                  end if
-               enddo
+               kcuth(r) = 2
+               kcutl(r) = nlay - 1
+               rdelp(r) = f_one / prsi(r,nlay-1)
+               !$acc loop seq
+               do k = nlay-1, 2, -1 ! lab_do_kcuth1
+                  if ( prsi(r,k) >= psrfh ) then
+                     kcuth(r) = k
+                     exit ! lab_do_kcuth1
+                  endif
+               enddo  ! lab_do_kcuth1
+               !$acc loop seq
+               do k = nlay, 2, -1 ! lab_do_kcutl1
+                  if ( prsi(r,k) >= psrfl ) then
+                     kcutl(r) = k
+                     rdelp(r) = f_one / (prsi(r,k) - prsi(r,kcuth(r)+1))
+                     exit ! lab_do_kcutl1
+                  endif
+               enddo  ! lab_do_kcutl1
             end do
          end if
       end if
-
    !  ---  sw: add volcanic aerosol optical depth to the background value
       if ( lavoflg ) then
          if ( ivflip .ne. 0 ) then         ! input data from toa to sfc
             if ( laddsw ) then
-               !$acc parallel loop gang collapse(2) private(mb) async(async_id)
-               do jj = 1, jlistnum
-                  do m = 1, nbdsw
+               !$acc parallel loop collapse(2) private(mb, tmp2, tmp1, kl, kh, m) async(async_id)
+               do nn = 1, packs_nbands
+                  do n = 1, nday_length
+                     jj = map_nday_jj(n) - jjoffset
+                     jf = jjoffset+jj
+                     j1 = idxday(n)
+                     r = j1 + nxjp_acc(jf) - 1
+                     m = jb(nn) - nblow + 1
                      mb = nswstr + m - 1
-
-                     !$acc loop vector private(tmp2, tmp1, kl, kh)
-                     do i = 1, myim(jj)
-                        if     ( wvnsw1(mb) > 20000 ) then   ! range of wvlth < 0.5mu
-                           tmp2 = 0.74
-                        elseif ( wvnsw2(mb) < 20000 ) then   ! range of wvlth > 0.5mu
-                           tmp2 = 1.14
-                        else                                 ! range of wvlth in btwn
-                           tmp2 = 0.94
-                        endif
-                        tmp1 = (0.275e-4 * (wvnsw2(mb)+wvnsw1(mb))) ** tmp2
-                        kh = kcuth(i, jj)
-                        kl = kcutl(i, jj)
-                        !$acc loop seq
-                        do k = kl, kh
-                           tmp2 = tmp1 * ((prsi(i,k, jj) - prsi(i,k+1, jj)) * rdelp(i, jj))
-                           aerosw(i,k,m,1, jj) = aerosw(i,k,m,1, jj) + tmp2*volcae(i, jj)
-                        enddo
+                     if     ( wvnsw1(mb) > 20000 ) then   ! range of wvlth < 0.5mu
+                        tmp2 = 0.74
+                     elseif ( wvnsw2(mb) < 20000 ) then   ! range of wvlth > 0.5mu
+                        tmp2 = 1.14
+                     else                                 ! range of wvlth in btwn
+                        tmp2 = 0.94
+                     endif
+                     tmp1 = (0.275e-4 * (wvnsw2(mb)+wvnsw1(mb))) ** tmp2
+                     kh = kcuth(r)
+                     kl = kcutl(r)
+                     !$acc loop seq
+                     do k = kl, kh
+                        tmp2 = tmp1 * ((prsi(r,k) - prsi(r,k+1)) * rdelp(r))
+                        tauae(n,k,nn) = tauae(n,k,nn) + tmp2*volcae(r)
+                     enddo
 
    !  ---  smoothing profile at boundary if needed
 
-                        if ( aerosw(i,kl,m,1, jj) > 10.*aerosw(i,kl-1,m,1, jj) ) then
-                           tmp2 = aerosw(i,kl,m,1, jj) + aerosw(i,kl-1,m,1, jj)
-                           aerosw(i,kl  ,m,1, jj) = 0.8 * tmp2
-                           aerosw(i,kl-1,m,1, jj) = 0.2 * tmp2
-                        endif
-                     enddo    ! end do_i_block
+                     if ( tauae(n,kl,nn) > 10.*tauae(n,kl-1,nn) ) then
+                        tmp2 = tauae(n,kl,nn) + tauae(n,kl-1,nn)
+                        tauae(n,kl  ,nn) = 0.8 * tmp2
+                        tauae(n,kl-1,nn) = 0.2 * tmp2
+                     endif
                   enddo      ! end do_m_block
                end do
 
@@ -2491,81 +2429,47 @@
       end if
 
    !  ---  lw: add volcanic aerosol optical depth to the background value
-      if ( lavoflg ) then
-         if ( ivflip .ne. 0 ) then         ! input data from toa to sfc
-            if ( laddlw ) then
-               if ( nlwbnd == 1 ) then
-
-                  tmp1 = (0.55 / 11.0) ** 1.2
-                  !$acc parallel loop gang collapse(2) async(async_id)
-                  do jj = 1, jlistnum
-                     do m = 1, nbdlw
-                        !$acc loop vector private(tmp2, kl, kh)
-                        do i = 1, myim(jj)
-                           kh = kcuth(i, jj)
-                           kl = kcutl(i, jj)
-                           !$acc loop seq
-                           do k = kl, kh
-                              tmp2 = tmp1 * ((prsi(i,k, jj) - prsi(i,k+1, jj)) * rdelp(i, jj))  &
-                              &                 * volcae(i, jj)
-                              aerolw(i,k,m,1, jj) = aerolw(i,k,m,1, jj) + tmp2
-                           enddo
-                        enddo
-                     enddo    ! end do_i_block
-                  end do
-               end if
-            end if
-         end if
+      if (ivflip == 0) then
+         !$acc parallel loop collapse(3) private(tmp1) async(async_id)
+         do nn = 1, packs_nbands
+            do k = 1, nlay/2
+               do n = 1, nday_length
+                  tmp1 = tauae(n, k, nn)
+                  tauae(n, k, nn) = tauae(n, nlay - k + 1, nn)
+                  tauae(n, nlay - k + 1, nn) = tmp1
+                  tmp1 = ssaae(n, k, nn)
+                  ssaae(n, k, nn) = ssaae(n, nlay - k + 1, nn)
+                  ssaae(n, nlay - k + 1, nn) = tmp1
+                  tmp1 = asyae(n, k, nn)
+                  asyae(n, k, nn) = asyae(n, nlay - k + 1, nn)
+                  asyae(n, nlay - k + 1, nn) = tmp1
+               end do
+            end do
+         end do
       end if
-      
-      if ( lavoflg ) then
-         if ( ivflip .ne. 0 ) then         ! input data from toa to sfc
-            if ( laddlw ) then
-               if ( nlwbnd .ne. 1 ) then
-                  !$acc parallel loop gang collapse(2) private(tmp1) async(async_id)
-                  do jj = 1, jlistnum
-                     do m = 1, nbdlw
-                        tmp1 = (0.275e-4 * (wvnlw2(m) + wvnlw1(m))) ** 1.2
-                        
-                        !$acc loop vector private(tmp2, kl, kh)
-                        do i = 1, myim(jj)
-                           kh = kcuth(i, jj)
-                           kl = kcutl(i, jj)
-                           !$acc loop seq
-                           do k = kl, kh
-                              tmp2 = tmp1 * ((prsi(i,k, jj)-prsi(i,k+1, jj)) * rdelp(i, jj))
-                              aerolw(i,k,m,1, jj) = aerolw(i,k,m,1, jj) + tmp2*volcae(i, jj)
-                           enddo
-                        enddo    ! end do_i_block
-                     enddo      ! end do_m_block
-                  end do
-               endif      ! end if_nlwbnd_block
-            endif        ! end if_laddlw_block
-
-         endif                           ! end if_ivflip_block
-
-      endif   ! end if_lavoflg_block
-      !$acc exit data delete(alon, alat, volcae, rdelp, prsln, hz, dz, kcutl, kcuth) &
+      !$acc exit data delete(alon, alat, volcae, rdelp, hz, dz, kcutl, kcuth, ssaaer) &
       !$acc&     async(async_id)
 !
       return
 !...................................
-      end subroutine setaer_gpu
+      end subroutine setaer_sw_gpu
 !-----------------------------------
 
 
 
 !-----------------------------------
-      subroutine aer_property                                           &
+      subroutine aer_property_sw                                           &
 !...................................
 
 !  ---  inputs:
      &     ( prsi,prsl,prslk,tvly,rhlay,dz,hz,tracer,                   &
      &       alon,alat,slmsk, laersw,laerlw,                            &
-     &       myim,nlay,nlp1, ix, async_id,                                           &
+     &       myim,nlay,nlp1, ix, map_jj, map_i, nxptot, idxday, &
+             map_nday_jj, jbs_nday, nday_length, jjoffset, max_nday_length, &
+             jb, small_ngpts, packs_nbands, offset_ng, max_packs_nbands, async_id,                                           &
 !    &       imax,nlay,nlp1,nspc,                                       &
 !  ---  outputs:
-     &       aerosw,aerolw                                              &
+     &       tauae, ssaae, asyae, ssaaer                                              &
 !    &       aerosw,aerolw,aerodp                                       &
      &     )
 
@@ -2631,37 +2535,47 @@
 !  ==================================================================  !
 
 !  ---  inputs:
-      integer, intent(in) :: myim(my_max), nlay, nlp1, ix
+      integer, intent(in) :: myim(my_max), nlay, nlp1, ix, nxptot, max_nday_length, &
+         jb(nbdsw), small_ngpts, packs_nbands, offset_ng, max_packs_nbands
+      integer :: idxday(nday_length), map_nday_jj(nday_length), jbs_nday, nday_length, jjoffset
+
 !     integer, intent(in) :: imax, nlay, nlp1, nspc
       logical, intent(in) :: laersw, laerlw
+      integer, dimension(nxptot) :: map_jj, map_i
 
-      real (kind=kind_phys), dimension(:,:,:), intent(in) :: prsi, prsl,  &
-     &       prslk, tvly, rhlay, dz, hz
-      real (kind=kind_phys), dimension(:,:),   intent(in) :: alon, alat,  &
-     &       slmsk
-      real (kind=kind_phys), dimension(:,:,:,:),intent(in):: tracer
+
+      real (kind=kind_phys), dimension(:,:), intent(in) :: dz, hz
+      real (kind=kind_phys), dimension(:,:), intent(in) :: prsi, prsl,  &
+     &       prslk, tvly, rhlay
+      real (kind=kind_phys), dimension(:),   intent(in) :: alon, alat
+      real (kind=kind_phys), dimension(:,:),   intent(in) :: slmsk
+      real (kind=kind_phys), dimension(:,:,:),intent(in):: tracer
 
 !  ---  outputs:
-      real (kind=kind_phys), dimension(:,:,:,:,:), intent(out) ::         &
-     &       aerosw, aerolw
+!     real (kind=kind_phys), dimension(:,:,:,:,:), intent(out) ::         &
+!     &       aerosw, aerolw
 !     real (kind=kind_phys), dimension(:,:)    , intent(out) :: aerodp
-
+      real (kind=kind_phys), dimension(nday_length, nlay, max_packs_nbands), intent(out):: &
+         tauae, ssaae, asyae
+      real (kind=kind_phys), dimension(nxptot, nlay,nbdlw), intent(out):: &
+               ssaaer
 !  ---  locals:
-      real (kind=kind_phys), dimension(ix, ncm, my_max) :: cmix
-      real (kind=kind_phys), dimension(2, ix, my_max) :: denn
+      !real (kind=kind_phys), dimension(ix, nlay,nbdlw, my_max), intent(out):: &
+      !         asyaer
+      real (kind=kind_phys), dimension(nxptot, ncm) :: cmix
+      real (kind=kind_phys), dimension(2, nxptot) :: denn
 !     real (kind=kind_phys), dimension(nspc) :: spcodp
 
-      real (kind=kind_phys), dimension(ix, nlay, my_max) :: delz, rh1, dz1
-      integer,               dimension(ix, nlay, my_max) :: idmaer
+      real (kind=kind_phys), dimension(nxptot, nlay) :: delz, rh1, dz1
+      integer,               dimension(nxptot, nlay) :: idmaer
 
-      real (kind=kind_phys), dimension(ix, nlay,nswlwbd, my_max):: tauae,ssaae,asyae
 !test real (kind=kind_phys), dimension(imax,nlay) :: aersav
 
       real (kind=kind_phys) :: tmp1, tmp2, rps, dtmp 
-      real (kind=kind_phys), dimension(ix, my_max) :: wi, wj, w11, w12, w21, w22, h1
+      real (kind=kind_phys), dimension(nxptot) :: wi, wj, w11, w12, w21, w22, h1
 
-      integer, dimension(ix, my_max) :: i1, i2, j1, j2, kp, kpa, kpi, kpj
-      integer :: i, ii, i3, j3, k, m, m1, jj
+      integer, dimension(nxptot) :: i1, i2, j1, j2, kp, kpa, kpi, kpj
+      integer :: i, ii, i3, j3, k, m, m1, jj, ig, r, jf, j11, mm, nn
 
 !  ---  conversion constants
       real (kind=kind_phys), parameter :: dltg = 360.0 / float(imxae)
@@ -2674,73 +2588,85 @@
       real (kind=kind_phys) :: cm, hd, hdi, sig0l, ratio, tt0,          &
      &      ex00, sc00, ss00, as00, ex01, sc01, ss01, as01,     tt1,    &
      &      ex02, sc02, ss02, as02, ex03, sc03, ss03, as03,     tt2,    &
-     &      ext1, sca1, ssa1, asy1, drh0, drh1, rdrh(ix, nlay, my_max)
-      integer, dimension(ix, nlay, my_max) :: ih1, ih2 
-      integer :: kk, idom, icmp, ib, ic, ic1, async_id
+     &      ext1, sca1, ssa1, asy1, drh0, drh1, rdrh(nxptot, nlay), rdrhr
+      integer, dimension(nxptot, nlay) :: ih1, ih2 
+      integer :: kk, idom, icmp, ib, ic, ic1, async_id, n, idx1, idx2
+      
+      ! GPU: The length of the third dimension of tauae, ssaae, and asyae is 
+      ! GPU: nswlwbd, which is nbdsw + nbdlw, in the original CPU version. 
+      ! GPU: In this GPU version, the length of this dimension is broken into 
+      ! GPU: nbdsw for short wave arrays and nbdlw for long wave arrays.
+      ! GPU: variable name changed: CPU - tauae(:,:,1:nbdsw), GPU - tauae
+      ! GPU: variable name changed: CPU - ssaae(:,:,1:nbdsw), GPU - ssaae
+      ! GPU: variable name changed: CPU - asyae(:,:,1:nbdsw), GPU - asyae
+      ! GPU: variable name changed: CPU - tauae(:,:,nbdsw+1:nswlwbd), GPU - tauaer
+      ! GPU: variable name changed: CPU - ssaae(:,:,nbdsw+1:nswlwbd), GPU - ssaaer
+      ! GPU: variable name changed: CPU - asyae(:,:,nbdsw+1:nswlwbd), GPU - <dismissed>
+      ! GPU: To save memory, 'aerosw' and 'aerolw' arrays are dismissed, the
+      ! GPU: output variables is changed from aerosw to tauae, ssaae, asyae, 
+      ! GPU: and from tauaer, ssaaer.
+      ! GPU: variable name changed: CPU - aerosw(:,:,:,1), GPU - tauae
+      ! GPU: variable name changed: CPU - aerosw(:,:,:,2), GPU - ssaae
+      ! GPU: variable name changed: CPU - aerosw(:,:,:,3), GPU - asyae
+      ! GPU: variable name changed: CPU - aerolw(:,:,:,1), GPU - tauaer
+      ! GPU: variable name changed: CPU - aerolw(:,:,:,2), GPU - ssaaer
+      ! GPU: variable name changed: CPU - aerolw(:,:,:,3), GPU - <dismissed>
 
 !
 !===>  ...  begin here
 !
 !  ---  map aerosol data to model grids
-      !$acc data create(cmix, denn, delz, rh1, dz1, idmaer, tauae, ssaae, asyae, &
+      !$acc data create(cmix, denn, delz, rh1, dz1, idmaer, &
       !$acc&     wi, wj, w11, w12, w21, w22, h1, i1, i2, j1, j2, kp, kpa, kpi, kpj, &
       !$acc&     ih1, ih2, rdrh) async(async_id)
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, jlistnum
-         do i = 1, ix
-            if (i .le. myim(jj)) then
-               i1(i, jj) = 1
-               i2(i, jj) = 2
-               j1(i, jj) = 1
-               j2(i, jj) = 2
-            end if
-         end do
-      end do
          
-      !$acc parallel loop gang collapse(2) private(i3, tmp1, dtmp) async(async_id)
-      do jj = 1, jlistnum
-         do i = 1, ix
-            if (i .le. myim(jj)) then ! lab_do_imax
+      !$acc parallel loop private(i3, tmp1, dtmp, i, j3, tmp2, dtmp, ii) async(async_id)
+      do n = 1, nday_length
+         jj = map_nday_jj(n) - jjoffset
+         jf = jjoffset+jj
+         j11 = idxday(n)
+         r = j11 + nxjp_acc(jf) - 1
+         i1(r) = 1
+         i2(r) = 2
+         j1(r) = 1
+         j2(r) = 2
 
-            !  ---  map grid in longitude direction, lon from 0 to 355 deg resolution
+      !  ---  map grid in longitude direction, lon from 0 to 355 deg resolution
 
-            !       print *,' seeking lon index for point i =',i
-               i3 = i1(i, jj)
-               do while ( i3 <= imxae ) ! lab_do_imxae
-                  tmp1 = dltg * (i3 - 1)
-                  dtmp = alon(i, jj) - tmp1
-      !         print *,'   alon, i3, tlon, dlon =',alon(i),i3,tmp1,dtmp
+      !       print *,' seeking lon index for point i =',i
+         i3 = i1(r)
+         do while ( i3 <= imxae ) ! lab_do_imxae
+            tmp1 = dltg * (i3 - 1)
+            dtmp = alon(r) - tmp1
+!         print *,'   alon, i3, tlon, dlon =',alon(i),i3,tmp1,dtmp
 
-                  if ( dtmp > dltg ) then
-                     i3 = i3 + 1
-                     if ( i3 > imxae ) then
-                        print *,' error! in setclimaer alon>360. ipt =',i,        &
-                        &           ',  dltg,alon,tlon,dlon =',dltg,alon(i, jj),tmp1,dtmp
-                        stop
-                     endif
-                  elseif ( dtmp >= f_zero ) then
-                     i1(i, jj) = i3
-                     i2(i, jj) = mod(i3,imxae) + 1
-                     wi(i, jj) = dtmp * rdlt
-                     if ( dtmp <= hdlt ) then
-                        kpi(i, jj) = i3
-                     else
-                        kpi(i, jj) = i2(i, jj)
-                     endif
-      !           print *,'   found i1, i2, wi =',i1,i2,wi
-                     exit ! lab_do_imxae
-                  else
-                     i3 = i3 - 1
-                     if ( i3 < 1 ) then
-                        print *,' error! in setclimaer alon< 0. ipt =',i,         &
-                        &           ',  dltg,alon,tlon,dlon =',dltg,alon(i, jj),tmp1,dtmp
-                        stop
-                     endif
-                  endif
-               enddo  ! lab_do_imxae
-            end if
-         end do
-      end do
+            if ( dtmp > dltg ) then
+               i3 = i3 + 1
+               if ( i3 > imxae ) then
+                  print *,' error! in setclimaer alon>360. ipt =',j11,        &
+                  &           ',  dltg,alon,tlon,dlon =',dltg,alon(r),tmp1,dtmp
+                  stop
+               endif
+            elseif ( dtmp >= f_zero ) then
+               i1(r) = i3
+               i2(r) = mod(i3,imxae) + 1
+               wi(r) = dtmp * rdlt
+               if ( dtmp <= hdlt ) then
+                  kpi(r) = i3
+               else
+                  kpi(r) = i2(r)
+               endif
+!           print *,'   found i1, i2, wi =',i1,i2,wi
+               exit ! lab_do_imxae
+            else
+               i3 = i3 - 1
+               if ( i3 < 1 ) then
+                  print *,' error! in setclimaer alon< 0. ipt =',j11,         &
+                  &           ',  dltg,alon,tlon,dlon =',dltg,alon(r),tmp1,dtmp
+                  stop
+               endif
+            endif
+         enddo  ! lab_do_imxae
 
 
 !org--  map grid in latitude direction, lat from 90n to 90s in 5 deg resolution
@@ -2749,158 +2675,127 @@
 !cmy--------------------------------------------------------------------
 
 !       print *,' seeking lat index for point i =',i
-      !$acc parallel loop gang collapse(2) private(j3, tmp2, dtmp) async(async_id)
-      do jj = 1, jlistnum
-         do i = 1, ix
-            if (i .le. myim(jj)) then
-               j3 = j1(i, jj)
-               do while ( j3 <= jmxae ) ! lab_do_jmxae
-   !cmy--------------------------------------------------------------------
-   !cmy      tmp2 = 90.0 - dltg * (j3 - 1)
-   !cmy      dtmp = tmp2 - alat(i)
-   !cmy--------------------------------------------------------------------
-   !         print *,'   alat, j3, tlat, dlat =',alat(i),j3,tmp2,dtmp
-   !cmy
-                  tmp2 = -90.0 + dltg * (j3 - 1)
-                  dtmp =  alat(i, jj) - tmp2
+         j3 = j1(r)
+         do while ( j3 <= jmxae ) ! lab_do_jmxae
+!cmy--------------------------------------------------------------------
+!cmy      tmp2 = 90.0 - dltg * (j3 - 1)
+!cmy      dtmp = tmp2 - alat(i)
+!cmy--------------------------------------------------------------------
+!         print *,'   alat, j3, tlat, dlat =',alat(i),j3,tmp2,dtmp
+!cmy
+            tmp2 = -90.0 + dltg * (j3 - 1)
+            dtmp =  alat(r) - tmp2
 
-                  if ( dtmp > dltg ) then
-                     j3 = j3 + 1
-                     if ( j3 >= jmxae ) then
-                        print *,' error! in setclimaer alat<-90. ipt =',i,        &
-                        &           ',  dltg,alat,tlat,dlat =',dltg,alat(i, jj),tmp2,dtmp
-                        stop
-                     endif
-                  elseif ( dtmp >= f_zero ) then
-                     j1(i, jj) = j3
-                     j2(i, jj) = j3 + 1
-                     wj(i, jj) = dtmp * rdlt
-                     if ( dtmp <= hdlt ) then
-                        kpj(i, jj) = j3
-                     else
-                        kpj(i, jj) = j2(i, jj)
-                     endif
-      !           print *,'   found j1, j2, wj =',j1,j2,wj
-                     exit ! lab_do_jmxae
-                  else
-                     j3 = j3 - 1
-                     if ( j3 < 1 ) then
-                        print *,' error! in setclimaer alat>90. ipt =',i,         &
-                        &           ',  dltg,alat,tlat,dlat =',dltg,alat(i, jj),tmp2,dtmp
-                        stop
-                     endif
-                  endif
-               enddo  ! lab_do_jmxae
-            end if
-         end do
-      end do
+            if ( dtmp > dltg ) then
+               j3 = j3 + 1
+               if ( j3 >= jmxae ) then
+                  print *,' error! in setclimaer alat<-90. ipt =',j11,        &
+                  &           ',  dltg,alat,tlat,dlat =',dltg,alat(r),tmp2,dtmp
+                  stop
+               endif
+            elseif ( dtmp >= f_zero ) then
+               j1(r) = j3
+               j2(r) = j3 + 1
+               wj(r) = dtmp * rdlt
+               if ( dtmp <= hdlt ) then
+                  kpj(r) = j3
+               else
+                  kpj(r) = j2(r)
+               endif
+!           print *,'   found j1, j2, wj =',j1,j2,wj
+               exit ! lab_do_jmxae
+            else
+               j3 = j3 - 1
+               if ( j3 < 1 ) then
+                  print *,' error! in setclimaer alat>90. ipt =',j11,         &
+                  &           ',  dltg,alat,tlat,dlat =',dltg,alat(r),tmp2,dtmp
+                  stop
+               endif
+            endif
+         enddo  ! lab_do_jmxae
 
 !  ---  determin the type of aerosol profile (kp) and scale hight for domain 1 (h1)
 !       to be used at this grid point
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, jlistnum
-         do i = 1, ix
-            if (i .le. myim(jj)) then
-               kp(i, jj) = kprfg(kpi(i, jj),kpj(i, jj))                     ! nearest typical aeros profile as default
-               kpa(i, jj) = max( kprfg(i1(i, jj),j1(i, jj)),kprfg(i1(i, jj),j2(i, jj)), &
-               kprfg(i2(i, jj),j1(i, jj)),kprfg(i2(i, jj),j2(i, jj)) )
-               h1(i, jj) = haer(1,kp(i, jj))
-               denn(2, i, jj) = f_zero
-            end if
-         end do
-      end do
-      !$acc parallel loop gang collapse(2) private(ii) async(async_id)
-      do jj = 1, jlistnum
-         do i = 1, ix
-            if (i .le. myim(jj)) then
-               ii = 1
-               if ( kp(i, jj) /= kpa(i, jj) ) then
-                  if ( kpa(i, jj) == 6 ) then                  ! if ocean prof with mineral aeros overlay
-                     ii = 2                              ! need 2 types of densities
-                     if ( slmsk(i, jj) > f_zero ) then       ! but actually a land/sea-ice point
-                        kp(i, jj) = 7                            ! reset prof index to land
-                        h1(i, jj) = 0.5*(haer(1,6) + haer(1,7))  ! use a transition scale hight
-                     else
-                        kp(i, jj) = kpa(i, jj)
-                        h1(i, jj) = haer(1,6)
-                     endif
-                  elseif ( kpa(i, jj) == 7 ) then              ! if land prof with mineral aeros overlay
-                     ii = 2                              ! need 2 types of densities
-                     if ( slmsk(i, jj) <= f_zero ) then      ! but actually an ocean point
-                        kp(i, jj) = 6                            ! reset prof index to ocean
-                        h1(i, jj) = 0.5*(haer(1,6) + haer(1,7))  ! use a transition scale hight
-                     else
-                        kp(i, jj) = kpa(i, jj)
-                        h1(i, jj) = haer(1,7)
-                     endif
-                  else                                  ! lower atmos without mineral aeros overlay
-                     !           h1 = 0.5*(haer(1,kp) + haer(1,kpa)) ! use a transition scale hight
-                     h1(i, jj) = haer(1,kpa(i, jj))
-                     kp(i, jj) = kpa(i, jj)
-                  endif
+         kp(r) = kprfg(kpi(r),kpj(r))                     ! nearest typical aeros profile as default
+         kpa(r) = max( kprfg(i1(r),j1(r)),kprfg(i1(r),j2(r)), &
+         kprfg(i2(r),j1(r)),kprfg(i2(r),j2(r)) )
+         h1(r) = haer(1,kp(r))
+         denn(2, r) = f_zero
+         ii = 1
+         if ( kp(r) /= kpa(r) ) then
+            if ( kpa(r) == 6 ) then                  ! if ocean prof with mineral aeros overlay
+               ii = 2                              ! need 2 types of densities
+               if ( slmsk(j11, jf) > f_zero ) then       ! but actually a land/sea-ice point
+                  kp(r) = 7                            ! reset prof index to land
+                  h1(r) = 0.5*(haer(1,6) + haer(1,7))  ! use a transition scale hight
+               else
+                  kp(r) = kpa(r)
+                  h1(r) = haer(1,6)
                endif
+            elseif ( kpa(r) == 7 ) then              ! if land prof with mineral aeros overlay
+               ii = 2                              ! need 2 types of densities
+               if ( slmsk(j11, jf) <= f_zero ) then      ! but actually an ocean point
+                  kp(r) = 6                            ! reset prof index to ocean
+                  h1(r) = 0.5*(haer(1,6) + haer(1,7))  ! use a transition scale hight
+               else
+                  kp(r) = kpa(r)
+                  h1(r) = haer(1,7)
+               endif
+            else                                  ! lower atmos without mineral aeros overlay
+               !           h1 = 0.5*(haer(1,kp) + haer(1,kpa)) ! use a transition scale hight
+               h1(r) = haer(1,kpa(r))
+               kp(r) = kpa(r)
+            endif
+         endif
 
-   !  ---  compute horizontal bi-linear interpolation weights
+!  ---  compute horizontal bi-linear interpolation weights
 
-               w11(i, jj) = (f_one-wi(i, jj)) * (f_one-wj(i, jj))
-               w12(i, jj) = (f_one-wi(i, jj)) *       wj(i, jj)
-               w21(i, jj) =        wi(i, jj)  * (f_one-wj(i, jj))
-               w22(i, jj) =        wi(i, jj)  * wj(i, jj)
+         w11(r) = (f_one-wi(r)) * (f_one-wj(r))
+         w12(r) = (f_one-wi(r)) *       wj(r)
+         w21(r) =        wi(r)  * (f_one-wj(r))
+         w22(r) =        wi(r)  * wj(r)
 
-   !  ---  check print
-   !       print *,'  grid pt', i,',   alon, alat =',alon(i),alat(i),      &
-   !    &                       ',   tlon, tlat =',tmp1,tmp2
-   !       print *,'   lon grid index i1, i2 =',i1,i2,',  weight wi =',wi
-   !       print *,'   lat grid index j1, j2 =',j1,j2,',  weight wj =',wj
-   !       print *,'   bi-linear weights w11,w21,w12,w22 =',w11,w21,w12,w22
-   !       print *,'   kp,kpa,slmsk,h1 =',kp,m1,slmsk(i),h1
+!  ---  check print
+!       print *,'  grid pt', i,',   alon, alat =',alon(i),alat(i),      &
+!    &                       ',   tlon, tlat =',tmp1,tmp2
+!       print *,'   lon grid index i1, i2 =',i1,i2,',  weight wi =',wi
+!       print *,'   lat grid index j1, j2 =',j1,j2,',  weight wj =',wj
+!       print *,'   bi-linear weights w11,w21,w12,w22 =',w11,w21,w12,w22
+!       print *,'   kp,kpa,slmsk,h1 =',kp,m1,slmsk(i),h1
 
-   !  ---  do horizontal bi-linear interpolation on aerosol partical density (denn)
-               !$acc loop seq
-               do m = 1, ii                            ! ii=1 for domain 1; =2 for domain 2.
-                  denn(m, i, jj) = w11(i, jj)*denng(m,i1(i, jj),j1(i, jj)) + w12(i, jj)* &
-                  denng(m,i1(i, jj),j2(i, jj))             &
-                  &            + w21(i, jj)*denng(m,i2(i, jj),j1(i, jj)) + w22(i, jj)* &
-                  denng(m,i2(i, jj),j2(i, jj))
-               enddo  ! end_do_m_loop
-            end if
-         end do
-      end do
+!  ---  do horizontal bi-linear interpolation on aerosol partical density (denn)
+         !$acc loop seq
+         do m = 1, ii                            ! ii=1 for domain 1; =2 for domain 2.
+            denn(m, r) = w11(r)*denng(m,i1(r),j1(r)) + w12(r)* &
+            denng(m,i1(r),j2(r))             &
+            &            + w21(r)*denng(m,i2(r),j1(r)) + w22(r)* &
+            denng(m,i2(r),j2(r))
+         enddo  ! end_do_m_loop
 
 !  ---  do horizontal bi-linear interpolation on mixing ratios
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, jlistnum
+         !$acc loop seq
          do ii = 1, ncm
-            !$acc loop vector
-            do i = 1, myim(jj)
-               cmix(i, ii, jj) = f_zero
-            end do
+            cmix(r, ii) = f_zero
          end do
-      end do
-      !$acc parallel loop collapse(2) private(ii) async(async_id)
-      do jj = 1, jlistnum
-         do i = 1, ix
-            if (i .le. myim(jj)) then
-               !$acc loop seq
-               do m = 1, nxc
-                  ii = idxcg(m,i1(i, jj),j1(i, jj))
-                  if ( ii > 0 ) then
-                     cmix(i, ii, jj) = cmix(i, ii, jj) + w11(i, jj)*cmixg(m,i1(i, jj),j1(i, jj))
-                  endif
-                  ii = idxcg(m,i1(i, jj),j2(i, jj))
-                  if ( ii > 0 ) then
-                     cmix(i, ii, jj) = cmix(i, ii, jj) + w12(i, jj)*cmixg(m,i1(i, jj),j2(i, jj))
-                  endif
-                  ii = idxcg(m,i2(i, jj),j1(i, jj))
-                  if ( ii > 0 ) then
-                     cmix(i, ii, jj) = cmix(i, ii, jj) + w21(i, jj)*cmixg(m,i2(i, jj),j1(i, jj))
-                  endif
-                  ii = idxcg(m,i2(i, jj),j2(i, jj))
-                  if ( ii > 0 ) then
-                     cmix(i, ii, jj) = cmix(i, ii, jj) + w22(i, jj)*cmixg(m,i2(i, jj),j2(i, jj))
-                  endif
-               enddo  ! end_do_m_loop
-            end if
+
+         !$acc loop seq
+         do m = 1, nxc
+            ii = idxcg(m,i1(r),j1(r))
+            if ( ii > 0 ) then
+               cmix(r, ii) = cmix(r, ii) + w11(r)*cmixg(m,i1(r),j1(r))
+            endif
+            ii = idxcg(m,i1(r),j2(r))
+            if ( ii > 0 ) then
+               cmix(r, ii) = cmix(r, ii) + w12(r)*cmixg(m,i1(r),j2(r))
+            endif
+            ii = idxcg(m,i2(r),j1(r))
+            if ( ii > 0 ) then
+               cmix(r, ii) = cmix(r, ii) + w21(r)*cmixg(m,i2(r),j1(r))
+            endif
+            ii = idxcg(m,i2(r),j2(r))
+            if ( ii > 0 ) then
+               cmix(r, ii) = cmix(r, ii) + w22(r)*cmixg(m,i2(r),j2(r))
+            endif
          end do
       end do
 
@@ -2910,97 +2805,87 @@
 
 !  ---  prepare to setup domain index array and effective layer thickness
 !       also convert pressure level to sigma level to follow the terrain
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, jlistnum
-         do k = 1, nlay
-            !$acc loop vector
-            do i = 1, myim(jj)
-               rh1(i, k, jj) = rhlay(i,k, jj)
-               dz1(i, k, jj) = dz   (i,k, jj)
-            enddo
-         end do
-      end do
       if (ivflip == 1) then  ! lab_if_flip     ! input from sfc to toa
-         !$acc parallel loop gang collapse(2) private(rps, ii, tmp1, tmp2) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               if (i .le. myim(jj)) then
-                  if ( prsi(i,1, jj) > 100.0 ) then
-                     rps = f_one / prsi(i,1, jj)
-                  else
-                     !print *,' !!! error in subr radiation_aerosols:',           &
-                     !&              ' unrealistic surface pressure =', prsi(i,1, jj)
-                     !stop
-                     cycle
+         !$acc parallel loop private(rps, ii, tmp1, tmp2) async(async_id)
+         do n = 1, nday_length
+            jj = map_nday_jj(n) - jjoffset
+            jf = jjoffset+jj
+            j11 = idxday(n)
+            r = j11 + nxjp_acc(jf) - 1
+            if ( prsi(r,1) > 100.0 ) then
+               rps = f_one / prsi(r,1)
+            else
+               !print *,' !!! error in subr radiation_aerosols:',           &
+               !&              ' unrealistic surface pressure =', prsi(i,1, jj)
+               !stop
+               cycle
+            endif
+
+            ii = 1
+            !$acc loop seq
+            do k = 1, nlay
+               if (prsi(r,k+1)*rps < sigref(ii,kp(r))) then
+                  ii = ii + 1
+                  if (ii == 2 .and. prsref(2,kp(r)) == prsref(3,kp(r))) then
+                     ii = 3
                   endif
+               endif
+               idmaer(r, k) = ii
 
-                  ii = 1
-                  !$acc loop seq
-                  do k = 1, nlay
-                     if (prsi(i,k+1, jj)*rps < sigref(ii,kp(i, jj))) then
-                        ii = ii + 1
-                        if (ii == 2 .and. prsref(2,kp(i, jj)) == prsref(3,kp(i, jj))) then
-                           ii = 3
-                        endif
-                     endif
-                     idmaer(i, k, jj) = ii
+               if ( ii > 1 ) then
+                  tmp1 = haer(ii,kp(r))
+               else
+                  tmp1 = h1(r)
+               endif
 
-                     if ( ii > 1 ) then
-                        tmp1 = haer(ii,kp(i, jj))
-                     else
-                        tmp1 = h1(i, jj)
-                     endif
-
-                     if (tmp1 > f_zero) then
-                        tmp2 = f_one / tmp1
-                        delz(i, k, jj) = tmp1 * (exp(-hz(i,k, jj)*tmp2)-exp(-hz(i,k+1, jj)*tmp2))
-                     else
-                        delz(i, k, jj) = dz1(i, k, jj)
-                     endif
-                  enddo
-               end if
-            end do
+               if (tmp1 > f_zero) then
+                  tmp2 = f_one / tmp1
+                  delz(r, k) = tmp1 * (exp(-hz(r,k)*tmp2)-exp(-hz(r,k+1)*tmp2))
+               else
+                  delz(r, k) = dz(r,k)
+               endif
+            enddo
          end do
 
       else  ! lab_if_flip                         ! input from toa to sfc
-         !$acc parallel loop gang collapse(2) private(rps, ii, tmp1, tmp2) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               if (i .le. myim(jj)) then
-                  if ( prsi(i,nlp1, jj) > 100.0 ) then
-                     rps =  1.0 / prsi(i,nlp1, jj)
-                  else
-                     print *,' !!! error in subr radiation_aerosols:',           &
-                     &              ' unrealistic surface pressure =', prsi(i,nlp1, jj)
-                     stop
+         !$acc parallel loop private(rps, ii, tmp1, tmp2) async(async_id)
+         do n = 1, nday_length
+            jj = map_nday_jj(n) - jjoffset
+            jf = jjoffset+jj
+            j11 = idxday(n)
+            r = j11 + nxjp_acc(jf) - 1
+            if ( prsi(r,nlp1) > 100.0 ) then
+               rps =  1.0 / prsi(r,nlp1)
+            else
+               print *,' !!! error in subr radiation_aerosols:',           &
+               &              ' unrealistic surface pressure =', prsi(r,nlp1)
+               stop
+            endif
+
+            ii = 1
+            !$acc loop seq
+            do k = nlay, 1, -1
+               if (prsi(r,k)*rps < sigref(ii,kp(r))) then
+                  ii = ii + 1
+                  if (ii == 2 .and. prsref(2,kp(r)) == prsref(3,kp(r))) then
+                     ii = 3
                   endif
+               endif
+               idmaer(r, k) = ii
 
-                  ii = 1
-                  !$acc loop seq
-                  do k = nlay, 1, -1
-                     if (prsi(i,k, jj)*rps < sigref(ii,kp(i, jj))) then
-                        ii = ii + 1
-                        if (ii == 2 .and. prsref(2,kp(i, jj)) == prsref(3,kp(i, jj))) then
-                           ii = 3
-                        endif
-                     endif
-                     idmaer(i, k, jj) = ii
+               if ( ii > 1 ) then
+                  tmp1 = haer(ii,kp(r))
+               else
+                  tmp1 = h1(r)
+               endif
 
-                     if ( ii > 1 ) then
-                        tmp1 = haer(ii,kp(i, jj))
-                     else
-                        tmp1 = h1(i, jj)
-                     endif
-
-                     if (tmp1 > f_zero) then
-                        tmp2   = f_one / tmp1
-                        delz(i, k, jj) = tmp1 * (exp(-hz(i,k+1, jj)*tmp2)-exp(-hz(i,k, jj)*tmp2))
-                     else
-                        delz(i, k, jj) = dz1(i, k, jj)
-                     endif
-                  enddo
-               end if
-            end do
+               if (tmp1 > f_zero) then
+                  tmp2   = f_one / tmp1
+                  delz(r, k) = tmp1 * (exp(-hz(r,k+1)*tmp2)-exp(-hz(r,k)*tmp2))
+               else
+                  delz(r, k) = dz(r,k)
+               endif
+            enddo
          end do
 
       endif  ! lab_if_flip
@@ -3025,65 +2910,60 @@
          !     spcodp = f_zero
 
          !===> ... loop over vertical layers from top to surface
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, jlistnum
-         do kk = 1, nlay ! lab_do_layer
-            !$acc loop vector private(drh0, drh1)
-            do i = 1, myim(jj)
+      !$acc parallel loop collapse(2) private(drh0, drh1, jj, i) async(async_id)
+      do kk = 1, nlay ! lab_do_layer
+         do n = 1, nday_length
+            jj = map_nday_jj(n) - jjoffset
+            jf = jjoffset+jj
+            j11 = idxday(n)
+            r = j11 + nxjp_acc(jf) - 1
 
-            ! --- linear interp coeffs for rh-dep species
+         ! --- linear interp coeffs for rh-dep species
 
-               ih2(i, kk, jj) = 1
-               do while ( rh1(i, kk, jj) > rhlev(ih2(i, kk, jj)) )
-                  ih2(i, kk, jj) = ih2(i, kk, jj) + 1
-                  if ( ih2(i, kk, jj) > nrhlev ) exit
-               enddo
-               ih1(i, kk, jj) = max( 1, ih2(i, kk, jj)-1 )
-               ih2(i, kk, jj) = min( nrhlev, ih2(i, kk, jj) )
+            ih2(r, kk) = 1
+            do while ( rhlay(r,kk) > rhlev(ih2(r, kk)) )
+               ih2(r, kk) = ih2(r, kk) + 1
+               if ( ih2(r, kk) > nrhlev ) exit
+            enddo
+            ih1(r, kk) = max( 1, ih2(r, kk)-1 )
+            ih2(r, kk) = min( nrhlev, ih2(r, kk) )
 
-               drh0 = rhlev(ih2(i, kk, jj)) - rhlev(ih1(i, kk, jj))
-               drh1 = rh1(i, kk, jj) - rhlev(ih1(i, kk, jj))
-               if ( ih1(i, kk, jj) == ih2(i, kk, jj) ) then
-                  rdrh(i, kk, jj) = f_zero
-               else
-                  rdrh(i, kk, jj) = drh1 / drh0
-               endif
-            end do
+            drh0 = rhlev(ih2(r, kk)) - rhlev(ih1(r, kk))
+            drh1 = rhlay(r,kk) - rhlev(ih1(r, kk))
+            if ( ih1(r, kk) == ih2(r, kk) ) then
+               rdrh(r, kk) = f_zero
+            else
+               rdrh(r, kk) = drh1 / drh0
+            endif
          end do
       end do
 
    ! --- assign optical properties in each domain
-      !$acc parallel loop gang collapse(3) async(async_id)
-      do jj = 1, jlistnum
-         do ib = 1, nswlwbd
-            do kk = 1, nlay ! lab_do_layer
-               !$acc loop vector private(ex01, sc01, ss01, as01, ex02, sc02, ss02, &
-               !$acc&      as02, ex03, sc03, ss03, as03, ext1, sca1, ssa1, asy1, ic, &
-               !$acc&      cm, tt0, ic1, ex00, sc00, ss00, as00)
-               do i = 1, myim(jj)
-                  if (idmaer(i, kk, jj) == 5) then ! lab_if_idom
+   ! GPU: for short wave only
+      !$acc parallel loop collapse(3) private(ex01, sc01, ss01, as01, ex02, sc02, ss02, &
+      !$acc&      as02, ex03, sc03, ss03, as03, ext1, sca1, ssa1, asy1, ic, &
+      !$acc&      cm, tt0, ic1, ex00, sc00, ss00, as00, jj, i, idx1, idx2, rdrhr) async(async_id)
+      do nn = 1, packs_nbands
+         do kk = 1, nlay ! lab_do_layer
+            do n = 1, nday_length
+               jj = map_nday_jj(n) - jjoffset
+               jf = jjoffset+jj
+               j11 = idxday(n)
+               ib = jb(nn) - nblow + 1
+               r = j11 + nxjp_acc(jf) - 1
+               if (idmaer(r, kk) == 5) then ! lab_if_idom
    ! --- 5th domain - upper stratosphere assume no aerosol
 
-                     tauae(i, kk,ib, jj) = f_zero
-                     if ( ib <= nswbnd ) then
-                        ssaae(i, kk,ib, jj) = 0.99
-                        asyae(i, kk,ib, jj) = 0.696
-                     else
-                     ssaae(i, kk,ib, jj) = 0.5
-                     asyae(i, kk,ib, jj) = 0.3
-                     endif
+                  tauae(n, kk,nn) = f_zero
+                  ssaae(n, kk,nn) = 0.99
+                  asyae(n, kk,nn) = 0.696
 
-                  elseif (idmaer(i, kk, jj) == 4) then    ! lab_if_idom
+               elseif (idmaer(r, kk) == 4) then    ! lab_if_idom
    ! --- 4th domain - stratospheric layers
 
-                     tauae(i, kk,ib, jj) = extstra(ib) * delz(i, kk, jj)
-                     if ( ib <= nswbnd ) then
-                        ssaae(i, kk,ib, jj) = 0.99
-                        asyae(i, kk,ib, jj) = 0.696
-                     else
-                        ssaae(i, kk,ib, jj) = 0.5
-                        asyae(i, kk,ib, jj) = 0.3
-                     endif
+                  tauae(n, kk,nn) = extstra(ib) * delz(r, kk)
+                  ssaae(n, kk,nn) = 0.99
+                  asyae(n, kk,nn) = 0.696
 
    ! --- compute aod from individual species' contribution (optional)
    !         idx = idxspc(10)             ! for sulfate
@@ -3091,41 +2971,40 @@
    !           spcodp(idx) = spcodp(idx) + tauae(kk,nv_aod)
    !         endif
 
-                  elseif (idmaer(i, kk, jj) == 3) then    ! lab_if_idom
+               elseif (idmaer(r, kk) == 3) then    ! lab_if_idom
    ! --- 3rd domain - free tropospheric layers
    !   1:inso 0.17e-3; 2:soot 0.4; 7:waso 0.59983; n:730
 
-                     ex01 = extrhi(1,ib)
-                     sc01 = scarhi(1,ib)
-                     ss01 = ssarhi(1,ib)
-                     as01 = asyrhi(1,ib)
+                  ex01 = extrhi(1,ib)
+                  sc01 = scarhi(1,ib)
+                  ss01 = ssarhi(1,ib)
+                  as01 = asyrhi(1,ib)
 
-                     ex02 = extrhi(2,ib)
-                     sc02 = scarhi(2,ib)
-                     ss02 = ssarhi(2,ib)
-                     as02 = asyrhi(2,ib)
+                  ex02 = extrhi(2,ib)
+                  sc02 = scarhi(2,ib)
+                  ss02 = ssarhi(2,ib)
+                  as02 = asyrhi(2,ib)
+                  idx1 = ih1(r, kk)
+                  idx2 = ih2(r, kk)
+                  ex03 = extrhd(idx1,1,ib)
+                  sc03 = scarhd(idx1,1,ib)
+                  ss03 = ssarhd(idx1,1,ib)
+                  as03 = asyrhd(idx1,1,ib)
+                  rdrhr = rdrh(r, kk)
 
-                     ex03 = extrhd(ih1(i, kk, jj),1,ib)                                     &
-                     &           + rdrh(i, kk, jj) * (extrhd(ih2(i, kk, jj),1,ib) &
-                                 - extrhd(ih1(i, kk, jj),1,ib))
-                     sc03 = scarhd(ih1(i, kk, jj),1,ib)                                     &
-                     &           + rdrh(i, kk, jj) * (scarhd(ih2(i, kk, jj),1,ib) &
-                                 - scarhd(ih1(i, kk, jj),1,ib))
-                     ss03 = ssarhd(ih1(i, kk, jj),1,ib)                                     &
-                     &           + rdrh(i, kk, jj) * (ssarhd(ih2(i, kk, jj),1,ib) &
-                                 - ssarhd(ih1(i, kk, jj),1,ib))
-                     as03 = asyrhd(ih1(i, kk, jj),1,ib)                                     &
-                     &           + rdrh(i, kk, jj) * (asyrhd(ih2(i, kk, jj),1,ib) &
-                                 - asyrhd(ih1(i, kk, jj),1,ib))
+                  ex03 = ex03 + rdrhr * (extrhd(idx2,1,ib) - ex03)
+                  sc03 = sc03 + rdrhr * (scarhd(idx2,1,ib) - sc03)
+                  ss03 = ss03 + rdrhr * (ssarhd(idx2,1,ib) - ss03)
+                  as03 = as03 + rdrhr * (asyrhd(idx2,1,ib) - as03)
 
-                     ext1 = 0.17e-3*ex01 + 0.4*ex02 + 0.59983*ex03
-                     sca1 = 0.17e-3*sc01 + 0.4*sc02 + 0.59983*sc03
-                     ssa1 = 0.17e-3*ss01*ex01 + 0.4*ss02*ex02 + 0.59983*ss03*ex03
-                     asy1 = 0.17e-3*as01*sc01 + 0.4*as02*sc02 + 0.59983*as03*sc03
+                  ext1 = 0.17e-3*ex01 + 0.4*ex02 + 0.59983*ex03
+                  sca1 = 0.17e-3*sc01 + 0.4*sc02 + 0.59983*sc03
+                  ssa1 = 0.17e-3*ss01*ex01 + 0.4*ss02*ex02 + 0.59983*ss03*ex03
+                  asy1 = 0.17e-3*as01*sc01 + 0.4*as02*sc02 + 0.59983*as03*sc03
 
-                     tauae(i, kk,ib, jj) = ext1 * 730.0 * delz(i, kk, jj)
-                     ssaae(i, kk,ib, jj) = min(f_one, ssa1/ext1)
-                     asyae(i, kk,ib, jj) = min(f_one, asy1/sca1)
+                  tauae(n, kk,nn) = ext1 * 730.0 * delz(r, kk)
+                  ssaae(n, kk,nn) = min(f_one, ssa1/ext1)
+                  asyae(n, kk,nn) = min(f_one, asy1/sca1)
 
    ! --- compute aod from individual species' contribution (optional)
    !           if ( lspcaod .and. ib==nv_aod ) then
@@ -3135,175 +3014,161 @@
    !           endif
 
 
-                  elseif (idmaer(i, kk, jj) == 1) then    ! lab_if_idom
+               elseif (idmaer(r, kk) == 1) then    ! lab_if_idom
    ! --- 1st domain - mixing layer
 
-                     ext1 = f_zero
-                     sca1 = f_zero
-                     ssa1 = f_zero
-                     asy1 = f_zero
-                     !$acc loop seq
-                     do icmp = 1, ncm ! lab_do_icmp
-                        ic = icmp
+                  ext1 = f_zero
+                  sca1 = f_zero
+                  ssa1 = f_zero
+                  asy1 = f_zero
+                  !$acc loop seq
+                  do icmp = 1, ncm ! lab_do_icmp
+                     ic = icmp
    !             idx = idxspc(icmp)
 
-                        cm = cmix(i, icmp, jj)
-                        if ( cm > f_zero ) then ! lab_if_cm
+                     cm = cmix(r, icmp)
+                     if ( cm > f_zero ) then ! lab_if_cm
 
-                           if ( ic <= ncm1 ) then ! lab_if_ic      ! component withour rh dep
-                              tt0  = cm * extrhi(ic,ib)
-                              ext1 = ext1 + tt0
-                              sca1 = sca1 + cm * scarhi(ic,ib)
-                              ssa1 = ssa1 + cm * ssarhi(ic,ib) * extrhi(ic,ib)
-                              asy1 = asy1 + cm * asyrhi(ic,ib) * scarhi(ic,ib)
-                           else  ! lab_if_ic                           ! component with rh dep
-                              ic1 = ic - ncm1
+                        if ( ic <= ncm1 ) then ! lab_if_ic      ! component withour rh dep
+                           tt0  = cm * extrhi(ic,ib)
+                           ext1 = ext1 + tt0
+                           sca1 = sca1 + cm * scarhi(ic,ib)
+                           ssa1 = ssa1 + cm * ssarhi(ic,ib) * extrhi(ic,ib)
+                           asy1 = asy1 + cm * asyrhi(ic,ib) * scarhi(ic,ib)
+                        else  ! lab_if_ic                           ! component with rh dep
+                           ic1 = ic - ncm1
+                           idx1 = ih1(r, kk)
+                           idx2 = ih2(r, kk)
+                           ex00 = extrhd(idx1,ic1,ib)
+                           sc00 = scarhd(idx1,ic1,ib)
+                           ss00 = ssarhd(idx1,ic1,ib)
+                           as00 = asyrhd(idx1,ic1,ib)
+                           rdrhr = rdrh(r, kk)
 
-                              ex00 = extrhd(ih1(i, kk, jj),ic1,ib)                             &
-                              &               + rdrh(i, kk, jj) * (extrhd(ih2(i, kk, jj),ic1,ib) &
-                                              - extrhd(ih1(i, kk, jj),ic1,ib))
-                              sc00 = scarhd(ih1(i, kk, jj),ic1,ib)                             &
-                              &               + rdrh(i, kk, jj) * (scarhd(ih2(i, kk, jj),ic1,ib) &
-                                              - scarhd(ih1(i, kk, jj),ic1,ib))
-                              ss00 = ssarhd(ih1(i, kk, jj),ic1,ib)                             &
-                              &               + rdrh(i, kk, jj) * (ssarhd(ih2(i, kk, jj),ic1,ib) &
-                                              - ssarhd(ih1(i, kk, jj),ic1,ib))
-                              as00 = asyrhd(ih1(i, kk, jj),ic1,ib)                             &
-                              &               + rdrh(i, kk, jj) * (asyrhd(ih2(i, kk, jj),ic1,ib) &
-                                              - asyrhd(ih1(i, kk, jj),ic1,ib))
+                           ex00 = ex00 + rdrhr * (extrhd(idx2,ic1,ib) - ex00)
+                           sc00 = sc00 + rdrhr * (scarhd(idx2,ic1,ib) - sc00)
+                           ss00 = ss00 + rdrhr * (ssarhd(idx2,ic1,ib) - ss00)
+                           as00 = as00 + rdrhr * (asyrhd(idx2,ic1,ib) - as00)
 
-                              tt0  = cm * ex00
-                              ext1 = ext1 + tt0
-                              sca1 = sca1 + cm * sc00
-                              ssa1 = ssa1 + cm * ss00 * ex00
-                              asy1 = asy1 + cm * as00 * sc00
-                           endif  ! lab_if_ic
+                           tt0  = cm * ex00
+                           ext1 = ext1 + tt0
+                           sca1 = sca1 + cm * sc00
+                           ssa1 = ssa1 + cm * ss00 * ex00
+                           asy1 = asy1 + cm * as00 * sc00
+                        endif  ! lab_if_ic
 
    ! --- compute aod from individual species' contribution (optional)
-   !               if ( lspcaod .and. ib==nv_aod ) then
+   !               if ( lspcaod .and. nn==nv_aod ) then
    !                 spcodp(idx) = spcodp(idx) + tt0*denn(1)*delz(kk)   ! idx for dif species
    !               endif
 
-                        endif  ! lab_if_cm
-                     enddo  ! lab_do_icmp
+                     endif  ! lab_if_cm
+                  enddo  ! lab_do_icmp
 
-                     tauae(i, kk,ib, jj) = ext1 * denn(1, i, jj) * delz(i, kk, jj)
-                     ssaae(i, kk,ib, jj) = min(f_one, ssa1/ext1)
-                     asyae(i, kk,ib, jj) = min(f_one, asy1/sca1)
+                  tauae(n, kk,nn) = ext1 * denn(1, r) * delz(r, kk)
+                  ssaae(n, kk,nn) = min(f_one, ssa1/ext1)
+                  asyae(n, kk,nn) = min(f_one, asy1/sca1)
 
-                  elseif (idmaer(i, kk, jj) == 2) then    ! lab_if_idom
+               elseif (idmaer(r, kk) == 2) then    ! lab_if_idom
    ! --- 2nd domain - mineral transport layers
 
-                     tauae(i, kk,ib, jj) = extrhi(6,ib) * denn(2, i, jj) * delz(i, kk, jj)
-                     ssaae(i, kk,ib, jj) = ssarhi(6,ib)
-                     asyae(i, kk,ib, jj) = asyrhi(6,ib)
+                  tauae(n, kk,nn) = extrhi(6,ib) * denn(2, r) * delz(r, kk)
+                  ssaae(n, kk,nn) = ssarhi(6,ib)
+                  asyae(n, kk,nn) = asyrhi(6,ib)
 
    ! --- compute aod from individual species' contribution (optional)
    !         if ( laersw ) then
    !            spcodp(1) = spcodp(1) + tauae(kk,nv_aod)            ! dust
    !         endif
 
-                  else  ! lab_if_idom
+               else  ! lab_if_idom
    ! --- domain index out off range, assume no aerosol
 
-                     tauae(i, kk,ib, jj) = f_zero
-                     ssaae(i, kk,ib, jj) = f_one
-                     asyae(i, kk,ib, jj) = f_zero
+                  tauae(n, kk,nn) = f_zero
+                  ssaae(n, kk,nn) = f_one
+                  asyae(n, kk,nn) = f_zero
 
    !         write(6,19) kk,idom
    ! 19      format(/'  ***  error in sub aeros: domain index out'         &
    !    &,            ' of range!  k, idom =',3i5,' ***')
    !         stop 19
 
-                  endif  ! lab_if_idom
-               end do
-            enddo  ! lab_do_layer
+               endif  ! lab_if_idom
+            end do
          end do
       end do
 !
 !===> ... smooth profile at domain boundaries
 !
       if ( ivflip == 0 ) then    ! input from toa to sfc
-         !$acc parallel loop gang collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do ib = 1, nswlwbd
-               !$acc loop vector private(ratio, tt0, tt1, tt2)
-               do i = 1, myim(jj)
-                  !$acc loop seq
-                  do kk = 2, nlay
-                     if ( tauae(i, kk,ib, jj) > f_zero ) then
-                        ratio = tauae(i, kk-1,ib, jj) / tauae(i, kk,ib, jj)
-                     else
-                        ratio = f_one
-                     endif
+         !$acc parallel loop collapse(2) private(ratio, tt0, tt1, tt2) async(async_id)
+         do nn = 1, packs_nbands
+            do n = 1, nday_length
+               jj = map_nday_jj(n) - jjoffset
+               jf = jjoffset+jj
+               j11 = idxday(n)
+               r = j11 + nxjp_acc(jf) - 1
+               !$acc loop seq
+               do kk = 2, nlay
+                  if ( tauae(n, kk,nn) > f_zero ) then
+                     ratio = tauae(n, kk-1,nn) / tauae(n, kk,nn)
+                  else
+                     ratio = f_one
+                  endif
 
-                     tt0 = tauae(i, kk,ib, jj) + tauae(i, kk-1,ib, jj)
-                     tt1 = 0.2 * tt0
-                     tt2 = tt0 - tt1
+                  tt0 = tauae(n, kk,nn) + tauae(n, kk-1,nn)
+                  tt1 = 0.2 * tt0
+                  tt2 = tt0 - tt1
 
-                     if ( ratio > crt1 ) then
-                        tauae(i, kk,ib, jj)   = tt1
-                        tauae(i, kk-1,ib, jj) = tt2
-                     endif
+                  if ( ratio > crt1 ) then
+                     tauae(n, kk,nn)   = tt1
+                     tauae(n, kk-1,nn) = tt2
+                  endif
 
-                     if ( ratio < crt2 ) then
-                        tauae(i, kk,ib, jj)   = tt2
-                        tauae(i, kk-1,ib, jj) = tt1
-                     endif
-                  enddo   ! do_kk_loop
-               enddo   ! do_ib_loop
+                  if ( ratio < crt2 ) then
+                     tauae(n, kk,nn)   = tt2
+                     tauae(n, kk-1,nn) = tt1
+                  endif
+               enddo   ! do_kk_loop
             end do
          end do
 
       else                      ! input from sfc to toa
-         !$acc parallel loop gang collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do ib = 1, nswlwbd
-               !$acc loop vector private(ratio, tt0, tt1, tt2)
-               do i = 1, myim(jj)
-                  !$acc loop seq
-                  do kk = nlay-1, 1, -1
-                     if ( tauae(i, kk,ib, jj) > f_zero ) then
-                        ratio = tauae(i, kk+1,ib, jj) / tauae(i, kk,ib, jj)
-                     else
-                        ratio = f_one
-                     endif
+         !$acc parallel loop collapse(2) private(ratio, tt0, tt1, tt2) async(async_id)
+         do nn = 1, packs_nbands
+            do n = 1, nday_length
+               jj = map_nday_jj(n) - jjoffset
+               jf = jjoffset+jj
+               j11 = idxday(n)
+               r = j11 + nxjp_acc(jf) - 1
+               !$acc loop seq
+               do kk = nlay-1, 1, -1
+                  if ( tauae(n, kk,nn) > f_zero ) then
+                     ratio = tauae(n, kk+1,nn) / tauae(n, kk,nn)
+                  else
+                     ratio = f_one
+                  endif
 
-                     tt0 = tauae(i, kk,ib, jj) + tauae(i, kk+1,ib, jj)
-                     tt1 = 0.2 * tt0
-                     tt2 = tt0 - tt1
+                  tt0 = tauae(n, kk,nn) + tauae(n, kk+1,nn)
+                  tt1 = 0.2 * tt0
+                  tt2 = tt0 - tt1
 
-                     if ( ratio > crt1 ) then
-                        tauae(i, kk,ib, jj)   = tt1
-                        tauae(i, kk+1,ib, jj) = tt2
-                     endif
+                  if ( ratio > crt1 ) then
+                     tauae(n, kk,nn)   = tt1
+                     tauae(n, kk+1,nn) = tt2
+                  endif
 
-                     if ( ratio < crt2 ) then
-                        tauae(i, kk,ib, jj)   = tt2
-                        tauae(i, kk+1,ib, jj) = tt1
-                     endif
-                  enddo   ! do_kk_loop
-               enddo   ! do_ib_loop
+                  if ( ratio < crt2 ) then
+                     tauae(n, kk,nn)   = tt2
+                     tauae(n, kk+1,nn) = tt1
+                  endif
+               enddo   ! do_kk_loop
             end do
          end do
 
-            endif
+      endif
 ! end call radclimaer
 
-      if ( laersw ) then
-         !$acc parallel loop gang collapse(3) async(async_id)
-         do jj = 1, jlistnum
-            do m = 1, nbdsw
-               do k = 1, nlay
-                  !$acc loop vector
-                  do i = 1, myim(jj)
-                     aerosw(i,k,m,1, jj) = tauae(i, k,m, jj)
-                     aerosw(i,k,m,2, jj) = ssaae(i, k,m, jj)
-                     aerosw(i,k,m,3, jj) = asyae(i, k,m, jj)
-                  enddo
-               enddo
-            end do
-         end do
 
 !  ---  total aod (optional)
 !         do k = 1, nlay
@@ -3317,50 +3182,1269 @@
 !           enddo
 !         endif
 
-      endif     ! end if_larsw_block
 
-      if ( laerlw ) then
 
-         if ( nlwbnd == 1 ) then
-            !$acc parallel loop gang collapse(3) private(m1) async(async_id)
-            do jj = 1, jlistnum
-               do m = 1, nbdlw
-                  do k = 1, nlay
-                     m1 = nswbnd + 1
-                     !$acc loop vector
-                     do i = 1, myim(jj)
-                        aerolw(i,k,m,1, jj) = tauae(i, k,m1, jj)
-                        aerolw(i,k,m,2, jj) = ssaae(i, k,m1, jj)
-                        aerolw(i,k,m,3, jj) = asyae(i, k,m1, jj)
-                     enddo
-                  enddo
-               end do
-            end do
-         else
-            !$acc parallel loop gang collapse(3) private(m1) async(async_id)
-            do jj = 1, jlistnum
-               do m = 1, nbdlw
-                  do k = 1, nlay
-                     m1 = nswbnd + m
-                     !$acc loop vector
-                     do i = 1, myim(jj)
-                        aerolw(i,k,m,1, jj) = tauae(i, k,m1, jj)
-                        aerolw(i,k,m,2, jj) = ssaae(i, k,m1, jj)
-                        aerolw(i,k,m,3, jj) = asyae(i, k,m1, jj)
-                     enddo
-                  enddo
-               end do
-            end do
-         endif
-
-      endif     ! end if_laerlw_block
       !$acc end data
 
 
 !
 !...................................
-      end subroutine aer_property
+      end subroutine aer_property_sw
 !-----------------------------------
+!-----------------------------------
+      subroutine setaer_lw_gpu                                               &
+!...................................
+
+!  ---  inputs:
+     &     ( prsi,prsl,prslk,tvly,rhlay,slmsk,tracer,xlon,xlat,         &
+     &       nlay,nlp1,lsswr,lslwr,me,myrank,ix, map_jj, map_i, nxptot, &
+             nxjp_acc_length, jjoffset, max_nxjp_acc_length, jbs_nxjp_acc, async_id,                      &
+!  ---  outputs:
+     &       tauaer                                              &
+!    &       aerosw,aerolw,aerodp                                       &
+     &     )
+
+!  ==================================================================  !
+!                                                                      !
+!  setaer computes aerosols optical properties                         !
+!                                                                      !
+!  inputs:                                                   size      !
+!     prsi    - pressure at interface              mb      imax*nlp1   !
+!     prsl    - layer mean pressure                mb      imax*nlay   !
+!     prslk   - exner function = (p/p0)**rocp              imax*nlay   !
+!     tvly    - layer virtual temperature          k       imax*nlay   !
+!     rhlay   - layer mean relative humidity               imax*nlay   !
+!     slmsk   - sea/land mask (sea:0,land:1,sea-ice:2)       imax      !
+!     tracer  - aerosol tracer concentration           imax*nlay*ntrac !
+!     xlon    - longitude of given points in radiance        imax      !
+!               ok for both 0->2pi or -pi->+pi ranges                  !
+!     xlat    - latitude of given points in radiance         imax      !
+!               default to pi/2 -> -pi/2, otherwise see in-line comment!
+!     imax    - horizontal dimension of arrays                  1      !
+!     nlay,nlp1-vertical dimensions of arrays                   1      !
+!     lsswr,lslwr                                                      !
+!             - logical flags for sw/lw radiation calls         1      !
+!                                                                      !
+!  outputs:                                                            !
+!     aerosw - aeros opt properties for sw      imax*nlay*nbdsw*nf_aesw!
+!               (:,:,:,1): optical depth                               !
+!               (:,:,:,2): single scattering albedo                    !
+!               (:,:,:,3): asymmetry parameter                         !
+!     aerolw - aeros opt properties for lw      imax*nlay*nbdlw*nf_aelw!
+!               (:,:,:,1): optical depth                               !
+!               (:,:,:,2): single scattering albedo                    !
+!               (:,:,:,3): asymmetry parameter                         !
+!!    aerodp - vertically integrated optical depth         imax*nspc1  !
+!                                                                      !
+!  external module variable: (in physpara)                             !
+!     iaerflg - aerosol effect control flag (volc,lw,sw, 3-dig)        !
+!     laswflg - tropospheric aerosol control flag for sw radiation     !
+!               =f: no sw aeros calc.  =t: do sw aeros calc.           !
+!     lalwflg - tropospheric aerosol control flag for lw radiation     !
+!               =f: no lw aeros calc.  =t: do lw aeros calc.           !
+!     lavoflg - control flag for stratospheric vocanic aerosols        !
+!               =t: add volcanic aerosols to the background aerosols   !
+!     ivflip  - control flag for direction of vertical index           !
+!               =0: index from toa to surface                          !
+!               =1: index from surface to toa                          !
+!                                                                      !
+!  internal module variable: (set by subroutine aer_init)              !
+!     ivolae  - stratosphere volcanic aerosol optical depth (fac 1.e4) !
+!                                                     12*4*10          !
+!  usage:    call setaer                                               !
+!                                                                      !
+!  subprograms called:  aer_property                                   !
+!                                                                      !
+!  ==================================================================  !
+
+!  ---  inputs:
+      integer, intent(in) :: nlay, nlp1,me,myrank, ix, nxptot, nxjp_acc_length, &
+         jjoffset, max_nxjp_acc_length, jbs_nxjp_acc
+      integer, dimension(max_nxjp_acc_length) :: map_jj, map_i
+
+      real (kind=kind_phys), dimension(:,:), intent(in) :: prsi, prsl,  &
+     &       prslk, tvly, rhlay
+      real (kind=kind_phys), dimension(:,:),   intent(in) :: xlon, xlat,  &
+     &       slmsk
+      real (kind=kind_phys), dimension(:,:,:),intent(in):: tracer
+
+      logical, intent(in) :: lsswr, lslwr
+
+!  ---  outputs:
+      real (kind=kind_phys), dimension(max_nxjp_acc_length, nlay,nbdlw), intent(out):: &
+               tauaer
+!     real (kind=kind_phys), dimension(:,:)    , intent(out) :: aerodp
+
+!  ---  locals:
+      real (kind=kind_phys), parameter :: psrfh = 5.0    ! ref press (mb) for upper bound
+      real (kind=kind_phys), dimension(max_nxjp_acc_length, nlay,nbdlw) :: &
+               ssaaer
+      real (kind=kind_phys), dimension(max_nxjp_acc_length) :: alon,alat,volcae,rdelp
+!     real (kind=kind_phys), dimension(imax) :: sumodp
+      real (kind=kind_phys) :: hz(max_nxjp_acc_length,nlp1),dz(max_nxjp_acc_length,nlay)
+      real (kind=kind_phys) :: tmp1, tmp2, psrfl
+      integer               :: kcutl(max_nxjp_acc_length), kcuth(max_nxjp_acc_length)
+      integer               :: i, i1, j, k, m, mb, kh, kl, jj, k1
+
+      logical               :: laddsw=.false.,  laersw=.false.
+      logical               :: laddlw=.false.,  laerlw=.false.
+
+!  ---  conversion constants
+      real (kind=kind_phys), parameter :: rdg  = 180.0 / con_pi
+      real (kind=kind_phys), parameter :: rovg = 0.001 * con_rd / con_g
+      integer :: async_id, n, r
+      real (kind=kind_phys) :: prslnr1, prslnr
+
+      ! GPU: variable name changed: CPU - aerosw(:,:,:,1), GPU - tauae
+      ! GPU: variable name changed: CPU - aerosw(:,:,:,2), GPU - ssaae
+      ! GPU: variable name changed: CPU - aerosw(:,:,:,3), GPU - asyae
+      ! GPU: variable name changed: CPU - aerolw(:,:,:,1), GPU - tauaer*
+      ! GPU: variable name changed: CPU - aerolw(:,:,:,2), GPU - ssaaer*
+      ! GPU: variable name changed: CPU - aerolw(:,:,:,3), GPU - <dismissed>
+      ! GPU: Before the mark !==++GPU++==lwrad!, tauaer correspned to aerolw(:,:,:,1).
+      ! GPU: After this mark, tauaer is the combination of aerolw(:,:,:,1) and 
+      ! GPU: aerolw(:,:,:,2), which can be used directly in subroutine lwrad_gpu.
+
+!===>  ...  begin here
+      !$acc enter data create(alon, alat, volcae, rdelp, hz, dz, kcutl, kcuth, ssaaer) &
+      !$acc&     async(async_id)
+
+      !$acc parallel loop collapse(3) async(async_id)
+      do m = 1, nbdlw
+         do k = 1, nlay
+            do n = 1, nxjp_acc_length
+               tauaer(n, k,m) = f_zero
+               ssaaer(n, k,m) = f_one
+            enddo
+         enddo
+      end do
+
+!     aerodp = f_zero
+!     sumodp = f_zero
+
+         if ( .not. (lsswr .or. lslwr) ) then
+            return
+         endif
+
+         if ( iaerflg <= 0 ) then
+            return
+         endif
+
+         laersw = lsswr .and. laswflg
+         laerlw = lslwr .and. lalwflg
+
+!  ---  ...  convert lat/lon from radiance to degree
+
+      !$acc parallel loop private(jj, i) async(async_id)
+      do n = 1, nxjp_acc_length
+         jj = map_jj(n)
+         i = map_i(n)
+         alon(n) = xlon(i, jj) * rdg
+         !       if (myrank == 0) print *,i,'alon=',alon(i),' xlon=',xlon(i),rdg
+         if (alon(n) < f_zero) alon(n) = alon(n) + 360.0
+         alat(n) = xlat(i, jj) * rdg          ! if xlat in pi/2 -> -pi/2 range
+         !       if (myrank == 0) print *,i,'alat=',alat(i),' xlat=',xlat(i),rdg
+         !       alat(i) = 90.0 - xlat(i)*rdg     ! if xlat in 0 -> pi range
+      end do
+
+!  ---  ...  compute level height and layer thickness
+
+      if ( laswflg .or. lalwflg ) then
+
+         if (ivflip == 1) then ! lab_if_flip      ! input from sfc to toa
+            !$acc parallel loop collapse(2) async(async_id)
+            do k = 1, nlay
+               do n = 1, nxjp_acc_length
+                     r = n + jbs_nxjp_acc - 1
+                     prslnr = log(prsi(r,k))
+                     if (k .eq. nlay) then
+                        prslnr1 = log(prsl(r,nlay))
+                     else
+                        prslnr1 = log(prsi(r,k+1))
+                     end if
+                     dz(n,k) = rovg * (prslnr - prslnr1) * tvly(r,k)
+               end do
+            end do
+            !$acc parallel loop async(async_id)
+            do n = 1, nxjp_acc_length
+               dz(n,nlay)  = 2.0 * dz(n,nlay)
+               hz(n,1) = f_zero
+            end do
+            !$acc parallel loop async(async_id)
+            do n = 1, nxjp_acc_length
+               !$acc loop seq
+               do k = 1, nlay
+                  hz(n,k+1) = hz(n,k) + dz(n,k)
+               enddo
+            end do
+
+         else    !lab_if_flip                     ! input from toa to sfc
+            !$acc parallel loop collapse(2) async(async_id)
+            do k = 1, nlay
+               do n = 1, nxjp_acc_length
+                  r = n + jbs_nxjp_acc - 1
+                  prslnr1 = log(prsi(r,k+1))
+                  if (k .eq. 1) then
+                     prslnr = log(prsl(r,1))
+                  else
+                     prslnr = log(prsi(r,k))
+                  end if
+                  dz(n,k) = rovg * (prslnr1 - prslnr) * tvly(r,k)
+               end do
+            end do
+            !$acc parallel loop async(async_id)
+            do n = 1, nxjp_acc_length
+               dz(n,1) = 2.0 * dz(n,1)
+               hz(n,nlp1) = f_zero
+            end do
+            !$acc parallel loop async(async_id)
+            do n = 1, nxjp_acc_length
+               !$acc loop seq
+               do k = nlay, 1, -1
+                  hz(n,k) = hz(n,k+1) + dz(n,k)
+               enddo
+            end do ! end lab_do_imax
+
+         endif ! lab_if_flip
+
+
+!  ---  ...  calculate sw aerosol optical properties for the corresponding
+!            frequency bands
+            call aer_property_lw                                               &
+            !  ---  inputs:
+            &     ( prsi,prsl,prslk,tvly,rhlay, &
+                    dz,hz,tracer,                   &
+            &       alon,alat,slmsk, laersw,laerlw,                            &
+            &       nlay,nlp1, ix, map_jj, map_i, nxptot, nxjp_acc_length, &
+                    jjoffset, max_nxjp_acc_length, jbs_nxjp_acc, async_id,                                           &
+            !    &       imax,nlay,nlp1,nspc1,                                      &
+            !  ---  outputs:
+            &       tauaer, ssaaer                                              &
+            !    &       aerosw,aerolw,aerodp                                       &
+            &     )
+
+!  ---  check print
+!       do m = 1, nbdsw
+!         print *,'  ***  check aerosols properties for sw band =',m,   &
+!    &            ' ***'
+!         do k = 1, 10
+!           print *,'  level :',k
+!           print *,'  tauaer:',aerosw(:,k,m,1)
+!           print *,'  ssaaer:',aerosw(:,k,m,2)
+!           print *,'  asyaer:',aerosw(:,k,m,3)
+!         enddo
+!       enddo
+!       print *,'  ***  check aerosols optical depth for 550nm region'
+!       print *, aerodp(:,1)
+!       if ( laod_out ) then
+!         do m = 1, nspc1
+!           print *,'  ***  check aerosols optical depth for species:', &
+!    &              m
+!           print *, aerodp(:,m)
+!           sumodp(:) = sumodp(:) + aerodp(:,m)
+!         enddo
+!
+!         print *,'  ***  check aerosols optical depth for all species:'
+!         print *, sumodp(:)
+!       endif
+!       do m = 1, nbdlw
+!         print *,'  ***  check aerosols properties for lw band =',m,   &
+!    &            ' ***'
+!         do k = 1, 10
+!           print *,'  level :',k
+!           print *,'  tauaer:',aerolw(:,k,m,1)
+!           print *,'  ssaaer:',aerolw(:,k,m,2)
+!           print *,'  asyaer:',aerolw(:,k,m,3)
+!         enddo
+!       enddo
+
+      endif   ! end if_laswflg_or_lalwflg_block
+
+!  ---  ...  stratosphere volcanic forcing
+      if ( lavoflg ) then
+
+         if ( iaerflg == 100 ) then
+            laddsw = lsswr
+            laddlw = lslwr
+         else
+            laddsw = lsswr .and. laswflg
+            laddlw = lslwr .and. lalwflg
+         endif
+
+         i1 = mod(kyrsav, 10) + 1
+      end if
+
+!  ---  select data in 4 lat bands, interpolation at the boundaires
+
+      if ( lavoflg ) then
+         !$acc parallel loop async(async_id)
+         do n = 1, nxjp_acc_length
+            if      ( alat(n) > 46.0 ) then
+               volcae(n) = 1.0e-4 * ivolae(kmonsav,1,i1)
+            else if ( alat(n) > 44.0 ) then
+               volcae(n) = 5.0e-5                                          &
+               &                * (ivolae(kmonsav,1,i1) + ivolae(kmonsav,2,i1))
+            else if ( alat(n) >  1.0 ) then
+               volcae(n) = 1.0e-4 * ivolae(kmonsav,2,i1)
+            else if ( alat(n) > -1.0 ) then
+               volcae(n) = 5.0e-5                                          &
+               &                * (ivolae(kmonsav,2,i1) + ivolae(kmonsav,3,i1))
+            else if ( alat(n) >-44.0 ) then
+               volcae(n) = 1.0e-4 * ivolae(kmonsav,3,i1)
+            else if ( alat(n) >-46.0 ) then
+               volcae(n) = 5.0e-5                                          &
+               &                * (ivolae(kmonsav,3,i1) + ivolae(kmonsav,4,i1))
+            else
+               volcae(n) = 1.0e-4 * ivolae(kmonsav,4,i1)
+            endif
+         end do
+      end if
+
+      if ( lavoflg ) then
+         if ( ivflip == 0 ) then         ! input data from toa to sfc
+
+   !  ---  find lower boundary of stratosphere
+            !$acc parallel loop private(tmp1, psrfl) async(async_id)
+            do n = 1, nxjp_acc_length
+               r = n + jbs_nxjp_acc - 1
+               tmp1 = abs( alat(n) )
+               if ( tmp1 > 70.0 ) then          ! polar, fixed at 25000pa (250mb)
+                  psrfl = 250.0
+               elseif ( tmp1 < 20.0 ) then      ! tropic, fixed at 15000pa (150mb)
+                  psrfl = 150.0
+               else                             ! mid-lat, interpolation
+                  psrfl = 110.0 + 2.0*tmp1
+               endif
+
+               kcuth(n) = nlay - 1
+               kcutl(n) = 2
+               rdelp(n) = f_one / prsi(r,2)
+               !$acc loop seq
+               do k = 2, nlay-2 ! lab_do_kcuth0
+                  if ( prsi(r,k) >= psrfh ) then
+                     kcuth(n) = k - 1
+                     exit ! lab_do_kcuth0
+                  endif
+               enddo  ! lab_do_kcuth0
+               !$acc loop seq
+               do k = 2, nlay-2 ! lab_do_kcutl0
+                  if ( prsi(r,k) >= psrfl ) then
+                     kcutl(n) = k - 1
+                     rdelp(n) = f_one / (prsi(r,k) - prsi(r,kcuth(n)))
+                     exit ! lab_do_kcutl0
+                  endif
+               enddo  ! lab_do_kcutl0
+            enddo
+         end if
+      end if
+
+
+   !  ---  lw: add volcanic aerosol optical depth to the background value
+      if ( lavoflg ) then
+         if ( ivflip == 0 ) then         ! input data from toa to sfc
+            if ( laddlw ) then
+               if ( nlwbnd == 1 ) then
+
+                  tmp1 = (0.55 / 11.0) ** 1.2
+                  !$acc parallel loop collapse(2) private(mb, kh, kl, tmp2) async(async_id)
+                  do m = 1, nbdlw
+                     do n = 1, nxjp_acc_length
+                        r = n + jbs_nxjp_acc - 1
+                        kh = kcuth(n)
+                        kl = kcutl(n)
+                        !$acc loop seq
+                        do k = kh, kl
+                           tmp2 = tmp1 * ((prsi(r,k+1) - prsi(r,k)) * rdelp(n))  &
+                           &                 * volcae(n)
+                           tauaer(n,k,m) = tauaer(n,k,m) + tmp2
+                        enddo
+                     enddo    ! end do_i_block
+                  end do
+               end if
+            end if
+         end if
+      end if
+
+      if ( lavoflg ) then
+         if ( ivflip == 0 ) then         ! input data from toa to sfc
+            if ( laddlw ) then
+               if ( nlwbnd .ne. 1 ) then
+                  !$acc parallel loop collapse(2) private(mb, kh, kl, tmp1, tmp2) async(async_id)
+                  do m = 1, nbdlw
+                     do n = 1, nxjp_acc_length
+                        r = n + jbs_nxjp_acc - 1
+                        tmp1 = (0.275e-4 * (wvnlw2(m) + wvnlw1(m))) ** 1.2
+                        kh = kcuth(n)
+                        kl = kcutl(n)
+                        !$acc loop seq
+                        do k = kh, kl
+                           tmp2 = tmp1 * ((prsi(r,k+1)-prsi(r,k)) * rdelp(n))
+                           tauaer(n,k,m) = tauaer(n,k,m) + tmp2*volcae(n)
+                        enddo
+                     enddo      ! end do_m_block
+                  end do
+               endif      ! end if_nlwbnd_block
+            endif        ! end if_laddlw_block
+         end if
+      end if
+      
+      if ( lavoflg ) then
+         if ( ivflip .ne. 0 ) then         ! input data from toa to sfc
+
+   !  ---  find lower boundary of stratosphere
+            !$acc parallel loop private(psrfl, tmp1) async(async_id)
+            do n = 1, nxjp_acc_length
+               r = n + jbs_nxjp_acc - 1
+               tmp1 = abs( alat(n) )
+               if ( tmp1 > 70.0 ) then          ! polar, fixed at 25000pa (250mb)
+                  psrfl = 250.0
+               elseif ( tmp1 < 20.0 ) then      ! tropic, fixed at 15000pa (150mb)
+                  psrfl = 150.0
+               else                             ! mid-lat, interpolation
+                  psrfl = 110.0 + 2.0*tmp1
+               endif
+
+               kcuth(n) = 2
+               kcutl(n) = nlay - 1
+               rdelp(n) = f_one / prsi(r,nlay-1)
+               !$acc loop seq
+               do k = nlay-1, 2, -1 ! lab_do_kcuth1
+                  if ( prsi(r,k) >= psrfh ) then
+                     kcuth(n) = k
+                     exit ! lab_do_kcuth1
+                  endif
+               enddo  ! lab_do_kcuth1
+               !$acc loop seq
+               do k = nlay, 2, -1 ! lab_do_kcutl1
+                  if ( prsi(r,k) >= psrfl ) then
+                     kcutl(n) = k
+                     rdelp(n) = f_one / (prsi(r,k) - prsi(r,kcuth(n)+1))
+                     exit ! lab_do_kcutl1
+                  endif
+               enddo  ! lab_do_kcutl1
+            end do
+         end if
+      end if
+
+
+   !  ---  lw: add volcanic aerosol optical depth to the background value
+      if ( lavoflg ) then
+         if ( ivflip .ne. 0 ) then         ! input data from toa to sfc
+            if ( laddlw ) then
+               if ( nlwbnd == 1 ) then
+
+                  tmp1 = (0.55 / 11.0) ** 1.2
+                  !$acc parallel loop collapse(2) private(tmp2, kl, kh) async(async_id)
+                  do m = 1, nbdlw
+                     do n = 1, nxjp_acc_length
+                        r = n + jbs_nxjp_acc - 1
+                        kh = kcuth(n)
+                        kl = kcutl(n)
+                        !$acc loop seq
+                        do k = kl, kh
+                           tmp2 = tmp1 * ((prsi(r,k) - prsi(r,k+1)) * rdelp(n))  &
+                           &                 * volcae(n)
+                           tauaer(n,k,m) = tauaer(n,k,m) + tmp2
+                        enddo
+                     enddo    ! end do_i_block
+                  end do
+               end if
+            end if
+         end if
+      end if
+      
+      if ( lavoflg ) then
+         if ( ivflip .ne. 0 ) then         ! input data from toa to sfc
+            if ( laddlw ) then
+               if ( nlwbnd .ne. 1 ) then
+                  !$acc parallel loop gang collapse(2) private(tmp1, tmp2, kl, kh) async(async_id)
+                  do m = 1, nbdlw
+                     do n = 1, nxjp_acc_length
+                        r = n + jbs_nxjp_acc - 1
+                        tmp1 = (0.275e-4 * (wvnlw2(m) + wvnlw1(m))) ** 1.2
+                        kh = kcuth(n)
+                        kl = kcutl(n)
+                        !$acc loop seq
+                        do k = kl, kh
+                           tmp2 = tmp1 * ((prsi(r,k)-prsi(r,k+1)) * rdelp(n))
+                           tauaer(n,k,m) = tauaer(n,k,m) + tmp2*volcae(n)
+                        enddo
+                     enddo      ! end do_m_block
+                  end do
+               endif      ! end if_nlwbnd_block
+            endif        ! end if_laddlw_block
+
+         endif                           ! end if_ivflip_block
+
+      !==++GPU++==lwrad!
+      !  --- ...  set aerosol optical properties
+      ! GPU: This computation is at module_radlw_main/lwrad originally in the CPU
+      ! GPU: version. To reduce the memory usage, GPU version move this computation
+      ! GPU: to here.
+      if (ivflip == 0) then
+         !$acc parallel loop collapse(3) async(async_id)
+         do j = 1, nbdlw
+            do k = 1, nlay
+               do n = 1, nxjp_acc_length
+                     ssaaer(n, k,j) = tauaer(n,k,j)                      &
+                     &                    * (f_one - ssaaer(n,k,j))
+               enddo
+            end do
+         end do
+         !$acc parallel loop collapse(3) private(k1) async(async_id)
+         do j = 1, nbdlw
+            do k = 1, nlay
+               do n = 1, nxjp_acc_length
+                  k1 = nlp1 - k
+                  tauaer(n, k,j) = ssaaer(n,k1,j)
+               enddo
+            end do
+         end do
+      else
+         !$acc parallel loop collapse(3) async(async_id)
+         do j = 1, nbdlw
+            do k = 1, nlay
+               do n = 1, nxjp_acc_length
+                  tauaer(n, k,j) = tauaer(n,k,j)                       &
+                  &                    * (f_one - ssaaer(n,k,j))
+               enddo
+            end do
+         end do
+      endif
+
+      endif   ! end if_lavoflg_block
+      !$acc exit data delete(alon, alat, volcae, rdelp, hz, dz, kcutl, kcuth, ssaaer) &
+      !$acc&     async(async_id)
+!
+      return
+!...................................
+      end subroutine setaer_lw_gpu
+!-----------------------------------
+
+
+
+!-----------------------------------
+      subroutine aer_property_lw                                           &
+!...................................
+
+!  ---  inputs:
+     &     ( prsi,prsl,prslk,tvly,rhlay,dz,hz,tracer,                   &
+     &       alon,alat,slmsk, laersw,laerlw,                            &
+     &       nlay,nlp1, ix, map_jj, map_i, nxptot, nxjp_acc_length, &
+             jjoffset, max_nxjp_acc_length, jbs_nxjp_acc, async_id,                                           &
+!    &       imax,nlay,nlp1,nspc,                                       &
+!  ---  outputs:
+     &       tauaer, ssaaer                                              &
+!    &       aerosw,aerolw,aerodp                                       &
+     &     )
+
+!  ==================================================================  !
+!                                                                      !
+!  aer_property maps the 5 degree global climatological aerosol data   !
+!  set onto model grids, and compute aerosol optical properties for sw !
+!  and lw radiations.                                                  !
+!                                                                      !
+!  inputs:                                                             !
+!     prsi    - pressure at interface              mb      imax*nlp1   !
+!     prsl    - layer mean pressure         (not used)     imax*nlay   !
+!     prslk   - exner function=(p/p0)**rocp (not used)     imax*nlay   !
+!     tvly    - layer virtual temperature   (not used)     imax*nlay   !
+!     rhlay   - layer mean relative humidity               imax*nlay   !
+!     dz      - layer thickness                    m       imax*nlay   !
+!     hz      - level high                         m       imax*nlp1   !
+!     tracer  - aer tracer concentrations   (not used)  imax*nlay*ntrac!
+!     alon, alat                                             imax      !
+!             - longitude and latitude of given points in degree       !
+!     slmsk   - sea/land mask (sea:0,land:1,sea-ice:2)       imax      !
+!     laersw,laerlw                                             1      !
+!             - logical flag for sw/lw aerosol calculations            !
+!     imax    - horizontal dimension of arrays                  1      !
+!     nlay,nlp1-vertical dimensions of arrays                   1      !
+!!    nspc    - num of species for optional aod output fields   1      !
+!                                                                      !
+!  outputs:                                                            !
+!     aerosw - aeros opt properties for sw      imax*nlay*nbdsw*nf_aesw!
+!               (:,:,:,1): optical depth                               !
+!               (:,:,:,2): single scattering albedo                    !
+!               (:,:,:,3): asymmetry parameter                         !
+!     aerolw - aeros opt properties for lw      imax*nlay*nbdlw*nf_aelw!
+!               (:,:,:,1): optical depth                               !
+!               (:,:,:,2): single scattering albedo                    !
+!               (:,:,:,3): asymmetry parameter                         !
+!!    aerodp - vertically integrated aer-opt-depth         imax*nspc+1 !
+!                                                                      !
+!  module parameters and constants:                                    !
+!     nswbnd  - total number of actual sw spectral bands computed      !
+!     nlwbnd  - total number of actual lw spectral bands computed      !
+!     nswlwbd - total number of sw+lw bands computed                   !
+!                                                                      !
+!  external module variables: (in physpara)                            !
+!     ivflip  - control flag for direction of vertical index           !
+!               =0: index from toa to surface                          !
+!               =1: index from surface to toa                          !
+!                                                                      !
+!  module variable: (set by subroutine aer_init)                       !
+!     kprfg   - aerosols profile index                imxae*jmxae      !
+!               1:ant  2:arc  3:cnt  4:mar  5:des  6:marme 7:cntme     !
+!     idxcg   - aerosols component index              nxc*imxae*jmxae  !
+!               1:inso    2:soot    3:minm    4:miam    5:micm         !
+!               6:mitr    7:waso    8:ssam    9:sscm   10:suso         !
+!     cmixg   - aerosols component mixing ratio       nxc*imxae*jmxae  !
+!     denng   - aerosols number density                2 *imxae*jmxae  !
+!               1:for domain-1   2:domain-2 (prof marme/cntme only)    !
+!                                                                      !
+!  usage:    call aer_property                                         !
+!                                                                      !
+!  subprograms called:  radclimaer                                     !
+!                                                                      !
+!  ==================================================================  !
+
+!  ---  inputs:
+      integer, intent(in) :: nlay, nlp1, ix, nxptot, nxjp_acc_length, jjoffset, &
+         max_nxjp_acc_length, jbs_nxjp_acc
+!     integer, intent(in) :: imax, nlay, nlp1, nspc
+      logical, intent(in) :: laersw, laerlw
+      integer, dimension(nxptot) :: map_jj, map_i
+
+
+      real (kind=kind_phys), dimension(:,:), intent(in) :: dz, hz
+      real (kind=kind_phys), dimension(:,:), intent(in) :: prsi, prsl,  &
+     &       prslk, tvly, rhlay
+      real (kind=kind_phys), dimension(:),   intent(in) :: alon, alat
+      real (kind=kind_phys), dimension(:,:),   intent(in) :: slmsk
+      real (kind=kind_phys), dimension(:,:,:),intent(in):: tracer
+
+!  ---  outputs:
+!     real (kind=kind_phys), dimension(:,:,:,:,:), intent(out) ::         &
+!     &       aerosw, aerolw
+!     real (kind=kind_phys), dimension(:,:)    , intent(out) :: aerodp
+      real (kind=kind_phys), dimension(max_nxjp_acc_length, nlay,nbdlw), intent(out):: &
+               tauaer
+      real (kind=kind_phys), dimension(max_nxjp_acc_length, nlay,nbdlw), intent(out):: &
+               ssaaer
+!  ---  locals:
+      !real (kind=kind_phys), dimension(ix, nlay,nbdlw, my_max), intent(out):: &
+      !         asyaer
+      real (kind=kind_phys), dimension(max_nxjp_acc_length, ncm) :: cmix
+      real (kind=kind_phys), dimension(2, max_nxjp_acc_length) :: denn
+!     real (kind=kind_phys), dimension(nspc) :: spcodp
+
+      real (kind=kind_phys), dimension(max_nxjp_acc_length, nlay) :: delz, rh1, dz1
+      integer,               dimension(max_nxjp_acc_length, nlay) :: idmaer
+
+!test real (kind=kind_phys), dimension(imax,nlay) :: aersav
+
+      real (kind=kind_phys) :: tmp1, tmp2, rps, dtmp 
+      real (kind=kind_phys), dimension(max_nxjp_acc_length) :: wi, wj, w11, w12, w21, w22, h1
+
+      integer, dimension(max_nxjp_acc_length) :: i1, i2, j1, j2, kp, kpa, kpi, kpj
+      integer :: i, ii, i3, j3, k, m, m1, jj, ig
+
+!  ---  conversion constants
+      real (kind=kind_phys), parameter :: dltg = 360.0 / float(imxae)
+      real (kind=kind_phys), parameter :: hdlt = 0.5 * dltg
+      real (kind=kind_phys), parameter :: rdlt = 1.0 / dltg
+
+!  --- radclimaer (inlined)
+      real (kind=kind_phys) :: crt1, crt2
+      parameter (crt1=30.0, crt2=0.03333)
+      real (kind=kind_phys) :: cm, hd, hdi, sig0l, ratio, tt0,          &
+     &      ex00, sc00, ss00, as00, ex01, sc01, ss01, as01,     tt1,    &
+     &      ex02, sc02, ss02, as02, ex03, sc03, ss03, as03,     tt2,    &
+     &      ext1, sca1, ssa1, asy1, drh0, drh1, rdrh(nxptot, nlay)
+      integer, dimension(nxptot, nlay) :: ih1, ih2 
+      integer :: kk, idom, icmp, ib, ic, ic1, async_id, n, r
+      
+      ! GPU: The length of the third dimension of tauae, ssaae, and asyae is 
+      ! GPU: nswlwbd, which is nbdsw + nbdlw, in the original CPU version. 
+      ! GPU: In this GPU version, the length of this dimension is broken into 
+      ! GPU: nbdsw for short wave arrays and nbdlw for long wave arrays.
+      ! GPU: variable name changed: CPU - tauae(:,:,1:nbdsw), GPU - tauae
+      ! GPU: variable name changed: CPU - ssaae(:,:,1:nbdsw), GPU - ssaae
+      ! GPU: variable name changed: CPU - asyae(:,:,1:nbdsw), GPU - asyae
+      ! GPU: variable name changed: CPU - tauae(:,:,nbdsw+1:nswlwbd), GPU - tauaer
+      ! GPU: variable name changed: CPU - ssaae(:,:,nbdsw+1:nswlwbd), GPU - ssaaer
+      ! GPU: variable name changed: CPU - asyae(:,:,nbdsw+1:nswlwbd), GPU - <dismissed>
+      ! GPU: To save memory, 'aerosw' and 'aerolw' arrays are dismissed, the
+      ! GPU: output variables is changed from aerosw to tauae, ssaae, asyae, 
+      ! GPU: and from tauaer, ssaaer.
+      ! GPU: variable name changed: CPU - aerosw(:,:,:,1), GPU - tauae
+      ! GPU: variable name changed: CPU - aerosw(:,:,:,2), GPU - ssaae
+      ! GPU: variable name changed: CPU - aerosw(:,:,:,3), GPU - asyae
+      ! GPU: variable name changed: CPU - aerolw(:,:,:,1), GPU - tauaer
+      ! GPU: variable name changed: CPU - aerolw(:,:,:,2), GPU - ssaaer
+      ! GPU: variable name changed: CPU - aerolw(:,:,:,3), GPU - <dismissed>
+
+!
+!===>  ...  begin here
+!
+!  ---  map aerosol data to model grids
+      !$acc data create(cmix, denn, delz, rh1, dz1, idmaer, &
+      !$acc&     wi, wj, w11, w12, w21, w22, h1, i1, i2, j1, j2, kp, kpa, kpi, kpj, &
+      !$acc&     ih1, ih2, rdrh) async(async_id)
+      !$acc parallel loop private(i3, tmp1, dtmp, i, j3, tmp2, ii, jj, i) async(async_id)
+      do n = 1, nxjp_acc_length
+         jj = map_jj(n)
+         i = map_i(n)
+         i1(n) = 1
+         i2(n) = 2
+         j1(n) = 1
+         j2(n) = 2
+
+         !  ---  map grid in longitude direction, lon from 0 to 355 deg resolution
+
+      !       print *,' seeking lon index for point i =',i
+         i3 = i1(n)
+         do while ( i3 <= imxae ) ! lab_do_imxae
+            tmp1 = dltg * (i3 - 1)
+            dtmp = alon(n) - tmp1
+!         print *,'   alon, i3, tlon, dlon =',alon(i),i3,tmp1,dtmp
+
+            if ( dtmp > dltg ) then
+               i3 = i3 + 1
+               if ( i3 > imxae ) then
+                  print *,' error! in setclimaer alon>360. ipt =',i,        &
+                  &           ',  dltg,alon,tlon,dlon =',dltg,alon(n),tmp1,dtmp
+                  stop
+               endif
+            elseif ( dtmp >= f_zero ) then
+               i1(n) = i3
+               i2(n) = mod(i3,imxae) + 1
+               wi(n) = dtmp * rdlt
+               if ( dtmp <= hdlt ) then
+                  kpi(n) = i3
+               else
+                  kpi(n) = i2(n)
+               endif
+!           print *,'   found i1, i2, wi =',i1,i2,wi
+               exit ! lab_do_imxae
+            else
+               i3 = i3 - 1
+               if ( i3 < 1 ) then
+                  print *,' error! in setclimaer alon< 0. ipt =',i,         &
+                  &           ',  dltg,alon,tlon,dlon =',dltg,alon(n),tmp1,dtmp
+                  stop
+               endif
+            endif
+         enddo  ! lab_do_imxae
+
+
+!org--  map grid in latitude direction, lat from 90n to 90s in 5 deg resolution
+!cmy--------------------------------------------------------------------
+!cmy    map grid in latitude direction, lat from 90s to 90n in 5 deg resolution
+!cmy--------------------------------------------------------------------
+
+!       print *,' seeking lat index for point i =',i
+         j3 = j1(n)
+         do while ( j3 <= jmxae ) ! lab_do_jmxae
+!cmy--------------------------------------------------------------------
+!cmy      tmp2 = 90.0 - dltg * (j3 - 1)
+!cmy      dtmp = tmp2 - alat(i)
+!cmy--------------------------------------------------------------------
+!         print *,'   alat, j3, tlat, dlat =',alat(i),j3,tmp2,dtmp
+!cmy
+            tmp2 = -90.0 + dltg * (j3 - 1)
+            dtmp =  alat(n) - tmp2
+
+            if ( dtmp > dltg ) then
+               j3 = j3 + 1
+               if ( j3 >= jmxae ) then
+                  print *,' error! in setclimaer alat<-90. ipt =',i,        &
+                  &           ',  dltg,alat,tlat,dlat =',dltg,alat(n),tmp2,dtmp
+                  stop
+               endif
+            elseif ( dtmp >= f_zero ) then
+               j1(n) = j3
+               j2(n) = j3 + 1
+               wj(n) = dtmp * rdlt
+               if ( dtmp <= hdlt ) then
+                  kpj(n) = j3
+               else
+                  kpj(n) = j2(n)
+               endif
+!           print *,'   found j1, j2, wj =',j1,j2,wj
+               exit ! lab_do_jmxae
+            else
+               j3 = j3 - 1
+               if ( j3 < 1 ) then
+                  print *,' error! in setclimaer alat>90. ipt =',i,         &
+                  &           ',  dltg,alat,tlat,dlat =',dltg,alat(n),tmp2,dtmp
+                  stop
+               endif
+            endif
+         enddo  ! lab_do_jmxae
+
+!  ---  determin the type of aerosol profile (kp) and scale hight for domain 1 (h1)
+!       to be used at this grid point
+         kp(n) = kprfg(kpi(n),kpj(n))                     ! nearest typical aeros profile as default
+         kpa(n) = max( kprfg(i1(n),j1(n)),kprfg(i1(n),j2(n)), &
+         kprfg(i2(n),j1(n)),kprfg(i2(n),j2(n)) )
+         h1(n) = haer(1,kp(n))
+         denn(2, n) = f_zero
+
+         ii = 1
+         if ( kp(n) /= kpa(n) ) then
+            if ( kpa(n) == 6 ) then                  ! if ocean prof with mineral aeros overlay
+               ii = 2                              ! need 2 types of densities
+               if ( slmsk(i, jj) > f_zero ) then       ! but actually a land/sea-ice point
+                  kp(n) = 7                            ! reset prof index to land
+                  h1(n) = 0.5*(haer(1,6) + haer(1,7))  ! use a transition scale hight
+               else
+                  kp(n) = kpa(n)
+                  h1(n) = haer(1,6)
+               endif
+            elseif ( kpa(n) == 7 ) then              ! if land prof with mineral aeros overlay
+               ii = 2                              ! need 2 types of densities
+               if ( slmsk(i, jj) <= f_zero ) then      ! but actually an ocean point
+                  kp(n) = 6                            ! reset prof index to ocean
+                  h1(n) = 0.5*(haer(1,6) + haer(1,7))  ! use a transition scale hight
+               else
+                  kp(n) = kpa(n)
+                  h1(n) = haer(1,7)
+               endif
+            else                                  ! lower atmos without mineral aeros overlay
+               !           h1 = 0.5*(haer(1,kp) + haer(1,kpa)) ! use a transition scale hight
+               h1(n) = haer(1,kpa(n))
+               kp(n) = kpa(n)
+            endif
+         endif
+
+!  ---  compute horizontal bi-linear interpolation weights
+
+         w11(n) = (f_one-wi(n)) * (f_one-wj(n))
+         w12(n) = (f_one-wi(n)) *       wj(n)
+         w21(n) =        wi(n)  * (f_one-wj(n))
+         w22(n) =        wi(n)  * wj(n)
+
+!  ---  check print
+!       print *,'  grid pt', i,',   alon, alat =',alon(i),alat(i),      &
+!    &                       ',   tlon, tlat =',tmp1,tmp2
+!       print *,'   lon grid index i1, i2 =',i1,i2,',  weight wi =',wi
+!       print *,'   lat grid index j1, j2 =',j1,j2,',  weight wj =',wj
+!       print *,'   bi-linear weights w11,w21,w12,w22 =',w11,w21,w12,w22
+!       print *,'   kp,kpa,slmsk,h1 =',kp,m1,slmsk(i),h1
+
+!  ---  do horizontal bi-linear interpolation on aerosol partical density (denn)
+         !$acc loop seq
+         do m = 1, ii                            ! ii=1 for domain 1; =2 for domain 2.
+            denn(m, n) = w11(n)*denng(m,i1(n),j1(n)) + w12(n)* &
+            denng(m,i1(n),j2(n))             &
+            &            + w21(n)*denng(m,i2(n),j1(n)) + w22(n)* &
+            denng(m,i2(n),j2(n))
+         enddo  ! end_do_m_loop
+
+!  ---  do horizontal bi-linear interpolation on mixing ratios
+         do ii = 1, ncm
+            cmix(n, ii) = f_zero
+         end do
+         !$acc loop seq
+         do m = 1, nxc
+            ii = idxcg(m,i1(n),j1(n))
+            if ( ii > 0 ) then
+               cmix(n, ii) = cmix(n, ii) + w11(n)*cmixg(m,i1(n),j1(n))
+            endif
+            ii = idxcg(m,i1(n),j2(n))
+            if ( ii > 0 ) then
+               cmix(n, ii) = cmix(n, ii) + w12(n)*cmixg(m,i1(n),j2(n))
+            endif
+            ii = idxcg(m,i2(n),j1(n))
+            if ( ii > 0 ) then
+               cmix(n, ii) = cmix(n, ii) + w21(n)*cmixg(m,i2(n),j1(n))
+            endif
+            ii = idxcg(m,i2(n),j2(n))
+            if ( ii > 0 ) then
+               cmix(n, ii) = cmix(n, ii) + w22(n)*cmixg(m,i2(n),j2(n))
+            endif
+         enddo  ! end_do_m_loop
+      end do
+
+!  ---  check print
+!       print *,'   denn =',denn(:)
+!       print *,'   cmix =',cmix(:)
+
+!  ---  prepare to setup domain index array and effective layer thickness
+!       also convert pressure level to sigma level to follow the terrain
+      if (ivflip == 1) then  ! lab_if_flip     ! input from sfc to toa
+         !$acc parallel loop private(rps, ii, tmp1, tmp2) async(async_id)
+         do n = 1, nxjp_acc_length
+            r = n + jbs_nxjp_acc - 1
+            if ( prsi(r,1) > 100.0 ) then
+               rps = f_one / prsi(r,1)
+            else
+               !print *,' !!! error in subr radiation_aerosols:',           &
+               !&              ' unrealistic surface pressure =', prsi(i,1, jj)
+               !stop
+               cycle
+            endif
+
+            ii = 1
+            !$acc loop seq
+            do k = 1, nlay
+               if (prsi(r,k+1)*rps < sigref(ii,kp(n))) then
+                  ii = ii + 1
+                  if (ii == 2 .and. prsref(2,kp(n)) == prsref(3,kp(n))) then
+                     ii = 3
+                  endif
+               endif
+               idmaer(n, k) = ii
+
+               if ( ii > 1 ) then
+                  tmp1 = haer(ii,kp(n))
+               else
+                  tmp1 = h1(n)
+               endif
+
+               if (tmp1 > f_zero) then
+                  tmp2 = f_one / tmp1
+                  delz(n, k) = tmp1 * (exp(-hz(n,k)*tmp2)-exp(-hz(n,k+1)*tmp2))
+               else
+                  delz(n, k) = dz(n,k)
+               endif
+            enddo
+         end do
+
+      else  ! lab_if_flip                         ! input from toa to sfc
+         !$acc parallel loop private(rps, ii, tmp1, tmp2) async(async_id)
+         do n = 1, nxjp_acc_length
+            r = n + jbs_nxjp_acc - 1
+            if ( prsi(r,nlp1) > 100.0 ) then
+               rps =  1.0 / prsi(r,nlp1)
+            else
+               print *,' !!! error in subr radiation_aerosols:',           &
+               &              ' unrealistic surface pressure =', prsi(r,nlp1)
+               stop
+            endif
+
+            ii = 1
+            !$acc loop seq
+            do k = nlay, 1, -1
+               if (prsi(r,k)*rps < sigref(ii,kp(n))) then
+                  ii = ii + 1
+                  if (ii == 2 .and. prsref(2,kp(n)) == prsref(3,kp(n))) then
+                     ii = 3
+                  endif
+               endif
+               idmaer(n, k) = ii
+
+               if ( ii > 1 ) then
+                  tmp1 = haer(ii,kp(n))
+               else
+                  tmp1 = h1(n)
+               endif
+
+               if (tmp1 > f_zero) then
+                  tmp2   = f_one / tmp1
+                  delz(n, k) = tmp1 * (exp(-hz(n,k+1)*tmp2)-exp(-hz(n,k)*tmp2))
+               else
+                  delz(n, k) = dz(n,k)
+               endif
+            enddo
+         end do
+
+      endif  ! lab_if_flip
+
+         !  ---  check print
+
+         !       print *,' in setclimaer, profile:',i
+         !       print *,'  rh   :',rh1
+         !       print *,'  dz   :',dz1
+         !       print *,'  delz :',delz
+         !       print *,'  idmaer:',idmaer
+
+         !  ---  calculate sw/lw aerosol optical properties for the
+         !       corresponding frequency bands
+
+         !call radclimaer
+         !  ---  inputs:  (in-scope variables)
+         !  ---  outputs: (in-scope variables)
+
+         !===> ...  begin here
+
+         !     spcodp = f_zero
+
+         !===> ... loop over vertical layers from top to surface
+      !$acc parallel loop collapse(2) private(drh0, drh1) async(async_id)
+      do kk = 1, nlay ! lab_do_layer
+         do n = 1, nxjp_acc_length
+            r = n + jbs_nxjp_acc - 1
+         ! --- linear interp coeffs for rh-dep species
+
+            ih2(n, kk) = 1
+            do while ( rhlay(r,kk) > rhlev(ih2(n, kk)) )
+               ih2(n, kk) = ih2(n, kk) + 1
+               if ( ih2(n, kk) > nrhlev ) exit
+            enddo
+            ih1(n, kk) = max( 1, ih2(n, kk)-1 )
+            ih2(n, kk) = min( nrhlev, ih2(n, kk) )
+
+            drh0 = rhlev(ih2(n, kk)) - rhlev(ih1(n, kk))
+            drh1 = rhlay(r,kk) - rhlev(ih1(n, kk))
+            if ( ih1(n, kk) == ih2(n, kk) ) then
+               rdrh(n, kk) = f_zero
+            else
+               rdrh(n, kk) = drh1 / drh0
+            endif
+         end do
+      end do
+
+   ! --- assign optical properties in each domain
+! end call radclimaer
+
+
+!  ---  total aod (optional)
+!         do k = 1, nlay
+!           aerodp(i,1) = aerodp(i,1) + tauae(k,nv_aod)
+!         enddo
+
+!  ---  for diagnostic output (optional)
+!         if ( lspcaod ) then
+!           do m = 1, nspc
+!             aerodp(i,m+1) = spcodp(m)
+!           enddo
+!         endif
+
+
+   ! GPU: for long wave only
+   ! GPU: asyaer will not used for later computation
+      !$acc parallel loop collapse(3) private(ex01, sc01, ss01, as01, ex02, sc02, ss02, &
+      !$acc&      as02, ex03, sc03, ss03, as03, ext1, sca1, ssa1, asy1, ic, &
+      !$acc&      cm, tt0, ic1, ex00, sc00, ss00, as00, ib) async(async_id)
+      do ig = 1, nbdlw
+         do kk = 1, nlay ! lab_do_layer
+            do n = 1, nxjp_acc_length
+               ib = ig + nbdsw
+               if (idmaer(n, kk) == 5) then ! lab_if_idom
+! --- 5th domain - upper stratosphere assume no aerosol
+
+                  tauaer(n, kk,ig) = f_zero
+                  ssaaer(n, kk,ig) = 0.5
+                  !asyaer(i, kk,ig, jj) = 0.3
+
+               elseif (idmaer(n, kk) == 4) then    ! lab_if_idom
+! --- 4th domain - stratospheric layers
+
+                  tauaer(n, kk,ig) = extstra(ib) * delz(n, kk)
+                  ssaaer(n, kk,ig) = 0.5
+                  !asyaer(i, kk,ig, jj) = 0.3
+
+! --- compute aod from individual species' contribution (optional)
+!         idx = idxspc(10)             ! for sulfate
+!         if ( lspcaod ) then
+!           spcodp(idx) = spcodp(idx) + tauae(kk,nv_aod)
+!         endif
+
+               elseif (idmaer(n, kk) == 3) then    ! lab_if_idom
+! --- 3rd domain - free tropospheric layers
+!   1:inso 0.17e-3; 2:soot 0.4; 7:waso 0.59983; n:730
+
+                  ex01 = extrhi(1,ib)
+                  sc01 = scarhi(1,ib)
+                  ss01 = ssarhi(1,ib)
+                  as01 = asyrhi(1,ib)
+
+                  ex02 = extrhi(2,ib)
+                  sc02 = scarhi(2,ib)
+                  ss02 = ssarhi(2,ib)
+                  as02 = asyrhi(2,ib)
+
+                  ex03 = extrhd(ih1(n, kk),1,ib)                                     &
+                  &           + rdrh(n, kk) * (extrhd(ih2(n, kk),1,ib) &
+                              - extrhd(ih1(n, kk),1,ib))
+                  sc03 = scarhd(ih1(n, kk),1,ib)                                     &
+                  &           + rdrh(n, kk) * (scarhd(ih2(n, kk),1,ib) &
+                              - scarhd(ih1(n, kk),1,ib))
+                  ss03 = ssarhd(ih1(n, kk),1,ib)                                     &
+                  &           + rdrh(n, kk) * (ssarhd(ih2(n, kk),1,ib) &
+                              - ssarhd(ih1(n, kk),1,ib))
+                  as03 = asyrhd(ih1(n, kk),1,ib)                                     &
+                  &           + rdrh(n, kk) * (asyrhd(ih2(n, kk),1,ib) &
+                              - asyrhd(ih1(n, kk),1,ib))
+
+                  ext1 = 0.17e-3*ex01 + 0.4*ex02 + 0.59983*ex03
+                  sca1 = 0.17e-3*sc01 + 0.4*sc02 + 0.59983*sc03
+                  ssa1 = 0.17e-3*ss01*ex01 + 0.4*ss02*ex02 + 0.59983*ss03*ex03
+                  asy1 = 0.17e-3*as01*sc01 + 0.4*as02*sc02 + 0.59983*as03*sc03
+
+                  tauaer(n, kk,ig) = ext1 * 730.0 * delz(n, kk)
+                  ssaaer(n, kk,ig) = min(f_one, ssa1/ext1)
+                  !asyaer(i, kk,ig, jj) = min(f_one, asy1/sca1)
+
+! --- compute aod from individual species' contribution (optional)
+!           if ( lspcaod .and. ib==nv_aod ) then
+!             spcodp(1) = spcodp(1) + 0.17e-3*ex01*730.0*delz(kk)   ! dust (inso)   #1
+!             spcodp(2) = spcodp(2) + 0.4    *ex02*730.0*delz(kk)   ! black carbon  #2
+!             spcodp(3) = spcodp(3) + 0.59983*ex03*730.0*delz(kk)   ! water soluble #7
+!           endif
+
+
+               elseif (idmaer(n, kk) == 1) then    ! lab_if_idom
+! --- 1st domain - mixing layer
+
+                  ext1 = f_zero
+                  sca1 = f_zero
+                  ssa1 = f_zero
+                  asy1 = f_zero
+                  !$acc loop seq
+                  do icmp = 1, ncm ! lab_do_icmp
+                     ic = icmp
+!             idx = idxspc(icmp)
+
+                     cm = cmix(n, icmp)
+                     if ( cm > f_zero ) then ! lab_if_cm
+
+                        if ( ic <= ncm1 ) then ! lab_if_ic      ! component withour rh dep
+                           tt0  = cm * extrhi(ic,ib)
+                           ext1 = ext1 + tt0
+                           sca1 = sca1 + cm * scarhi(ic,ib)
+                           ssa1 = ssa1 + cm * ssarhi(ic,ib) * extrhi(ic,ib)
+                           asy1 = asy1 + cm * asyrhi(ic,ib) * scarhi(ic,ib)
+                        else  ! lab_if_ic                           ! component with rh dep
+                           ic1 = ic - ncm1
+
+                           ex00 = extrhd(ih1(n, kk),ic1,ib)                             &
+                           &               + rdrh(n, kk) * (extrhd(ih2(n, kk),ic1,ib) &
+                                             - extrhd(ih1(n, kk),ic1,ib))
+                           sc00 = scarhd(ih1(n, kk),ic1,ib)                             &
+                           &               + rdrh(n, kk) * (scarhd(ih2(n, kk),ic1,ib) &
+                                             - scarhd(ih1(n, kk),ic1,ib))
+                           ss00 = ssarhd(ih1(n, kk),ic1,ib)                             &
+                           &               + rdrh(n, kk) * (ssarhd(ih2(n, kk),ic1,ib) &
+                                             - ssarhd(ih1(n, kk),ic1,ib))
+                           as00 = asyrhd(ih1(n, kk),ic1,ib)                             &
+                           &               + rdrh(n, kk) * (asyrhd(ih2(n, kk),ic1,ib) &
+                                             - asyrhd(ih1(n, kk),ic1,ib))
+
+                           tt0  = cm * ex00
+                           ext1 = ext1 + tt0
+                           sca1 = sca1 + cm * sc00
+                           ssa1 = ssa1 + cm * ss00 * ex00
+                           asy1 = asy1 + cm * as00 * sc00
+                        endif  ! lab_if_ic
+
+! --- compute aod from individual species' contribution (optional)
+!               if ( lspcaod .and. ib==nv_aod ) then
+!                 spcodp(idx) = spcodp(idx) + tt0*denn(1)*delz(kk)   ! idx for dif species
+!               endif
+
+                     endif  ! lab_if_cm
+                  enddo  ! lab_do_icmp
+
+                  tauaer(n, kk,ig) = ext1 * denn(1, n) * delz(n, kk)
+                  ssaaer(n, kk,ig) = min(f_one, ssa1/ext1)
+                  !asyaer(i, kk,ig, jj) = min(f_one, asy1/sca1)
+
+               elseif (idmaer(n, kk) == 2) then    ! lab_if_idom
+! --- 2nd domain - mineral transport layers
+
+                  tauaer(n, kk,ig) = extrhi(6,ib) * denn(2, n) * delz(n, kk)
+                  ssaaer(n, kk,ig) = ssarhi(6,ib)
+                  !asyaer(i, kk,ig, jj) = asyrhi(6,ib)
+
+! --- compute aod from individual species' contribution (optional)
+!         if ( laersw ) then
+!            spcodp(1) = spcodp(1) + tauae(kk,nv_aod)            ! dust
+!         endif
+
+               else  ! lab_if_idom
+! --- domain index out off range, assume no aerosol
+
+                  tauaer(n, kk,ig) = f_zero
+                  ssaaer(n, kk,ig) = f_one
+                  !asyaer(i, kk,ig, jj) = f_zero
+
+!         write(6,19) kk,idom
+! 19      format(/'  ***  error in sub aeros: domain index out'         &
+!    &,            ' of range!  k, idom =',3i5,' ***')
+!         stop 19
+
+               endif  ! lab_if_idom
+            end do
+         enddo  ! lab_do_layer
+      end do
+!
+!===> ... smooth profile at domain boundaries
+!
+      if ( ivflip == 0 ) then    ! input from toa to sfc
+         !$acc parallel loop collapse(2) private(ratio, tt0, tt1, tt2) async(async_id)
+         do ig = 1, nbdlw
+            do n = 1, nxjp_acc_length
+               !$acc loop seq
+               do kk = 2, nlay
+                  if ( tauaer(n, kk,ig) > f_zero ) then
+                     ratio = tauaer(n, kk-1,ig) / tauaer(n, kk,ig)
+                  else
+                     ratio = f_one
+                  endif
+
+                  tt0 = tauaer(n, kk,ig) + tauaer(n, kk-1,ig)
+                  tt1 = 0.2 * tt0
+                  tt2 = tt0 - tt1
+
+                  if ( ratio > crt1 ) then
+                     tauaer(n, kk,ig)   = tt1
+                     tauaer(n, kk-1,ig) = tt2
+                  endif
+
+                  if ( ratio < crt2 ) then
+                     tauaer(n, kk,ig)   = tt2
+                     tauaer(n, kk-1,ig) = tt1
+                  endif
+               enddo   ! do_kk_loop
+            enddo   ! do_ib_loop
+         end do
+
+      else                      ! input from sfc to toa
+         !$acc parallel loop collapse(2) private(ratio, tt0, tt1, tt2) async(async_id)
+         do ig = 1, nbdlw
+            do n = 1, nxjp_acc_length
+               !$acc loop seq
+               do kk = nlay-1, 1, -1
+                  if ( tauaer(n, kk,ig) > f_zero ) then
+                     ratio = tauaer(n, kk+1,ig) / tauaer(n, kk,ig)
+                  else
+                     ratio = f_one
+                  endif
+
+                  tt0 = tauaer(n, kk,ig) + tauaer(n, kk+1,ig)
+                  tt1 = 0.2 * tt0
+                  tt2 = tt0 - tt1
+
+                  if ( ratio > crt1 ) then
+                     tauaer(n, kk,ig)   = tt1
+                     tauaer(n, kk+1,ig) = tt2
+                  endif
+
+                  if ( ratio < crt2 ) then
+                     tauaer(n, kk,ig)   = tt2
+                     tauaer(n, kk+1,ig) = tt1
+                  endif
+               enddo   ! do_kk_loop
+            enddo   ! do_ib_loop
+         end do
+
+      endif
+      if ( nlwbnd == 1 ) then
+         !$acc parallel loop collapse(3) private(m1) async(async_id)
+         do m = 1, nbdlw
+            do k = 1, nlay
+               do n = 1, nxjp_acc_length
+                  m1 = 1
+                  tauaer(n,k,m) = tauaer(n, k,m1)
+                  ssaaer(n,k,m) = ssaaer(n, k,m1)
+                  !asyaer(i,k,m,jj) = asyaer(i, k,m1, jj)
+               enddo
+            end do
+         end do
+      end if
+
+      !$acc end data
+
+
+!
+!...................................
+      end subroutine aer_property_lw
+!-----------------------------------
+
 
 
 !..........................................!
