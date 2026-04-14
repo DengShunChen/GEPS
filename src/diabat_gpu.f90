@@ -2377,7 +2377,7 @@
          if (docgrav .and. upnor .and. (nmgwcv .eq. 1)) then
             if (myrank .eq. 0) print *, "Not support this entry. nmgwcv=", nmgwcv
             !$acc wait(async_id)
-            !$acc update self(ut, vt, tt, qt, plt, pk, pk2, phi) async(async_id)
+            !$acc update self(ut, vt, tt, qt, plt, pk, pk2, phi, sinl, cosl) async(async_id)
             !$acc wait(async_id)
             do jj = 1, jlistnum
                j = jlist1(jj)
@@ -2388,7 +2388,7 @@
                              grav, rgas, sinl(j), cosl(j), drag_u(1, jj), drag_v(1, jj), cp, ptop)
             end do
             !$acc wait(async_id)
-            !$acc update device(ut, vt, tt) async(async_id)
+            !$acc update device(ut, vt, tt, qt, plt, pk, pk2, phi, sinl, cosl) async(async_id)
             !$acc wait(async_id)
 
             !   call nor_gwdp_gpu(1, nxjp, nxp, lev, &

@@ -281,7 +281,7 @@
 !  ---  inputs:
      &     ( slmsk,snowf,sncovr,snoalb,zorlf,coszf,tsknf,tairf,hprif,   &
      &       alvsf,alnsf,alvwf,alnwf,facsf,facwf,fice,tisfc,            &
-     &       myim, ix, async_id,                                                      &
+     &       myim, ix, map_jj, map_i, nxptot, async_id,                                                      &
 !  ---  outputs:
      &       sfcalb                                                     &
      &     )
@@ -346,15 +346,18 @@
       implicit none
 
 !  ---  inputs
-      integer, intent(in) :: myim(my_max), ix
+      integer, intent(in) :: myim(my_max), ix, nxptot
+      integer, dimension(nxptot) :: map_jj, map_i
 
+
+      real (kind=kind_phys), dimension(:), intent(in) :: tsknf, tairf
       real (kind=kind_phys), dimension(:,:), intent(in) ::                &
-     &       slmsk, snowf, zorlf, coszf, tsknf, tairf, hprif,           &
+     &       slmsk, snowf, zorlf, coszf, hprif,           &
      &       alvsf, alnsf, alvwf, alnwf, facsf, facwf, fice, tisfc,     &
      &       sncovr, snoalb
 
 !  ---  outputs
-      real (kind=kind_phys), dimension(:,:,:), intent(out) :: sfcalb
+      real (kind=kind_phys), dimension(:,:), intent(out) :: sfcalb
 
 !  ---  locals:
       real (kind=kind_phys) :: asnvb, asnnb, asnvd, asnnd, asevb        &
@@ -364,234 +367,229 @@
 
       real (kind=kind_phys) ffw, dtgd
 
-      integer :: i, k, jj, async_id
+      integer :: i, k, jj, async_id, n
 
 !
 !===> ...  begin here
 !
       if ( ialbflg == 0 ) then   ! use climatological albedo scheme
-         !$acc parallel loop collapse(2) private(asnow, argh, hrgh, fsno0, fsno1, &
+         !$acc parallel loop private(asnow, argh, hrgh, fsno0, fsno1, &
          !$acc&         flnd0, fsea0, fsno, fsea, flnd, asevd, asend, a1, ffw, &
          !$acc&         dtgd, b1, b3, asnvd, asnnd, csnow, asnvb, asnnb, rfcs, &
-         !$acc&         rfcw, asevb, asenb, a2, b2, ab1bm, ab2bm) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               if (i .le. myim(jj)) then
+         !$acc&         rfcw, asevb, asenb, a2, b2, ab1bm, ab2bm, jj, i) async(async_id)
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            ! --- modified snow albedo scheme - units convert to m
+            !     (originally snowf in mm; zorlf in cm)
 
-                  ! --- modified snow albedo scheme - units convert to m
-                  !     (originally snowf in mm; zorlf in cm)
+            asnow = 0.02*snowf(i, jj)
+            argh  = min(0.50, max(.025, 0.01*zorlf(i, jj)))
+            hrgh  = min(f_one, max(0.20, 1.0577-1.1538e-3*hprif(i, jj) ) )
+            fsno0 = asnow / (argh + asnow) * hrgh
+            if (nint(slmsk(i, jj))==0 .and. tsknf(n)>con_tice) fsno0 = f_zero
+            fsno1 = f_one - fsno0
+            flnd0 = min(f_one, facsf(i, jj)+facwf(i, jj))
+            fsea0 = max(f_zero, f_one-flnd0)
+            fsno  = fsno0
+            fsea  = fsea0 * fsno1
+            flnd  = flnd0 * fsno1
 
-                  asnow = 0.02*snowf(i, jj)
-                  argh  = min(0.50, max(.025, 0.01*zorlf(i, jj)))
-                  hrgh  = min(f_one, max(0.20, 1.0577-1.1538e-3*hprif(i, jj) ) )
-                  fsno0 = asnow / (argh + asnow) * hrgh
-                  if (nint(slmsk(i, jj))==0 .and. tsknf(i, jj)>con_tice) fsno0 = f_zero
-                  fsno1 = f_one - fsno0
-                  flnd0 = min(f_one, facsf(i, jj)+facwf(i, jj))
-                  fsea0 = max(f_zero, f_one-flnd0)
-                  fsno  = fsno0
-                  fsea  = fsea0 * fsno1
-                  flnd  = flnd0 * fsno1
+            ! --- diffused sea surface albedo
 
-                  ! --- diffused sea surface albedo
+            if (tsknf(n) >= 271.5) then
+               asevd = 0.06
+               asend = 0.06
+            elseif (tsknf(n) < 271.1) then
+               asevd = 0.70
+               asend = 0.65
+            else
+               a1 = (tsknf(n) - 271.1)**2
+               asevd = 0.7 - 4.0*a1
+               asend = 0.65 - 3.6875*a1
+            endif
 
-                  if (tsknf(i, jj) >= 271.5) then
-                     asevd = 0.06
-                     asend = 0.06
-                  elseif (tsknf(i, jj) < 271.1) then
-                     asevd = 0.70
-                     asend = 0.65
-                  else
-                     a1 = (tsknf(i, jj) - 271.1)**2
-                     asevd = 0.7 - 4.0*a1
-                     asend = 0.65 - 3.6875*a1
-                  endif
+         ! --- diffused snow albedo
 
-               ! --- diffused snow albedo
+            if (nint(slmsk(i, jj)) == 2) then
+               ffw   = f_one - fice(i, jj)
+               if (ffw < f_one) then
+                     dtgd = max(f_zero, min(5.0, (con_ttp-tisfc(i, jj)) ))
+                     b1   = 0.03 * dtgd
+               else
+                     b1 = f_zero
+               endif
 
-                  if (nint(slmsk(i, jj)) == 2) then
-                     ffw   = f_one - fice(i, jj)
-                     if (ffw < f_one) then
-                           dtgd = max(f_zero, min(5.0, (con_ttp-tisfc(i, jj)) ))
-                           b1   = 0.03 * dtgd
-                     else
-                           b1 = f_zero
-                     endif
+               b3   = 0.06 * ffw
+               asnvd = (0.70 + b1) * fice(i, jj) + b3
+               asnnd = (0.60 + b1) * fice(i, jj) + b3
+               asevd = 0.70        * fice(i, jj) + b3
+               asend = 0.60        * fice(i, jj) + b3
+            else
+               asnvd = 0.90
+               asnnd = 0.75
+            endif
 
-                     b3   = 0.06 * ffw
-                     asnvd = (0.70 + b1) * fice(i, jj) + b3
-                     asnnd = (0.60 + b1) * fice(i, jj) + b3
-                     asevd = 0.70        * fice(i, jj) + b3
-                     asend = 0.60        * fice(i, jj) + b3
-                  else
-                     asnvd = 0.90
-                     asnnd = 0.75
-                  endif
+         ! --- direct snow albedo
 
-               ! --- direct snow albedo
+            if (coszf(i, jj) < 0.5) then
+               csnow = 0.5 * (3.0 / (f_one+4.0*coszf(i, jj)) - f_one)
+               asnvb = min( 0.98, asnvd+(1.0-asnvd)*csnow )
+               asnnb = min( 0.98, asnnd+(1.0-asnnd)*csnow )
+            else
+               asnvb = asnvd
+               asnnb = asnnd
+            endif
 
-                  if (coszf(i, jj) < 0.5) then
-                     csnow = 0.5 * (3.0 / (f_one+4.0*coszf(i, jj)) - f_one)
-                     asnvb = min( 0.98, asnvd+(1.0-asnvd)*csnow )
-                     asnnb = min( 0.98, asnnd+(1.0-asnnd)*csnow )
-                  else
-                     asnvb = asnvd
-                     asnnb = asnnd
-                  endif
+         ! --- direct sea surface albedo
 
-               ! --- direct sea surface albedo
+            if (coszf(i, jj) > 0.0001) then
+               !           rfcs = 1.4 / (f_one + 0.8*coszf(i))
+               !           rfcw = 1.3 / (f_one + 0.6*coszf(i))
+               rfcs = 2.14 / (f_one + 1.48*coszf(i, jj))
+               rfcw = rfcs
 
-                  if (coszf(i, jj) > 0.0001) then
-                     !           rfcs = 1.4 / (f_one + 0.8*coszf(i))
-                     !           rfcw = 1.3 / (f_one + 0.6*coszf(i))
-                     rfcs = 2.14 / (f_one + 1.48*coszf(i, jj))
-                     rfcw = rfcs
+               if (tsknf(n) >= con_t0c) then
+                  asevb = max(asevd, 0.026/(coszf(i, jj)**1.7+0.065)            &
+                  &              + 0.15 * (coszf(i, jj)-0.1) * (coszf(i, jj)-0.5)            &
+                  &              * (coszf(i, jj)-f_one))
+                  asenb = asevb
+               else
+                  asevb = asevd
+                  asenb = asend
+               endif
+            else
+               rfcs  = f_one
+               rfcw  = f_one
+               asevb = asevd
+               asenb = asend
+            endif
 
-                     if (tsknf(i, jj) >= con_t0c) then
-                        asevb = max(asevd, 0.026/(coszf(i, jj)**1.7+0.065)            &
-                        &              + 0.15 * (coszf(i, jj)-0.1) * (coszf(i, jj)-0.5)            &
-                        &              * (coszf(i, jj)-f_one))
-                        asenb = asevb
-                     else
-                        asevb = asevd
-                        asenb = asend
-                     endif
-                  else
-                     rfcs  = f_one
-                     rfcw  = f_one
-                     asevb = asevd
-                     asenb = asend
-                  endif
-
-                  a1   = alvsf(i, jj) * facsf(i, jj)
-                  b1   = alvwf(i, jj) * facwf(i, jj)
-                  a2   = alnsf(i, jj) * facsf(i, jj)
-                  b2   = alnwf(i, jj) * facwf(i, jj)
-                  ab1bm = a1*rfcs + b1*rfcw
-                  ab2bm = a2*rfcs + b2*rfcw
-                  sfcalb(i,1, jj) = min(0.99, ab2bm) *flnd + asenb*fsea + asnnb*fsno
-                  sfcalb(i,2, jj) = (a2 + b2) * 0.96 *flnd + asend*fsea + asnnd*fsno
-                  sfcalb(i,3, jj) = min(0.99, ab1bm) *flnd + asevb*fsea + asnvb*fsno
-                  sfcalb(i,4, jj) = (a1 + b1) * 0.96 *flnd + asevd*fsea + asnvd*fsno
-                  !byl         sfcalb(i,1) = (a2*rfcs+b2*rfcw)*flnd + asenb*fsea + asnnb*fsno
-                  !byl         sfcalb(i,2) = (a2 + b2) * 0.96 *flnd + asend*fsea + asnnd*fsno
-                  !byl         sfcalb(i,3) = (a1*rfcs+b1*rfcw)*flnd + asevb*fsea + asnvb*fsno
-                  !byl         sfcalb(i,4) = (a1 + b1) * 0.96 *flnd + asevd*fsea + asnvd*fsno
-               end if
-            enddo    ! end_do_i_loop
+            a1   = alvsf(i, jj) * facsf(i, jj)
+            b1   = alvwf(i, jj) * facwf(i, jj)
+            a2   = alnsf(i, jj) * facsf(i, jj)
+            b2   = alnwf(i, jj) * facwf(i, jj)
+            ab1bm = a1*rfcs + b1*rfcw
+            ab2bm = a2*rfcs + b2*rfcw
+            sfcalb(n,1) = min(0.99, ab2bm) *flnd + asenb*fsea + asnnb*fsno
+            sfcalb(n,2) = (a2 + b2) * 0.96 *flnd + asend*fsea + asnnd*fsno
+            sfcalb(n,3) = min(0.99, ab1bm) *flnd + asevb*fsea + asnvb*fsno
+            sfcalb(n,4) = (a1 + b1) * 0.96 *flnd + asevd*fsea + asnvd*fsno
+            !byl         sfcalb(i,1) = (a2*rfcs+b2*rfcw)*flnd + asenb*fsea + asnnb*fsno
+            !byl         sfcalb(i,2) = (a2 + b2) * 0.96 *flnd + asend*fsea + asnnd*fsno
+            !byl         sfcalb(i,3) = (a1*rfcs+b1*rfcw)*flnd + asevb*fsea + asnvb*fsno
+            !byl         sfcalb(i,4) = (a1 + b1) * 0.96 *flnd + asevd*fsea + asnvd*fsno
          end do
 
       else                       ! use modis based albedo for land area
-         !$acc parallel loop collapse(2) private(asnow, argh, hrgh, fsno0, fsno1, &
+         !$acc parallel loop private(asnow, argh, hrgh, fsno0, fsno1, &
          !$acc&         flnd0, fsea0, fsno, fsea, flnd, asevd, asend, a1, ffw, &
          !$acc&         dtgd, b1, b3, asnvd, asnnd, csnow, asnvb, asnnb, rfcs, &
-         !$acc&         asevb, asenb, ab1bm, ab2bm) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix 
-               if (i .le. myim(jj)) then
+         !$acc&         asevb, asenb, ab1bm, ab2bm, jj, i) async(async_id)
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
 
-                  ! --- snow cover input directly from land model, no conversion needed
+            ! --- snow cover input directly from land model, no conversion needed
 
-                  fsno0 = sncovr(i, jj)
+            fsno0 = sncovr(i, jj)
 
-                  if (nint(slmsk(i, jj))==0 .and. tsknf(i, jj)>con_tice) fsno0 = f_zero
+            if (nint(slmsk(i, jj))==0 .and. tsknf(n)>con_tice) fsno0 = f_zero
 
-                  if (nint(slmsk(i, jj)) == 2) then
-                     asnow = 0.02*snowf(i, jj)
-                     argh  = min(0.50, max(.025, 0.01*zorlf(i, jj)))
-                     hrgh  = min(f_one, max(0.20, 1.0577-1.1538e-3*hprif(i, jj) ) )
-                     fsno0 = asnow / (argh + asnow) * hrgh
-                  endif
+            if (nint(slmsk(i, jj)) == 2) then
+               asnow = 0.02*snowf(i, jj)
+               argh  = min(0.50, max(.025, 0.01*zorlf(i, jj)))
+               hrgh  = min(f_one, max(0.20, 1.0577-1.1538e-3*hprif(i, jj) ) )
+               fsno0 = asnow / (argh + asnow) * hrgh
+            endif
 
-                  fsno1 = f_one - fsno0
-                  flnd0 = min(f_one, facsf(i, jj)+facwf(i, jj))
-                  fsea0 = max(f_zero, f_one-flnd0)
-                  fsno  = fsno0
-                  fsea  = fsea0 * fsno1
-                  flnd  = flnd0 * fsno1
+            fsno1 = f_one - fsno0
+            flnd0 = min(f_one, facsf(i, jj)+facwf(i, jj))
+            fsea0 = max(f_zero, f_one-flnd0)
+            fsno  = fsno0
+            fsea  = fsea0 * fsno1
+            flnd  = flnd0 * fsno1
 
-                  ! --- diffused sea surface albedo
+            ! --- diffused sea surface albedo
 
-                  if (tsknf(i, jj) >= 271.5) then
-                     asevd = 0.06
-                     asend = 0.06
-                  elseif (tsknf(i, jj) < 271.1) then
-                     asevd = 0.70
-                     asend = 0.65
-                  else
-                     a1 = (tsknf(i, jj) - 271.1)**2
-                     asevd = 0.7 - 4.0*a1
-                     asend = 0.65 - 3.6875*a1
-                  endif
+            if (tsknf(n) >= 271.5) then
+               asevd = 0.06
+               asend = 0.06
+            elseif (tsknf(n) < 271.1) then
+               asevd = 0.70
+               asend = 0.65
+            else
+               a1 = (tsknf(n) - 271.1)**2
+               asevd = 0.7 - 4.0*a1
+               asend = 0.65 - 3.6875*a1
+            endif
 
-                  ! --- diffused snow albedo, land area use input max snow albedo
+            ! --- diffused snow albedo, land area use input max snow albedo
 
-                  if (nint(slmsk(i, jj)) == 2) then
-                     ffw   = f_one - fice(i, jj)
-                     if (ffw < f_one) then
-                        dtgd = max(f_zero, min(5.0, (con_ttp-tisfc(i, jj)) ))
-                        b1   = 0.03 * dtgd
-                     else
-                        b1 = f_zero
-                     endif
+            if (nint(slmsk(i, jj)) == 2) then
+               ffw   = f_one - fice(i, jj)
+               if (ffw < f_one) then
+                  dtgd = max(f_zero, min(5.0, (con_ttp-tisfc(i, jj)) ))
+                  b1   = 0.03 * dtgd
+               else
+                  b1 = f_zero
+               endif
 
-                     b3   = 0.06 * ffw
-                     asnvd = (0.70 + b1) * fice(i, jj) + b3
-                     asnnd = (0.60 + b1) * fice(i, jj) + b3
-                     asevd = 0.70        * fice(i, jj) + b3
-                     asend = 0.60        * fice(i, jj) + b3
-                  else
-                     asnvd = snoalb(i, jj)
-                     asnnd = snoalb(i, jj)
-                  endif
+               b3   = 0.06 * ffw
+               asnvd = (0.70 + b1) * fice(i, jj) + b3
+               asnnd = (0.60 + b1) * fice(i, jj) + b3
+               asevd = 0.70        * fice(i, jj) + b3
+               asend = 0.60        * fice(i, jj) + b3
+            else
+               asnvd = snoalb(i, jj)
+               asnnd = snoalb(i, jj)
+            endif
 
-                  ! --- direct snow albedo
+            ! --- direct snow albedo
 
-                  if (nint(slmsk(i, jj)) == 2) then
-                     if (coszf(i, jj) < 0.5) then
-                        csnow = 0.5 * (3.0 / (f_one+4.0*coszf(i, jj)) - f_one)
-                        asnvb = min( 0.98, asnvd+(f_one-asnvd)*csnow )
-                        asnnb = min( 0.98, asnnd+(f_one-asnnd)*csnow )
-                     else
-                        asnvb = asnvd
-                        asnnb = asnnd
-                     endif
-                  else
-                        asnvb = snoalb(i, jj)
-                        asnnb = snoalb(i, jj)
-                  endif
+            if (nint(slmsk(i, jj)) == 2) then
+               if (coszf(i, jj) < 0.5) then
+                  csnow = 0.5 * (3.0 / (f_one+4.0*coszf(i, jj)) - f_one)
+                  asnvb = min( 0.98, asnvd+(f_one-asnvd)*csnow )
+                  asnnb = min( 0.98, asnnd+(f_one-asnnd)*csnow )
+               else
+                  asnvb = asnvd
+                  asnnb = asnnd
+               endif
+            else
+                  asnvb = snoalb(i, jj)
+                  asnnb = snoalb(i, jj)
+            endif
 
-                  ! --- direct sea surface albedo, use fanglin's zenith angle treatment
+            ! --- direct sea surface albedo, use fanglin's zenith angle treatment
 
-                  if (coszf(i, jj) > 0.0001) then
+            if (coszf(i, jj) > 0.0001) then
 
-                     !           rfcs = 1.89 - 3.34*coszf(i) + 4.13*coszf(i)*coszf(i)        &
-                     !    &           - 2.02*coszf(i)*coszf(i)*coszf(i)
-                     rfcs = 1.775/(1.0+1.55*coszf(i, jj))      
+               !           rfcs = 1.89 - 3.34*coszf(i) + 4.13*coszf(i)*coszf(i)        &
+               !    &           - 2.02*coszf(i)*coszf(i)*coszf(i)
+               rfcs = 1.775/(1.0+1.55*coszf(i, jj))      
 
-                     if (tsknf(i, jj) >= con_t0c) then
-                        asevb = max(asevd, 0.026/(coszf(i, jj)**1.7+0.065)            &
-                        &              + 0.15 * (coszf(i, jj)-0.1) * (coszf(i, jj)-0.5)            &
-                        &              * (coszf(i, jj)-f_one))
-                        asenb = asevb
-                     else
-                        asevb = asevd
-                        asenb = asend
-                     endif
-                  else
-                     rfcs  = f_one
-                     asevb = asevd
-                     asenb = asend
-                  endif
+               if (tsknf(n) >= con_t0c) then
+                  asevb = max(asevd, 0.026/(coszf(i, jj)**1.7+0.065)            &
+                  &              + 0.15 * (coszf(i, jj)-0.1) * (coszf(i, jj)-0.5)            &
+                  &              * (coszf(i, jj)-f_one))
+                  asenb = asevb
+               else
+                  asevb = asevd
+                  asenb = asend
+               endif
+            else
+               rfcs  = f_one
+               asevb = asevd
+               asenb = asend
+            endif
 
-                  ab1bm = min(0.99, alnsf(i, jj)*rfcs)
-                  ab2bm = min(0.99, alvsf(i, jj)*rfcs)
-                  sfcalb(i,1, jj) = ab1bm   *flnd + asenb*fsea + asnnb*fsno
-                  sfcalb(i,2, jj) = alnwf(i, jj)     *flnd + asend*fsea + asnnd*fsno
-                  sfcalb(i,3, jj) = ab2bm   *flnd + asevb*fsea + asnvb*fsno
-                  sfcalb(i,4, jj) = alvwf(i, jj)     *flnd + asevd*fsea + asnvd*fsno
-               end if
-            enddo    ! end_do_i_loop
+            ab1bm = min(0.99, alnsf(i, jj)*rfcs)
+            ab2bm = min(0.99, alvsf(i, jj)*rfcs)
+            sfcalb(n,1) = ab1bm   *flnd + asenb*fsea + asnnb*fsno
+            sfcalb(n,2) = alnwf(i, jj)     *flnd + asend*fsea + asnnd*fsno
+            sfcalb(n,3) = ab2bm   *flnd + asevb*fsea + asnvb*fsno
+            sfcalb(n,4) = alvwf(i, jj)     *flnd + asevd*fsea + asnvd*fsno
          end do
          
       endif   ! end if_ialbflg
@@ -608,7 +606,7 @@
 
 !  ---  inputs:
      &     ( xlon,xlat,slmsk,snowf,sncovr,zorlf,tsknf,tairf,hprif,       &
-     &       myim, ix, async_id,                                                     &
+     &       myim, ix, map_jj, map_i, nxptot, async_id,                                                     &
 !  ---  outputs:
      &       sfcemis                                                    &
      &     )
@@ -655,16 +653,18 @@
       implicit none
 
 !  ---  inputs
-      integer, intent(in) :: myim(my_max), ix
+      integer, intent(in) :: myim(my_max), ix, nxptot
+      integer, dimension(nxptot) :: map_jj, map_i
 
+      real (kind=kind_phys), dimension(:), intent(in) :: tsknf, tairf
       real (kind=kind_phys), dimension(:,:), intent(in) ::                &
-     &       xlon,xlat, slmsk, snowf, sncovr, zorlf, tsknf, tairf, hprif
+     &       xlon,xlat, slmsk, snowf, sncovr, zorlf, hprif
 
 !  ---  outputs
-      real (kind=kind_phys), dimension(:,:), intent(out) :: sfcemis
+      real (kind=kind_phys), dimension(:), intent(out) :: sfcemis
 
 !  ---  locals:
-      integer :: i, i1, i2, j1, j2, idx, jj
+      integer :: i, i1, i2, j1, j2, idx, jj, n
 
       real (kind=kind_phys) :: dltg, hdlt, tmp1, tmp2,                  &
      &      asnow, argh, hrgh, fsno, fsno0, fsno1
@@ -682,85 +682,83 @@
 !
 
       if ( iemslw == 0 ) then        ! sfc emiss default to 1.0
-         !$acc parallel loop collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               sfcemis(i, jj) = f_one
-            end do
+         !$acc parallel loop private(jj, i) async(async_id)
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            sfcemis(n) = f_one
          end do
          return
 
       else                           ! emiss set by sfc type and condition
 
-            dltg = 360.0 / float(imxems)
-            hdlt = 0.5 * dltg
+         dltg = 360.0 / float(imxems)
+         hdlt = 0.5 * dltg
 
-            !  --- ...  mapping input data onto model grid
-            !           note: this is a simple mapping method, an upgrade is needed if
-            !           the model grid is much corcer than the 1-deg data resolution
-         !$acc parallel loop collapse(2) private(i2, j2, tmp1, tmp2, idx, fsno0, &
-         !$acc&         fsno1, asnow, argh, hrgh) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               if (i .le. myim(jj)) then ! lab_do_imax
-                  if ( nint(slmsk(i, jj)) == 0 ) then          ! sea point
-                     sfcemis(i, jj) = emsref(1)
-                  else if ( nint(slmsk(i, jj)) == 2 ) then     ! sea-ice
-                     sfcemis(i, jj) = emsref(7)
-                  else                                     ! land
+         !  --- ...  mapping input data onto model grid
+         !           note: this is a simple mapping method, an upgrade is needed if
+         !           the model grid is much corcer than the 1-deg data resolution
+         !$acc parallel loop private(i2, j2, tmp1, tmp2, idx, fsno0, &
+         !$acc&         fsno1, asnow, argh, hrgh, jj, i) async(async_id)
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            if ( nint(slmsk(i, jj)) == 0 ) then          ! sea point
+               sfcemis(n) = emsref(1)
+            else if ( nint(slmsk(i, jj)) == 2 ) then     ! sea-ice
+               sfcemis(n) = emsref(7)
+            else                                     ! land
 
-                     !  ---  map grid in longitude direction
-                     i2 = 1
-                     j2 = 1
-                     tmp1 = xlon(i, jj) * rad2dg
-                     if (tmp1 < f_zero) tmp1 = tmp1 + 360.0
+               !  ---  map grid in longitude direction
+               i2 = 1
+               j2 = 1
+               tmp1 = xlon(i, jj) * rad2dg
+               if (tmp1 < f_zero) tmp1 = tmp1 + 360.0
 
-                     do i1 = 1, imxems ! lab_do_imxems
-                        tmp2 = dltg * (i1 - 1) + hdlt
+               do i1 = 1, imxems ! lab_do_imxems
+                  tmp2 = dltg * (i1 - 1) + hdlt
 
-                        if (abs(tmp1-tmp2) <= hdlt) then
-                           i2 = i1
-                           exit ! lab_do_imxems
-                        endif
-                     enddo  ! lab_do_imxems
+                  if (abs(tmp1-tmp2) <= hdlt) then
+                     i2 = i1
+                     exit ! lab_do_imxems
+                  endif
+               enddo  ! lab_do_imxems
 
-                     !  ---  map grid in latitude direction
-                     tmp1 = xlat(i, jj) * rad2dg           ! if xlat in pi/2 -> -pi/2 range
-                     !           tmp1 = 90.0 - xlat(i)*rad2dg      ! if xlat in 0 -> pi range
-                     do j1 = 1, jmxems ! lab_do_jmxems
-                        !cmy          tmp2 = 90.0 - dltg * (j1 - 1)
-                        tmp2 = -90.0 + dltg * (j1 - 1)
-                        if (abs(tmp1-tmp2) <= hdlt) then
-                           j2 = j1
-                           exit ! lab_do_jmxems
-                        endif
-                     enddo  ! lab_do_jmxems
+               !  ---  map grid in latitude direction
+               tmp1 = xlat(i, jj) * rad2dg           ! if xlat in pi/2 -> -pi/2 range
+               !           tmp1 = 90.0 - xlat(i)*rad2dg      ! if xlat in 0 -> pi range
+               do j1 = 1, jmxems ! lab_do_jmxems
+                  !cmy          tmp2 = 90.0 - dltg * (j1 - 1)
+                  tmp2 = -90.0 + dltg * (j1 - 1)
+                  if (abs(tmp1-tmp2) <= hdlt) then
+                     j2 = j1
+                     exit ! lab_do_jmxems
+                  endif
+               enddo  ! lab_do_jmxems
 
-                     idx = max( 2, idxems(i2,j2) )
-                     if ( idx >= 7 ) idx = 2
-                     sfcemis(i, jj) = emsref(idx)
+               idx = max( 2, idxems(i2,j2) )
+               if ( idx >= 7 ) idx = 2
+               sfcemis(n) = emsref(idx)
 
-                  endif   ! end if_slmsk_block
+            endif   ! end if_slmsk_block
 
-                  !  ---  check for snow covered area
-                  if ( ialbflg==1 .and. nint(slmsk(i, jj))==1 ) then ! input land area snow cover
-                     fsno0 = sncovr(i, jj)
-                     fsno1 = f_one - fsno0
-                     sfcemis(i, jj) = sfcemis(i, jj)*fsno1 + emsref(8)*fsno0
-                  else                                           ! compute snow cover from snow depth
-                     if ( snowf(i, jj) > f_zero ) then
-                        asnow = 0.02*snowf(i, jj)
-                        argh  = min(0.50, max(.025, 0.01*zorlf(i, jj)))
-                        hrgh  = min(f_one, max(0.20, 1.0577-1.1538e-3*hprif(i, jj) ) )
-                        fsno0 = asnow / (argh + asnow) * hrgh
-                        if (nint(slmsk(i, jj)) == 0 .and. tsknf(i, jj) > 271.2)           &
-                        &                               fsno0=f_zero
-                        fsno1 = f_one - fsno0
-                        sfcemis(i, jj) = sfcemis(i, jj)*fsno1 + emsref(8)*fsno0
-                     endif
-                  endif                                          ! end if_ialbflg
-               end if
-            enddo  ! lab_do_imax
+            !  ---  check for snow covered area
+            if ( ialbflg==1 .and. nint(slmsk(i, jj))==1 ) then ! input land area snow cover
+               fsno0 = sncovr(i, jj)
+               fsno1 = f_one - fsno0
+               sfcemis(n) = sfcemis(n)*fsno1 + emsref(8)*fsno0
+            else                                           ! compute snow cover from snow depth
+               if ( snowf(i, jj) > f_zero ) then
+                  asnow = 0.02*snowf(i, jj)
+                  argh  = min(0.50, max(.025, 0.01*zorlf(i, jj)))
+                  hrgh  = min(f_one, max(0.20, 1.0577-1.1538e-3*hprif(i, jj) ) )
+                  fsno0 = asnow / (argh + asnow) * hrgh
+                  if (nint(slmsk(i, jj)) == 0 .and. tsknf(n) > 271.2)           &
+                  &                               fsno0=f_zero
+                  fsno1 = f_one - fsno0
+                  sfcemis(n) = sfcemis(n)*fsno1 + emsref(8)*fsno0
+               endif
+            endif                                          ! end if_ialbflg
          end do
       endif   ! end if_iemslw_block
 

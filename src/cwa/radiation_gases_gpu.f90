@@ -909,8 +909,8 @@
         close ( nico2cn )
 
       endif  lab_if_idyr
-      !!$acc update device(co2vmr_sav, co2cyc_sav, gco2cyc) async(async_id)
-      !!$acc wait(async_id)
+      !$acc update device(co2vmr_sav, co2cyc_sav, gco2cyc) async(async_id)
+      !$acc wait(async_id)
 
       return
 !
@@ -925,9 +925,9 @@
 
 !  ---  inputs:
      &     ( plvl, xlon, xlat,                                          &
-     &       myim, lmax, async_id,                                                &
+     &       myim, lmax, map_jj, map_i, nxptot, async_id,                                                &
 !  ---  outputs:
-     &       gasdat                                                     &
+     &       gasdat_co2, gasdat_other                                                     &
      &      )
 
 !  ===================================================================  !
@@ -982,53 +982,57 @@
 !                                                                       !
 !  ===================================================================  !
 !
+! GPU: The GPU version of rrtmg modify the variable gasdat(imax, lmax, nf_vgas, my_max) 
+! GPU: to gasdat_co2(imax, lmax, my_max) and gasdat_other(nf_vgas) for other gases.
+! GPU: Because of the constant fields for gasdat(:, :, 2, :) to gasdat(:, :, 10, :), 
+! GPU: the first, second, and fourth dimension are reduced to gasdat_other(2~10) to
+! GPU: reduce the menory usage.
+! GPU: gasdat_other(1) is remained to align the nf_vgas index with CPU version, but
+! GPU: gasdat_other(1) is set to 0. and not be used in GPU version.
+
+! GPU: variable name changed: CPU - gasdat(:, :, 1), GPU - gasdat_co2
+! GPU: variable name changed: CPU - gasdat(:, :, 2~10), GPU - gasdat_other(2~10)
       implicit none
 
 !  ---  input:
-      integer,  intent(in)  :: lmax, myim(my_max)
-      real (kind=kind_phys), intent(in) :: plvl(:,:,:), xlon(:,:), xlat(:,:)
+      integer,  intent(in)  :: lmax, myim(my_max), nxptot
+      integer, dimension(nxptot) :: map_jj, map_i
+      real (kind=kind_phys), intent(in) :: plvl(:,:), xlon(:,:), xlat(:,:)
 
 !  ---  output:
-      real (kind=kind_phys), intent(out) :: gasdat(:,:,:,:)
+      real (kind=kind_phys), intent(out) :: gasdat_co2(:,:), gasdat_other(:)
 
 !  ---  local:
-      integer :: i, k, ilat, ilon, jj, async_id
+      integer :: i, k, ilat, ilon, jj, async_id, n
 
       real (kind=kind_phys) :: xlon1, xlat1, tmp
 
 !===>  ...  begin here
 
 !  --- ...  assign default values
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, jlistnum
-         do k = 1, lmax
-            !$acc loop vector
-            do i = 1, myim(jj)
-               gasdat(i,k,1, jj) = co2vmr_def
-               gasdat(i,k,2, jj) = n2ovmr_def
-               gasdat(i,k,3, jj) = ch4vmr_def
-               gasdat(i,k,4, jj) = o2vmr_def
-               gasdat(i,k,5, jj) = covmr_def
-               gasdat(i,k,6, jj) = f11vmr_def
-               gasdat(i,k,7, jj) = f12vmr_def
-               gasdat(i,k,8, jj) = f22vmr_def
-               gasdat(i,k,9, jj) = cl4vmr_def
-               gasdat(i,k,10, jj)= f113vmr_def
-            enddo
-         enddo
-      end do
+      !$acc kernels async(async_id)
+      gasdat_other(1) = 0.
+      gasdat_other(2) = n2ovmr_def
+      gasdat_other(3) = ch4vmr_def
+      gasdat_other(4) = o2vmr_def
+      gasdat_other(5) = covmr_def
+      gasdat_other(6) = f11vmr_def
+      gasdat_other(7) = f12vmr_def
+      gasdat_other(8) = f22vmr_def
+      gasdat_other(9) = cl4vmr_def
+      gasdat_other(10)= f113vmr_def
+      !$acc end kernels
 
    !  --- ...  co2 section
 
       if ( ico2flg == 1 ) then
    !  ---  use obs co2 global annual mean value only
-         !$acc parallel loop gang collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, lmax
-              !$acc loop vector
-               do i = 1, myim(jj)
-                  gasdat(i,k,1, jj) = co2_glb + gco2cyc(kmonsav)
-               enddo
+         !$acc parallel loop private(jj, i) async(async_id)
+         do k = 1, lmax
+            do n = 1, nxptot
+               jj = map_jj(n)
+               i = map_i(n)
+               gasdat_co2(n,k) = co2_glb + gco2cyc(kmonsav)
             enddo
          end do
 
@@ -1037,36 +1041,45 @@
    !       otherwise use global mean value
 
          tmp = raddeg / resco2
-         !$acc parallel loop gang collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, lmax
-               !$acc loop vector private(xlon1, xlat1, ilon, ilat)
-               do i = 1, myim(jj)
-                  xlon1 = xlon(i, jj)
-                  if ( xlon1 < 0.0 ) xlon1 = xlon1 + con_pi  ! if xlon in -pi->pi, convert to 0->2pi
-                  !         xlat1 = hfpi - xlat(i)                     ! if xlat in pi/2 -> -pi/2 range
-                  xlat1 = hfpi + xlat(i, jj)                     ! if xlat in -pi/2 -> pi/2 range
-                  !note     xlat1 = xlat(i)                            ! if xlat in 0 -> pi range
+         !$acc parallel loop collapse(2) private(xlon1, xlat1, ilon, ilat, jj, i) &
+         !$acc&         async(async_id)
+         do k = 1, lmax
+            do n = 1, nxptot
+               jj = map_jj(n)
+               i = map_i(n)
+               xlon1 = xlon(i, jj)
+               if ( xlon1 < 0.0 ) xlon1 = xlon1 + con_pi  ! if xlon in -pi->pi, convert to 0->2pi
+               !         xlat1 = hfpi - xlat(i)                     ! if xlat in pi/2 -> -pi/2 range
+               xlat1 = hfpi + xlat(i, jj)                     ! if xlat in -pi/2 -> pi/2 range
+               !note     xlat1 = xlat(i)                            ! if xlat in 0 -> pi range
 
-                  ilon = min( imxco2, int( xlon1*tmp + 1 ))
-                  ilat = min( jmxco2, int( xlat1*tmp + 1 ))
+               ilon = min( imxco2, int( xlon1*tmp + 1 ))
+               ilat = min( jmxco2, int( xlat1*tmp + 1 ))
 
-                  if ( ivflip == 0 ) then         ! index from toa to sfc
-                     if ( plvl(i,k, jj) >= prsco2 ) then
-                        gasdat(i,k,1, jj) = co2vmr_sav(ilon,ilat,kmonsav)
-                     else
-                        gasdat(i,k,1, jj) = co2_glb + gco2cyc(kmonsav)
-                     endif
-                  else                            ! index from sfc to toa
-                     if ( plvl(i,k+1, jj) >= prsco2 ) then
-                        gasdat(i,k,1, jj) = co2vmr_sav(ilon,ilat,kmonsav)
-                     else
-                        gasdat(i,k,1, jj) = co2_glb + gco2cyc(kmonsav)
-                     endif
+               if ( ivflip == 0 ) then         ! index from toa to sfc
+                  if ( plvl(n,k) >= prsco2 ) then
+                     gasdat_co2(n,k) = co2vmr_sav(ilon,ilat,kmonsav)
+                  else
+                     gasdat_co2(n,k) = co2_glb + gco2cyc(kmonsav)
                   endif
-               end do
+               else                            ! index from sfc to toa
+                  if ( plvl(n,k+1) >= prsco2 ) then
+                     gasdat_co2(n,k) = co2vmr_sav(ilon,ilat,kmonsav)
+                  else
+                     gasdat_co2(n,k) = co2_glb + gco2cyc(kmonsav)
+                  endif
+               endif
             enddo
          end do
+      else
+         !$acc parallel loop collapse(2) private(jj, i) async(async_id)
+         do k = 1, lmax
+            do n = 1, nxptot
+               jj = map_jj(n)
+               i = map_i(n)
+               gasdat_co2(n,k) = co2vmr_def
+            enddo
+          end do
       endif
 
 !

@@ -1913,7 +1913,8 @@ endif
 ! set write out restart at the end of integration
             if (mod(float(itau), float(itauezz)) .lt. 0.01) then
                !$acc wait(async_id)
-               
+               !$acc update self(vornow, divnow, temnow, vorold, divold, temold, &
+               !$acc&            trefs, plnow, plold) async(async_id)
                !$acc wait(async_id)
                write (ctau, 800) itau
 800            format(i7.7)
@@ -2151,6 +2152,9 @@ endif
 !         write(35,'(1552f6.2)') (glob(:,j),j=1,my)
 !         close(35)
 !      endif
+         !$acc wait(async_id)
+         !$acc update self(vornow) async(async_id)
+         !$acc wait(async_id)
 
          call transr(jtrun, jtmax, nx, my, my_max, levp, poly, vornow, cc, 1, nsizey)
          call ujoinsr(cc, rvor, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)

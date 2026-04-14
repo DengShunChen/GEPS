@@ -601,8 +601,8 @@
 
       if (me == 0 .and. myrank == 0) print*,'in sol_update completed sr solar'
 !
-      !!$acc update device(smon_sav) async(async_id)
-      !!$acc wait(async_id)
+      !$acc update device(smon_sav) async(async_id)
+      !$acc wait(async_id)
 
       return
 !...................................
@@ -774,7 +774,7 @@
       subroutine coszmn_gpu                                                 &
 !...................................
 !  ---  inputs:
-     &     ( xlon,sinlat,coslat,solhr, myim, me, ix, async_id,                          &
+     &     ( xlon,sinlat,coslat,solhr, myim, me, ix, map_jj, map_i, nxptot, async_id,                          &
 !  ---  outputs:
      &       coszen, coszdg                                             &
      &     )
@@ -812,7 +812,8 @@
       implicit none
 
 !  ---  inputs:
-      integer, intent(in) :: myim(my_max), me, ix
+      integer, intent(in) :: myim(my_max), me, ix, nxptot
+      integer, dimension(nxptot) :: map_jj, map_i
 
       real (kind=kind_phys), intent(in) :: sinlat(:,:), coslat(:,:),        &
      &       xlon(:,:), solhr
@@ -823,36 +824,34 @@
 !  ---  locals:
       real (kind=kind_phys) :: coszn, cns, ss, cc, solang, rstp, coszenr
 
-      integer :: istsun, i, it, j, lat, jj, async_id
+      integer :: istsun, i, it, j, lat, jj, async_id, n
 
 !===>  ...  begin here
 
       solang = pid12 * (solhr - f12)         ! solar angle at present time
       rstp = 1.0 / float(nstp)
 
-      !$acc parallel loop collapse(2) private(ss, cc, cns, coszn, istsun, coszenr) &
+      !$acc parallel loop private(ss, cc, cns, coszn, istsun, coszenr, jj, i) &
       !$acc&         async(async_id)
-      do jj = 1, jlistnum
-         do i = 1, ix
-            if (i .le. myim(jj)) then
-               coszenr = 0.0
-               istsun = 0
-               ss  = sinlat(i, jj) * sindec
-               cc  = coslat(i, jj) * cosdec
-               !$acc loop seq
-               do it = 1, nstp
-                  cns = solang + float(it-1)*anginc + sollag
+      do n = 1, nxptot
+         jj = map_jj(n)
+         i = map_i(n)
+         coszenr = 0.0
+         istsun = 0
+         ss  = sinlat(i, jj) * sindec
+         cc  = coslat(i, jj) * cosdec
+         !$acc loop seq
+         do it = 1, nstp
+            cns = solang + float(it-1)*anginc + sollag
 
-                  coszn = ss + cc * cos(cns + xlon(i, jj))
-                  coszenr = coszenr + max(0.0, coszn)
-                  if (coszn > czlimt) istsun = istsun + 1
-               enddo
-   !  --- ...  compute time averages
-               coszdg(i, jj) = coszenr * rstp
-               if (istsun > 0) coszenr = coszenr / istsun
-               coszen(i, jj) = coszenr
-            end if
+            coszn = ss + cc * cos(cns + xlon(i, jj))
+            coszenr = coszenr + max(0.0, coszn)
+            if (coszn > czlimt) istsun = istsun + 1
          enddo
+!  --- ...  compute time averages
+         coszdg(i, jj) = coszenr * rstp
+         if (istsun > 0) coszenr = coszenr / istsun
+         coszen(i, jj) = coszenr
       end do
 
 !

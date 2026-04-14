@@ -139,7 +139,7 @@
 !........................................!
 !
       use physpara,            only : icldflg, icmphys, iovrsw, iovrlw, &
-     &                                lcrick, lcnorm, lnoprec,          &
+     &                                lcrick, lcnorm, lnoprec, ilwcliq,          &
      &                                ivflip, kind_phys, kind_io4
       use physcons,            only : con_fvirt, con_ttp, con_rocp,     &
      &                                con_t0c, con_pi, con_g, con_rd,   & 
@@ -3167,10 +3167,10 @@
 !  ---  inputs:
      &     ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,clw,                    &
      &       xlat,xlon,slmsk,ntrac,                                     &
-     &       phy_f3d,effr_in,                   &
-     &       myim, IX, NLAY, NLP1, lmfshal, lmfdeep2, async_id,                         &
+     &       phy_f3d, effr_in,                   &
+     &       myim, IX, NLAY, NLP1, lmfshal, lmfdeep2, map_jj, map_i, nxptot, async_id,                         &
 !  ---  outputs:
-     &       clouds,clds,mtop,mbot,cldcov                               &
+     &       cldfrc, cwp, rew, cip, rei, crp, rer, csp, res ,clds,mtop,mbot,cldcov                               &
      &      )
 
 ! =================   subprogram documentation block   ================ !
@@ -3260,160 +3260,168 @@
       implicit none
 
 !  ---  inputs
-      integer,  intent(in) :: IX, NLAY, NLP1, myim(my_max)
+      integer,  intent(in) :: IX, NLAY, NLP1, myim(my_max), nxptot
       integer,  intent(in) :: ntrac
+      integer, dimension(nxptot) :: map_jj, map_i
 
-      real (kind=kind_phys), dimension(:,:,:), intent(in) :: plvl, plyr,  &
+
+      real (kind=kind_phys), dimension(:,:), intent(in) :: plvl, plyr,  &
      &       tlyr, tvly, qlyr, qstl, rhly
 
 
-      real (kind=kind_phys), dimension(:,:,:,:), intent(in) :: clw, phy_f3d
+      real (kind=kind_phys), dimension(:,:,:), intent(in) :: clw
+      real (kind=kind_phys), dimension(:,:,:,:), intent(in) :: phy_f3d
       real (kind=kind_phys), dimension(:,:),   intent(in) :: xlat, xlon,  &
      &       slmsk
 
       logical, intent(in) :: effr_in, lmfshal, lmfdeep2
 
 !  ---  outputs
-      real (kind=kind_phys), dimension(:,:,:,:), intent(out) :: clouds
+      real (kind=kind_phys), dimension(:,:), intent(out) :: cldfrc
+      real (kind=kind_phys), dimension(:,:), intent(out) :: cwp, rew, &
+         cip, rei, crp, rer, csp, res
 
-      real (kind=kind_phys), dimension(:,:,:),   intent(out) :: clds
+      real (kind=kind_phys), dimension(:,:),   intent(out) :: clds
       real (kind=kind_phys), dimension(:,:,:),   intent(out) :: cldcov
 
-      integer,               dimension(:,:,:),   intent(out) :: mtop,mbot
+      integer,               dimension(:,:),   intent(out) :: mtop,mbot
 
 !  ---  local variables:
-      real (kind=kind_phys), dimension(IX,NLAY, my_max) :: cldcnv,              &
-     &       cwp, cip, crp, csp, rew, rei, res, rer, delp, tem2d, clwf
+      real (kind=kind_phys), dimension(nxptot,NLAY) :: cldcnv,              &
+     &   delp, tem2d, clwf
 
-      real (kind=kind_phys) :: ptop1(IX,NK_CLDS+1, my_max)
+      real (kind=kind_phys) :: ptop1(nxptot,NK_CLDS+1)
 
       real (kind=kind_phys) :: clwmin, clwm, clwt, onemrh, value,       &
-     &       tem1, tem2, tem3
+     &       tem1, tem2, tem3, tmp
 
-      integer :: i, k, id, nf, jj, async_id
+      integer :: i, k, id, nf, jj, async_id, k1, n
+      ! GPU: variable name changed: CPU - clouds(:,:,1), GPU - cldfrc
+      ! GPU: variable name changed: CPU - clouds(:,:,2), GPU - cwp
+      ! GPU: variable name changed: CPU - clouds(:,:,3), GPU - rew
+      ! GPU: variable name changed: CPU - clouds(:,:,4), GPU - cip
+      ! GPU: variable name changed: CPU - clouds(:,:,5), GPU - rei
+      ! GPU: variable name changed: CPU - clouds(:,:,6), GPU - crp
+      ! GPU: variable name changed: CPU - clouds(:,:,7), GPU - rer
+      ! GPU: variable name changed: CPU - clouds(:,:,8), GPU - csp
+      ! GPU: variable name changed: CPU - clouds(:,:,9), GPU - res
 
 !
 !===> ... begin here
 !
       !$acc data create(cldcnv, cwp, cip, crp, csp, rew, rei, res, rer, delp, &
       !$acc&     tem2d, clwf, ptop1) async(async_id)
-      !$acc parallel loop gang collapse(3) async(async_id)
-      do jj = 1, jlistnum
-         do nf=1,nf_clds
-            do k=1,nlay
-               !$acc loop vector 
-               do i=1,myim(jj)
-                  clouds(i,k,nf, jj) = 0.0
-               enddo
-            enddo
-         enddo
-      end do
+      !!$acc parallel loop gang collapse(3) async(async_id)
+      !do jj = 1, jlistnum
+      !   do nf=1,nf_clds
+      !      do k=1,nlay
+      !         !$acc loop vector 
+      !         do i=1,myim(jj)
+      !            clouds(i,k,nf, jj) = 0.0
+      !         enddo
+      !      enddo
+      !   enddo
+      !end do
       !     clouds(:,:,:) = 0.0
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, jlistnum
-         do k = 1, NLAY
-            !$acc loop vector 
-            do i = 1, myim(jj)
-            cldcnv(i,k, jj) = 0.0
-            !cwp   (i,k, jj) = 0.0
-            !cip   (i,k, jj) = 0.0
-            !crp   (i,k, jj) = 0.0
-            !csp   (i,k, jj) = 0.0
+      !$acc parallel loop collapse(2) private(jj, i) async(async_id)
+      do k = 1, NLAY
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            cldcnv(n,k) = 0.0
+            !cwp   (n,k) = 0.0
+            !cip   (n,k) = 0.0
+            !crp   (n,k) = 0.0
+            !csp   (n,k) = 0.0
             if ( effr_in ) then
-               rew (i,k, jj) = phy_f3d(i, k, 1, jj)  ! effr_cw (i,k, jj)
-               rei (i,k, jj) = phy_f3d(i, k, 2, jj)  ! effr_iw (i,k, jj)
-               res (i,k, jj) = phy_f3d(i, k, 3, jj)  ! effr_sw (i,k, jj)
-               rer (i,k, jj) = phy_f3d(i, k, 4, jj)  ! effr_rw (i,k, jj)
+               rew (n,k) = phy_f3d(i, k, 1, jj)  ! effr_cw (i,k, jj)
+               rei (n,k) = phy_f3d(i, k, 2, jj)  ! effr_iw (i,k, jj)
+               res (n,k) = phy_f3d(i, k, 3, jj)  ! effr_sw (i,k, jj)
+               rer (n,k) = phy_f3d(i, k, 4, jj)  ! effr_rw (i,k, jj)
             else
-               rew (i,k, jj) = reliq_def            ! default liq radius to 10 micron
-               rei (i,k, jj) = reice_def            ! default ice radius to 50 micron
-               rer (i,k, jj) = rrain_def            ! default rain radius to 1000 micron
-               res (i,k, jj) = rsnow_def            ! default snow radius to 250 micron
+               rew (n,k) = reliq_def            ! default liq radius to 10 micron
+               rei (n,k) = reice_def            ! default ice radius to 50 micron
+               rer (n,k) = rrain_def            ! default rain radius to 1000 micron
+               res (n,k) = rsnow_def            ! default snow radius to 250 micron
             endif
-            tem2d (i,k, jj) = min( 1.0, max( 0.0, (con_ttp-tlyr(i,k, jj))*0.05 ) )
+            tem2d (n,k) = min( 1.0, max( 0.0, (con_ttp-tlyr(n,k))*0.05 ) )
             cldcov(i,k, jj) = 0.0
             !          clwf  (i,k) = clw(i,k,ntcw)+clw(i,k,ntiw)+clw(i,k,ntrw)+      &
             !                        clw(i,k,ntsw)+clw(i,k,ntgl)+clw(i,k,nthl)
             !          clwf  (i,k) = clw(i,k,ntcw)+clw(i,k,ntiw)+clw(i,k,ntsw)
-            clwf  (i,k, jj) = clw(i,k,ntcw, jj)+clw(i,k,ntiw, jj)+clw(i,k,ntrw, jj)+      &
-            clw(i,k,ntsw, jj)+clw(i,k,ntgl, jj)
-            enddo
+            clwf  (n,k) = clw(n,k,ntcw)+clw(n,k,ntiw)+clw(n,k,ntrw)+      &
+            clw(n,k,ntsw)+clw(n,k,ntgl)
          enddo
       end do
 
          !  ---  find top pressure for each cloud domain for given latitude
          !       ptopc(k,i): top presure of each cld domain (k=1-4 are sfc,L,m,h;
          !  ---  i=1,2 are low-lat (<45 degree) and pole regions)
-      !$acc parallel loop collapse(3) async(async_id) private(tem1, tem2)
-      do jj = 1, jlistnum
-         do id = 1, 4
-            do i = 1, ix
-               if (i .le. myim(jj)) then
-                  tem1 = ptopc(id,2) - ptopc(id,1)
-                  tem2 = xlat(i, jj) / con_pi        ! if xlat in pi/2 -> -pi/2 range
-                  !         tem2 = 0.5 - xlat(i)/con_pi    ! if xlat in 0 -> pi range
+      !$acc parallel loop collapse(2) async(async_id) private(tem1, tem2, jj, i)
+      do id = 1, 4
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            tem1 = ptopc(id,2) - ptopc(id,1)
+            tem2 = xlat(i, jj) / con_pi        ! if xlat in pi/2 -> -pi/2 range
+            !         tem2 = 0.5 - xlat(i)/con_pi    ! if xlat in 0 -> pi range
 
-                  ptop1(i,id, jj) = ptopc(id,1) + tem1*max( 0.0, 4.0*abs(tem2)-1.0 )
-               end if
-            enddo
+            ptop1(n,id) = ptopc(id,1) + tem1*max( 0.0, 4.0*abs(tem2)-1.0 )
          enddo
       end do
 
          !  ---  compute liquid/ice condensate path in g/m**2
 
       if ( ivflip == 0 ) then          ! input data from toa to sfc
-         !$acc parallel loop gang collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, NLAY
-               !$acc loop vector
-               do i = 1, myim(jj)
-                  delp(i,k, jj) = plvl(i,k+1, jj) - plvl(i,k, jj)
-                  cwp(i,k, jj) = max(0.0, clw(i,k,ntcw, jj) * gfac * delp(i,k, jj))
-                  cip(i,k, jj) = max(0.0, clw(i,k,ntiw, jj) * gfac * delp(i,k, jj))
-                  crp(i,k, jj) = max(0.0, clw(i,k,ntrw, jj) * gfac * delp(i,k, jj))
-                  !            csp(i,k) = max(0.0, ( clw(i,k,ntsw)+clw(i,k,ntgl)+          &
-                  !     &                 clw(i,k,nthl) ) * gfac * delp(i,k))
-                  csp(i,k, jj) = max(0.0, ( clw(i,k,ntsw, jj)+clw(i,k,ntgl, jj) )         &
-                  &                  * gfac * delp(i,k, jj))
-               enddo
+         !$acc parallel loop collapse(2) private(jj, i) async(async_id)
+         do k = 1, NLAY
+            do n = 1, nxptot
+               jj = map_jj(n)
+               i = map_i(n)
+               delp(n,k) = plvl(n,k+1) - plvl(n,k)
+               cwp(n,k) = max(0.0, clw(n,k,ntcw) * gfac * delp(n,k))
+               cip(n,k) = max(0.0, clw(n,k,ntiw) * gfac * delp(n,k))
+               crp(n,k) = max(0.0, clw(n,k,ntrw) * gfac * delp(n,k))
+               !            csp(i,k) = max(0.0, ( clw(i,k,ntsw)+clw(i,k,ntgl)+          &
+               !     &                 clw(i,k,nthl) ) * gfac * delp(i,k))
+               csp(n,k) = max(0.0, ( clw(n,k,ntsw)+clw(n,k,ntgl) )         &
+               &                  * gfac * delp(n,k))
             enddo
          end do
       else                             ! input data from sfc to toa
-         !$acc parallel loop gang collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, NLAY
-               !$acc loop vector
-               do i = 1, myim(jj)
-                  delp(i,k, jj) = plvl(i,k, jj) - plvl(i,k+1, jj)
-                  cwp(i,k, jj) = max(0.0, clw(i,k,ntcw, jj) * gfac * delp(i,k, jj))
-                  cip(i,k, jj) = max(0.0, clw(i,k,ntiw, jj) * gfac * delp(i,k, jj))
-                  crp(i,k, jj) = max(0.0, clw(i,k,ntrw, jj) * gfac * delp(i,k, jj))
-                  csp(i,k, jj) = max(0.0, ( clw(i,k,ntsw, jj)+clw(i,k,ntgl, jj) )         &
-                  &                  * gfac * delp(i,k, jj))
-               enddo
+         !$acc parallel loop collapse(2) private(jj, i) async(async_id)
+         do k = 1, NLAY
+            do n = 1, nxptot
+               jj = map_jj(n)
+               i = map_i(n)
+               delp(n,k) = plvl(n,k) - plvl(n,k+1)
+               cwp(n,k) = max(0.0, clw(n,k,ntcw) * gfac * delp(n,k))
+               cip(n,k) = max(0.0, clw(n,k,ntiw) * gfac * delp(n,k))
+               crp(n,k) = max(0.0, clw(n,k,ntrw) * gfac * delp(n,k))
+               csp(n,k) = max(0.0, ( clw(n,k,ntsw)+clw(n,k,ntgl) )         &
+               &                  * gfac * delp(n,k))
             enddo
          end do
       endif                            ! end_if_ivflip
          !  --- calculate cloud fraction :
       call cloud_fraction_XuRandall_gpu                                     &
          ( myim, ix, NLAY, plyr, clwf, rhly, qstl,                       &
-         lmfshal, lmfdeep2, async_id, cldcov)
+         lmfshal, lmfdeep2, map_jj, map_i, nxptot, async_id, cldcov)
 
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, jlistnum
-         do k = 1, NLAY
-            !$acc loop vector private(tem1)
-            do i = 1, myim(jj)
-               ! impose minimum cloudiness if substantial liquid exists
-               tem1 = clw(i,k,ntcw, jj) + clw(i,k,ntrw, jj)
-               if ( tem1 .ge. 1.e-8 ) then
-                  cldcov(i,k, jj) = max(0.05,cldcov(i,k, jj))
-               endif
-               ! saturation cloudiness
-               if ( rhly(i,k, jj).gt.0.99 .and. tlyr(i,k, jj).gt.288.16 ) then
-                  cldcov(i,k, jj) = 1.0
-               endif
-            enddo
+      !$acc parallel loop collapse(2) private(tem1, jj, i) async(async_id)
+      do k = 1, NLAY
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            ! impose minimum cloudiness if substantial liquid exists
+            tem1 = clw(n,k,ntcw) + clw(n,k,ntrw)
+            if ( tem1 .ge. 1.e-8 ) then
+               cldcov(i,k, jj) = max(0.05,cldcov(i,k, jj))
+            endif
+            ! saturation cloudiness
+            if ( rhly(n,k).gt.0.99 .and. tlyr(n,k).gt.288.16 ) then
+               cldcov(i,k, jj) = 1.0
+            endif
          enddo
       end do
 
@@ -3421,68 +3429,63 @@
          !       ptopc(k,i): top presure of each cld domain (k=1-4 are sfc,L,m,h;
          !  ---  i=1,2 are low-lat (<45 degree) and pole regions)
       
-      !$acc parallel loop collapse(3) private(tem1, tem2) async(async_id)
-      do jj = 1, jlistnum
-         do id = 1, 4
-            do i =1, ix
-               if (i .le. myim(jj)) then
-                  tem1 = ptopc(id,2) - ptopc(id,1)
-                  tem2 = xlat(i, jj) / con_pi        ! if xlat in pi/2 -> -pi/2 range
-                  !         tem2 = 0.5 - xlat(i)/con_pi    ! if xlat in 0 -> pi range
+      !$acc parallel loop collapse(2) private(tem1, tem2, jj, i) async(async_id)
+      do id = 1, 4
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            tem1 = ptopc(id,2) - ptopc(id,1)
+            tem2 = xlat(i, jj) / con_pi        ! if xlat in pi/2 -> -pi/2 range
+            !         tem2 = 0.5 - xlat(i)/con_pi    ! if xlat in 0 -> pi range
 
-                  ptop1(i,id, jj) = ptopc(id,1) + tem1*max( 0.0, 4.0*abs(tem2)-1.0 )
-               end if
-            enddo
+            ptop1(n,id) = ptopc(id,1) + tem1*max( 0.0, 4.0*abs(tem2)-1.0 )
          enddo
       end do
 
          !  ---  effective liquid cloud droplet radius over land
 
       if ( .not. effr_in ) then
-         !$acc parallel loop gang collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, NLAY
-               !$acc loop vector
-               do i = 1, myim(jj)
-                  if (nint(slmsk(i, jj)) == 1) then
-                     rew(i,k, jj) = 5.0 + 5.0 * tem2d(i,k, jj)
-                  endif
-               enddo
+         !$acc parallel loop collapse(2) private(jj, i) async(async_id)
+         do k = 1, NLAY
+            do n = 1, nxptot
+               jj = map_jj(n)
+               i = map_i(n)
+               if (nint(slmsk(i, jj)) == 1) then
+                  rew(n,k) = 5.0 + 5.0 * tem2d(n,k)
+               endif
             enddo
          end do
       endif
 
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, jlistnum
-         do k = 1, NLAY
-            !$acc loop vector
-            do i = 1, myim(jj)
-               if (cldcov(i,k, jj) < climit) then
-                  cldcov(i,k, jj) = 0.0 
-                  cwp(i,k, jj)    = 0.0
-                  cip(i,k, jj)    = 0.0
-                  crp(i,k, jj)    = 0.0
-                  csp(i,k, jj)    = 0.0
-               endif
-            enddo
+      !$acc parallel loop collapse(2) private(jj, i) async(async_id)
+      do k = 1, NLAY
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            if (cldcov(i,k, jj) < climit) then
+               cldcov(i,k, jj) = 0.0 
+               cwp(n,k)    = 0.0
+               cip(n,k)    = 0.0
+               crp(n,k)    = 0.0
+               csp(n,k)    = 0.0
+            endif
          enddo
       end do
       
       
       if ( lcnorm ) then
-         !$acc parallel loop gang collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, NLAY
-               !$acc loop vector private(tem1)
-               do i = 1, myim(jj)
-                  if (cldcov(i,k, jj) >= climit) then
-                     tem1 = 1.0 / max(climit2, cldcov(i,k, jj))
-                     cwp(i,k, jj) = cwp(i,k, jj) * tem1
-                     cip(i,k, jj) = cip(i,k, jj) * tem1
-                     crp(i,k, jj) = crp(i,k, jj) * tem1
-                     csp(i,k, jj) = csp(i,k, jj) * tem1
-                  endif
-               enddo
+         !$acc parallel loop collapse(2) private(tem1, jj, i) async(async_id)
+         do k = 1, NLAY
+            do n = 1, nxptot
+               jj = map_jj(n)
+               i = map_i(n)
+               if (cldcov(i,k, jj) >= climit) then
+                  tem1 = 1.0 / max(climit2, cldcov(i,k, jj))
+                  cwp(n,k) = cwp(n,k) * tem1
+                  cip(n,k) = cip(n,k) * tem1
+                  crp(n,k) = crp(n,k) * tem1
+                  csp(n,k) = csp(n,k) * tem1
+               endif
             enddo
          end do
       endif
@@ -3490,53 +3493,79 @@
          !  ---  effective ice cloud droplet radius
 
       if ( .not. effr_in ) then
-         !$acc parallel loop gang collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, NLAY
-               !$acc loop vector private(tem2, tem3)
-               do i = 1, myim(jj)
-                  tem2 = tlyr(i,k, jj) - con_ttp
+         !$acc parallel loop collapse(2) private(tem2, tem3, jj, i) async(async_id)
+         do k = 1, NLAY
+            do n = 1, nxptot
+               jj = map_jj(n)
+               i = map_i(n)
+               tem2 = tlyr(n,k) - con_ttp
 
-                  if (cip(i,k, jj) > 0.0) then
-                     tem3 = gord * cip(i,k, jj) * plyr(i,k, jj) / (delp(i,k, jj)*tvly(i,k, jj))
+               if (cip(n,k) > 0.0) then
+                  tem3 = gord * cip(n,k) * plyr(n,k) / (delp(n,k)*tvly(n,k))
 
-                     if (tem2 < -50.0) then
-                        rei(i,k, jj) = (1250.0/9.917) * tem3 ** 0.109
-                     elseif (tem2 < -40.0) then
-                        rei(i,k, jj) = (1250.0/9.337) * tem3 ** 0.08
-                     elseif (tem2 < -30.0) then
-                        rei(i,k, jj) = (1250.0/9.208) * tem3 ** 0.055
-                     else
-                        rei(i,k, jj) = (1250.0/9.387) * tem3 ** 0.031
-                     endif
-                     !           rei(i,k)   = max(20.0, min(rei(i,k), 300.0))
-                     !           rei(i,k)   = max(10.0, min(rei(i,k), 100.0))
-                     rei(i,k, jj)   = max(10.0, min(rei(i,k, jj), 150.0))
-                     !           rei(i,k)   = max(5.0,  min(rei(i,k), 130.0))
+                  if (tem2 < -50.0) then
+                     rei(n,k) = (1250.0/9.917) * tem3 ** 0.109
+                  elseif (tem2 < -40.0) then
+                     rei(n,k) = (1250.0/9.337) * tem3 ** 0.08
+                  elseif (tem2 < -30.0) then
+                     rei(n,k) = (1250.0/9.208) * tem3 ** 0.055
+                  else
+                     rei(n,k) = (1250.0/9.387) * tem3 ** 0.031
                   endif
-               enddo
+                  !           rei(i,k)   = max(20.0, min(rei(i,k), 300.0))
+                  !           rei(i,k)   = max(10.0, min(rei(i,k), 100.0))
+                  rei(n,k)   = max(10.0, min(rei(n,k), 150.0))
+                  !           rei(i,k)   = max(5.0,  min(rei(i,k), 130.0))
+               endif
             enddo
          end do
       endif
-
-         !
-      !$acc parallel loop gang collapse(2) async(async_id)
-      do jj = 1, jlistnum
-         do k = 1, NLAY
-            !$acc loop vector
-            do i = 1, myim(jj)
-               clouds(i,k,1, jj) = cldcov(i,k, jj)
-               clouds(i,k,2, jj) = cwp(i,k, jj)
-               clouds(i,k,3, jj) = rew(i,k, jj)
-               clouds(i,k,4, jj) = cip(i,k, jj)
-               clouds(i,k,5, jj) = rei(i,k, jj)
-               clouds(i,k,6, jj) = crp(i,k, jj) 
-               clouds(i,k,7, jj) = rer(i,k, jj)
-               clouds(i,k,8, jj) = csp(i,k, jj)
-               clouds(i,k,9, jj) = res(i,k, jj)
-            enddo
-         enddo
+      !$acc parallel loop gang collapse(2) private(tem2, tem3, jj, i) async(async_id)
+      do k = 1, NLAY
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            cldfrc(n, k) = cldcov(i, k, jj)
+         end do
       end do
+
+      if (ivflip == 0) then
+         !$acc parallel loop collapse(2) private(k1, tmp, jj, i) async(async_id)
+         do k = 1, NLAY / 2
+            do n = 1, nxptot
+               jj = map_jj(n)
+               i = map_i(n)
+               k1 = nlay + 1 - k
+               tmp = cldfrc(n,k)
+               cldfrc(n,k) = cldfrc(n,k1)
+               cldfrc(n,k1) = tmp
+               tmp = cwp(n,k)
+               cwp(n,k) = cwp(n,k1)
+               cwp(n,k1) = tmp
+               tmp = rew(n,k)
+               rew(n,k) = rew(n,k1)
+               rew(n,k1) = tmp
+               tmp = cip(n,k)
+               cip(n,k) = cip(n,k1)
+               cip(n,k1) = tmp
+               tmp = rei(n,k)
+               rei(n,k) = rei(n,k1)
+               rei(n,k1) = tmp
+               tmp = crp(n,k)
+               crp(n,k) = crp(n,k1)
+               crp(n,k1) = tmp
+               tmp = rer(n,k)
+               rer(n,k) = rer(n,k1)
+               rer(n,k1) = tmp
+               tmp = csp(n,k)
+               csp(n,k) = csp(n,k1)
+               csp(n,k1) = tmp
+               tmp = res(n,k)
+               res(n,k) = res(n,k1)
+               res(n,k1) = tmp
+            enddo
+         end do
+      end if
 
 
          !  ---  compute low, mid, high, total, and boundary layer cloud fractions
@@ -3547,7 +3576,7 @@
       call gethml_gpu                                                       &
       !  ---  inputs:
       &     ( plyr, ptop1, cldcov, cldcnv,                               &
-      &       myim, ix, NLAY, async_id,                                                   &
+      &       myim, ix, NLAY, map_jj, map_i, nxptot, async_id,                                                   &
       !  ---  outputs:
       &       clds, mtop, mbot                                           &
       &     )
@@ -4840,7 +4869,7 @@
 
 !  ---  inputs:
      &     ( plyr, ptop1, cldtot, cldcnv,                               &
-     &       myim, ix, nlay, async_id,                                                  &
+     &       myim, ix, nlay, map_jj, map_i, nxptot, async_id,                                                  &
 !  ---  outputs:
      &       clds, mtop, mbot                                           &
      &     )
@@ -4894,46 +4923,45 @@
       implicit none!
 
 !  ---  inputs:
-      integer, intent(in) :: ix, nlay, myim(my_max)
+      integer, intent(in) :: ix, nlay, myim(my_max), nxptot
+      integer, dimension(nxptot) :: map_jj, map_i
 
-      real (kind=kind_phys), dimension(:,:,:), intent(in) :: plyr, ptop1, &
-     &       cldtot, cldcnv
+
+      real (kind=kind_phys), dimension(:,:), intent(in) :: cldcnv, ptop1
+      real (kind=kind_phys), dimension(:,:,:), intent(in) :: cldtot
+     real (kind=kind_phys), dimension(:,:), intent(in) :: plyr
 
 !  ---  outputs
-      real (kind=kind_phys), dimension(:,:,:), intent(out) :: clds
+      real (kind=kind_phys), dimension(:,:), intent(out) :: clds
 
-      integer,               dimension(:,:,:), intent(out) :: mtop, mbot
+      integer,               dimension(:,:), intent(out) :: mtop, mbot
 
 !  ---  local variables:
-      real (kind=kind_phys) :: cl1(ix, my_max), cl2(ix, my_max)
+      real (kind=kind_phys) :: cl1(nxptot), cl2(nxptot)
       real (kind=kind_phys) :: pcur, pnxt, ccur, cnxt
 
-      integer, dimension(ix, my_max):: idom, kbt1, kth1, kbt2, kth2
-      integer :: i, k, id, id1, kstr, kend, kinc, jj, async_id
+      integer, dimension(nxptot):: idom, kbt1, kth1, kbt2, kth2
+      integer :: i, k, id, id1, kstr, kend, kinc, jj, async_id, n
 
 !
 !===> ... begin here
 !
       !$acc data create(idom, kbt1, kth1, kbt2, kth2, cl1, cl2) async(async_id)
-      !$acc parallel loop collapse(3) async(async_id)
-      do jj = 1, jlistnum
-         do k = 1, 5
-            do i = 1, ix
-               if (i .le. myim(jj)) then
-                  clds(i,k, jj) = 0.0
-               end if
-            end do
+      !$acc parallel loop collapse(2) private(jj, i) async(async_id)
+      do k = 1, 5
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            clds(n,k) = 0.0
          end do
       end do
       
-      !$acc parallel loop collapse(2) async(async_id)
-      do jj = 1, jlistnum
-         do i = 1, ix
-            if (i .le. myim(jj)) then
-               cl1(i, jj) = 1.0
-               cl2(i, jj) = 1.0
-            end if
-         enddo
+      !$acc parallel loop private(jj, i) async(async_id)
+      do n = 1, nxptot
+         jj = map_jj(n)
+         i = map_i(n)
+         cl1(n) = 1.0
+         cl2(n) = 1.0
       end do
 
          !  ---  total and bl clouds, where cl1, cl2 are fractions of clear-sky view
@@ -4950,47 +4978,43 @@
       endif                                     ! end_if_ivflip
       
       if ( iovr == 0 ) then                     ! random overlap
-         !$acc parallel loop collapse(2) private(ccur) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               if (i .le. myim(jj)) then
-                  !$acc loop seq
-                  do k = kstr, kend, kinc
-                     ccur = min( ovcst, max( cldtot(i,k, jj), cldcnv(i,k, jj) ))
-                     if (ccur >= climit) cl1(i, jj) = cl1(i, jj) * (1.0 - ccur)
+         !$acc parallel loop private(ccur, jj, i) async(async_id)
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            !$acc loop seq
+            do k = kstr, kend, kinc
+               ccur = min( ovcst, max( cldtot(i,k, jj), cldcnv(n,k) ))
+               if (ccur >= climit) cl1(n) = cl1(n) * (1.0 - ccur)
 
-                     if (k == llyr) then
-                        clds(i,5, jj) = 1.0 - cl1(i, jj)          ! save bl cloud
-                     endif
-                  enddo
-                  clds(i,4, jj) = 1.0 - cl1(i, jj)              ! save total cloud
-               end if
+               if (k == llyr) then
+                  clds(n,5) = 1.0 - cl1(n)          ! save bl cloud
+               endif
             enddo
+            clds(n,4) = 1.0 - cl1(n)              ! save total cloud
          end do
 
       else                                      ! max/ran overlap
-         !$acc parallel loop collapse(2) private(ccur) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               if (i .le. myim(jj)) then
-                  !$acc loop seq
-                  do k = kstr, kend, kinc
-                     ccur = min( ovcst, max( cldtot(i,k, jj), cldcnv(i,k, jj) ))
-                     if (ccur >= climit) then             ! cloudy layer
-                        cl2(i, jj) = min( cl2(i, jj), (1.0 - ccur) )
-                     else                                ! clear layer
-                        cl1(i, jj) = cl1(i, jj) * cl2(i, jj)
-                        cl2(i, jj) = 1.0
-                     endif
+         !$acc parallel loop private(ccur, jj, i) async(async_id)
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            !$acc loop seq
+            do k = kstr, kend, kinc
+               ccur = min( ovcst, max( cldtot(i,k, jj), cldcnv(n,k) ))
+               if (ccur >= climit) then             ! cloudy layer
+                  cl2(n) = min( cl2(n), (1.0 - ccur) )
+               else                                ! clear layer
+                  cl1(n) = cl1(n) * cl2(n)
+                  cl2(n) = 1.0
+               endif
 
-                     if (k == llyr) then
-                        clds(i,5, jj) = 1.0 - cl1(i, jj) * cl2(i, jj) ! save bl cloud
-                     endif
-                  enddo
-
-                  clds(i,4, jj) = 1.0 - cl1(i, jj) * cl2(i, jj)     ! save total cloud
-               end if
+               if (k == llyr) then
+                  clds(n,5) = 1.0 - cl1(n) * cl2(n) ! save bl cloud
+               endif
             enddo
+
+            clds(n,4) = 1.0 - cl1(n) * cl2(n)     ! save total cloud
          end do
 
       endif                                     ! end_if_iovr
@@ -5000,188 +5024,180 @@
          !  ---  change! layer processed from surface to top, so low clouds will
          !       contains both bl and low clouds.
       if ( ivflip == 0 ) then                   ! input data from toa to sfc
-         !$acc parallel loop collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               if (i .le. myim(jj)) then
-               cl1 (i, jj) = 0.0
-               cl2 (i, jj) = 0.0
-               kbt1(i, jj) = nlay
-               kbt2(i, jj) = nlay
-               kth1(i, jj) = 0
-               kth2(i, jj) = 0
-               idom(i, jj) = 1
-               mbot(i,1, jj) = nlay
-               mtop(i,1, jj) = nlay
-               mbot(i,2, jj) = nlay - 1
-               mtop(i,2, jj) = nlay - 1
-               mbot(i,3, jj) = nlay - 1
-               mtop(i,3, jj) = nlay - 1
-               end if
-            enddo
+         !$acc parallel loop private(jj, i) async(async_id)
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            cl1 (n) = 0.0
+            cl2 (n) = 0.0
+            kbt1(n) = nlay
+            kbt2(n) = nlay
+            kth1(n) = 0
+            kth2(n) = 0
+            idom(n) = 1
+            mbot(n,1) = nlay
+            mtop(n,1) = nlay
+            mbot(n,2) = nlay - 1
+            mtop(n,2) = nlay - 1
+            mbot(n,3) = nlay - 1
+            mtop(n,3) = nlay - 1
          end do
 
          !org    do k = llyr-1, 1, -1
-         !$acc parallel loop collapse(2) private(id, id1, pcur, ccur, pnxt, &
-         !$acc&      cnxt) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               if (i .le. myim(jj)) then
-                  !$acc loop seq
-                  do k = nlay, 1, -1
-                     id = idom(i, jj)
-                     id1= id + 1
+         !$acc parallel loop private(id, id1, pcur, ccur, pnxt, &
+         !$acc&      cnxt, jj, i) async(async_id)
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            !$acc loop seq
+            do k = nlay, 1, -1
+               id = idom(n)
+               id1= id + 1
 
-                     pcur = plyr(i,k, jj)
-                     ccur = min( ovcst, max( cldtot(i,k, jj), cldcnv(i,k, jj) ))
+               pcur = plyr(n,k)
+               ccur = min( ovcst, max( cldtot(i,k, jj), cldcnv(n,k) ))
 
-                     if (k > 1) then
-                        pnxt = plyr(i,k-1, jj)
-                        cnxt = min( ovcst, max( cldtot(i,k-1, jj), cldcnv(i,k-1, jj) ))
-                     else
-                        pnxt = -1.0
-                        cnxt = 0.0
-                     endif
+               if (k > 1) then
+                  pnxt = plyr(n,k-1)
+                  cnxt = min( ovcst, max( cldtot(i,k-1, jj), cldcnv(n,k-1) ))
+               else
+                  pnxt = -1.0
+                  cnxt = 0.0
+               endif
 
-                     if (pcur < ptop1(i,id1, jj)) then
-                        id = id + 1
-                        id1= id1 + 1
-                        idom(i, jj) = id
-                     endif
+               if (pcur < ptop1(n,id1)) then
+                  id = id + 1
+                  id1= id1 + 1
+                  idom(n) = id
+               endif
 
-                     if (ccur >= climit) then
-                        if (kth2(i, jj) == 0) kbt2(i, jj) = k
-                        kth2(i, jj) = kth2(i, jj) + 1
+               if (ccur >= climit) then
+                  if (kth2(n) == 0) kbt2(n) = k
+                  kth2(n) = kth2(n) + 1
 
-                        if ( iovr == 0 ) then
-                           cl2(i, jj) = cl2(i, jj) + ccur - cl2(i, jj)*ccur
-                        else
-                           cl2(i, jj) = max( cl2(i, jj), ccur )
-                        endif
+                  if ( iovr == 0 ) then
+                     cl2(n) = cl2(n) + ccur - cl2(n)*ccur
+                  else
+                     cl2(n) = max( cl2(n), ccur )
+                  endif
 
-                        if (cnxt < climit .or. pnxt < ptop1(i,id1, jj)) then
-                           kbt1(i, jj) = nint( (cl1(i, jj)*kbt1(i, jj) + cl2(i, jj)*kbt2(i, jj) )      &
-                           &                  / (cl1(i, jj) + cl2(i, jj)) )
-                           kth1(i, jj) = nint( (cl1(i, jj)*kth1(i, jj) + cl2(i, jj)*kth2(i, jj) )      &
-                           &                  / (cl1(i, jj) + cl2(i, jj)) )
-                           cl1 (i, jj) = cl1(i, jj) + cl2(i, jj) - cl1(i, jj)*cl2(i, jj)
+                  if (cnxt < climit .or. pnxt < ptop1(n,id1)) then
+                     kbt1(n) = nint( (cl1(n)*kbt1(n) + cl2(n)*kbt2(n) )      &
+                     &                  / (cl1(n) + cl2(n)) )
+                     kth1(n) = nint( (cl1(n)*kth1(n) + cl2(n)*kth2(n) )      &
+                     &                  / (cl1(n) + cl2(n)) )
+                     cl1 (n) = cl1(n) + cl2(n) - cl1(n)*cl2(n)
 
-                           kbt2(i, jj) = k - 1
-                           kth2(i, jj) = 0
-                           cl2 (i, jj) = 0.0
-                        endif   ! end_if_cnxt_or_pnxt
-                     endif     ! end_if_ccur
+                     kbt2(n) = k - 1
+                     kth2(n) = 0
+                     cl2 (n) = 0.0
+                  endif   ! end_if_cnxt_or_pnxt
+               endif     ! end_if_ccur
 
-                     if (pnxt < ptop1(i,id1, jj)) then
-                        clds(i,id, jj) = cl1(i, jj)
-                        mtop(i,id, jj) = min( kbt1(i, jj), kbt1(i, jj)-kth1(i, jj)+1 )
-                        mbot(i,id, jj) = kbt1(i, jj)
+               if (pnxt < ptop1(n,id1)) then
+                  clds(n,id) = cl1(n)
+                  mtop(n,id) = min( kbt1(n), kbt1(n)-kth1(n)+1 )
+                  mbot(n,id) = kbt1(n)
 
-                        cl1 (i, jj) = 0.0
-                        kbt1(i, jj) = k - 1
-                        kth1(i, jj) = 0
+                  cl1 (n) = 0.0
+                  kbt1(n) = k - 1
+                  kth1(n) = 0
 
-                        if (id1 <= nk_clds) then
-                           mbot(i,id1, jj) = kbt1(i, jj)
-                           mtop(i,id1, jj) = kbt1(i, jj)
-                        endif
-                     endif     ! end_if_pnxt
+                  if (id1 <= nk_clds) then
+                     mbot(n,id1) = kbt1(n)
+                     mtop(n,id1) = kbt1(n)
+                  endif
+               endif     ! end_if_pnxt
 
-                  enddo       ! end_do_i_loop
-               end if
-            enddo         ! end_do_k_loop
+            enddo       ! end_do_i_loop
          end do
 
       else                                      ! input data from sfc to toa
-         !$acc parallel loop collapse(2) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               if (i .le. myim(jj)) then
-                  cl1 (i, jj) = 0.0
-                  cl2 (i, jj) = 0.0
-                  kbt1(i, jj) = 1
-                  kbt2(i, jj) = 1
-                  kth1(i, jj) = 0
-                  kth2(i, jj) = 0
-                  idom(i, jj) = 1
-                  mbot(i,1, jj) = 1
-                  mtop(i,1, jj) = 1
-                  mbot(i,2, jj) = 2
-                  mtop(i,2, jj) = 2
-                  mbot(i,3, jj) = 2
-                  mtop(i,3, jj) = 2
-               end if
-            enddo
+         !$acc parallel loop private(jj, i) async(async_id)
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            cl1 (n) = 0.0
+            cl2 (n) = 0.0
+            kbt1(n) = 1
+            kbt2(n) = 1
+            kth1(n) = 0
+            kth2(n) = 0
+            idom(n) = 1
+            mbot(n,1) = 1
+            mtop(n,1) = 1
+            mbot(n,2) = 2
+            mtop(n,2) = 2
+            mbot(n,3) = 2
+            mtop(n,3) = 2
          end do
 
             !org    do k = llyr+1, nlay
-         !$acc parallel loop collapse(2) private(id, id1, pcur, ccur, pnxt, &
-         !$acc&      cnxt) async(async_id)
-         do jj = 1, jlistnum
-            do i = 1, ix
-               if (i .le. myim(jj)) then
-                  do k = 1, nlay
-                     id = idom(i, jj)
-                     id1= id + 1
+         !$acc parallel loop private(id, id1, pcur, ccur, pnxt, &
+         !$acc&      cnxt, jj, i) async(async_id)
+         do n = 1, nxptot
+            jj = map_jj(n)
+            i = map_i(n)
+            do k = 1, nlay
+               id = idom(n)
+               id1= id + 1
 
-                     pcur = plyr(i,k, jj)
-                     ccur = min( ovcst, max( cldtot(i,k, jj), cldcnv(i,k, jj) ))
+               pcur = plyr(n,k)
+               ccur = min( ovcst, max( cldtot(i,k, jj), cldcnv(n,k) ))
 
-                     if (k < nlay) then
-                        pnxt = plyr(i,k+1, jj)
-                        cnxt = min( ovcst, max( cldtot(i,k+1, jj), cldcnv(i,k+1, jj) ))
-                     else
-                        pnxt = -1.0
-                        cnxt = 0.0
-                     endif
+               if (k < nlay) then
+                  pnxt = plyr(n,k+1)
+                  cnxt = min( ovcst, max( cldtot(i,k+1, jj), cldcnv(n,k+1) ))
+               else
+                  pnxt = -1.0
+                  cnxt = 0.0
+               endif
 
-                     if (pcur < ptop1(i,id1, jj)) then
-                        id = id + 1
-                        id1= id1 + 1
-                        idom(i, jj) = id
-                     endif
+               if (pcur < ptop1(n,id1)) then
+                  id = id + 1
+                  id1= id1 + 1
+                  idom(n) = id
+               endif
 
-                     if (ccur >= climit) then
-                        if (kth2(i, jj) == 0) kbt2(i, jj) = k
-                        kth2(i, jj) = kth2(i, jj) + 1
+               if (ccur >= climit) then
+                  if (kth2(n) == 0) kbt2(n) = k
+                  kth2(n) = kth2(n) + 1
 
-                        if ( iovr == 0 ) then
-                           cl2(i, jj) = cl2(i, jj) + ccur - cl2(i, jj)*ccur
-                        else
-                           cl2(i, jj) = max( cl2(i, jj), ccur )
-                        endif
+                  if ( iovr == 0 ) then
+                     cl2(n) = cl2(n) + ccur - cl2(n)*ccur
+                  else
+                     cl2(n) = max( cl2(n), ccur )
+                  endif
 
-                        if (cnxt < climit .or. pnxt < ptop1(i,id1, jj)) then
-                           kbt1(i, jj) = nint( (cl1(i, jj)*kbt1(i, jj) + cl2(i, jj)*kbt2(i, jj))       &
-                           &                  / (cl1(i, jj) + cl2(i, jj)) )
-                           kth1(i, jj) = nint( (cl1(i, jj)*kth1(i, jj) + cl2(i, jj)*kth2(i, jj))       &
-                           &                  / (cl1(i, jj) + cl2(i, jj)) )
-                           cl1 (i, jj) = cl1(i, jj) + cl2(i, jj) - cl1(i, jj)*cl2(i, jj)
+                  if (cnxt < climit .or. pnxt < ptop1(n,id1)) then
+                     kbt1(n) = nint( (cl1(n)*kbt1(n) + cl2(n)*kbt2(n))       &
+                     &                  / (cl1(n) + cl2(n)) )
+                     kth1(n) = nint( (cl1(n)*kth1(n) + cl2(n)*kth2(n))       &
+                     &                  / (cl1(n) + cl2(n)) )
+                     cl1 (n) = cl1(n) + cl2(n) - cl1(n)*cl2(n)
 
-                           kbt2(i, jj) = k + 1
-                           kth2(i, jj) = 0
-                           cl2 (i, jj) = 0.0
-                        endif     ! end_if_cnxt_or_pnxt
-                     endif       ! end_if_ccur
+                     kbt2(n) = k + 1
+                     kth2(n) = 0
+                     cl2 (n) = 0.0
+                  endif     ! end_if_cnxt_or_pnxt
+               endif       ! end_if_ccur
 
-                     if (pnxt < ptop1(i,id1, jj)) then
-                        clds(i,id, jj) = cl1(i, jj)
-                        mtop(i,id, jj) = max( kbt1(i, jj), kbt1(i, jj)+kth1(i, jj)-1 )
-                        mbot(i,id, jj) = kbt1(i, jj)
+               if (pnxt < ptop1(n,id1)) then
+                  clds(n,id) = cl1(n)
+                  mtop(n,id) = max( kbt1(n), kbt1(n)+kth1(n)-1 )
+                  mbot(n,id) = kbt1(n)
 
-                        cl1 (i, jj) = 0.0
-                        kbt1(i, jj) = k + 1
-                        kth1(i, jj) = 0
+                  cl1 (n) = 0.0
+                  kbt1(n) = k + 1
+                  kth1(n) = 0
 
-                        if (id1 <= nk_clds) then
-                           mbot(i,id1, jj) = kbt1(i, jj)
-                           mtop(i,id1, jj) = kbt1(i, jj)
-                        endif
-                     endif     ! end_if_pnxt
+                  if (id1 <= nk_clds) then
+                     mbot(n,id1) = kbt1(n)
+                     mtop(n,id1) = kbt1(n)
+                  endif
+               endif     ! end_if_pnxt
 
-                  enddo       ! end_do_i_loop
-               end if
-            enddo         ! end_do_k_loop
+            enddo       ! end_do_i_loop
          end do
       endif                                     ! end_if_ivflip
       !$acc end data
@@ -5760,17 +5776,21 @@
       endif
 
       end subroutine cloud_fraction_XuRandall
+
+
 !> This subroutine computes the Xu-Randall cloud fraction scheme.
       subroutine cloud_fraction_XuRandall_gpu                               &
 !  ---  inputs:
-     &     ( myim, IX, NLAY, plyr, clwf, rhly, qstl, lmfshal, lmfdeep2, async_id,       &
+     &     ( myim, IX, NLAY, plyr, clwf, rhly, qstl, lmfshal, lmfdeep2, map_jj, map_i, nxptot, async_id,       &
 !  ---  outputs:
      &       cldtot) 
 
 !  ---  inputs:
-      integer, intent(in) :: IX, NLAY, myim(my_max)
-      real (kind=kind_phys), dimension(:,:,:), intent(in) :: plyr, clwf,  &
-     &                                                     rhly, qstl
+      integer, intent(in) :: IX, NLAY, myim(my_max), nxptot
+      integer, dimension(nxptot) :: map_jj, map_i
+
+      real (kind=kind_phys), dimension(:,:), intent(in) :: plyr, rhly, qstl
+      real (kind=kind_phys), dimension(:,:), intent(in) :: clwf
       logical, intent(in) :: lmfshal, lmfdeep2
 
 !  ---  outputs
@@ -5781,7 +5801,7 @@
        real (kind=kind_phys) :: clwmin, clwm, clwt, onemrh, value,      &
      &       tem1, tem2
        real (kind=kind_phys), parameter :: xrc3 = 100.
-       integer :: i, k, jj, async_id
+       integer :: i, k, jj, async_id, n
 
 !> - Compute layer cloud fraction.
 
@@ -5789,53 +5809,53 @@
 
          clwmin = 0.0
          if (.not. lmfshal) then
-            !$acc parallel loop gang collapse(2) async(async_id)
-            do jj = 1, jlistnum
-               do k = NLAY, 1, -1
-                  !$acc loop vector private(clwt, onemrh, clwm, tem1, value, tem2)
-                  do i = 1, myim(jj)
-                     clwt = 1.0e-6 * (plyr(i,k, jj)*0.001)
+            !$acc parallel loop collapse(2) private(clwt, onemrh, clwm, tem1, &
+            !$acc&         value, tem2, jj, i) async(async_id)
+            do k = NLAY, 1, -1
+               do n = 1, nxptot
+                  jj = map_jj(n)
+                  i = map_i(n)
+                  clwt = 1.0e-6 * (plyr(n,k)*0.001)
 
-                     if (clwf(i,k, jj) > clwt) then
+                  if (clwf(n,k) > clwt) then
 
-                        onemrh= max( 1.e-10, 1.0-rhly(i,k, jj) )
-                        clwm  = clwmin / max( 0.01, plyr(i,k, jj)*0.001 )
+                     onemrh= max( 1.e-10, 1.0-rhly(n,k) )
+                     clwm  = clwmin / max( 0.01, plyr(n,k)*0.001 )
 
-                        tem1  = min(max(sqrt(sqrt(onemrh*qstl(i,k, jj))),0.0001),1.0)
-                        tem1  = 2000.0 / tem1
+                     tem1  = min(max(sqrt(sqrt(onemrh*qstl(n,k))),0.0001),1.0)
+                     tem1  = 2000.0 / tem1
 
-                        value = max( min( tem1*(clwf(i,k, jj)-clwm), 50.0 ), 0.0 )
-                        tem2  = sqrt( sqrt(rhly(i,k, jj)) )
+                     value = max( min( tem1*(clwf(n,k)-clwm), 50.0 ), 0.0 )
+                     tem2  = sqrt( sqrt(rhly(n,k)) )
 
-                        cldtot(i,k, jj) = max( tem2*(1.0-exp(-value)), 0.0 )
-                     endif
-                  enddo
+                     cldtot(i,k, jj) = max( tem2*(1.0-exp(-value)), 0.0 )
+                  endif
                enddo
             end do
          else
-            !$acc parallel loop gang collapse(2) async(async_id)
-            do jj = 1, jlistnum
-               do k = NLAY, 1, -1
-                  !$acc loop vector private(clwt, onemrh, clwm, tem1, value, tem2)
-                  do i = 1, myim(jj)
-                     clwt = 1.0e-6 * (plyr(i,k, jj)*0.001)
+            !$acc parallel loop collapse(2) private(clwt, onemrh, clwm, tem1, &
+            !$acc&         value, tem2, jj, i) async(async_id)
+            do k = NLAY, 1, -1
+               do n = 1, nxptot
+                  jj = map_jj(n)
+                  i = map_i(n)
+                  clwt = 1.0e-6 * (plyr(n,k)*0.001)
 
-                     if (clwf(i,k, jj) > clwt) then
-                        onemrh= max( 1.e-10, 1.0-rhly(i,k, jj) )
-                        clwm  = clwmin / max( 0.01, plyr(i,k, jj)*0.001 )
+                  if (clwf(n,k) > clwt) then
+                     onemrh= max( 1.e-10, 1.0-rhly(n,k) )
+                     clwm  = clwmin / max( 0.01, plyr(n,k)*0.001 )
 
-                        tem1  = min(max((onemrh*qstl(i,k, jj))**0.49,0.0001),1.0)  !jhan
-                        if (lmfdeep2) then
-                           tem1  = xrc3 / tem1
-                        else
-                           tem1  = 100.0 / tem1
-                        endif
-
-                        value = max( min( tem1*(clwf(i,k, jj)-clwm), 50.0 ), 0.0 )
-                        tem2  = sqrt( sqrt(rhly(i,k, jj)) )
-                        cldtot(i,k, jj) = max( tem2*(1.0-exp(-value)), 0.0 )
+                     tem1  = min(max((onemrh*qstl(n,k))**0.49,0.0001),1.0)  !jhan
+                     if (lmfdeep2) then
+                        tem1  = xrc3 / tem1
+                     else
+                        tem1  = 100.0 / tem1
                      endif
-                  enddo
+
+                     value = max( min( tem1*(clwf(n,k)-clwm), 50.0 ), 0.0 )
+                     tem2  = sqrt( sqrt(rhly(n,k)) )
+                     cldtot(i,k, jj) = max( tem2*(1.0-exp(-value)), 0.0 )
+                  endif
                enddo
             end do
          endif
@@ -5844,54 +5864,54 @@
 
          clwmin = 0.0
          if (.not. lmfshal) then
-            !$acc parallel loop gang collapse(2) async(async_id)
-            do jj = 1, jlistnum
-               do k = 1, NLAY
-                  !$acc loop vector private(clwt, onemrh, clwm, tem1, value, tem2)
-                  do i = 1, myim(jj)
-                     clwt = 1.0e-6 * (plyr(i,k, jj)*0.001)
+            !$acc parallel loop collapse(2) private(clwt, onemrh, clwm, tem1, &
+            !$acc&         value, tem2, jj, i) async(async_id)
+            do k = 1, NLAY
+               do n = 1, nxptot
+                  jj = map_jj(n)
+                  i = map_i(n)
+                  clwt = 1.0e-6 * (plyr(n,k)*0.001)
 
-                     if (clwf(i,k, jj) > clwt) then
+                  if (clwf(n,k) > clwt) then
 
-                        onemrh= max( 1.e-10, 1.0-rhly(i,k, jj) )
-                        clwm  = clwmin / max( 0.01, plyr(i,k, jj)*0.001 )
+                     onemrh= max( 1.e-10, 1.0-rhly(n,k) )
+                     clwm  = clwmin / max( 0.01, plyr(n,k)*0.001 )
 
-                        tem1  = min(max(sqrt(sqrt(onemrh*qstl(i,k, jj))),0.0001),1.0)
-                        tem1  = 2000.0 / tem1
+                     tem1  = min(max(sqrt(sqrt(onemrh*qstl(n,k))),0.0001),1.0)
+                     tem1  = 2000.0 / tem1
 
-                        value = max( min( tem1*(clwf(i,k, jj)-clwm), 50.0 ), 0.0 )
-                        tem2  = sqrt( sqrt(rhly(i,k, jj)) )
+                     value = max( min( tem1*(clwf(n,k)-clwm), 50.0 ), 0.0 )
+                     tem2  = sqrt( sqrt(rhly(n,k)) )
 
-                        cldtot(i,k, jj) = max( tem2*(1.0-exp(-value)), 0.0 )
-                     endif
-                  enddo
+                     cldtot(i,k, jj) = max( tem2*(1.0-exp(-value)), 0.0 )
+                  endif
                enddo
             end do
          else
-            !$acc parallel loop gang collapse(2) async(async_id)
-            do jj = 1, jlistnum
-               do k = 1, NLAY
-                  !$acc loop vector private(clwt, onemrh, clwm, tem1, value, tem2)
-                  do i = 1, myim(jj)
-                     clwt = 1.0e-6 * (plyr(i,k, jj)*0.001)
+            !$acc parallel loop collapse(2) private(clwt, onemrh, clwm, tem1, &
+            !$acc&         value, tem2, jj, i) async(async_id)
+            do k = 1, NLAY
+               do n = 1, nxptot
+                  jj = map_jj(n)
+                  i = map_i(n)
+                  clwt = 1.0e-6 * (plyr(n,k)*0.001)
 
-                     if (clwf(i,k, jj) > clwt) then
-                        onemrh= max( 1.e-10, 1.0-rhly(i,k, jj) )
-                        clwm  = clwmin / max( 0.01, plyr(i,k, jj)*0.001 )
-                        !
-                        tem1  = min(max((onemrh*qstl(i,k, jj))**0.49,0.0001),1.0)  !jhan
-                        if (lmfdeep2) then
-                           tem1  = xrc3 / tem1
-                        else
-                           tem1  = 100.0 / tem1
-                        endif
-
-                        value = max( min( tem1*(clwf(i,k, jj)-clwm), 50.0 ), 0.0 )
-                        tem2  = sqrt( sqrt(rhly(i,k, jj)) )
-
-                        cldtot(i,k, jj) = max( tem2*(1.0-exp(-value)), 0.0 )
+                  if (clwf(n,k) > clwt) then
+                     onemrh= max( 1.e-10, 1.0-rhly(n,k) )
+                     clwm  = clwmin / max( 0.01, plyr(n,k)*0.001 )
+                     !
+                     tem1  = min(max((onemrh*qstl(n,k))**0.49,0.0001),1.0)  !jhan
+                     if (lmfdeep2) then
+                        tem1  = xrc3 / tem1
+                     else
+                        tem1  = 100.0 / tem1
                      endif
-                  enddo
+
+                     value = max( min( tem1*(clwf(n,k)-clwm), 50.0 ), 0.0 )
+                     tem2  = sqrt( sqrt(rhly(n,k)) )
+
+                     cldtot(i,k, jj) = max( tem2*(1.0-exp(-value)), 0.0 )
+                  endif
                enddo
             end do
          endif
