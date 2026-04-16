@@ -135,7 +135,7 @@
 !
 ! --- 2d
 !
-         real fluxr(nx, nfxr, my_max)
+         real fluxr(nx, my_max, nfxr)
          character(len=4) :: myrank_str
          integer :: async_id = 1
 !
@@ -584,26 +584,26 @@
                   !
                   ! total sky
                   !
-                  ss(i, jj) = fluxr(i, 4, jj) - fluxr(i, 5, jj)
-                  rs(i, jj) = fluxr(i, 7, jj) - fluxr(i, 6, jj)
-                  asol(i, jj) = fluxr(i, 1, jj) - fluxr(i, 2, jj)
-                  olr(i, jj) = fluxr(i, 3, jj)
-                  sld(i, jj) = fluxr(i, 4, jj)
-                  rld(i, jj) = fluxr(i, 6, jj)
+                  ss(i, jj) = fluxr(i, jj, 4) - fluxr(i, jj, 5)
+                  rs(i, jj) = fluxr(i, jj, 7) - fluxr(i, jj, 6)
+                  asol(i, jj) = fluxr(i, jj, 1) - fluxr(i, jj, 2)
+                  olr(i, jj) = fluxr(i, jj, 3)
+                  sld(i, jj) = fluxr(i, jj, 4)
+                  rld(i, jj) = fluxr(i, jj, 6)
                   ! clear sky
-                  ss_clr(i, jj) = fluxr(i, 24, jj) - fluxr(i, 25, jj)
-                  rs_clr(i, jj) = fluxr(i, 27, jj) - fluxr(i, 26, jj)
-                  asol_clr(i, jj) = fluxr(i, 1, jj) - fluxr(i, 22, jj)
-                  olr_clr(i, jj) = fluxr(i, 23, jj)
-                  sld_clr(i, jj) = fluxr(i, 24, jj)
-                  rld_clr(i, jj) = fluxr(i, 26, jj)
+                  ss_clr(i, jj) = fluxr(i, jj, 24) - fluxr(i, jj, 25)
+                  rs_clr(i, jj) = fluxr(i, jj, 27) - fluxr(i, jj, 26)
+                  asol_clr(i, jj) = fluxr(i, jj, 1) - fluxr(i, jj, 22)
+                  olr_clr(i, jj) = fluxr(i, jj, 23)
+                  sld_clr(i, jj) = fluxr(i, jj, 24)
+                  rld_clr(i, jj) = fluxr(i, jj, 26)
                   !
                   ! cloud fraction
                   !
-                  chig(i, jj) = fluxr(i, 8, jj)   ! high cloud fraction
-                  cmid(i, jj) = fluxr(i, 9, jj)   ! middle cloud fraction
-                  clow(i, jj) = fluxr(i, 10, jj)  ! low cloud fraction
-                  ctot(i, jj) = fluxr(i, 20, jj)  ! total cloud fraction
+                  chig(i, jj) = fluxr(i, jj, 8)   ! high cloud fraction
+                  cmid(i, jj) = fluxr(i, jj, 9)   ! middle cloud fraction
+                  clow(i, jj) = fluxr(i, jj, 10)  ! low cloud fraction
+                  ctot(i, jj) = fluxr(i, jj, 20)  ! total cloud fraction
                   !
                   sfalb_g(i, jj) = sfalb(i, jj)
                   semis_g(i, jj) = semis(i, jj)  ! surface emissivity

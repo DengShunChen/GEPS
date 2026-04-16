@@ -28,6 +28,7 @@ contains
       call copyin_radsw_kgb27(async_id)
       call copyin_radsw_kgb28(async_id)
       call copyin_radsw_kgb29(async_id)
+      !$acc wait(async_id)
 
       end subroutine
 
