@@ -103,7 +103,7 @@ subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
       end if
       kfac = kfac*(1.+vd*dec)
       facd = max(1., kfac)*amp
-      facv = 0.25*max(1., kfac)*amp
+      facv = max(1., kfac)*amp
 !      fact = max(1., kfac)*amp
       !$acc loop worker
       do m = 1, mlistnum
@@ -247,8 +247,8 @@ subroutine whdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
       end if
       kfac = kfac*(1.+vd*dec)
       facd = max(1., kfac)*amp
-      facv = 0.25*max(1., kfac)*amp
-!      fact = max(1., kfac)*amp
+      facv = max(1., kfac)*amp
+      fact = 0.8*max(1., kfac)*amp
       !$acc loop worker private(mf, c1, c2, c3)
       do m = 1, mlistnum
          mf = mlist(m)
@@ -257,13 +257,13 @@ subroutine whdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
             if (n .ge. mf) then
                c1 = 1.+dta*facv*hfilt*eps4(n, m)**powd
                c2 = 1.+dta*facd*hfilt*eps4(n, m)**powd
-!               c3 = 1.+dta*fact*hfilt*eps4(n, m)**powd
+               c3 = 1.+dta*fact*hfilt*eps4(n, m)**powd
                vornow(k, 1, n, m) = vornow(k, 1, n, m)/c1
                vornow(k, 2, n, m) = vornow(k, 2, n, m)/c1
                divnow(k, 1, n, m) = divnow(k, 1, n, m)/c2
                divnow(k, 2, n, m) = divnow(k, 2, n, m)/c2
-!               temnow(k, 1, n, m) = (temnow(k, 1, n, m) + (c3 - 1.)*trefs(k, 1, n, m))/c3
-!               temnow(k, 2, n, m) = (temnow(k, 2, n, m) + (c3 - 1.)*trefs(k, 2, n, m))/c3
+               temnow(k, 1, n, m) = (temnow(k, 1, n, m) + (c3 - 1.)*trefs(k, 1, n, m))/c3
+               temnow(k, 2, n, m) = (temnow(k, 2, n, m) + (c3 - 1.)*trefs(k, 2, n, m))/c3
             end if
          end do
       end do

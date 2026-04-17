@@ -844,7 +844,7 @@
                       end do
                    end do
                 end do
-                hfiltm = mwhd*hfiltx
+                hfiltm = hfiltx
                 call whdiffu(dtahi, my, my_max, nx, jtrun, jtmax, lev, ncld &
                              , hfiltm, rad, cosl, um, vm, vormid, divmid, temmid &
                              , eps4, trefs)
