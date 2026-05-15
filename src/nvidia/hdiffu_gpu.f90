@@ -35,7 +35,7 @@ subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
 
    integer jj, j, nxj, k, i, m, n, mf, nc, kk, KL
    real xx, facd, facv, fact, amp, ddiffu, vdiffu, tdiffu
-   real hfilt, nf, dec, coefu, powd, kfac, dect
+   real hfilt, nf, dec, coefu, powd, kfac, dect, hfilt2, hfiltd, powdd
    real c1, c2, c3
    logical windchk
    real wt
@@ -83,11 +83,14 @@ subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
 
    powd = float(hord)/2.
    hfilt = (radsq/(nf*(nf + 1)))**powd
+   hfilt2= radsq/(nf*(nf+1))
    coefu = factop/float(hdk2(1) - hdk1)
    if (octahedral) then
       hfilt = hfilt/(6.*dta)
+      hfilt2= hfilt2/(6.*dta)
    else
       hfilt = hfilt/dta
+      hfilt2= hfilt2/dta
    end if
 
    !$acc parallel loop gang private(KL, kfac, dect, dec, facd, facv, fact) async(async_id)
@@ -105,13 +108,23 @@ subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
       facd = max(1., kfac)*amp
       facv = max(1., kfac)*amp
 !      fact = max(1., kfac)*amp
+
+      if ( KL .lt. hdk1 ) then
+        hfiltd = hfilt2
+        powdd  = 1.
+      else
+        hfiltd = hfilt
+        powdd  = powd
+      endif
+
       !$acc loop worker
       do m = 1, mlistnum
          mf = mlist(m)
          !$acc loop vector
          do n = mf, jtrun
             c1 = 1.+dta*facv*hfilt*eps4(n, m)**powd
-            c2 = 1.+dta*facd*hfilt*eps4(n, m)**powd
+!            c2 = 1.+dta*facd*hfilt*eps4(n, m)**powd
+            c2 = 1.+dta*facd*hfiltd*eps4(n, m)**powdd
 !            c3 = 1.+dta*fact*hfilt*eps4(n, m)**powd
             vordiss(k, 1, n, m) = (1.-1./c1)*vornow(k, 1, n, m)
             vordiss(k, 2, n, m) = (1.-1./c1)*vornow(k, 2, n, m)

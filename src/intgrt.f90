@@ -1191,7 +1191,7 @@
 !
 ! add reynolds stress
 !
-             call rayleifr(nx, my, my_max, lev, rad, cosl, dt, ut, vt)
+!             call rayleifr(nx, my, my_max, lev, rad, cosl, dt, ut, vt)
 
              if (two_loop) then
                 if (mass_dp) then
