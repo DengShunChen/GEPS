@@ -25,7 +25,9 @@
         t=x
         tbpvs(jx)=fpvsx(t)
       enddo
+
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      !$acc enter data copyin(tbpvs)
       end subroutine
 
       function fpvsx(t)

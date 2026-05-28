@@ -210,7 +210,7 @@ subroutine sfc_ocean_unit
    !write(*,*) 12345
 
    if (.true.) then
-      !$acc enter data copyin(tbpvs) async(async_id)
+      !$acc update device(tbpvs) async(async_id)
       !$acc enter data copyin(psi, ut, vt, tt, qt, tg, cd, cdq, prsl1, prslki, &
       !$acc&      islmsk, ddvel, flag_iter, myim) async(async_id)
       !$acc enter data copyin(qsurf_gpu, gfx_gpu, qflux_gpu, &

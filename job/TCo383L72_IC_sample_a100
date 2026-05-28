@@ -2,12 +2,15 @@
 #PJM -L vnode=1
 #PJM -L vnode-core=32
 #PJM -L rscunit=rscunit_pg01
-#PJM -L rscgrp=gpu-rd-small
+###PJM -L rscgrp=gpu-rd-small
+###PJM -L gpu-share=8
+#PJM -L rscgrp=gpu-rd-large
+#PJM -L gpu=8
 #PJM -L elapse=02:30:00
 #PJM -L node-mem=unlimited
-#PJM -L gpu-share=8
 #PJM --no-stging
 #PJM --mpi "proc=8"
+#PJM -g sum
 #PJM -j
 #PJM -S
 #PJM -N "JTCo383L72"
@@ -27,12 +30,16 @@ OMP=1
 export OMP_NUM_THREADS=$OMP
 
 if [ $JCAP = 639 ] ; then
-  NPEX=8
-  NPEY=320
+  NPEX=1
+  NPEY=8
 elif [ $JCAP = 383 ] ; then
   NPEX=1
   NPEY=8
+elif [ $JCAP = 199 ] ; then
+  NPEX=1
+  NPEY=8
 fi
+# MPI=${NPEY}
 
 . /usr/share/Modules/init/bash
 

@@ -23,7 +23,8 @@
             clow       ,  hpbl       ,   cosz       , & 
          rainlp6       ,raincu6      ,tg_diff       , &
          rainlp3       ,raincu3      ,tg_ocn        , &
-         rainlp1       ,raincu1      ,tsflw
+         rainlp1       ,raincu1      ,tsflw         , &
+            sstc
 
       logical, allocatable,save :: land(:,:),ice(:,:),ocean(:,:)
 
@@ -64,6 +65,7 @@
       contains 
 
          subroutine allocate_phygrid_array
+           integer,parameter :: async_id = 1
 
            integer  ierr
 
@@ -107,6 +109,7 @@
          rainlp6(nxp,my_max),raincu6(nxp,my_max),tg_diff(nxp,my_max), &
          rainlp3(nxp,my_max),raincu3(nxp,my_max),tg_ocn(nxp,my_max), &
          rainlp1(nxp,my_max),raincu1(nxp,my_max), tsflw(nxp,my_max), &
+            sstc(nxp,my_max),                    &
                                           stat=ierr)
 
            if (ierr/= 0) then
@@ -134,7 +137,8 @@
          rainlp6=0.;    raincu6=0.
          rainlp3=0.;    raincu3=0.
          rainlp1=0.;    raincu1=0.
-
+            sstc=0.
+!$acc enter data create(chig,cmid,clow,ctot,hpbl,sstc)  async(async_id)
            allocate (land(nxp,my_max),ice(nxp,my_max), &
                      ocean(nxp,my_max), stat=ierr)
            if (ierr/= 0) then
@@ -240,6 +244,7 @@
          end subroutine
 
          subroutine deallocate_phygrid_array
+           integer,parameter :: async_id = 1
 
            deallocate (e,eps,o3l,dtrad,asl,atl,ftp,fqp,ftp1,fqp1)
            deallocate (deltaq,cnvwr,cnvcr)
@@ -248,7 +253,6 @@
              ustar,tstar,qstar,hflux,qflux,raintot,raincu,rainlp, &
              totalp,curate,plcl,cumtop,tgclim,gwet,z0,alb,        &
              gwclim,acld,ctot,chig,cmid,clow,hpbl,cosz)
-
            deallocate (land,ice,ocean)
            deallocate (il,ib)
            deallocate (cof,xlon,xlat)

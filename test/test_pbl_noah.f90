@@ -331,20 +331,25 @@ subroutine pbl_noah_unit
       end do
       call cpu_time(time2)
       if (ii .ne. 1) call nvtxEndRange
-      if (ii .ne. 1) ct = ct + time2 - time1
+      !if (ii .ne. 1) ct = ct + time2 - time1
+      ct = ct + time2 - time1
 
 
       if (.true.) then
+         !$acc update device(snoalb,shdmax,shdmin,sigmaf) async(async_id)
+         !$acc update device(slopetyp,istyp,ivegtyp) async(async_id)
+         !$acc update device(sfalb,sfemis) async(async_id)
+         !$acc update device(tbpvs) async(async_id)
+         !$acc update device(sgeo, ut, vt, tt, phi, pk, pk2) async(async_id) 
          !$acc enter data copyin(slope_data, bb, drysmc, f11, maxsmc, refsmc, &
          !$acc&      satpsi, satdk, satdw, wltsmc, qtz, rsmtbl, rgltbl, hstbl, &
          !$acc&      snupx, lai_data, nroot_data) async(async_id)
          !$acc enter data copyin(jlist1, nxjp, nxjp_acc) async(async_id)
-         !$acc enter data copyin(tbpvs) async(async_id)
-         !$acc enter data copyin(land, sgeo, phi, phii, pst, upp, vpp, ttpp, &
-         !$acc&      qp, ut, vt, tt, pk, pk2, e, eps, hflux, qflux, gwclim, tgclim, &
-         !$acc&      ocean, ice, totalp, ss_adj, rs, sfalb, ipblmx, xkmx, ijdg, &
-         !$acc&      xkmd, rld_adj, sigmaf, istyp, ivegtyp, dsigma, slopetyp, &
-         !$acc&      shdmax, shdmin, snoalb, sld_adj, asl, atl, xmu, sfemis) &
+         !$acc enter data copyin(land, phii, pst, upp, vpp, ttpp, &
+         !$acc&      qp, e, eps, hflux, qflux, gwclim, tgclim, &
+         !$acc&      ocean, ice, totalp, ss_adj, rs, ipblmx, xkmx, ijdg, &
+         !$acc&      xkmd, rld_adj, dsigma,  &
+         !$acc&      sld_adj, asl, atl, xmu ) &
          !$acc&      async(async_id)
          !$acc enter data copyin(tg_gpu, z0_gpu, qt_gpu, ustar_gpu, snr_gpu, &
          !$acc&      smc_gpu, stc_gpu, canopy_gpu, runoff_gpu, slc_gpu, &
@@ -383,15 +388,16 @@ subroutine pbl_noah_unit
          !$acc wait(async_id)
          if (ii .ne. 1) call nvtxEndRange
          call cpu_time(time2)
+
          !$acc exit data delete(slope_data, bb, drysmc, f11, maxsmc, refsmc, &
          !$acc&     satpsi, satdk, satdw, wltsmc, qtz, rsmtbl, rgltbl, hstbl, &
          !$acc&     snupx, lai_data, nroot_data) async(async_id)
          !$acc exit data delete(jlist1, nxjp, nxjp_acc) async(async_id)
-         !$acc exit data delete(tbpvs) async(async_id)
+         !!$acc exit data delete(tbpvs) async(async_id)
          !$acc exit data delete(pk, pk2, e, eps, hflux, qflux, gwclim, tgclim, &
-         !$acc&     ocean, ice, totalp, ss_adj, rs, sfalb, ipblmx, xkmx, ijdg, &
-         !$acc&     xkmd, rld_adj, sigmaf, istyp, ivegtyp, dsigma, slopetyp, &
-         !$acc&     shdmax, shdmin, snoalb, sld_adj, asl, atl, xmu, sfemis) &
+         !$acc&     ocean, ice, totalp, ss_adj, rs,  ipblmx, xkmx, ijdg, &
+         !$acc&     xkmd, rld_adj, dsigma, &
+         !$acc&     sld_adj, asl, atl, xmu ) &
          !$acc&     async(async_id)
          !$acc exit data copyout(tg_gpu, z0_gpu, qt_gpu, ustar_gpu, snr_gpu, &
          !$acc&     smc_gpu, stc_gpu, canopy_gpu, runoff_gpu, slc_gpu, &
@@ -402,7 +408,8 @@ subroutine pbl_noah_unit
          !$acc&     albedo2_gpu, hpbl_gpu, gfx_gpu, kpbl_gpu, dudtc_gpu, &
          !$acc&     dvdtc_gpu, dtdtc_gpu, dqdtc_gpu) async(async_id)
          !$acc wait(async_id)
-         if (ii .ne. 1) gt = gt + time2 - time1
+         !if (ii .ne. 1) gt = gt + time2 - time1
+         gt = gt + time2 - time1
       end if
 
       call assert_real(ustar_gpu, size(ustar_gpu), ustar, size(ustar), &

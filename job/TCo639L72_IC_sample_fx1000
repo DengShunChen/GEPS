@@ -1,4 +1,5 @@
 #!/bin/ksh
+#PJM -N "JTCo639L72"
 #PJM -L "node=54"
 #PJM -L rscgrp=large
 #PJM -x PJM_CACHE_MODE=4
@@ -6,9 +7,9 @@
 #PJM -L node-mem=unlimited
 #PJM --no-stging
 #PJM --mpi "proc=2560"
+#PJM -g sum
 #PJM -j
 #PJM -S
-#PJM -N "JTCo639L72"
 
 set -x
 
@@ -20,12 +21,12 @@ machine=fx1000
 TERR=GMTED30
 JCAP=639
 
-MPI=1536
+MPI=2560
 OMP=1
 
 if [ $JCAP = 639 ] ; then
   NPEX=4
-  NPEY=384
+  NPEY=640
 elif [ $JCAP = 383 ] ; then
   NPEX=8
   NPEY=192
@@ -36,4 +37,3 @@ source /users/xa09/sample/setup_mpi+omp.${machine} $OMP
 #==============================================================================================================#
 
 . ${MDIR}/job/regression.ksh
-#. ${MDIR}/job/regression_stochy_physics.ksh

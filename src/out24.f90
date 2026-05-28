@@ -28,6 +28,7 @@
       character*4  ggdef
 
       integer   imax,jmax,lenc,j,nxj,i,istat,jj
+
 !
       imax=nx
       jmax=my

@@ -156,7 +156,8 @@ subroutine ozphys_2015_unit(itimestep, benchmark, ct, gt)
 
    if (.false.) then
          !$acc wait(async_id)
-         !$acc enter data copyin(jlist1, nxdef_2d, nxjp, xlat, tt, plt, dsigma, pst) &
+         !$acc update device(tt) async(async_id)
+         !$acc enter data copyin(jlist1, nxdef_2d, nxjp, xlat, plt, dsigma, pst) &
          !$acc&      async(async_id)
          !$acc enter data copyin(o3l_gpu) async(async_id)
          !$acc enter data copyin(ozplin, pl_lat, pl_pres) async(async_id)
@@ -170,7 +171,7 @@ subroutine ozphys_2015_unit(itimestep, benchmark, ct, gt)
          call cpu_time(time2)
          if (benchmark .eq. .true.) gt = gt + time2 - time1
          !$acc wait(async_id)
-         !$acc exit data delete(jlist1, nxdef_2d, nxjp, xlat, tt, plt, dsigma, pst) &
+         !$acc exit data delete(jlist1, nxdef_2d, nxjp, xlat, plt, dsigma, pst) &
          !$acc&      async(async_id)
          !$acc exit data copyout(o3l_gpu) async(async_id)
          !$acc exit data delete(ozplin, pl_lat, pl_pres) async(async_id)

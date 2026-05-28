@@ -76,6 +76,10 @@ module unuse ${MDIR}/modulefiles
   echo ${LNCP} ${source}/*${fgdtg}* ${target}/${idmshead}${idmsbody}${idmstail}
        ${LNCP} ${source}/*${fgdtg}* ${target}/${idmshead}${idmsbody}${idmstail}
 
+  if [[ ! -d ${target}/${odmshead}${odmsbody}${odmstail} ]];then
+    ${DMSPATH}/rdmscrt ${odmsfile} 
+  fi
+
  export source="/data/common/gfs/dms_data/bckdms.ufs"
  export target="${dmsdb_home}/bckdms.ufs"
 
