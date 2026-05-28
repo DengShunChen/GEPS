@@ -66,7 +66,7 @@ integer*4,parameter :: numcoord=1 !number of values in array
       integer*4::grbid=23,grbparid=24
       integer*8::grb_idtg
       !for ensemble
-      integer::grbmem=-1 ,grbnumm
+      integer::grbmem=-1 ,grbnumm=20
       !=======================================================================
       !  call baopenw(g2num,g2name,ierr)                                     !
       !=======================================================================
@@ -349,6 +349,11 @@ integer*4,parameter :: numcoord=1 !number of values in array
              listsec1(13)=1 !Forecast data
             endif
 
+            if(grbmem>=0)then
+              ipdsnum=1
+              ipdsnum_acc=11
+            endif
+
             return
             end subroutine
       !=======================================================================
@@ -381,6 +386,7 @@ integer*4,parameter :: numcoord=1 !number of values in array
             subroutine wrt_grb2_v2(itau,t0,t1,t2,p3,t10,t11,t12,fld)
             use param, only : nx,my
             use const, only: idtg,RTYPE,ihdgo2
+            use rank,only:myrank
             integer::  t0,t1,t2,t10,t11,p3
             integer::  t12
             integer::ptp0(9)
@@ -403,9 +409,55 @@ integer*4,parameter :: numcoord=1 !number of values in array
 #else
               write(grbfile,133 )trim(ofdir),'/',ihdgo2(1:6),ihdgo2(11:14)
 #endif
-              r4out(:)=fld(:)
+              
               call opn_grb2(grbparid,nx,my,idtg,itau,istat)              
+#ifdef SP
+              call wrt_grb2_io(itau,t0,t1,t2,p3,t10,t11,t12, fld )
+#else
+              do i=1,nx*my
+                r4out(i)=fld(i) !trans into real4
+              enddo
               call wrt_grb2_io(itau,t0,t1,t2,p3,t10,t11,t12, r4out )
+#endif
+              call cls_grb2(grbparid,istat)
+            end
+      !=======================================================================
+            subroutine wrtgrb2_v2_gpu(itau,t0,t1,t2,p3,t10,t11,t12,fld)
+            use param, only : nx,my
+            use const, only: idtg,RTYPE,ihdgo2
+            use rank,only:myrank
+            integer::  t0,t1,t2,t10,t11,p3
+            integer::  t12
+            integer::ptp0(9)
+            integer::itau,ist,istat,i,ia
+            real(kind=RTYPE)::fld(nx*my)
+            real*4::r4out(nx*my)
+!            character:: ihdg2*26,clen*7
+
+             do i = 1, 26
+              ia=ichar(ihdgo2(i:i))
+              if((ia.ge.97).and.(ia.le.122))then
+                ia=ia-32
+                ihdgo2(i:i)=char(ia)
+              endif
+             enddo
+
+ 133                      format( A  ,A1 ,A6,A4 )
+#ifdef O38K
+              write(grbfile,133 )trim(ofdir),'/',ihdgo2(1:6),ihdgo2(13:16)
+#else
+              write(grbfile,133 )trim(ofdir),'/',ihdgo2(1:6),ihdgo2(11:14)
+#endif
+              
+              call opn_grb2(grbparid,nx,my,idtg,itau,istat)              
+              !$acc enter data create(r4out)
+              !$acc parallel loop
+              do i=1,nx*my
+                r4out(i)=fld(i) !trans into real4
+              enddo
+              !$acc update self(r4out)
+              call wrt_grb2_io(itau,t0,t1,t2,p3,t10,t11,t12, r4out )
+              !$acc exit data delete(r4out)
               call cls_grb2(grbparid,istat)
             end
       !=======================================================================
@@ -458,9 +510,50 @@ integer*4,parameter :: numcoord=1 !number of values in array
 #else
               write(grbfile,133 )trim(ofdir),'/',ihdgo2(1:6),ihdgo2(11:14)
 #endif
-              r4out(:)=fld(:)
               call opn_grb2(grbparid,nx,my,idtg,itau,istat)              
+#ifdef SP
+              call wrt_grb2_accu_io(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,fld)
+#else
+              do i=1,nx*my
+                r4out(i)=fld(i) !trans into real4
+              enddo
               call wrt_grb2_accu_io(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,r4out)
+#endif
+              call cls_grb2(grbparid,istat)
+            end
+      !=======================================================================
+            subroutine wrtgrb2_accu_v2_gpu(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,fld)
+            use param, only : nx,my
+            use const, only: idtg,RTYPE,ihdgo2
+            integer::  t0,t1,t2,t10,t11,p3,t24,t27
+            integer::  t12
+            integer::ptp0(9)
+            integer::itau,ist,istat,i,ia
+            real(kind=RTYPE)::fld(nx*my)
+            real*4::r4out(nx*my)
+!            character:: ihdg2*26,clen*7
+             do i = 1, 26
+              ia=ichar(ihdgo2(i:i))
+              if((ia.ge.97).and.(ia.le.122))then
+                ia=ia-32
+                ihdgo2(i:i)=char(ia)
+              endif
+             enddo
+ 133                      format( A  ,A1 ,A6,A4 )
+#ifdef O38K
+              write(grbfile,133 )trim(ofdir),'/',ihdgo2(1:6),ihdgo2(13:16)
+#else
+              write(grbfile,133 )trim(ofdir),'/',ihdgo2(1:6),ihdgo2(11:14)
+#endif
+              call opn_grb2(grbparid,nx,my,idtg,itau,istat)              
+              !$acc enter data create(r4out)
+              !$acc parallel loop
+              do i=1,nx*my
+                r4out(i)=fld(i) !trans into real4
+              enddo
+              !$acc update self(r4out)
+              call wrt_grb2_accu_io(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,r4out)
+              !$acc exit data delete(r4out)
               call cls_grb2(grbparid,istat)
             end
       !=======================================================================
@@ -495,8 +588,10 @@ integer*4,parameter :: numcoord=1 !number of values in array
       !
             if(itau.eq.0)then
             ipdstmpl(3)=0    !Type of generating process (See Code Table 4.3)
+             listsec1(13)=0 !Analysis data (Code Table 1.4)
             else
             ipdstmpl(3)=2
+             listsec1(13)=1 !Forecast data
             endif
             ipdstmpl(9)=itau !Forecast time in units defined by ipdstmpl(8)
             ipdstmpl(10)=t10 !Type of first fixed surface(See Code Table 4.5)
@@ -556,6 +651,7 @@ integer*4,parameter :: numcoord=1 !number of values in array
             integer*8::idtg2
             character:: cdtg*12
 
+
             if( (itau-t27)  <  0 )return
             listsec0(1)=t0   !Product Discipline ( Code Table 0.0 )
       ! Add data info. (section 4)
@@ -564,8 +660,10 @@ integer*4,parameter :: numcoord=1 !number of values in array
             ipdstmpl8(2)=t2   !Parameter number ( See Code Table 4.2 )
             if(itau.eq.0)then
             ipdstmpl8(3)=0    !Type of generating process (See Code Table 4.3)
+             listsec1(13)=0 !Analysis data (Code Table 1.4)
             else
             ipdstmpl8(3)=2
+             listsec1(13)=1 !Forecast data
             endif
             ipdstmpl8(8 )=1   !Forecast time in units defined by ipdstmpl(8)
             ipdstmpl8(9 )= itau-t27  !Forecast time in units defined by ipdstmpl(8)
@@ -694,14 +792,10 @@ integer*4,parameter :: numcoord=1 !number of values in array
                  integer*8::idtg
                  if( .not. allocated( cgrib ) )allocate( cgrib(lcgrib) , bmap(nx*my) )
                  lengrib=0
-                 cgrib=''
+                 !cgrib=''
                  call baopenw(grbidin,trim(grbfile),ierr)
-                 call latlong(nx,my)
-                 call seclist01(idtg,itau)
-                 if(grbmem>=0)then
-                   ipdsnum=1
-                   ipdsnum_acc=11
-                 endif
+                 !call latlong(nx,my)
+                 !call seclist01(idtg,itau)
             end subroutine 
             subroutine cls_grb2 (grbidin,ierr)
             use grib_mod

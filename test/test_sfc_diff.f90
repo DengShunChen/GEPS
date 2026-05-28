@@ -244,7 +244,7 @@ subroutine sfc_diff_unit
       !write(*,*) 12345
 
    if (.true.) then
-      !$acc enter data copyin(tbpvs) async(async_id)
+      !$acc update device(tbpvs) async(async_id)
       !$acc enter data copyin(myim, psi, ut, vt, tt, qt, hgt, snwdph, &
       !$acc&      tg, prsl1, prslki, islmsk, ddvel, sigmaf, ivegtyp, &
       !$acc&      shdmax, tsurf, flag_iter) async(async_id)

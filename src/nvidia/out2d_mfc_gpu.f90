@@ -1,4 +1,4 @@
-      subroutine out2d_mfc (nx,lev,my,my_max,itau,idtg    &
+      subroutine out2d_mfc_gpu (nx,lev,my,my_max,itau,idtg    &
                             ,raincu1,rainlp1,raintot,glob,t2,q2,rh2,rh10 &
                             ,u10,v10,tmax,tmin,rld,sld,ctot,pt,ggdef )
 !
@@ -8,7 +8,7 @@
       use const ,only : grav,ptop,rgas,cp ,outdms ,outgrb2 ,ifilout_grb, &
                         RTYPE,kflag,out_hp,ihdgo,ihdgo2
       use grid  ,only : tt,qt,plt,pk,pk2,sgeo
-      use mod_grb2_param , only :ofdir,wrt_grb2_v2,wrt_grb2_accu_v2
+      use mod_grb2_param , only :ofdir,wrtgrb2_v2_gpu,wrtgrb2_accu_v2_gpu
       use phygrid ,only: raincu3, rainlp3
       implicit  none
 
@@ -46,6 +46,7 @@
                   'b10200','b10210','b02171','b02181','b02150', &
                   's003x0','s003u0','x00770','ssl010'/
 
+      integer, parameter:: async_id = 1
       integer:: gtp1(9),gtp0(9)
 !     grib code 0,1,2:variable   3:order  4:layer  5:above_land_height
 !                 1h  Tot                   T2M T2M  2M DW DW       
@@ -70,10 +71,15 @@
              write(ofdir,134 )trim(ifilout_grb),'/',idtg/100 ,itau
              if(myrank==0) call system("mkdir -p "//trim(ofdir) )
         endif
+!$acc wait(async_id)
+!$acc enter data create(mfcout,hld1,hld2,glob,mout,phi) async(async_id)
+
+!$acc parallel loop collapse(2) private(j,nxj,TdGamma) async(async_id)
       do jj = 1, jlistnum
+        do i=1,nxp
         j=jlist1(jj)
         nxj=nxdef_2d(j)
-        do i=1,nxj
+        if(i<=nxj)then
           mfcout(i,jj,1)=raincu1(i,jj) + rainlp1(i,jj) !rain1
           mfcout(i,jj,2)=raintot(i,jj)
           mfcout(i,jj,3)=t2  (i,jj)
@@ -90,24 +96,26 @@
           mfcout(i,jj,11)=rld (i,jj)
           mfcout(i,jj,12)=sld (i,jj)
           mfcout(i,jj,13)=ctot(i,jj) * 100.0 ! total cloud cover ! frac -> %
+         endif
         enddo
       enddo
 !
 !  hydrostatic equation
 !
+!$acc parallel loop collapse(2) private(j,nxj) async(async_id)
       do jj =1,jlistnum
+       do i=1,nxp
         j=jlist1(jj)
         nxj=nxdef_2d(j)
-        do i=1,nxj
-          phi(i,lev,jj)= cp*tt(i,lev,jj)*(pk2(i,lev,jj)-pk(i,lev,jj)) &
-                       + sgeo(i,jj)
-        enddo
-        do k=lev-1,1,-1
-          do i=1,nxj
-            phi(i,k,jj)=phi(i,k+1,jj)+cp*(tt(i,k,jj)*(pk2(i,k,jj)-pk(i,k,jj)) &
-                       + tt(i,k+1,jj)*(pk(i,k+1,jj)-pk2(i,k,jj)))
-          enddo
-        enddo
+        if(i<=nxj)then
+         phi(i,lev,jj)= cp*tt(i,lev,jj)*(pk2(i,lev,jj)-pk(i,lev,jj)) &
+                      + sgeo(i,jj)
+         do k=lev-1,1,-1
+             phi(i,k,jj)=phi(i,k+1,jj)+cp*(tt(i,k,jj)*(pk2(i,k,jj)-pk(i,k,jj)) &
+                        + tt(i,k+1,jj)*(pk(i,k+1,jj)-pk2(i,k,jj)))
+         enddo
+        endif
+       enddo
       enddo
 !
 ! Sea level pressure(hPa)
@@ -120,10 +128,13 @@
 !
       llts = lev-5
 !
+!$acc parallel loop collapse(2) &
+!$acc& private( j,nxj,ttt,ttb,ttp,ttt1,ttt2,anlslp,apha ) async(async_id)
       do jj = 1, jlistnum
+        do i=1,nxp
         j=jlist1(jj)
         nxj=nxdef_2d(j)
-        do i=1,nxj
+        if(i<=nxj)then
           ttb  = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
           ttp  = tt(i,llts,jj)*pk(i,llts,jj)/(1.0+0.608*qt(i,llts,jj))
           ttt1 = ttb + alaps*rdg*ttb*   &
@@ -151,21 +162,19 @@
                      apha*ttt*apha*ttt) )
           endif
           mfcout(i,jj,14) = anlslp * 100.0  !hPa to Pa
+        endif
         enddo
       enddo
 
 
 !
 ! Total Precp.
-!byl      call mpe2d_unify(glob,raintot)
+!
       nc=0
       do n=1,num
         call syslbl_w (dmskey(n),idtg,ntau,ggdef)
-        call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),glob)
+        call unify_reduceintp_gpu(nx,my,my_max,mfcout(1,1,n),glob)
         !call qmaxn3_w (glob,1,1,1,nx,my,1)
-!        if ( myrank .eq. n-1 ) then
-!          mout=glob
-!          ihdgo2=ihdgo
           gtp0=(/ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,ptp5(n),-999,-999/)
           if(n==1)then
              gtp0(8:9)=(/1,1/) !1hr precip
@@ -174,46 +183,42 @@
           else if(n==9)then
              gtp0(8:9)=(/3,1/) !MinT2m
           endif
-!        endif
-          call split2(nx,my,lenc,nc,glob,mout,gtp0,gtp1)
+          call split_v2_gpu(nx,my,lenc,nc,glob,mout,gtp0,gtp1)
       enddo
 !
       if (myrank .lt. nc ) then
 
         if(outgrb2 == 1 )then
           if(gtp1(8)==-999)then
-          call wrt_grb2_v2(itau,gtp1(1),gtp1(2),gtp1(3),gtp1(4),gtp1(5) &
+          call wrtgrb2_v2_gpu(itau,gtp1(1),gtp1(2),gtp1(3),gtp1(4),gtp1(5) &
               ,gtp1(6),gtp1(7),mout)
           else
-          call wrt_grb2_accu_v2(itau,gtp1(1),gtp1(2),gtp1(3),gtp1(4),gtp1(5) &
+          call wrtgrb2_accu_v2_gpu(itau,gtp1(1),gtp1(2),gtp1(3),gtp1(4),gtp1(5) &
               ,gtp1(6),gtp1(7),gtp1(8),gtp1(9),mout)
           endif
         endif !outgrb2
 
         if(outdms.gt.0)then
+          !$acc update self(mout) async(async_id)
+          !$acc wait(async_id)
           if ( myrank .eq. (14-1) ) mout = mout / 100.0
           call dmswrit_split(nx,my,lenc,kflag,mout,istat)
         endif ! outdms .gt. 0
 
       endif
 !
-!! rh10
-!!byl      call mpe2d_unify(glob,rh10)
-!      call syslbl ('b10510',idtg,ntau,ggdef,ihdg)
-!      call unify_reduceintp(nx,my,my_max,rh10,glob)
-!!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!      glob=glob*100.0
-!!     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
-!      call dmswrit_mfc(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 ! 3hr accum. precipitation for HomePageWifi
       if (out_hp)then
+!$acc parallel loop collapse(2) private(j,nxj) async(async_id)
        do jj = 1, jlistnum
+         do i=1,nxp
          j=jlist1(jj)
          nxj=nxdef_2d(j)
-         do i=1,nxj
+         if(i<=nxj)then
            raincu3(i,jj)= raincu3(i,jj) + raincu1(i,jj)
            rainlp3(i,jj)= rainlp3(i,jj) + rainlp1(i,jj)
+         endif
          enddo
        enddo
 
@@ -222,40 +227,69 @@
        if(outgrb2 == 1 )then
         !convective precipitation
         call syslbl_w ('B00632',idtg,ntau,ggdef)
-        glob=raincu3
-        call unify_reduceintp(nx,my,my_max,glob,mout)
+        !$acc parallel loop collapse(2) private(j,nxj) async(async_id)
+        do jj = 1, jlistnum
+          do i=1,nxp
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          if(i<=nxj)  glob(i,jj)=raincu3(i,jj)
+          enddo
+        enddo
+        call unify_reduceintp_gpu(nx,my,my_max,glob,mout)
         ihdgo2 = ihdgo
         if(myrank==0) &
-        call wrt_grb2_accu_v2(itau,0,1,10,2,103,0,0,1,3,mout)
+        call wrtgrb2_accu_v2_gpu(itau,0,1,10,2,103,0,0,1,3,mout)
         !
         call syslbl_w ('B00642',idtg,ntau,ggdef)
-        glob=rainlp3
-        call unify_reduceintp(nx,my,my_max,glob,mout)
+        !$acc parallel loop collapse(2) private(j,nxj) async(async_id)
+        do jj = 1, jlistnum
+          do i=1,nxp
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          if(i<=nxj) glob(i,jj)=rainlp3(i,jj)
+          enddo
+        enddo
+        call unify_reduceintp_gpu(nx,my,my_max,glob,mout)
         ihdgo2 = ihdgo
         if(myrank==0) &
-        call wrt_grb2_accu_v2(itau,0,1,9,2,103,0,0,1,3,mout)
+        call wrtgrb2_accu_v2_gpu(itau,0,1,9,2,103,0,0,1,3,mout)
 
         call syslbl_w ('B00622',idtg,ntau,ggdef)
-        glob=raincu3 + rainlp3
-        call unify_reduceintp(nx,my,my_max,glob,mout)
+        !$acc parallel loop collapse(2) private(j,nxj) async(async_id)
+        do jj = 1, jlistnum
+          do i=1,nxp
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          if(i<=nxj) glob(i,jj)=rainlp3(i,jj) + raincu3(i,jj)
+          enddo
+        enddo
+        call unify_reduceintp_gpu(nx,my,my_max,glob,mout)
         ihdgo2 = ihdgo
         if(myrank==0) &
-        call wrt_grb2_accu_v2(itau,0,1,9,2,103,0,0,1,3,mout)
+        call wrtgrb2_accu_v2_gpu(itau,0,1,9,2,103,0,0,1,3,mout)
 
        endif
 
+        !$acc parallel loop collapse(2) private(j,nxj) async(async_id)
         do jj = 1, jlistnum
+          do i=1,nxp
           j=jlist1(jj)
           nxj=nxdef_2d(j)
-          do i=1,nxj
+          if(i<=nxj)then
             raincu3(i,jj)= 0.0
             rainlp3(i,jj)= 0.0
+          endif
           enddo
         enddo
 
        endif ! mod(itau,3)==0
 
       endif !out_hp
+
+!$acc wait(async_id)
+!$acc exit data delete(mfcout,glob,mout)
+!$acc exit data delete(hld1,hld2,phi)
+!$acc wait(async_id)
 
       return
       end

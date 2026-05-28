@@ -1,6 +1,8 @@
-module mod_outflds
+module mod_outflds_gpu
  implicit none
 
+ real,allocatable::      tens(:)
+ integer,parameter,private:: async_id = 1
  
 contains
   subroutine divgout(nx,my,my_max,lpout,lev,itau,idtg, &
@@ -16,10 +18,10 @@ contains
       integer   nx,my,my_max,lpout,lev,itau,ncnt
 
       real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max),       &
+                rdivb(nxp,my_max),               &
                 plev(lpout),whtlev(num)
-      real(kind=RTYPE) rdiv(nxp,lev,my_max), rdivb(nxp,my_max)
+      real       rdiv(nxp,lev,my_max)
       real(kind=RTYPE) div(nxp,my_max,lpout)
-      real      tens(lev+1)
       real(kind=RTYPE) wk1(nx,my),pout(nx,my)
 
 !
@@ -31,14 +33,10 @@ contains
       integer:: ptp0(9),ptp1(9)
   
       logical :: lwrite
+!$acc wait(async_id)
+!$acc enter data create(wk1,pout) async(async_id)
 
-      do k = 1, lev+1
-       tens(k) = 1.0
-      end do
-      tens(lev)= 0.0
-      tens(lev+1)= 0.0
-!
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,rdiv,rdivb,pkout,div,tens)
+      call voterp_gpu(nx,my,my_max,lev,lpout,pk,pklp,rdiv,rdivb,pkout,div,tens)
 
       do k = 1, lpout-1
        lpl = int(plev(k)+0.001)
@@ -53,25 +51,30 @@ contains
       do 20 n=1,num
       do 10 k=1,lpout
       if(plev(k).eq.whtlev(n)) then
-      call unify_reduceintp(nx,my,my_max,div(1,1,k),wk1)
+      call unify_reduceintp_gpu(nx,my,my_max,div(1,1,k),wk1)
       call syslbl_w(lrec(k),idtg,itau,ggdef)
-!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,wk1,istat)
       call qmaxn3_w(wk1,1,1,1,nx,my,1)
       ptp0=(/0,2,11,6,100,-2,nint(plev(k)),-999,-999/)
-      call split2(nx,my,lenc,ncnt,wk1,pout,ptp0,ptp1)
+      call split_v2_gpu(nx,my,lenc,ncnt,wk1,pout,ptp0,ptp1)
       go to 20
       endif
    10 continue
    20 continue
       if(outdms.gt.0)then
-      if(lwrite .and. myrank .lt. ncnt ) &
+      if(lwrite .and. myrank .lt. ncnt ) then
+         !$acc update self(pout) async(async_id)
+         !$acc wait(async_id)
         call dmswrit_split(nx,my,lenc,kflag,pout,istat)
+      endif
       endif
       if(outgrb2 == 1 )then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+        call wrtgrb2_v2_gpu(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
             ,ptp1(6),ptp1(7),pout)
       endif
+!$acc wait(async_id)
+!$acc exit data delete(wk1,pout) async(async_id)
+!$acc wait(async_id)
 !
       return
   end subroutine divgout
@@ -90,10 +93,9 @@ contains
       integer   nx,my,my_max,lpout,lev,itau,num,ncnt
 
       real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max),               &
+                rdrag(nxp,lev,my_max),rdragb(nxp,my_max),                       &
                 plev(lpout),whtlev(num)
-      real      tens(lev+1)
       real(kind=RTYPE) wk1(nx,my),pout(nx,my),drag(nxp,my_max,lpout)
-      real(kind=RTYPE) rdrag(nxp,lev,my_max),rdragb(nxp,my_max)
 !
       integer*8 idtg
       character*6 lrec(lpout)
@@ -108,13 +110,10 @@ contains
 
       logical lwrite
 
-      do k = 1, lev+1
-       tens(k) = 1.0
-      end do
-      tens(lev)= 0.0
-      tens(lev+1)= 0.0
+!$acc wait(async_id)
+!$acc enter data create(wk1,pout) async(async_id)
 
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,rdrag,rdragb,pkout,drag,tens)
+      call voterp_gpu(nx,my,my_max,lev,lpout,pk,pklp,rdrag,rdragb,pkout,drag,tens)
 !
       do k = 1, lpout-1
        lpl = int(plev(k)+0.001)
@@ -126,48 +125,45 @@ contains
       lenc= nx*my
       ncnt= 0
 !
-!!      do jj =1, jlistnum
-!!      j=jlist1(jj)
-!!      nxj=nxdef_2d(j)
-!!      do i=1,nxj
-!!        pk_lev_m1(i,j)=pk(i,lev-1,jj)
-!!      enddo
-!!      enddo
-!
-!!      call mpe_unify(pk_lev_m1,nx,my,2,mpe_double)
-!
       do 20 n=1,num
       do 10 k=1,lpout
 !
       if(plev(k).eq.whtlev(n)) then
 !
+!$acc parallel loop collapse(2) private(j,nxj) async(async_id)
       do 45 jj=1, jlistnum
+      do 45 i=1,nxp
       j=jlist1(jj)
       nxj=nxdef_2d(j)
-      do 45 i=1,nxj
-!      ij=(j-1)*nx+i
-      if(pkout(k).gt.pk(i,lev-1,jj)) drag(i,jj,k)= 0.
+      if(i<=nxj)then
+        if(pkout(k).gt.pk(i,lev-1,jj)) drag(i,jj,k)= 0.
+      endif
    45 continue
 !
-      call unify_reduceintp(nx,my,my_max,drag(1,1,k),wk1)
+      call unify_reduceintp_gpu(nx,my,my_max,drag(1,1,k),wk1)
       call syslbl_w(lrec(k),idtg,itau,ggdef)
-!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,wk1,istat)
       call qmaxn3_w(wk1,1,1,1,nx,my,1)
       ptp0=(/0,2,196,6,100,-2,nint(plev(k)),-999,-999/)
-      call split2(nx,my,lenc,ncnt,wk1,pout,ptp0,ptp1)
+      call split_v2_gpu(nx,my,lenc,ncnt,wk1,pout,ptp0,ptp1)
       go to 20
       endif
    10 continue
    20 continue
       if(outdms.gt.0)then
-      if(lwrite .and. myrank .lt. ncnt ) &
+      if(lwrite .and. myrank .lt. ncnt ) then
+         !$acc update self(pout) async(async_id)
+         !$acc wait(async_id)
         call dmswrit_split(nx,my,lenc,kflag,pout,istat)
+      endif
       endif
       if(outgrb2 == 1 )then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+        call wrtgrb2_v2_gpu(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
             ,ptp1(6),ptp1(7),pout)
       endif
+!$acc wait(async_id)
+!$acc exit data delete(wk1,pout) async(async_id)
+!$acc wait(async_id)
 !
       return
   end subroutine dragout
@@ -186,9 +182,9 @@ contains
       integer   nx,my,my_max,lpout,lev,itau,num,ncnt
 !
       real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max),            &
-                plev(lpout),whtlev(num)
-      real(kind=RTYPE) phi(nxp,lev,my_max),phib(nxp,my_max)
-      real      tens(lev+1),phistd(lpout)
+                phi(nxp,lev,my_max),phib(nxp,my_max),plev(lpout),whtlev(num)
+
+      real      phistd(lpout)
       real(kind=RTYPE) pout(nx,my),glob(nx,my),slp(nx,my),phips(nxp,my_max,lpout)
       real(kind=RTYPE) h850(nxp,my_max),h500(nxp,my_max),tmp(nxp,my_max)
 !
@@ -203,13 +199,10 @@ contains
 
       logical lwrite
 
-      do k = 1, lev+1
-       tens(k) = 1.0
-      end do
-      tens(lev)= 0.0
-      tens(lev+1)= 0.0
+!$acc wait(async_id)
+!$acc enter data create(tmp,slp,pout) async(async_id)
 !
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,phi,phib,pkout,phips,tens)
+      call voterp_gpu(nx,my,my_max,lev,lpout,pk,pklp,phi,phib,pkout,phips,tens)
 
       do k = 1, lpout-1
        lpl = int(plev(k)+0.001)
@@ -223,43 +216,23 @@ contains
 !
       do k=1,lpout
         if(plev(k).eq.850.)then
+!$acc parallel loop collapse(2) private(j,nxj) async(async_id)
         do jj=1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          do i=1,nxj
-            h850(i,jj)= phips(i,jj,k)
+          do i=1,nxp
+           j=jlist1(jj)
+           nxj=nxdef_2d(j)
+           if(i<=nxj)  h850(i,jj)= phips(i,jj,k)
           enddo
         enddo
-!byl          call unify_reduceintp(nx,my,my_max,phips(1,1,k),h850)
-!!          do i=1,lenc
-!!            h850(i,1)=phips(i,k)
-!!          enddo
-!
-!          if(itau.le.72 .and. lreduce.eq.1)then
-!byl            call smth9(nx,my,h850,glob,1)
-!byl            h850=glob
-!byl            call smth9(nx,my,h850,glob,2)
-!byl            h850=glob
-!          endif
         else if(plev(k).eq.500.)then
+!$acc parallel loop collapse(2) private(j,nxj) async(async_id)
         do jj=1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          do i=1,nxj
-            h500(i,jj)= phips(i,jj,k)
+          do i=1,nxp
+           j=jlist1(jj)
+           nxj=nxdef_2d(j)
+           if(i<=nxj) h500(i,jj)= phips(i,jj,k)
           enddo
         enddo
-
-!byl          call unify_reduceintp(nx,my,my_max,phips(1,1,k),h500)
-!!          do i=1,lenc
-!!            h500(i,1)=phips(i,k)
-!!          enddo
-!          if(itau.le.72 .and. lreduce.eq.1)then
-!byl            call smth9(nx,my,h500,glob,1)
-!byl            h500=glob
-!byl            call smth9(nx,my,h500,glob,2)
-!byl            h500=glob
-!          endif
         endif
       enddo
 !
@@ -268,27 +241,25 @@ contains
 !
       if(plev(k).eq.whtlev(n)) then
 !
-      do 11 jj=1, jlistnum
-      j=jlist1(jj)
-      nxj=nxdef_2d(j)
-      do 11 i=1,nxj
-       tmp(i,jj)= phips(i,jj,k)+phistd(k)
+!$acc parallel loop collapse(2) private(j,nxj) async(async_id)
+      do  jj=1, jlistnum
+       do  i=1,nxp
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        if(i<=nxj) tmp(i,jj)= phips(i,jj,k)+phistd(k)
+       enddo
+      enddo
    11 continue
-      call unify_reduceintp(nx,my,my_max,tmp,glob)
+      call unify_reduceintp_gpu(nx,my,my_max,tmp,slp)
 !
       call syslbl_w(lrec(k),idtg,itau,ggdef)
 !
-!      if(lreduce.eq.1 .and. itau.le.72)then
-        call smth9(nx,my,glob,slp,1)
-        glob=slp
-        call smth9(nx,my,glob,slp,2)
-!        glob=slp
-!      endif
+      call smth9(nx,my,slp,glob,1)
+      call smth9(nx,my,glob,slp,2)
 !
-!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,slp,istat)
       call qmaxn3_w(slp,1,1,1,nx,my,1)
       ptp0=(/0,3,5,1,100,-2,nint(plev(k)),-999,-999/)
-      call split2(nx,my,lenc,ncnt,slp,pout,ptp0,ptp1)
+      call split_v2_gpu(nx,my,lenc,ncnt,slp,pout,ptp0,ptp1)
 !
       go to 20
       endif
@@ -296,14 +267,20 @@ contains
    20 continue
 
       if(outdms.gt.0)then
-      if(lwrite .and. myrank .lt. ncnt ) &
+      if(lwrite .and. myrank .lt. ncnt ) then
+         !$acc update self(pout) async(async_id)
+         !$acc wait(async_id)
         call dmswrit_split(nx,my,lenc,kflag,pout,istat)
+      endif
       endif
       if(outgrb2 == 1 )then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+        call wrtgrb2_v2_gpu(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
             ,ptp1(6),ptp1(7),pout)
       endif
+!$acc wait(async_id)
+!$acc exit data delete(tmp,slp,pout) async(async_id)
+!$acc wait(async_id)
 !
       return
   end subroutine geopout
@@ -320,11 +297,10 @@ contains
       integer   nx,my,my_max,lpout,lev,itau,num,ncnt
 
       real      pkout(lpout),pklp(nxp,my_max)                            &
-      , pk(nxp,lev,my_max), plev(lpout),whtlev(num),tens(lev+1)
-       real(kind=RTYPE) dpd(nxp,lev,my_max),dpdb(nxp,my_max)
+      , pk(nxp,lev,my_max),dpd(nxp,lev,my_max),dpdb(nxp,my_max)          &
+      , plev(lpout),whtlev(num)
       real(kind=RTYPE) pout(nx,my),glob(nx,my),tmp(nxp,my_max)           &
       ,                dew(nxp,my_max,lpout),ffx(nx,my_max)
-
 
       integer   i,k,lpl,n,lenc,istat,jj,j,nxj
       integer:: ptp0(9),ptp1(9)
@@ -334,14 +310,10 @@ contains
       character*4 ggdef
 !
       logical :: lwrite
+!$acc wait(async_id)
+!$acc enter data create(pout) async(async_id)
 
-      do k = 1, lev+1
-       tens(k) = 1.0
-      end do
-      tens(lev)= 0.0
-      tens(lev+1)= 0.0
-!
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,dpd,dpdb,pkout,dew,tens)
+      call voterp_gpu(nx,my,my_max,lev,lpout,pk,pklp,dpd,dpdb,pkout,dew,tens)
 
       do k = 1, lpout-1
        lpl = int(plev(k)+0.001)
@@ -360,27 +332,14 @@ contains
 !
 ! relative humidity must be smaller or equal 1.0
 !
-!!      do 20 jj=1, jlistnum
-!!      j=jlist1(jj)
-!!      nxj=nxdef_2d(j)
-!!      do 20 i=1,nxj
-!!       tmp(i,jj)= min(100.,max(dew(i,jj,k)*100.,0.0))
-!!   20 continue
-      call mpe2d_unify_nx(ffx,dew(1,1,k))
-      if( lreduce.eq.1 ) then
-        do jj =1, jlistnum
-          j=jlist1(jj)
-          call reduceintp(ffx(1,jj),nxdef(j),nx,1)
+      call unify_reduceintp_gpu(nx,my,my_max,dew(1,1,k),glob)
+
+!$acc parallel loop collapse(2) async(async_id)
+        do j=1,my
           do i=1,nx
-             ffx(i,jj)=min(100.,max(ffx(i,jj)*100.,0.0))
+             glob(i,j)=min(100.,max(glob(i,j)*100.,0.0))
           enddo
         enddo
-      endif
-      call mpe2d_unify_my(glob,ffx)
-!      call unify_reduceintp(nx,my,my_max,dew(1,1,k),glob)
-!      do 20 i=1,lenc
-!      glob(i,1)= min(100.,max(glob(i,1)*100.,0.0))
-!   20 continue
 !
       call syslbl_w(lrec(k),idtg,itau,ggdef)
 !
@@ -389,21 +348,27 @@ contains
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3_w(glob,1,1,1,nx,my,1)
       ptp0=(/0,1,1,2,100,-2,nint(plev(k)),-999,-999/)
-      call split2(nx,my,lenc,ncnt,glob,pout,ptp0,ptp1)
+      call split_v2_gpu(nx,my,lenc,ncnt,glob,pout,ptp0,ptp1)
       go to 30
       endif
    10 continue
    30 continue
       if(outdms.gt.0)then
-      if(lwrite .and. myrank .lt. ncnt ) &
+      if(lwrite .and. myrank .lt. ncnt ) then
+         !$acc update self(pout) async(async_id)
+         !$acc wait(async_id)
         call dmswrit_split(nx,my,lenc,kflag,pout,istat)
+      endif
       endif
       if(outgrb2 == 1 )then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+        call wrtgrb2_v2_gpu(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
             ,ptp1(6),ptp1(7),pout)
       endif
 !
+!$acc wait(async_id)
+!$acc exit data delete(pout) async(async_id)
+!$acc wait(async_id)
       return
   end subroutine shumout
 
@@ -420,9 +385,10 @@ contains
       implicit  none
 
       integer   nx,my,my_max,lpout,lev,itau,num,ntrac,ncnt,ntrchk
-      real(kind=RTYPE) dpd(nxp,lev,my_max),dpdb(nxp,my_max)
+
       real      pkout(lpout),pklp(nxp,my_max)                        &
-      , pk(nxp,lev,my_max), plev(lpout),whtlev(num),tens(lev+1)
+      , pk(nxp,lev,my_max),dpd(nxp,lev,my_max),dpdb(nxp,my_max)      &
+      , plev(lpout),whtlev(num)
       real(kind=RTYPE) pout(nx,my),glob(nx,my),tmp(nxp,my_max)       &
       , dew(nxp,my_max,lpout),ffx(nx,my_max)
 !
@@ -439,6 +405,9 @@ contains
       integer::Ptp0,Ptp1,Ptp2,Ptp3
 !      integer,dimension(6)::cspe0,cspe1,cspe2,cspe3
       integer,dimension(:),allocatable ::cspe0,cspe1,cspe2,cspe3
+
+!$acc wait(async_id)
+!$acc enter data create(pout) async(async_id)
 
 !key=556 for mixing ratio of hail
 !key=571~575 for number concentration of cloud droplet, ice, rain, snow, and graupel
@@ -476,13 +445,7 @@ contains
         ntrchk = ncld
       endif
 !
-      do k = 1, lev+1
-       tens(k) = 1.0
-      end do
-      tens(lev)= 0.0
-      tens(lev+1)= 0.0
-!
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,dpd,dpdb,pkout,dew,tens)
+      call voterp_gpu(nx,my,my_max,lev,lpout,pk,pklp,dpd,dpdb,pkout,dew,tens)
 
       if(ntrac.le.ntrchk)then ! all hydrometeors
 
@@ -527,48 +490,40 @@ contains
 !
 ! relative humidity must be smaller or equal 1.0
 !
-!      do 20 jj=1, jlistnum
-!      j=jlist1(jj)
-!      nxj=nxdef_2d(j)
-!      do 20 i=1,nxj
-!       tmp(i,jj)= max(dew(i,jj,k),0.0)
-!   20 continue
-      call mpe2d_unify_nx(ffx,dew(1,1,k))
-      if( lreduce.eq.1 ) then
-        do jj =1, jlistnum
-          j=jlist1(jj)
-          call reduceintp(ffx(1,jj),nxdef(j),nx,1)
-          do i=1,nx
-             ffx(i,jj)=max(ffx(i,jj),qmin)
-          enddo
+      call unify_reduceintp_gpu(nx,my,my_max,dew(1,1,k),glob)
+!$acc parallel loop collapse(2) async(async_id)
+      do j=1,my
+        do  i=1,nx
+          glob(i,j)= max(glob(i,j),0.0)
         enddo
-      endif
-      call mpe2d_unify_my(glob,ffx)
-!      do 20 i=1,lenc
-!        glob(i,1)= max(glob(i,1),0.0)
-!   20 continue
+      enddo
 !
       call syslbl_w(lrec(k),idtg,itau,ggdef)
-!!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3_w(glob,1,1,1,nx,my,1)
       gtp0=(/ptp0,ptp1,ptp2,ptp3,100,-2,nint(plev(k)),-999,-999/)
-      call split2(nx,my,lenc,ncnt,glob,pout,gtp0,gtp1)
+      call split_v2_gpu(nx,my,lenc,ncnt,glob,pout,gtp0,gtp1)
       go to 30
       endif
    10 continue
    30 continue
       if(outdms.gt.0)then
-      if(lwrite .and. myrank .lt. ncnt ) &
+      if(lwrite .and. myrank .lt. ncnt ) then
+         !$acc update self(pout) async(async_id)
+         !$acc wait(async_id)
         call dmswrit_split(nx,my,lenc,kflag,pout,istat)
+      endif
       endif
       if(outgrb2 == 1 )then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call wrt_grb2_v2(itau,gtp1(1),gtp1(2),gtp1(3),gtp1(4),gtp1(5) &
+        call wrtgrb2_v2_gpu(itau,gtp1(1),gtp1(2),gtp1(3),gtp1(4),gtp1(5) &
             ,gtp1(6),gtp1(7),pout)
       endif
 !
    40 continue
       deallocate ( cspec,cspe0,cspe1,cspe2,cspe3 )
+!$acc wait(async_id)
+!$acc exit data delete(pout) async(async_id)
+!$acc wait(async_id)
       return
   end subroutine shumout2
 
@@ -585,9 +540,10 @@ contains
       implicit  none
 
       integer   nx,my,my_max,lpout,lev,itau,num,ntrac,ncnt,ntrchk
-      real(kind=RTYPE) clds(nxp,lev,my_max),cldb(nxp,my_max)
+
       real      pkout(lpout),pklp(nxp,my_max)                        &
-      , pk(nxp,lev,my_max) ,  plev(lpout),whtlev(num),tens(lev+1) 
+      , pk(nxp,lev,my_max),clds(nxp,lev,my_max),cldb(nxp,my_max)      &
+      , plev(lpout),whtlev(num)
       real(kind=RTYPE) pout(nx,my),glob(nx,my),tmp(nxp,my_max)       &
       , cldfc(nxp,my_max,lpout),ffx(nx,my_max)
 !
@@ -598,14 +554,10 @@ contains
       character*4 ggdef
       logical :: lwrite
       integer:: ptp0(9),ptp1(9)
+!$acc wait(async_id)
+!$acc enter data create(pout) async(async_id)
 !
-      do k = 1, lev+1
-       tens(k) = 1.0
-      end do
-      tens(lev)= 0.0
-      tens(lev+1)= 0.0
-!
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,clds,cldb,pkout,cldfc,tens)
+      call voterp_gpu(nx,my,my_max,lev,lpout,pk,pklp,clds,cldb,pkout,cldfc,tens)
 
       do k = 1, lpout-1
        lpl = int(plev(k)+0.001)
@@ -621,28 +573,34 @@ contains
 !
       if(plev(k).eq.whtlev(n)) then
 !
-      call unify_reduceintp(nx,my,my_max,cldfc,glob)
+      call unify_reduceintp_gpu(nx,my,my_max,cldfc,glob)
 !
       call syslbl_w(lrec(k),idtg,itau,ggdef)
       call qmaxn3_w(glob,1,1,1,nx,my,1)
       ptp0=(/0,6,32,2,100,-2,nint(plev(k)),-999,-999/)
-      call split2(nx,my,lenc,ncnt,glob,pout,ptp0,ptp1)
+      call split_v2_gpu(nx,my,lenc,ncnt,glob,pout,ptp0,ptp1)
       go to 30
       endif
    10 continue
    30 continue
       if(outdms.gt.0)then
-      if(lwrite .and. myrank .lt. ncnt ) &
+      if(lwrite .and. myrank .lt. ncnt ) then
+         !$acc update self(pout) async(async_id)
+         !$acc wait(async_id)
         call dmswrit_split(nx,my,lenc,kflag,pout,istat)
+      endif
       endif
       if(outgrb2 == 1 )then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+        call wrtgrb2_v2_gpu(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
             ,ptp1(6),ptp1(7),pout)
       endif
 !
    40 continue
 
+!$acc wait(async_id)
+!$acc exit data delete(pout) async(async_id)
+!$acc wait(async_id)
       return
   end subroutine cloudout
 
@@ -672,30 +630,15 @@ contains
    
       logical :: lwrite
 !
+!$acc parallel loop collapse(2) private( j,nxj ) async(async_id)
       do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        do i=1,nxj
-!byl          slp(i,j)= pt(i,jj)+pdiff(i,jj)
-          slp(i,jj)= ( pt(i,jj)+pdiff(i,jj) )
+        do i=1,nxp
+         j=jlist1(jj)
+         nxj=nxdef_2d(j)
+         if(i<=nxj) slp(i,jj)= ( pt(i,jj)+pdiff(i,jj) )
         enddo
       enddo
 
-!      do jj = 1, jlistnum
-!        j=jlist1(jj)
-!        nxj=nxdef_2d(j)
-!        do i=1,nxj
-!          ptend(i,jj)= ptend(i,jj)*3600.0
-!        enddo
-!      enddo
-!
-!byl      call unify_reduceintp(nx,my,my_max,tmp,slp)
-!byl      call mpe_unify(slp,nx,my,2,mpe_double)
-!byl      if( lreduce.eq.1 ) call reduceintp (slp,nxdef,nx,my)
-!byl      call smth9(nx,my,slp,glob,1)
-!byl      slp=glob
-!byl      call smth9(nx,my,slp,glob,2)
-!byl      slp=glob
 !
       num= 0
       do 20 n=1,ntau
@@ -705,34 +648,40 @@ contains
           label(num)= labx
         endif
    20 continue
-      if(myrank==0)print*,'in surfout ntau=',ntau,' num=',num
+
       if(num.eq.0) return
 !
       tnshun= 1.0
       lenc= nx*my
 !
+!$acc wait(async_id)
+!$acc enter data create(tmp) async(async_id)
       do 100 kk=1,num
 !
 !  sea surface level pressure
 !
 
       if(label(kk).eq.'SSL010' .or. label(kk).eq.'ssl010') then
+!$acc wait(async_id)
+!$acc parallel loop collapse(2)  private( j,nxj ) async(async_id)
         do jj = 1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          do i=1,nxj
-            tmp(i,jj)= slp(i,jj) * 100.0 !hPa -> Pa
+          do i=1,nxp
+           j=jlist1(jj)
+           nxj=nxdef_2d(j)
+           if(i<=nxj) tmp(i,jj)= slp(i,jj) * 100.0 !hPa -> Pa
           enddo
         enddo
-        call unify_reduceintp(nx,my,my_max,tmp,glob)
+        call unify_reduceintp_gpu(nx,my,my_max,tmp,glob)
         call syslbl_w('ssl010',idtg,itau,ggdef)
         if( itau==0 .or. itau .gt. nint(domfc) )then
          call qmaxn3_w(glob,1,1,1,nx,my,1)
          if(outgrb2==1.and.myrank==0)then
            ihdgo2 = ihdgo
-           call wrt_grb2_v2(itau,0,3,1,1,101,0,0,glob)
+           call wrtgrb2_v2_gpu(itau,0,3,1,1,101,0,0,glob)
          endif
          if(outdms.gt.0)then
+          !$acc update self(glob) async(async_id)
+          !$acc wait(async_id)
            glob=glob/100.0
            if(lwrite) call dmswrit(nx,my,lenc,kflag,glob,istat)
          endif
@@ -741,30 +690,24 @@ contains
 !  terrain pressure
 !
       else if(label(kk).eq.'B00010' .or. label(kk).eq.'b00010') then
+!$acc parallel loop collapse(2) private( j,nxj ) async(async_id)
         do jj = 1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          do i=1,nxj
-!byl            glob(i,j) = pt(i,jj) + ptop
-            tmp(i,jj) = ( pt(i,jj) + ptop ) * 100.0
+          do i=1,nxp
+           j=jlist1(jj)
+           nxj=nxdef_2d(j)
+           if(i<=nxj)  tmp(i,jj) = ( pt(i,jj) + ptop ) * 100.0
           enddo
         enddo
-        call unify_reduceintp(nx,my,my_max,tmp,glob)
-!     if(myrank.eq.0) then
-!       open(30,file='sfc_pres.bin',status='unknown', &
-!           form='unformatted',access='direct',recl=262656)
-!       write(30,rec=1) ((glob(i,j),i=432,647),j=410,561)
-!       close(30)
-!     endif
-!byl        call mpe_unify(glob,nx,my,2,mpe_double)
+        call unify_reduceintp_gpu(nx,my,my_max,tmp,glob)
         call syslbl_w('b00010',idtg,itau,ggdef)
-!byl        if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
         call qmaxn3_w(glob,1,1,1,nx,my,1)
         if(outgrb2==1.and.myrank==0)then
           ihdgo2 = ihdgo
-          call wrt_grb2_v2(itau,0,3,0,1,103,0,0,glob)
+          call wrtgrb2_v2_gpu(itau,0,3,0,1,103,0,0,glob)
         endif
         if(outdms.gt.0)then
+          !$acc update self(glob) async(async_id)
+          !$acc wait(async_id)
           glob=glob/100.0
           if(lwrite) call dmswrit(nx,my,lenc,kflag,glob,istat)
         endif
@@ -773,17 +716,27 @@ contains
 !  terrain pressure tendency
 !
 !      else if(label(kk).eq.'B00011' .or. label(kk).eq.'b00011') then
-!        do i = 1, lenc
-!          glob(i,1) = ptend(i,1)
-!        end do
-!        call syslbl('b00011',idtg,itau,ggdef,lrec)
-!        if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!        if(lwrite) call dmswrit(nx,my,lrec,lenc,kflag,ifilout,glob,istat)
-!        call qmaxn3(glob,lrec(1:14),lrec(15:26),1,1,1,nx,my,1)
+!        $acc parallel loop collapse(2) private( j,nxj ) async(async_id)
+!        do jj = 1, jlistnum
+!          do i=1,nxp
+!          j=jlist1(jj)
+!          nxj=nxdef_2d(j)
+!           if(i<=nxj)then
+!            tmp(i,jj)= ptend(i,jj)*3600.0
+!           endif
+!          enddo
+!        enddo
+!        call unify_reduceintp_gpu(nx,my,my_max,tmp,glob)
+!        call syslbl_w('b00011',idtg,itau,ggdef)
+!        call qmaxn3_w(glob,1,1,1,nx,my,1)
+!        if(lwrite) call dmswrit(nx,my,lenc,kflag,glob,istat)
 !
       endif
 !
   100 continue
+!$acc wait(async_id)
+!$acc exit data delete(tmp) async(async_id)
+!$acc wait(async_id)
       return
   end subroutine surfout
 
@@ -797,15 +750,13 @@ contains
 
       implicit  none
 
-      integer   nx,my,my_max,lpout,lev,itau,k,i,n,istat
+      integer   nx,my,my_max,lpout,lev,itau,k,i,j,n,istat
       integer   num,lpl,lenc,ncnt
       integer:: ptp0(9),ptp1(9)
       real      tnshun
 
       real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max)        &
-      ,plev(lpout),whtlev(num)
-      real      tens(lev+1)
-      real(kind=RTYPE) tt(nxp,lev,my_max) , ttbot(nxp,my_max)
+      , tt(nxp,lev,my_max),ttbot(nxp,my_max),plev(lpout),whtlev(num)
       real(kind=RTYPE) pout(nx,my),glob(nx,my),slp(nx,my),temp(nxp,my_max,lpout)
 
 !
@@ -815,12 +766,9 @@ contains
 !
      logical :: lwrite
 
-      do k = 1, lev+1
-       tens(k) = 1.0
-      end do
-      tens(lev+1)= 0.0
-      tens(lev)= 0.0
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,tt,ttbot,pkout,temp,tens)
+!$acc wait(async_id)
+!$acc enter data create(glob,slp,pout) async(async_id)
+      call voterp_gpu(nx,my,my_max,lev,lpout,pk,pklp,tt,ttbot,pkout,temp,tens)
 !
       do k = 1, lpout-1
        lpl = int(plev(k)+0.001)
@@ -841,37 +789,36 @@ contains
       if(plev(k).eq.whtlev(n)) then  
 !
 !
-      call unify_reduceintp(nx,my,my_max,temp(1,1,k),glob)
-!!      do 11 i=1,lenc
-!!      glob(i,1)= temp(i,k)
-!!   11 continue
-!
+      call unify_reduceintp_gpu(nx,my,my_max,temp(1,1,k),slp)
       call syslbl_w(lrec(k),idtg,itau,ggdef)
 !
 !  reduceintp has been done in voterp (2011/5)
 !
-        call smth9(nx,my,glob,slp,1)
-        glob=slp
-        call smth9(nx,my,glob,slp,2)
-!!        glob=slp
+      call smth9(nx,my,slp,glob,1)
+      call smth9(nx,my,glob,slp,2)
 !
-!!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3_w(slp,1,1,1,nx,my,1)
       ptp0=(/0,0,0,2,100,-2,nint(plev(k)),-999,-999/)
-      call split2(nx,my,lenc,ncnt,slp,pout,ptp0,ptp1)
+      call split_v2_gpu(nx,my,lenc,ncnt,slp,pout,ptp0,ptp1)
       go to 30
       endif
    10 continue
    30 continue
       if(outdms.gt.0)then
-      if(lwrite .and. myrank .lt. ncnt ) &
+      if(lwrite .and. myrank .lt. ncnt ) then
+         !$acc update self(pout) async(async_id)
+         !$acc wait(async_id)
         call dmswrit_split(nx,my,lenc,kflag,pout,istat)
+      endif
       endif
       if(outgrb2 == 1 )then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+        call wrtgrb2_v2_gpu(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
             ,ptp1(6),ptp1(7),pout)
       endif
+!$acc wait(async_id)
+!$acc exit data delete(glob,slp,pout) async(async_id)
+!$acc wait(async_id)
 !
       return
   end subroutine tempout
@@ -889,10 +836,10 @@ contains
       integer   nx,my,my_max,lpout,lev,itau,num,ncnt
 
       real      pkout(lpout),pklp(nxp,my_max)                        &
-      , pk(nxp,lev,my_max) , plev(lpout),whtlev(num)
-      real(kind=RTYPE) rvor(nxp,lev,my_max),rvorb(nxp,my_max)
+      , pk(nxp,lev,my_max),rvorb(nxp,my_max)  &
+      , plev(lpout),whtlev(num)
+      real rvor(nxp,lev,my_max)
       real(kind=RTYPE) vor(nxp,my_max,lpout)
-      real      tens(lev+1)
       real(kind=RTYPE) v850(nxp,my_max),v700(nxp,my_max)
       real(kind=RTYPE) wk1(nx,my),pout(nx,my)
 
@@ -905,13 +852,9 @@ contains
       integer:: ptp0(9),ptp1(9)
 !
       logical :: lwrite
-
-      do k = 1, lev+1
-       tens(k) = 1.0
-      end do
-      tens(lev)= 0.0
-      tens(lev+1)= 0.0
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,rvor,rvorb,pkout,vor,tens)
+!$acc wait(async_id)
+!$acc enter data create(wk1,pout) async(async_id)
+      call voterp_gpu(nx,my,my_max,lev,lpout,pk,pklp,rvor,rvorb,pkout,vor,tens)
 !
       do k = 1, lpout-1
        lpl = int(plev(k)+0.001)
@@ -925,32 +868,26 @@ contains
 !
       do k=1,lpout
         if(plev(k).eq.850.)then
+!$acc parallel loop collapse(2) private(j,nxj) async(async_id)
         do jj=1, jlistnum
+          do i=1,nxp
           j=jlist1(jj)
           nxj=nxdef_2d(j)
-          do i=1,nxj
-            v850(i,jj)= vor(i,jj,k)
+          if(i<=nxj) v850(i,jj)= vor(i,jj,k)
           enddo
         enddo
-!byl        call unify_reduceintp(nx,my,my_max,vor(1,1,k),v850)
-!!          do i=1,lenc
-!!            v850(i,1)=vor(i,k)
-!!          enddo
 !
 !  reduceintp has been done in voterp (2011/5)
 !
         else if(plev(k).eq.700.)then
+!$acc parallel loop collapse(2)  private(j,nxj) async(async_id)
         do jj=1, jlistnum
+          do i=1,nxp
           j=jlist1(jj)
           nxj=nxdef_2d(j)
-          do i=1,nxj
-            v700(i,jj)= vor(i,jj,k)
+          if(i<=nxj) v700(i,jj)= vor(i,jj,k)
           enddo
         enddo
-!byl        call unify_reduceintp(nx,my,my_max,vor(1,1,k),v700)
-!!          do i=1,lenc
-!!            v700(i,1)=vor(i,k)
-!!          enddo
 !
 !  reduceintp has been done in voterp (2011/5)
 !
@@ -960,28 +897,33 @@ contains
       do 20 n=1,num
       do 10 k=1,lpout
       if(plev(k).eq.whtlev(n)) then
-      call unify_reduceintp(nx,my,my_max,vor(1,1,k),wk1)
+      call unify_reduceintp_gpu(nx,my,my_max,vor(1,1,k),wk1)
       call syslbl_w(lrec(k),idtg,itau,ggdef)
 !
 !  reduceintp has been done in voterp (2011/5)
 !
-!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,wk1,istat)
       call qmaxn3_w(wk1,1,1,1,nx,my,1)
       ptp0=(/0,2,12,6,100,-2,nint(plev(k)),-999,-999/)
-      call split2(nx,my,lenc,ncnt,wk1,pout,ptp0,ptp1)
+      call split_v2_gpu(nx,my,lenc,ncnt,wk1,pout,ptp0,ptp1)
       go to 20
       endif
    10 continue
    20 continue
       if(outdms.gt.0)then
-      if(lwrite .and. myrank .lt. ncnt ) & 
+      if(lwrite .and. myrank .lt. ncnt ) then
+         !$acc update self(pout) async(async_id)
+         !$acc wait(async_id)
         call dmswrit_split(nx,my,lenc,kflag,pout,istat)
+      endif
       endif
       if(outgrb2 == 1 )then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+        call wrtgrb2_v2_gpu(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
             ,ptp1(6),ptp1(7),pout)
       endif
+!$acc wait(async_id)
+!$acc exit data delete(wk1,pout) async(async_id)
+!$acc wait(async_id)
 !
       return
   end subroutine vortout
@@ -994,16 +936,16 @@ contains
       use rank, only : myrank
       use mod_grb2_param
       use const ,only:outdms,outgrb2 , RTYPE,kflag
+      use openacc
 
       implicit none
 
       real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max)          &
+      , rdiv(nxp,lev,my_max),work3d(nxp,lev,my_max)                       &
       , plev(lpout),whtlev(num)
-      real(kind=RTYPE) work3d(nxp,lev,my_max)
       real(kind=RTYPE) ut(nxp,lev,my_max),vt(nxp,lev,my_max)              &
       , sdhat(nxp,lev,my_max),cosl(my),wind(nxp,my_max,lpout)
-      real(kind=RTYPE) utb(nxp,my_max),vtb(nxp,my_max),wtb(nxp,my_max)
-      real      tens(lev+1)
+      real      utb(nxp,my_max),vtb(nxp,my_max),wtb(nxp,my_max)
       real(kind=RTYPE) pout(nx,my),glob(nx,my),tmp(nxp,my_max)
 !
       integer   nx,my,my_max,lpout,lev,itau,jj,nxj,ncnt
@@ -1012,9 +954,6 @@ contains
 
       real      rad,xxx
       integer, parameter:: async_id = 1
-!lzl +add
-!!      real      pklzl(nx,my)
-!lzl -end
 
       integer*8 idtg
       character*6 lrec(lpout),krec(lpout),mrec(lpout)
@@ -1024,11 +963,8 @@ contains
 !
      logical :: lwrite
 
-      do k = 1, lev+1
-       tens(k) = 1.0
-      end do
-      tens(lev)= 0.0
-      tens(lev+1)= 0.0
+!$acc wait(async_id)
+!$acc enter data create(wtb,tmp,pout) async(async_id)
       lenc= nx*my
       ncnt= 0
 !
@@ -1044,31 +980,18 @@ contains
 !
 ! first: do the u components
 !
+!$acc parallel loop collapse(3) private(j,nxj) async(async_id)
      do jj = 1, jlistnum
-       j=jlist1(jj)
-       nxj=nxdef_2d(j)
        do k = 1, lev
-        do i = 1,nxj
-          work3d(i,k,jj)=ut(i,k,jj)
+        do i = 1,nxp
+         j=jlist1(jj)
+         nxj=nxdef_2d(j)
+         if(i<=nxj) work3d(i,k,jj)=ut(i,k,jj)
         enddo
        enddo
      enddo
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,work3d,utb,pkout,wind,tens)
+      call voterp_gpu(nx,my,my_max,lev,lpout,pk,pklp,work3d,utb,pkout,wind,tens)
 !
-!!      if( lreduce.eq.1 ) call reduceintp (utb,nxdef,nx,my)
-!
-!lzl +add======================================================
-!!      do i =1,nx
-!!      do j =1,my
-!!         pklzl(i,j)=pklp(i,j)
-!!      end do
-!!      end do
-!
-!!      if( lreduce.eq.1 ) then
-!!          call reduceintp(pklzl,nxdef,nx,my)
-!!      endif
-
-!lzl -end=====================================================          
 
       do 30 n=1,num
       do 10 k=1,lpout
@@ -1078,79 +1001,57 @@ contains
 !  below ground level extrapolate surface wind downward
 !  deweight wind with cos latitude, earth radius
 !
+!$acc parallel loop collapse(2) private(j,nxj,xxx) async(async_id)
         do jj = 1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          xxx= rad/cosl(j)
-          do i=1,nxj
-           if(pkout(k).gt.pklp(i,jj)) wind(i,jj,k)= utb(i,jj)
-           tmp(i,jj)=wind(i,jj,k)*xxx
+          do i=1,nxp
+           j=jlist1(jj)
+           nxj=nxdef_2d(j)
+           if(i<=nxj)then
+            xxx= rad/cosl(j)
+            if(pkout(k).gt.pklp(i,jj)) wind(i,jj,k)= utb(i,jj)
+            tmp(i,jj)=wind(i,jj,k)*xxx
+           endif
           enddo
         enddo
-        call unify_reduceintp(nx,my,my_max,tmp,glob)
-!!      do 45 i=1,nx*my
-!lzl c      if(pkout(k).gt.pklp(i,1)) wind(i,1,k)= utb(i,1)
-!!      if(pkout(k).gt.pklzl(i,1)) wind(i,1,k)= utb(i,1)  !lzl use full grid(pklzl)
-!!   45 continue
-!
-!
-!  deweight wind with cos latitude, earth radius
-!
-!!      do 50 j=1,my
-!!      xxx= rad/cosl(j)
-!!      do 50 i=1,nx
-!!      glob(i,j)= wind(i,j,k)*xxx
-!!   50 continue
-!
+      call unify_reduceintp_gpu(nx,my,my_max,tmp,glob)
       call syslbl_w(lrec(k),idtg,itau,ggdef)
 !
 !  reduceintp has been done in voterp (2011/5)
 !
-!!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3_w(glob,1,1,1,nx,my,1)
       ptp0=(/0,2,2,2,100,-2,nint(plev(k)),-999,-999/)
-      call split2(nx,my,lenc,ncnt,glob,pout,ptp0,ptp1)
+      call split_v2_gpu(nx,my,lenc,ncnt,glob,pout,ptp0,ptp1)
       go to 30
       endif
    10 continue
    30 continue
       if(outdms.gt.0)then
-      if(lwrite .and. myrank .lt. ncnt ) &
+      if(lwrite .and. myrank .lt. ncnt ) then
+         !$acc update self(pout) async(async_id)
+         !$acc wait(async_id)
         call dmswrit_split(nx,my,lenc,kflag,pout,istat)
+      endif
       endif
       if(outgrb2 == 1 )then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+        call wrtgrb2_v2_gpu(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
             ,ptp1(6),ptp1(7),pout)
       endif
+!----------------------------------------
 !
 !  now the v components
 !
+!$acc parallel loop collapse(3) private(j,nxj) async(async_id)
      do jj = 1, jlistnum
-       j=jlist1(jj)
-       nxj=nxdef_2d(j)
        do k = 1, lev
-        do i = 1,nxj
-          work3d(i,k,jj)=vt(i,k,jj)
+        do i = 1,nxp
+         j=jlist1(jj)
+         nxj=nxdef_2d(j)
+         if(i<=nxj) work3d(i,k,jj)=vt(i,k,jj)
         enddo
        enddo
      enddo
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,work3d,vtb,pkout,wind,tens)
-!
-!!      if( lreduce.eq.1 ) call reduceintp (vtb,nxdef,nx,my)
-!
-!lzl +add===============================================================
-!!      do i =1,nx
-!!      do j =1,my
-!!         pklzl(i,j)=pklp(i,j)
-!!      end do
-!!      end do
-!
-!!      if( lreduce.eq.1 ) then
-!!          call reduceintp(pklzl,nxdef,nx,my)
-!!      endif
-
-!lzl -end================================================================
+      call voterp_gpu(nx,my,my_max,lev,lpout,pk,pklp,work3d,vtb,pkout,wind,tens)
 !
       ncnt= 0
       do 40 n=1,num
@@ -1161,71 +1062,66 @@ contains
 !  below ground level extrapolate surface wind downward
 !  deweight wind with cos latitude, earth radius
 !
+!$acc parallel loop collapse(2) private(j,nxj,xxx) async(async_id)
         do jj = 1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          xxx= rad/cosl(j)
-          do i=1,nxj
-           if(pkout(k).gt.pklp(i,jj)) wind(i,jj,k)= vtb(i,jj)
-           tmp(i,jj)=wind(i,jj,k)*xxx
+          do i=1,nxp
+           j=jlist1(jj)
+           nxj=nxdef_2d(j)
+           if(i<=nxj)then
+            xxx= rad/cosl(j)
+            if(pkout(k).gt.pklp(i,jj)) wind(i,jj,k)= vtb(i,jj)
+            tmp(i,jj)=wind(i,jj,k)*xxx
+           endif
           enddo
         enddo
-        call unify_reduceintp(nx,my,my_max,tmp,glob)
-!
-!!      do 55 i=1,nx*my
-!lzl c      if(pkout(k).gt.pklp(i,1)) wind(i,1,k)= vtb(i,1)
-!!      if(pkout(k).gt.pklzl(i,1)) wind(i,1,k)= vtb(i,1) !lzl use full grid (pklzl)
-!!   55 continue
-!
-!  deweight wind with cos latitude, earth radius
-!
-!!      do 60 j=1,my
-!!      xxx= rad/cosl(j)
-!!      do 60 i=1,nx
-!!      glob(i,j)= wind(i,j,k)*xxx
-!!   60 continue
+      call unify_reduceintp_gpu(nx,my,my_max,tmp,glob)
 !
       call syslbl_w(krec(k),idtg,itau,ggdef)
 !
 !  reduceintp has been done in voterp (2011/5)
 !
-!!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3_w(glob,1,1,1,nx,my,1)
       ptp0=(/0,2,3,2,100,-2,nint(plev(k)),-999,-999/)
-      call split2(nx,my,lenc,ncnt,glob,pout,ptp0,ptp1)
+      call split_v2_gpu(nx,my,lenc,ncnt,glob,pout,ptp0,ptp1)
       go to 40
       endif
    20 continue
    40 continue
       if(outdms.gt.0)then
-      if(lwrite .and. myrank .lt. ncnt ) & 
+      if(lwrite .and. myrank .lt. ncnt ) then
+         !$acc update self(pout) async(async_id)
+         !$acc wait(async_id)
         call dmswrit_split(nx,my,lenc,kflag,pout,istat)
+      endif
       endif
       if(outgrb2 == 1 )then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+        call wrtgrb2_v2_gpu(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
             ,ptp1(6),ptp1(7),pout)
       endif
+!----------------------------------------
 !
 !  now the w components
 !
+!$acc parallel loop collapse(2) private( j,nxj ) async(async_id)
      do jj = 1, jlistnum
+       do i = 1,nxp
        j=jlist1(jj)
        nxj=nxdef_2d(j)
-       do i = 1,nxj
-        wtb(i,jj)=0.0
+       if(i<=nxj) wtb(i,jj)=0.0
        enddo
      enddo
+!$acc parallel loop collapse(3) private(j,nxj) async(async_id)
      do jj = 1, jlistnum
-       j=jlist1(jj)
-       nxj=nxdef_2d(j)
        do k = 1, lev
-        do i = 1,nxj
-          work3d(i,k,jj)=sdhat(i,k,jj)
+        do i = 1,nxp
+         j=jlist1(jj)
+         nxj=nxdef_2d(j)
+         if(i<=nxj) work3d(i,k,jj)=sdhat(i,k,jj) * 100.0
         enddo
        enddo
      enddo
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,work3d,wtb,pkout,wind,tens)
+      call voterp_gpu(nx,my,my_max,lev,lpout,pk,pklp,work3d,wtb,pkout,wind,tens)
 !
       ncnt= 0
       do 42 n=1,num
@@ -1233,35 +1129,33 @@ contains
 !
       if(plev(k).eq.whtlev(n)) then
 !
-      call unify_reduceintp(nx,my,my_max,wind(1,1,k),glob)
-!!      do j=1,my
-!!      do i=1,nx
-!!        glob(i,j)= wind(i,j,k)
-!!      enddo
-!!      enddo
-!
+      call unify_reduceintp_gpu(nx,my,my_max,wind(1,1,k),glob)
       call syslbl_w(mrec(k),idtg,itau,ggdef)
 !
-!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3_w(glob,1,1,1,nx,my,1)
-      glob=glob*100.
       ptp0=(/0,2,8,6,100,-2,nint(plev(k)),-999,-999/)
-      call split2(nx,my,lenc,ncnt,glob,pout,ptp0,ptp1)
+      call split_v2_gpu(nx,my,lenc,ncnt,glob,pout,ptp0,ptp1)
       go to 42
       endif
    22 continue
    42 continue
       if(outdms.gt.0)then
-      if(lwrite .and. myrank .lt. ncnt ) &
+      if(lwrite .and. myrank .lt. ncnt ) then
+         !$acc update self(pout) async(async_id)
+         !$acc wait(async_id)
         call dmswrit_split(nx,my,lenc,kflag,pout,istat)
+      endif
       endif
       if(outgrb2 == 1 )then
       if(lwrite .and. myrank .lt. ncnt ) &
-        call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+        call wrtgrb2_v2_gpu(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
             ,ptp1(6),ptp1(7),pout)
       endif
+!$acc wait(async_id)
+!$acc exit data delete(wtb,tmp,pout) async(async_id)
+!$acc wait(async_id)
 !
       return
   end subroutine windout
 !
-end module mod_outflds
+end module mod_outflds_gpu

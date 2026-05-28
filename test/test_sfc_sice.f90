@@ -336,8 +336,9 @@ subroutine sfc_sice_unit
       !write(*,*) 12345
 
    if (.true.) then
-      !$acc enter data copyin(tbpvs) async(async_id)
-      !$acc enter data copyin(myim, psi, ut, vt, tt, qt, sfemis, rld, ss, &
+      !$acc update device(ut, vt, tt, qt) async(async_id) 
+      !$acc update device(tbpvs) async(async_id)
+      !$acc enter data copyin(myim, psi, sfemis, rld, ss, &
       !$acc&      sld, srflag, cd, cdq, prsl1, prslki, islmsk, ddvel, &
       !$acc&      flag_iter, nx, dth) async(async_id)
       !$acc enter data copyin(zice_gpu, cice_gpu, xtice_gpu, sheleg_gpu, &

@@ -101,7 +101,12 @@
 # fi
 
 #----------------------------------------------------------------#
-
+RSMMPMD='f'
+MODLST_RSM=''
+if [[ ${RSMMPMD} = 't' ]] ;then
+  MODLST_RSM='outrsm=t,rsmoutinv=6,'
+fi
+#----------------------------------------------------------------#
 
 #-- write out running date tag
  echo $dtg > ${GFSWRK}/crdate
@@ -127,6 +132,7 @@ EOF
 export GFSDIR DMSPATH
 export NWPETC=${GFSDIR}/etc
 export NWPETCGLB=${GFSWRK}
+#export GLB_TYPHINI="/ncs/ncsatyp/TYP/M00/dtg/tdty" #inner
 export GLB_TYPHINI="/nwpr/gfs/a361/MODEL/typhoon"
 export FIXDIR=${GFSFIX}
 
@@ -227,6 +233,7 @@ cat > ${GFSWRK}/namlsts << EOF
 !  naero=1,
   ${MODLST_RES}
   ${MODLST_PHY}
+  ${MODLST_RSM}
  &end
 
  &typ
@@ -282,6 +289,12 @@ EOF
  else
 	FCT_MODEL=$MDIR/src/$EXEC
  fi
+ if [[ ${RSMMPMD} = 't' ]] ;then
+      FCT_RSM="../rsm/run/exe/rsm.x"
+      if [[ ! -f ${FCT_RSM}  ]];then echo 'rsm exe not found'; exit -1 ;fi
+      export GMPI=${MPI}
+      export RMPI=216  #RSM use cpu core
+ fi
 
  if [ ${machine} = a100 ]; then
   export NVCOMPILER_ACC_CUDA_MEMALLOCASYNC="1"
@@ -290,6 +303,13 @@ EOF
   export NVCOMPILER_ACC_CUDA_NOCOPY="1"
  fi
  /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} -Wl,-T
+
+ ###--- NVIDIA Nsight Systems tool for A100 ---###
+ #nsys profile -t cuda,nvtx,openacc --cuda-memory-usage=true mpiexec -n ${MPI} ${FCT_MODEL} -Wl,-T
+
+ ###--- run rsm ---###
+ #/usr/bin/time -p mpiexec -stdin rfcstparm.all \
+ # -n ${GMPI} ${FCT_MODEL} -Wl,-T : -n ${RMPI} ${FCT_RSM}
 
  if [ $? != 0 ] ; then
   echo "error occured: fct model fail !!" ; exit 9

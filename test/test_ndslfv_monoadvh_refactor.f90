@@ -6,6 +6,7 @@ program test_ndslfv_monoadvh
    call mpe_init
    call cons
 
+
    xy = 1
    fgnl = .false.
    forward = .false.
@@ -168,7 +169,8 @@ subroutine ndslfv_monoadvh_unit(xy, fgnl, forward)
                                     my_max, jlistnum, jlen, nsizex, row_comm)
    end do
 
-   !$acc enter data copyin(um, ut_sl, vm, vt_sl, ut, uum_sl, vt, vvm_sl, tt, ttm_sl, qm, qm_sl, &
+   !$acc update device (ut,vt,tt) async(async_id)
+   !$acc enter data copyin(um, ut_sl, vm, vt_sl, uum_sl, vvm_sl, ttm_sl, qm, qm_sl, &
    !$acc& jlist1, nxjlen, nxjlen_all, pten_sl, cosl, nxdef, lonlen, lonstr, latlen, jlist1_sl, gglati, fa1, fa2, fa3, fa4, &
    !$acc& tt_gpu, ut_gpu, vt_gpu, qt_gpu, nxjp) async(async_id)
    do i = 1, steps
@@ -212,8 +214,9 @@ subroutine ndslfv_monoadvh_unit(xy, fgnl, forward)
       call mpe2d_transpose_ndsl_f2p_gpu(vvm_sl, vt_gpu, &
                                         nxp, nx, levf, levp, 1, myf, &
                                         my_max, jlistnum, jlen, nsizex, nccl_row_comm)
-   end do
-   !$acc exit data copyout(um, ut_sl, vm, vt_sl, ut, uum_sl, vt, vvm_sl, tt, ttm_sl, qm, qm_sl, &
+   end do  
+   !$acc update self (ut,vt,tt) async(async_id)
+   !$acc exit data copyout(um, ut_sl, vm, vt_sl, uum_sl, vvm_sl, ttm_sl, qm, qm_sl, &
    !$acc& jlist1, nxjlen, nxjlen_all, pten_sl, cosl, nxdef, lonlen, lonstr, latlen, jlist1_sl, gglati, fa1, fa2, fa3, fa4, &
    !$acc& tt_gpu, ut_gpu, vt_gpu, qt_gpu, nxjp) async(async_id)
    !$acc wait(async_id)

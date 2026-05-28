@@ -363,7 +363,8 @@ subroutine tendget_unit(no)
    !$acc enter data copyin(tcolt_jlist, poly_mlist) async(async_id)
    !$acc enter data copyin(jlist1_sl, nxjlen_all, nxjlen) async(async_id)
    !! << grid >>
-   !$acc enter data copyin(sgeo) async(async_id)
+   !!$acc enter data copyin(sgeo) async(async_id)
+   !$acc update device(sgeo) async(async_id)
    !$acc enter data copyin(lonlen, lonstr, latlen, fa1, fa2, fa3, fa4, gglati) async(async_id)
 
    ! ========================================
@@ -380,13 +381,13 @@ subroutine tendget_unit(no)
    call vcopy_spec(divten_c, divten)
 
    ! << GPU >>
-
-   !$acc enter data create(rdiv, pt, tt, ut, vt, qt, &
-   !$acc& plt, pk, pk2, dtpl, dlpl, &
-   !$acc& sd, vvel, up, vp, ttp, qm, &
-   !$acc& ut_sl, vt_sl, &
-   !$acc& phi, dlphi, dtphi) async(async_id)
-   !$acc enter data create(temten, vorten, divten, hldten, plten) async(async_id)
+   !$acc enter data create(qm,ut_sl, vt_sl ) async(async_id)
+   !!$acc enter data create(rdiv, pt, tt, ut, vt, qt, &
+   !!$acc& plt, pk, pk2, dtpl, dlpl, &
+   !!$acc& sd, vvel, up, vp, ttp, qm, &
+   !!$acc& ut_sl, vt_sl, &
+   !!$acc& phi, dlphi, dtphi) async(async_id)
+   !!$acc enter data create(temten, vorten, divten, hldten, plten) async(async_id)
 
    !$acc enter data create(buf) async(async_id)
    !$acc enter data create(phiten_g) async(async_id)

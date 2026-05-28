@@ -38,6 +38,8 @@ subroutine ptotc_unit
   call random_seed()
   call random_number(pt)
   call random_number(qt)
+  !pt =   950.0 + 100.0 * pt !  950 - 1050
+  !qt =  1.0E-5 + 100.0 * qt ! 1E-5 - 1E-3
 
   pdrym = 0.
   pdrym_gpu = 0.
@@ -45,8 +47,9 @@ subroutine ptotc_unit
   do i = 1, steps
      call ptotc(pdrym, lprint)
   end do
+  !$acc update device(pt, qt) async(async_id)
   !$acc enter data async(async_id) &
-  !$acc& copyin(jlist1, nxdef, nxdef_2d, dsigma, pt, qt, nxjlen_all, cosl, jlist2)
+  !$acc& copyin(jlist1, nxdef, nxdef_2d, dsigma, nxjlen_all, cosl, jlist2)
   do i = 1, steps
      call ptotc_gpu(pdrym_gpu, lprint)
   end do

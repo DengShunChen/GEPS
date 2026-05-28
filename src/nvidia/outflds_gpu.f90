@@ -1,4 +1,5 @@
-      subroutine outflds( itau,nx,my,my_max,lev,ncld                 &
+#define NCCLCHECK(ierr) call nccl_check_helper(ierr, __FILE__, __LINE__)
+      subroutine outflds_gpu( itau,nx,my,my_max,lev,ncld             &
              , lmax,numout,idtg                                      &
              , outdir,ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo        &
              , ptend,pt,plt,pk,pk2,phi,ut,vt,vvel                    &
@@ -18,11 +19,14 @@
       use mpe
       use rank
       use index
-      use mod_outflds
+      use mod_outflds_gpu
       use radn, only : ntcw,ntiw,ntoz
       use const, only : RTYPE,nmmiph,outgrb2,ifilout_grb
       use mod_grb2_param , only :ofdir
       use raddiag, only:clds !cloud fraction on sigma levels
+      use mod_qsatq,only:qsatq_gpu,qsatq_3d_gpu
+      use openacc
+      use cudafor
       implicit  none
 
       integer   itau,nx,my,my_max,lev,ncld,lmax,numout,ktrop,km
@@ -67,40 +71,51 @@
 !
 ! local work arrays
 !
-      real      plog(nxp,lev,my_max),pllp(nxp,my_max)
-      real(kind=RTYPE) glob(nx,my) ,tmp(nxp,lev,my_max) &
-                     , bt1(nxp,my_max),bt2(nxp,my_max)        
+      real      tmp(nxp,lev,my_max),plog(nxp,lev,my_max),pllp(nxp,my_max)
+      real(kind=RTYPE) glob(nx,my)
       real      slp(nxp,my_max)
 !
 !  pout(16) chnaged into pout(26) to increase p output to 26 levels
 !  to respond to the request from regional model
 !
       integer,  parameter :: lpout = 31 
-      real      wrk1(nxp,lev),pout(lpout),pkout(lpout),phistd(lpout) &
+      real      wrk1(nxp,lev,my_max),pout(lpout),pkout(lpout),phistd(lpout) &
 !              , bt1(nx,my),bt2(nx,my)                               &
-              , hld1(nxp,my_max),hld2(nxp,my_max) 
+              , bt1(nxp,my_max),bt2(nxp,my_max)                      !&
+!              , hld1(nxp,my_max),hld2(nxp,my_max) 
 !
       real(kind=RTYPE) pres3d(nxp,my_max,lpout)
 !
-      real(kind=RTYPE) wk_xy(nxp,my_max,12)   ! the last dim is changable
-      real      tmpin(nxp),tmpout(nxp)
-!
+      real(kind=RTYPE) wk_xy(nxp,my_max,12)     ! the last dim is changable
       real(kind=RTYPE) soil_xy(nxp,my_max,12)   ! the last dim is changable
+      real      tmpin(nxp,my_max),tmpout(nxp,my_max)
+!
 !
       real      whtlev(100),whtlevq(100),whtlevz(100)
       character*16 taudir(numout),outdir(numout)
       character*6 labx
 
-      integer   nxmy,nxlev,nxly,ntau,jj,j,nxj,k,i,n,nk,ngq,ntt,kk,ntrac
+      integer   nxmy,nxlev,nxly,ntau,jj,j,nxj,k,i,n,nk,kk,ntrac
+      integer,allocatable::   ntt(:),ngq(:)
+      integer::ntttmp,ngqtmp
       integer   llts,numz,numq,numt,iqwout,num,nclds
-      real      rad,ograv,alaps,rdg,ttb,ttp,ttt,ttt1,ttt2,anlslp
+      real      rad,ograv,alaps,rdg,ttb,ttp,ttt,ttt1,ttt2,ttt3,ttt4,anlslp
       real      apha,pl1000,splog,ax,bx,cx,dx,tmid,tsf,tadia,xx,deltap
 !
+!      integer*8 :: toutsrt, toutend, toutrate
 !
       logical :: lwrite,lwritesit
+
+      integer, parameter:: async_id = 1
+
+      integer(kind=cuda_stream_kind) :: stream
+
+
 !xb110>
 !      real      flash(nxp,my_max)         !flash density 
 !xb110<
+
+
 !
 !p16  data pout/10.0,20.0,30.0,50.0,70.0,100.0,150.0,200.0,250.0
 !p16 1         ,300.0,400.0,500.0,700.0,850.0,925.0,1000.0/
@@ -113,10 +128,36 @@
                ,1000.0/
 !
       data rad/6.371e6/
+
+      if(myrank .eq. 0) print*,'   in outflds for tau= ',itau
+
+      call whttau (itau,numout,outdir,ntau,taudir)
+      if(ntau.eq.0) return
+
+
+      allocate( tens(lev+1) )
+      do k = 1, lev+1
+       tens(k)    = 1.0
+      end do
+      tens(lev  ) = 0.0
+      tens(lev+1) = 0.0
 !
+!$acc wait(async_id)
+!$acc enter data create(tmp,bt1,bt2 ,glob) async(async_id)
+!$acc enter data create(pres3d,pkout,plog,pllp,pdiff ) async(async_id)
+!$acc enter data create(t1000,wrk1,slp,qt,phistd ) async(async_id)
+!$acc enter data create( wk_xy,soil_xy ) async(async_id)
+!$acc enter data copyin( tens ) async(async_id)
+!$acc enter data copyin(pout) async(async_id)
+!$acc wait(async_id)
+!
+
       nxmy = nx*my
       nxlev= nx*lev
       nxly = nx*lev*my
+      ograv= 1.0/grav
+      alaps = 0.0065
+      rdg = rgas/grav
 !
       if ( ntoz .gt. 0 ) then
         nclds=ntoz-1
@@ -124,20 +165,33 @@
         nclds=ncld
       endif
 !  
-      wk_xy = 0.
-      tmpin = 0.
-      tmpout= 0.
 
-      pllp=0.
-      bt1=0.
-      bt2=0.
-      pres3d=0.
-      soil_xy=0.
+!$acc parallel loop collapse(2) private( j,nxj ) async(async_id)
+      do jj = 1, jlistnum
+       do i = 1,nxp
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+
+        do k=1,lpout
+        pres3d (i,jj,k) = 0.0
+        enddo
+
+        pllp   (i,jj) = 0.0
+        bt1    (i,jj) = 0.0
+        bt2    (i,jj) = 0.0
+       enddo
+      enddo
+
+!$acc parallel loop collapse(3) private(j,nxj) async(async_id)
+      do k = 1 , 12
+       do jj = 1 , my_max
+        do i = 1 , nxp
+         wk_xy  (i,jj,k) = 0.0
+         soil_xy(i,jj,k) = 0.0
+        enddo
+       enddo
+      enddo
 !
-      if(myrank .eq. 0) print*,'   in outflds for tau= ',itau
-!
-      call whttau (itau,numout,outdir,ntau,taudir)
-      if(ntau.eq.0) return
 
       if( outgrb2 == 1)then
  134                    format( A  ,A ,I10.10 , i4.4       )
@@ -148,12 +202,13 @@
 !
 !  copy qt into local qt arrays
 !
+!$acc parallel loop collapse(3) private( j,nxj ) async(async_id)
       do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
         do k = 1, lev*ncld
-          do i = 1,nxj
-            qt(i,k,jj) = qt_org(i,k,jj)  
+          do i = 1,nxp
+           j=jlist1(jj)
+           nxj=nxdef_2d(j)
+           if(i<=nxj) qt(i,k,jj) = qt_org(i,k,jj)  
           enddo
         enddo
       enddo
@@ -163,39 +218,73 @@
       else
         ntrac=ncld
       endif
+      allocate(ngq(ntrac) , ntt(ntrac)  )
+!$acc enter data create(ngq,ntt)  async(async_id)
+       ngq(:) = 0
+       ntt(:) = 0
+!$acc wait(async_id)
+!$acc update device(ngq,ntt)  async(async_id)
+!$acc wait(async_id)
+
+      
       do n=1,ntrac
-        nk=(n-1)*lev
-        ngq = 0
-        ntt = 0
+        ngqtmp=0
+        ntttmp=0
+!$acc parallel loop collapse(3) private( j,nxj,kk )  &
+!$acc&  reduction(+:ntttmp,ngqtmp )  async(async_id)
         do jj =1,jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
           do k = 1, lev
-            kk=nk+k
-            do i = 1,nxj
-              if ( qt(i,kk,jj) .lt. 0.0 )  then
-                ngq = ngq + 1
-                qt(i,kk,jj) = 0.0
-              endif
+            do i = 1,nxp
+              kk=(n-1)*lev + k
+              j=jlist1(jj)
+              nxj=nxdef_2d(j)
+              if(i<=nxj)then
+               if ( qt(i,kk,jj) .lt. 0.0 )  then
+                 qt(i,kk,jj) = 0.0
+                 !ngq(n) = ngq(n)+1
+                 ngqtmp=ngqtmp+1
+               endif
+               !ntt(n) = ntt(n)+1
+               ntttmp=ntttmp+1
+             endif
             enddo
           enddo
-!         ntt = ntt + nxj*lev
-          ntt = ntt + nxjp(j)*lev
         enddo
-        call mpe_global_sum(ngq,1,mpe_integer)
-        call mpe_global_sum(ntt,1,mpe_integer)
-        if( n.eq.1 .and. myrank.eq.0 .and. ngq.ne.0 )  print 901, ngq
-        if( n.eq.2 .and. myrank.eq.0 .and. ngq.ne.0 )  print 902, ntt-ngq
+        !$acc wait(async_id)
+        ngq(n)=ngqtmp
+        ntt(n)=ntttmp
       enddo
+   
+!!$acc wait(async_id)
+!!$acc update self (ngq,ntt) async(async_id)
+!$acc wait(async_id)
+        call mpe_global_sum(ngq, ntrac ,mpe_integer)
+        call mpe_global_sum(ntt, ntrac ,mpe_integer)
 
+!      stream = acc_get_cuda_stream(async_id)
+!!$acc host_data use_device(ngq,ntt)
+!      NCCLCHECK( ncclAllReduce( ngq , ngq , ntrac, ncclInt32, ncclSum, nccl_comm_gfs, stream ) )
+!      NCCLCHECK( ncclAllReduce( ntt , ntt , ntrac, ncclInt32, ncclSum, nccl_comm_gfs, stream ) )
+!!$acc end host_data
+!!$acc wait(async_id)
+!!$acc exit data copyout(ngq,ntt)  async(async_id)
+!!$acc wait(async_id)
+
+        if(  myrank.eq.0 .and. ngq(1).ne.0 )  print 901, ngq(1)
+        if(  myrank.eq.0 .and. ngq(2).ne.0 )  print 902, ntt(2)-ngq(2)
   901 format ( 1x, " *** warning: in outflds, there are grid points"  &
-             , " with q < 0. , total number = ",i8,// )
+             , " with q < 0. , total number = ",i10,// )
   902 format ( 1x, " *** checking: in outflds, there are grid points" &
-             , " with qc > 0. , total number = ",i8,// )
+             , " with qc > 0. , total number = ",i10,// )
+
+!$acc wait(async_id)
+!$acc exit data delete (ngq,ntt) async(async_id)
+!$acc wait(async_id)
+      deallocate(ngq,ntt)
+
 !
 !                 compute interpolation coeffs
 !
-      ograv= 1.0/grav
 !
 !  generate structure variables
 !
@@ -204,82 +293,54 @@
       do k=1,lpout
         pkout(k)= log(pout(k))
       enddo
+!$acc update device( pkout ) async(async_id)
+
 !
 !  generate std height at p levels
 !
       call geostd(lpout,pout,phistd)
-!
-      alaps = 0.0065
-      rdg = rgas/grav
-!
-!  hydrostatic equation
-!
+!$acc update device( phistd ) async(async_id)
+!$acc wait(async_id)
+
+
+!!
+!!  hydrostatic equation
+!!
+!!$acc parallel loop collapse(2) private( j,nxj ) async(async_id)
+!      do jj =1,jlistnum
+!        do i=1,nxp
+!          j=jlist1(jj)
+!          nxj=nxdef_2d(j)
+!          if(i<=nxj)then
+!           phi(i,lev,jj)= cp*tt(i,lev,jj)*(pk2(i,lev,jj)-pk(i,lev,jj)) &
+!                        + sgeo(i,jj)
+!           do k=lev-1,1,-1
+!             phi(i,k,jj)= phi(i,k+1,jj)+cp*(tt(i,k,jj)*(pk2(i,k,jj)-pk(i,k,jj)) &
+!                        + tt(i,k+1,jj)*(pk(i,k+1,jj)-pk2(i,k,jj)))
+!           enddo
+!          endif
+!        enddo
+!      enddo
+!$acc parallel loop collapse(3) private( j,nxj ) async(async_id)
       do jj =1,jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        do i=1,nxj
-          phi(i,lev,jj)= cp*tt(i,lev,jj)*(pk2(i,lev,jj)-pk(i,lev,jj)) &
-                       + sgeo(i,jj)
-        enddo
-        do k=lev-1,1,-1
-          do i=1,nxj
-            phi(i,k,jj)= phi(i,k+1,jj)+cp*(tt(i,k,jj)*(pk2(i,k,jj)-pk(i,k,jj)) &
-                       + tt(i,k+1,jj)*(pk(i,k+1,jj)-pk2(i,k,jj)))
-          enddo
-        enddo
         do k=1,lev
-          do i=1,nxj
+          do i=1,nxp
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+            if(i<=nxj)then
             plog(i,k,jj)= log(plt(i,k,jj))
+            endif
           enddo
         enddo
       enddo
 !
-!  compute sea level pressure and update pdiff
-!  The method is based on one used by ecmwf, reseach manual 2 (1988)
-!
-!  llts layer's temperature is used to derive an alternative
-!  surface skin temperature
-!
-!      if( itau .gt. 0 )then
-!
-      !llts = lev-5
-!
-      !do jj = 1, jlistnum
-      !  j=jlist1(jj)
-      !  nxj=nxdef_2d(j)
-      !  do i=1,nxj
-      !    ttb  = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
-      !    ttp  = tt(i,llts,jj)*pk(i,llts,jj)/(1.0+0.608*qt(i,llts,jj))
-      !    ttt1 = ttb + alaps*rdg*ttb*   &
-      !        ((pt(i,jj)+ptop)/plt(i,lev,jj)-1.0)
-      !    ttt2 = ttp + alaps*(phi(i,llts,jj)-sgeo(i,jj))/grav
-      !    hld1(i,jj) = 0.25*ttt1 + 0.75*ttt2
-      !    hld2(i,jj) = hld1(i,jj) + alaps*sgeo(i,jj)/grav
-      !    if( sgeo(i,jj) .lt. 0.1 ) then
-      !      anlslp = pt(i,jj) + ptop
-      !    else if( hld1(i,jj) .le. 290.5 .and. hld2(i,jj) .gt. 290.5 ) then
-      !      apha = rgas*(290.5-hld1(i,jj))/sgeo(i,jj)
-      !      ttt = sgeo(i,jj)/(rgas*hld1(i,jj))
-      !      anlslp = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333*  &
-      !               apha*ttt*apha*ttt) )
-      !    else if( hld1(i,jj) .gt. 290.5 .and. hld2(i,jj) .gt. 290.5 ) then
-      !      hld1(i,jj) = (hld1(i,jj)+290.5)*0.5
-      !      anlslp = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,jj)) )
-      !    else if( hld1(i,jj) .lt. 255.0 .and. hld2(i,jj) .lt. 255.0 ) then
-      !      hld1(i,jj) = (hld1(i,jj)+255.0)*0.5
-      !      anlslp = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,jj)) )
-      !    else
-      !      apha = alaps * rdg
-      !      ttt = sgeo(i,jj)/(rgas*hld1(i,jj))
-      !      anlslp = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333*  &
-      !               apha*ttt*apha*ttt) )
-      !    endif
-      !    pllp(i,jj) = anlslp - pt(i,jj)
-      !    pdiff(i,jj)=pllp(i,jj)
-      !  enddo
-      !enddo
+!!
+!!      if( itau .gt. 0 )then
+!!
+
       call get_prmsl(nx,my,my_max,lev,ncld &
                     ,sgeo,pt,tt,qt,pk,pk2,plt,phi,pdiff,slp)
+
 !
 !      else
 !
@@ -295,15 +356,11 @@
 !
 !      endif     ! end of ( itau .gt. 0 )
 !
-!      call mpe_unify(pllp,nx,my,2,mpe_double)
-!      call mpe_unify(pt,nx,my,2,mpe_double)
-!      call mpe_unify(ptend,nx,my,2,mpe_double)
-!
-!
 ! output surface fields
 !
 !  add terrain pressure output in surfout ( add "ptop" )
 !
+!$acc wait(async_id)
       if(myrank.eq.0)print*,' outfld : start surfout, lwrite = ',lwrite
       call surfout (nx,my,my_max,itau,idtg,taudir,ntau,pdiff,pt  &
                    ,ptop,typtrk(1,1,1),ptend,glob,ggdef,lwrite)
@@ -313,27 +370,32 @@
 !
       pl1000= log(1000.1)
 !
+!$acc parallel loop collapse(2) private( j,nxj ) async(async_id)
       do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        do i = 1, nxj
+        do i = 1, nxp
+         j=jlist1(jj)
+         nxj=nxdef_2d(j)
+         if(i<=nxj)then
           slp(i,jj)= pt(i,jj)+pdiff(i,jj)
           if( slp(i,jj) .le. 1000.1) then
             pllp(i,jj) = 1000.1
           else
             pllp(i,jj) = slp(i,jj)
           endif
-        enddo
-!
-        call geostd (nxjp(j),pllp(1,jj),bt2(1,jj))
-!
-        do i = 1, nxj
-          pllp(i,jj) = log(pllp(i,jj))
+         endif
         enddo
       enddo
-!
-!      call mpe_unify(pllp,nx,my,2,mpe_double)
-!      call mpe_unify(bt2,nx,my,2,mpe_double)
+
+      call geostd_2d_gpu (nx,my_max,pllp,bt2)
+!$acc parallel loop collapse(2) private( j,nxj ) async(async_id)
+      do jj = 1, jlistnum
+        do i = 1, nxp
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        if(i<=nxj) pllp(i,jj) = log(pllp(i,jj))
+        enddo
+      enddo
+
 !
       labx='phi   '
       call whtrec (labx,ntau,taudir,whtlevz,numz)
@@ -344,13 +406,11 @@
       labx='tmp   '
       call whtrec (labx,ntau,taudir,whtlev,numt)
 !
+!$acc wait(async_id)
       if(numz.gt.0.or.numt.gt.0.or.numq.gt.0) then
 !
 !  temperature output
 !
-      do jj =1,jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
 !
 !  bottom boundary condition for temperature:
 !  limits for 1000 mb boundary condition are (1) standard lapse rate
@@ -358,13 +418,24 @@
 !  of slp and 1000 mb.  Boundary condition is linear combination
 !  of these two cases weighted with subterrainean thickness.
 !
+      !$acc parallel loop collapse(3) private(j,nxj)  async(async_id)
+      do jj =1,jlistnum
         do k = 1, lev
-          do i = 1,nxj
-            tmp(i,k,jj) = tt(i,k,jj)*pk(i,k,jj)/(1.0+0.608*qt(i,k,jj))
+          do i = 1,nxp
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+           if(i<=nxj) tmp(i,k,jj) = tt(i,k,jj)*pk(i,k,jj)/(1.0+0.608*qt(i,k,jj))
           enddo
         enddo
+      enddo
 !
-        do i=1,nxj
+!$acc parallel loop collapse(2) private(i,nxj,ax,bx,cx,dx,tsf, &
+!$acc& tadia,splog,tmid) async(async_id)
+      do jj =1,jlistnum
+        do i=1,nxp
+         j=jlist1(jj)
+         nxj=nxdef_2d(j)
+         if(i<=nxj)then
           slp(i,jj) = max( slp(i,jj), pt(i,jj) )
           splog= log(slp(i,jj))
           dx= log(slp(i,jj)/(pt(i,jj)+ptop))
@@ -391,10 +462,9 @@
                      / (splog - plog(i,lev,jj))
             t1000(i,jj) = bt1(i,jj)
           endif
+         endif
         enddo
       enddo
-!
-!!      call mpe_unify(bt1,nx,my,2,mpe_double)
 !
       if(numt.gt.0) then
       if(myrank.eq.0)print*,' outfld : start tempout, lwrite = ',lwrite
@@ -408,17 +478,23 @@
 !
 !  ensure no supersaturated points for output moisture fields
 !
+      call qsatq_3d_gpu(nx,my_max,lev,tmp,plt,wrk1)
+!$acc parallel loop collapse(3) private(j,nxj) async(async_id)
       do jj =1,jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        call qsatq_2d(nxjp(j),nxp,lev,tmp(1,1,jj),plt(1,1,jj),wrk1(1,1))
         do k=1, lev
-          do i=1,nxj
-            tmp(i,k,jj)= qt(i,k,jj)/wrk1(i,k)
+          do i=1,nxp
+           j=jlist1(jj)
+           nxj=nxdef_2d(j)
+           if(i<=nxj) tmp(i,k,jj)= qt(i,k,jj)/wrk1(i,k,jj)
           enddo
         enddo
-        do i=1,nxj
-          bt1(i,jj)= tmp(i,lev,jj)
+      enddo
+      !$acc parallel loop collapse(2) private(i,nxj) async(async_id)
+      do jj =1,jlistnum
+        do i=1,nxp
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        if(i<=nxj) bt1(i,jj)= tmp(i,lev,jj)
         enddo
       enddo
 
@@ -435,17 +511,25 @@
 !  output all hydrometeors
         do ntrac=1,nclds
           if ( ntrac .eq. 1 .or. nclds .gt. 2 ) then
+            !$acc parallel loop collapse(3) private(i,nxj,kk) async(async_id)
             do jj = 1, jlistnum
-              j=jlist1(jj)
-              nxj=nxdef_2d(j)
               do k = 1, lev
-                kk = (ntrac-1)*lev+k
-                do i = 1,nxj
-                  tmp(i,k,jj)=qt(i,kk,jj)
+                do i = 1,nxp
+                  j=jlist1(jj)
+                  nxj=nxdef_2d(j)
+                  if(i<=nxj)then
+                    kk = (ntrac-1)*lev+k
+                    tmp(i,k,jj)=qt(i,kk,jj)
+                  endif
                 enddo
               enddo
-              do i = 1,nxj
-                bt1(i,jj)=tmp(i,lev,jj)
+            enddo
+            !$acc parallel loop collapse(2) private(i,nxj) async(async_id)
+            do jj = 1, jlistnum
+              do i = 1,nxp
+                j=jlist1(jj)
+                nxj=nxdef_2d(j)
+                if(i<=nxj) bt1(i,jj)=tmp(i,lev,jj)
               enddo
             enddo
 !!        call mpe_unify(bt1,nx,my,2,mpe_double)
@@ -457,16 +541,25 @@
 !
 !  output ozone
         if ( ntoz .eq. ncld ) then
+         !$acc parallel loop collapse(3) private(i,nxj,kk) async(async_id)
           do jj = 1, jlistnum
-            j=jlist1(jj)
-            nxj=nxdef_2d(j)
             do k = 1, lev
-              do i = 1,nxj
-                tmp(i,k,jj)=qt(i,k+(ntoz-1)*lev,jj)
+              do i = 1,nxp
+              j=jlist1(jj)
+              nxj=nxdef_2d(j)
+              if(i<=nxj)then
+                kk=k+(ntoz-1)*lev
+                tmp(i,k,jj)=qt(i,kk,jj)
+               endif
               enddo
             enddo
-            do i = 1,nxj
-              bt1(i,jj)=tmp(i,lev,jj)
+          enddo
+         !$acc parallel loop collapse(2) private(i,nxj) async(async_id)
+          do jj = 1, jlistnum
+            do i = 1,nxp
+              j=jlist1(jj)
+              nxj=nxdef_2d(j)
+              if(i<=nxj) bt1(i,jj)=tmp(i,lev,jj)
             enddo
           enddo
 !!        call mpe_unify(bt1,nx,my,2,mpe_double)
@@ -477,19 +570,29 @@
 !        
 !  output for combination of all condensates
         if ( nmmiph .eq. 18 ) nclds = 6  !do not combine number concentraction for 2M Thompson
-        tmp=0.
+        !tmp=0.
+!$acc parallel loop collapse(3) private(j,nxj,kk) async(async_id)
         do jj = 1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
           do k = 1, lev
-            do ntrac=2,nclds
-              do i = 1,nxj
-                tmp(i,k,jj)=tmp(i,k,jj)+qt(i,k+(ntrac-1)*lev,jj)
-              enddo
+            do i = 1,nxp
+              j=jlist1(jj)
+              nxj=nxdef_2d(j)
+              if( i<=nxj)then
+                tmp(i,k,jj) = 0.0
+                do ntrac=2,nclds
+                  kk=k+(ntrac-1)*lev
+                  tmp(i,k,jj)=tmp(i,k,jj)+qt(i,kk,jj)
+                enddo
+              endif
             enddo
           enddo
-          do i = 1,nxj
-            bt1(i,jj)=tmp(i,lev,jj)
+        enddo
+         !$acc parallel loop collapse(2) private(i,nxj) async(async_id)
+        do jj = 1, jlistnum
+          do i = 1,nxp
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+            if(i<=nxj) bt1(i,jj)=tmp(i,lev,jj)
           enddo
         enddo
 !!        call mpe_unify(bt1,nx,my,2,mpe_double)
@@ -506,32 +609,45 @@
 !  geopotential height output
 !
       if(numz.gt.0) then
+!$acc parallel loop collapse(2) private( j,nxj ) async(async_id)
         do jj =1,jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          do i=1,nxj
+          do i=1,nxp
+           j=jlist1(jj)
+           nxj=nxdef_2d(j)
+           if(i<=nxj)then
             if(slp(i,jj).le.1000.1) then
               bt1(i,jj)= t1000(i,jj)*rgas*log(slp(i,jj)*0.001)
             else
               bt1(i,jj) = min( sgeo(i,jj), 0.0 )
             endif
+           endif
           enddo
+        enddo
 !
 !  compute standard geopotentials, subtract them from sigma
 !  level values. vertical interpolation will be done on
 !  these deviation from standard values
 !
+        call geostd_3d_gpu (nx,my_max,lev,plt,wrk1)
+!$acc parallel loop collapse(3) private(j,nxj) async(async_id)
+        do jj =1,jlistnum
           do k=1,lev
-            call geostd (nxjp(j),plt(1,k,jj),wrk1(1,k))
-            do i=1,nxj
-              tmp(i,k,jj) = ograv*phi(i,k,jj)-wrk1(i,k)
+            do i=1,nxp
+             j=jlist1(jj)
+             nxj=nxdef_2d(j)
+             if(i<=nxj) tmp(i,k,jj) = ograv*phi(i,k,jj)-wrk1(i,k,jj)
             enddo
           enddo
+        enddo
 !
 !  bottom boundary conditions
 !
-          do i=1,nxj
-            bt1(i,jj) = ograv*bt1(i,jj) - bt2(i,jj)
+!$acc parallel loop collapse(2) private(j,nxj) async(async_id)
+        do jj =1,jlistnum
+          do i=1,nxp
+           j=jlist1(jj)
+           nxj=nxdef_2d(j)
+           if(i<=nxj) bt1(i,jj) = ograv*bt1(i,jj) - bt2(i,jj)
           enddo
         enddo
 !!        call mpe_unify(bt1,nx,my,2,mpe_double)
@@ -548,16 +664,22 @@
       labx='vor   '
       call whtrec (labx,ntau,taudir,whtlev,num)
       if(num.gt.0) then
+!$acc parallel loop collapse(3) private(j,nxj) async(async_id)
         do jj =1,jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          do k = 1, lev
-              do i = 1,nxj
-                tmp(i,k,jj)=rvor(i,k,jj)
-              enddo
+          do k=1,lev
+            do i=1,nxp
+             j=jlist1(jj)
+             nxj=nxdef_2d(j)
+             if(i<=nxj) tmp(i,k,jj) = rvor(i,k,jj)
+            enddo
           enddo
-          do i=1,nxj
-            bt1(i,jj)= rvor(i,lev,jj)
+        enddo
+!$acc parallel loop collapse(2) private(j,nxj) async(async_id)
+        do jj =1,jlistnum
+          do i=1,nxp
+           j=jlist1(jj)
+           nxj=nxdef_2d(j)
+           if(i<=nxj) bt1(i,jj)= rvor(i,lev,jj)
           enddo
         enddo
 !!        call mpe_unify(bt1,nx,my,2,mpe_double)
@@ -570,16 +692,22 @@
       labx='div   '
       call whtrec (labx,ntau,taudir,whtlev,num)
       if(num.gt.0) then
+!$acc parallel loop collapse(3) private(j,nxj) async(async_id)
         do jj =1,jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          do k = 1, lev
-              do i = 1,nxj
-                tmp(i,k,jj)=rdiv(i,k,jj)
-              enddo
+          do k=1,lev
+            do i=1,nxp
+             j=jlist1(jj)
+             nxj=nxdef_2d(j)
+             if(i<=nxj) tmp(i,k,jj) = rdiv(i,k,jj)
+            enddo
           enddo
-          do i=1,nxj
-            bt1(i,jj)= rdiv(i,lev,jj)
+        enddo
+!$acc parallel loop collapse(2) private(j,nxj) async(async_id)
+        do jj =1,jlistnum
+          do i=1,nxp
+             j=jlist1(jj)
+             nxj=nxdef_2d(j)
+             if(i<=nxj) bt1(i,jj)= rdiv(i,lev,jj)
           enddo
         enddo
 !!        call mpe_unify(bt1,nx,my,2,mpe_double)
@@ -591,12 +719,15 @@
       labx='wnd   '
       call whtrec (labx,ntau,taudir,whtlev,num)
       if(num.gt.0) then
+!$acc parallel loop collapse(2) private(j,nxj) async(async_id)
         do jj =1,jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          do i=1,nxj
+          do i=1,nxp
+           j=jlist1(jj)
+           nxj=nxdef_2d(j)
+           if(i<=nxj)then
             bt1(i,jj)= ut(i,lev,jj)
             bt2(i,jj)= vt(i,lev,jj)
+           endif
           enddo
         enddo
 !!        call mpe_unify(bt1,nx,my,2,mpe_double)
@@ -609,16 +740,23 @@
       labx='dag   '
       call whtrec (labx,ntau,taudir,whtlev,num)
       if(num.gt.0) then
+!$acc enter data copyin(drag) async(async_id)
+!$acc parallel loop collapse(3) private(j,nxj) async(async_id)
         do jj =1,jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
           do k=1,lev
-           do i=1,nxj
-            tmp(i,k,jj)= drag(i,lev,jj)
-           enddo
+            do i=1,nxp
+             j=jlist1(jj)
+             nxj=nxdef_2d(j)
+             if(i<=nxj) tmp(i,k,jj) = drag(i,k,jj)
+            enddo
           enddo
-          do i=1,nxj
-            bt1(i,jj)= drag(i,lev,jj)
+        enddo
+!$acc parallel loop collapse(2) private(j,nxj) async(async_id)
+        do jj =1,jlistnum
+          do i=1,nxp
+             j=jlist1(jj)
+             nxj=nxdef_2d(j)
+             if(i<=nxj) bt1(i,jj)= drag(i,lev,jj)
           enddo
         enddo
 !!        call mpe_unify(bt1,nx,my,2,mpe_double)
@@ -626,26 +764,30 @@
         call dragout (nx,my,my_max,lpout,lev,itau,idtg,pout,num &
                   ,whtlev,pkout,plog,pllp,tmp,bt1,pres3d,ggdef,lwrite)
       endif
+!$acc exit data delete(drag) async(async_id)
 !
-!!follow ECMWF output Fraction of cloud cover on pressure levels
+!!output Fraction of cloud cover on pressure levels
 !!clouds output
       labx='cld   '
       call whtrec (labx,ntau,taudir,whtlev,num)
-      !for debug
-      !num=12
-      !whtlev(1:12)=(/100.,150.,200.,250.,300.,400.,500.,600.,700.,850.,925.,1000./)
       if(num.gt.0) then
-        tmp=0.
+!        tmp=0.
+!$acc parallel loop collapse(3) private(j,nxj) async(async_id)
         do jj = 1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
           do k = 1, lev
-              do i = 1,nxj
-                tmp(i,k,jj)=clds(i,k,jj)
-              enddo
+            do i = 1,nxp
+             j=jlist1(jj)
+             nxj=nxdef_2d(j)
+             if(i<=nxj) tmp(i,k,jj)=clds(i,k,jj) * 100.0
+            enddo
           enddo
-          do i = 1,nxj
-            bt1(i,jj)=clds(i,lev,jj)
+        enddo
+!$acc parallel loop collapse(2) private(j,nxj) async(async_id)
+        do jj = 1, jlistnum
+          do i = 1,nxp
+             j=jlist1(jj)
+             nxj=nxdef_2d(j)
+             if(i<=nxj) bt1(i,jj)=tmp(i,lev,jj)
           enddo
         enddo
           call cloudout(nx,my,my_max,lpout,lev,itau,idtg,pout,num &
@@ -659,6 +801,7 @@
           call sitout(nx,my,my_max,itau,idtg,num,whtlev,ggdef)
         endif
       endif
+
 !
 !  wk_xy(-,-,1) : temperature at the lowest sigma level
 !  wk_xy(-,-,2) : u wind at the lowest sigma level
@@ -666,44 +809,80 @@
 !  wk_xy(-,-,4) : precipitable water
 !  wk_xy(-,-,5) : relative humidity at the lowest sigma level
 !
+
       if(ncld.ge.2)then
         ntrac=2
       else
         ntrac=ncld
       endif
-      do jj = 1, jlistnum
+
+
+!$acc parallel loop collapse(2) private(j,nxj,xx) async(async_id)
+      do jj = 1 , jlistnum
+        do i = 1 , nxp
         j=jlist1(jj)
         nxj=nxdef_2d(j)
-        xx=rad/cosl(j)
-        do i = 1,nxj
-          wk_xy(i,jj,1) = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
-          wk_xy(i,jj,2) = ut(i,lev,jj)*xx
-          wk_xy(i,jj,3) = vt(i,lev,jj)*xx
-        end do
-        do n = 1, ntrac
+        if(i<=nxj)then
+         xx=rad/cosl(j)
+         wk_xy(i,jj,1) = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
+         wk_xy(i,jj,2) = ut(i,lev,jj)*xx
+         wk_xy(i,jj,3) = vt(i,lev,jj)*xx
+        endif
+       enddo
+      enddo
+
+!$acc parallel loop collapse(2) private(j,nxj,kk,deltap) async(async_id)
+      do jj = 1, jlistnum
+       do i = 1,nxp
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        if(i<=nxj)then
+         wk_xy(i,jj,4) = 0.0
+         do n = 1, ntrac
           do k = 1, lev
             kk=(n-1)*lev+k
-            do i = 1,nxj
-              deltap = ( pt(i,jj)*(sigma(k+1,1)-sigma(k,1))+ &
-                       (sigma(k+1,2)-sigma(k,2)) ) * 100./grav
-              wk_xy(i,jj,4) = wk_xy(i,jj,4) + qt(i,kk,jj)*deltap
-            enddo
+            deltap = ( pt(i,jj)*(sigma(k+1,1)-sigma(k,1))+ &
+                     (sigma(k+1,2)-sigma(k,2)) ) * 100./grav
+            wk_xy(i,jj,4) = wk_xy(i,jj,4) + qt(i,kk,jj)*deltap
           enddo
-        enddo
-        tmpin(:)=wk_xy(:,jj,1)
-        call qsatq(nxj,tmpin,plt(1,lev,jj),tmpout)
-        wk_xy(:,jj,5)=tmpout(:)
-        do i = 1,nxj
+         enddo !ntrac
+        endif
+       end do
+      end do
+
+
+!$acc parallel loop collapse(2) private(j,nxj) async(async_id)
+      do jj = 1, jlistnum
+       do i = 1,nxp
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        if(i<=nxj)then
+         tmpin(i,jj)=wk_xy(i,jj,1)
+         bt1  (i,jj)=plt(i,lev,jj)
+        endif
+       enddo
+      enddo
+      call qsatq_gpu(nxp,my_max,tmpin ,bt1 ,tmpout)
+!$acc parallel loop collapse(2) private(j,nxj) async(async_id)
+      do jj = 1, jlistnum
+       do i = 1,nxp
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        if(i<=nxj)then
+          wk_xy(i,jj,5) = tmpout(i,jj)
           wk_xy(i,jj,5) = 100.*(qt(i,lev,jj)/wk_xy(i,jj,5))
           wk_xy(i,jj,5) = min( 100., max( 1., wk_xy(i,jj,5) ) )
-        enddo
+        endif
+       enddo
       enddo
 
 !
+!$acc parallel loop collapse(2) private(j,nxj) async(async_id)
       do jj =1,jlistnum
+       do i=1,nxp
         j=jlist1(jj)
         nxj=nxdef_2d(j)
-        do i=1,nxj
+        if(i<=nxj)then
           wk_xy(i,jj,6)  = ctot(i,jj) * 100.0
           wk_xy(i,jj,7)  = chig(i,jj) * 100.0
           wk_xy(i,jj,8)  = cmid(i,jj) * 100.0
@@ -711,14 +890,17 @@
           wk_xy(i,jj,10) = hpbl(i,jj)
           wk_xy(i,jj,11) = qt(i,1,jj)
           wk_xy(i,jj,12) = qt(i,lev,jj)
-        enddo
+        endif
+       enddo
       enddo
 
 !soil variable
+!$acc parallel loop collapse(2) private(j,nxj) async(async_id)
       do jj = 1, jlistnum
+        do i = 1,nxp
         j=jlist1(jj)
         nxj=nxdef_2d(j)
-        do i = 1,nxj
+        if(i<=nxj)then
           soil_xy(i,jj,1 ) = smc(i,1,jj)
           soil_xy(i,jj,2 ) = smc(i,2,jj)
           soil_xy(i,jj,3 ) = smc(i,3,jj)
@@ -731,20 +913,33 @@
           soil_xy(i,jj,10) = stc(i,2,jj)
           soil_xy(i,jj,11) = stc(i,3,jj)
           soil_xy(i,jj,12) = stc(i,4,jj)
+        endif
         enddo
       enddo
-
 !
 ! output some 2-dimension veriable to dmsfile
 !
       if(myrank .eq. 0) print *,'call out2d'
       if ( lwrite )                                                 &
-      call out2d (nx,lev,my,my_max,itau,idtg,taudir,ntau            &
+      call out2d_gpu (nx,lev,my,my_max,itau,idtg,taudir,ntau        &
                  ,hflux,qflux,tg,gwet,snr,z0,raintot,raincu,rainlp  &
                  ,plcl,cumtop,ss,rs,alb,gwclim,glob                 &
                  ,acld,ugws,vgws,t2,q2,rh2,rh10,u10,v10,gfx,rld     &
 !xb110                 ,sld,wk_xy,soil_xy,canopy,ggdef,lwrite,flash)
                  ,sld,wk_xy,soil_xy,canopy,ggdef)
+
+
 !
+!$acc wait(async_id)
+!$acc update self(typtrk) async(async_id)
+!$acc exit data delete( wk_xy,soil_xy ) async(async_id)
+!$acc exit data delete( tmp,bt1,bt2 ,glob) async(async_id)
+!$acc exit data delete( pres3d,pkout,plog,pllp,pdiff) async(async_id)
+!$acc exit data delete( t1000,wrk1,slp,qt,phistd ) async(async_id)
+!$acc exit data delete( pout) async(async_id)
+!$acc exit data delete( tens ) async(async_id)
+!$acc wait(async_id)
+      deallocate( tens )
+
       return
       end

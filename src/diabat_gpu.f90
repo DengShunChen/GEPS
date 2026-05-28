@@ -202,7 +202,7 @@
 !
          use physcons, only: con_rd, con_fvirt, con_rerth, con_rv, con_pi
 ! for slavepp
-         use phygrid, only: dtcup, ducup, dvcup, dtshl, dushl, dvshl, dtlsp, dulsp, dvlsp
+         use phygrid, only: dtcup, ducup, dvcup, dtshl, dushl, dvshl, dtlsp, dulsp, dvlsp, sstc
 ! for land_noah_new
          use namelist_soilveg, only: MAX_SLOPETYP, MAX_SOILTYP, MAX_VEGTYP, &
              slope_data, bb, drysmc, f11, maxsmc, refsmc, satpsi, satdk, satdw, &
@@ -474,7 +474,9 @@
 ! for new shlcon
          real rcup2(nxp, my_max)
 ! for scale-aware convection
-         real garea(nxp, my_max), tpr, tem1(my_max), tem2(my_max), jup, jdn, tpi
+         real garea(nxp, my_max), tpr, tem1(my_max), tem2(my_max), tpi
+         integer jup, jdn
+
 ! for wsm6 & thompson
          integer nmmiph
          real phii(nxp, lev + 1, my_max)
@@ -486,7 +488,7 @@
          logical SL_sedi, sat_predict, new_saturation, use_cpm, use_declination
 ! for updating low boundary condition
          integer ls(nxp, my_max)
-         real sstc(nxp, my_max), z0ocn(nxp, my_max)
+         real  z0ocn(nxp, my_max)
          logical doclxu, iceold(nxp, my_max)
 
 !CWB 2007-09-27 for random number seed >>>
@@ -569,6 +571,8 @@
 
 ! for dissipation convective (test)
       real      diss_dcc(nxp,lev,my_max)
+      real ::   diss_sst = 10. ,DissSSTARate
+      real      ssta(nxp,my_max)
       450 format(a3, 1x, a, 1x, I3, 1x, 30(ES26.17, 1x))
       451 format(a3, 1x, a, 1x, I3, 1x, 30(I10, 1x))
       !write(*,*) nxjp
@@ -644,8 +648,8 @@
          !$acc&      work3, dlength, cldf, tauctx, taucty, heat, evap, &
          !$acc&      area, rhc_mp) async(async_id)
          !$acc enter data create(itlsp, nnlsp, dtcupd, dqcupd, dtcupl, dqcupl) async(async_id)
-         !$acc enter data copyin(tbpvs) async(async_id)
-         !$acc enter data create(sstc, ls) async(async_id)
+         !!$acc enter data copyin(tbpvs) async(async_id)
+         !$acc enter data create(ls) async(async_id)
 #ifdef TIMCOMCPL
          !$acc enter data create(ice_cpl, ocean_cpl, z0_cpl) async(async_id)
 #endif
@@ -809,6 +813,23 @@
                   z0ocn(i, jj) = z0(i, jj)
                end do
             end do
+
+            DissSSTARate = 1.0 - ( 1.0 / Diss_sst )! SST anomaly dissipate rate
+            !$acc parallel loop collapse(2) private(j,nxj) async(async_id)
+            do jj = 1, jlistnum
+             do i=1,nxp
+              j=jlist1(jj)
+              nxj=nxdef_2d(j)
+              if(i<=nxj)then
+               ssta(i,jj) = 0.0
+               if(ocean(i,jj) )then
+                !get sst anomaly
+                ssta(i,jj) = ( tg(i,jj) - sstc(i,jj) ) * DissSSTARate
+                !ssta(i,jj) = max( min( ssta(i,jj) , 10.0 ) ,-10.0 )
+               endif
+              endif
+            enddo
+            enddo
 !     read climate data
             !$acc wait(async_id)
             call readclx(nx, my, my_max, julian, land, ocean, ice, tgclim, gwclim, &
@@ -850,7 +871,10 @@
 !---------------------------------------------------------------------
 !            if ( .not. do_sit )then
 #ifndef TIMCOMCPL
-                     if (ocean(i, jj)) tg(i, jj) = sstc(i, jj)
+                    ! if (ocean(i, jj)) tg(i, jj) = sstc(i, jj)
+                    if (ocean(i,jj))then
+                      tg(i,jj)= sstc(i,jj) + ssta(i,jj) 
+                    endif
 #else
                      if (ocean(i,jj) .and. tg_ocn(i,jj) .eq. 0) tg(i, jj)=sstc(i,jj)
 #endif
@@ -1214,8 +1238,8 @@
             j = jlist1(jj)
             ! for scale-aware
             tem1(jj) = tpr*cosl(j)/float(nxdef(j))
-            jup = min(j + 1, my)
-            jdn = max(j - 1, 1)
+            jup = int( min(j + 1, my) )
+            jdn = int( max(j - 1, 1) )
             tem2(jj) = radus*0.5*abs(xlat(jup) - xlat(jdn))*d2r
          end do
          
@@ -4147,8 +4171,8 @@
          !$acc&     work3, dlength, cldf, tauctx, taucty, heat, evap, &
          !$acc&     area, rhc_mp) async(async_id)
          !$acc exit data delete(itlsp, nnlsp, dtcupd, dqcupd, dtcupl, dqcupl) async(async_id)
-         !$acc exit data delete(tbpvs) async(async_id)
-         !$acc exit data delete(sstc, ls) async(async_id)
+         !!$acc exit data delete(tbpvs) async(async_id)
+         !$acc exit data delete(ls) async(async_id)
 #ifdef TIMCOMCPL
          !$acc exit data delete(ice_cpl, ocean_cpl, z0_cpl) async(async_id)
 #endif
