@@ -22,8 +22,8 @@
                     cp, sigma, dsigma, ptop, ptmeans, tmeans, spalm, &
                     eigval, evecin, evectr, arrhyd, arsddt, pmcor, tmcor, &
                     ! --------------------
-                    poly, dpoly, polyf, dpolyf, weight, cim, &
-                    wcfac, wdfac, onocos  ! tranuv, trandv
+                    poly, dpoly, polyf, dpolyf, weight, cim, cosl, &
+                    wcfac, wdfac, onocos,aki ,bki  ! tranuv, trandv
    use grid, only: rdiv, ut, vt, tt, qt, pt, &
                    dtpl, dlpl, &
                    pk, pk2, plt, &
@@ -33,6 +33,7 @@
                    vorold, divold, temold, plold, &
                    vorten, divten, temten, &
                    hldten, plten
+   use mod_typhoon, only: typtrk
    use cudafor
 #else
    use param
@@ -70,16 +71,7 @@
 #ifdef TIMCOMCPL
       call gfs_cpl_init(compid)
 #endif
-!
-!  read in initial data and prepare for initialization/forecast
-!
-   call getrdy
-!
-!  initialization would be done here, taking initial spectral fields
-!  out of 'getrdy' and preparing them for 'intgrt'.  for identification
-!  purposes only, initialization history file data is assigned
-!  "tau"=1.0.
-!
+
    !! << param >>
    !$acc enter data copyin(nx, my, lev, jtrun, ncld, &
    !$acc&                  my_max, jtmax) async(async_id)
@@ -92,25 +84,24 @@
    !$acc& Llist, nxjp, nxjstart, nxjend, nxjlen, nxdef_2d, nxjp_acc, nxjlen_all &
    !$acc& ) async(async_id)
    !! << const >>
-   !$acc enter data copyin(poly, dpoly, polyf, dpolyf, weight, cim, &
-   !$acc&                  wcfac, wdfac, onocos) async(async_id)
-
-   !! << spec >>
-   !$acc enter data create(temten, vorten, divten, hldten, plten, &
-   !$acc&                  temold, vorold, divold, plold, &
-   !$acc&                  temnow, vornow, divnow, plnow &
+   !$acc enter data copyin(poly, dpoly, polyf, dpolyf, weight, cim, cosl, &
+   !$acc&                  wcfac, wdfac, onocos, sigma ,dsigma,aki ,bki    &
    !$acc& ) async(async_id)
-   !! << grid >>
-   !$acc enter data create(rdiv, ut, vt, tt, qt, pt, &
-   !$acc&                  dtpl, dlpl, &
-   !$acc&                  pk, pk2, plt, sgeo, phi, dtphi, dlphi, &
-   !$acc&                  sd, vvel &
-   !$acc& )async(async_id)
-
-   !$acc update device(pt, ut, vt, tt, qt) async(async_id)
-   !$acc update device(rdiv, phi, dtpl, dlpl) async(async_id)
-   !$acc update device(vornow, divnow, temnow, plnow) async(async_id)
-   !$acc update device(sgeo) async(async_id)
+   !!! << spec >>
+   !!$acc enter data create(temten, vorten, divten, hldten, plten, &
+   !!$acc&                  temold, vorold, divold, plold, &
+   !!$acc&                  temnow, vornow, divnow, plnow &
+   !!$acc& ) async(async_id)
+!
+!  read in initial data and prepare for initialization/forecast
+!
+   call getrdy
+!
+!  initialization would be done here, taking initial spectral fields
+!  out of 'getrdy' and preparing them for 'intgrt'.  for identification
+!  purposes only, initialization history file data is assigned
+!  "tau"=1.0.
+!
    if (donnmi .and. taui .lt. 1.0) then
       no = 2*((jtrun + 1)/2) + (jtrun/2) + 10
 #ifdef USE_CUDA

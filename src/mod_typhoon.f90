@@ -49,12 +49,13 @@
          subroutine allocate_typhoon_array
 
            integer  ierr
-
+           integer, parameter:: async_id = 1
 !byl           allocate (tlon(nx,my),tlat(my),tydom(nx,my),             &
 !byl                     slp(nx,my),v850(nx,my),v700(nx,my),h850(nx,my),&
 !by                     h500(nx,my), stat=ierr)
            allocate (tlon(nx),tlat(my),tydom(nx,my),             &
                      typtrk(nxp,my_max,5), stat=ierr)
+           !$acc enter data create( typtrk ) async(async_id)
 
            if (ierr/= 0) then
                write(6,*) 'mod_typhoon : allocate fail 1 '

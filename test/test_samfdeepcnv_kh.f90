@@ -231,7 +231,8 @@ subroutine samfdeepcnv_kh_unit(itimestep, benchmark, ct, gt)
 
    if (.false.) then
          !$acc wait(async_id)
-         !$acc enter data copyin(jlist1, tbpvs) async(async_id)
+         !$acc update device(tbpvs) async(async_id)
+         !$acc enter data copyin(jlist1 ) async(async_id)
          !$acc enter data copyin(nxjp, del, prsl, psfc, phil, islimsk, garea, &
          !$acc&      dotc) async(async_id)
          !$acc enter data copyin(qtr_gpu, qti_gpu, qtc_gpu, ttc_gpu, utc_gpu, &

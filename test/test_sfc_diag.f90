@@ -191,7 +191,7 @@ subroutine sfc_diag_unit
       !write(*,*) 12345
 
    if (.true.) then
-      !$acc enter data copyin(tbpvs) async(async_id)
+      !$acc update device(tbpvs) async(async_id)
       !$acc enter data copyin(myim, psi, ut, vt, tt, qt, tg, qsurf, prslki, qflux, &
       !$acc&      fm, fh, fm10, fh2, fh10) async(async_id)
       !$acc enter data copyin(u10_gpu, v10_gpu, t2_gpu, q2_gpu, rh2_gpu, &

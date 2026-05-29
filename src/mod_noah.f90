@@ -36,6 +36,7 @@
          subroutine allocate_noah_array
 
            integer  ierr
+           integer,parameter :: async_id = 1
 
            allocate (smc(nxp,km_soil,my_max), stc(nxp,km_soil,my_max), &
                      slc(nxp,km_soil,my_max), stat=ierr)
@@ -48,6 +49,7 @@
            stc=0.
            smc=0.
            slc=0.
+!$acc enter data create(stc, smc, slc) async(async_id)
 !
            allocate (canopy(nxp,my_max), runoff(nxp,my_max),rld(nxp,my_max), &
               sigmaf(nxp,my_max), sld(nxp,my_max),gfx(nxp,my_max),           &
@@ -60,19 +62,21 @@
                write(6,*) 'mod_noah : allocate fail 2 '
                stop
            end if
-
 !CWB2016
-           xtice=0.
-           sfemis=0.
-           sfalb=0.
-           zice=0.
-           sncover=0.
-           gfx=0.
-           canopy=0.
-           sndepth=0.
-           cice=0.
-           sld=0.
-           rld=0.
+           xtice  =0.0
+           sfemis =0.0
+           sfalb  =0.0
+           zice   =0.0
+           sncover=0.0
+           gfx    =0.0
+           canopy =0.0
+           sndepth=0.0
+           cice   =0.0
+           sld    =0.0
+           rld    =0.0
+!$acc enter data create(canopy,runoff,rld,sigmaf,sld,gfx,zice &
+!$acc& ,cice,xtice,sncover,sndepth,shdmax,shdmin,snoalb,sfalb &
+!$acc& ,sfemis) async(async_id)
 
            allocate (slopetyp(nxp,my_max),istyp(nxp,my_max),&
                      ivegtyp(nxp,my_max), stat=ierr)
@@ -80,6 +84,7 @@
                write(6,*) 'mod_noah : allocate fail 3 '
                stop
            end if
+!$acc enter data create(slopetyp,istyp,ivegtyp) async(async_id)
 
            return
 

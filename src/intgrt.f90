@@ -1462,6 +1462,8 @@
           end do
 !    ---------------------------------------------------------------
 #ifdef TIMCOMCPL
+          call get_prmsl(nx,my,my_max,lev,ncld &
+                        ,sgeo,pt,tt,qt,pk,pk2,plt,phi,pdiff,mslp)
           u10m_cpl = u10m_cpl + u10*dtx
           v10m_cpl = v10m_cpl + v10*dtx
           t02m_cpl = t02m_cpl +  t2*dtx
@@ -1863,6 +1865,8 @@
 #ifdef RSM_sig
 ! for sigma coordinate
                 if (outrsm .and. mod(float(itau) + 0.00001, float(rsmoutinv)) .lt. 0.01) then
+                   call get_prmsl(nx,my,my_max,lev,ncld &
+                        ,sgeo,pt,tt,qt,pk,pk2,plt,phi,pdiff,mslp)
                    if (myrank .eq. 0) print *, ' call rsmout for rsm output at tau=', itau
                    call rsmout(idtg, itau, nx, my, my_max, lev, ncld &
                                , ptop, cp, rgas, grav, sgeo, pdiff &
@@ -1973,6 +1977,7 @@
             if ( mod( itau , 6 ) == 0 ) then
              raincu6=0.
              rainlp6=0.
+             runoff=0.0 !6 hr zero out
             endif
         endif
 !

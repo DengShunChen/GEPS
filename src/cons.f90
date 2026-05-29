@@ -48,7 +48,7 @@
                    skeb_vdof,skebnorm, skebfilt, &
                    ssst, ssst_seed, ssst_decort, ssst_lscale, &
                    init_stochastic_physics
-      use mod_grb2_param, only:grbmem,grbnumm
+      use mod_grb2_param, only:grbmem,grbnumm, grbnxmy, latlong, seclist01
 
       implicit  none
 
@@ -148,7 +148,7 @@
         call mpe_finalize
         call dmsexit(-1)
       else
-        if(myrank .eq. 0) print *,truefile
+        if(myrank .eq. 0) print *,trim(truefile)
       endif
 !
       open (unit=12,file=trim(truefile),form='formatted')
@@ -167,13 +167,17 @@
 !
       read (1,modlst,end=120)
   120 continue
+      rewind(1)
       read (1,typ,end=121)
   121 continue
+      rewind(1)
       ! read stochastic_physics
       read (1,stochy_physics,end=122)
   122 continue
+      rewind(1)
       read (1,gce_3ice,end=124)
   124 continue
+      rewind(1)
       read (1,grb_conf,end=123)
   123 continue
       close(1)
@@ -197,6 +201,12 @@
   130 continue
       endif
       close(1)
+
+      if(myrank .eq. 0)then
+        print modlst
+        print typ
+        print stochy_physics
+      endif
 
 !
       open (unit=2,file=trim(crdate),form='formatted')
@@ -263,9 +273,6 @@
         hours = mod(hours,24.)
       endif
 !
-      if(myrank .eq. 0) print modlst
-      if(myrank .eq. 0) print typ
-      if(myrank .eq. 0) print stochy_physics
 !
       if (taui .ge. taue)  then
         if(myrank .eq. 0)  &
@@ -911,6 +918,13 @@
 990  continue
 
 !for 2dMPI <<
+
+!    for grib2 information
+      if( outgrb2 == 1)then
+       grbnxmy=nx*my
+       call latlong(nx,my)
+       call seclist01( idtg, 0 )
+      endif
 
       return
       end

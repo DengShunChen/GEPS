@@ -31,6 +31,7 @@
 
          subroutine allocate_spec_array
 
+           integer,parameter :: async_id = 1
            integer  ierr
 
            allocate (vornow(levp,2,jtrun,jtmax),divnow(levp,     2,jtrun,jtmax), &
@@ -86,6 +87,11 @@
            spgeo=0.
            jtwv=0.
            plmid=0.   ! avoid undefine valuse
+
+   !$acc enter data create(temten, vorten, divten, hldten, plten, &
+   !$acc&                  temold, vorold, divold, plold, &
+   !$acc&                  temnow, vornow, divnow, plnow &
+   !$acc& ) async(async_id)
 
            return
 

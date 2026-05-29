@@ -106,16 +106,16 @@ subroutine trandv_gpu(jtrun, jtmax, nx, my, my_max, lev, ut, vt, w, cim &
 #endif
    else
 #ifdef SP
-!$omp  parallel do default(none)  &
-!$omp  private(jj,j,nxj,gwk1)     &
-!$omp  shared(jlistnum,jlist1,nxdef,cc,trigsj,ifaxj,nx,levp) &
-!$omp  schedule(dynamic)
+!!$omp  parallel do default(none)  &
+!!$omp  private(jj,j,nxj,gwk1)     &
+!!$omp  shared(jlistnum,jlist1,nxdef,cc,trigsj,ifaxj,nx,levp) &
+!!$omp  schedule(dynamic)
       do jj = 1, jlistnum
          j = jlist1(jj)
          nxj = nxdef(j)
          call rfftmlt_sp(cc(1, 1, 1, jj), gwk1(1, 1, 1, jj), trigsj(1, j), ifaxj(1, j), 1, nx + 2, nxj, levp*2, -1)
       end do
-!$omp end parallel do
+!!$omp end parallel do
 #else
       call rfftmlt_loop(cc, gwk1, trigsj, ifaxj, jlist1, nxdef, jlistnum, nx + 2, levp*2, -1)
 #endif

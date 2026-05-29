@@ -1,4 +1,4 @@
-      subroutine outflds_green( itau,nx,my,my_max,lev,ncld       &
+      subroutine outflds_green_gpu( itau,nx,my,my_max,lev,ncld   &
              , idtg,cp,rgas,grav,t2,u10,v10,ss,pk                &
              , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6)
 !
@@ -9,10 +9,10 @@
       use index
       use const ,only:aki,bki ,outdms ,outgrb2 ,ifilout_grb , &
                       RTYPE,kflag,ggdef
-      use mod_grb2_param , only :ofdir,wrt_grb2_v2,wrt_grb2_accu_v2
+      use mod_grb2_param , only :ofdir,wrtgrb2_v2_gpu,wrtgrb2_accu_v2_gpu
 
-      use noah,only:runoff, cice ,zice 
-      use phygrid,only:ice,ocean,land
+      use noah,only:runoff
+      use mod_qsatq
 
       implicit  none
 
@@ -36,16 +36,15 @@
 !
       real(kind=RTYPE) glob(nx,my),mout(nx,my),wrk(nxp,my_max),      &
                        rh0(nxp,my_max)
-!
       real      whtlev(100),whtlevq(100),whtlevz(100)
       character*6 labx
 
       integer   jj,j,nxj,k,i,n,nk,ntrac,ll,mm,la,kk
 !
-      real oqt(nxp,my_max),oqc(nxp,my_max),ou(nxp,my_max),  &
-           ov(nxp,my_max),ot(nxp,my_max),pla(nxp,my_max),   &
-           pp(nxp,my_max),p2(nxp,my_max),p10(nxp,my_max),   &
-           rhtmp(nxp)
+      real(kind=RTYPE) oqt(nxp,my_max),oqc(nxp,my_max), ou(nxp,my_max),  &
+                        ov(nxp,my_max), ot(nxp,my_max),pla(nxp,my_max)
+      real pp(nxp,my_max),p2(nxp,my_max),p10(nxp,my_max),   &
+           rhtmp(nxp,my_max), plt_bt(nxp,my_max)
       real, parameter ::rad=6.371e6
       integer,parameter :: l= 4, m= 2
       real   avett,p(l),hm(m),xxx,temp,tepl(nxp,l,my_max)
@@ -56,23 +55,43 @@
       character layer(2)*3,var(6)*3,wtemp*6
       data layer/'H10','B40'/
       data var/'010','500','200','210','100','550'/
+      real plyr(nxp,l,my_max)
+      integer,parameter:: async_id = 1
 !
-      pla=0.
-      oqt=0.
-      oqc=0.
-      ou=0.
-      ov=0.
-      ot=0.
-      runoff=0.
+!$acc wait(async_id)
+!$acc enter data create(pla,oqt,oqc,ou,ov,ot,tepl,plyr) async(async_id)
+!$acc enter data create(pp,p2,p10,tht) async(async_id)
+!$acc enter data create(wrk,glob,mout) async(async_id)
+!$acc enter data create(akir,bkir) async(async_id)
+!$acc enter data create(plt_bt,rhtmp) async(async_id)
+!$acc enter data copyin(hm) async(async_id)
+
+!$acc parallel loop collapse(2) private(j,nxj) async(async_id)
+      do jj = 1, jlistnum
+        do i = 1, nxp
+         j=jlist1(jj)
+         nxj=nxdef_2d(j)
+         if(i<=nxj)then
+           pla(i,jj)= 0.0
+           oqt(i,jj)= 0.0
+           oqc(i,jj)= 0.0
+           ou (i,jj)= 0.0
+           ov (i,jj)= 0.0
+           ot (i,jj)= 0.0
+         endif
+        enddo
+      enddo
+
       rcp=rgas/cp
       lenc = nx*my
       nc=0
+
+!$acc parallel loop private(kk) async(async_id)
       do k=1,l
         kk=lev-k+1
         akir(k)=aki(kk)
         bkir(k)=bki(kk)
       enddo
-
         if( outgrb2 == 1)then
  134                      format( A  ,A ,I10.10 , i4.4       )
              write(ofdir,134 )trim(ifilout_grb),'/',idtg/100 ,itau
@@ -81,13 +100,16 @@
 !=======================================================================
       if(myrank .eq. 0) print*,'   in outflds_green for tau= ',itau
 !----------------------------------------------------------------------
+      call sigmap_gpu(nxp,my_max,l,akir,bkir,pt,plyr)
       do mm=1,m    ! 1: 100m, 2: 40m.
 !-----------------------------------------------------------------------
 ! calculate PQUVT at new layer.
+!$acc parallel loop collapse(2) private(j,nxj,avett,la,temp,xxx) async(async_id)
       do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-          do i = 1, nxj
+        do i = 1, nxp
+         j=jlist1(jj)
+         nxj=nxdef_2d(j)
+         if(i<=nxj)then
 ! ave. temp.
           avett=(tt(i,lev,jj)+tt(i,lev-1,jj))/2.*                  &
                 ((plt(i,lev,jj)+plt(i,lev-1,jj))/2./1000.)**rcp/     &
@@ -96,39 +118,39 @@
         pp(i,jj)=(pt(i,jj)+ptop)*(exp(-(hm(mm)*grav)/(rgas*avett)))
         p2(i,jj)=(pt(i,jj)+ptop)*(exp(-(2.0*grav)/(rgas*avett)))
         p10(i,jj)=(pt(i,jj)+ptop)*(exp(-(10.0*grav)/(rgas*avett)))
-        pla(i,jj)=pp(i,jj)
+        pla(i,jj)=pp(i,jj) * 100.0
 ! transfer temperature from tt(virtual theta) to tepl(temperature).
         la=0
         do ll=lev,lev-3,-1
           la=la+1
-          tepl(i,la,jj)=(tt(i,ll,jj)*(pla(i,jj)/1000.)**rcp)/(1.+0.608*qt(i,ll,jj))
+          tepl(i,la,jj)=(tt(i,ll,jj)*(pp(i,jj)/1000.)**rcp)/(1.+0.608*qt(i,ll,jj))
         enddo
 
-        call sigmap(l,akir(:),bkir(:),pt(i,jj),p)
+        !call sigmap(l,akir(:),bkir(:),pt(i,jj),p)
 ! find pp pressure position
-         if(pp(i,jj).gt.p(1))then
-          temp=(pp(i,jj)-p(2))/(p(1)-p(2))-1.0
+         if(pp(i,jj).gt.plyr(i,1,jj))then
+          temp=(pp(i,jj)-plyr(i,2,jj))/(plyr(i,1,jj)-plyr(i,2,jj))-1.0
           oqt(i,jj)=qt(i,lev,jj)+temp*(qt(i,lev,jj)-qt(i,lev-1,jj))
           oqt(i,jj)=max(oqt(i,jj),1.e-8)
           oqc(i,jj)=qt(i,lev*2,jj)+temp*(qt(i,lev*2,jj)-qt(i,lev*2-1,jj))
           oqc(i,jj)=max(oqc(i,jj),1.e-8)
 
-         xxx= rad/cosl(j)
-         ou(i,jj)=u10(i,jj)/xxx
-         ov(i,jj)=v10(i,jj)/xxx
-          temp=(p(1)-pp(i,jj))/(p(1)-p10(i,jj))
+          xxx= rad/cosl(j)
+          ou(i,jj)=u10(i,jj)/xxx
+          ov(i,jj)=v10(i,jj)/xxx
+          temp=(plyr(i,1,jj)-pp(i,jj))/(plyr(i,1,jj)-p10(i,jj))
           ou(i,jj)=ou(i,jj)*temp+ut(i,lev,jj)*(1.0-temp)
           ov(i,jj)=ov(i,jj)*temp+vt(i,lev,jj)*(1.0-temp)
 
-          temp=(p(1)-pp(i,jj))/(p(1)-p2(i,jj))
+          temp=(plyr(i,1,jj)-pp(i,jj))/(plyr(i,1,jj)-p2(i,jj))
           ot(i,jj)=t2(i,jj)*temp+tepl(i,1,jj)*(1.0-temp)
 
           goto 99
           endif
 
         do ll=1,l-1
-         if((pp(i,jj).le.p(ll)).and.(pp(i,jj)).gt.p(ll+1))then
-          temp=(p(ll)-pp(i,jj))/(p(ll)-p(ll+1))
+         if((pp(i,jj).le.plyr(i,ll,jj)).and.(pp(i,jj)).gt.plyr(i,ll+1,jj))then
+          temp=(plyr(i,ll,jj)-pp(i,jj))/(plyr(i,ll,jj)-plyr(i,ll+1,jj))
           oqt(i,jj)=qt(i,lev-ll+1,jj)*temp+qt(i,lev-ll,jj)*(1.0-temp)
           oqt(i,jj)=max(oqt(i,jj),1.e-8)
           oqc(i,jj)=qt(i,lev*2-ll+1,jj)*temp+qt(i,lev*2-ll,jj)*(1.0-temp)
@@ -140,8 +162,8 @@
          endif
         enddo
 
-         if(pp(i,jj).le.p(l))then
-          temp=(p(l-1)-pp(i,jj))/(p(l-1)-p(l))-1.0
+         if(pp(i,jj).le.plyr(i,l,jj))then
+          temp=(plyr(i,l-1,jj)-pp(i,jj))/(plyr(i,l-1,jj)-plyr(i,l,jj))-1.0
           oqt(i,jj)=qt(i,lev-l+1,jj)+temp*(qt(i,lev-l+1,jj)-qt(i,lev-l+2,jj))
           oqt(i,jj)=max(oqt(i,jj),1.e-8)
           oqc(i,jj)=qt(i,lev*2-l+1,jj)+temp*(qt(i,lev*2-l+1,jj)-qt(i,lev*2-l+2,jj))
@@ -155,194 +177,252 @@
  99   continue
 ! transfer tt(theta tv) to T
 !        tepl(i,j)=(ot(i,j)*(pla(i,j)/1000.)**rcp)/(1.+0.608*oqt(i,j))
-
+        endif
         enddo  ! end (i)
       enddo  ! end (jj)
 
-!      call mpe_unify(pla,nx,my,2,mpe_double)
-!      call mpe_unify(oqt,nx,my,2,mpe_double)
-!      call mpe_unify(oqc,nx,my,2,mpe_double)
-!      call mpe_unify(tepl,nx,my,2,mpe_double)
-!      call mpe_unify(ot,nx,my,2,mpe_double)
+!$acc parallel loop collapse(2) private(j,nxj,xxx) async(async_id)
       do 50 jj = 1, jlistnum
+      do 50 i=1,nxp
       j=jlist1(jj)
       nxj=nxdef_2d(j)
+      if(i<=nxj)then
       xxx= rad/cosl(j)
-      do 50 i=1,nxj
        ou(i,jj)= ou(i,jj)*xxx
        ov(i,jj)= ov(i,jj)*xxx
+      endif
    50 continue
 
-!      call mpe_unify(globu,nx,my,2,mpe_double)
-!      call mpe_unify(globv,nx,my,2,mpe_double)
 !-----------------------------------------------------------------------
-
 !output P
       write(wtemp,'(a3,a3)')layer(mm),var(1)
       call syslbl_w(wtemp,idtg,itau,ggdef)
-      wrk=pla * 100.0
-      call unify_reduceintp(nx,my,my_max,wrk,glob)
+      call unify_reduceintp_gpu(nx,my,my_max,pla,glob)
+      call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/0,3,0,1,103,0,nint(hm(mm)),-999,-999/)
-      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
+      call split_v2_gpu(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 
 !output Q
       write(wtemp,'(a3,a3)')layer(mm),var(2)
       call syslbl_w(wtemp,idtg,itau,ggdef)
-      wrk=oqt
-      call unify_reduceintp(nx,my,my_max,wrk,glob)
+      call unify_reduceintp_gpu(nx,my,my_max,oqt,glob)
+      call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/0,1,0,6,103,0,nint(hm(mm)),-999,-999/)
-      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
+      call split_v2_gpu(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 
       write(wtemp,'(a3,a3)')layer(mm),var(6)
       call syslbl_w(wtemp,idtg,itau,ggdef)
-      wrk=oqc
-      call unify_reduceintp(nx,my,my_max,wrk,glob)
+      call unify_reduceintp_gpu(nx,my,my_max,oqc,glob)
+      call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/0,1,235,8,103,0,nint(hm(mm)),-999,-999/)
-      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
+      call split_v2_gpu(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 
 !output U,V
       write(wtemp,'(a3,a3)')layer(mm),var(3)
       call syslbl_w(wtemp,idtg,itau,ggdef)
-      wrk=ou
-      call unify_reduceintp(nx,my,my_max,wrk,glob)
+      call unify_reduceintp_gpu(nx,my,my_max,ou,glob)
+      call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/0,2,2,2,103,0,nint(hm(mm)),-999,-999/)
-      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
+      call split_v2_gpu(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 
       write(wtemp,'(a3,a3)')layer(mm),var(4)
       call syslbl_w(wtemp,idtg,itau,ggdef)
-      wrk=ov
-      call unify_reduceintp(nx,my,my_max,wrk,glob)
+      call unify_reduceintp_gpu(nx,my,my_max,ov,glob)
+      call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/0,2,3,2,103,0,nint(hm(mm)),-999,-999/)
-      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
+      call split_v2_gpu(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 
 !output T
       write(wtemp,'(a3,a3)')layer(mm),var(5)
       call syslbl_w(wtemp,idtg,itau,ggdef)
-      wrk=ot
-      call unify_reduceintp(nx,my,my_max,wrk,glob)
+      call unify_reduceintp_gpu(nx,my,my_max,ot,glob)
+      call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/0,0,0,2,103,0,nint(hm(mm)),-999,-999/)
-      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
+      call split_v2_gpu(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 !-----------------------------------------------------------------------
       enddo  ! end (mm)
 !=======================================================================
 !output S00310(net SW flux at the surface)
       write(wtemp,'(a6)')'S00310'
       call syslbl_w(wtemp,idtg,itau,ggdef)
-      wrk=ss
-      call unify_reduceintp(nx,my,my_max,wrk,glob)
-      ptp0=(/0,4,9,2,1,0,0,-999,-999/)
-      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
-
-!output RH at bottom level
+      !$acc parallel loop collapse(2) private(j,nxj) async(async_id)
       do jj = 1, jlistnum
+        do i=1,nxp
         j=jlist1(jj)
         nxj=nxdef_2d(j)
-          do i = 1, nxj
-          tht(i,jj) =tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
-          enddo
-       call qsatq(nxj,tht(1,jj),plt(1,lev,jj),rhtmp)
-          do i = 1, nxj
-           rh0(i,jj)=rhtmp(i)
-           rh0(i,jj)=100.*(qt(i,lev,jj)/rh0(i,jj))
-           rh0(i,jj)= min( 100., max( 1., rh0(i,jj) ) )
-          enddo
+        if(i<=nxj) wrk(i,jj)=ss(i,jj)
+        enddo
+      enddo
+      call unify_reduceintp_gpu(nx,my,my_max,wrk,glob)
+      call qmaxn3_w (glob,1,1,1,nx,my,1)
+      ptp0=(/0,4,9,2,1,0,0,-999,-999/)
+      call split_v2_gpu(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
+
+!output RH at bottom level
+      !$acc parallel loop collapse(2) private(j,nxj) async(async_id)
+      do jj = 1, jlistnum
+        do i = 1, nxp
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          if(i<=nxj)then
+           tht(i,jj) =tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
+           plt_bt(i,jj) = plt(i,lev,jj)
+          endif
+        enddo
+      enddo
+      call qsatq_gpu (nx,my_max,tht,plt_bt,rhtmp)
+      !$acc parallel loop collapse(2) private(j,nxj) async(async_id)
+      do jj = 1, jlistnum
+        do i = 1, nxp
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          if(i<=nxj)then
+           wrk(i,jj)=100.*(qt(i,lev,jj)/rhtmp(i,jj))
+           wrk(i,jj)= min( 100., max( 1., wrk(i,jj) ) )
+          endif
+        enddo
       enddo
       write(wtemp,'(a6)')'B00510'
       call syslbl_w(wtemp,idtg,itau,ggdef)
-      call unify_reduceintp(nx,my,my_max,rh0,glob)
+      call unify_reduceintp_gpu(nx,my,my_max,wrk,glob)
+      call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/0,1,1,2,103,0,0,-999,-999/)
-      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
+      call split_v2_gpu(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 
 !output b00010
+      !$acc parallel loop collapse(2) private(j,nxj) async(async_id)
       do jj = 1, jlistnum
+        do i = 1, nxp
         j=jlist1(jj)
         nxj=nxdef_2d(j)
-          do i = 1, nxj
-           wrk(i,jj)=pt(i,jj)+ptop
-           wrk(i,jj)=wrk(i,jj) * 100.0
-          enddo
+        if(i<=nxj) wrk(i,jj)=( pt(i,jj)+ptop ) * 100.0
+        enddo
       enddo
       write(wtemp,'(a6)')'B00010'
       call syslbl_w(wtemp,idtg,itau,ggdef)
-      call unify_reduceintp(nx,my,my_max,wrk,glob)
+      call unify_reduceintp_gpu(nx,my,my_max,wrk,glob)
+      call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/0,3,0,1,103,0,0,-999,-999/)
-      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
+      call split_v2_gpu(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 !=======================================================================
 !output 6hr prec.
       if (mod(float(itau)+0.00001, 6. ) .lt. 0.01) then
       call syslbl_w ('b00633',idtg,itau,ggdef)
-      wrk=raincu6
-      call unify_reduceintp(nx,my,my_max,wrk,glob)
+      !$acc parallel loop collapse(2) private(j,nxj) async(async_id)
+      do jj = 1, jlistnum
+        do i=1,nxp
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        if(i<=nxj) wrk(i,jj)=raincu6(i,jj)
+        enddo
+      enddo
+      call unify_reduceintp_gpu(nx,my,my_max,wrk,glob)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/0,1,10,2,103,0,0,1,6/)
-      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
+      call split_v2_gpu(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 
 !
       call syslbl_w ('b00643',idtg,itau,ggdef)
-      wrk=rainlp6
-      call unify_reduceintp(nx,my,my_max,wrk,glob)
+      !$acc parallel loop collapse(2) private(j,nxj) async(async_id)
+      do jj = 1, jlistnum
+        do i=1,nxp
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        if(i<=nxj) wrk(i,jj)=rainlp6(i,jj)
+        enddo
+      enddo
+      call unify_reduceintp_gpu(nx,my,my_max,wrk,glob)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/0,1,47,2,103,0,0,1,6/)
-      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
+      call split_v2_gpu(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 
 !
       call syslbl_w ('b00623',idtg,itau,ggdef)
+      !$acc parallel loop collapse(2) private(j,nxj) async(async_id)
       do 98 jj = 1, jlistnum
+      do 98 i=1,nxp
       j=jlist1(jj)
       nxj=nxdef_2d(j)
-      do 98 i=1,nxj
-       wrk(i,jj)=raincu6(i,jj)+rainlp6(i,jj)
+      if (i<=nxj) wrk(i,jj)=raincu6(i,jj)+rainlp6(i,jj)
  98   continue
-      call unify_reduceintp(nx,my,my_max,wrk,glob)
+      call unify_reduceintp_gpu(nx,my,my_max,wrk,glob)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/0,1,8,2,103,0,0,1,6/)
-      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
+      call split_v2_gpu(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 
       !runoff
-      wrk=runoff
-      call syslbl_w ('runoff',idtg,itau,ggdef)
-      call unify_reduceintp(nx,my,my_max,wrk,glob)
+      !$acc parallel loop collapse(2) private(j,nxj) async(async_id)
+      do jj = 1, jlistnum
+        do i=1,nxp
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        if(i<=nxj) wrk(i,jj)=runoff(i,jj)
+        enddo
+      enddo
+      call syslbl_w ('b00663',idtg,itau,ggdef)
+      call unify_reduceintp_gpu(nx,my,my_max,wrk,glob)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/2,0,5,2,103,0,0,1,6/)
-      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
-      runoff(:,:)=0.0 !6 hr zero out
+      call split_v2_gpu(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 
       endif !mod(float(itau)+0.00001, 6. ) .lt. 0.01
 
 !
+
+!
       if(outdms.gt.0)then
-      if ( myrank .lt. nc )             &
+      if ( myrank .lt. nc ) then
+         !$acc update self(mout) async(async_id)
+         !$acc wait(async_id)
          call dmswrit_split(nx,my,lenc,kflag,mout,istat)
+      endif
       endif
 
       if(outgrb2 == 1 )then
        if ( myrank .lt. nc ) then
         if(ptp1(8)==-999)then
-        call wrt_grb2_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+        call wrtgrb2_v2_gpu(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
             ,ptp1(6),ptp1(7),mout)
         else
-        call wrt_grb2_accu_v2(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
+        call wrtgrb2_accu_v2_gpu(itau,ptp1(1),ptp1(2),ptp1(3),ptp1(4),ptp1(5) &
             ,ptp1(6),ptp1(7),ptp1(8),ptp1(9),mout)
         endif
        endif
       endif
+!$acc wait(async_id)
+!$acc exit data delete(wrk,glob,mout) async(async_id)
+!$acc exit data delete(pla,oqt,oqc,ou,ov,ot,tepl,plyr) async(async_id)
+!$acc exit data delete(pp,p2,p10,tht) async(async_id)
+!$acc exit data delete(akir,bkir,hm) async(async_id)
+!$acc exit data delete(plt_bt,rhtmp) async(async_id)
+!$acc wait(async_id)
 !
 !=======================================================================
       return
       end
 
 !***********************************************************************
-      subroutine sigmap(layer,aki,bki,psfc,p)
-!
+      subroutine sigmap_gpu(nxp,my_max,layer,aki,bki,psfc,p)
       use const, only: RTYPE
-!
+      use index,only:jlistnum,nxdef_2d,jlist1
       implicit none
-      integer i, layer
-      real p(layer)
-      real(kind=RTYPE) psfc,aki(layer), bki(layer)
-
-      do i=1,layer
-      p(i)=aki(i)+(bki(i)*psfc)
+      integer i,j,jj,k,nxj,nxp,my_max, layer
+      real p(nxp,layer,my_max)
+      real(kind=RTYPE) psfc(nxp,my_max),aki(layer), bki(layer)
+      integer,parameter:: async_id = 1
+      !$acc parallel loop collapse(3) private(j,nxj) async(async_id)
+      do  jj = 1, jlistnum
+       do k=1,layer
+        do i=1,nxp
+         j=jlist1(jj)
+         nxj=nxdef_2d(j)
+         if(i<=nxj)then
+          p(i,k,jj)=aki(k)+(bki(k)*psfc(i,jj))
+         endif
+        enddo
+       enddo
       enddo
+
       return
       end
+

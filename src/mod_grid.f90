@@ -11,7 +11,7 @@
       public
 
       real, dimension(:,:),allocatable,save ::                      &
-                           pdiff,t1000,tsave,std
+                           pdiff,mslp,t1000,tsave,std
       real(kind=RTYPE),dimension(:,:),allocatable,save :: pt,sgeo,  &
                            ptend,ptp
 
@@ -39,6 +39,7 @@
       contains
 
          subroutine allocate_grid_array
+           integer,parameter :: async_id = 1
 
            integer  ierr
 
@@ -78,9 +79,11 @@
            ut=0. ;  vt=0.;  sd=0.; rvor=0.; rdiv=0.
            tt=0. ;  qt=0.; phi=0.;  plt=0.;   pk=0.
            pk2=0.;  up=0.;  vp=0.;  ttp=0.;   qp=0.
+!$acc enter data create(ut,vt,sd,rvor,rdiv,tt,qt,phi,plt &
+!$acc&                 ,pk,pk2,up,vp,ttp,qp) async(async_id)
 
            allocate (pt(nxp,my_max),dlpl(nxp,my_max),dtpl(nxp,my_max), &
-                    sgeo(nxp,my_max), pdiff(nxp,my_max),&
+                    sgeo(nxp,my_max), pdiff(nxp,my_max), mslp(nxp,my_max), &
                     ptend(nxp,my_max), t1000(nxp,my_max), tsave(nxp,my_max), &
                     std(nxp,my_max), ptp(nxp,my_max) ,stat=ierr)
            if (ierr/= 0) then
@@ -88,6 +91,8 @@
                stop
            end if
            sgeo=0.; std=0.; pdiff=0.; tsave=0.; pt=0.
+!$acc enter data create( sgeo,std,pdiff,tsave,pt,ptp,mslp) async(async_id)
+!$acc enter data create( dtpl,dlpl) async(async_id)
 
            allocate (gslati(my*2+1),gglati(my*2+1),                 &
                      lonstr(npe),lonlen(npe),                       &
@@ -113,30 +118,23 @@
            end if
            dlphi=0.
            dtphi=0.
+!$acc enter data create(dlphi,dtphi) async(async_id)
 
 !CWB2015
            ptend=0.
 
 !CWB2018
-           ut=0.
-           vt=0.
-           up=0.
-           vp=0.
-           tt=0.
-           ttp=0.
-           qt=0.
-           qp=0.
 !! for Semi-Lagrangiain
            rdivm=0.
            ut_sl=0.
            vt_sl=0.
            qm=0.
-           sd=0.
            vvel=0.
            fa1=0.
            fa2=0.
            fa3=0.
            fa4=0.
+!$acc enter data create(vvel) async(async_id)
 
            return
 
@@ -146,7 +144,7 @@
 
            deallocate (ut,vt,sd,vvel,rvor,rdiv,tt,qt,phi,plt,pk,pk2,up,vp,ttp,qp,qm)
            deallocate (rdivm)
-           deallocate ( pt,dlpl,dtpl,sgeo,pdiff, &
+           deallocate ( pt,dlpl,dtpl,sgeo,pdiff,mslp, &
                 ptend,t1000,tsave,std,ptp)
            ! for Semi-Lagrangian
            deallocate (gslati,gglati,lonstr,lonlen,latstr,latlen)

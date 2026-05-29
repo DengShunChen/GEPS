@@ -193,7 +193,7 @@
 !
       use physcons, only :con_rd,con_fvirt,con_rerth,con_rv,con_pi
 ! for slavepp
-      use phygrid,  only :dtcup,ducup,dvcup,dtshl,dushl,dvshl,dtlsp,dulsp,dvlsp
+      use phygrid,  only :dtcup,ducup,dvcup,dtshl,dushl,dvshl,dtlsp,dulsp,dvlsp,sstc
 ! for land_noah_new
       use namelist_soilveg, only :MAX_SLOPETYP,MAX_SOILTYP,MAX_VEGTYP
       use mod_stochastic_physics, only : sppt3d, shum3d, ssst3d,     &
@@ -473,7 +473,8 @@
       real      qni
 ! for updating low boundary condition
       integer   ls(nxp,my_max)
-      real      sstc(nxp,my_max),z0ocn(nxp,my_max)
+      !real      sstc(nxp,my_max),z0ocn(nxp,my_max)
+      real      z0ocn(nxp,my_max)
       logical   doclxu,iceold(nxp,my_max)
 
 
@@ -528,6 +529,8 @@
       real dtx_tau,dtaup,dtxb
 ! for dissipation convective (test)
       real      diss_dcc(nxp,lev)
+      real ::   diss_sst = 10. ,DissSSTARate
+      real      ssta(nxp,my_max)
 !xb110>
       ztenh = 0.
       zqenh = 0.
@@ -667,6 +670,21 @@
            print *,'update low boundary condition at tau= ',tau
         iceold=ice
         z0ocn=z0
+
+        DissSSTARate = 1.0 !- ( 1.0 / Diss_sst )! SST anomaly dissipate rate
+        do jj = 1, jlistnum
+         j=jlist1(jj)
+         nxj=nxdef_2d(j)
+         do i=1,nxj
+           ssta(i,jj) = 0.0
+           if(ocean(i,jj) )then
+            !get sst anomaly
+            ssta(i,jj) = ( tg(i,jj) - sstc(i,jj) ) * DissSSTARate
+            !ssta(i,jj) = max( min( ssta(i,jj) , 10.0 ) ,-10.0 )
+          endif
+         enddo
+        enddo
+
 !     read climate data
         call readclx( nx,my,my_max,julian,land,ocean,ice,tgclim,gwclim  &
                    ,z0,alb,sstc,sigmaf,istyp,ivegtyp,ls                 &
@@ -694,7 +712,8 @@
 !---------------------------------------------------------------------
 !            if ( .not. do_sit )then
 #ifndef TIMCOMCPL
-            if (ocean(i,jj)) tg(i,jj)=sstc(i,jj)
+          ! if (ocean(i,jj)) tg(i,jj)=sstc(i,jj)
+            if (ocean(i,jj)) tg(i,jj)=sstc(i,jj) + ssta(i,jj) 
 #else
             if (ocean(i,jj) .and. tg_ocn(i,jj) .eq. 0) tg(i, jj)=sstc(i,jj) 
 #endif

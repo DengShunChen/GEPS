@@ -77,6 +77,7 @@ SRCS_f90  = \
   geostd.f90 \
   get_model_param.f90 \
   get_phi.f90 \
+  get_prmsl.f90 \
   getphi.f90 \
   getrdy.f90 \
   gfcst.f90 \
