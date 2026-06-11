@@ -42,7 +42,7 @@ module unuse ${MDIR}/modulefiles
    DMSFLAG=GI
  fi
 
- dtg='22081500'
+ dtg='23012000'
  fgdtg=$(/users/xb80/bin/Caldtg.ksh ${dtg} -6)
 
  idmshead='MASOPS'
