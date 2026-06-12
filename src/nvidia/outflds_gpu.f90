@@ -92,7 +92,7 @@
 !
 !
       real      whtlev(100),whtlevq(100),whtlevz(100)
-      character*16 taudir(numout),outdir(numout)
+      character*18 taudir(numout),outdir(numout)
       character*6 labx
 
       integer   nxmy,nxlev,nxly,ntau,jj,j,nxj,k,i,n,nk,kk,ntrac
@@ -306,21 +306,21 @@
 !!
 !!  hydrostatic equation
 !!
-!!$acc parallel loop collapse(2) private( j,nxj ) async(async_id)
-!      do jj =1,jlistnum
-!        do i=1,nxp
-!          j=jlist1(jj)
-!          nxj=nxdef_2d(j)
-!          if(i<=nxj)then
-!           phi(i,lev,jj)= cp*tt(i,lev,jj)*(pk2(i,lev,jj)-pk(i,lev,jj)) &
-!                        + sgeo(i,jj)
-!           do k=lev-1,1,-1
-!             phi(i,k,jj)= phi(i,k+1,jj)+cp*(tt(i,k,jj)*(pk2(i,k,jj)-pk(i,k,jj)) &
-!                        + tt(i,k+1,jj)*(pk(i,k+1,jj)-pk2(i,k,jj)))
-!           enddo
-!          endif
-!        enddo
-!      enddo
+!$acc parallel loop collapse(2) private( j,nxj ) async(async_id)
+      do jj =1,jlistnum
+        do i=1,nxp
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          if(i<=nxj)then
+           phi(i,lev,jj)= cp*tt(i,lev,jj)*(pk2(i,lev,jj)-pk(i,lev,jj)) &
+                        + sgeo(i,jj)
+           do k=lev-1,1,-1
+             phi(i,k,jj)= phi(i,k+1,jj)+cp*(tt(i,k,jj)*(pk2(i,k,jj)-pk(i,k,jj)) &
+                        + tt(i,k+1,jj)*(pk(i,k+1,jj)-pk2(i,k,jj)))
+           enddo
+          endif
+        enddo
+      enddo
 !$acc parallel loop collapse(3) private( j,nxj ) async(async_id)
       do jj =1,jlistnum
         do k=1,lev
@@ -338,7 +338,7 @@
 !!      if( itau .gt. 0 )then
 !!
 
-      call get_prmsl(nx,my,my_max,lev,ncld &
+      call get_prmsl_gpu(nx,my,my_max,lev,ncld &
                     ,sgeo,pt,tt,qt,pk,pk2,plt,phi,pdiff,slp)
 
 !

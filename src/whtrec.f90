@@ -5,7 +5,7 @@
       integer ntau,num,n,lev
 
       character*6 label,labx
-      character*16 taudir(ntau)
+      character*18 taudir(ntau)
 !
       real  whtlev(100)
 !

@@ -43,6 +43,7 @@ option(USE_SP "enable partial computation with single precision" OFF)
 option(TIMCOMCPL "enable CPL TIMCOM" ON)
 option(CWBSUM "enable CWBSUM" ON)
 option(USE_aeroclx "enable Readaeroclx" OFF)
+option(USE_NDMS "enable NDMS" OFF)
 
 set(GPU_ARCHS
     "80"
@@ -83,6 +84,7 @@ message(STATUS "CUDA_RUNTIME_VERSION: ${CUDA_RUNTIME_VERSION}")
 message(STATUS "Output path:  ${TCO_OUTPUT_PATH}")
 message(STATUS "Install path: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "BUILD_TYPE : ${CMAKE_BUILD_TYPE}")
+message(STATUS "USE_NDMS:       ${USE_NDMS}")
 
 if(${USE_CUDA})
   include(OpenACC)
@@ -128,6 +130,9 @@ if(${TIMCOMCPL})
 endif()
 if(${USE_aeroclx})
   add_definitions(-DReadaeroclx -DLUT_aero)
+endif()
+if(${USE_NDMS})
+  add_definitions(-DNDMS)
 endif()
 
 # ##############################################################################

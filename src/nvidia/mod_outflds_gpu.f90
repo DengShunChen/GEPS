@@ -620,7 +620,7 @@ contains
       real      pdiff(nxp,my_max)
       real(kind=RTYPE) ptend(nxp,my_max),pt(nxp,my_max),glob(nx,my),   &
                        slp(nxp,my_max),tmp(nxp,my_max)
-      character*16 taudir(ntau)
+      character*18 taudir(ntau)
       character*4 ggdef
 !
       real      ptop,tnshun

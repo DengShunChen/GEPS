@@ -17,7 +17,7 @@ module unuse modulefiles
 
 # Set the build directory
 BLD_DIR=build_${MACHINE}
-[[ -e ${BLD_DIR} ]] && rm -rf ${BLD_DIR}
+#[[ -e ${BLD_DIR} ]] && rm -rf ${BLD_DIR}
 
 # Compile based on the selected MACHINE
 if [[ ${MACHINE} == 'fx1000' ]] ; then
@@ -42,7 +42,8 @@ elif [[ ${MACHINE} == 'a100' ]] ; then
         -DUSE_SP=OFF  \
         -DCWBSUM=OFF  \
         -DTIMCOMCPL=OFF  \
-        -DUSE_aeroclx=OFF
+        -DUSE_aeroclx=OFF \
+        -DUSE_NDMS=OFF
     cmake --build ${BLD_DIR} -j $(($(nproc)/2)) -v
 else
     echo "[ERROR] Fatal error: unknown MACHINE!"

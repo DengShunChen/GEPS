@@ -29,7 +29,7 @@
                 u10(nxp,my_max),v10(nxp,my_max),gfx(nxp,my_max),           &
                 rld(nxp,my_max),sld(nxp,my_max)
 
-      character*16 taudir(ntau)
+      character*18 taudir(ntau)
       character*4 ggdef
       character::varkey*6
       integer*8 idtg

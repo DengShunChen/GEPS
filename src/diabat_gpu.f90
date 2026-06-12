@@ -649,7 +649,7 @@
          !$acc&      area, rhc_mp) async(async_id)
          !$acc enter data create(itlsp, nnlsp, dtcupd, dqcupd, dtcupl, dqcupl) async(async_id)
          !!$acc enter data copyin(tbpvs) async(async_id)
-         !$acc enter data create(ls) async(async_id)
+         !$acc enter data create(ls,ssta) async(async_id)
 #ifdef TIMCOMCPL
          !$acc enter data create(ice_cpl, ocean_cpl, z0_cpl) async(async_id)
 #endif
@@ -4172,7 +4172,7 @@
          !$acc&     area, rhc_mp) async(async_id)
          !$acc exit data delete(itlsp, nnlsp, dtcupd, dqcupd, dtcupl, dqcupl) async(async_id)
          !!$acc exit data delete(tbpvs) async(async_id)
-         !$acc exit data delete(ls) async(async_id)
+         !$acc exit data delete(ls,ssta) async(async_id)
 #ifdef TIMCOMCPL
          !$acc exit data delete(ice_cpl, ocean_cpl, z0_cpl) async(async_id)
 #endif

@@ -1,4 +1,4 @@
-subroutine get_prmsl(nx,my,my_max,lev,ncld &
+subroutine get_prmsl_gpu(nx,my,my_max,lev,ncld &
           ,sgeo,pt,tt,qt,pk,pk2,plt,phi,pdiff,mslp)
 !  compute mean sea level pressure and update pdiff
 !  The method is based on one used by ecmwf, reseach manual 2 (1988)
@@ -29,11 +29,38 @@ integer, parameter:: async_id = 1
 !=====
 rdg = rgas/grav
 llts= lev-5
+!!=====get phi
+!!
+!!  hydrostatic equation
+!!
+!$acc wait(async_id)
+!!$acc parallel loop collapse(2) private(j,nxj) async(async_id)
+!do jj =1,jlistnum
+!  do i=1,nxp
+!    j=jlist1(jj)
+!    nxj=nxdef_2d(j)
+!    if(i<=nxj)then
+!    phi(i,lev,jj)= cp*tt(i,lev,jj)*(pk2(i,lev,jj)-pk(i,lev,jj)) &
+!                 + sgeo(i,jj)
+!    do k=lev-1,1,-1
+!        phi(i,k,jj)= phi(i,k+1,jj)+cp*(tt(i,k,jj)*(pk2(i,k,jj)-pk(i,k,jj)) &
+!                   + tt(i,k+1,jj)*(pk(i,k+1,jj)-pk2(i,k,jj)))
+!    enddo
+!   endif
+!  enddo
+!enddo
+!!$acc wait(async_id)
 !=====
+!$acc wait(async_id)
+!$acc enter data create(hld1,hld2) async(async_id)
+
+!$acc parallel loop collapse(2) &
+!$acc& private(j,nxj,ttt,ttb,ttp,ttt1,ttt2,apha,anlslp) async(async_id)
 do jj = 1, jlistnum
-  j=jlist1(jj)
-  nxj=nxdef_2d(j)
-  do i=1,nxj
+  do i=1,nxp
+   j=jlist1(jj)
+   nxj=nxdef_2d(j)
+   if(i<=nxj)then 
     ttb  = tt(i,lev ,jj)*pk(i,lev ,jj)/(1.0+0.608*qt(i,lev ,jj))
     ttp  = tt(i,llts,jj)*pk(i,llts,jj)/(1.0+0.608*qt(i,llts,jj))
     ttt1 = ttb + alaps*rdg*ttb*   &
@@ -62,8 +89,11 @@ do jj = 1, jlistnum
     endif
     mslp (i,jj) =  anlslp
     pdiff(i,jj) =  anlslp - pt(i,jj)
+   endif
   enddo
 enddo
 
+!$acc wait(async_id)
+!$acc exit data delete(hld1,hld2) async(async_id)
 return
 end subroutine
