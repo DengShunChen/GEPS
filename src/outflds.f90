@@ -76,9 +76,10 @@
 !  to respond to the request from regional model
 !
       integer,  parameter :: lpout = 31 
-      real      wrk1(nxp,lev),pout(lpout),pkout(lpout),phistd(lpout) &
+      real      pout(lpout),pkout(lpout),phistd(lpout) &
 !              , bt1(nx,my),bt2(nx,my)                               &
-              , hld1(nxp,my_max),hld2(nxp,my_max) 
+              , hld1(nxp,my_max),hld2(nxp,my_max)
+      real      wrk1(nxp,lev),wrk2(nxp,lev)
 !
       real(kind=RTYPE) pres3d(nxp,my_max,lpout)
 !
@@ -88,7 +89,7 @@
       real(kind=RTYPE) soil_xy(nxp,my_max,12)   ! the last dim is changable
 !
       real      whtlev(100),whtlevq(100),whtlevz(100)
-      character*16 taudir(numout),outdir(numout)
+      character*18 taudir(numout),outdir(numout)
       character*6 labx
 
       integer   nxmy,nxlev,nxly,ntau,jj,j,nxj,k,i,n,nk,ngq,ntt,kk,ntrac
@@ -325,7 +326,8 @@
           endif
         enddo
 !
-        call geostd (nxjp(j),pllp(1,jj),bt2(1,jj))
+        call geostd (nxjp(j),pllp(1,jj),hld1(1,jj))
+        bt2(:,jj) = hld1(:,jj)
 !
         do i = 1, nxj
           pllp(i,jj) = log(pllp(i,jj))
@@ -411,7 +413,8 @@
       do jj =1,jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
-        call qsatq_2d(nxjp(j),nxp,lev,tmp(1,1,jj),plt(1,1,jj),wrk1(1,1))
+        wrk2(:,:) = tmp(:,:,jj)
+        call qsatq_2d(nxjp(j),nxp,lev,wrk2(1,1),plt(1,1,jj),wrk1(1,1))
         do k=1, lev
           do i=1,nxj
             tmp(i,k,jj)= qt(i,k,jj)/wrk1(i,k)

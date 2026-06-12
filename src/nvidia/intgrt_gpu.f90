@@ -1727,7 +1727,7 @@ endif
    end do
 
 #ifdef TIMCOMCPL
-      call get_prmsl(nx,my,my_max,lev,ncld &
+      call get_prmsl_gpu(nx,my,my_max,lev,ncld &
                  ,sgeo,pt,tt,qt,pk,pk2,plt,phi,pdiff,mslp)
       !$acc wait(async_id)
       !$acc update self(pt, tg, pdiff) async(async_id)
@@ -1793,7 +1793,9 @@ endif
                endif
               enddo
               enddo
-            end if
+            !$acc update device(cice,snr,ice,ocean,xtice, &
+            !$acc&       zice,sndepth,sncover,shdmax) async(async_id)
+            end if  ! if(mom4ice)
 !            
             u10m_cpl = u10m_cpl/dt_cpl
             v10m_cpl = v10m_cpl/dt_cpl
@@ -1854,8 +1856,6 @@ endif
 !           write(*,*) 'tg_atm=', tg(2,1) !, "i=", i, "j=", j
 !         end if
           !$acc update device(tg) async(async_id)
-          !$acc update device(cice,snr,ice,ocean,xtice, &
-          !$acc&       zice,sndepth,sncover,shdmax) async(async_id)
           !$acc wait(async_id)
 
 #endif

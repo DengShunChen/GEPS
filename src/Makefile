@@ -57,6 +57,7 @@ SRCS_f90  = \
   dcyc2.f90 \
   diabat.f90 \
   diagrd.f90 \
+  dmslite.f90 \
   dmsread.f90 \
   dmswrit.f90 \
   drychk.f90 \

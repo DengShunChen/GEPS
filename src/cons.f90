@@ -509,10 +509,17 @@
          end do
       end do
 #endif
-!
+
+
+!-----------------------------------------------------------------------
 !  specify the dms read-in and write-out only for 34 keys
 !
+#ifdef NDMS
+      if( myrank == 0 ) print*,'run No_use_DMS library'
+#endif
       if( myrank .eq. 0 ) then
+       istat_r=0
+       istat_w=0
        type_r="RORDER"//char(0)
        type_w="WORDER"//char(0)
 #ifdef I38K
@@ -528,7 +535,7 @@
 #endif
        call dmscfg(type_w,argument,istat_w)
        istat = abs(istat_r) + abs(istat_w)
-      endif
+      endif ! myrank==0
 !ch   call mpe_broadcast(istat,1,flag,mpe_integer)
       call mpe_bcast(istat,1,0,mpe_integer)
       if(istat.ne.0)then
@@ -539,6 +546,7 @@
 !
 !  open back ground dmsfile
 !
+      istat1=0 ;istat2=0 ;istat3=0
       if(myrank.eq.0) then
       call dmsmsg("ALL",istat)
       call dmsopn(bckfile,"r",istat1)
@@ -552,14 +560,15 @@
 !
       if(myrank .lt. lev) call dmsopn(ifilout,"w",istat3)
 !
-      if(myrank.eq.0) then
-      istat = abs(istat1) + abs(istat2) + abs(istat3)
 !
 ! ldailyFCTsst=true, restore sst, snow depth, sea ice fraction from ncep
 ! data
 ! open ncep data dms
 !
-       istat4=0; istat5=0; istat6=0; istat7=0; istat8=0
+      istat4=0; istat5=0; istat6=0; istat7=0; istat8=0
+      if(myrank.eq.0) then
+        istat = abs(istat1) + abs(istat2) + abs(istat3)
+
         if(ldailyFCTsst) then
           call dmsopn(ifilin_sst,"r",istat4)
           istat = istat + abs(istat4)
@@ -588,20 +597,23 @@
       if(istat.ne.0)then
         if(myrank.eq.0) then
          print *,'dmsopn error'
-         if(istat1.ne.0) print*,' BCKFILE=',bckfile,' dms open failed !'
-         if(istat2.ne.0) print*,' IFILEIN=',ifilin,' dms open failed!'
-         if(istat3.ne.0) print*,' IFILEOUT=',ifilout,' dms open failed!'
-         if(istat4.ne.0) print*,' IFILE_SST=',ifilin_sst,' dms open failed!'
-         if(istat5.ne.0) print*,' IFILE_NCEP=',ifilin_ncep,' dms open failed!'
-         if(istat6.ne.0) print*,' IFILE_ClmANA=',ifilin_ClmANA,' dmsopen failed!'
-         if(istat7.ne.0) print*,' IFILE_ClmFCT=',ifilin_ClmFCT,' dmsopen failed!'
+         if(istat1.ne.0) print*,' BCKFILE=',trim(bckfile),' dms open failed !'
+         if(istat2.ne.0) print*,' IFILEIN=',trim(ifilin),' dms open failed!'
+         if(istat3.ne.0) print*,' IFILEOUT=',trim(ifilout),' dms open failed!'
+         if(istat4.ne.0) print*,' IFILE_SST=',trim(ifilin_sst),' dms open failed!'
+         if(istat5.ne.0) print*,' IFILE_NCEP=',trim(ifilin_ncep),' dms open failed!'
+         if(istat6.ne.0) print*,' IFILE_ClmANA=',trim(ifilin_ClmANA),' dmsopen failed!'
+         if(istat7.ne.0) print*,' IFILE_ClmFCT=',trim(ifilin_ClmFCT),' dmsopen failed!'
 #ifdef Readaeroclx
-         if(istat8.ne.0) print*,' IFILE_AERO=',ifilin_aero,' dmsopen failed!'
+         if(istat8.ne.0) print*,' IFILE_AERO=',trim(ifilin_aero),' dmsopen failed!'
 #endif
         endif
         call mpe_finalize
         call dmsexit(-1)
       endif
+
+!-----------------------------------------------------------------------
+
 !
 !
 ! read file of output directives specifying desired output
@@ -612,7 +624,7 @@
       do 80 k=1,nout
       numout= k
       read (4,800,iostat=io)  outdir(numout)
-  800 format (a16)
+  800 format (a18)
       if (io.ne.0)  go to 85
       if (outdir(numout).eq.'nomodata')  go to 85
    80 continue
