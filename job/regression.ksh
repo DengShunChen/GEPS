@@ -33,7 +33,7 @@
    DMSFLAG=GK
  fi
 
- dtg='23012000'
+ dtg='22081500'
  fgdtg=$(/users/xb80/bin/Caldtg.ksh ${dtg} -6)
 
  idmshead='MASOPS'
