@@ -190,7 +190,7 @@
             ifilin_ClmANA,ifilin_ClmFCT,        &
             ifilin_aero
 
-    character(len=16), dimension(:), allocatable, save  :: outdir
+    character(len=18), dimension(:), allocatable, save  :: outdir
 
     !dms34
     integer(kind=8) ::  idtg,idtg2

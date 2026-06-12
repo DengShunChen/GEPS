@@ -16,7 +16,7 @@
       use mpe
       use rank
       use index
-      use const, only:keyi,ihdgi
+      use const, only:keyi,ihdgi,KLENI
 
       implicit  none
       integer   nx,my,lenc,istat
@@ -25,9 +25,11 @@
 !
       logical t_flg
 !
-      character ifile*255,kflag*1
+      character kflag*1, ifn*512
 !
       character crmk*88
+      character(len=*)ifile
+      integer :: i,ia
 !
       write(keyi,1000)ihdgi,kflag,lenc
 #ifdef I38K
@@ -39,7 +41,28 @@
       t_flg=.false.
 !
       if(myrank .eq. 0) then
+#ifdef NDMS
+      do i = 1, KLENI
+      ia = ichar(keyi(i:i))
+       if((ia.ge.97).and.(ia.le.122))then
+         ia=ia-32
+         keyi(i:i)=char(ia)
+       endif
+      enddo
+  #ifdef O38K
+      ifn=trim(ifile)//'/'//keyi(17:28)//keyi(7:12)//'/' &
+                  //keyi(1:6)//keyi(13:16)//'H'//keyi(30:38)
+  #else
+      ifn=trim(ifile)//'/'//keyi(15:26)//keyi(7:10)//'/' &
+                  //keyi(1:6)//keyi(11:14)//'H'//keyi(28:34)
+  #endif
+      open(12,file=trim(ifn),access='stream',form='unformatted' &
+             ,action='read',convert='little_endian',iostat=istat)
+      read(12)z(:,:)
+      close(12)
+#else
       call dmsget(ifile,keyi//char(0),z,istat)
+#endif
       t_flg=.true.
       endif
 !
@@ -92,7 +115,7 @@
       use mpe
       use rank
       use index
-      use const, only:keyi,ihdgi
+      use const, only:keyi,ihdgi,KLENI
 
       implicit  none
       integer   nx,my,lenc,istat
@@ -101,9 +124,12 @@
 !
       logical t_flg
 !
-      character ifile*255,kflag*1
+      character kflag*1, ifn*512
 !
       character crmk*88
+
+      character(len=*)ifile
+      integer :: i,ia
 !
       write(keyi,1000)ihdgi,kflag,lenc
 #ifdef I38K
@@ -115,7 +141,28 @@
       t_flg=.false.
 !
       if(myrank .eq. 0) then
+#ifdef NDMS
+      do i = 1, KLENI
+      ia = ichar(keyi(i:i))
+       if((ia.ge.97).and.(ia.le.122))then
+         ia=ia-32
+         keyi(i:i)=char(ia)
+       endif
+      enddo
+  #ifdef O38K
+      ifn=trim(ifile)//'/'//keyi(17:28)//keyi(7:12)//'/' &
+                  //keyi(1:6)//keyi(13:16)//'I'//keyi(30:38)
+  #else
+      ifn=trim(ifile)//'/'//keyi(15:26)//keyi(7:10)//'/' &
+                  //keyi(1:6)//keyi(11:14)//'I'//keyi(28:34)
+  #endif
+      open(12,file=trim(ifn),access='stream',form='unformatted' &
+             ,action='read',convert='little_endian',iostat=istat)
+      read(12)z(:,:)
+      close(12)
+#else
       call dmsget(ifile,keyi//char(0),z,istat)
+#endif
       t_flg=.true.
       endif
 !
@@ -167,7 +214,7 @@
       use mpe
       use rank
       use index
-      use const, only:keyi,ihdgi
+      use const, only:keyi,ihdgi,KLENI
 
       implicit  none
       integer   nx,my,lenc,istat
@@ -176,9 +223,11 @@
 !
       logical t_flg
 !
-      character ifile*255,kflag*1
+      character kflag*1, ifn*512
 !
       character crmk*88
+      character(len=*)ifile
+      integer :: i,ia
 !
       write(keyi,1000)ihdgi,kflag,lenc
 #ifdef I38K
@@ -190,7 +239,28 @@
       t_flg=.false.
 !
       if(col_rank .eq. 0) then
+#ifdef NDMS
+      do i = 1, KLENI
+      ia = ichar(keyi(i:i))
+       if((ia.ge.97).and.(ia.le.122))then
+         ia=ia-32
+         keyi(i:i)=char(ia)
+       endif
+      enddo
+  #ifdef O38K
+      ifn=trim(ifile)//'/'//keyi(17:28)//keyi(7:12)//'/' &
+                  //keyi(1:6)//keyi(13:16)//'H'//keyi(30:38)
+  #else
+      ifn=trim(ifile)//'/'//keyi(15:26)//keyi(7:10)//'/' &
+                  //keyi(1:6)//keyi(11:14)//'H'//keyi(28:34)
+  #endif
+      open(12,file=trim(ifn),access='stream',form='unformatted' &
+             ,action='read',convert='little_endian',iostat=istat)
+      read(12)z(:,:)
+      close(12)
+#else
       call dmsget(ifile,keyi//char(0),z,istat)
+#endif
       t_flg=.true.
       endif
 !

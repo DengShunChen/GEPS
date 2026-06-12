@@ -451,7 +451,7 @@ subroutine tracking(tau,dt_trk,dt,nx,my,                                  &
 !      else
       dmskeytrack=dmshead//tytrack//trim(mem)//cdtg//'00'//dmstail
 !      endif
-
+#ifndef NDMS
       call dmsput (dfile,dmskeytrack//char(0),work,istat)
       if (istat .ne. 0) then
         print *,'dmskey : ',dmskeytrack,' put error !!'
@@ -460,6 +460,7 @@ subroutine tracking(tau,dt_trk,dt,nx,my,                                  &
       else
 !        print *,'dmskey : ',dmskeytrack,' put OK !!'
       endif
+#endif
 !
       enddo
 

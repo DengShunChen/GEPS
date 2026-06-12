@@ -37,7 +37,9 @@
         if(ncnt.gt.0)then
 
           do j=1,ncnt
+#ifndef NDMS
              call dmsput(ifilout,keys(j)//char(0),z(1,j),ist)
+#endif
              if(ist.ne.0)then
                print *,' '
                print *,'** Bad I/O: ',keys(j),' dmsput error:',trim(ifilout)
@@ -75,7 +77,9 @@
           if(ncnt.gt.NMAX)then
             print *,'<<< ioserver : flushing dms buffer to prevent overflow >>>'
             do j=1,NMAX
+#ifndef NDMS
                call dmsput(ifilout,keys(j)//char(0),z(1,j),ist)
+#endif
                if(ist.ne.0)then
                  print *,' '
                  print *,'** Bad I/O: ',keys(j),' dmsput error:',trim(ifilout)
