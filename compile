@@ -17,7 +17,7 @@ module unuse modulefiles
 
 # Set the build directory
 BLD_DIR=build_${MACHINE}
-#[[ -e ${BLD_DIR} ]] && rm -rf ${BLD_DIR}
+[[ -e ${BLD_DIR} ]] && rm -rf ${BLD_DIR}
 
 # Compile based on the selected MACHINE
 if [[ ${MACHINE} == 'fx1000' ]] ; then
