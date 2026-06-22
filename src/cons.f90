@@ -358,7 +358,7 @@
 !
 !  horizontal diffusion settings for sponge layer
       do k = 1, lev
-        prslp=sigma(k,2)+sigma(k,1)*1000.+ptop
+        prslp=sigma(k,2)+sigma(k,1)*900.+ptop
         if ( prslp .le. spl1  ) hdk1=k
         if ( prslp .le. spl2  ) hdk2(1)=k
         if ( prslp .le.  50.  ) hdk2(2)=k

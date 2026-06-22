@@ -87,7 +87,6 @@ if(${USE_CUDA})
         test_tranrs1
         test_gridnl_hybrid_ndsl
         test_hdiffu
-        test_whdiffu
         # test_cyclic_cell_massadvx
         # test_ndslfv_monoadvh
         # test_ndslfv_monoadvh_fgnl

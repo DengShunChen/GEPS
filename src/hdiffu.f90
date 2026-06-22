@@ -185,7 +185,7 @@
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
       real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
-      real      hfilt,nf,dec,coefu,powd,kfac,dect
+      real      hfilt,nf,dec,coefu,powd,kfac,dect,hfilt2,powdd,hfiltd
       real      c1,c2,c3
       logical   windchk
 
@@ -220,11 +220,14 @@
 !
       powd = float(hord) / 2.
       hfilt  = (radsq/(nf*(nf+1)))**powd
+      hfilt2 = radsq/(nf*(nf+1))
       coefu = factop/float(hdk2(1)-hdk1)
       if ( octahedral ) then
         hfilt  = hfilt/(6.*dta)
+        hfilt2 = hfilt2/(6.*dta)
       else
         hfilt  = hfilt/dta
+        hfilt2 = hfilt2/dta
       endif
 
       do 100 k=1,levp  ! levp -> lev
@@ -247,11 +250,19 @@
         kfac = kfac*(1.+vd*dec)
         facd = max(1.,kfac)*amp
         facv = max(1.,kfac)*amp
-        fact = max(1.,kfac)*amp
+!        fact = max(1.,kfac)*amp
 !!        facd = 1. * amp * (kfac + 2.*max(float(hdk1-KL),0.))
 !!        facv = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
 !!        fact = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
 !
+        if ( KL .lt. hdk1 ) then
+          hfiltd = hfilt2
+          powdd  = 1.
+        else
+          hfiltd = hfilt
+          powdd  = powd
+        endif
+
 
 
 !
@@ -267,8 +278,8 @@
 !              c3=1.+dta*fact*hfilt*eps4(n,m)**powd+vd*exp(-0.7*k)
 !            else
               c1=1.+dta*facv*hfilt*eps4(n,m)**powd
-              c2=1.+dta*facd*hfilt*eps4(n,m)**powd
-              c3=1.+dta*fact*hfilt*eps4(n,m)**powd
+              c2=1.+dta*facd*hfiltd*eps4(n,m)**powdd
+!              c3=1.+dta*fact*hfilt*eps4(n,m)**powd
 !            endif
 
 !  if doskeb = .true. estimate the dissipation of kinectic energy for SKEB
@@ -281,8 +292,8 @@
             vornow(k,2,n,m)=vornow(k,2,n,m)/c1
             divnow(k,1,n,m)=divnow(k,1,n,m)/c2
             divnow(k,2,n,m)=divnow(k,2,n,m)/c2
-            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
-            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
+!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
+!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
 !            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
 !            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
           enddo
@@ -550,7 +561,7 @@
 !        facv = max(min(amp,1.),kfac)
         facd = max(1.,kfac)*amp
         facv = max(1.,kfac)*amp
-        fact = max(1.,kfac)*amp
+        fact = 0.8*max(1.,kfac)*amp
 !!        fact = amp * kfacv 
 !          endif
 

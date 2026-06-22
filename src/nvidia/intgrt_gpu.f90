@@ -153,7 +153,7 @@
    real www, dtx, dtq, thdai, tkei, tpei, dsigp, &
       cosw, tengi, dt24, tg2, dtx_tau, sqhaf, &
       dt1, sptend, wmax, xx, dtaup, hfiltm, &
-      sptendmax2, sptendmax1, dt_chg
+      sptendmax2, sptendmax1, dt_chg, powd
    integer recn
 
 ! for io quilting
@@ -390,9 +390,7 @@
    dtx = dt
 !
    dta = dtx
-   dtah = 0.5*dta
-   ndsldtah = dtah/float(itter)
-   dtahi = dtah/float(itter)
+   powd = 2.**float(itter)
 !
 !jwhwu 201407 add time control
    if (dorst) then
@@ -748,7 +746,10 @@ endif
    ! call ujoinsr(cc,tm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
    forward = .true.
    fwd = .true.
+   ndsldtah = dta / powd
+   dtahi = ndsldtah
    do itt = 1, itter
+      dtah  = ndsldtah * 2.**float(itt-1)
 !
 ! for Semi-Lagrangian advection
 !
@@ -842,37 +843,20 @@ endif
       call tranrs1_gpu(jtrun, jtmax, nx, my, my_max, polyf, weight, ww1 &
                        , plten, nsizey, cc_cg, gwk1_cg)
 
-      if (forward) then
-         !$acc parallel loop collapse(3) private(j, nxj) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, lev
-               do i = 1, nxp
-                  j = jlist1(jj)
-                  nxj = nxdef_2d(j)
-                  if (i .le. nxj) then
-                     vdzonl(i, k, jj) = (vdzonl(i, k, jj) - um(i, k, jj))/dtahi
-                     vdmerd(i, k, jj) = (vdmerd(i, k, jj) - vm(i, k, jj))/dtahi
-                     ddtemp(i, k, jj) = (ddtemp(i, k, jj) - tm(i, k, jj))/dtahi
-                  end if
-               end do
+      !$acc parallel loop collapse(3) private(j, nxj) async(async_id)
+      do jj = 1, jlistnum
+         do k = 1, lev
+            do i = 1, nxp
+               j = jlist1(jj)
+               nxj = nxdef_2d(j)
+               if (i .le. nxj) then
+                  vdzonl(i, k, jj) = (vdzonl(i, k, jj) - ut(i, k, jj))/dtah
+                  vdmerd(i, k, jj) = (vdmerd(i, k, jj) - vt(i, k, jj))/dtah
+                  ddtemp(i, k, jj) = (ddtemp(i, k, jj) - tt(i, k, jj))/dtah
+               end if
             end do
          end do
-      else
-         !$acc parallel loop collapse(3) private(j, nxj) async(async_id)
-         do jj = 1, jlistnum
-            do k = 1, lev
-               do i = 1, nxp
-                  j = jlist1(jj)
-                  nxj = nxdef_2d(j)
-                  if (i .le. nxj) then
-                     vdzonl(i, k, jj) = (vdzonl(i, k, jj) - ut(i, k, jj))/dtah
-                     vdmerd(i, k, jj) = (vdmerd(i, k, jj) - vt(i, k, jj))/dtah
-                     ddtemp(i, k, jj) = (ddtemp(i, k, jj) - tt(i, k, jj))/dtah
-                  end if
-               end do
-            end do
-         end do
-      end if
+      end do
 
       call joinrs_gpu(cc_cg, ddtemp, dummy, dummy, dummy, nx, my_max, lev &
                       , jlistnum, 1, 1)
@@ -884,17 +868,10 @@ endif
                                  cc_cg, gwk1_cg, ws_cg, wc_cg(1, 1), wc_cg(1, 2), &
                                  wcc_fk_cg, fj_weight_cg(1, 1), fj_weight_cg(1, 2))
 
-      if (forward) then
-         if (lsimpl) &
-            call siimpl_gpu(jtrun, jtmax, lev, dtahi, ptmeans, dsigma, spalm, eps4, eigval &
-                            , evecin, evectr, arrhyd, arsddt, temmid, divmid, plmid &
-                            , temmid, divmid, plmid, temten, divten, plten, alphax)
-      else
-         if (lsimpl) &
-            call siimpl_gpu(jtrun, jtmax, lev, dtah, ptmeans, dsigma, spalm, eps4, eigval &
-                            , evecin, evectr, arrhyd, arsddt, temnow, divnow, plnow &
-                            , temmid, divmid, plmid, temten, divten, plten, alphax)
-      end if
+      if (lsimpl) &
+         call siimpl_gpu(jtrun, jtmax, lev, dtah, ptmeans, dsigma, spalm, eps4, eigval &
+                         , evecin, evectr, arrhyd, arsddt, temnow, divnow, plnow &
+                         , temmid, divmid, plmid, temten, divten, plten, alphax)
 
       mlst = ilist(1)
       if (mlst .ne. 0) then
@@ -917,71 +894,38 @@ endif
          end do
       end do
 
-      if (forward) then
-         !$acc parallel loop collapse(4) private(mf) async(async_id)
-         do m = 1, mlistnum
-            do n = 1, jtrun
-               do i = 1, 2
-                  do k = 1, levp
-                     mf = mlist(m)
-                     if (n .ge. mf) then
-                        vormid(k, i, n, m) = dtahi*vorten(k, i, n, m) + vormid(k, i, n, m)
-                        divmid(k, i, n, m) = dtahi*divten(k, i, n, m) + divmid(k, i, n, m)
-                        temmid(k, i, n, m) = dtahi*temten(k, i, n, m) + temmid(k, i, n, m)
-                     end if
-                  end do
-               end do
-            end do
-         end do
-
-         !$acc parallel loop collapse(3) private(mf) async(async_id)
-         do i = 1, 2
-            do m = 1, mlistnum
-               do n = 1, jtrun
+      !$acc parallel loop collapse(4) private(mf) async(async_id)
+      do m = 1, mlistnum
+         do n = 1, jtrun
+            do i = 1, 2
+               do k = 1, levp
                   mf = mlist(m)
                   if (n .ge. mf) then
-                     plmid(n, m, i) = dtahi*plten(n, m, i) + plmid(n, m, i)
+                     vormid(k, i, n, m) = dtah*vorten(k, i, n, m) + vornow(k, i, n, m)
+                     divmid(k, i, n, m) = dtah*divten(k, i, n, m) + divnow(k, i, n, m)
+                     temmid(k, i, n, m) = dtah*temten(k, i, n, m) + temnow(k, i, n, m)
                   end if
                end do
             end do
          end do
-         hfiltm = mwhd*hfiltx
-         call whdiffu_gpu(dtahi, my, my_max, nx, jtrun, jtmax, lev, ncld &
-                          , hfiltm, rad, cosl, um, vm, vormid, divmid, temmid &
-                          , eps4, trefs)
-      else
-         !$acc parallel loop collapse(4) private(mf) async(async_id)
+      end do
+
+      !$acc parallel loop collapse(3) private(mf) async(async_id)
+      do i = 1, 2
          do m = 1, mlistnum
             do n = 1, jtrun
-               do i = 1, 2
-                  do k = 1, levp
-                     mf = mlist(m)
-                     if (n .ge. mf) then
-                        vormid(k, i, n, m) = dtah*vorten(k, i, n, m) + vornow(k, i, n, m)
-                        divmid(k, i, n, m) = dtah*divten(k, i, n, m) + divnow(k, i, n, m)
-                        temmid(k, i, n, m) = dtah*temten(k, i, n, m) + temnow(k, i, n, m)
-                     end if
-                  end do
-               end do
+               mf = mlist(m)
+               if (n .ge. mf) then
+                  plmid(n, m, i) = dtah*plten(n, m, i) + plnow(n, m, i)
+               end if
             end do
          end do
-
-         !$acc parallel loop collapse(3) private(mf) async(async_id)
-         do i = 1, 2
-            do m = 1, mlistnum
-               do n = 1, jtrun
-                  mf = mlist(m)
-                  if (n .ge. mf) then
-                     plmid(n, m, i) = dtah*plten(n, m, i) + plnow(n, m, i)
-                  end if
-               end do
-            end do
-         end do
-         hfiltm = mwhd*hfiltx
-         call whdiffu_gpu(dtah, my, my_max, nx, jtrun, jtmax, lev, ncld &
-                          , hfiltm, rad, cosl, um, vm, vormid, divmid, temmid &
-                          , eps4, trefs)
-      end if
+      end do
+!
+      hfiltm = mwhd*hfiltx
+      call hdiffu_gpu(dtah, my, my_max, nx, jtrun, jtmax, lev, ncld &
+                      , hfiltm, rad, cosl, um, vm, vormid, divmid, temmid &
+                      , eps4, trefs)
 !
 !      call hdiffu ( dth,my,my_max,nx,jtrun,jtmax,lev,ncld     &
 !                   ,hfiltm,rad,cosl,ut,vt,vormid,divmid,temmid  &
@@ -1007,6 +951,7 @@ endif
       call trngra_gpu(jtrun, jtmax, nx, my, my_max, cim, poly, dpoly, plmid &
                       , dlpl, dtpl, nsizey, cc_cg, gwk1_cg)
       forward = .false.
+      dtahi = dtah
    end do ! do itt=1,itter
 !
 !  the gaussian quadrature loop for spectral tendencies.  subroutine
@@ -1372,7 +1317,7 @@ endif
 !
 ! add reynolds stress
 !
-      call rayleifr_gpu(nx, my, my_max, lev, rad, cosl, dt, ut, vt)
+!      call rayleifr_gpu(nx, my, my_max, lev, rad, cosl, dt, ut, vt)
 
       if (two_loop) then
          if (mass_dp) then
