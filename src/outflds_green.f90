@@ -310,22 +310,6 @@
       endif !mod(float(itau)+0.00001, 6. ) .lt. 0.01
 
 !
-      if (mod(float(itau)+0.00001, 24. ) .lt. 0.01) then
-!      !!!sea ice fraction
-!      wrk=cice
-!      call syslbl_w ('w00091',idtg,itau,ggdef)
-!      call unify_reduceintp(nx,my,my_max,wrk,glob)
-!      ptp0=(/10,2,0,2,103,0,0,-999,-999/)
-!      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
-      !!!sea ice thickness
-      wrk=zice
-      call syslbl_w ('w00092',idtg,itau,ggdef)
-      call unify_reduceintp(nx,my,my_max,wrk,glob)
-      ptp0=(/10,2,1,2,103,0,0,-999,-999/)
-      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
-      endif
-
-!
       if(outdms.gt.0)then
       if ( myrank .lt. nc )             &
          call dmswrit_split(nx,my,lenc,kflag,mout,istat)

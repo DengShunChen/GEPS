@@ -11,6 +11,7 @@
       use mod_outflds
       use mod_grb2_param , only :ofdir,wrt_grb2_v2,wrt_grb2_accu_v2
       use const ,only:outgrb2 ,outdms ,domfc ,RTYPE,kflag
+      use noah,only:runoff, cice ,zice 
 !
       implicit  none
 
@@ -28,7 +29,7 @@
                 u10(nxp,my_max),v10(nxp,my_max),gfx(nxp,my_max),           &
                 rld(nxp,my_max),sld(nxp,my_max)
 
-      character*16 taudir(ntau)
+      character*18 taudir(ntau)
       character*4 ggdef
       character::varkey*6
       integer*8 idtg
@@ -53,6 +54,7 @@
       real      sfac2,sfac3,sfac4
       integer::praint
       integer:: ptp0(9),ptp1(9)
+
 !kc <
 !      logical lwrite
 !xb110>
@@ -119,8 +121,8 @@
 !
       if(label(kk).eq.'b00620')then
       !precipitaion accum. interval info for grib2
-      praint=mod(itau,12)
-      if(praint==0)praint=12
+      praint=mod(itau-1,12)
+      praint=praint+1
 !
 !cumulus parameterization precipitation
       globp=raincu
@@ -170,6 +172,18 @@
       call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
       go to 30
       endif
+
+!runoff
+      if(label(kk).eq.'b00660') then
+      globp=runoff
+      call unify_reduceintp(nx,my,my_max,globp,glob)
+      call syslbl_w ('b00660',idtg,itau,ggdef)
+      call qmaxn3_w (glob,1,1,1,nx,my,1)
+      ptp0=(/2,0,5,2,103,0,0,-999,-999/)
+      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
+      go to 30
+      endif
+
 !atmosphere column precipitable water (mm)
       if(label(kk).eq.'x00590') then
       call unify_reduceintp(nx,my,my_max,wk_xy(1,1,4),glob)
@@ -314,7 +328,6 @@
 !land suface tempaerature or sea surface temperature
       if(label(kk).eq.'s00100') then
       globp=tg
-!      call unify_reduceintp_idw(nx,my,my_max,globp,glob)
       call unify_reduceintp_idw(nx,my,my_max,globp,glob)
       call syslbl_w ('s00100',idtg,itau,ggdef)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
@@ -413,7 +426,7 @@
       if( itau==0 .or. itau .gt. nint(domfc) )then
       do 37 jj=1,jlistnum
         j=jlist1(jj)
-       nxj=nxdef_2d(j)
+        nxj=nxdef_2d(j)
       do 37 i=1,nxj
         globp(i,jj)=rh2(i,jj) * 100.0
  37   continue
@@ -775,14 +788,7 @@
 ! ctot_total cloud fraction
       if(label(kk).eq.'x00770') then
       if( itau==0 .or. itau .gt. nint(domfc) )then
-      do  jj=1,jlistnum
-         j=jlist1(jj)
-       nxj=nxdef_2d(j)
-      do  i=1,nxj
-        globp(i,jj)=wk_xy(i,jj,6) * 100.0
-      enddo
-      enddo
-      call unify_reduceintp(nx,my,my_max,globp,glob)
+      call unify_reduceintp(nx,my,my_max,wk_xy(1,1,6),glob)
       call syslbl_w ('x00770',idtg,itau,ggdef)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/0,6,1,2,10,0,0,-999,-999/)
@@ -792,14 +798,7 @@
       endif
 ! chig_high cloud fraction
       if(label(kk).eq.'x00760') then
-      do  jj=1,jlistnum
-         j=jlist1(jj)
-       nxj=nxdef_2d(j)
-      do  i=1,nxj
-        globp(i,jj)=wk_xy(i,jj,7) * 100.0
-      enddo
-      enddo
-      call unify_reduceintp(nx,my,my_max,globp,glob)
+      call unify_reduceintp(nx,my,my_max,wk_xy(1,1,7),glob)
       call syslbl_w ('x00760',idtg,itau,ggdef)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/0,6,5,2,10,0,0,-999,-999/)
@@ -808,14 +807,7 @@
       endif
 ! cmid_middle cloud fraction
       if(label(kk).eq.'x00750') then
-      do  jj=1,jlistnum
-         j=jlist1(jj)
-       nxj=nxdef_2d(j)
-      do  i=1,nxj
-        globp(i,jj)=wk_xy(i,jj,8) * 100.0
-      enddo
-      enddo
-      call unify_reduceintp(nx,my,my_max,globp,glob)
+      call unify_reduceintp(nx,my,my_max,wk_xy(1,1,8),glob)
       call syslbl_w ('x00750',idtg,itau,ggdef)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/0,6,4,2,10,0,0,-999,-999/)
@@ -824,14 +816,7 @@
       endif
 ! clow_low cloud fraction
       if(label(kk).eq.'x00740') then
-      do  jj=1,jlistnum
-         j=jlist1(jj)
-       nxj=nxdef_2d(j)
-      do  i=1,nxj
-        globp(i,jj)=wk_xy(i,jj,9) * 100.0
-      enddo
-      enddo
-      call unify_reduceintp(nx,my,my_max,globp,glob)
+      call unify_reduceintp(nx,my,my_max,wk_xy(1,1,9),glob)
       call syslbl_w ('x00740',idtg,itau,ggdef)
       call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/0,6,3,2,10,0,0,-999,-999/)
@@ -890,6 +875,29 @@
       call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
       go to 30
       endif
+
+!      !!!sea ice fraction
+      if(label(kk).eq.'w00091') then
+      globp=cice
+      call unify_reduceintp(nx,my,my_max,globp,glob)
+      call syslbl_w ('w00091',idtg,itau,ggdef)
+      call qmaxn3_w (glob,1,1,1,nx,my,1)
+      ptp0=(/10,2,0,2,103,0,0,-999,-999/)
+      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
+      go to 30
+      endif
+
+!     !!!sea ice thickness
+      if(label(kk).eq.'w00092') then
+      globp=zice
+      call syslbl_w ('w00092',idtg,itau,ggdef)
+      call unify_reduceintp(nx,my,my_max,globp,glob)
+      call qmaxn3_w (glob,1,1,1,nx,my,1)
+      ptp0=(/10,2,1,2,103,0,0,-999,-999/)
+      call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
+      go to 30
+      endif
+
 
 !move to  out24.f90
 !xb110> flash density
@@ -956,7 +964,7 @@
 !
       implicit none
 !
-      integer   nx,my,nc,istat,lenc,lev
+      integer   i,nx,my,nc,istat,lenc,lev
       real(kind=RTYPE) glob(nx,my),mout(nx,my)
 !      character*26 ihdg,ihdg2
 !      character*80 ifilout

@@ -202,7 +202,7 @@
 !
          use physcons, only: con_rd, con_fvirt, con_rerth, con_rv, con_pi
 ! for slavepp
-         use phygrid, only: dtcup, ducup, dvcup, dtshl, dushl, dvshl, dtlsp, dulsp, dvlsp
+         use phygrid, only: dtcup, ducup, dvcup, dtshl, dushl, dvshl, dtlsp, dulsp, dvlsp, sstc
 ! for land_noah_new
          use namelist_soilveg, only: MAX_SLOPETYP, MAX_SOILTYP, MAX_VEGTYP, &
              slope_data, bb, drysmc, f11, maxsmc, refsmc, satpsi, satdk, satdw, &
@@ -213,6 +213,7 @@
          use ozne_def, only :pl_coeff
 
          use leapyr
+         !use nvtx
 !-----------------------------------------------------------------------
          implicit none
          integer nfxr, ntrac, kk, nk, n
@@ -473,7 +474,9 @@
 ! for new shlcon
          real rcup2(nxp, my_max)
 ! for scale-aware convection
-         real garea(nxp, my_max), tpr, tem1(my_max), tem2(my_max), jup, jdn, tpi
+         real garea(nxp, my_max), tpr, tem1(my_max), tem2(my_max), tpi
+         integer jup, jdn
+
 ! for wsm6 & thompson
          integer nmmiph
          real phii(nxp, lev + 1, my_max)
@@ -485,7 +488,7 @@
          logical SL_sedi, sat_predict, new_saturation, use_cpm, use_declination
 ! for updating low boundary condition
          integer ls(nxp, my_max)
-         real sstc(nxp, my_max), z0ocn(nxp, my_max)
+         real  z0ocn(nxp, my_max)
          logical doclxu, iceold(nxp, my_max)
 
 !CWB 2007-09-27 for random number seed >>>
@@ -568,6 +571,8 @@
 
 ! for dissipation convective (test)
       real      diss_dcc(nxp,lev,my_max)
+      real ::   diss_sst = 10. ,DissSSTARate
+      real      ssta(nxp,my_max)
       450 format(a3, 1x, a, 1x, I3, 1x, 30(ES26.17, 1x))
       451 format(a3, 1x, a, 1x, I3, 1x, 30(I10, 1x))
       !write(*,*) nxjp
@@ -626,14 +631,14 @@
          !$acc enter data create(ztenh, zqenh, rho, snow_flx, ptu, pqu, &
          !$acc&      cnvwn, kuo, rcup2, islimsk, kpbl, icsdsw, icsdlw, &
          !$acc&      rld_adj, sld_adj, ss_adj) async(async_id)
-         !$acc enter data create(qflux, hflux, utgwc, vtgwc, cnvw, cnvc, &
+         !$acc enter data create(utgwc, vtgwc, cnvw, cnvc, &
          !$acc&      qtr, qti) async(async_id)
          !$acc enter data create(rcup, rlsp, rlspi, rlsps, rlspg, cldwrk, &
          !$acc&      xmu, sr, asr, alr, xsr, xlr, dtcupz, dqcupz, nlcl, &
          !$acc&      nnegl, nosat) async(async_id)
          !$acc enter data create(nwork, ntcup, nflx, ilsp, nlsp, aflxd, aflxu, ijdg, &
          !$acc&      ncup, ndry, nshl, icupmx, ipblmx, xkmx, dtcupx) async(async_id)
-         !$acc enter data create(albx, albedo2, alb, slimsk, tem1, tem2, work1, dtradc, &
+         !$acc enter data create(albx, albedo2, slimsk, tem1, tem2, work1, dtradc, &
          !$acc&      work2, garea, rstd, dotc, ixseed, rs_adj, xlonr) async(async_id)
          !$acc enter data create(u0, v0, t0, q0, xkmd, hprime, oc, theta, &
          !$acc&      gamma, sigmaog) async(async_id)
@@ -643,7 +648,8 @@
          !$acc&      work3, dlength, cldf, tauctx, taucty, heat, evap, &
          !$acc&      area, rhc_mp) async(async_id)
          !$acc enter data create(itlsp, nnlsp, dtcupd, dqcupd, dtcupl, dqcupl) async(async_id)
-         !$acc enter data copyin(tbpvs) async(async_id)
+         !!$acc enter data copyin(tbpvs) async(async_id)
+         !$acc enter data create(ls,ssta) async(async_id)
 #ifdef TIMCOMCPL
          !$acc enter data create(ice_cpl, ocean_cpl, z0_cpl) async(async_id)
 #endif
@@ -807,6 +813,23 @@
                   z0ocn(i, jj) = z0(i, jj)
                end do
             end do
+
+            DissSSTARate = 1.0 - ( 1.0 / Diss_sst )! SST anomaly dissipate rate
+            !$acc parallel loop collapse(2) private(j,nxj) async(async_id)
+            do jj = 1, jlistnum
+             do i=1,nxp
+              j=jlist1(jj)
+              nxj=nxdef_2d(j)
+              if(i<=nxj)then
+               ssta(i,jj) = 0.0
+               if(ocean(i,jj) )then
+                !get sst anomaly
+                ssta(i,jj) = ( tg(i,jj) - sstc(i,jj) ) * DissSSTARate
+                !ssta(i,jj) = max( min( ssta(i,jj) , 10.0 ) ,-10.0 )
+               endif
+              endif
+            enddo
+            enddo
 !     read climate data
             !$acc wait(async_id)
             call readclx(nx, my, my_max, julian, land, ocean, ice, tgclim, gwclim, &
@@ -815,7 +838,7 @@
             !$acc wait(async_id)
             !$acc update device(land, ocean, ice, tgclim, gwclim, z0, alb, &
             !$acc&       sigmaf, istyp, ivegtyp, shdmax, shdmin, slopetyp, &
-            !$acc&       snoalb) &
+            !$acc&       snoalb, sstc, ls) &
             !$acc&       async(async_id)
             !$acc wait(async_id)
 !
@@ -848,7 +871,10 @@
 !---------------------------------------------------------------------
 !            if ( .not. do_sit )then
 #ifndef TIMCOMCPL
-                     if (ocean(i, jj)) tg(i, jj) = sstc(i, jj)
+                    ! if (ocean(i, jj)) tg(i, jj) = sstc(i, jj)
+                    if (ocean(i,jj))then
+                      tg(i,jj)= sstc(i,jj) + ssta(i,jj) 
+                    endif
 #else
                      if (ocean(i,jj) .and. tg_ocn(i,jj) .eq. 0) tg(i, jj)=sstc(i,jj)
 #endif
@@ -941,6 +967,10 @@
             if ( myrank .eq. 0 ) print *, 'update aeroclx at tau= ', tau
             call readaeroclx(nx, my, my_max, lev, naero, julian, &
                              itimestep, monsave, ggdef, aeroclx)
+                             
+            !$acc wait(async_id)
+            !$acc update device(aeroclx) async(async_id)
+            !$acc wait(async_id)
          endif
 #endif
 
@@ -1085,6 +1115,7 @@
                        idat, jdat, solhr, dtsw, dtlw, lsswr, lslwr, &
                        slag, sdec, cdec, solcon, &
                        xlonr, ixseed, icsdsw, icsdlw, async_id)
+         !$acc wait(async_id)
          year = jdat(1)
 !-------------------------------------------------------------------------
 ! cosz was modified to be an average of the  calling period(1 hour fo
@@ -1207,8 +1238,8 @@
             j = jlist1(jj)
             ! for scale-aware
             tem1(jj) = tpr*cosl(j)/float(nxdef(j))
-            jup = min(j + 1, my)
-            jdn = max(j - 1, 1)
+            jup = int( min(j + 1, my) )
+            jdn = int( max(j - 1, 1) )
             tem2(jj) = radus*0.5*abs(xlat(jup) - xlat(jdn))*d2r
          end do
          
@@ -1450,50 +1481,78 @@
 !      endif
 !--------------------------------------------------------------------------------
             !$acc wait(async_id)
-            !$acc update self(icsdsw, icsdlw, slimsk, rstd, dotc, tg, xlonr, tpp, qp, ps, pltp, &
-            !$acc&       cnvwr, cnvcr, cice, xtice, snr, snoalb, z0, o3l, &
-            !$acc&       sncover, curate, ftp, ftp1, fqp, fqp1, cosl, sinl) async(async_id)
+            !!$acc update self(icsdsw, icsdlw, slimsk, rstd, dotc, tg, xlonr, tpp, qp, ps, pltp, &
+            !!$acc&       cnvwr, cnvcr, cice, xtice, snr, snoalb, z0, o3l, &
+            !!$acc&       sncover, curate, ftp, ftp1, fqp, fqp1, cosl, sinl) async(async_id)
             !$acc wait(async_id)
-            do jj = 1, jlistnum
-               j = jlist1(jj)
-               nxj = nxdef_2d(j)
-               call rrtmg &
-                  !  ---  inputs:
-                  (sigma, ps(1, jj), pltp(1, 1, jj), rstd(1, jj), &
-                   tpp(1, 1, jj), qp(1, 1, jj), o3l(1, 1, jj), dotc(1, 1, jj), tg(1, jj), &
-                   slimsk(1, jj), cice(1, jj), xtice(1, jj), &
-                   snr(1, jj), sncover(1, jj), snoalb(1, jj), z0(1, jj), &
-                   alvsf(1, jj), alnsf(1, jj), alvwf(1, jj), &
-                   alnwf(1, jj), facsf(1, jj), facwf(1, jj), &
-                   curate(1, jj), icsdsw(1, jj), icsdlw(1, jj), &
-                   sinl(j), cosl(j), xlat(j), xlonr(1, jj), jdat, d2r, xkapa, &
-                   ptrad, dtlw, dtsw, lsswr, lslwr, lssav, &
-                   nfxr, j, &
-                   nxp, nxjp(j), lev, ncld, lprnt, ipt, kdt, &
-                   uni_cloud, lmfshal, lmfdeep2, &
-                   deltaq(1, 1, jj), sup, cnvwr(1, 1, jj), cnvcr(1, 1, jj), &
-                   ftp(1, 1, jj), ftp1(1, 1, jj), fqp(1, 1, jj), fqp1(1, 1, jj), nmmiph, &
-                   !  ---  outputs:
-                   asol(1, jj), olr(1, jj), ss(1, jj), rs(1, jj), &
-                   sld(1, jj), rld(1, jj), tsflw(1, jj), &
-                   ctot(1, jj), chig(1, jj), cmid(1, jj), clow(1, jj), &
-                   clds(1, 1, jj), asl(1, 1, jj), atl(1, 1, jj), &
-                   fusl(1, 1, jj), fdsl(1, 1, jj), fuir(1, 1, jj), fdir(1, 1, jj), &
-                   fuslr(1, 1, jj), fdslr(1, 1, jj), fuirr(1, 1, jj), fdirr(1, 1, jj), &
-                   asl_clr(1, 1, jj), atl_clr(1, 1, jj), cosz(1, jj), &
-                   asol_clr(1, jj), olr_clr(1, jj), ss_clr(1, jj), rs_clr(1, jj), &
-                   sld_clr(1, jj), rld_clr(1, jj), sfalb(1, jj), sfemis(1, jj))
+            !do jj = 1, jlistnum
+            !   j = jlist1(jj)
+            !   nxj = nxdef_2d(j)
+            !   call rrtmg &
+            !      !  ---  inputs:
+            !      (sigma, ps(1, jj), pltp(1, 1, jj), rstd(1, jj), &
+            !       tpp(1, 1, jj), qp(1, 1, jj), o3l(1, 1, jj), dotc(1, 1, jj), tg(1, jj), &
+            !       slimsk(1, jj), cice(1, jj), xtice(1, jj), &
+            !       snr(1, jj), sncover(1, jj), snoalb(1, jj), z0(1, jj), &
+            !       alvsf(1, jj), alnsf(1, jj), alvwf(1, jj), &
+            !       alnwf(1, jj), facsf(1, jj), facwf(1, jj), &
+            !       curate(1, jj), icsdsw(1, jj), icsdlw(1, jj), &
+            !       sinl(j), cosl(j), xlat(j), xlonr(1, jj), jdat, d2r, xkapa, &
+            !       ptrad, dtlw, dtsw, lsswr, lslwr, lssav, &
+            !       nfxr, j, &
+            !       nxp, nxjp(j), lev, ncld, lprnt, ipt, kdt, &
+            !       uni_cloud, lmfshal, lmfdeep2, &
+            !       deltaq(1, 1, jj), sup, cnvwr(1, 1, jj), cnvcr(1, 1, jj), &
+            !       ftp(1, 1, jj), ftp1(1, 1, jj), fqp(1, 1, jj), fqp1(1, 1, jj), nmmiph, &
+            !       !  ---  outputs:
+            !       asol(1, jj), olr(1, jj), ss(1, jj), rs(1, jj), &
+            !       sld(1, jj), rld(1, jj), tsflw(1, jj), &
+            !       ctot(1, jj), chig(1, jj), cmid(1, jj), clow(1, jj), &
+            !       clds(1, 1, jj), asl(1, 1, jj), atl(1, 1, jj), &
+            !       fusl(1, 1, jj), fdsl(1, 1, jj), fuir(1, 1, jj), fdir(1, 1, jj), &
+            !       fuslr(1, 1, jj), fdslr(1, 1, jj), fuirr(1, 1, jj), fdirr(1, 1, jj), &
+            !       asl_clr(1, 1, jj), atl_clr(1, 1, jj), cosz(1, jj), &
+            !       asol_clr(1, jj), olr_clr(1, jj), ss_clr(1, jj), rs_clr(1, jj), &
+            !       sld_clr(1, jj), rld_clr(1, jj), sfalb(1, jj), sfemis(1, jj))
 !          do k = 1, lev
 !            do i = 1, nxj
 !              dtrad(i,k,jj) = asl(i,k,jj) + atl(i,k,jj)
 !            enddo
 !          enddo
-            end do
+            !end do
+       !call nvtxStartRange("rrtmg")
+       call rrtmg_gpu                                                           &
+          !  ---  inputs:
+           ( sigma,ps,pltp,rstd,                                     &
+             tpp,qp,o3l,dotc,tg,                     &
+             slimsk   ,cice,xtice,                             &
+             snr,sncover,snoalb,z0,                &
+             alvsf,alnsf,alvwf,                          &
+             alnwf,facsf,facwf,                          &
+             curate,icsdsw,icsdlw,                                   &
+             sinl,cosl,xlat,xlonr,jdat,d2r,xkapa,           &
+             ptrad,dtlw,dtsw,lsswr,lslwr,lssav,                            &
+             nfxr,j,                                                       &
+             nxp,1,lev,ncld,lprnt,ipt,kdt,                           &
+             uni_cloud,lmfshal,lmfdeep2,                                   &
+             deltaq,sup,cnvwr,cnvcr,               &
+             ftp,ftp1,fqp,fqp1,nmmiph,     &
+!  ---  outputs:
+             asol,olr,ss,rs,                       &
+             sld,rld,tsflw,                              &
+             ctot,chig,cmid,clow,                  &
+             clds,asl,atl,                         &
+             fusl,fdsl,fuir,fdir,          &
+             fuslr,fdslr,fuirr,fdirr,      &
+             asl_clr,atl_clr,cosz,                   &
+             asol_clr,olr_clr,ss_clr,rs_clr,       &
+             sld_clr,rld_clr,sfalb,sfemis)
             !$acc wait(async_id)
-            !$acc update device(sld, ss, rld, asl, atl, asl_clr, atl_clr, sfemis, &
-            !$acc&       tsflw, cosz, rs, sfalb, clds) async(async_id)
+            !!$acc update device(sld, ss, rld, asl, atl, asl_clr, atl_clr, sfemis, &
+            !!$acc&       tsflw, cosz, rs, sfalb, clds) async(async_id)
             !$acc wait(async_id)
          end if  ! for uprad .and. irad=2
+         !call nvtxEndRange
 
          if (dorad) then
             !$acc wait(async_id)
@@ -2107,7 +2166,7 @@
                      phil(i, kc, jj) = phi(i, k, jj) - sgeo(i, jj)
                      qtc(i, kc, jj) = qt(i, k, jj)
                      qtr(i, kc, jj) = qt(i, lev + k, jj)
-                     if (nmmiph .gt. 2) qti(i, kc, jj) = qt(i, (ntiw - 1)*lev + k, jj)
+!                     if (nmmiph .gt. 2) qti(i, kc, jj) = qt(i, (ntiw - 1)*lev + k, jj)
                      ttc(i, kc, jj) = tt(i, k, jj)
                      utc(i, kc, jj) = ut(i, k, jj)
                      vtc(i, kc, jj) = vt(i, k, jj)
@@ -2254,7 +2313,7 @@
                   do i = 1, nxj
                      qt(i, k, jj) = max(qtc(i, kc, jj), qmin)
                      qt(i, k + lev, jj) = max(qtr(i, kc, jj), qmin)
-                     if (nmmiph .gt. 2) qt(i, (ntiw - 1)*lev + k, jj) = qti(i, kc, jj)
+!                     if (nmmiph .gt. 2) qt(i, (ntiw - 1)*lev + k, jj) = qti(i, kc, jj)
                      dttmp = ttc(i, kc, jj) - tt(i, k, jj)
                      dutmp = utc(i, kc, jj) - ut(i, k, jj)
                      dvtmp = vtc(i, kc, jj) - vt(i, k, jj)
@@ -2342,7 +2401,7 @@
          if (docgrav .and. upnor .and. (nmgwcv .eq. 1)) then
             if (myrank .eq. 0) print *, "Not support this entry. nmgwcv=", nmgwcv
             !$acc wait(async_id)
-            !$acc update self(ut, vt, tt, qt, plt, pk, pk2, phi) async(async_id)
+            !$acc update self(ut, vt, tt, qt, plt, pk, pk2, phi, sinl, cosl) async(async_id)
             !$acc wait(async_id)
             do jj = 1, jlistnum
                j = jlist1(jj)
@@ -2353,7 +2412,7 @@
                              grav, rgas, sinl(j), cosl(j), drag_u(1, jj), drag_v(1, jj), cp, ptop)
             end do
             !$acc wait(async_id)
-            !$acc update device(ut, vt, tt) async(async_id)
+            !$acc update device(ut, vt, tt, qt, plt, pk, pk2, phi, sinl, cosl) async(async_id)
             !$acc wait(async_id)
 
             !   call nor_gwdp_gpu(1, nxjp, nxp, lev, &
@@ -2513,7 +2572,7 @@
                      phil(i, kc, jj) = phi(i, k, jj) - sgeo(i, jj)
                      qtc(i, kc, jj) = qt(i, k, jj)
                      qtr(i, kc, jj) = qt(i, lev + k, jj)
-                     if (nmmiph .gt. 2) qti(i, kc, jj) = qt(i, (ntiw - 1)*lev + k, jj)
+!                     if (nmmiph .gt. 2) qti(i, kc, jj) = qt(i, (ntiw - 1)*lev + k, jj)
                      ttc(i, kc, jj) = tt(i, k, jj)
                      utc(i, kc, jj) = ut(i, k, jj)
                      vtc(i, kc, jj) = vt(i, k, jj)
@@ -2615,7 +2674,7 @@
                   do i = 1, nxj
                      qt(i, k, jj) = max(qtc(i, kc, jj), qmin)
                      qt(i, k + lev, jj) = max(qtr(i, kc, jj), qmin)
-                     if (nmmiph .gt. 2) qt(i, (ntiw - 1)*lev + k, jj) = qti(i, kc, jj)
+!                     if (nmmiph .gt. 2) qt(i, (ntiw - 1)*lev + k, jj) = qti(i, kc, jj)
                      dttmp = ttc(i, kc, jj) - tt(i, k, jj)
                      dutmp = utc(i, kc, jj) - ut(i, k, jj)
                      dvtmp = vtc(i, kc, jj) - vt(i, k, jj)
@@ -4095,14 +4154,14 @@
          !$acc exit data delete(ztenh, zqenh, rho, snow_flx, ptu, pqu, &
          !$acc&      cnvwn, kuo, rcup2, islimsk, kpbl, icsdsw, icsdlw, &
          !$acc&      rld_adj, sld_adj, ss_adj) async(async_id)
-         !$acc exit data delete(qflux, hflux, utgwc, vtgwc, cnvw, cnvc, &
+         !$acc exit data delete(utgwc, vtgwc, cnvw, cnvc, &
          !$acc&      qtr, qti) async(async_id)
          !$acc exit data delete(rcup, rlsp, rlspi, rlsps, rlspg, cldwrk, &
          !$acc&      xmu, sr, asr, alr, xsr, xlr, dtcupz, dqcupz, nlcl, &
          !$acc&      nnegl, nosat) async(async_id)
          !$acc exit data delete(nwork, ntcup, nflx, ilsp, nlsp, aflxd, aflxu, ijdg, &
          !$acc&      ncup, ndry, nshl, icupmx, ipblmx, xkmx, dtcupx) async(async_id)
-         !$acc exit data delete(albx, albedo2, alb, slimsk, tem1, tem2, work1, &
+         !$acc exit data delete(albx, albedo2, slimsk, tem1, tem2, work1, &
          !$acc&      work2, garea, rstd, dotc, ixseed, rs_adj, xlonr, dtradc) async(async_id)
          !$acc exit data delete(u0, v0, t0, q0, xkmd, hprime, oc, theta, &
          !$acc&      gamma, sigmaog) async(async_id)
@@ -4112,7 +4171,8 @@
          !$acc&     work3, dlength, cldf, tauctx, taucty, heat, evap, &
          !$acc&     area, rhc_mp) async(async_id)
          !$acc exit data delete(itlsp, nnlsp, dtcupd, dqcupd, dtcupl, dqcupl) async(async_id)
-         !$acc exit data delete(tbpvs) async(async_id)
+         !!$acc exit data delete(tbpvs) async(async_id)
+         !$acc exit data delete(ls,ssta) async(async_id)
 #ifdef TIMCOMCPL
          !$acc exit data delete(ice_cpl, ocean_cpl, z0_cpl) async(async_id)
 #endif

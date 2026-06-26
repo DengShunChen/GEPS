@@ -1,6 +1,6 @@
 module mod_outflds
  implicit none
- 
+
  
 contains
   subroutine divgout(nx,my,my_max,lpout,lev,itau,idtg, &
@@ -16,9 +16,9 @@ contains
       integer   nx,my,my_max,lpout,lev,itau,ncnt
 
       real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max),       &
-                work3d(nxp,lev,my_max),rdivb(nxp,my_max),               &
                 plev(lpout),whtlev(num)
-      real(kind=RTYPE) rdiv(nxp,lev,my_max),div(nxp,my_max,lpout)
+      real(kind=RTYPE) rdiv(nxp,lev,my_max), rdivb(nxp,my_max)
+      real(kind=RTYPE) div(nxp,my_max,lpout)
       real      tens(lev+1)
       real(kind=RTYPE) wk1(nx,my),pout(nx,my)
 
@@ -38,14 +38,14 @@ contains
       tens(lev)= 0.0
       tens(lev+1)= 0.0
 !
+      call voterp(nx,my,my_max,lev,lpout,pk,pklp,rdiv,rdivb,pkout,div,tens)
+
       do k = 1, lpout-1
        lpl = int(plev(k)+0.001)
        write( lrec(k), '(i3.3,a3)' ) lpl,'230'
       end do
       lrec(lpout) = 'h00230'
-      work3d=rdiv
 !
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,work3d,rdivb,pkout,div,tens)
 !
       lenc= nx*my
       ncnt= 0
@@ -63,7 +63,6 @@ contains
       endif
    10 continue
    20 continue
-
       if(outdms.gt.0)then
       if(lwrite .and. myrank .lt. ncnt ) &
         call dmswrit_split(nx,my,lenc,kflag,pout,istat)
@@ -91,10 +90,10 @@ contains
       integer   nx,my,my_max,lpout,lev,itau,num,ncnt
 
       real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max),               &
-                rdrag(nxp,lev,my_max),rdragb(nxp,my_max),                       &
                 plev(lpout),whtlev(num)
       real      tens(lev+1)
       real(kind=RTYPE) wk1(nx,my),pout(nx,my),drag(nxp,my_max,lpout)
+      real(kind=RTYPE) rdrag(nxp,lev,my_max),rdragb(nxp,my_max)
 !
       integer*8 idtg
       character*6 lrec(lpout)
@@ -114,6 +113,8 @@ contains
       end do
       tens(lev)= 0.0
       tens(lev+1)= 0.0
+
+      call voterp(nx,my,my_max,lev,lpout,pk,pklp,rdrag,rdragb,pkout,drag,tens)
 !
       do k = 1, lpout-1
        lpl = int(plev(k)+0.001)
@@ -121,7 +122,6 @@ contains
       end do
       lrec(lpout) = 'h00290'
 !
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,rdrag,rdragb,pkout,drag,tens)
 !
       lenc= nx*my
       ncnt= 0
@@ -159,7 +159,6 @@ contains
       endif
    10 continue
    20 continue
-
       if(outdms.gt.0)then
       if(lwrite .and. myrank .lt. ncnt ) &
         call dmswrit_split(nx,my,lenc,kflag,pout,istat)
@@ -187,8 +186,8 @@ contains
       integer   nx,my,my_max,lpout,lev,itau,num,ncnt
 !
       real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max),            &
-                phi(nxp,lev,my_max),phib(nxp,my_max),plev(lpout),whtlev(num)
-
+                plev(lpout),whtlev(num)
+      real(kind=RTYPE) phi(nxp,lev,my_max),phib(nxp,my_max)
       real      tens(lev+1),phistd(lpout)
       real(kind=RTYPE) pout(nx,my),glob(nx,my),slp(nx,my),phips(nxp,my_max,lpout)
       real(kind=RTYPE) h850(nxp,my_max),h500(nxp,my_max),tmp(nxp,my_max)
@@ -210,13 +209,14 @@ contains
       tens(lev)= 0.0
       tens(lev+1)= 0.0
 !
+      call voterp(nx,my,my_max,lev,lpout,pk,pklp,phi,phib,pkout,phips,tens)
+
       do k = 1, lpout-1
        lpl = int(plev(k)+0.001)
        write( lrec(k), '(i3.3,a3)' ) lpl,'000'
       end do
       lrec(lpout) = 'h00000'
 !
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,phi,phib,pkout,phips,tens)
 !
       lenc= nx*my
       ncnt= 0
@@ -249,6 +249,7 @@ contains
             h500(i,jj)= phips(i,jj,k)
           enddo
         enddo
+
 !byl          call unify_reduceintp(nx,my,my_max,phips(1,1,k),h500)
 !!          do i=1,lenc
 !!            h500(i,1)=phips(i,k)
@@ -319,8 +320,8 @@ contains
       integer   nx,my,my_max,lpout,lev,itau,num,ncnt
 
       real      pkout(lpout),pklp(nxp,my_max)                            &
-      , pk(nxp,lev,my_max),dpd(nxp,lev,my_max),dpdb(nxp,my_max)          &
-      , plev(lpout),whtlev(num),tens(lev+1)
+      , pk(nxp,lev,my_max), plev(lpout),whtlev(num),tens(lev+1)
+       real(kind=RTYPE) dpd(nxp,lev,my_max),dpdb(nxp,my_max)
       real(kind=RTYPE) pout(nx,my),glob(nx,my),tmp(nxp,my_max)           &
       ,                dew(nxp,my_max,lpout),ffx(nx,my_max)
 
@@ -340,13 +341,14 @@ contains
       tens(lev)= 0.0
       tens(lev+1)= 0.0
 !
+      call voterp(nx,my,my_max,lev,lpout,pk,pklp,dpd,dpdb,pkout,dew,tens)
+
       do k = 1, lpout-1
        lpl = int(plev(k)+0.001)
        write( lrec(k), '(i3.3,a3)' ) lpl,'510'
       end do
       lrec(lpout) = 'h00510'
 !
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,dpd,dpdb,pkout,dew,tens)
 !
       lenc= nx*my
       ncnt= 0
@@ -418,10 +420,9 @@ contains
       implicit  none
 
       integer   nx,my,my_max,lpout,lev,itau,num,ntrac,ncnt,ntrchk
-
+      real(kind=RTYPE) dpd(nxp,lev,my_max),dpdb(nxp,my_max)
       real      pkout(lpout),pklp(nxp,my_max)                        &
-      , pk(nxp,lev,my_max),dpd(nxp,lev,my_max),dpdb(nxp,my_max)      &
-      , plev(lpout),whtlev(num),tens(lev+1)
+      , pk(nxp,lev,my_max), plev(lpout),whtlev(num),tens(lev+1)
       real(kind=RTYPE) pout(nx,my),glob(nx,my),tmp(nxp,my_max)       &
       , dew(nxp,my_max,lpout),ffx(nx,my_max)
 !
@@ -481,6 +482,8 @@ contains
       tens(lev)= 0.0
       tens(lev+1)= 0.0
 !
+      call voterp(nx,my,my_max,lev,lpout,pk,pklp,dpd,dpdb,pkout,dew,tens)
+
       if(ntrac.le.ntrchk)then ! all hydrometeors
 
       do k = 1, lpout-1
@@ -512,7 +515,6 @@ contains
         goto 40
       endif
 !
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,dpd,dpdb,pkout,dew,tens)
 !
       lenc= nx*my
       ncnt= 0
@@ -583,10 +585,9 @@ contains
       implicit  none
 
       integer   nx,my,my_max,lpout,lev,itau,num,ntrac,ncnt,ntrchk
-
+      real(kind=RTYPE) clds(nxp,lev,my_max),cldb(nxp,my_max)
       real      pkout(lpout),pklp(nxp,my_max)                        &
-      , pk(nxp,lev,my_max),clds(nxp,lev,my_max),cldb(nxp,my_max)      &
-      , plev(lpout),whtlev(num),tens(lev+1) 
+      , pk(nxp,lev,my_max) ,  plev(lpout),whtlev(num),tens(lev+1) 
       real(kind=RTYPE) pout(nx,my),glob(nx,my),tmp(nxp,my_max)       &
       , cldfc(nxp,my_max,lpout),ffx(nx,my_max)
 !
@@ -604,12 +605,13 @@ contains
       tens(lev)= 0.0
       tens(lev+1)= 0.0
 !
+      call voterp(nx,my,my_max,lev,lpout,pk,pklp,clds,cldb,pkout,cldfc,tens)
+
       do k = 1, lpout-1
        lpl = int(plev(k)+0.001)
        write( lrec(k), '(i3.3,a3)' ) lpl,'770'
       end do
       lrec(lpout) = 'h00770'
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,clds,cldb,pkout,cldfc,tens)
 !
       lenc= nx*my
       ncnt= 0
@@ -619,13 +621,7 @@ contains
 !
       if(plev(k).eq.whtlev(n)) then
 !
-      do 11 jj=1, jlistnum
-      j=jlist1(jj)
-      nxj=nxdef_2d(j)
-      do 11 i=1,nxj
-       tmp(i,jj)= cldfc(i,jj,k) * 100.0
-   11 continue
-      call unify_reduceintp(nx,my,my_max,tmp,glob)
+      call unify_reduceintp(nx,my,my_max,cldfc,glob)
 !
       call syslbl_w(lrec(k),idtg,itau,ggdef)
       call qmaxn3_w(glob,1,1,1,nx,my,1)
@@ -666,7 +662,7 @@ contains
       real      pdiff(nxp,my_max)
       real(kind=RTYPE) ptend(nxp,my_max),pt(nxp,my_max),glob(nx,my),   &
                        slp(nxp,my_max),tmp(nxp,my_max)
-      character*16 taudir(ntau)
+      character*18 taudir(ntau)
       character*4 ggdef
 !
       real      ptop,tnshun
@@ -681,10 +677,17 @@ contains
         nxj=nxdef_2d(j)
         do i=1,nxj
 !byl          slp(i,j)= pt(i,jj)+pdiff(i,jj)
-          slp(i,jj)= pt(i,jj)+pdiff(i,jj)
-          ptend(i,jj)= ptend(i,jj)*3600.0
+          slp(i,jj)= ( pt(i,jj)+pdiff(i,jj) )
         enddo
       enddo
+
+!      do jj = 1, jlistnum
+!        j=jlist1(jj)
+!        nxj=nxdef_2d(j)
+!        do i=1,nxj
+!          ptend(i,jj)= ptend(i,jj)*3600.0
+!        enddo
+!      enddo
 !
 !byl      call unify_reduceintp(nx,my,my_max,tmp,slp)
 !byl      call mpe_unify(slp,nx,my,2,mpe_double)
@@ -702,6 +705,7 @@ contains
           label(num)= labx
         endif
    20 continue
+      if(myrank==0)print*,'in surfout ntau=',ntau,' num=',num
       if(num.eq.0) return
 !
       tnshun= 1.0
@@ -713,18 +717,25 @@ contains
 !
 
       if(label(kk).eq.'SSL010' .or. label(kk).eq.'ssl010') then
-        call unify_reduceintp(nx,my,my_max,slp,glob)
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          do i=1,nxj
+            tmp(i,jj)= slp(i,jj) * 100.0 !hPa -> Pa
+          enddo
+        enddo
+        call unify_reduceintp(nx,my,my_max,tmp,glob)
         call syslbl_w('ssl010',idtg,itau,ggdef)
         if( itau==0 .or. itau .gt. nint(domfc) )then
-        if(outdms.gt.0)then
-          if(lwrite) call dmswrit(nx,my,lenc,kflag,glob,istat)
-        endif
-        if(outgrb2==1.and.myrank==0)then
-          ihdgo2 = ihdgo
-          glob=glob*100.0
-          call wrt_grb2_v2(itau,0,3,1,1,101,0,0,glob)
-        endif
-        call qmaxn3_w(glob,1,1,1,nx,my,1)
+         call qmaxn3_w(glob,1,1,1,nx,my,1)
+         if(outgrb2==1.and.myrank==0)then
+           ihdgo2 = ihdgo
+           call wrt_grb2_v2(itau,0,3,1,1,101,0,0,glob)
+         endif
+         if(outdms.gt.0)then
+           glob=glob/100.0
+           if(lwrite) call dmswrit(nx,my,lenc,kflag,glob,istat)
+         endif
         endif !itau .gt. domfc
 !
 !  terrain pressure
@@ -735,7 +746,7 @@ contains
           nxj=nxdef_2d(j)
           do i=1,nxj
 !byl            glob(i,j) = pt(i,jj) + ptop
-            tmp(i,jj) = pt(i,jj) + ptop
+            tmp(i,jj) = ( pt(i,jj) + ptop ) * 100.0
           enddo
         enddo
         call unify_reduceintp(nx,my,my_max,tmp,glob)
@@ -748,15 +759,15 @@ contains
 !byl        call mpe_unify(glob,nx,my,2,mpe_double)
         call syslbl_w('b00010',idtg,itau,ggdef)
 !byl        if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-        if(outdms.gt.0)then
-          if(lwrite) call dmswrit(nx,my,lenc,kflag,glob,istat)
-        endif
+        call qmaxn3_w(glob,1,1,1,nx,my,1)
         if(outgrb2==1.and.myrank==0)then
           ihdgo2 = ihdgo
-          glob=glob*100.0
           call wrt_grb2_v2(itau,0,3,0,1,103,0,0,glob)
         endif
-        call qmaxn3_w(glob,1,1,1,nx,my,1)
+        if(outdms.gt.0)then
+          glob=glob/100.0
+          if(lwrite) call dmswrit(nx,my,lenc,kflag,glob,istat)
+        endif
 
 !
 !  terrain pressure tendency
@@ -792,8 +803,9 @@ contains
       real      tnshun
 
       real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max)        &
-      , tt(nxp,lev,my_max),ttbot(nxp,my_max),plev(lpout),whtlev(num)
+      ,plev(lpout),whtlev(num)
       real      tens(lev+1)
+      real(kind=RTYPE) tt(nxp,lev,my_max) , ttbot(nxp,my_max)
       real(kind=RTYPE) pout(nx,my),glob(nx,my),slp(nx,my),temp(nxp,my_max,lpout)
 
 !
@@ -808,6 +820,7 @@ contains
       end do
       tens(lev+1)= 0.0
       tens(lev)= 0.0
+      call voterp(nx,my,my_max,lev,lpout,pk,pklp,tt,ttbot,pkout,temp,tens)
 !
       do k = 1, lpout-1
        lpl = int(plev(k)+0.001)
@@ -815,7 +828,6 @@ contains
       end do
       lrec(lpout) = 'h00100'
 !
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,tt,ttbot,pkout,temp,tens)
 !
       lenc= nx*my
 !
@@ -877,9 +889,9 @@ contains
       integer   nx,my,my_max,lpout,lev,itau,num,ncnt
 
       real      pkout(lpout),pklp(nxp,my_max)                        &
-      , pk(nxp,lev,my_max),work3d(nxp,lev,my_max),rvorb(nxp,my_max)  &
-      , plev(lpout),whtlev(num)
-      real(kind=RTYPE) rvor(nxp,lev,my_max),vor(nxp,my_max,lpout)
+      , pk(nxp,lev,my_max) , plev(lpout),whtlev(num)
+      real(kind=RTYPE) rvor(nxp,lev,my_max),rvorb(nxp,my_max)
+      real(kind=RTYPE) vor(nxp,my_max,lpout)
       real      tens(lev+1)
       real(kind=RTYPE) v850(nxp,my_max),v700(nxp,my_max)
       real(kind=RTYPE) wk1(nx,my),pout(nx,my)
@@ -899,15 +911,14 @@ contains
       end do
       tens(lev)= 0.0
       tens(lev+1)= 0.0
+      call voterp(nx,my,my_max,lev,lpout,pk,pklp,rvor,rvorb,pkout,vor,tens)
 !
       do k = 1, lpout-1
        lpl = int(plev(k)+0.001)
        write( lrec(k), '(i3.3,a3)' ) lpl,'240'
       end do
       lrec(lpout) = 'h00240'
-      work3d=rvor
 !
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,work3d,rvorb,pkout,vor,tens)
 !
       lenc= nx*my
       ncnt= 0
@@ -976,7 +987,7 @@ contains
   end subroutine vortout
 
   subroutine windout(nx,my,my_max,lpout,lev,itau,idtg      &
-      , plev,num,whtlev,cosl,pkout,pk,pklp,ut,vt,sdhat,utb,vtb     &
+      , plev,num,whtlev,cosl,pkout,pk,pklp,ut,vt,sdhat,work3d,utb,vtb     &
       , wind,glob,ggdef,lwrite)
 !
       use index
@@ -987,12 +998,12 @@ contains
       implicit none
 
       real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max)          &
-      , rdiv(nxp,lev,my_max),work3d(nxp,lev,my_max)                       &
-      , utb(nxp,my_max),vtb(nxp,my_max),plev(lpout),whtlev(num)
+      , plev(lpout),whtlev(num)
+      real(kind=RTYPE) work3d(nxp,lev,my_max)
       real(kind=RTYPE) ut(nxp,lev,my_max),vt(nxp,lev,my_max)              &
       , sdhat(nxp,lev,my_max),cosl(my),wind(nxp,my_max,lpout)
-
-      real      tens(lev+1),wtb(nxp,my_max)
+      real(kind=RTYPE) utb(nxp,my_max),vtb(nxp,my_max),wtb(nxp,my_max)
+      real      tens(lev+1)
       real(kind=RTYPE) pout(nx,my),glob(nx,my),tmp(nxp,my_max)
 !
       integer   nx,my,my_max,lpout,lev,itau,jj,nxj,ncnt
@@ -1000,6 +1011,7 @@ contains
       integer:: ptp0(9),ptp1(9)
 
       real      rad,xxx
+      integer, parameter:: async_id = 1
 !lzl +add
 !!      real      pklzl(nx,my)
 !lzl -end
@@ -1032,7 +1044,15 @@ contains
 !
 ! first: do the u components
 !
-      work3d=ut
+     do jj = 1, jlistnum
+       j=jlist1(jj)
+       nxj=nxdef_2d(j)
+       do k = 1, lev
+        do i = 1,nxj
+          work3d(i,k,jj)=ut(i,k,jj)
+        enddo
+       enddo
+     enddo
       call voterp(nx,my,my_max,lev,lpout,pk,pklp,work3d,utb,pkout,wind,tens)
 !
 !!      if( lreduce.eq.1 ) call reduceintp (utb,nxdef,nx,my)
@@ -1106,7 +1126,15 @@ contains
 !
 !  now the v components
 !
-      work3d=vt
+     do jj = 1, jlistnum
+       j=jlist1(jj)
+       nxj=nxdef_2d(j)
+       do k = 1, lev
+        do i = 1,nxj
+          work3d(i,k,jj)=vt(i,k,jj)
+        enddo
+       enddo
+     enddo
       call voterp(nx,my,my_max,lev,lpout,pk,pklp,work3d,vtb,pkout,wind,tens)
 !
 !!      if( lreduce.eq.1 ) call reduceintp (vtb,nxdef,nx,my)
@@ -1181,8 +1209,22 @@ contains
 !
 !  now the w components
 !
-      wtb=0.
-      work3d=sdhat
+     do jj = 1, jlistnum
+       j=jlist1(jj)
+       nxj=nxdef_2d(j)
+       do i = 1,nxj
+        wtb(i,jj)=0.0
+       enddo
+     enddo
+     do jj = 1, jlistnum
+       j=jlist1(jj)
+       nxj=nxdef_2d(j)
+       do k = 1, lev
+        do i = 1,nxj
+          work3d(i,k,jj)=sdhat(i,k,jj)
+        enddo
+       enddo
+     enddo
       call voterp(nx,my,my_max,lev,lpout,pk,pklp,work3d,wtb,pkout,wind,tens)
 !
       ncnt= 0

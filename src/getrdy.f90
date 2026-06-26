@@ -50,7 +50,6 @@
       use module_mp_thompson_make_number_concentrations,                &
                              only: make_IceNumber, make_RainNumber
 !-----------------------------------------------------------------------
-      use mod_grb2_param , only : grbnxmy
 
       implicit   none
 
@@ -101,6 +100,7 @@
 ! for Thompson MP
       real  tem,rho,ttr,ttv
 
+      integer, parameter:: async_id = 1
       lmax=26
       cc=0.
 !
@@ -359,6 +359,7 @@
         call readclx( nx,my,my_max,julian,land,ocean,ice,tgclim,gwclim  &
                    ,z0,alb,sst,sigmaf,istyp,ivegtyp,ls                  &
                    ,shdmax,shdmin,slopetyp,snoalb,ggdef,isot,ivegsrc )
+        sstc=sst
 #ifdef Readaeroclx
 !
 ! read aerosol climate data
@@ -595,7 +596,7 @@
           enddo
         enddo
 !
-      else
+      else !---------------
 !
         do jj = 1, jlistnum
           j=jlist1(jj)
@@ -1254,9 +1255,25 @@
         sld=0.
         rld=0.
 !        flash=0.   !xb110, flash density
-
-!!       open grib2 file
-        if( outgrb2 == 1) grbnxmy=nx*my
+!--- dynamic ---
+!$acc update device(pk,pk2,plt) async(async_id)
+!$acc update device(rvor,rdiv) async(async_id)
+!$acc update device(pt,tt,ut, vt, qt) async(async_id)
+!$acc update device(dlpl,dtpl) async(async_id)
+!$acc update device(vornow, divnow, temnow, plnow, pdiff) async(async_id)
+!$acc update device(sgeo,std) async(async_id)
+!--- physic ---
+!$acc update device(zice,xtice,cice) async(async_id)
+!$acc update device(canopy,sndepth,sncover) async(async_id)
+!$acc update device(snoalb,shdmax,shdmin,sigmaf) async(async_id)
+!$acc update device(slopetyp,istyp,ivegtyp) async(async_id)
+!$acc update device(stc,smc,slc) async(async_id)
+!$acc update device( chig, cmid, clow, ctot, hpbl, rld, sld, gfx) async(async_id)
+!--- PBL ---
+!$acc update device(sstc) async(async_id)
+!!$acc enter data copyin(tg,gwr,z0,hflux,qflux,snr, raintot,raincu,rainlp,plcl, &
+!!$acc&   cumtop,ss,rs,alb,gwclim,acld,t2,q2,rh2,rh10,u10,v10) async(async_id)
+!$acc wait(async_id)
 
         call outflds ( itaui,nx,my,my_max,lev,ncld,lmax,numout,idtg     &
              , outdir,ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo           &
@@ -1270,7 +1287,6 @@
              , ctot,chig,cmid,clow,hpbl,.true.,do_sit)
 
 ! add 40m 100m output for green energy plan
-
       if(out_green)then
         call  outflds_green(0,nx,my,my_max,lev,ncld                     &
               , idtg,cp,rgas,grav,t2,u10,v10,ss,pk                      &
@@ -1349,5 +1365,10 @@
 
       endif   ! end of (.not.restrt) for output initial fileds
 !
+
+!!$acc wait(async_id)
+!!$acc exit data delete(tg,gwr,z0,hflux,qflux,snr, raintot,raincu,rainlp,plcl, &
+!!$acc&   cumtop,ss,rs,alb,gwclim,acld,t2,q2,rh2,rh10,u10,v10) async(async_id)
+!$acc wait(async_id)
       return
       end

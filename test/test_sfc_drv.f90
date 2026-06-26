@@ -140,6 +140,7 @@ subroutine sfc_drv_unit
    ct = 0.
    gt = 0.
    error_count = 0
+   !$acc exit data delete(tbpvs) async(async_id)
    do ii = 1, 16
    call random_number(psi)
    call random_number(ut)

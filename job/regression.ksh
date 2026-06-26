@@ -101,7 +101,12 @@
 # fi
 
 #----------------------------------------------------------------#
-
+RSMMPMD='f'
+MODLST_RSM=''
+if [[ ${RSMMPMD} = 't' ]] ;then
+  MODLST_RSM='outrsm=t,rsmoutinv=6,'
+fi
+#----------------------------------------------------------------#
 
 #-- write out running date tag
  echo $dtg > ${GFSWRK}/crdate
@@ -127,6 +132,7 @@ EOF
 export GFSDIR DMSPATH
 export NWPETC=${GFSDIR}/etc
 export NWPETCGLB=${GFSWRK}
+#export GLB_TYPHINI="/ncs/ncsatyp/TYP/M00/dtg/tdty" #inner
 export GLB_TYPHINI="/nwpr/gfs/a361/MODEL/typhoon"
 export FIXDIR=${GFSFIX}
 
@@ -164,13 +170,22 @@ if [ $JCAP = 639  ] ; then
   MODLST_RES='dt=450., hfilt=1., cgw=4.2e-5, cgwd=1.20, cmbk=1.00,spl2=50.,itter=2,'
   MODLST_PHY='isot=2,ivegsrc=2,'
   MODEL_BASIC='nco=640,'
+  if [ ${machine} = a100 ]; then
+    MODLST_PHY="nmgwcv=2, nmmiph=15"
+  fi
 elif [ $JCAP = 383  ] ; then
   MODLST_RES='dt=600., hfilt=1., cgw=2.6e-5, cgwd=2.40, cmbk=0.60,'
   MODLST_PHY="nmgwcv=1,"
   MODEL_BASIC='nco=384,'
+  if [ ${machine} = a100 ]; then
+    MODLST_PHY="nmgwcv=2, nmmiph=15"
+  fi
 elif [ $JCAP = 199  ] ; then
   MODLST_RES='dt=1200., hfilt=1., cgwd=2.40, cmbk=0.60, mom4ice=f, '
   MODEL_BASIC='nco=200,'
+  if [ ${machine} = a100 ]; then
+    MODLST_PHY="nmgwcv=2, nmmiph=15"
+  fi
 fi
 
 cat > ${GFSWRK}/namlsts << EOF
@@ -218,6 +233,7 @@ cat > ${GFSWRK}/namlsts << EOF
 !  naero=1,
   ${MODLST_RES}
   ${MODLST_PHY}
+  ${MODLST_RSM}
  &end
 
  &typ
@@ -263,7 +279,7 @@ cat > ${GFSWRK}/namlsts << EOF
 
  &gce_3ice
   SL_sedi=false, sat_predict=true, new_saturation=true,
-  use_cpm=false, use_declination=false
+  use_cpm=false, use_declination=true
  /
 
 EOF
@@ -273,14 +289,27 @@ EOF
  else
 	FCT_MODEL=$MDIR/src/$EXEC
  fi
+ if [[ ${RSMMPMD} = 't' ]] ;then
+      FCT_RSM="../rsm/run/exe/rsm.x"
+      if [[ ! -f ${FCT_RSM}  ]];then echo 'rsm exe not found'; exit -1 ;fi
+      export GMPI=${MPI}
+      export RMPI=216  #RSM use cpu core
+ fi
 
  if [ ${machine} = a100 ]; then
   export NVCOMPILER_ACC_CUDA_MEMALLOCASYNC="1"
-  export NVCOMPILER_ACC_CUDA_MEMALLOCASYNC_POOLSIZE="40G"
+  export NVCOMPILER_ACC_CUDA_MEMALLOCASYNC_POOLSIZE="60G"
   export NVCOMPILER_ACC_USE_GRAPH="1"
   export NVCOMPILER_ACC_CUDA_NOCOPY="1"
  fi
  /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} -Wl,-T
+
+ ###--- NVIDIA Nsight Systems tool for A100 ---###
+ #nsys profile -t cuda,nvtx,openacc --cuda-memory-usage=true mpiexec -n ${MPI} ${FCT_MODEL} -Wl,-T
+
+ ###--- run rsm ---###
+ #/usr/bin/time -p mpiexec -stdin rfcstparm.all \
+ # -n ${GMPI} ${FCT_MODEL} -Wl,-T : -n ${RMPI} ${FCT_RSM}
 
  if [ $? != 0 ] ; then
   echo "error occured: fct model fail !!" ; exit 9

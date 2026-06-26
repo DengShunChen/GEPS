@@ -48,7 +48,7 @@
                    skeb_vdof,skebnorm, skebfilt, &
                    ssst, ssst_seed, ssst_decort, ssst_lscale, &
                    init_stochastic_physics
-      use mod_grb2_param, only:grbmem,grbnumm
+      use mod_grb2_param, only:grbmem,grbnumm, grbnxmy, latlong, seclist01
 
       implicit  none
 
@@ -148,7 +148,7 @@
         call mpe_finalize
         call dmsexit(-1)
       else
-        if(myrank .eq. 0) print *,truefile
+        if(myrank .eq. 0) print *,trim(truefile)
       endif
 !
       open (unit=12,file=trim(truefile),form='formatted')
@@ -167,13 +167,17 @@
 !
       read (1,modlst,end=120)
   120 continue
+      rewind(1)
       read (1,typ,end=121)
   121 continue
+      rewind(1)
       ! read stochastic_physics
       read (1,stochy_physics,end=122)
   122 continue
+      rewind(1)
       read (1,gce_3ice,end=124)
   124 continue
+      rewind(1)
       read (1,grb_conf,end=123)
   123 continue
       close(1)
@@ -197,6 +201,12 @@
   130 continue
       endif
       close(1)
+
+      if(myrank .eq. 0)then
+        print modlst
+        print typ
+        print stochy_physics
+      endif
 
 !
       open (unit=2,file=trim(crdate),form='formatted')
@@ -263,9 +273,6 @@
         hours = mod(hours,24.)
       endif
 !
-      if(myrank .eq. 0) print modlst
-      if(myrank .eq. 0) print typ
-      if(myrank .eq. 0) print stochy_physics
 !
       if (taui .ge. taue)  then
         if(myrank .eq. 0)  &
@@ -351,7 +358,7 @@
 !
 !  horizontal diffusion settings for sponge layer
       do k = 1, lev
-        prslp=sigma(k,2)+sigma(k,1)*1000.+ptop
+        prslp=sigma(k,2)+sigma(k,1)*900.+ptop
         if ( prslp .le. spl1  ) hdk1=k
         if ( prslp .le. spl2  ) hdk2(1)=k
         if ( prslp .le.  50.  ) hdk2(2)=k
@@ -502,10 +509,17 @@
          end do
       end do
 #endif
-!
+
+
+!-----------------------------------------------------------------------
 !  specify the dms read-in and write-out only for 34 keys
 !
+#ifdef NDMS
+      if( myrank == 0 ) print*,'run No_use_DMS library'
+#endif
       if( myrank .eq. 0 ) then
+       istat_r=0
+       istat_w=0
        type_r="RORDER"//char(0)
        type_w="WORDER"//char(0)
 #ifdef I38K
@@ -521,7 +535,7 @@
 #endif
        call dmscfg(type_w,argument,istat_w)
        istat = abs(istat_r) + abs(istat_w)
-      endif
+      endif ! myrank==0
 !ch   call mpe_broadcast(istat,1,flag,mpe_integer)
       call mpe_bcast(istat,1,0,mpe_integer)
       if(istat.ne.0)then
@@ -532,6 +546,7 @@
 !
 !  open back ground dmsfile
 !
+      istat1=0 ;istat2=0 ;istat3=0
       if(myrank.eq.0) then
       call dmsmsg("ALL",istat)
       call dmsopn(bckfile,"r",istat1)
@@ -545,14 +560,15 @@
 !
       if(myrank .lt. lev) call dmsopn(ifilout,"w",istat3)
 !
-      if(myrank.eq.0) then
-      istat = abs(istat1) + abs(istat2) + abs(istat3)
 !
 ! ldailyFCTsst=true, restore sst, snow depth, sea ice fraction from ncep
 ! data
 ! open ncep data dms
 !
-       istat4=0; istat5=0; istat6=0; istat7=0; istat8=0
+      istat4=0; istat5=0; istat6=0; istat7=0; istat8=0
+      if(myrank.eq.0) then
+        istat = abs(istat1) + abs(istat2) + abs(istat3)
+
         if(ldailyFCTsst) then
           call dmsopn(ifilin_sst,"r",istat4)
           istat = istat + abs(istat4)
@@ -568,31 +584,36 @@
           endif
           istat = istat + abs(istat6)+abs(istat7)
         endif
+      end if !myrank == 0
+
 #ifdef Readaeroclx
-        call dmsopn(ifilin_aero,"r",istat8)
+        !call dmsopn(ifilin_aero,"r",istat8)
+        if(col_rank .eq. 0) call dmsopn(ifilin_aero,"r",istat8)
         istat = istat + abs(istat8)
 #endif
 
-      end if
 !ch   call mpe_broadcast(istat,1,flag,mpe_integer)
       call mpe_bcast(istat,1,0,mpe_integer)
       if(istat.ne.0)then
         if(myrank.eq.0) then
          print *,'dmsopn error'
-         if(istat1.ne.0) print*,' BCKFILE=',bckfile,' dms open failed !'
-         if(istat2.ne.0) print*,' IFILEIN=',ifilin,' dms open failed!'
-         if(istat3.ne.0) print*,' IFILEOUT=',ifilout,' dms open failed!'
-         if(istat4.ne.0) print*,' IFILE_SST=',ifilin_sst,' dms open failed!'
-         if(istat5.ne.0) print*,' IFILE_NCEP=',ifilin_ncep,' dms open failed!'
-         if(istat6.ne.0) print*,' IFILE_ClmANA=',ifilin_ClmANA,' dmsopen failed!'
-         if(istat7.ne.0) print*,' IFILE_ClmFCT=',ifilin_ClmFCT,' dmsopen failed!'
+         if(istat1.ne.0) print*,' BCKFILE=',trim(bckfile),' dms open failed !'
+         if(istat2.ne.0) print*,' IFILEIN=',trim(ifilin),' dms open failed!'
+         if(istat3.ne.0) print*,' IFILEOUT=',trim(ifilout),' dms open failed!'
+         if(istat4.ne.0) print*,' IFILE_SST=',trim(ifilin_sst),' dms open failed!'
+         if(istat5.ne.0) print*,' IFILE_NCEP=',trim(ifilin_ncep),' dms open failed!'
+         if(istat6.ne.0) print*,' IFILE_ClmANA=',trim(ifilin_ClmANA),' dmsopen failed!'
+         if(istat7.ne.0) print*,' IFILE_ClmFCT=',trim(ifilin_ClmFCT),' dmsopen failed!'
 #ifdef Readaeroclx
-         if(istat8.ne.0) print*,' IFILE_AERO=',ifilin_aero,' dmsopen failed!'
+         if(istat8.ne.0) print*,' IFILE_AERO=',trim(ifilin_aero),' dmsopen failed!'
 #endif
         endif
         call mpe_finalize
         call dmsexit(-1)
       endif
+
+!-----------------------------------------------------------------------
+
 !
 !
 ! read file of output directives specifying desired output
@@ -603,7 +624,7 @@
       do 80 k=1,nout
       numout= k
       read (4,800,iostat=io)  outdir(numout)
-  800 format (a16)
+  800 format (a18)
       if (io.ne.0)  go to 85
       if (outdir(numout).eq.'nomodata')  go to 85
    80 continue
@@ -648,10 +669,17 @@
 !  for rrtmg scheme : rad_initialize
 !-----------------------------------------------------------------------
       if (irad .eq. 2) then
+#ifdef USE_CUDA
+       call rad_initialize_gpu (si,lev,ictm, isol, ico2, iaer, ialb,        &
+       iems, ntcw, nmmiph, ntoz, iovr_sw, iovr_lw, isubc_sw, isubc_lw,  &
+       icliq_sw, icice_sw, icliq_lw, icice_lw, sashal, crick_proof,     &
+       ccnorm, norad_precip, idate, iflip, me, myrank)
+#else
        call rad_initialize (si,lev,ictm, isol, ico2, iaer, ialb,        &
        iems, ntcw, nmmiph, ntoz, iovr_sw, iovr_lw, isubc_sw, isubc_lw,  &
        icliq_sw, icice_sw, icliq_lw, icice_lw, sashal, crick_proof,     &
        ccnorm, norad_precip, idate, iflip, me, myrank)
+#endif
 
       if(myrank .eq. 0) print *,'after rad_initialize ..'
       if(myrank .eq. 0) print *,'ntoz=',ntoz,' iflip=',iflip
@@ -902,6 +930,13 @@
 990  continue
 
 !for 2dMPI <<
+
+!    for grib2 information
+      if( outgrb2 == 1)then
+       grbnxmy=nx*my
+       call latlong(nx,my)
+       call seclist01( idtg, 0 )
+      endif
 
       return
       end

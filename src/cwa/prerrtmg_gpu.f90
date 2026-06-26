@@ -10,7 +10,7 @@
 !--------------------------------------------------------------------
 !   Prepare for RRTMG scheme
 !--------------------------------------------------------------------
-         use module_radiation_driver, only: radupdate
+         use module_radiation_driver_gpu, only: radupdate_gpu
 
          use mersenne_twister, only: random_setseed, random_index, &
                                       random_stat
@@ -86,7 +86,9 @@
 ! --- run radupdate
 !
          if (uprad) then
-            call radupdate &
+            !if (myrank .eq. 0) write(*,*) 'CCCCC', idat, jdat, dtsw, dt, lsswr, me, myrank, &
+            !   slag, sdec, cdec, solcon
+            call radupdate_gpu &
                ! --- inputs:                                                        &
                (idat, jdat, dtsw, dt, lsswr, me, myrank, &
                 ! --- outputs:                                                       &

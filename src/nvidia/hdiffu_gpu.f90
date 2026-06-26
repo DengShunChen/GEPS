@@ -35,7 +35,7 @@ subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
 
    integer jj, j, nxj, k, i, m, n, mf, nc, kk, KL
    real xx, facd, facv, fact, amp, ddiffu, vdiffu, tdiffu
-   real hfilt, nf, dec, coefu, powd, kfac, dect
+   real hfilt, nf, dec, coefu, powd, kfac, dect, hfilt2, hfiltd, powdd
    real c1, c2, c3
    logical windchk
    real wt
@@ -83,11 +83,14 @@ subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
 
    powd = float(hord)/2.
    hfilt = (radsq/(nf*(nf + 1)))**powd
+   hfilt2= radsq/(nf*(nf+1))
    coefu = factop/float(hdk2(1) - hdk1)
    if (octahedral) then
       hfilt = hfilt/(6.*dta)
+      hfilt2= hfilt2/(6.*dta)
    else
       hfilt = hfilt/dta
+      hfilt2= hfilt2/dta
    end if
 
    !$acc parallel loop gang private(KL, kfac, dect, dec, facd, facv, fact) async(async_id)
@@ -104,15 +107,25 @@ subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
       kfac = kfac*(1.+vd*dec)
       facd = max(1., kfac)*amp
       facv = max(1., kfac)*amp
-      fact = max(1., kfac)*amp
+!      fact = max(1., kfac)*amp
+
+      if ( KL .lt. hdk1 ) then
+        hfiltd = hfilt2
+        powdd  = 1.
+      else
+        hfiltd = hfilt
+        powdd  = powd
+      endif
+
       !$acc loop worker
       do m = 1, mlistnum
          mf = mlist(m)
          !$acc loop vector
          do n = mf, jtrun
             c1 = 1.+dta*facv*hfilt*eps4(n, m)**powd
-            c2 = 1.+dta*facd*hfilt*eps4(n, m)**powd
-            c3 = 1.+dta*fact*hfilt*eps4(n, m)**powd
+!            c2 = 1.+dta*facd*hfilt*eps4(n, m)**powd
+            c2 = 1.+dta*facd*hfiltd*eps4(n, m)**powdd
+!            c3 = 1.+dta*fact*hfilt*eps4(n, m)**powd
             vordiss(k, 1, n, m) = (1.-1./c1)*vornow(k, 1, n, m)
             vordiss(k, 2, n, m) = (1.-1./c1)*vornow(k, 2, n, m)
             divdiss(k, 1, n, m) = (1.-1./c2)*divnow(k, 1, n, m)
@@ -121,8 +134,8 @@ subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
             vornow(k, 2, n, m) = vornow(k, 2, n, m)/c1
             divnow(k, 1, n, m) = divnow(k, 1, n, m)/c2
             divnow(k, 2, n, m) = divnow(k, 2, n, m)/c2
-            temnow(k, 1, n, m) = (temnow(k, 1, n, m) + (c3 - 1.)*trefs(k, 1, n, m))/c3
-            temnow(k, 2, n, m) = (temnow(k, 2, n, m) + (c3 - 1.)*trefs(k, 2, n, m))/c3
+!            temnow(k, 1, n, m) = (temnow(k, 1, n, m) + (c3 - 1.)*trefs(k, 1, n, m))/c3
+!            temnow(k, 2, n, m) = (temnow(k, 2, n, m) + (c3 - 1.)*trefs(k, 2, n, m))/c3
          end do
       end do
    end do
@@ -154,130 +167,6 @@ subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
       call filter_top_gpu(jtrun, jtmax, levp, hdk1, ncld, temnow, vornow, divnow)
    end if
 !--------------------------------------------------------------------
-   return
-end
-
-subroutine whdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
-                       , rad, cosl, ut, vt, vornow, divnow, temnow &
-                       , eps4, trefs)
-   ! Present on device: cosl, ut, vt, vornow, divnow, temnow, eps4, trefs
-   ! Present on device: jlist1, nxdef_2d, Llist, hdk2
-   use index
-   use mpe
-   use rank
-   use const, only: hdk1, hdk2, radsq, vd, factop, RTYPE, hord
-   use param, only: octahedral
-   use openacc
-   use cudafor
-
-   implicit none
-
-   integer my, my_max, nx, jtrun, jtmax, lev, ncld
-   real rad
-
-   real(kind=RTYPE) dta
-   real(kind=RTYPE) vornow(levp, 2, jtrun, jtmax), divnow(levp, 2, jtrun, jtmax), &
-      temnow(levp, 2, jtrun, jtmax), trefs(levp, 2, jtrun, jtmax), &
-      ut(nxp, lev, my_max), vt(nxp, lev, my_max), &
-      eps4(jtrun, jtmax), cosl(my)
-   real wmax(lev), wt, wmax_buf(lev)
-   real windmax1, windmax2, windmax3
-
-   integer jj, j, nxj, k, i, m, n, mf, nc, kk, KL
-   real xx, facd, facv, fact, amp, ddiffu, vdiffu, tdiffu, dec, dect
-   real hfilt, nf, kfac, fl, powd
-   real c1, c2, c3, c4
-   logical windchk
-
-   data windmax1/80./, windmax2/100./, windmax3/130./
-   integer async_id, istat, ierr
-   integer(kind=cuda_stream_kind) :: stream
-
-   async_id = 1
-   stream = acc_get_cuda_stream(async_id)
-
-   !$acc enter data create(wmax) create(wmax_buf) async(async_id)
-   !$acc parallel loop gang async(async_id) private(wt)
-   do k = 1, lev
-      wt = 0.0
-      !$acc loop vector collapse(2) reduction(max:wt) private(j, nxj, xx)
-      do jj = 1, jlistnum
-         do i = 1, nxp
-            j = jlist1(jj)
-            nxj = nxdef_2d(j)
-            if (i .le. nxj) then
-               xx = rad/cosl(j)
-               wt = max(wt, xx*sqrt(ut(i, k, jj)**2 + vt(i, k, jj)**2))
-            end if
-         end do
-      end do
-      wmax(k) = wt
-   end do
-
-   !$acc host_data use_device(wmax, wmax_buf)
-   NCCLCHECK(ncclAllReduce(wmax, wmax_buf, lev, ncclFloat64, ncclMax, nccl_comm_gfs, stream))
-   !$acc end host_data
-
-   !$acc parallel loop async(async_id)
-   do i = 1, lev
-      wmax(i) = wmax_buf(i)
-   end do
-
-   nf = jtrun - 1
-
-   powd = float(hord)/2.
-   fl = factop/float(hdk2(1) - hdk1)
-   hfilt = (radsq/(nf*(nf + 1)))**powd
-   if (octahedral) then
-      hfilt = hfilt/(6.*dta)
-   else
-      hfilt = hfilt/dta
-   end if
-
-   !$acc parallel loop gang private(KL, kfac, dect, dec, facd, facv, fact) async(async_id)
-   do k = 1, levp
-      KL = Llist(k)
-      kfac = min(fl*max(float(hdk2(1) - KL), 0.), factop)
-      dect = float(min(max(hdk1 - KL, 1 - hdk1), hdk1 - 1))/float((hdk1 - 1))
-      if (dect .ge. 0.) then
-         dec = 0.5*(1.+dect**(1./3.))
-      else
-         dect = -1.*dect
-         dec = 0.5*(1.-dect**(1./3.))
-      end if
-      kfac = kfac*(1.+vd*dec)
-      facd = max(1., kfac)*amp
-      facv = max(1., kfac)*amp
-      fact = max(1., kfac)*amp
-      !$acc loop worker private(mf, c1, c2, c3)
-      do m = 1, mlistnum
-         mf = mlist(m)
-         !$acc loop vector
-         do n = 1, jtrun
-            if (n .ge. mf) then
-               c1 = 1.+dta*facv*hfilt*eps4(n, m)**powd
-               c2 = 1.+dta*facd*hfilt*eps4(n, m)**powd
-               c3 = 1.+dta*fact*hfilt*eps4(n, m)**powd
-               vornow(k, 1, n, m) = vornow(k, 1, n, m)/c1
-               vornow(k, 2, n, m) = vornow(k, 2, n, m)/c1
-               divnow(k, 1, n, m) = divnow(k, 1, n, m)/c2
-               divnow(k, 2, n, m) = divnow(k, 2, n, m)/c2
-               temnow(k, 1, n, m) = (temnow(k, 1, n, m) + (c3 - 1.)*trefs(k, 1, n, m))/c3
-               temnow(k, 2, n, m) = (temnow(k, 2, n, m) + (c3 - 1.)*trefs(k, 2, n, m))/c3
-            end if
-         end do
-      end do
-   end do
-   !$acc exit data copyout(wmax) delete(wmax_buf) async(async_id)
-   !$acc wait(async_id)
-   windchk = .false.
-   do k = 1, hdk1
-      if (wmax(k) .gt. windmax3) windchk = .true.
-   end do
-   if (windchk) then
-      ! Present on device: temnow, vornow, divnow, Llist, mlist
-      call filter_top_gpu(jtrun, jtmax, levp, hdk1, ncld, temnow, vornow, divnow)
-   end if
    return
 end
 

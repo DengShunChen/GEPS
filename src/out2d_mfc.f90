@@ -70,7 +70,6 @@
              write(ofdir,134 )trim(ifilout_grb),'/',idtg/100 ,itau
              if(myrank==0) call system("mkdir -p "//trim(ofdir) )
         endif
- 
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
@@ -79,7 +78,7 @@
           mfcout(i,jj,2)=raintot(i,jj)
           mfcout(i,jj,3)=t2  (i,jj)
           mfcout(i,jj,4)=q2  (i,jj)
-          mfcout(i,jj,5)=rh2 (i,jj) * 100.0  ! ( % )
+          mfcout(i,jj,5)=rh2 (i,jj) * 100.0  !  fraction -> % 
           mfcout(i,jj,6)=u10 (i,jj)
           mfcout(i,jj,7)=v10 (i,jj)
           mfcout(i,jj,8)=tmax(i,jj)
@@ -90,10 +89,9 @@
           mfcout(i,jj,10)= ( TdBeta * TdGamma / ( TdAlpha - TdGamma ) ) + 273.15
           mfcout(i,jj,11)=rld (i,jj)
           mfcout(i,jj,12)=sld (i,jj)
-          mfcout(i,jj,13)=ctot(i,jj) * 100.0 ! total cloud cover
+          mfcout(i,jj,13)=ctot(i,jj) * 100.0 ! total cloud cover ! frac -> %
         enddo
       enddo
-
 !
 !  hydrostatic equation
 !
@@ -155,6 +153,8 @@
           mfcout(i,jj,14) = anlslp * 100.0  !hPa to Pa
         enddo
       enddo
+
+
 !
 ! Total Precp.
 !byl      call mpe2d_unify(glob,raintot)
@@ -162,7 +162,7 @@
       do n=1,num
         call syslbl_w (dmskey(n),idtg,ntau,ggdef)
         call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),glob)
-        call qmaxn3_w (glob,1,1,1,nx,my,1)
+        !call qmaxn3_w (glob,1,1,1,nx,my,1)
 !        if ( myrank .eq. n-1 ) then
 !          mout=glob
 !          ihdgo2=ihdgo
@@ -220,27 +220,28 @@
        if( mod( itau , 3 ) == 0 )then
 
        if(outgrb2 == 1 )then
-        if(myrank==0)then
         !convective precipitation
         call syslbl_w ('B00632',idtg,ntau,ggdef)
         glob=raincu3
         call unify_reduceintp(nx,my,my_max,glob,mout)
         ihdgo2 = ihdgo
+        if(myrank==0) &
         call wrt_grb2_accu_v2(itau,0,1,10,2,103,0,0,1,3,mout)
         !
         call syslbl_w ('B00642',idtg,ntau,ggdef)
         glob=rainlp3
         call unify_reduceintp(nx,my,my_max,glob,mout)
         ihdgo2 = ihdgo
+        if(myrank==0) &
         call wrt_grb2_accu_v2(itau,0,1,9,2,103,0,0,1,3,mout)
 
         call syslbl_w ('B00622',idtg,ntau,ggdef)
         glob=raincu3 + rainlp3
         call unify_reduceintp(nx,my,my_max,glob,mout)
         ihdgo2 = ihdgo
+        if(myrank==0) &
         call wrt_grb2_accu_v2(itau,0,1,9,2,103,0,0,1,3,mout)
 
-        endif
        endif
 
         do jj = 1, jlistnum

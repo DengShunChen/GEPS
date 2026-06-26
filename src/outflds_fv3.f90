@@ -30,6 +30,7 @@
 !
       character wtemp*6
 
+!$acc enter data create(globp,glob)
       lenc =nx*my
 !=======================================================================
       if(myrank .eq. 0) print*,'   in outflds_fv3 for tau= ',itau
@@ -39,6 +40,7 @@
       write(wtemp,'(a6)')'B02500'
       call syslbl_w(wtemp,idtg,itau,ggdef)
       globp=q2
+      !$acc update device(globp)
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call dmswrit(nx,my,lenc,kflag,glob,istat)
 
@@ -46,6 +48,7 @@
       write(wtemp,'(a6)'),"S004F1"
       call syslbl_w(wtemp,idtg,itau,ggdef)
       globp=fm
+      !$acc update device(globp)
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call dmswrit(nx,my,lenc,kflag,glob,istat)
 
@@ -53,6 +56,7 @@
       write(wtemp,'(a6)'),"S004F2"
       call syslbl_w(wtemp,idtg,itau,ggdef)
       globp=fm10
+      !$acc update device(globp)
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call dmswrit(nx,my,lenc,kflag,glob,istat)
 
@@ -60,6 +64,7 @@
       write(wtemp,'(a6)'),"S004F3"
       call syslbl_w(wtemp,idtg,itau,ggdef)
       globp=fh
+      !$acc update device(globp)
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call dmswrit(nx,my,lenc,kflag,glob,istat)
 
@@ -67,6 +72,7 @@
       write(wtemp,'(a6)'),"S004F4"
       call syslbl_w(wtemp,idtg,itau,ggdef)
       globp=fh2
+      !$acc update device(globp)
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call dmswrit(nx,my,lenc,kflag,glob,istat)
 
@@ -74,6 +80,7 @@
       write(wtemp,'(a6)'),"S004F5"
       call syslbl_w(wtemp,idtg,itau,ggdef)
       globp=ustar
+      !$acc update device(globp)
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call dmswrit(nx,my,lenc,kflag,glob,istat)
 
@@ -81,9 +88,11 @@
       write(wtemp,'(a6)'),"S001A0"
       call syslbl_w(wtemp,idtg,itau,ggdef)
       globp=srflag
+      !$acc update device(globp)
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call dmswrit(nx,my,lenc,kflag,glob,istat)
 
 !=======================================================================
+!$acc exit data delete(globp,glob)
       return
       end

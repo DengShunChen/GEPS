@@ -42,7 +42,8 @@ elif [[ ${MACHINE} == 'a100' ]] ; then
         -DUSE_SP=OFF  \
         -DCWBSUM=OFF  \
         -DTIMCOMCPL=OFF  \
-        -DUSE_aeroclx=OFF
+        -DUSE_aeroclx=OFF \
+        -DUSE_NDMS=OFF
     cmake --build ${BLD_DIR} -j $(($(nproc)/2)) -v
 else
     echo "[ERROR] Fatal error: unknown MACHINE!"

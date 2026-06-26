@@ -67,18 +67,19 @@
 !
 ! local work arrays
 !
-      real      tmp(nxp,lev,my_max),plog(nxp,lev,my_max),pllp(nxp,my_max)
-      real(kind=RTYPE) glob(nx,my)
+      real      plog(nxp,lev,my_max),pllp(nxp,my_max)
+      real(kind=RTYPE) glob(nx,my) ,tmp(nxp,lev,my_max) &
+                     , bt1(nxp,my_max),bt2(nxp,my_max)        
       real      slp(nxp,my_max)
 !
 !  pout(16) chnaged into pout(26) to increase p output to 26 levels
 !  to respond to the request from regional model
 !
       integer,  parameter :: lpout = 31 
-      real      wrk1(nxp,lev),pout(lpout),pkout(lpout),phistd(lpout) &
+      real      pout(lpout),pkout(lpout),phistd(lpout) &
 !              , bt1(nx,my),bt2(nx,my)                               &
-              , bt1(nxp,my_max),bt2(nxp,my_max)                      &
-              , hld1(nxp,my_max),hld2(nxp,my_max) 
+              , hld1(nxp,my_max),hld2(nxp,my_max)
+      real      wrk1(nxp,lev),wrk2(nxp,lev)
 !
       real(kind=RTYPE) pres3d(nxp,my_max,lpout)
 !
@@ -88,7 +89,7 @@
       real(kind=RTYPE) soil_xy(nxp,my_max,12)   ! the last dim is changable
 !
       real      whtlev(100),whtlevq(100),whtlevz(100)
-      character*16 taudir(numout),outdir(numout)
+      character*18 taudir(numout),outdir(numout)
       character*6 labx
 
       integer   nxmy,nxlev,nxly,ntau,jj,j,nxj,k,i,n,nk,ngq,ntt,kk,ntrac
@@ -242,42 +243,44 @@
 !
 !      if( itau .gt. 0 )then
 !
-      llts = lev-5
+      !llts = lev-5
 !
-      do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        do i=1,nxj
-          ttb  = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
-          ttp  = tt(i,llts,jj)*pk(i,llts,jj)/(1.0+0.608*qt(i,llts,jj))
-          ttt1 = ttb + alaps*rdg*ttb*   &
-              ((pt(i,jj)+ptop)/plt(i,lev,jj)-1.0)
-          ttt2 = ttp + alaps*(phi(i,llts,jj)-sgeo(i,jj))/grav
-          hld1(i,jj) = 0.25*ttt1 + 0.75*ttt2
-          hld2(i,jj) = hld1(i,jj) + alaps*sgeo(i,jj)/grav
-          if( sgeo(i,jj) .lt. 0.1 ) then
-            anlslp = pt(i,jj) + ptop
-          else if( hld1(i,jj) .le. 290.5 .and. hld2(i,jj) .gt. 290.5 ) then
-            apha = rgas*(290.5-hld1(i,jj))/sgeo(i,jj)
-            ttt = sgeo(i,jj)/(rgas*hld1(i,jj))
-            anlslp = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333*  &
-                     apha*ttt*apha*ttt) )
-          else if( hld1(i,jj) .gt. 290.5 .and. hld2(i,jj) .gt. 290.5 ) then
-            hld1(i,jj) = (hld1(i,jj)+290.5)*0.5
-            anlslp = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,jj)) )
-          else if( hld1(i,jj) .lt. 255.0 .and. hld2(i,jj) .lt. 255.0 ) then
-            hld1(i,jj) = (hld1(i,jj)+255.0)*0.5
-            anlslp = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,jj)) )
-          else
-            apha = alaps * rdg
-            ttt = sgeo(i,jj)/(rgas*hld1(i,jj))
-            anlslp = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333*  &
-                     apha*ttt*apha*ttt) )
-          endif
-          pllp(i,jj) = anlslp - pt(i,jj)
-          pdiff(i,jj)=pllp(i,jj)
-        enddo
-      enddo
+      !do jj = 1, jlistnum
+      !  j=jlist1(jj)
+      !  nxj=nxdef_2d(j)
+      !  do i=1,nxj
+      !    ttb  = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
+      !    ttp  = tt(i,llts,jj)*pk(i,llts,jj)/(1.0+0.608*qt(i,llts,jj))
+      !    ttt1 = ttb + alaps*rdg*ttb*   &
+      !        ((pt(i,jj)+ptop)/plt(i,lev,jj)-1.0)
+      !    ttt2 = ttp + alaps*(phi(i,llts,jj)-sgeo(i,jj))/grav
+      !    hld1(i,jj) = 0.25*ttt1 + 0.75*ttt2
+      !    hld2(i,jj) = hld1(i,jj) + alaps*sgeo(i,jj)/grav
+      !    if( sgeo(i,jj) .lt. 0.1 ) then
+      !      anlslp = pt(i,jj) + ptop
+      !    else if( hld1(i,jj) .le. 290.5 .and. hld2(i,jj) .gt. 290.5 ) then
+      !      apha = rgas*(290.5-hld1(i,jj))/sgeo(i,jj)
+      !      ttt = sgeo(i,jj)/(rgas*hld1(i,jj))
+      !      anlslp = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333*  &
+      !               apha*ttt*apha*ttt) )
+      !    else if( hld1(i,jj) .gt. 290.5 .and. hld2(i,jj) .gt. 290.5 ) then
+      !      hld1(i,jj) = (hld1(i,jj)+290.5)*0.5
+      !      anlslp = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,jj)) )
+      !    else if( hld1(i,jj) .lt. 255.0 .and. hld2(i,jj) .lt. 255.0 ) then
+      !      hld1(i,jj) = (hld1(i,jj)+255.0)*0.5
+      !      anlslp = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,jj)) )
+      !    else
+      !      apha = alaps * rdg
+      !      ttt = sgeo(i,jj)/(rgas*hld1(i,jj))
+      !      anlslp = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333*  &
+      !               apha*ttt*apha*ttt) )
+      !    endif
+      !    pllp(i,jj) = anlslp - pt(i,jj)
+      !    pdiff(i,jj)=pllp(i,jj)
+      !  enddo
+      !enddo
+      call get_prmsl(nx,my,my_max,lev,ncld &
+                    ,sgeo,pt,tt,qt,pk,pk2,plt,phi,pdiff,slp)
 !
 !      else
 !
@@ -323,7 +326,8 @@
           endif
         enddo
 !
-        call geostd (nxjp(j),pllp(1,jj),bt2(1,jj))
+        call geostd (nxjp(j),pllp(1,jj),hld1(1,jj))
+        bt2(:,jj) = hld1(:,jj)
 !
         do i = 1, nxj
           pllp(i,jj) = log(pllp(i,jj))
@@ -382,7 +386,7 @@
           tadia= tmp(i,lev,jj)*(slp(i,jj)/plt(i,lev,jj))**0.25
           tsf  = max( tmp(i,lev,jj), min( tsf,tadia ) )
           if ( slp(i,jj) .gt. 1000.1 )  then
-            bt1(i,jj)= tsf
+            bt1(i,jj)   = tsf
             t1000(i,jj) = tsf
           else
             bt1(i,jj)= tsf + (tsf-tmp(i,lev,jj))*(pl1000-splog)  &
@@ -409,7 +413,8 @@
       do jj =1,jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
-        call qsatq_2d(nxjp(j),nxp,lev,tmp(1,1,jj),plt(1,1,jj),wrk1(1,1))
+        wrk2(:,:) = tmp(:,:,jj)
+        call qsatq_2d(nxjp(j),nxp,lev,wrk2(1,1),plt(1,1,jj),wrk1(1,1))
         do k=1, lev
           do i=1,nxj
             tmp(i,k,jj)= qt(i,k,jj)/wrk1(i,k)
@@ -549,6 +554,11 @@
         do jj =1,jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
+          do k = 1, lev
+              do i = 1,nxj
+                tmp(i,k,jj)=rvor(i,k,jj)
+              enddo
+          enddo
           do i=1,nxj
             bt1(i,jj)= rvor(i,lev,jj)
           enddo
@@ -556,7 +566,7 @@
 !!        call mpe_unify(bt1,nx,my,2,mpe_double)
         if(myrank.eq.0)print*,' outfld : start vorout, lwrite = ',lwrite
         call vortout (nx,my,my_max,lpout,lev,itau,idtg,pout,num  &
-                 ,whtlev,pkout,plog,pllp,rvor,bt1,pres3d,ggdef           &
+                 ,whtlev,pkout,plog,pllp,tmp,bt1,pres3d,ggdef           &
                  ,typtrk(1,1,2),typtrk(1,1,3),lwrite)
       endif
 !
@@ -566,6 +576,11 @@
         do jj =1,jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
+          do k = 1, lev
+              do i = 1,nxj
+                tmp(i,k,jj)=rdiv(i,k,jj)
+              enddo
+          enddo
           do i=1,nxj
             bt1(i,jj)= rdiv(i,lev,jj)
           enddo
@@ -573,7 +588,7 @@
 !!        call mpe_unify(bt1,nx,my,2,mpe_double)
         if(myrank.eq.0)print*,' outfld : start divgout, lwrite = ',lwrite
         call divgout (nx,my,my_max,lpout,lev,itau,idtg,pout,num &
-                  ,whtlev,pkout,plog,pllp,rdiv,bt1,pres3d,ggdef,lwrite)
+                  ,whtlev,pkout,plog,pllp,tmp,bt1,pres3d,ggdef,lwrite)
       endif
 !
       labx='wnd   '
@@ -591,7 +606,7 @@
 !!        call mpe_unify(bt2,nx,my,2,mpe_double)
         if(myrank.eq.0)print*,' outfld : start windout, lwrite = ',lwrite
         call windout (nx,my,my_max,lpout,lev,itau,idtg,pout,num &
-           ,whtlev,cosl,pkout,plog,pllp,ut,vt,vvel,bt1,bt2,pres3d,glob,ggdef,lwrite)
+           ,whtlev,cosl,pkout,plog,pllp,ut,vt,vvel,tmp,bt1,bt2,pres3d,glob,ggdef,lwrite)
       endif
 !
       labx='dag   '
@@ -600,6 +615,11 @@
         do jj =1,jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
+          do k=1,lev
+           do i=1,nxj
+            tmp(i,k,jj)= drag(i,lev,jj)
+           enddo
+          enddo
           do i=1,nxj
             bt1(i,jj)= drag(i,lev,jj)
           enddo
@@ -607,7 +627,7 @@
 !!        call mpe_unify(bt1,nx,my,2,mpe_double)
       if(myrank.eq.0)print*,' outfld : start dragout, lwrite = ',lwrite
         call dragout (nx,my,my_max,lpout,lev,itau,idtg,pout,num &
-                  ,whtlev,pkout,plog,pllp,drag,bt1,pres3d,ggdef,lwrite)
+                  ,whtlev,pkout,plog,pllp,tmp,bt1,pres3d,ggdef,lwrite)
       endif
 !
 !!follow ECMWF output Fraction of cloud cover on pressure levels
@@ -687,10 +707,10 @@
         j=jlist1(jj)
         nxj=nxdef_2d(j)
         do i=1,nxj
-          wk_xy(i,jj,6) = ctot(i,jj)
-          wk_xy(i,jj,7) = chig(i,jj)
-          wk_xy(i,jj,8) = cmid(i,jj)
-          wk_xy(i,jj,9) = clow(i,jj)
+          wk_xy(i,jj,6)  = ctot(i,jj) * 100.0
+          wk_xy(i,jj,7)  = chig(i,jj) * 100.0
+          wk_xy(i,jj,8)  = cmid(i,jj) * 100.0
+          wk_xy(i,jj,9)  = clow(i,jj) * 100.0
           wk_xy(i,jj,10) = hpbl(i,jj)
           wk_xy(i,jj,11) = qt(i,1,jj)
           wk_xy(i,jj,12) = qt(i,lev,jj)

@@ -19,7 +19,7 @@
       use param, only : io_quilting
       use mpe
       use rank
-      use const, only : RTYPE,ifilout,keyo,ihdgo
+      use const, only : RTYPE,ifilout,keyo,ihdgo,KLENO
 !     use index
 
       implicit  none
@@ -28,7 +28,9 @@
       logical   t_flg
 !CWB2021
       real(kind=RTYPE) z(nx,my)
-      character kflag*1
+      character kflag*1 ,ifn*512 ,ipath*512
+      integer :: i,ia
+      logical ::isdir
 !
 ! working array
 !
@@ -60,6 +62,30 @@
 !>
 
        if(myrank .eq. 0) then
+#ifdef NDMS
+      do i = 1, KLENO
+      ia = ichar(keyo(i:i))
+       if((ia.ge.97).and.(ia.le.122))then
+         ia=ia-32
+         keyo(i:i)=char(ia)
+       endif
+      enddo
+      
+#ifdef O38K
+      ipath=trim(ifilout)//'/'//keyo(17:28)//keyo(7:12)
+      ifn=trim(ipath)//'/'//keyo(1:6)//keyo(13:16)//keyo(29:38)
+#else
+      ipath=trim(ifilout)//'/'//keyo(15:26)//keyo(7:10)
+      ifn=trim(ipath)//'/'//keyo(1:6)//keyo(11:14)//keyo(27:34)
+#endif
+      inquire(file=trim(ipath)//'/.' , exist=isdir)
+      if(.not. isdir) call system('mkdir -p '//trim(ipath ) )
+      
+      open(12,file=trim(ifn),access='stream',form='unformatted' &
+             ,convert='little_endian',iostat=istat)
+      write(12)z
+      close(12)
+#else
 !CWB2021
 !       if(key(27:27).eq.'R')then
 !          z4=z
@@ -68,6 +94,7 @@
 !       if(key(27:27).eq.'H')then
           call dmsput(ifilout,keyo//char(0),z,istat)
 !       endif
+#endif
        t_flg=.true.
        endif
  
@@ -110,7 +137,7 @@
       use param, only : io_quilting
       use mpe
       use rank
-      use const, only : RTYPE,ifilout,keyo,ihdgo
+      use const, only : RTYPE,ifilout,keyo,ihdgo,KLENO
 !     use index
 
       implicit  none
@@ -119,7 +146,8 @@
       logical   t_flg
       real(kind=RTYPE) z(nx,my)
 !CWB2021
-      character kflag*1
+      character kflag*1, ifn*512
+      integer :: i,ia
 !
 ! working array
 !
@@ -134,6 +162,26 @@
       t_flg=.false.
 
        if(myrank .eq. 0) then
+#ifdef NDMS
+      do i = 1, KLENO
+      ia = ichar(keyo(i:i))
+       if((ia.ge.97).and.(ia.le.122))then
+         ia=ia-32
+         keyo(i:i)=char(ia)
+       endif
+      enddo
+#ifdef O38K
+      ifn=trim(ifilout)//'/'//keyo(17:28)//keyo(7:12)//'/' &
+                  //keyo(1:6)//keyo(13:16)//keyo(29:38)
+#else
+      ifn=trim(ifilout)//'/'//keyo(15:26)//keyo(7:10)//'/' &
+                  //keyo(1:6)//keyo(11:14)//keyo(27:34)
+#endif
+      open(12,file=trim(ifn),access='stream',form='unformatted' &
+             ,convert='little_endian',iostat=istat)
+      write(12)z
+      close(12)
+#else
 !CWB2021
 !       if(key(27:27).eq.'R')then
 !          z4=z
@@ -142,6 +190,7 @@
 !       if(key(27:27).eq.'H')then
           call dmsput(ifilout,keyo//char(0),z,istat)
 !       endif
+#endif
        t_flg=.true.
        endif
  
@@ -184,7 +233,7 @@
       use mpe
       use rank
       use index, only : col_rank
-      use const, only : RTYPE,ifilout,keyo,ihdgo2
+      use const, only : RTYPE,ifilout,keyo,ihdgo2,KLENO
 
       implicit  none
 
@@ -192,7 +241,9 @@
       logical   t_flg
       real(kind=RTYPE) z(nx,my)
 !CWB2021
-      character kflag*1
+      character kflag*1 ,ifn*512 ,ipath*512
+      integer :: i,ia
+      logical ::isdir
 !
 ! working array
 !
@@ -206,6 +257,29 @@
 !
       t_flg=.false.
 
+#ifdef NDMS
+      do i = 1, KLENO
+      ia = ichar(keyo(i:i))
+       if((ia.ge.97).and.(ia.le.122))then
+         ia=ia-32
+         keyo(i:i)=char(ia)
+       endif
+      enddo
+#ifdef O38K
+      ipath=trim(ifilout)//'/'//keyo(17:28)//keyo(7:12)
+      ifn=trim(ipath)//'/'//keyo(1:6)//keyo(13:16)//'H'//keyo(30:38)
+#else
+      ipath=trim(ifilout)//'/'//keyo(15:26)//keyo(7:10)
+      ifn=trim(ipath)//'/'//keyo(1:6)//keyo(11:14)//'H'//keyo(28:34)
+#endif
+      inquire(file=trim(ipath)//'/.' , exist=isdir)
+      if(.not. isdir) call system('mkdir -p '//trim(ipath ) )
+
+      open(12,file=trim(ifn),access='stream',form='unformatted' &
+             ,convert='little_endian',iostat=istat)
+      write(12)z
+      close(12)
+#else
 !       if(myrank .eq. iroot) then
 !CWB2021
 !       if(key(27:27).eq.'R')then
@@ -217,7 +291,7 @@
 !       endif
        t_flg=.true.
 !       endif
- 
+#endif 
 !       call mpe_bcast_col(istat,1,0,mpe_integer)
 !
        if(istat.ne.0)then

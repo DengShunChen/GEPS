@@ -57,6 +57,7 @@ SRCS_f90  = \
   dcyc2.f90 \
   diabat.f90 \
   diagrd.f90 \
+  dmslite.f90 \
   dmsread.f90 \
   dmswrit.f90 \
   drychk.f90 \
@@ -77,6 +78,7 @@ SRCS_f90  = \
   geostd.f90 \
   get_model_param.f90 \
   get_phi.f90 \
+  get_prmsl.f90 \
   getphi.f90 \
   getrdy.f90 \
   gfcst.f90 \

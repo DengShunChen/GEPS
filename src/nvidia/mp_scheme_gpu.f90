@@ -266,7 +266,7 @@
       integer :: async_id = 1
       ! allocate temporary arrays (GCE) on GPU
       !$acc enter data create(prsl, del, ttc, qtc, qtr, qtrw, qti, qtsw, &
-      !$acc&      qtgl, refl10, ntnc, rainncv, snowncv, graupelncv) async(async_id)
+      !$acc&      qtgl, refl10, ntnc, rainncv, snowncv, graupelncv,myim,xlat_myim) async(async_id)
       !$acc wait(async_id)
       !$acc parallel loop private(j, nxj) async(async_id)
       do jj = 1, jlistnum
@@ -1106,13 +1106,12 @@
 
 #ifdef Readaeroclx
       allocate ( aero4d(nx,lev,naero,my_max) )
-      !$acc enter data copyin(aeroclx) async(async_id)
       !$acc enter data create(aero4d) async(async_id)
 #endif
          !$acc enter data create(th3d, qv3d, qc3d, qr3d, &
          !$acc&      qi3d, qs3d, rain2d, ice2d, snow2d, &
          !$acc&      graupel2d, sr2d, qg3d, rew3d, rer3d, &
-         !$acc&      rei3d, res3d, reg3d, myim, xlat_myim) async(async_id)
+         !$acc&      rei3d, res3d, reg3d ) async(async_id)
          !$acc enter data create(rho3d, pii3d, p3d, z3d, ht, dz3d, &
          !$acc&      w3d, land2d) async(async_id)
          
@@ -1396,7 +1395,6 @@
          !$acc&     w3d, land2d) async(async_id)
 #ifdef Readaeroclx
          !$acc exit data delete(aero4d) async(async_id)
-         !$acc exit data delete(aeroclx) async(async_id)
          deallocate ( aero4d )
 #endif
          !$acc wait(async_id)
