@@ -6360,6 +6360,9 @@ CONTAINS
             REAL FUNCTION esi_mks_gpu(tair)
             !$acc routine seq
                IMPLICIT NONE
+               integer, parameter :: esflag = 1
+               !  esflag = 1 : F92
+               !  esflag = 2 : fpvs
                REAL :: tair   !real temperature (K)
 !
 !  COMPUTE SATURATION VAPOR PRESSURE POLYSVP RETURNED IN UNITS OF PA. T IS INPUT IN UNITS OF K.
@@ -6369,11 +6372,35 @@ CONTAINS
                DATA a0i, a1i, a2i, a3i, a4i, a5i, a6i, a7i, a8i/6.11147274, 0.503160820, &
                   0.188439774E-1, 0.420895665E-3, 0.615021634E-5, 0.602588177E-7, &
                   0.385852041E-9, 0.146898966E-11, 0.252751365E-14/
+               real, parameter :: psat = 6.1078e+2 ,&
+                                  hvap = 2.5000e+6 ,&
+                                  hfus = 3.3358e+5 ,&
+                                  cvap = 1.8460e+3 ,&
+                                  cliq = 4.1855e+3 ,&
+                                  csol = 2.1060e+3 ,&
+                                  ttp = 2.7316e+2 ,&
+                                  rv = 4.6150e+2
+               real :: dldtl, dldti, heatl, heati, &
+                       xponal, xponbl, xponai, xponbi
+               real :: tr, fpvsx
 
-               DT = MAX(-80., tair - 273.16)
-               esi_mks_gpu = a0i + DT*(a1i + DT*(a2i + DT*(a3i + DT*(a4i + DT*(a5i + &
-                                             DT*(a6i + DT*(a7i + a8i*DT)))))))
-               esi_mks_gpu = esi_mks_gpu*100.  !convert to Pa
+               if (esflag .eq. 1) then
+                  DT = MAX(-80., tair - 273.16)
+                  esi_mks_gpu = a0i + DT*(a1i + DT*(a2i + DT*(a3i + DT*(a4i + DT*(a5i + &
+                                                DT*(a6i + DT*(a7i + a8i*DT)))))))
+                  esi_mks_gpu = esi_mks_gpu*100.  !convert to Pa
+
+               elseif (esflag .eq. 2) then
+                  ! function fpvsx :
+                  tr = ttp/tair
+                  dldti = cvap - csol
+                  heati = hvap + hfus
+                  xponai = - dldti/rv
+                  xponbi = xponai + heati/(rv*ttp)
+                  fpvsx = psat*(tr**xponai)*exp(xponbi*(1. - tr))
+                  esi_mks_gpu = fpvsx   !(Pa)
+
+               endif
 !
 !  Goff-Gratch equation (Goff and Gratch 1945)
 !       esi_mks = c610 * exp( c218 - c580 / (tair - c76) )
@@ -6384,6 +6411,9 @@ CONTAINS
             REAL FUNCTION esw_mks_gpu(tair)
             !$acc routine seq
                IMPLICIT NONE
+               integer, parameter :: esflag = 1
+               !  esflag = 1 : F92
+               !  esflag = 2 : fpvs
                REAL :: tair   !real temperature (K)
 !
 !  COMPUTE SATURATION VAPOR PRESSURE POLYSVP RETURNED IN UNITS OF PA. T IS INPUT IN UNITS OF K.
@@ -6393,14 +6423,38 @@ CONTAINS
                DATA a0, a1, a2, a3, a4, a5, a6, a7, a8/6.11239921, 0.443987641, &
                   0.142986287E-1, 0.264847430E-3, 0.302950461E-5, 0.206739458E-7, &
                   0.640689451E-10, -0.952447341E-13, -0.976195544E-15/
+               real, parameter :: psat = 6.1078e+2 ,&
+                                  hvap = 2.5000e+6 ,&
+                                  hfus = 3.3358e+5 ,&
+                                  cvap = 1.8460e+3 ,&
+                                  cliq = 4.1855e+3 ,&
+                                  csol = 2.1060e+3 ,&
+                                  ttp = 2.7316e+2 ,&
+                                  rv = 4.6150e+2
+               real :: dldtl, dldti, heatl, heati, &
+                       xponal, xponbl, xponai, xponbi
+               real :: tr, fpvsx
 
-               DT = MAX(-80., tair - 273.16)
-               esw_mks_gpu = a0 + DT*(a1 + DT*(a2 + DT*(a3 + DT*(a4 + DT*(a5 + &
-                                           DT*(a6 + DT*(a7 + a8*DT)))))))
-               esw_mks_gpu = esw_mks_gpu*100.  !convert to Pa
+               if (esflag .eq. 1) then
+                  DT = MAX(-80., tair - 273.16)
+                  esw_mks_gpu = a0 + DT*(a1 + DT*(a2 + DT*(a3 + DT*(a4 + DT*(a5 + &
+                                              DT*(a6 + DT*(a7 + a8*DT)))))))
+                  esw_mks_gpu = esw_mks_gpu*100.  !convert to Pa
 
-               ! to be closer to function fpvs :
-               if ( DT.gt.-5.0 ) esw_mks_gpu = esw_mks_gpu*max(1.0-(DT+5.0)*0.0025/35.0,0.9975)
+                  ! to be closer to function fpvs :
+                  if ( DT.gt.-5.0 ) esw_mks_gpu = esw_mks_gpu*max(1.0-(DT+5.0)*0.0025/35.0,0.9975)
+
+               elseif (esflag .eq. 2) then
+                  ! function fpvsx :
+                  tr = ttp/tair
+                  dldtl = cvap - cliq
+                  heatl = hvap
+                  xponal = - dldtl/rv
+                  xponbl = xponal + heatl/(rv*ttp)
+                  fpvsx = psat*(tr**xponal)*exp(xponbl*(1.-tr))
+                  esw_mks_gpu = fpvsx   !(Pa)
+
+               endif
 !
 !  Goff-Gratch equation (Goff and Gratch 1945)
 !       esw_mks = c610 * exp( c172 - c409 / (tair - c358) )
