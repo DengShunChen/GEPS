@@ -65,6 +65,7 @@ MODULE module_mp_gsfcgce_3ice_nuwrf_gpu
                              rn25, rn31, beta, rn32, rn33, &
                              rn331, rn332, rn34, rn35, rnn30a, &
                              rnn191, rnn192, cn0
+   REAL, PRIVATE ::          rw, cv, cw, ci
 
    REAL, PRIVATE ::          ami50, ami40, ami100
 
@@ -1250,12 +1251,13 @@ CONTAINS
 
       ! heat capacity and latent heat (in CGS) :
       rw = 4.615e+6     !gas constant of vapor
+      cv = 1.846e+7     !specific heat capacity of vapor
       cw = 4.187e+7     !specific heat capacity of liquid water
       ci = 2.093e+7     !specific heat capacity of ice
       cp = 1.004e7      !specific heat capacity of dry air
-      alv = 2.5e+10     !latent heat of evaporation/condensation
-      alf = 3.336e+9    !latent heat of melting/freezing
-      als = 2.8336e+10  !latent heat of sublimation/deposition
+      alv = 2.5e+10     !latent heat of vaporization
+      alf = 3.336e+9    !latent heat of fusion
+      als = 2.8336e+10  !latent heat of sublimation
       avc = alv/cp
       afc = alf/cp
       asc = als/cp
@@ -1873,7 +1875,7 @@ CONTAINS
       real :: cv409, cs580
 
       real :: y1, y2, y3, y4, y5, qsw, ssw, rtair, dm, rsub1, esi, esw, qsi, ssi, &
-         prn, psn, xlv, cpm1, xls, xlf, qvs, dd1, dd, ern, pmlts, pmltg, &
+         prn, psn, xlv, xcpm, xrw, xls, xlf, qvs, dd1, dd, ern, pmlts, pmltg, &
          psdep, pgdep, pssub, pgsub, qracs, cnd, dep, pint, psmlt, pgmlt, &
          pimlt, pgfr, psacr, pihom, pidw, f0, zrr, zsr, zgr, vscf, vgcf, &
          dwvp, pidep, wgacr, pracs, qsacr, pgaut, dgaci, wgaci, pgwet, &
@@ -2065,14 +2067,6 @@ CONTAINS
       real :: dltd, nbd, sbd, nbd1, nbd2, sbd1, sbd2, latint
       real :: fxlat
       
-
-      !cp=1.004e7
-      !alv=2.5e10 ; alf=3.336e9 ; als=2.8336e10
-      !rw=4.615e6 ; cw=4.187e7 ; ci=2.093e7
-      !avcp=alv/cp*pir
-      real, parameter :: cvap = 1.846e+7    !specific heat capacity of vapor (in CGS)
-      real, parameter :: cliq = 4.218e+7    !specific heat capacity of liquid (in CGS)
-      real, parameter :: cice = 2.106e+7    !specific heat capacity of ice (in CGS)
       real :: cpm, hlv, hls, hlf
       
       !for GPU porting
@@ -2192,6 +2186,12 @@ CONTAINS
       hmtemp3 = -6.
       hmtemp4 = -8.
 
+      ! heat capacity and latent heat (in MKS) :
+      xrw = rw*1.e-4   ! gas constant of vapor
+      xcpm = cp*1.e-4  ! specific heat capacity of air
+      xlv = alv*1.e-4  ! latent heat of vaporization
+      xlf = alf*1.e-4  ! latent heat of fusion
+      xls = als*1.e-4  ! latent heat of sublimation
 
       f2 = rd1*d2t
       f3 = rd2*d2t
@@ -3059,11 +3059,11 @@ CONTAINS
    !********   HANDLING THE NEGATIVE SNOW (QS)          *******************
                   if (use_cpm) then
                      cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
-                           + cvap*qvwrfr &
-                           + cliq*(qlwrfr + qrwrfr) &
-                           + cice*(qiwrfr + qswrfr + qgwrfr)
-                     hlv = alv - (cliq - cvap)*(tairr - t0)
-                     hlf = alf - (cice - cliq)*(tairr - t0)
+                           + cv*qvwrfr &
+                           + cw*(qlwrfr + qrwrfr) &
+                           + ci*(qiwrfr + qswrfr + qgwrfr)
+                     hlv = alv - (cw - cv)*(tairr - t0)
+                     hlf = alf - (ci - cw)*(tairr - t0)
                      hls = hlv + hlf
                      avcp(i, k, j) = hlv/cpm*pirr
                      ascp(i, k, j) = hls/cpm*pirr
@@ -3157,11 +3157,11 @@ CONTAINS
                      pgmlt = r2ig*min(qgwrfr, max(dd1, 0.0))
                      if (use_cpm) then
                         cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
-                              + cvap*qvwrfr &
-                              + cliq*(qlwrfr + qrwrfr) &
-                              + cice*(qiwrfr + qswrfr + qgwrfr)
-                        hlv = alv - (cliq - cvap)*(tairr - t0)
-                        hlf = alf - (cice - cliq)*(tairr - t0)
+                              + cv*qvwrfr &
+                              + cw*(qlwrfr + qrwrfr) &
+                              + ci*(qiwrfr + qswrfr + qgwrfr)
+                        hlv = alv - (cw - cv)*(tairr - t0)
+                        hlf = alf - (ci - cw)*(tairr - t0)
                         hls = hlv + hlf
                         avcp(i, k, j) = hlv/cpm*pirr
                         ascp(i, k, j) = hls/cpm*pirr
@@ -3335,11 +3335,11 @@ CONTAINS
 
                   if (use_cpm) then
                      cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
-                           + cvap*qvwrfr &
-                           + cliq*(qlwrfr + qrwrfr) &
-                           + cice*(qiwrfr + qswrfr + qgwrfr)
-                     hlv = alv - (cliq - cvap)*(tairr - t0)
-                     hlf = alf - (cice - cliq)*(tairr - t0)
+                           + cv*qvwrfr &
+                           + cw*(qlwrfr + qrwrfr) &
+                           + ci*(qiwrfr + qswrfr + qgwrfr)
+                     hlv = alv - (cw - cv)*(tairr - t0)
+                     hlf = alf - (ci - cw)*(tairr - t0)
                      hls = hlv + hlf
                      avcp(i, k, j) = hlv/cpm*pirr
                      ascp(i, k, j) = hls/cpm*pirr
@@ -3359,13 +3359,13 @@ CONTAINS
             !$acc parallel loop gang collapse(2) async(async_id) private(cpm, &
             !$acc&         hlv, C1, K1, rhw, nact, qcmax, hlf, hls, r_nci, &
             !$acc&         qimax, pact, pint, cnd, dep, fez, ern, tairc, &
-            !$acc&         rhoair, cpm1, xlv, esw, qsw, y1, abw, xls, esi, &
+            !$acc&         rhoair, xcpm, xlv, esw, qsw, y1, abw, xls, esi, &
             !$acc&         qsi, y2, abi, ssi, rp0r, xlandr, qvwrfr)
 #else
             !$acc parallel loop gang collapse(2) async(async_id) private(cpm, &
             !$acc&         hlv, C1, K1, nact, qcmax, hlf, hls, r_nci, &
             !$acc&         qimax, pact, pint, cnd, dep, fez, ern, tairc, &
-            !$acc&         rhoair, cpm1, xlv, esw, qsw, y1, abw, xls, esi, &
+            !$acc&         rhoair, xcpm, xlv, esw, qsw, y1, abw, xls, esi, &
             !$acc&         qsi, y2, abi, ssi, nice, ncloud, tairr, rp0r, xlandr, &
             !$acc&         qvwrfr, qlwrfr, qiwrfr, qrwrfr, qswrfr, qgwrfr, p0r1)
 #endif
@@ -3407,15 +3407,12 @@ CONTAINS
                      qgwrfr = qgwrf(i, k, j)
                      if (use_cpm) then
                         cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
-                              + cvap*qvwrfr &
-                              + cliq*(qlwrfr + qrwrfr) &
-                              + cice*(qiwrfr + qswrfr + qgwrfr)      ! specific heat capacity (in CGS)
-                        cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
-                        hlv = alv - (cliq - cvap)*(tairr - t0)    ! latent heat of vaporization (in CGS)
-                        xlv = hlv*1.e-4                           ! latent heat of vaporization (in MKS)
-                     else
-                        cpm1 = cp*1.e-4*(1. + 0.887*qvwrfr)       ! specific heat capacity (in MKS)
-                        xlv = 3.1484E6 - 2370.*tairr           ! latent heat of vaporization (in MKS)
+                              + cv*qvwrfr &
+                              + cw*(qlwrfr + qrwrfr) &
+                              + ci*(qiwrfr + qswrfr + qgwrfr)
+                        xcpm = cpm*1.e-4
+                        hlv = alv - (cw - cv)*(tairr - t0)
+                        xlv = hlv*1.e-4
                      end if
                      if (new_saturation) then
                         esw = min(0.99*p0r1, esw_mks_gpu(tairr))
@@ -3424,7 +3421,7 @@ CONTAINS
                         y1 = 1./(tairr - c358)
                         qsw = rp0r*exp(c172 - c409*y1)
                      end if
-                     abw = 1.+xlv**2.*qsw/cpm1/(4.61495E2*tairr**2.)  ! abw=1+dqsdT*(Lv/Cp)
+                     abw = 1. + xlv**2.*qsw/xcpm/(xrw*tairr**2.)  ! abw=1+dqsdT*(Lv/Cp)
 
                      if (ccnflag .eq. 1) then
                         if (qvwrfr .gt. qsw .and. w_mks(i, k, j) .gt. 1.e-3) then
@@ -3459,7 +3456,7 @@ CONTAINS
                         nact = max(0., ncloud/rhoair - qlwrfr/5.236E-13)      ! CONVERT FROM CM-3 TO M-3 and 5 microm in radius
                         qcmax = max((qvwrfr - qsw), 0.)/abw
                         pact = min(max(nact*1.414E-14, 0.), qcmax)       ! 1.5 micron in radius
-                        tairr = tairr + pact*xlv/cpm1
+                        tairr = tairr + pact*xlv/xcpm
                         tair(i ,k, j) = tairr
                         tairc = tairr - t0
                         qvwrfr = max(0., qvwrfr - pact)
@@ -3471,17 +3468,14 @@ CONTAINS
                      ! -------------
                      if (use_cpm) then
                         cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
-                              + cvap*qvwrfr &
-                              + cliq*(qlwrfr + qrwrfr) &
-                              + cice*(qiwrfr + qswrfr + qgwrfr)      ! specific heat capacity (in CGS)
-                        cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
-                        hlv = alv - (cliq - cvap)*(tairr - t0)
-                        hlf = alf - (cice - cliq)*(tairr - t0)
-                        hls = hlv + hlf                           ! latent heat of sublimation (in CGS)
-                        xls = hls*1.e-4                           ! latent heat of sublimation (in MKS)
-                     else
-                        cpm1 = cp*1.e-4*(1. + 0.887*qvwrfr)       ! specific heat capacity (in MKS)
-                        xls = 3.15E6 - 2370.*tairr + 0.3337E6    ! latent heat of sublimation  (in MKS)
+                              + cv*qvwrfr &
+                              + cw*(qlwrfr + qrwrfr) &
+                              + ci*(qiwrfr + qswrfr + qgwrfr)
+                        xcpm = cpm*1.e-4
+                        hlv = alv - (cw - cv)*(tairr - t0)
+                        hlf = alf - (ci - cw)*(tairr - t0)
+                        hls = hlv + hlf
+                        xls = hls*1.e-4
                      endif
                      if (new_saturation) then
                         esw = min(0.99*p0r1, esw_mks_gpu(tairr))
@@ -3495,7 +3489,7 @@ CONTAINS
                         y2 = 1./(tairr - c76)
                         qsi = rp0r*exp(c218 - c580*y2)
                      end if
-                     abi = 1.+xls**2.*qsi/cpm1/(4.61495E2*tairr**2.)  ! abi=1+dqidT*(Ls/Cp)
+                     abi = 1. + xls**2.*qsi/xcpm/(xrw*tairr**2.)  ! abi=1+dqidT*(Ls/Cp)
 
                      if (qvwrfr .gt. qsi .and. tairr .lt. t0) then
                         if (inflag .eq. 1) then       ! Meyers et al. 1992 (m^-3)
@@ -3528,7 +3522,7 @@ CONTAINS
                         end if
                         qimax = max((qvwrfr - qsi), 0.)/abi
                         pint = min(max(0., r_nci*1.02e-13), qimax)
-                        tairr = tairr + pint*xls/cpm1
+                        tairr = tairr + pint*xls/xcpm
                         tair(i ,k, j) = tairr
                         qvwrfr = max(0., qvwrfr - pint)
                         qiwrfr = max(0., qiwrfr + pint)
@@ -3556,7 +3550,7 @@ CONTAINS
             !$acc&         avr, bvr, mur, rhoaj, gr2, gbr25, cnd1, cnd2, dep1, &
             !$acc&         dep2, fez1, fez2, ern1, ern2, tau, atem, dltd, &
             !$acc&         latint, sbd, nbd, sbd1, sbd2, nbd1, nbd2, fxlat, &
-            !$acc&         cpm1, xlv, xlf, xls, esw, esi, qsw, qsi, y1, y2, &
+            !$acc&         xcpm, xlv, xlf, xls, esw, esi, qsw, qsi, y1, y2, &
             !$acc&         pr0, rhoair, dv1, abw, abi, tauc, tairc, ssi, taui, &
             !$acc&         taur, cnd, dep, fez, ern, tairr, rp0r, xlandr, qvwrfr, &
             !$acc&         qlwrfr, qiwrfr, qrwrfr, qswrfr, qgwrfr, p0r1, &
@@ -3580,22 +3574,16 @@ CONTAINS
                      qgwrfr = qgwrf(i, k, j)
                      if (use_cpm) then
                         cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
-                              + cvap*qvwrfr &
-                              + cliq*(qlwrfr + qrwrfr) &
-                              + cice*(qiwrfr + qswrfr + qgwrfr)      ! specific heat capacity (in CGS)
-                        cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
-                        hlv = alv - (cliq - cvap)*(tairr - t0)    ! latent heat of vaporization (in CGS)
-                        xlv = hlv*1.e-4                           ! latent heat of vaporization (in MKS)
-                        hlf = alf - (cice - cliq)*(tairr - t0)    ! latent heat of fusion (in CGS)
-                        xlf = hlf*1.e-4                           ! latent heat of fusion (in MKS)
-                        hls = hlv + hlf                           ! latent heat of sublimation (in CGS)
-                        xls = hls*1.e-4                           ! latent heat of sublimation (in MKS)
-                     else
-                        cpm = cp*(1. + 0.887*qvwrfr)     ! specific heat capacity (in CGS)
-                        cpm1 = cpm*1.e-4                 ! specific heat capacity (in MKS)
-                        xlv = 3.1484E6 - 2370.*tairr          ! latent heat of vaporization (in MKS)
-                        xls = 3.15E6 - 2370.*tairr + 0.3337E6   ! latent heat of sublimation  (in MKS)
-                        xlf = alf*1.e-4                         ! latent heat of fusion (in MKS)
+                              + cv*qvwrfr &
+                              + cw*(qlwrfr + qrwrfr) &
+                              + ci*(qiwrfr + qswrfr + qgwrfr)
+                        xcpm = cpm*1.e-4
+                        hlv = alv - (cw - cv)*(tairr - t0)
+                        xlv = hlv*1.e-4
+                        hlf = alf - (ci - cw)*(tairr - t0)
+                        xlf = hlf*1.e-4
+                        hls = hlv + hlf
+                        xls = hls*1.e-4
                      end if
                      if (new_saturation) then
                         esw = min(0.99*p0r1, esw_mks_gpu(tairr))
@@ -3609,12 +3597,12 @@ CONTAINS
                         y2 = 1./(tairr - c76)
                         qsi = rp0r*exp(c218 - c580*y2)
                      end if
-                     dv1 = 8.794E-4*pr0*tairr**1.81
+                     dv1 = 8.794E-4*pr0*tairr**1.81   ! diffusivity of water vapor (in MKS)
 
                      ! psychrometric correction to condensation/evaporation, abw=1+dqsdT*(Lv/Cp) ; dqsdT=Lv*qsw/Rv/T^2
-                     abw = 1.+xlv**2.*qsw/cpm1/(4.61495E2*tairr**2.)
+                     abw = 1. + xlv**2.*qsw/xcpm/(xrw*tairr**2.)
                      ! psychrometric correction to deposition/sublimation,   abi=1+dqidT*(Ls/Cp) ; dqidT=Ls*qsi/Rv/T^2
-                     abi = 1.+xls**2.*qsi/cpm1/(4.61495E2*tairr**2.)
+                     abi = 1. + xls**2.*qsi/xcpm/(xrw*tairr**2.)
 
                      ! tauc : supersaturation relaxation timescale of cloud water
                      if (qlwrfr .ge. cwmin) then
@@ -3748,11 +3736,11 @@ CONTAINS
                      ! tau : multiphase supersaturation relaxation time scale defined by
                      ! 1/tau = 1/tauc + 1/taur + (1+Ls/Cp*dqsl/dT)/(1+Ls/Cp*dqsi/dT)/taui
                      tau = 1./(1./tauc + 1./taur + 1./taui*(1.+qsw* &
-                           xls*xlv/cpm1/(4.61495E+2*tairr**2.))/abi)
+                           xls*xlv/xcpm/(xrw*tairr**2.))/abi)
 
                      ! atem : change in supersaturation due to Bergeron process
                      atem = (qsi - qsw)/taui*(1.+qsw*xls*xlv &
-                            /cpm1/(4.61495E+2*tairr**2.))/abi
+                            /xcpm/(xrw*tairr**2.))/abw
 
                      ! decide values at lower latitude :
                      cnd1 = max(-qlwrfr, (atem*dt*tau/tauc + (qvwrfr &
@@ -3783,7 +3771,7 @@ CONTAINS
                            !   condense/evaporate to saturation (with respect to ice) ;
                            !   no deposition/sublimation
 !                           cnd2 = max(-qlwrfr, (qvwrfr - qsi)/abi)
-                           abw = 1. + xlv**2.*qsi/cpm1/(4.61495E2*tairr**2.)
+                           abw = 1. + xlv**2.*qsi/xcpm/(xrw*tairr**2.)
                            cnd2 = max(-qlwrfr, (qvwrfr - qsi)/abw)
                            fez2 = -qiwrfr
                            dep2 = 0.
@@ -3825,8 +3813,8 @@ CONTAINS
                         ern = ern1*(1.0 - fxlat) + ern2*fxlat
 
                         ! update tair, qv, qc, qi, qr :
-                        tairr = tair(i, k, j) + (ern + cnd)*xlv/cpm1 &
-                                     + dep*xls/cpm1 + fez*xlf/cpm1
+                        tairr = tair(i, k, j) + (ern + cnd)*xlv/xcpm &
+                                     + dep*xls/xcpm + fez*xlf/xcpm
                         tair(i, k, j) = tairr
                         qvwrf(i, k, j) = max(0., qvwrf(i, k, j) - cnd - dep - ern)
                         qlwrf(i, k, j) = max(0., qlwrf(i, k, j) + cnd - fez)
@@ -3847,18 +3835,14 @@ CONTAINS
                               ! T>=-20, qi>qliml
                               if (use_cpm) then
                                  cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
-                                       + cvap*qvwrfr &
-                                       + cliq*(qlwrfr + qrwrfr) &
-                                       + cice*(qiwrfr + qswrfr + qgwrfr)   ! specific heat capacity (in CGS)
-                                 cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
-                                 hlv = alv - (cliq - cvap)*(tairr - t0)    ! latent heat of vaporization (in CGS)
-                                 hlf = alf - (cice - cliq)*(tairr - t0)    ! latent heat of fusion (in CGS)
-                                 hls = hlv + hlf                           ! latent heat of sublimation (in CGS)
-                                 xls = hls*1.e-4                           ! latent heat of sublimation (in MKS)
-                              else
-                                 cpm = cp*(1. + 0.887*qvwrfr)            ! specific heat capacity (in CGS)
-                                 cpm1 = cpm*1.e-4                        ! specific heat capacity (in MKS)
-                                 xls = 3.15E6 - 2370.*tairr + 0.3337E6   ! latent heat of sublimation  (in MKS)
+                                       + cv*qvwrfr &
+                                       + cw*(qlwrfr + qrwrfr) &
+                                       + ci*(qiwrfr + qswrfr + qgwrfr)
+                                 xcpm = cpm*1.e-4
+                                 hlv = alv - (cw - cv)*(tairr - t0)
+                                 hlf = alf - (ci - cw)*(tairr - t0)
+                                 hls = hlv + hlf
+                                 xls = hls*1.e-4
                               endif
                               if (new_saturation) then
                                  esw = min(0.99*p0r1, esw_mks_gpu(tairr))
@@ -3872,10 +3856,10 @@ CONTAINS
                                  y2 = 1./(tairr - c76)
                                  qsi = rp0r*exp(c218 - c580*y2)
                               endif
-                              abi = 1. + xls**2.*qsi/cpm1/(4.61495E2*tairr**2.)
+                              abi = 1. + xls**2.*qsi/xcpm/(xrw*tairr**2.)
                               dep3 = max(-qiwrfr, (qvwrfr - qsw)/abi)*fxlat
 
-                              tairr = tair(i, k, j) + dep3*xls/cpm1
+                              tairr = tair(i, k, j) + dep3*xls/xcpm
                               tair(i, k, j) = tairr
                               qvwrf(i, k, j) = max(0., qvwrf(i, k, j) - dep3)
                               qiwrf(i, k, j) = max(0., qiwrf(i, k, j) + dep3)
@@ -3889,8 +3873,8 @@ CONTAINS
                         ern = ern1
 
                         ! update tair, qv, qc, qi, qr :
-                        tairr = tair(i, k, j) + (ern + cnd)*xlv/cpm1 &
-                                     + dep*xls/cpm1 + fez*xlf/cpm1
+                        tairr = tair(i, k, j) + (ern + cnd)*xlv/xcpm &
+                                     + dep*xls/xcpm + fez*xlf/xcpm
                         tair(i, k, j) = tairr
                         qvwrf(i, k, j) = max(0., qvwrf(i, k, j) - cnd - dep - ern)
                         qlwrf(i, k, j) = max(0., qlwrf(i, k, j) + cnd - fez)
@@ -3952,11 +3936,11 @@ CONTAINS
                      rp0r = rp0(i, k, j)
                      if (use_cpm) then
                         cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
-                              + cvap*qvwrfr &
-                              + cliq*(qlwrfr + qrwrfr) &
-                              + cice*(qiwrfr + qswrfr + qgwrfr)
-                        hlv = alv - (cliq - cvap)*(tairr - t0)
-                        hlf = alf - (cice - cliq)*(tairr - t0)
+                              + cv*qvwrfr &
+                              + cw*(qlwrfr + qrwrfr) &
+                              + ci*(qiwrfr + qswrfr + qgwrfr)
+                        hlv = alv - (cw - cv)*(tairr - t0)
+                        hlf = alf - (ci - cw)*(tairr - t0)
                         hls = hlv + hlf
                         avcpr = hlv/cpm*pirr
                         ascpr = hls/cpm*pirr
@@ -3968,14 +3952,17 @@ CONTAINS
                      if (tairr .lt. t0) then
                         if (qiwrfr .le. cmin) qiwrfr = 0.
                         tairc = tairr - t0
-                        rtair = 1./(tairr - c76)
-                        y2 = exp(c218 - c580*rtair)
-                        qsi = rp0r*y2
-                        esi = c610*y2
                         if (new_saturation) then
                            esi = min(0.99*p0r1, esi_mks_gpu(tairr))
                            qsi = 0.622*esi/(p0r1 - esi)
                            esi = esi*10.  !in CGS
+                           rsub1 = asc*als*qsi/(tairr*tairr*rw)
+                        else
+                           rtair = 1./(tairr - c76)
+                           y2 = exp(c218 - c580*rtair)
+                           qsi = rp0r*y2
+                           esi = c610*y2
+                           rsub1 = cs580*qsi*rtair*rtair
                         end if
                         ssi = (qvwrfr + qb0)/qsi - 1.
                         y1 = 1./tairr
@@ -3983,8 +3970,7 @@ CONTAINS
                         dd = y1*(RN10A*y1 - RN10B) + RN10C*tairr/ &
                                    esi
                         dm = max(qvwrfr + qb0 - qsi, 0.0)
-                        rsub1 = cs580*qsi*rtair*rtair
-                        dep = dm/(1.+rsub1)
+                        dep = dm/(1. + rsub1)
                         if (tairc .le. -5.) then
                            y4 = 1./(tairr - c358)
                            qsw = rp0r*exp(c172 - c409*y4)
@@ -4020,11 +4006,11 @@ CONTAINS
                         tair(i, k, j) = tairr
                         if (use_cpm) then
                            cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
-                                 + cvap*qvwrfr &
-                                 + cliq*(qlwrfr + qrwrfr) &
-                                 + cice*(qiwrfr + qswrfr + qgwrfr)
-                           hlv = alv - (cliq - cvap)*(tairr - t0)
-                           hlf = alf - (cice - cliq)*(tairr - t0)
+                                 + cv*qvwrfr &
+                                 + cw*(qlwrfr + qrwrfr) &
+                                 + ci*(qiwrfr + qswrfr + qgwrfr)
+                           hlv = alv - (cw - cv)*(tairr - t0)
+                           hlf = alf - (ci - cw)*(tairr - t0)
                            hls = hlv + hlf
                            avcpr = hlv/cpm*pirr
                            ascpr = hls/cpm*pirr
@@ -4092,11 +4078,11 @@ CONTAINS
                         tair(i, k, j) = tairr
                         if (use_cpm) then
                            cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
-                                 + cvap*qvwrfr &
-                                 + cliq*(qlwrfr + qrwrfr) &
-                                 + cice*(qiwrfr + qswrfr + qgwrfr)
-                           hlv = alv - (cliq - cvap)*(tairr - t0)
-                           hlf = alf - (cice - cliq)*(tairr - t0)
+                                 + cv*qvwrfr &
+                                 + cw*(qlwrfr + qrwrfr) &
+                                 + ci*(qiwrfr + qswrfr + qgwrfr)
+                           hlv = alv - (cw - cv)*(tairr - t0)
+                           hlf = alf - (ci - cw)*(tairr - t0)
                            hls = hlv + hlf
                            avcpr = hlv/cpm*pirr
                            ascpr = hls/cpm*pirr
@@ -4163,11 +4149,11 @@ CONTAINS
                         tair(i, k, j) = tairr
                         if (use_cpm) then
                            cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
-                                 + cvap*qvwrfr &
-                                 + cliq*(qlwrfr + qrwrfr) &
-                                 + cice*(qiwrfr + qswrfr + qgwrfr)
-                           hlv = alv - (cliq - cvap)*(tairr - t0)
-                           hlf = alf - (cice - cliq)*(tairr - t0)
+                                 + cv*qvwrfr &
+                                 + cw*(qlwrfr + qrwrfr) &
+                                 + ci*(qiwrfr + qswrfr + qgwrfr)
+                           hlv = alv - (cw - cv)*(tairr - t0)
+                           hlf = alf - (ci - cw)*(tairr - t0)
                            hls = hlv + hlf
                            avcpr = hlv/cpm*pirr
                            ascpr = hls/cpm*pirr
@@ -4223,11 +4209,11 @@ CONTAINS
                         tair(i, k, j) = tairr
                         if (use_cpm) then
                            cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
-                                 + cvap*qvwrfr &
-                                 + cliq*(qlwrfr + qrwrfr) &
-                                 + cice*(qiwrfr + qswrfr + qgwrfr)
-                           hlv = alv - (cliq - cvap)*(tairr - t0)
-                           hlf = alf - (cice - cliq)*(tairr - t0)
+                                 + cv*qvwrfr &
+                                 + cw*(qlwrfr + qrwrfr) &
+                                 + ci*(qiwrfr + qswrfr + qgwrfr)
+                           hlv = alv - (cw - cv)*(tairr - t0)
+                           hlf = alf - (ci - cw)*(tairr - t0)
                            hls = hlv + hlf
                            avcpr = hlv/cpm*pirr
                            ascpr = hls/cpm*pirr
@@ -4259,11 +4245,11 @@ CONTAINS
                         tair(i, k, j) = tairr
                         if (use_cpm) then
                            cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
-                                 + cvap*qvwrfr &
-                                 + cliq*(qlwrfr + qrwrfr) &
-                                 + cice*(qiwrfr + qswrfr + qgwrfr)
-                           hlv = alv - (cliq - cvap)*(tairr - t0)
-                           hlf = alf - (cice - cliq)*(tairr - t0)
+                                 + cv*qvwrfr &
+                                 + cw*(qlwrfr + qrwrfr) &
+                                 + ci*(qiwrfr + qswrfr + qgwrfr)
+                           hlv = alv - (cw - cv)*(tairr - t0)
+                           hlf = alf - (ci - cw)*(tairr - t0)
                            hls = hlv + hlf
                            avcpr = hlv/cpm*pirr
                            ascpr = hls/cpm*pirr
@@ -4377,33 +4363,35 @@ CONTAINS
                   if (tairr .lt. t0) then
                      if (use_cpm) then
                         cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
-                              + cvap*qvwrfr &
-                              + cliq*(qlwrfr + qrwrfr) &
-                              + cice*(qiwrfr + qswrfr + qgwrfr)
-                        hlv = alv - (cliq - cvap)*(tairr - t0)
-                        hlf = alf - (cice - cliq)*(tairr - t0)
+                              + cv*qvwrfr &
+                              + cw*(qlwrfr + qrwrfr) &
+                              + ci*(qiwrfr + qswrfr + qgwrfr)
+                        hlv = alv - (cw - cv)*(tairr - t0)
+                        hlf = alf - (ci - cw)*(tairr - t0)
                         hls = hlv + hlf
                         avcp(i, k, j) = hlv/cpm*pirr
                         ascpr = hls/cpm*pirr
                         afcp(i, k, j) = hlf/cpm*pirr
                         ascp(i, k, j) = ascpr
                      end if
-                     rtair = 1./(tairr - c76)
-                     y2 = exp(c218 - c580*rtair)
-                     qsi = rp0(i, k, j)*y2
-                     esi = c610*y2
                      if (new_saturation) then
                         esi = min(0.99*p0r1, esi_mks_gpu(tairr))
                         qsi = 0.622*esi/(p0r1 - esi)
                         esi = esi*10.  !in CGS
+                        rsub1 = asc*als*qsi/(tairr*tairr*rw)
+                     else
+                        rtair = 1./(tairr - c76)
+                        y2 = exp(c218 - c580*rtair)
+                        qsi = rp0(i, k, j)*y2
+                        esi = c610*y2
+                        rsub1 = cs580*qsi*rtair*rtair
                      end if
 
                      SSI = (qvwrfr + QB0)/QSI - 1.
                      IF (DLT1 .EQ. 1.) SSI = max(SSI, 0.)
                      IF (DLT1 .EQ. 0.) SSI = min(SSI, 0.)
                      DM = qvwrfr + QB0 - QSI
-                     RSUB1 = CS580*QSI*RTAIR*RTAIR
-                     DD1 = DM/(1.+RSUB1)
+                     DD1 = DM/(1. + RSUB1)
                      Y3 = 1./TAIRr
                      DD = Y3*(RN10A*Y3 - RN10B) + RN10C*TAIRr/ESI
                      TAIRC = TAIRr - T0
@@ -4521,11 +4509,11 @@ CONTAINS
                         rtair = 1./(tairr - c358)
                         if (use_cpm) then
                            cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
-                                 + cvap*qvwrfr &
-                                 + cliq*(qlwrfr + qrwrfr) &
-                                 + cice*(qiwrfr + qswrfr + qgwrfr)
-                           hlv = alv - (cliq - cvap)*(tairr - t0)
-                           hlf = alf - (cice - cliq)*(tairr - t0)
+                                 + cv*qvwrfr &
+                                 + cw*(qlwrfr + qrwrfr) &
+                                 + ci*(qiwrfr + qswrfr + qgwrfr)
+                           hlv = alv - (cw - cv)*(tairr - t0)
+                           hlf = alf - (ci - cw)*(tairr - t0)
                            hls = hlv + hlf
                            avcpr = hlv/cpm*pirr
                            ascpr = hls/cpm*pirr
@@ -4533,18 +4521,20 @@ CONTAINS
                            ascp(i, k, j) = ascpr
                            avcp(i, k, j) = avcpr
                         end if
-                        y2 = exp(c172 - c409*rtair)
-                        esw = c610*y2
-                        qsw = rp0r*y2
                         if (new_saturation) then
                            esw = min(0.99*p0r1, esw_mks_gpu(tairr))
                            qsw = 0.622*esw/(p0r1 - esw)
                            esw = esw*10.  !in CGS
+                           rsub1 = avc*alv*qsw/(tairr*tairr*rw)
+                        else
+                           y2 = exp(c172 - c409*rtair)
+                           esw = c610*y2
+                           qsw = rp0r*y2
+                           rsub1 = cv409*qsw*rtair*rtair
                         end if
                         ssw = (qvwrfr + qb0)/qsw - 1.
                         dm = qvwrfr + qb0 - qsw
-                        rsub1 = cv409*qsw*rtair*rtair
-                        dd1 = max(-dm/(1.+rsub1), 0.0)
+                        dd1 = max(-dm/(1. + rsub1), 0.0)
                         y3 = 1./tair(i, k, j)
                         dd = y3*(rn30a*y3 - rn10b) + rn10c*tairr &
                                    /esw
@@ -4567,11 +4557,11 @@ CONTAINS
                   tairc = tairr - t0
                   if (use_cpm) then
                      cpm = cp*(1.0 - qvwrfr - qlwrfr - qiwrfr - qrwrfr - qswrfr - qgwrfr) &
-                           + cvap*qvwrfr &
-                           + cliq*(qlwrfr + qrwrfr) &
-                           + cice*(qiwrfr + qswrfr + qgwrfr)
-                     hlv = alv - (cliq - cvap)*(tairr - t0)
-                     hlf = alf - (cice - cliq)*(tairr - t0)
+                           + cv*qvwrfr &
+                           + cw*(qlwrfr + qrwrfr) &
+                           + ci*(qiwrfr + qswrfr + qgwrfr)
+                     hlv = alv - (cw - cv)*(tairr - t0)
+                     hlf = alf - (ci - cw)*(tairr - t0)
                      hls = hlv + hlf
                      avcpr = hlv/cpm*pirr
                      ascpr = hls/cpm*pirr
@@ -4593,21 +4583,22 @@ CONTAINS
                      ftns = ftns0r
                      ftng = ftng0r
 
-   !              rtair(i,j)=1./(tair(i,j)-c358)
-                     rtair = 1./(t0 - c358)
-                     y2 = exp(c172 - c409*rtair)
-                     esw = c610*y2
-                     qsw = rp0r*y2
                      if (new_saturation) then
-                     esw = min(0.99*p0r1, esw_mks_gpu(tairr))
-                     qsw = 0.622*esw/(p0r1 - esw)
-                     esw = esw*10.  !in CGS
+                        esw = min(0.99*p0r1, esw_mks_gpu(tairr))
+                        qsw = 0.622*esw/(p0r1 - esw)
+                        esw = esw*10.  !in CGS
+                        rsub1 = avc*alv*qsw/(tairr*tairr*rw)
+                     else
+                        rtair = 1./(t0 - c358)
+                        y2 = exp(c172 - c409*rtair)
+                        esw = c610*y2
+                        qsw = rp0r*y2
+                        rsub1 = cv409*qsw*rtair*rtair
                      end if
                      
                      ssw = 1.-(qvwrfr + qb0)/qsw
                      dm = qsw - qvwrfr - qb0
-                     rsub1 = cv409*qsw*rtair*rtair
-                     dd1 = max(dm/(1.+rsub1), 0.0)
+                     dd1 = max(dm/(1. + rsub1), 0.0)
                      y3 = 1./tairr
                      dd = y3*(rn30a*y3 - rn10b) + rn10c*tairr/esw
                      y1 = ftng*r30t*ssw*(r191r/zgr**2 + r192rf &
