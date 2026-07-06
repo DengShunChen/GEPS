@@ -336,11 +336,10 @@ CONTAINS
       ! convert specific values of q to mixing ratios :
       !$acc data create(qtot) async(async_id)
       !qtot = 0.
-      !$acc parallel loop gang collapse(2) async(async_id) &
-      !$acc&         private(qtotr, qvr, qlr, qrr, qir, qsr, qgr)
+      !$acc parallel loop gang collapse(2) async(async_id)  
       do j = jts, jte
          do k = kts, kte
-            !$acc loop vector
+            !$acc loop vector private(qtotr, qvr, qlr, qrr, qir, qsr, qgr)
             do i = its, myim(j)
                qvr = qv(i, k, j)
                qlr = ql(i, k, j)
@@ -474,11 +473,10 @@ CONTAINS
       end do  !end of do n=1,ntimes
 
       ! convert mixing values of q back to specific values :
-      !$acc parallel loop gang collapse(2) async(async_id) &
-      !$acc&         private(qtotr)
+      !$acc parallel loop gang collapse(2) async(async_id) 
       do j = jts, jte
          do k = kts, kte
-            !$acc loop vector
+            !$acc loop vector private(qtotr)
             do i = its, myim(j)
                qtotr = qtot(i, k, j)
                qv(i, k, j) = qv(i, k, j)/(1.+qtotr)
@@ -1211,7 +1209,7 @@ CONTAINS
               egw, egi, egr, ehw, ehi, ehr
       real :: sc13
       real :: amw, ami, ars, amc
-      real :: rw, cw, ci
+      !real :: rw, cw, ci
       real :: ui50, ri50, cmn, y1, apri, bpri
 
 !      if (improve .eq. 3) ihail = 0
@@ -2243,16 +2241,16 @@ CONTAINS
       cs580 = c580*asc
       
 !JJS
-#ifdef Readaeroclx
-      !$acc parallel loop gang collapse(2) async(async_id) private(r0s, rrs, &
-      !$acc&         rrq, fvs, pir1, p0r, rhor, pirr, rr0r, mr2mc)
-#else
-      !$acc parallel loop gang collapse(2) async(async_id) private(r0s, rrs, &
-      !$acc&         rrq, fvs, pir1, p0r, rhor, pirr, rr0r)
-#endif
+      !$acc parallel loop gang collapse(2) async(async_id)
       do j = jts, jte
          do k = kts, kte
-            !$acc loop vector
+#ifdef Readaeroclx
+            !$acc loop vector private(r0s, rrs, &
+            !$acc&         rrq, fvs, pir1, p0r, rhor, pirr, rr0r, mr2mc)
+#else
+            !$acc loop vector private(r0s, rrs, &
+            !$acc&         rrq, fvs, pir1, p0r, rhor, pirr, rr0r)
+#endif
             do i = its, myim(j)
 !JJS  convert from mks to cgs, and move from WRF grid to GCE grid
                rhor = rho_mks(i, k, j)*0.001
@@ -2360,14 +2358,14 @@ CONTAINS
 
       
       IF (IWARM .EQ. 1) THEN
-         !$acc parallel loop gang collapse(2) async(async_id) private(fact_fit, &
-         !$acc&         pr0, rr0r, y1, dwvp, dwv, tca, scv, cp409, r22f, r23af, &
-         !$acc&         r23br, dd, pracw, praut, y2, y3, y4, pr, cnd, qsw, dm, &
-         !$acc&         cnd, rtair, ssw, tairr, zrr, avcpr, pi0r, rp0r, rhor, fv0r, &
-         !$acc&         vrr, ptwrfr, qvwrfr, qiwrfr, qswrfr, qgwrfr, qrwrfr, qlwrfr)
+         !$acc parallel loop gang collapse(2) async(async_id) 
          do j = jts, jte
             do k = kts, kte
-               !$acc loop vector
+               !$acc loop vector private(fact_fit, &
+               !$acc&         pr0, rr0r, y1, dwvp, dwv, tca, scv, cp409, r22f, r23af, &
+               !$acc&         r23br, dd, pracw, praut, y2, y3, y4, pr, cnd, qsw, dm, &
+               !$acc&         cnd, rtair, ssw, tairr, zrr, avcpr, pi0r, rp0r, rhor, fv0r, &
+               !$acc&         vrr, ptwrfr, qvwrfr, qiwrfr, qswrfr, qgwrfr, qrwrfr, qlwrfr)
                do i = its, myim(j)
    !     ******************************************************************
    !     ***   Y1 : DYNAMIC VISCOSITY OF AIR (U)
@@ -2507,13 +2505,13 @@ CONTAINS
 
    !     ***   COMPUTE ZR,ZS,ZG,VR,VS,VG      *****************************
       IF (IWARM .ne. 1) THEN
-         !$acc parallel loop gang collapse(2) async(async_id) private(tairc, &
-         !$acc&         vgcr, dd, y1, y2, ftns, vgcf, ftng, tairr, r00r, vrr, &
-         !$acc&         vsr, vgr, vir, qrwrfr, qswrfr, qgwrfr, qiwrfr)
+         !$acc parallel loop gang collapse(2) async(async_id) 
 
          do j = jts, jte
             do k = kts, kte
-               !$acc loop vector
+               !$acc loop vector private(tairc, &
+               !$acc&         vgcr, dd, y1, y2, ftns, vgcf, ftng, tairr, r00r, vrr, &
+               !$acc&         vsr, vgr, vir, qrwrfr, qswrfr, qgwrfr, qiwrfr)
                do i = its, myim(j)
                   qrwrfr = qrwrf(i, k, j)
                   qswrfr = qswrf(i, k, j)
@@ -2612,24 +2610,24 @@ CONTAINS
    !*  6 * PIACR : ACCRETION OF QR OR QG BY QI                       ***6**
    !* 34 * pwacs : collection of qs by qc                            **34**
       IF (IWARM .ne. 1) THEN
-         !$acc parallel loop gang collapse(2) async(async_id) private(tairc, &
-         !$acc&         psfw, psfi, pihms, psaut, psaci, praci,piacr, psacw, &
-         !$acc&         pwacs, qsacw, ftns, ftng, fv0r, r3f, r4f, r5f, r6f, &
-         !$acc&         r12r, r22f, r34f, rn1s, bnd1, esi, dmicrons, y1, y2, &
-         !$acc&         y3, y4, y5, dd, dd1, praut, pracw, pidep, it, qsw, &
-         !$acc&         qsi, esw, hfact, sfact, ssi, fssi, r_nci, rr0r, r14f, &
-         !$acc&         r15f, r9rf, r16rf, pgacs, dgacs, wgacs, dmicrong, &
-         !$acc&         dgacw, pihmg, dgaci, wgaci, dgacr, qgacr, qgacw, wgacr, &
-         !$acc&         dlt3, dlt4, pr, ps, pg, r7r, r8r, r18r, rrs, fvs, &
-         !$acc&         r101r, r102rf, r191r, r192rf, qracs, pracs, psacr, &
-         !$acc&         qsacr, pgaut, pgfr, temp, cpm, hlv, hlf, hls, dlt2, &
-         !$acc&         prn, psn, psmlt, pgmlt, ftns0r, ftng0r, pgwet, tairr, &
-         !$acc&         zrr, zsr, zgr, afcpr, pirr, rp0r, r00r, rhor, vrr, vsr, &
-         !$acc&         vgr, vir, ptwrfr, qvwrfr, qlwrfr, qiwrfr, qrwrfr, qswrfr, &
-         !$acc&         qgwrfr, p0r1)
+         !$acc parallel loop gang collapse(2) async(async_id) 
          do j = jts, jte
             do k = kts, kte
-               !$acc loop vector
+               !$acc loop vector private(tairc, &
+               !$acc&         psfw, psfi, pihms, psaut, psaci, praci,piacr, psacw, &
+               !$acc&         pwacs, qsacw, ftns, ftng, fv0r, r3f, r4f, r5f, r6f, &
+               !$acc&         r12r, r22f, r34f, rn1s, bnd1, esi, dmicrons, y1, y2, &
+               !$acc&         y3, y4, y5, dd, dd1, praut, pracw, pidep, it, qsw, &
+               !$acc&         qsi, esw, hfact, sfact, ssi, fssi, r_nci, rr0r, r14f, &
+               !$acc&         r15f, r9rf, r16rf, pgacs, dgacs, wgacs, dmicrong, &
+               !$acc&         dgacw, pihmg, dgaci, wgaci, dgacr, qgacr, qgacw, wgacr, &
+               !$acc&         dlt3, dlt4, pr, ps, pg, r7r, r8r, r18r, rrs, fvs, &
+               !$acc&         r101r, r102rf, r191r, r192rf, qracs, pracs, psacr, &
+               !$acc&         qsacr, pgaut, pgfr, temp, cpm, hlv, hlf, hls, dlt2, &
+               !$acc&         prn, psn, psmlt, pgmlt, ftns0r, ftng0r, pgwet, tairr, &
+               !$acc&         zrr, zsr, zgr, afcpr, pirr, rp0r, r00r, rhor, vrr, vsr, &
+               !$acc&         vgr, vir, ptwrfr, qvwrfr, qlwrfr, qiwrfr, qrwrfr, qswrfr, &
+               !$acc&         qgwrfr, p0r1)
                do i = its, myim(j)
                   ptwrfr = ptwrf(i, k, j)
                   qvwrfr = qvwrf(i, k, j)
@@ -3191,17 +3189,16 @@ CONTAINS
    !****** PIMM  : IMMERSION FREEZING OF QC TO QI (T < T0)           ******
    !****** PCFR  : CONTACT NUCLEATION OF QC TO QI (T < T0)           ******
      IF (IWARM .ne. 1) THEN
-         !$acc parallel loop gang collapse(2) async(async_id) private(fssi, r_nci, &
-         !$acc&         xncld, esat, rv, rlapse_m, delT, xccld, Xknud, alpha, &
-         !$acc&         cunnF, dvair, DIFFar, cpm, hlv, hlf, hls, pimm, pcfr, &
-         !$acc&         rr0, tairc, ftns, ftng, ftns0r, ftng0r, pihom, pimlt, &
-         !$acc&         pidw, y1, it, y2, y3, y4, qsw, rtair, y5, qsi, esw, &
-         !$acc&         esi, ssi, dd, tairr, pirr, rp0r, r00r, ptwrfr, qvwrfr, &
-         !$acc&         qlwrfr, qiwrfr, qrwrfr, qswrfr, qgwrfr, p0r1)
-
+         !$acc parallel loop gang collapse(2) async(async_id) 
          do j = jts, jte
             do k = kts, kte
-               !$acc loop vector
+               !$acc loop vector private(fssi, r_nci, &
+               !$acc&         xncld, esat, rv, rlapse_m, delT, xccld, Xknud, alpha, &
+               !$acc&         cunnF, dvair, DIFFar, cpm, hlv, hlf, hls, pimm, pcfr, &
+               !$acc&         rr0, tairc, ftns, ftng, ftns0r, ftng0r, pihom, pimlt, &
+               !$acc&         pidw, y1, it, y2, y3, y4, qsw, rtair, y5, qsi, esw, &
+               !$acc&         esi, ssi, dd, tairr, pirr, rp0r, r00r, ptwrfr, qvwrfr, &
+               !$acc&         qlwrfr, qiwrfr, qrwrfr, qswrfr, qgwrfr, p0r1)
                do i = its, myim(j)
                   pimm = 0.0
                   pcfr = 0.0
@@ -3355,25 +3352,23 @@ CONTAINS
 
       IF (IWARM .ne. 1) THEN
          if (sat_predict) then
-#ifdef Readaeroclx
-            !$acc parallel loop gang collapse(2) async(async_id) private(cpm, &
-            !$acc&         hlv, C1, K1, rhw, nact, qcmax, hlf, hls, r_nci, &
-            !$acc&         qimax, pact, pint, cnd, dep, fez, ern, tairc, &
-            !$acc&         rhoair, xcpm, xlv, esw, qsw, y1, abw, xls, esi, &
-            !$acc&         qsi, y2, abi, ssi, rp0r, xlandr, qvwrfr)
-#else
-            !$acc parallel loop gang collapse(2) async(async_id) private(cpm, &
-            !$acc&         hlv, C1, K1, nact, qcmax, hlf, hls, r_nci, &
-            !$acc&         qimax, pact, pint, cnd, dep, fez, ern, tairc, &
-            !$acc&         rhoair, xcpm, xlv, esw, qsw, y1, abw, xls, esi, &
-            !$acc&         qsi, y2, abi, ssi, nice, ncloud, tairr, rp0r, xlandr, &
-            !$acc&         qvwrfr, qlwrfr, qiwrfr, qrwrfr, qswrfr, qgwrfr, p0r1)
-#endif
+            !$acc parallel loop gang collapse(2) async(async_id) firstprivate(xcpm, xlv, xls)
             do j = jts, jte
                do k = kts, kte
 #ifdef Readaeroclx
                   !$acc loop vector private(p_mb, nice, ncloud, ssrw, tairr, qlwrfr, &
-                  !$acc&     qiwrfr, qrwrfr, qswrfr, qgwrfr, p0r1)
+                  !$acc&     qiwrfr, qrwrfr, qswrfr, qgwrfr, p0r1, cpm, &
+                  !$acc&         hlv, C1, K1, rhw, nact, qcmax, hlf, hls, r_nci, &
+                  !$acc&         qimax, pact, pint, cnd, dep, fez, ern, tairc, &
+                  !$acc&         rhoair, esw, qsw, y1, abw, esi, &
+                  !$acc&         qsi, y2, abi, ssi, rp0r, xlandr, qvwrfr) 
+#else
+                  !$acc loop vector private(cpm, &
+                  !$acc&         hlv, C1, K1, nact, qcmax, hlf, hls, r_nci, &
+                  !$acc&         qimax, pact, pint, cnd, dep, fez, ern, tairc, &
+                  !$acc&         rhoair, esw, qsw, y1, abw, esi, &
+                  !$acc&         qsi, y2, abi, ssi, nice, ncloud, tairr, rp0r, xlandr, &
+                  !$acc&         qvwrfr, qlwrfr, qiwrfr, qrwrfr, qswrfr, qgwrfr, p0r1)
 #endif
                   do i = its, myim(j)
                      ! --------------------------------------------------------------------------------
@@ -3543,21 +3538,21 @@ CONTAINS
                      ! -------------
       IF (IWARM .ne. 1) THEN
          if (sat_predict) then
-            !$acc parallel loop gang collapse(2) async(async_id) private(cpm, hlv, &
-            !$acc&         hlf, hls, ltk, lqc, ltk2, lqc2, mvdc, mvrc, ncloud, &
-            !$acc&         lqi, lqi2, mvdi, mvri, hid, inhgr, rhoi, nice, lqr, &
-            !$acc&         lqr2, kmin, kmax, mvdr, efdr, kdxr, afar, lzr, tnr, &
-            !$acc&         avr, bvr, mur, rhoaj, gr2, gbr25, cnd1, cnd2, dep1, &
-            !$acc&         dep2, fez1, fez2, ern1, ern2, tau, atem, dltd, &
-            !$acc&         latint, sbd, nbd, sbd1, sbd2, nbd1, nbd2, fxlat, &
-            !$acc&         xcpm, xlv, xlf, xls, esw, esi, qsw, qsi, y1, y2, &
-            !$acc&         pr0, rhoair, dv1, abw, abi, tauc, tairc, ssi, taui, &
-            !$acc&         taur, cnd, dep, fez, ern, tairr, rp0r, xlandr, qvwrfr, &
-            !$acc&         qlwrfr, qiwrfr, qrwrfr, qswrfr, qgwrfr, p0r1, &
-            !$acc&         tmnlbc, ivegtypr)
+            !$acc parallel loop gang collapse(2) async(async_id) firstprivate(xcpm, xlv, xlf, xls)
             do j = jts, jte
                do k = kts, kte
-                  !$acc loop vector
+                  !$acc loop vector private(cpm, hlv, &
+                  !$acc&         hlf, hls, ltk, lqc, ltk2, lqc2, mvdc, mvrc, ncloud, &
+                  !$acc&         lqi, lqi2, mvdi, mvri, hid, inhgr, rhoi, nice, lqr, &
+                  !$acc&         lqr2, kmin, kmax, mvdr, efdr, kdxr, afar, lzr, tnr, &
+                  !$acc&         avr, bvr, mur, rhoaj, gr2, gbr25, cnd1, cnd2, dep1, &
+                  !$acc&         dep2, fez1, fez2, ern1, ern2, tau, atem, dltd, &
+                  !$acc&         latint, sbd, nbd, sbd1, sbd2, nbd1, nbd2, fxlat, &
+                  !$acc&         esw, esi, qsw, qsi, y1, y2, &
+                  !$acc&         pr0, rhoair, dv1, abw, abi, tauc, tairc, ssi, taui, &
+                  !$acc&         taur, cnd, dep, fez, ern, tairr, rp0r, xlandr, qvwrfr, &
+                  !$acc&         qlwrfr, qiwrfr, qrwrfr, qswrfr, qgwrfr, p0r1, &
+                  !$acc&         tmnlbc, ivegtypr, qliml, dep3)
                   do i = its, myim(j)
                      p0r1 = p0_mks(i, k, j)
                      pr0 = 1./(p0r1*10.0)
@@ -3788,8 +3783,8 @@ CONTAINS
                         ! create transition zones :
                         dltd = asin(sdec)*180.0/cpi      ! solar declination angle (in degree latitude)
                         latint = 20.0                    ! width of the transition zone (in degree latitude)
-                        sbd = dltd - 90.0 + 15.0           ! southern boundary of sun (in degree latitude)
-                        nbd = dltd + 90.0 + 15.0           ! northern boundary of sun (in degree latitude)
+                        sbd = dltd/4. - 90.0 + 15.0        ! southern boundary of sun (in degree latitude)
+                        nbd = dltd/4. + 90.0 - 15.0        ! northern boundary of sun (in degree latitude)
                         sbd1 = sbd + latint/2.0            ! southern boundary of southern transition zone
                         sbd2 = sbd - latint/2.0            ! northern boundary of southern transition zone
                         nbd1 = nbd - latint/2.0            ! southern boundary of northern transition zone
@@ -3904,16 +3899,16 @@ CONTAINS
       
       IF (IWARM .ne. 1) THEN
          if (.not. sat_predict) then
-            !$acc parallel loop gang collapse(2) async(async_id) private(cpm, &
-            !$acc&         hlv, hlf, hls, fssi, r_nci, cp409, cp580, r32rt, &
-            !$acc&         rtair, y3, dd, dm, rsub1, y4, tairc, y2, qsi, esi, &
-            !$acc&         ssi, y1, dep, qsw, pidep, pint, cnd, esw, dd1, y5, &
-            !$acc&         qvs, tairr, ascpr, avcpr, pi0r, pirr, rp0r, ptwrfr, &
-            !$acc&         qvwrfr, qlwrfr, qiwrfr, qrwrfr, qswrfr, qgwrfr, pir1, &
-            !$acc&         p0r1)
+            !$acc parallel loop gang collapse(2) async(async_id) 
             do j = jts, jte
                do k = kts, kte
-                  !$acc loop vector
+                  !$acc loop vector private(cpm, &
+                  !$acc&         hlv, hlf, hls, fssi, r_nci, cp409, cp580, r32rt, &
+                  !$acc&         rtair, y3, dd, dm, rsub1, y4, tairc, y2, qsi, esi, &
+                  !$acc&         ssi, y1, dep, qsw, pidep, pint, cnd, esw, dd1, y5, &
+                  !$acc&         qvs, tairr, ascpr, avcpr, pi0r, pirr, rp0r, ptwrfr, &
+                  !$acc&         qvwrfr, qlwrfr, qiwrfr, qrwrfr, qswrfr, qgwrfr, pir1, &
+                  !$acc&         p0r1)
                   do i = its, myim(j)
                      ptwrfr = ptwrf(i, k, j)
                      qvwrfr = qvwrf(i, k, j)
@@ -4309,16 +4304,15 @@ CONTAINS
    !* 10 * PSDEP : DEPOSITION OR SUBLIMATION OF QS                   **10**
    !* 20 * PGSUB : SUBLIMATION OF QG                                 **20**
       IF (IWARM .ne. 1) THEN
-         !$acc parallel loop gang collapse(2) async(async_id) &
-         !$acc&         private(cpm, hlv, hlf, hls, psdep, pgdep, pssub, pgsub, &
-         !$acc&         rr0r, rrs, fvs, r101r, r102rf, r191r, r192rf, tairc, &
-         !$acc&         dlt1, rtair, y2, qsi, esi, ssi, dm, rsub1, dd1, y3, &
-         !$acc&         dd, ftns, ftng, ftns0r, ftng0r, y4, y5, y1, tairr, zsr, &
-         !$acc&         zgr, ascpr, pirr, r00r, ptwrfr, qvwrfr, qlwrfr, qiwrfr, &
-         !$acc&         qrwrfr, qswrfr, qgwrfr, p0r1)
+         !$acc parallel loop gang collapse(2) async(async_id) 
          do j = jts, jte
             do k = kts, kte
-               !$acc loop vector
+               !$acc loop vector private(cpm, hlv, hlf, hls, psdep, pgdep, pssub, pgsub, &
+               !$acc&         rr0r, rrs, fvs, r101r, r102rf, r191r, r192rf, tairc, &
+               !$acc&         dlt1, rtair, y2, qsi, esi, ssi, dm, rsub1, dd1, y3, &
+               !$acc&         dd, ftns, ftng, ftns0r, ftng0r, y4, y5, y1, tairr, zsr, &
+               !$acc&         zgr, ascpr, pirr, r00r, ptwrfr, qvwrfr, qlwrfr, qiwrfr, &
+               !$acc&         qrwrfr, qswrfr, qgwrfr, p0r1)
                do i = its, myim(j)
                   ptwrfr = ptwrf(i, k, j)
                   qvwrfr = qvwrf(i, k, j)
@@ -4462,16 +4456,16 @@ CONTAINS
 
    !* 23 * ERN : EVAPORATION OF QR (SUBSATURATION)                   **23**
       IF (IWARM .ne. 1) THEN
-         !$acc parallel loop gang collapse(2) async(async_id) private(cpm, hlv, &
-         !$acc&         hlf, hls, rr0r, fv0r, rrs, fvs, r191r, r192rf, r331r, &
-         !$acc&         r332rf, r231r, r232rf, rtair, y2, esw, qsw, ssw, dm, &
-         !$acc&         rsub1, dd1, y3, dd, y1, ern, pmlts, pmltg, tairc, &
-         !$acc&         ftns0r, ftng0r, ftns, ftng, tairr, zrr, zsr, zgr, &
-         !$acc&         ascpr, avcpr, pi0r, pirr, rp0r, r00r, ptwrfr, qvwrfr, &
-         !$acc&         qlwrfr, qiwrfr, qrwrfr, qswrfr, qgwrfr, p0r1)
+         !$acc parallel loop gang collapse(2) async(async_id) 
          do j = jts, jte
             do k = kts, kte
-               !$acc loop vector
+               !$acc loop vector private(cpm, hlv, &
+               !$acc&         hlf, hls, rr0r, fv0r, rrs, fvs, r191r, r192rf, r331r, &
+               !$acc&         r332rf, r231r, r232rf, rtair, y2, esw, qsw, ssw, dm, &
+               !$acc&         rsub1, dd1, y3, dd, y1, ern, pmlts, pmltg, tairc, &
+               !$acc&         ftns0r, ftng0r, ftns, ftng, tairr, zrr, zsr, zgr, &
+               !$acc&         ascpr, avcpr, pi0r, pirr, rp0r, r00r, ptwrfr, qvwrfr, &
+               !$acc&         qlwrfr, qiwrfr, qrwrfr, qswrfr, qgwrfr, p0r1)
                do i = its, myim(j)
                   ptwrfr = ptwrf(i, k, j)
                   qvwrfr = qvwrf(i, k, j)
@@ -4750,16 +4744,16 @@ CONTAINS
    #endif
 
    !   endif
-      !$acc parallel loop gang collapse(2) async(async_id) private(L_cloud, &
-      !$acc&         ccn_ref, mu, gamfac3, gamfac1, lambda, mdc1, mdc2, mdc3, &
-      !$acc&         mdc4, mdc5, mdc6, efd1, efd2, efd3, efd4, efd5, efd6, &
-      !$acc&         ltk, lqc, ltk2, lqc2, mvdc, efdc, reimin, iwc_0, bw98, &
-      !$acc&         lqi, lqi2, efdi, tairc, tairr, rhor, xlandr, qlwrfr, &
-      !$acc&         qiwrfr, qrwrfr, qswrfr, qgwrfr, rhoair, refcr, refrr, &
-      !$acc&         refir, refsr, refgr)
+      !$acc parallel loop gang collapse(2) async(async_id) 
       do j = jts, jte
          do k = kts, kte
-            !$acc loop vector
+            !$acc loop vector private(L_cloud, &
+            !$acc&         ccn_ref, mu, gamfac3, gamfac1, lambda, mdc1, mdc2, mdc3, &
+            !$acc&         mdc4, mdc5, mdc6, efd1, efd2, efd3, efd4, efd5, efd6, &
+            !$acc&         ltk, lqc, ltk2, lqc2, mvdc, efdc, reimin, iwc_0, bw98, &
+            !$acc&         lqi, lqi2, efdi, tairc, tairr, rhor, xlandr, qlwrfr, &
+            !$acc&         qiwrfr, qrwrfr, qswrfr, qgwrfr, rhoair, refcr, refrr, &
+            !$acc&         refir, refsr, refgr)
             do i = its, myim(j)
                tairr = tair(i, k, j)
                tairc = tairr - t0
@@ -6184,11 +6178,11 @@ CONTAINS
                   end do
                end do
       !====================================
-               !$acc parallel loop gang collapse(2) async(async_id) &
-               !$acc&         private(dip, dim)
+               !$acc parallel loop gang collapse(2) async(async_id)
                do j = jts, jte
                   do k = 1, km+1
-                     !$acc loop vector
+                     !$acc loop vector &
+                     !$acc&         private(dip, dim)
                      do i = its, myim(j)
                         if (k .eq. 1) then
                            qpi(i, 1, j) = qa(i, 1, j)
