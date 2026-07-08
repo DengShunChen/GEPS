@@ -64,6 +64,7 @@ MODULE module_mp_gsfcgce_3ice_nuwrf
                     rn25, rn31, beta, rn32, rn33, &
                     rn331, rn332, rn34, rn35, rnn30a, &
                     rnn191, rnn192, cn0
+   REAL, PRIVATE :: rw, cv, cw, ci
 
    REAL, PRIVATE ::         ami50, ami40, ami100
 
@@ -1126,7 +1127,6 @@ CONTAINS
               egw, egi, egr, ehw, ehi, ehr
       real :: sc13
       real :: amw, ami, ars, amc
-      real :: rw, cw, ci
       real :: ui50, ri50, cmn, y1, apri, bpri
 
 !      if (improve .eq. 3) ihail = 0
@@ -1166,12 +1166,13 @@ CONTAINS
 
       ! heat capacity and latent heat (in CGS) :
       rw = 4.615e+6     !gas constant of vapor
+      cv = 1.846e+7     !specific heat capacity of vapor
       cw = 4.187e+7     !specific heat capacity of liquid water
       ci = 2.093e+7     !specific heat capacity of ice
       cp = 1.004e7      !specific heat capacity of dry air
-      alv = 2.5e+10     !latent heat of evaporation/condensation
-      alf = 3.336e+9    !latent heat of melting/freezing
-      als = 2.8336e+10  !latent heat of sublimation/deposition
+      alv = 2.5e+10     !latent heat of vaporization
+      alf = 3.336e+9    !latent heat of fusion
+      als = 2.8336e+10  !latent heat of sublimation
       avc = alv/cp
       afc = alf/cp
       asc = als/cp
@@ -1984,7 +1985,7 @@ CONTAINS
 !sat_predict
       ! saturation prediction scheme :
       integer :: hid
-      real :: rhoair, xlv, xls, xlf, cpm1, dv1, abw, abi
+      real :: rhoair, xrw, xlv, xls, xlf, xcpm, dv1, abw, abi
       real :: taui, tauc, taur, tau, atem
       real :: C1, K1, ncloud, nact, qcmax, mvrc
       real :: qimax, nice, inhgr, rhoi, mvdi, mvri
@@ -1999,14 +2000,6 @@ CONTAINS
       real :: dltd, nbd, sbd, nbd1, nbd2, sbd1, sbd2, latint
       real :: fxlat
       
-
-      !cp=1.004e7
-      !alv=2.5e10 ; alf=3.336e9 ; als=2.8336e10
-      !rw=4.615e6 ; cw=4.187e7 ; ci=2.093e7
-      !avcp=alv/cp*pir
-      real, parameter :: cvap = 1.846e+7    !specific heat capacity of vapor (in CGS)
-      real, parameter :: cliq = 4.218e+7    !specific heat capacity of liquid (in CGS)
-      real, parameter :: cice = 2.106e+7    !specific heat capacity of ice (in CGS)
       real :: cpm, hlv, hls, hlf
 
       integer, parameter :: i_check = 30400, k_check = 800, j_check = 1200
@@ -2134,6 +2127,13 @@ CONTAINS
       hmtemp2 = -4.
       hmtemp3 = -6.
       hmtemp4 = -8.
+
+      ! heat capacity and latent heat (in MKS) :
+      xrw = rw*1.e-4   ! gas constant of vapor
+      xcpm = cp*1.e-4  ! specific heat capacity of air
+      xlv = alv*1.e-4  ! latent heat of vaporization
+      xlf = alf*1.e-4  ! latent heat of fusion
+      xls = als*1.e-4  ! latent heat of sublimation
 
       do j = jts, jte
          do i = its, ite
@@ -2985,10 +2985,10 @@ CONTAINS
 
                if (use_cpm) then
                   cpm = cp*(1 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
-                        cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
-                        cice*(qi(i, j) + qs(i, j) + qg(i, j))
-                  hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
-                  hlf = alf - (cice - cliq)*(tair(i, j) - t0)
+                        cv*qv(i, j) + cw*(qc(i, j) + qr(i, j)) + &
+                        ci*(qi(i, j) + qs(i, j) + qg(i, j))
+                  hlv = alv - (cw - cv)*(tair(i, j) - t0)
+                  hlf = alf - (ci - cw)*(tair(i, j) - t0)
                   hls = hlv + hlf
                   avcp = hlv/cpm*pir
                   ascp = hls/cpm*pir
@@ -3081,10 +3081,10 @@ CONTAINS
                   pgmlt(i, j) = r2ig*min(qg(i, j), max(dd1(i, j), 0.0))
                   if (use_cpm) then
                      cpm = cp*(1 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
-                           cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
-                           cice*(qi(i, j) + qs(i, j) + qg(i, j))
-                     hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
-                     hlf = alf - (cice - cliq)*(tair(i, j) - t0)
+                           cv*qv(i, j) + cw*(qc(i, j) + qr(i, j)) + &
+                           ci*(qi(i, j) + qs(i, j) + qg(i, j))
+                     hlv = alv - (cw - cv)*(tair(i, j) - t0)
+                     hlf = alf - (ci - cw)*(tair(i, j) - t0)
                      hls = hlv + hlf
                      avcp = hlv/cpm*pir
                      ascp = hls/cpm*pir
@@ -3221,10 +3221,10 @@ CONTAINS
 
                if (use_cpm) then
                   cpm = cp*(1 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
-                        cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
-                        cice*(qi(i, j) + qs(i, j) + qg(i, j))
-                  hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
-                  hlf = alf - (cice - cliq)*(tair(i, j) - t0)
+                        cv*qv(i, j) + cw*(qc(i, j) + qr(i, j)) + &
+                        ci*(qi(i, j) + qs(i, j) + qg(i, j))
+                  hlv = alv - (cw - cv)*(tair(i, j) - t0)
+                  hlf = alf - (ci - cw)*(tair(i, j) - t0)
                   hls = hlv + hlf
                   avcp = hlv/cpm*pir
                   ascp = hls/cpm*pir
@@ -3256,14 +3256,11 @@ CONTAINS
                   rhoair = rho_mks(i, k, j)
                   if (use_cpm) then
                      cpm = cp*(1 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
-                           cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
-                           cice*(qi(i, j) + qs(i, j) + qg(i, j))      ! specific heat capacity (in CGS)
-                     cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
-                     hlv = alv - (cliq - cvap)*(tair(i, j) - t0)    ! latent heat of vaporization (in CGS)
-                     xlv = hlv*1.e-4                           ! latent heat of vaporization (in MKS)
-                  else
-                     cpm1 = cp*1.e-4*(1. + 0.887*qv(i, j))       ! specific heat capacity (in MKS)
-                     xlv = 3.1484E6 - 2370.*tair(i, j)           ! latent heat of vaporization (in MKS)
+                           cv*qv(i, j) + cw*(qc(i, j) + qr(i, j)) + &
+                           ci*(qi(i, j) + qs(i, j) + qg(i, j))
+                     xcpm = cpm*1.e-4
+                     hlv = alv - (cw - cv)*(tair(i, j) - t0)
+                     xlv = hlv*1.e-4
                   end if
                   if (new_saturation) then
                      esw(i, j) = min(0.99*p0_mks(i, k, j), esw_mks(tair(i, j)))
@@ -3272,7 +3269,7 @@ CONTAINS
                      y1(i, j) = 1./(tair(i, j) - c358)
                      qsw(i, j) = rp0*exp(c172 - c409*y1(i, j))
                   end if
-                  abw = 1.+xlv**2.*qsw(i, j)/cpm1/(4.61495E2*tair(i, j)**2.)  ! abw=1+dqsdT*(Lv/Cp)
+                  abw = 1.+xlv**2.*qsw(i, j)/xcpm/(xrw*tair(i, j)**2.)  ! abw=1+dqsdT*(Lv/Cp)
 
                   if (ccnflag .eq. 1) then
                      if (qv(i, j) .gt. qsw(i, j) .and. ww1(i, j, k) .gt. 1.e-3) then
@@ -3305,7 +3302,7 @@ CONTAINS
                      nact = max(0., ncloud/rhoair - qc(i, j)/5.236E-13)      ! CONVERT FROM CM-3 TO M-3 and 5 microm in radius
                      qcmax = max((qv(i, j) - qsw(i, j)), 0.)/abw
                      pact(i, j) = min(max(nact*1.414E-14, 0.), qcmax)       ! 1.5 micron in radius
-                     tair(i, j) = tair(i, j) + pact(i, j)*xlv/cpm1
+                     tair(i, j) = tair(i, j) + pact(i, j)*xlv/xcpm
                      tairc(i, j) = tair(i, j) - t0
                      qv(i, j) = max(0., qv(i, j) - pact(i, j))
                      qc(i, j) = max(0., qc(i, j) + pact(i, j))
@@ -3317,16 +3314,13 @@ CONTAINS
 
                   if (use_cpm) then
                      cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
-                           cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
-                           cice*(qi(i, j) + qs(i, j) + qg(i, j))      ! specific heat capacity (in CGS)
-                     cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
-                     hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
-                     hlf = alf - (cice - cliq)*(tair(i, j) - t0)
-                     hls = hlv + hlf                           ! latent heat of sublimation (in CGS)
-                     xls = hls*1.e-4                           ! latent heat of sublimation (in MKS)
-                  else
-                     cpm1 = cp*1.e-4*(1. + 0.887*qv(i, j))         ! specific heat capacity (in MKS)
-                     xls = 3.15E6 - 2370.*tair(i, j) + 0.3337E6    ! latent heat of sublimation  (in MKS)
+                           cv*qv(i, j) + cw*(qc(i, j) + qr(i, j)) + &
+                           ci*(qi(i, j) + qs(i, j) + qg(i, j))
+                     xcpm = cpm*1.e-4
+                     hlv = alv - (cw - cv)*(tair(i, j) - t0)
+                     hlf = alf - (ci - cw)*(tair(i, j) - t0)
+                     hls = hlv + hlf
+                     xls = hls*1.e-4
                   endif
                   if (new_saturation) then
                      esw(i, j) = min(0.99*p0_mks(i, k, j), esw_mks(tair(i, j)))
@@ -3340,7 +3334,7 @@ CONTAINS
                      y2(i, j) = 1./(tair(i, j) - c76)
                      qsi(i, j) = rp0*exp(c218 - c580*y2(i, j))
                   end if
-                  abi = 1.+xls**2.*qsi(i, j)/cpm1/(4.61495E2*tair(i, j)**2.)  ! abi=1+dqidT*(Ls/Cp)
+                  abi = 1.+xls**2.*qsi(i, j)/xcpm/(xrw*tair(i, j)**2.)  ! abi=1+dqidT*(Ls/Cp)
 
                   if (qv(i, j) .gt. qsi(i, j) .and. tair(i, j) .lt. t0) then
                      if (inflag .eq. 1) then      ! Meyers et al. 1992 (m^-3)
@@ -3372,7 +3366,7 @@ CONTAINS
                      end if
                      qimax = max((qv(i, j) - qsi(i, j)), 0.)/abi
                      pint(i, j) = min(max(0., r_nci*1.02e-13), qimax)
-                     tair(i, j) = tair(i, j) + pint(i, j)*xls/cpm1
+                     tair(i, j) = tair(i, j) + pint(i, j)*xls/xcpm
                      tairc(i, j) = tair(i, j) - t0
                      qv(i, j) = max(0., qv(i, j) - pint(i, j))
                      qi(i, j) = max(0., qi(i, j) + pint(i, j))
@@ -3387,21 +3381,15 @@ CONTAINS
 
                   if (use_cpm) then
                      cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
-                           cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
-                           cice*(qi(i, j) + qs(i, j) + qg(i, j))      ! specific heat capacity (in CGS)
-                     cpm1 = cpm*1.e-4                          ! specific heat capacity (in MKS)
-                     hlv = alv - (cliq - cvap)*(tair(i, j) - t0)    ! latent heat of vaporization (in CGS)
-                     xlv = hlv*1.e-4                           ! latent heat of vaporization (in MKS)
-                     hlf = alf - (cice - cliq)*(tair(i, j) - t0)    ! latent heat of fusion (in CGS)
-                     xlf = hlf*1.e-4                           ! latent heat of fusion (in MKS)
-                     hls = hlv + hlf                           ! latent heat of sublimation (in CGS)
-                     xls = hls*1.e-4                           ! latent heat of sublimation (in MKS)
-                  else
-                     cpm = cp*(1. + 0.887*qv(i, j))             ! specific heat capacity (in CGS)
-                     cpm1 = cpm*1.e-4                           ! specific heat capacity (in MKS)
-                     xlv = 3.1484E6 - 2370.*tair(i, j)          ! latent heat of vaporization (in MKS)
-                     xls = 3.15E6 - 2370.*tair(i, j) + 0.3337E6   ! latent heat of sublimation  (in MKS)
-                     xlf = alf*1.e-4                         ! latent heat of fusion (in MKS)
+                           cv*qv(i, j) + cw*(qc(i, j) + qr(i, j)) + &
+                           ci*(qi(i, j) + qs(i, j) + qg(i, j))
+                     xcpm = cpm*1.e-4
+                     hlv = alv - (cw - cv)*(tair(i, j) - t0)
+                     xlv = hlv*1.e-4
+                     hlf = alf - (ci - cw)*(tair(i, j) - t0)
+                     xlf = hlf*1.e-4
+                     hls = hlv + hlf
+                     xls = hls*1.e-4
                   end if
                   if (new_saturation) then
                      esw(i, j) = min(0.99*p0_mks(i, k, j), esw_mks(tair(i, j)))
@@ -3415,12 +3403,12 @@ CONTAINS
                      y2(i, j) = 1./(tair(i, j) - c76)
                      qsi(i, j) = rp0*exp(c218 - c580*y2(i, j))
                   end if
-                  dv1 = 8.794E-4*pr0*tair(i, j)**1.81
+                  dv1 = 8.794E-4*pr0*tair(i, j)**1.81    ! diffusivity of water vapor (in MKS)
 
                   ! psychrometric correction to condensation/evaporation, abw=1+dqsdT*(Lv/Cp) ; dqsdT=Lv*qsw/Rv/T^2
-                  abw = 1.+xlv**2.*qsw(i, j)/cpm1/(4.61495E2*tair(i, j)**2.)
+                  abw = 1.+xlv**2.*qsw(i, j)/xcpm/(xrw*tair(i, j)**2.)
                   ! psychrometric correction to deposition/sublimation,   abi=1+dqidT*(Ls/Cp) ; dqidT=Ls*qsi/Rv/T^2
-                  abi = 1.+xls**2.*qsi(i, j)/cpm1/(4.61495E2*tair(i, j)**2.)
+                  abi = 1.+xls**2.*qsi(i, j)/xcpm/(xrw*tair(i, j)**2.)
 
                   ! tauc : supersaturation relaxation timescale of cloud water
                   if (qc(i, j) .ge. cwmin) then
@@ -3554,11 +3542,11 @@ CONTAINS
                   ! tau : multiphase supersaturation relaxation time scale defined by
                   ! 1/tau = 1/tauc + 1/taur + (1+Ls/Cp*dqsl/dT)/(1+Ls/Cp*dqsi/dT)/taui
                   tau = 1./(1./tauc + 1./taur + 1./taui*(1.+qsw(i, j)* &
-                                                         xls*xlv/cpm1/(4.61495E+2*tair(i, j)**2.))/abi)
+                                                         xls*xlv/xcpm/(xrw*tair(i, j)**2.))/abi)
 
                   ! atem : change in supersaturation due to Bergeron process
                   atem = (qsi(i, j) - qsw(i, j))/taui*(1.+qsw(i, j)*xls*xlv &
-                                                       /cpm1/(4.61495E+2*tair(i, j)**2.))/abi
+                                                       /xcpm/(xrw*tair(i, j)**2.))/abw
 
                   ! decide values at lower latitude :
                   cnd1 = max(-qc(i, j), (atem*dt*tau/tauc + (qv(i, j) &
@@ -3591,7 +3579,7 @@ CONTAINS
                         !   condense/evaporate to saturation (with respect to ice) ;
                         !   no deposition/sublimation
 !                        cnd2 = max(-qc(i, j), (qv(i, j) - qsi(i, j))/abi)
-                        abw = 1. + xlv**2.*qsi(i, j)/cpm1/(4.61495E2*tair(i, j)**2.)
+                        abw = 1. + xlv**2.*qsi(i, j)/xcpm/(xrw*tair(i, j)**2.)
                         cnd2 = max(-qc(i, j), (qv(i, j) - qsi(i, j))/abw)
                         fez2 = -qi(i, j)
                         dep2 = 0.
@@ -3633,8 +3621,8 @@ CONTAINS
                      ern(i, j) = ern1*(1.0 - fxlat) + ern2*fxlat
 
                      ! update tair, qv, qc, qi, qr :
-                     tair(i, j) = tair(i, j) + (ern(i, j) + cnd(i, j))*xlv/cpm1 &
-                                  + dep(i, j)*xls/cpm1 + fez(i, j)*xlf/cpm1
+                     tair(i, j) = tair(i, j) + (ern(i, j) + cnd(i, j))*xlv/xcpm &
+                                  + dep(i, j)*xls/xcpm + fez(i, j)*xlf/xcpm
                      qv(i, j) = max(0., qv(i, j) - cnd(i, j) - dep(i, j) - ern(i, j))
                      qc(i, j) = max(0., qc(i, j) + cnd(i, j) - fez(i, j))
                      qi(i, j) = max(0., qi(i, j) + dep(i, j) + fez(i, j))
@@ -3647,17 +3635,13 @@ CONTAINS
                            ! T>=-20, qi>qliml
                            if (use_cpm) then
                               cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
-                                    cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
-                                    cice*(qi(i, j) + qs(i, j) + qg(i, j))   ! specific heat capacity (in CGS)
-                              cpm1 = cpm*1.e-4                              ! specific heat capacity (in MKS)
-                              hlv = alv - (cliq - cvap)*(tair(i, j) - t0)   ! latent heat of vaporization (in CGS)
-                              hlf = alf - (cice - cliq)*(tair(i, j) - t0)   ! latent heat of fusion (in CGS)
-                              hls = hlv + hlf                               ! latent heat of sublimation (in CGS)
-                              xls = hls*1.e-4                               ! latent heat of sublimation (in MKS)
-                           else
-                              cpm = cp*(1. + 0.887*qv(i, j))                ! specific heat capacity (in CGS)
-                              cpm1 = cpm*1.e-4                              ! specific heat capacity (in MKS)
-                              xls = 3.15E6 - 2370.*tair(i, j) + 0.3337E6    ! latent heat of sublimation  (in MKS)
+                                    cv*qv(i, j) + cw*(qc(i, j) + qr(i, j)) + &
+                                    ci*(qi(i, j) + qs(i, j) + qg(i, j))
+                              xcpm = cpm*1.e-4
+                              hlv = alv - (cw - cv)*(tair(i, j) - t0)
+                              hlf = alf - (ci - cw)*(tair(i, j) - t0)
+                              hls = hlv + hlf
+                              xls = hls*1.e-4
                            end if
                            if (new_saturation) then
                               esw(i, j) = min(0.99*p0_mks(i, k, j), esw_mks(tair(i, j)))
@@ -3671,9 +3655,9 @@ CONTAINS
                               y2(i, j) = 1./(tair(i, j) - c76)
                               qsi(i, j) = rp0*exp(c218 - c580*y2(i, j))
                            end if
-                           abi = 1. + xls**2.*qsi(i, j)/cpm1/(4.61495E2*tair(i, j)**2.)
+                           abi = 1. + xls**2.*qsi(i, j)/xcpm/(xrw*tair(i, j)**2.)
                            dep3 = max(-qi(i, j),(qv(i, j) - qsw(i, j))/abi)*fxlat
-                           tair(i, j) = tair(i, j) + dep3*xls/cpm1
+                           tair(i, j) = tair(i, j) + dep3*xls/xcpm
                            qv(i, j) = max(0.,qv(i, j) - dep3)
                            qi(i, j) = max(0.,qi(i, j) + dep3)
                         endif
@@ -3686,8 +3670,8 @@ CONTAINS
                      ern(i, j) = ern1
 
                      ! update tair, qv, qc, qi, qr :
-                     tair(i, j) = tair(i, j) + (ern(i, j) + cnd(i, j))*xlv/cpm1 &
-                                  + dep(i, j)*xls/cpm1 + fez(i, j)*xlf/cpm1
+                     tair(i, j) = tair(i, j) + (ern(i, j) + cnd(i, j))*xlv/xcpm &
+                                  + dep(i, j)*xls/xcpm + fez(i, j)*xlf/xcpm
                      qv(i, j) = max(0., qv(i, j) - cnd(i, j) - dep(i, j) - ern(i, j))
                      qc(i, j) = max(0., qc(i, j) + cnd(i, j) - fez(i, j))
                      qi(i, j) = max(0., qi(i, j) + dep(i, j) + fez(i, j))
@@ -3712,10 +3696,10 @@ CONTAINS
                   tair(i, j) = (pt(i, j) + tb0)*pi0
                   if (use_cpm) then
                      cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
-                           cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
-                           cice*(qi(i, j) + qs(i, j) + qg(i, j))
-                     hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
-                     hlf = alf - (cice - cliq)*(tair(i, j) - t0)
+                           cv*qv(i, j) + cw*(qc(i, j) + qr(i, j)) + &
+                           ci*(qi(i, j) + qs(i, j) + qg(i, j))
+                     hlv = alv - (cw - cv)*(tair(i, j) - t0)
+                     hlf = alf - (ci - cw)*(tair(i, j) - t0)
                      hls = hlv + hlf
                      avcp = hlv/cpm*pir
                      ascp = hls/cpm*pir
@@ -3724,14 +3708,17 @@ CONTAINS
                   if (tair(i, j) .lt. t0) then
                      if (qi(i, j) .le. cmin) qi(i, j) = 0.
                      tairc(i, j) = tair(i, j) - t0
-                     rtair(i, j) = 1./(tair(i, j) - c76)
-                     y2(i, j) = exp(c218 - c580*rtair(i, j))
-                     qsi(i, j) = rp0*y2(i, j)
-                     esi(i, j) = c610*y2(i, j)
                      if (new_saturation) then
                         esi(i, j) = min(0.99*p0_mks(i, k, j), esi_mks(tair(i, j)))
                         qsi(i, j) = 0.622*esi(i, j)/(p0_mks(i, k, j) - esi(i, j))
                         esi(i, j) = esi(i, j)*10.  !in CGS
+                        rsub1(i, j) = asc*als*qsi(i, j)/(tair(i, j)*tair(i, j)*rw)
+                     else
+                        rtair(i, j) = 1./(tair(i, j) - c76)
+                        y2(i, j) = exp(c218 - c580*rtair(i, j))
+                        qsi(i, j) = rp0*y2(i, j)
+                        esi(i, j) = c610*y2(i, j)
+                        rsub1(i, j) = cs580*qsi(i, j)*rtair(i, j)*rtair(i, j)
                      end if
                      ssi(i, j) = (qv(i, j) + qb0)/qsi(i, j) - 1.
                      y1(i, j) = 1./tair(i, j)
@@ -3739,8 +3726,7 @@ CONTAINS
                      dd(i, j) = y1(i, j)*(RN10A*y1(i, j) - RN10B) + RN10C*tair(i, j)/ &
                                 esi(i, j)
                      dm(i, j) = max(qv(i, j) + qb0 - qsi(i, j), 0.0)
-                     rsub1(i, j) = cs580*qsi(i, j)*rtair(i, j)*rtair(i, j)
-                     dep(i, j) = dm(i, j)/(1.+rsub1(i, j))
+                     dep(i, j) = dm(i, j)/(1. + rsub1(i, j))
                      if (tairc(i, j) .le. -5.) then
                         y4(i, j) = 1./(tair(i, j) - c358)
                         qsw(i, j) = rp0*exp(c172 - c409*y4(i, j))
@@ -3775,10 +3761,10 @@ CONTAINS
                      tair(i, j) = (pt(i, j) + tb0)*pi0
                      if (use_cpm) then
                         cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
-                              cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
-                              cice*(qi(i, j) + qs(i, j) + qg(i, j))
-                        hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
-                        hlf = alf - (cice - cliq)*(tair(i, j) - t0)
+                              cv*qv(i, j) + cw*(qc(i, j) + qr(i, j)) + &
+                              ci*(qi(i, j) + qs(i, j) + qg(i, j))
+                        hlv = alv - (cw - cv)*(tair(i, j) - t0)
+                        hlf = alf - (ci - cw)*(tair(i, j) - t0)
                         hls = hlv + hlf
                         avcp = hlv/cpm*pir
                         ascp = hls/cpm*pir
@@ -3841,10 +3827,10 @@ CONTAINS
                      tair(i, j) = (pt(i, j) + tb0)*pi0
                      if (use_cpm) then
                         cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
-                              cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
-                              cice*(qi(i, j) + qs(i, j) + qg(i, j))
-                        hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
-                        hlf = alf - (cice - cliq)*(tair(i, j) - t0)
+                              cv*qv(i, j) + cw*(qc(i, j) + qr(i, j)) + &
+                              ci*(qi(i, j) + qs(i, j) + qg(i, j))
+                        hlv = alv - (cw - cv)*(tair(i, j) - t0)
+                        hlf = alf - (ci - cw)*(tair(i, j) - t0)
                         hls = hlv + hlf
                         avcp = hlv/cpm*pir
                         ascp = hls/cpm*pir
@@ -3907,10 +3893,10 @@ CONTAINS
                      tair(i, j) = (pt(i, j) + tb0)*pi0
                      if (use_cpm) then
                         cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
-                              cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
-                              cice*(qi(i, j) + qs(i, j) + qg(i, j))
-                        hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
-                        hlf = alf - (cice - cliq)*(tair(i, j) - t0)
+                              cv*qv(i, j) + cw*(qc(i, j) + qr(i, j)) + &
+                              ci*(qi(i, j) + qs(i, j) + qg(i, j))
+                        hlv = alv - (cw - cv)*(tair(i, j) - t0)
+                        hlf = alf - (ci - cw)*(tair(i, j) - t0)
                         hls = hlv + hlf
                         avcp = hlv/cpm*pir
                         ascp = hls/cpm*pir
@@ -3961,10 +3947,10 @@ CONTAINS
                      tair(i, j) = (pt(i, j) + tb0)*pi0
                      if (use_cpm) then
                         cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
-                              cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
-                              cice*(qi(i, j) + qs(i, j) + qg(i, j))
-                        hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
-                        hlf = alf - (cice - cliq)*(tair(i, j) - t0)
+                              cv*qv(i, j) + cw*(qc(i, j) + qr(i, j)) + &
+                              ci*(qi(i, j) + qs(i, j) + qg(i, j))
+                        hlv = alv - (cw - cv)*(tair(i, j) - t0)
+                        hlf = alf - (ci - cw)*(tair(i, j) - t0)
                         hls = hlv + hlf
                         avcp = hlv/cpm*pir
                         ascp = hls/cpm*pir
@@ -3991,10 +3977,10 @@ CONTAINS
                      tair(i, j) = (pt(i, j) + tb0)*pi0
                      if (use_cpm) then
                         cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
-                              cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
-                              cice*(qi(i, j) + qs(i, j) + qg(i, j))
-                        hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
-                        hlf = alf - (cice - cliq)*(tair(i, j) - t0)
+                              cv*qv(i, j) + cw*(qc(i, j) + qr(i, j)) + &
+                              ci*(qi(i, j) + qs(i, j) + qg(i, j))
+                        hlv = alv - (cw - cv)*(tair(i, j) - t0)
+                        hlf = alf - (ci - cw)*(tair(i, j) - t0)
                         hls = hlv + hlf
                         avcp = hlv/cpm*pir
                         ascp = hls/cpm*pir
@@ -4059,31 +4045,33 @@ CONTAINS
                if (tair(i, j) .lt. t0) then
                   if (use_cpm) then
                      cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
-                           cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
-                           cice*(qi(i, j) + qs(i, j) + qg(i, j))
-                     hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
-                     hlf = alf - (cice - cliq)*(tair(i, j) - t0)
+                           cv*qv(i, j) + cw*(qc(i, j) + qr(i, j)) + &
+                           ci*(qi(i, j) + qs(i, j) + qg(i, j))
+                     hlv = alv - (cw - cv)*(tair(i, j) - t0)
+                     hlf = alf - (ci - cw)*(tair(i, j) - t0)
                      hls = hlv + hlf
                      avcp = hlv/cpm*pir
                      ascp = hls/cpm*pir
                      afcp = hlf/cpm*pir
                   end if
-                  rtair(i, j) = 1./(tair(i, j) - c76)
-                  y2(i, j) = exp(c218 - c580*rtair(i, j))
-                  qsi(i, j) = rp0*y2(i, j)
-                  esi(i, j) = c610*y2(i, j)
                   if (new_saturation) then
                      esi(i, j) = min(0.99*p0_mks(i, k, j), esi_mks(tair(i, j)))
                      qsi(i, j) = 0.622*esi(i, j)/(p0_mks(i, k, j) - esi(i, j))
                      esi(i, j) = esi(i, j)*10.  !in CGS
+                     rsub1(i, j) = asc*als*qsi(i, j)/(tair(i, j)*tair(i, j)*rw)
+                  else
+                     rtair(i, j) = 1./(tair(i, j) - c76)
+                     y2(i, j) = exp(c218 - c580*rtair(i, j))
+                     qsi(i, j) = rp0*y2(i, j)
+                     esi(i, j) = c610*y2(i, j)
+                     rsub1(i, j) = cs580*qsi(i, j)*rtair(i, j)*rtair(i, j)
                   end if
 
                   SSI(I, J) = (QV(I, J) + QB0)/QSI(I, J) - 1.
                   IF (DLT1(I, J) .EQ. 1.) SSI(I, J) = max(SSI(I, J), 0.)
                   IF (DLT1(I, J) .EQ. 0.) SSI(I, J) = min(SSI(I, J), 0.)
                   DM(I, J) = QV(I, J) + QB0 - QSI(I, J)
-                  RSUB1(I, J) = CS580*QSI(I, J)*RTAIR(I, J)*RTAIR(I, J)
-                  DD1(I, J) = DM(I, J)/(1.+RSUB1(I, J))
+                  DD1(I, J) = DM(I, J)/(1. + RSUB1(I, J))
                   Y3(I, J) = 1./TAIR(I, J)
                   DD(I, J) = Y3(I, J)*(RN10A*Y3(I, J) - RN10B) + RN10C*TAIR(I, J)/ESI(I, J)
                   TAIRC(I, J) = TAIR(I, J) - T0
@@ -4151,27 +4139,29 @@ CONTAINS
                      rtair(i, j) = 1./(tair(i, j) - c358)
                      if (use_cpm) then
                         cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
-                              cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
-                              cice*(qi(i, j) + qs(i, j) + qg(i, j))
-                        hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
-                        hlf = alf - (cice - cliq)*(tair(i, j) - t0)
+                              cv*qv(i, j) + cw*(qc(i, j) + qr(i, j)) + &
+                              ci*(qi(i, j) + qs(i, j) + qg(i, j))
+                        hlv = alv - (cw - cv)*(tair(i, j) - t0)
+                        hlf = alf - (ci - cw)*(tair(i, j) - t0)
                         hls = hlv + hlf
                         avcp = hlv/cpm*pir
                         ascp = hls/cpm*pir
                         afcp = hlf/cpm*pir
                      end if
-                     y2(i, j) = exp(c172 - c409*rtair(i, j))
-                     esw(i, j) = c610*y2(i, j)
-                     qsw(i, j) = rp0*y2(i, j)
                      if (new_saturation) then
                         esw(i, j) = min(0.99*p0_mks(i, k, j), esw_mks(tair(i, j)))
                         qsw(i, j) = 0.622*esw(i, j)/(p0_mks(i, k, j) - esw(i, j))
                         esw(i, j) = esw(i, j)*10.  !in CGS
+                        rsub1(i, j) = avc*alv*qsw(i, j)/(tair(i, j)*tair(i, j)*rw)
+                     else
+                        y2(i, j) = exp(c172 - c409*rtair(i, j))
+                        esw(i, j) = c610*y2(i, j)
+                        qsw(i, j) = rp0*y2(i, j)
+                        rsub1(i, j) = cv409*qsw(i, j)*rtair(i, j)*rtair(i, j)
                      end if
                      ssw(i, j) = (qv(i, j) + qb0)/qsw(i, j) - 1.
                      dm(i, j) = qv(i, j) + qb0 - qsw(i, j)
-                     rsub1(i, j) = cv409*qsw(i, j)*rtair(i, j)*rtair(i, j)
-                     dd1(i, j) = max(-dm(i, j)/(1.+rsub1(i, j)), 0.0)
+                     dd1(i, j) = max(-dm(i, j)/(1. + rsub1(i, j)), 0.0)
                      y3(i, j) = 1./tair(i, j)
                      dd(i, j) = y3(i, j)*(rn30a*y3(i, j) - rn10b) + rn10c*tair(i, j) &
                                 /esw(i, j)
@@ -4194,10 +4184,10 @@ CONTAINS
                tairc(i, j) = tair(i, j) - t0
                if (use_cpm) then
                   cpm = cp*(1.0 - qv(i, j) - qc(i, j) - qi(i, j) - qr(i, j) - qs(i, j) - qg(i, j)) + &
-                        cvap*qv(i, j) + cliq*(qc(i, j) + qr(i, j)) + &
-                        cice*(qi(i, j) + qs(i, j) + qg(i, j))
-                  hlv = alv - (cliq - cvap)*(tair(i, j) - t0)
-                  hlf = alf - (cice - cliq)*(tair(i, j) - t0)
+                        cv*qv(i, j) + cw*(qc(i, j) + qr(i, j)) + &
+                        ci*(qi(i, j) + qs(i, j) + qg(i, j))
+                  hlv = alv - (cw - cv)*(tair(i, j) - t0)
+                  hlf = alf - (ci - cw)*(tair(i, j) - t0)
                   hls = hlv + hlf
                   avcp = hlv/cpm*pir
                   ascp = hls/cpm*pir
@@ -4215,20 +4205,21 @@ CONTAINS
                   ftns(i, j) = ftns0(i, j)
                   ftng(i, j) = ftng0(i, j)
 
-!              rtair(i,j)=1./(tair(i,j)-c358)
-                  rtair(i, j) = 1./(t0 - c358)
-                  y2(i, j) = exp(c172 - c409*rtair(i, j))
-                  esw(i, j) = c610*y2(i, j)
-                  qsw(i, j) = rp0*y2(i, j)
                   if (new_saturation) then
-                  esw(i, j) = min(0.99*p0_mks(i, k, j), esw_mks(tair(i, j)))
-                  qsw(i, j) = 0.622*esw(i, j)/(p0_mks(i, k, j) - esw(i, j))
-                  esw(i, j) = esw(i, j)*10.  !in CGS
+                     esw(i, j) = min(0.99*p0_mks(i, k, j), esw_mks(tair(i, j)))
+                     qsw(i, j) = 0.622*esw(i, j)/(p0_mks(i, k, j) - esw(i, j))
+                     esw(i, j) = esw(i, j)*10.  !in CGS
+                     rsub1(i, j) = avc*alv*qsw(i, j)/(tair(i, j)*tair(i, j)*rw)
+                  else
+                     rtair(i, j) = 1./(t0 - c358)
+                     y2(i, j) = exp(c172 - c409*rtair(i, j))
+                     esw(i, j) = c610*y2(i, j)
+                     qsw(i, j) = rp0*y2(i, j)
+                     rsub1(i, j) = cv409*qsw(i, j)*rtair(i, j)*rtair(i, j)
                   end if
                   ssw(i, j) = 1.-(qv(i, j) + qb0)/qsw(i, j)
                   dm(i, j) = qsw(i, j) - qv(i, j) - qb0
-                  rsub1(i, j) = cv409*qsw(i, j)*rtair(i, j)*rtair(i, j)
-                  dd1(i, j) = max(dm(i, j)/(1.+rsub1(i, j)), 0.0)
+                  dd1(i, j) = max(dm(i, j)/(1. + rsub1(i, j)), 0.0)
                   y3(i, j) = 1./tair(i, j)
                   dd(i, j) = y3(i, j)*(rn30a*y3(i, j) - rn10b) + rn10c*tair(i, j) &
                              /esw(i, j)
@@ -5743,6 +5734,9 @@ CONTAINS
 
             REAL FUNCTION esi_mks(tair)
                IMPLICIT NONE
+               integer, parameter :: esflag = 1
+               !  esflag = 1 : F92
+               !  esflag = 2 : fpvs
                REAL :: tair   !real temperature (K)
 !
 !  COMPUTE SATURATION VAPOR PRESSURE POLYSVP RETURNED IN UNITS OF PA. T IS INPUT IN UNITS OF K.
@@ -5752,11 +5746,36 @@ CONTAINS
                DATA a0i, a1i, a2i, a3i, a4i, a5i, a6i, a7i, a8i/6.11147274, 0.503160820, &
                   0.188439774E-1, 0.420895665E-3, 0.615021634E-5, 0.602588177E-7, &
                   0.385852041E-9, 0.146898966E-11, 0.252751365E-14/
+               real, parameter :: psat = 6.1078e+2 ,&
+                                  hvap = 2.5000e+6 ,&
+                                  hfus = 3.3358e+5 ,&
+                                  cvap = 1.8460e+3 ,&
+                                  cliq = 4.1855e+3 ,&
+                                  csol = 2.1060e+3 ,&
+                                  ttp = 2.7316e+2 ,&
+                                  rv = 4.6150e+2
+               real :: dldtl, dldti, heatl, heati, &
+                       xponal, xponbl, xponai, xponbi
+               real :: tr, fpvsx
 
-               DT = MAX(-80., tair - 273.16)
-               esi_mks = a0i + DT*(a1i + DT*(a2i + DT*(a3i + DT*(a4i + DT*(a5i + &
-                                                                           DT*(a6i + DT*(a7i + a8i*DT)))))))
-               esi_mks = esi_mks*100.  !convert to Pa
+               if (esflag .eq. 1) then
+                  DT = MAX(-80., tair - 273.16)
+                  esi_mks = a0i + DT*(a1i + DT*(a2i + DT*(a3i + DT*(a4i + DT*(a5i + &
+                                                                              DT*(a6i + DT*(a7i + a8i*DT)))))))
+                  esi_mks = esi_mks*100.  !convert to Pa
+
+               elseif (esflag .eq. 2) then
+                  ! function fpvsx :
+                  tr = ttp/tair
+                  dldti = cvap - csol
+                  heati = hvap + hfus
+                  xponai = - dldti/rv
+                  xponbi = xponai + heati/(rv*ttp)
+                  fpvsx = psat*(tr**xponai)*exp(xponbi*(1. - tr))
+                  esi_mks = fpvsx   !(Pa)
+
+               endif
+
 !
 !  Goff-Gratch equation (Goff and Gratch 1945)
 !       esi_mks = c610 * exp( c218 - c580 / (tair - c76) )
@@ -5766,6 +5785,9 @@ CONTAINS
 
             REAL FUNCTION esw_mks(tair)
                IMPLICIT NONE
+               integer, parameter :: esflag = 1
+               !  esflag = 1 : F92
+               !  esflag = 2 : fpvs
                REAL :: tair   !real temperature (K)
 !
 !  COMPUTE SATURATION VAPOR PRESSURE POLYSVP RETURNED IN UNITS OF PA. T IS INPUT IN UNITS OF K.
@@ -5775,14 +5797,38 @@ CONTAINS
                DATA a0, a1, a2, a3, a4, a5, a6, a7, a8/6.11239921, 0.443987641, &
                   0.142986287E-1, 0.264847430E-3, 0.302950461E-5, 0.206739458E-7, &
                   0.640689451E-10, -0.952447341E-13, -0.976195544E-15/
+               real, parameter :: psat = 6.1078e+2 ,&
+                                  hvap = 2.5000e+6 ,&
+                                  hfus = 3.3358e+5 ,&
+                                  cvap = 1.8460e+3 ,&
+                                  cliq = 4.1855e+3 ,&
+                                  csol = 2.1060e+3 ,&
+                                  ttp = 2.7316e+2 ,&
+                                  rv = 4.6150e+2
+               real :: dldtl, dldti, heatl, heati, &
+                       xponal, xponbl, xponai, xponbi
+               real :: tr, fpvsx
 
-               DT = MAX(-80., tair - 273.16)
-               esw_mks = a0 + DT*(a1 + DT*(a2 + DT*(a3 + DT*(a4 + DT*(a5 + DT* &
-                                                                      (a6 + DT*(a7 + a8*DT)))))))
-               esw_mks = esw_mks*100.  !convert to Pa
+               if (esflag .eq. 1) then
+                  DT = MAX(-80., tair - 273.16)
+                  esw_mks = a0 + DT*(a1 + DT*(a2 + DT*(a3 + DT*(a4 + DT*(a5 + DT* &
+                                                                         (a6 + DT*(a7 + a8*DT)))))))
+                  esw_mks = esw_mks*100.  !convert to Pa
 
-               ! to be closer to function fpvs :
-               if ( DT.gt.-5.0 ) esw_mks = esw_mks*max(1.0-(DT+5.0)*0.0025/35.0,0.9975)
+                  ! to be closer to function fpvs :
+                  if ( DT.gt.-5.0 ) esw_mks = esw_mks*max(1.0-(DT+5.0)*0.0025/35.0,0.9975)
+
+               elseif (esflag .eq. 2) then
+                  ! function fpvsx :
+                  tr = ttp/tair
+                  dldtl = cvap - cliq
+                  heatl = hvap
+                  xponal = - dldtl/rv
+                  xponbl = xponal + heatl/(rv*ttp)
+                  fpvsx = psat*(tr**xponal)*exp(xponbl*(1.-tr))
+                  esw_mks = fpvsx   !(Pa)
+
+               endif
 !
 !  Goff-Gratch equation (Goff and Gratch 1945)
 !       esw_mks = c610 * exp( c172 - c409 / (tair - c358) )
