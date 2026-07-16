@@ -529,8 +529,6 @@
       real dtx_tau,dtaup,dtxb
 ! for dissipation convective (test)
       real      diss_dcc(nxp,lev)
-      real ::   diss_sst = 10. ,DissSSTARate
-      real      ssta(nxp,my_max)
 !xb110>
       ztenh = 0.
       zqenh = 0.
@@ -671,20 +669,6 @@
         iceold=ice
         z0ocn=z0
 
-        DissSSTARate = 1.0 !- ( 1.0 / Diss_sst )! SST anomaly dissipate rate
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         nxj=nxdef_2d(j)
-         do i=1,nxj
-           ssta(i,jj) = 0.0
-           if(ocean(i,jj) )then
-            !get sst anomaly
-            ssta(i,jj) = ( tg(i,jj) - sstc(i,jj) ) * DissSSTARate
-            !ssta(i,jj) = max( min( ssta(i,jj) , 10.0 ) ,-10.0 )
-          endif
-         enddo
-        enddo
-
 !     read climate data
         call readclx( nx,my,my_max,julian,land,ocean,ice,tgclim,gwclim  &
                    ,z0,alb,sstc,sigmaf,istyp,ivegtyp,ls                 &
@@ -712,8 +696,7 @@
 !---------------------------------------------------------------------
 !            if ( .not. do_sit )then
 #ifndef TIMCOMCPL
-          ! if (ocean(i,jj)) tg(i,jj)=sstc(i,jj)
-            if (ocean(i,jj)) tg(i,jj)=sstc(i,jj) + ssta(i,jj) 
+            if (ocean(i,jj)) tg(i,jj)=sstc(i,jj)
 #else
             if (ocean(i,jj) .and. tg_ocn(i,jj) .eq. 0) tg(i, jj)=sstc(i,jj) 
 #endif

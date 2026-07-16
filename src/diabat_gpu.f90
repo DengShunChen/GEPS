@@ -571,8 +571,6 @@
 
 ! for dissipation convective (test)
       real      diss_dcc(nxp,lev,my_max)
-      real ::   diss_sst = 10. ,DissSSTARate
-      real      ssta(nxp,my_max)
       450 format(a3, 1x, a, 1x, I3, 1x, 30(ES26.17, 1x))
       451 format(a3, 1x, a, 1x, I3, 1x, 30(I10, 1x))
       !write(*,*) nxjp
@@ -649,7 +647,7 @@
          !$acc&      area, rhc_mp) async(async_id)
          !$acc enter data create(itlsp, nnlsp, dtcupd, dqcupd, dtcupl, dqcupl) async(async_id)
          !!$acc enter data copyin(tbpvs) async(async_id)
-         !$acc enter data create(ls,ssta) async(async_id)
+         !$acc enter data create(ls) async(async_id)
 #ifdef TIMCOMCPL
          !$acc enter data create(ice_cpl, ocean_cpl, z0_cpl) async(async_id)
 #endif
@@ -814,22 +812,6 @@
                end do
             end do
 
-            DissSSTARate = 1.0 - ( 1.0 / Diss_sst )! SST anomaly dissipate rate
-            !$acc parallel loop collapse(2) private(j,nxj) async(async_id)
-            do jj = 1, jlistnum
-             do i=1,nxp
-              j=jlist1(jj)
-              nxj=nxdef_2d(j)
-              if(i<=nxj)then
-               ssta(i,jj) = 0.0
-               if(ocean(i,jj) )then
-                !get sst anomaly
-                ssta(i,jj) = ( tg(i,jj) - sstc(i,jj) ) * DissSSTARate
-                !ssta(i,jj) = max( min( ssta(i,jj) , 10.0 ) ,-10.0 )
-               endif
-              endif
-            enddo
-            enddo
 !     read climate data
             !$acc wait(async_id)
             call readclx(nx, my, my_max, julian, land, ocean, ice, tgclim, gwclim, &
@@ -871,10 +853,7 @@
 !---------------------------------------------------------------------
 !            if ( .not. do_sit )then
 #ifndef TIMCOMCPL
-                    ! if (ocean(i, jj)) tg(i, jj) = sstc(i, jj)
-                    if (ocean(i,jj))then
-                      tg(i,jj)= sstc(i,jj) + ssta(i,jj) 
-                    endif
+                     if (ocean(i, jj)) tg(i, jj) = sstc(i, jj)
 #else
                      if (ocean(i,jj) .and. tg_ocn(i,jj) .eq. 0) tg(i, jj)=sstc(i,jj)
 #endif
@@ -4172,7 +4151,7 @@
          !$acc&     area, rhc_mp) async(async_id)
          !$acc exit data delete(itlsp, nnlsp, dtcupd, dqcupd, dtcupl, dqcupl) async(async_id)
          !!$acc exit data delete(tbpvs) async(async_id)
-         !$acc exit data delete(ls,ssta) async(async_id)
+         !$acc exit data delete(ls) async(async_id)
 #ifdef TIMCOMCPL
          !$acc exit data delete(ice_cpl, ocean_cpl, z0_cpl) async(async_id)
 #endif

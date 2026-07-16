@@ -123,7 +123,7 @@
       ptp0=(/0,1,8,2,103,0,0,1,24/)
       call split_v2_gpu(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 !
-!  Total precipitation  24-hours
+!  large scale precipitation  24-hours
       !$acc parallel loop collapse(2) private(j,nxj) async(async_id)
       do jj=1,jlistnum
         do i=1,nxp
@@ -136,7 +136,8 @@
       enddo
       call unify_reduceintp_gpu(nx,my,my_max,wrk,glob)
       call syslbl_w ('b00646',idtg,itau,ggdef)
-      if(outdms.gt.0) call dmswrit(imax,jmax,lenc,kflag,glob,istat)
+      ptp0=(/0,1,47,2,103,0,0,1,24/)
+      call split_v2_gpu(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
 
 !  The average of latent heat flux release for total precipitation within 24-hours
       !$acc parallel loop collapse(2) private(j,nxj) async(async_id)
@@ -151,7 +152,11 @@
       enddo
       call unify_reduceintp_gpu(nx,my,my_max,wrk,glob)
       call syslbl_w ('b0062f',idtg,itau,ggdef)
-      if(outdms.gt.0) call dmswrit(imax,jmax,lenc,kflag,glob,istat)
+      if(outdms.gt.0)then
+         !$acc update self(glob) async(async_id)
+         !$acc wait(async_id)
+         call dmswrit(imax,jmax,lenc,kflag,glob,istat)
+      endif
 
 ! model top of net solor shortwave radiation
       !$acc parallel loop collapse(2) private(j,nxj) async(async_id)

@@ -156,7 +156,8 @@
       call qmaxn3_w (glob,1,1,1,nx,my,1)
       ptp0=(/0,1,10,2,103,0,0,1,praint/)
       call split_v2_gpu(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
- 
+
+!large scale precipitation 
       !$acc parallel loop collapse(2) private(j,nxj) async(async_id)
       do jj=1,jlistnum
        do  i=1,nxp
