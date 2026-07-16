@@ -680,9 +680,13 @@ contains
            call wrtgrb2_v2_gpu(itau,0,3,1,1,101,0,0,glob)
          endif
          if(outdms.gt.0)then
-          !$acc update self(glob) async(async_id)
-          !$acc wait(async_id)
-           glob=glob/100.0
+           !$acc parallel loop async(async_id)
+           do i=1,nx*my
+             glob(i,1)=glob(i,1)/100.0
+           enddo
+           !$acc wait(async_id)
+           !$acc update self(glob) async(async_id)
+           !$acc wait(async_id)
            if(lwrite) call dmswrit(nx,my,lenc,kflag,glob,istat)
          endif
         endif !itau .gt. domfc
@@ -706,9 +710,13 @@ contains
           call wrtgrb2_v2_gpu(itau,0,3,0,1,103,0,0,glob)
         endif
         if(outdms.gt.0)then
-          !$acc update self(glob) async(async_id)
-          !$acc wait(async_id)
-          glob=glob/100.0
+           !$acc parallel loop async(async_id)
+           do i=1,nx*my
+             glob(i,1)=glob(i,1)/100.0
+           enddo
+           !$acc wait(async_id)
+           !$acc update self(glob) async(async_id)
+           !$acc wait(async_id)
           if(lwrite) call dmswrit(nx,my,lenc,kflag,glob,istat)
         endif
 

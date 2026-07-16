@@ -132,6 +132,7 @@
       ptp0=(/0,1,10,2,103,0,0,1,praint/)
       call split2(nx,my,lenc,nc,glob,mout,ptp0,ptp1)
  
+!large scale precipitation 
       globp=rainlp
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl_w ('b00640',idtg,itau,ggdef)
