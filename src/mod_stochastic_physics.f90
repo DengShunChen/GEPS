@@ -93,6 +93,8 @@ module mod_stochastic_physics
   real :: ssst_lscale(5) = -999.      ! length scales(meters)
   real, allocatable, dimension(:) :: vfact_ssst
 
+  logical :: do_unit_test = .false.
+
   public random_pattern
 
   public nsppt, sppt, sppt_seed, sppt_decort, sppt_lscale, sppt3d
@@ -107,7 +109,7 @@ module mod_stochastic_physics
        destroy_stochastic_physics
 
   public spptout,shumout,skebout,skebest
-  public avevar_sppt2d
+  public avevar_sppt2d, do_unit_test
 
 contains
 
@@ -115,29 +117,23 @@ contains
     implicit none
     integer :: n, k 
     real :: dtau
-
-    allocate(sl(lev))
-    ! calculation sigma values
-    do k=1,lev
-      sl(k)=0.5*(aki(k)/1013.0+bki(k)+aki(k+1)/1013.0+bki(k+1))
-    enddo
- 
-    if (dosppt) then
-      call init_sppt(dtau)
-    endif
-
-    if (doshum) then
-      call init_shum(dtau)
-    endif
-
-    if (doskeb) then
-      call init_skeb(dtau)
-    endif
-
-    if (dossst) then
-      call init_ssst(dtau)
-    endif
-
+      allocate (sl(lev))
+      ! calculation sigma values
+      do k = 1, lev
+         sl(k) = 0.5*(aki(k)/1013.0 + bki(k) + aki(k + 1)/1013.0 + bki(k + 1))
+      end do
+      if (dosppt) then
+         call init_sppt(dtau)
+      end if
+      if (doshum) then
+         call init_shum(dtau)
+      end if
+      if (doskeb) then
+         call init_skeb(dtau)
+      end if
+      if (dossst) then
+         call init_ssst(dtau)
+      end if
   end subroutine init_stochastic_physics
 
   subroutine run_stochastic_physics()
@@ -374,8 +370,10 @@ contains
     ! reproduced when restart ( restart function not ready yet ).
     if ( first_call ) then
       skeblevs=nint(rpattern_skeb(1)%decortau/(2.*dtau)*skeb_vdof)
+      write(*,*) "first_call is true in init_skeb."
     else
       skeblevs=nint(rpattern_skeb(1)%decortau/dtau*skeb_vdof)
+      write(*,*) "first_call is false in init_skeb."
     endif
 
     call get_random_pattern_init(rpattern_skeb,nskeb,dtau,.true.)
@@ -524,6 +522,7 @@ contains
           iseed=irand(0)
           count4=irand(timearray(1)+(i*11467-iseed)*timearray(2) &
               +(iseed-i*23)*timearray(3))
+          write(*,*) timearray
         else
           call system_clock(count, count_rate, count_max)
           count_trunc = iscale*(count/iscale)
@@ -535,6 +534,7 @@ contains
       if (rpattern(n)%seed == -999 ) then
         rpattern(n)%seed = count4
       endif
+      if (do_unit_test) rpattern(n)%seed = 1000
       if (myrank.eq.0) write(6,*)'scale',n,' : using seed :',rpattern(n)%seed
       call random_setseed(rpattern(n)%seed,rpattern(n)%rstate)
 
@@ -568,7 +568,7 @@ contains
         rpattern(n)%varspec(ml) = sqrt(float(rpattern(n)%jtrun) & 
             * exp(-rkT*float(rpattern(n)%lsort(ml))*(float(rpattern(n)%lsort(ml)-1))))
       enddo
-
+      !write(*,*) "CAA", sum(rpattern(n)%varspec(:)), rkT, float(rpattern(n)%jtrun), sum(float(rpattern(n)%lsort(:)))
       noise(:,1) = noise(:,1)*rpattern(n)%varspec
       noise(:,2) = noise(:,2)*rpattern(n)%varspec
 
@@ -582,10 +582,11 @@ contains
         endif
       enddo
       rpattern(n)%varspec = rpattern(n)%varspec / sqrt(var)
+      !write(*,*) "CAB", sum(rpattern(n)%varspec)
 
-#ifdef VERBOSE
-      if (myrank.eq.0) write(6,*)'total variance =',var
-      if (myrank.eq.0) write(6,*)'rpattern(n)%varspec =',rpattern(n)%varspec
+      !if (myrank.eq.0) write(6,*)'CACtotal variance =',var
+      !if (myrank.eq.0) write(6,*)'CADrpattern(n)%varspec =',rpattern(n)%varspec
+      #ifdef VERBOSE
 #endif
       ! initialize spectrum coefficient 
       noise = 0. 

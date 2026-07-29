@@ -37,6 +37,7 @@ if(${USE_CUDA})
     endif()
 
     set(TESTS
+        test_run_stochastic_physics
         #test_grrad_file
         #test_coszmn_file
         #test_getgases_file

@@ -9,11 +9,13 @@ subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
    use mpe
    use rank
    use const, only: hdk1, hdk2, radsq, doskeb, onocos, wcfac, wdfac &
-                    , poly, dpoly, hord, vd, factop, RTYPE
+                    , poly, dpoly, hord, vd, factop, RTYPE, coslr, polyf, dpolyf
    use param, only: octahedral
    use openacc
    use cudafor
    use mpi
+   use spec_cuda_graph, only: cc_cg, gwk1_cg, wcc_fk_cg, &
+                              wc_cg, ws_cg, fj_weight_cg
 
    implicit none
 
@@ -139,16 +141,20 @@ subroutine hdiffu_gpu(dta, my, my_max, nx, jtrun, jtmax, lev, ncld, amp &
          end do
       end do
    end do
-   !$acc exit data copyout(wmax) delete(wmax_buf, vordiss, divdiss) async(async_id)
-   !$acc wait(async_id)
 !
 !       estimate the dissipation of kinetic energy
    if (doskeb) then
+      !$acc wait(async_id)
       ! transfer the dissipation to grid point from spectrum
-      call tranuv(jtrun, jtmax, nx, my, my_max, levp, onocos, wcfac, wdfac &
-                  , poly, dpoly, vordiss, divdiss, ut, vt, nsizey)
+      call tranuv_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, &
+                                 coslr, wcfac, wdfac, polyf, dpolyf, &
+                                 vordiss, divdiss, ut, vt, nsizey, &
+                                 cc_cg, gwk1_cg, ws_cg(1, 1), ws_cg(1, 2), wc_cg, &
+                                 wcc_fk_cg, fj_weight_cg(1, 1), fj_weight_cg(1, 2))
+      !$acc wait(async_id)
    end if
-
+   !$acc exit data copyout(wmax) delete(wmax_buf, vordiss, divdiss) async(async_id)
+   !$acc wait(async_id)
 !
 !-------------------------------------------------------------------
 !
@@ -296,3 +302,80 @@ subroutine filter_top_gpu(jtrun, jtmax, lev, ktop, ncld, temnow &
 !
    return
 end
+
+      subroutine filter_skeb_gpu(jtrun,jtmax,lev,dissest,wvn_top, async_id)
+!
+!  apply Lanczos filter to estimation of kinetic energy dissipation.
+!
+      use index
+      use mpe
+      use const, only : RTYPE
+!
+      implicit  none
+
+!
+      integer   jtrun,jtmax,lev,ncld
+
+      real(kind=RTYPE) dissest(lev,2,jtrun,jtmax)
+!
+      real      wvn_top
+
+      integer   k,mode,m,mf,n,nflt,IERR,KL, async_id
+      real      pi,flt,fac
+!
+
+!2dMPI >
+!     if(ktop.gt.levp)then
+!        print *,'filter_top fatal: ktop greater than lev partial !'
+!        call MPI_FINALIZE(IERR)
+!        stop
+!     endif
+!2dMPI <
+
+!
+      pi = 3.141596
+!
+!  mode = 0 : just truncate into assigned wavenumbers without 
+!             extra filtering
+!  mode = 1 or other : add fitering along with truncating
+!
+      mode = 1
+!
+      if( mode .eq. 0 ) then
+         !$acc parallel loop gang collapse(2) private(KL, mf) async(async_id)
+         do k = 1, lev
+!2dMPI >
+            do m = 1, mlistnum
+               KL=Llist(k)
+               mf=max(2,mlist(m))
+               !$acc loop vector private(nflt, flt)
+               do n = mf, jtrun
+                  nflt = int ( wvn_top / float(n) )
+                  flt = min( 1.0, float(nflt) )
+                  dissest(k,1,n,m)= dissest(k,1,n,m)*flt
+                  dissest(k,2,n,m)= dissest(k,2,n,m)*flt
+               enddo
+            enddo
+!2dMPI <
+         enddo
+      else
+         !$acc parallel loop gang collapse(2) private(KL, mf) async(async_id)
+         do k = 1, lev
+!2dMPI >
+            do m = 1, mlistnum
+               KL=Llist(k)
+               mf=max(2,mlist(m))
+               !$acc loop vector private(fac, flt)
+               do n = mf, jtrun
+                  fac = min(wvn_top,float(n-1)) * pi / wvn_top
+                  flt = sin(fac)/fac
+                  dissest(k,1,n,m)= dissest(k,1,n,m)*flt
+                  dissest(k,2,n,m)= dissest(k,2,n,m)*flt
+               enddo
+            enddo
+!2dMPI <
+         enddo
+      endif
+!  
+      return
+      end

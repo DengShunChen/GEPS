@@ -62,11 +62,11 @@
    use radn
    use albn
 !-----------------------------------------------------------------------
-   use mod_stochastic_physics, only: spptout, skebout, &
-                                     run_stochastic_physics, &
-                                     destroy_stochastic_physics, &
+   use mod_stochastic_physics_gpu, only: spptout, skebout, shumout, &
+                                     run_stochastic_physics_gpu, &
+                                     destroy_stochastic_physics_gpu, &
                                      skeb3du, skeb3dv, diss_est, skebfilt, &
-                                     keb, kea, skebest, diss_dc
+                                     keb, kea, skebest_gpu, diss_dc
    use spec_cuda_graph, only: cc_cg, gwk1_cg, wcc_fk_cg, &
                               wc_cg, ws_cg, fj_weight_cg, &
                               allocate_spec_cg_buffer, &
@@ -1216,7 +1216,7 @@ endif
    end if ! two_loop
 
    !  stochastic_physics
-   call run_stochastic_physics()
+   call run_stochastic_physics_gpu()
 !
 !  for physical parameterization,output spectrum u,v,t,q to grid point
 !
@@ -1333,11 +1333,7 @@ endif
 
          ! SKEB process
          if (doskeb) then
-            print *, "not doskeb entry"
-            !$acc update self(um, vm) async(async_id)
-            !$acc wait(async_id)
-            call skebest(um, vm)
-            !$acc update device(um, vm, ut, vt) async(async_id)
+            call skebest_gpu(um, vm)
          end if
 
          call trandv_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, &
@@ -1509,15 +1505,20 @@ endif
                                  , eps4, trefs)
       ! SKEB process
       if (doskeb) then
-         print *, "not doskeb entry"
-         call tranuv(jtrun, jtmax, nx, my, my_max, levp, onocos, wcfac, wdfac &
-                     , poly, dpoly, vornow, divnow, ut, vt, nsizey)
-
-         call skebest(um, vm)
-
+         !$acc wait(async_id)
+         call tranuv_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, &
+                                    coslr, wcfac, wdfac, polyf, dpolyf, &
+                                    vornow, divnow, ut, vt, nsizey, &
+                                    cc_cg, gwk1_cg, ws_cg(1, 1), ws_cg(1, 2), wc_cg, &
+                                    wcc_fk_cg, fj_weight_cg(1, 1), fj_weight_cg(1, 2))
+            call skebest_gpu(um, vm)
          ! compute vorticity and divergence from u and v
-         call trandv(jtrun, jtmax, nx, my, my_max, lev, ut, vt, weight, cim &
-                     , onocos, poly, dpoly, vornow, divnow, nsizey)
+         call trandv_gpu_cuda_graph(jtrun, jtmax, nx, my, my_max, levp, &
+                                    ut, vt, weight, cim, onocos, &
+                                    polyf, dpolyf, vornow, divnow, nsizey, &
+                                    cc_cg, gwk1_cg, ws_cg, wc_cg(1, 1), wc_cg(1, 2), &
+                                    wcc_fk_cg, fj_weight_cg(1, 1), fj_weight_cg(1, 2))
+         !$acc wait(async_id)
       end if
    end if ! .not. two_loop
 !
@@ -2349,6 +2350,9 @@ endif
          if (doskeb .and. doskebout) then
             call skebout(tau)
          end if
+         if (doshum .and. doshumout) then
+            call shumout(tau)
+         endif
       end if
 
       if (do_sit .AND. lgodas .AND. ldailysst) then
@@ -2504,7 +2508,7 @@ endif
          !$acc exit data delete(land, ocean, ice, cosz, tg, tsflw, std, &
          !$acc&      sld, ss, rld, sfemis, shdmax, shdmin, snoalb, z0, ustar, &
          !$acc&      snr, canopy, runoff, sndepth, zice, cice, xtice, tstar, &
-         !$acc&      qstar, srflag, sncover, plcl, cumtop, flash, diss_dc, curate, &
+         !$acc&      qstar, srflag, sncover, plcl, cumtop, flash, curate, &
          !$acc&      t2, q2, rh2, rh10, u10, v10, fm, fh, fm10, fh2, hpbl, gfx, &
          !$acc&      ugws, vgws, totallp, raincu, rainlp, raincu1, rainlp1, &
          !$acc&      raincu6, rainlp6, raintot) async(async_id)
@@ -2552,7 +2556,7 @@ endif
    go to 10
 !
    ! finilize stochastic_physics
-   call destroy_stochastic_physics()
+   call destroy_stochastic_physics_gpu()
    close (35)
 
 end subroutine intgrt_gpu
