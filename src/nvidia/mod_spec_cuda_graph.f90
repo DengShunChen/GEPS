@@ -18,11 +18,14 @@ module spec_cuda_graph
       transr_fft_cg, transr_lt_cg, transr1_fft_cg, transr1_lt_cg, &
       tranrs_fft_cg, tranrs_lt_cg, tranrs1_fft_cg, &
       tranuv_fft_cg, tranuv_lt_cg, rstrandz_fft_cg, rstrandz_lt_cg, &
-      trandv_fft_cg, trandv_lt_cg
+      trandv_fft_cg, trandv_lt_cg, tranuv1_lt_cg, tranuv1_fft_cg
 
    !! buffer
    real(kind=RTYPE), dimension(:), allocatable :: cc_cg, gwk1_cg, wcc_fk_cg
    real, dimension(:, :), allocatable :: wc_cg, ws_cg, fj_weight_cg
+   real, dimension(:, :, :), allocatable :: fj_ws3_cg, fj_tcc_cg, fj_wc_cg
+   real, dimension(:, :, :, :), allocatable :: cc_cg2, gwk1_cg2
+
 
 contains
    subroutine allocate_spec_cg_buffer
@@ -45,17 +48,39 @@ contains
          write (6, *) 'spec_cuda_graph : allocate fail 2 '
          stop
       end if
-
       !$acc enter data create(cc_cg, gwk1_cg, wcc_fk_cg, &
       !$acc                   wc_cg, ws_cg, fj_weight_cg) async(async_id)
    end subroutine allocate_spec_cg_buffer
+   subroutine allocate_spec_cg_buffer2
+      implicit none
+      integer ierr, async_id
+      async_id = 1
+
+      allocate (fj_ws3_cg(1*2*2, jtrun, mlistnum), &
+                fj_tcc_cg(1*2*2, my, mlistnum), &
+                fj_wc_cg(jtrun, my/2, mlistnum), &
+                stat=ierr)
+      if (ierr /= 0) then
+         write (6, *) 'spec_cuda_graph : allocate fail 3 '
+         stop
+      end if
+      allocate (cc_cg2(nx + 2, 1, 2, my_max), &
+                gwk1_cg2(nx + 2, 1, 2, my_max), &
+                stat=ierr)
+      if (ierr /= 0) then
+         write (6, *) 'spec_cuda_graph : allocate fail 3 '
+         stop
+      end if
+
+      !$acc enter data create(fj_ws3_cg, fj_tcc_cg, fj_wc_cg, cc_cg2, gwk1_cg2)
+   end subroutine allocate_spec_cg_buffer2
 
    subroutine deallocate_spec_cg_buffer
       implicit none
       integer ierr
 
       !$acc exit data delete(cc_cg, gwk1_cg, wcc_fk_cg, &
-      !$acc                   wc_cg, ws_cg, fj_weight_cg)
+      !$acc                   wc_cg, ws_cg, fj_weight_cg, fj_ws3_cg, fj_tcc_cg, fj_wc_cg, cc_cg2, gwk1_cg2)
       deallocate (cc_cg, gwk1_cg, wcc_fk_cg)
       deallocate (wc_cg, ws_cg, fj_weight_cg)
 

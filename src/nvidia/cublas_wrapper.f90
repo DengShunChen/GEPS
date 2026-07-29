@@ -55,5 +55,29 @@ subroutine dgemm_gpu(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ld
     !$acc wait(1)
     !$acc end data
 end subroutine dgemm_gpu
+subroutine dgemm_gpu2(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc)
+    implicit none
+    character*1 :: transa, transb
+    integer :: m, n, k, lda, ldb, ldc
+    real(8), dimension(lda, *) :: a
+    real(8), dimension(ldb, *) :: b
+    real(8), dimension(ldc, *) :: c
+    real(8) :: alpha, beta
+    integer :: a_sd, b_sd
+
+    if (transa == 'n') then
+        a_sd = k
+    else
+        a_sd = m
+    end if
+    if (transb == 'n') then
+        b_sd = n
+    else
+        b_sd = k
+    end if
+
+    call dgemm_async(transa, transb, m, n, k, alpha, a, lda, b, ldb, beta, c, ldc, 1)
+    !$acc wait(1)
+end subroutine dgemm_gpu2
 
 

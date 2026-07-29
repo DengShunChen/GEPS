@@ -37,6 +37,20 @@
       USE mo_constants,    only : inicon
       USE mo_convect_tables, only : set_lookup_tables
       ! for stochastic_physics
+#ifdef USE_CUDA
+      use mod_stochastic_physics_gpu, only : ncep_seeds, &
+                   sppt, sppt_seed, sppt_decort, sppt_lscale, &
+                   sppt_sigtop1, sppt_sigtop2, sppt_sigbot1, sppt_sigbot2, &
+                   sppt_sfclimit, sppt_logit, &
+                   shum, shum_seed, shum_decort, shum_lscale, &
+                   shum_sigefold, &
+                   skeb, skeb_seed, skeb_decort, skeb_lscale, &
+                   skeb_sigtop1, skeb_sigtop2, skeb_sigbot1, skeb_sigbot2, &
+                   skeb_vdof,skebnorm, skebfilt, &
+                   ssst, ssst_seed, ssst_decort, ssst_lscale, &
+                   init_stochastic_physics_gpu
+      use spec_cuda_graph, only: allocate_spec_cg_buffer2
+#else
       use mod_stochastic_physics, only : ncep_seeds, &
                    sppt, sppt_seed, sppt_decort, sppt_lscale, &
                    sppt_sigtop1, sppt_sigtop2, sppt_sigbot1, sppt_sigbot2, &
@@ -48,6 +62,7 @@
                    skeb_vdof,skebnorm, skebfilt, &
                    ssst, ssst_seed, ssst_decort, ssst_lscale, &
                    init_stochastic_physics
+#endif
       use mod_grb2_param, only:grbmem,grbnumm, grbnxmy, latlong, seclist01
 
       implicit  none
@@ -293,7 +308,9 @@
 !
 
       call make_list
-
+#ifdef USE_CUDA
+      call allocate_spec_cg_buffer2
+#endif
       do 150 m =1,mlistnum
        mf=mlist(m)
 !
@@ -694,7 +711,11 @@
 !-----------------------------------------------------------------------
 !  for stochastic_physics initialization
 !-----------------------------------------------------------------------
+#ifdef USE_CUDA
+      call init_stochastic_physics_gpu(dt)
+#else
       call init_stochastic_physics(dt)
+#endif
 !-----------------------------------------------------------------------
 !
 ! check if typhoon exit

@@ -207,7 +207,7 @@
          use namelist_soilveg, only: MAX_SLOPETYP, MAX_SOILTYP, MAX_VEGTYP, &
              slope_data, bb, drysmc, f11, maxsmc, refsmc, satpsi, satdk, satdw, &
              wltsmc, qtz, rsmtbl, rgltbl, hstbl, snupx, lai_data, nroot_data
-         use mod_stochastic_physics, only: sppt3d, shum3d, ssst3d,     &
+         use mod_stochastic_physics_gpu, only: sppt3d, shum3d, ssst3d,     &
                                          diss_dc, shum3d_dq
 ! for ozone physics
          use ozne_def, only :pl_coeff
@@ -646,8 +646,12 @@
          !$acc&      work3, dlength, cldf, tauctx, taucty, heat, evap, &
          !$acc&      area, rhc_mp) async(async_id)
          !$acc enter data create(itlsp, nnlsp, dtcupd, dqcupd, dtcupl, dqcupl) async(async_id)
+
+         !$acc enter data create(ut_save_sppt, vt_save_sppt, tt_save_sppt, qt_save_sppt) &
+         !$acc&      async(async_id)
          !!$acc enter data copyin(tbpvs) async(async_id)
          !$acc enter data create(ls) async(async_id)
+
 #ifdef TIMCOMCPL
          !$acc enter data create(ice_cpl, ocean_cpl, z0_cpl) async(async_id)
 #endif
@@ -1283,12 +1287,12 @@
          !-----------------------------------------------------------------------------
          if (dosppt) then
             ! Save u, v, t, and q for SPPT
-            !$acc update self(ut, vt, tt, qt) async(async_id)
-            !$acc wait(async_id)
+            !$acc parallel loop gang collapse(2) private(j, nxj) async(async_id)
             do jj = 1, jlistnum
-               j = jlist1(jj)
-               nxj = nxdef_2d(j)
                do k = 1, lev
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
+                  !$acc loop vector
                   do i = 1, nxj
                      ut_save_sppt(i, k, jj) = ut(i, k, jj)
                      vt_save_sppt(i, k, jj) = vt(i, k, jj)
@@ -3390,13 +3394,14 @@
 #endif
          ! sppt tendencies
          if (dosppt) then
-            if (myrank .eq. 0) print *, "Not support this entry. (sppt)"
-
+            !$acc parallel loop gang collapse(2) private(j, nxj, kc) async(async_id)
             do jj = 1, jlistnum
-               j = jlist1(jj)
-               nxj = nxdef_2d(j)
                do k = 1, lev
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
                   kc = lev - k + 1
+                  !$acc loop vector private(vru, ru, dtdtr, upert, vpert, tpert, &
+                  !$acc&     qpert, qnew)
                   do i = 1, nxj
                      vru = 1.
                      if (kc .gt. zmtnblck(i, jj) + 2) then
@@ -3445,10 +3450,13 @@
 
          ! SHUM process
          if (doshum) then
+            !$acc wait(async_id)
+            !$acc parallel loop gang collapse(2) private(j, nxj) async(async_id)
             do jj = 1, jlistnum
-               j = jlist1(jj)
-               nxj = nxdef_2d(j)
                do k = 1, lev
+                  j = jlist1(jj)
+                  nxj = nxdef_2d(j)
+                  !$acc loop vector private(ru, qnew)
                   do i = 1, nxj
                      ru = shum3d(i, k, jj)
                      qnew = qt(i,k,jj)*(1.+ru)
@@ -3462,6 +3470,7 @@
                   end do
                end do
             end do
+            !$acc wait(async_id)
          end if
 
 #ifdef VERBOSE
@@ -4150,6 +4159,8 @@
          !$acc&     work3, dlength, cldf, tauctx, taucty, heat, evap, &
          !$acc&     area, rhc_mp) async(async_id)
          !$acc exit data delete(itlsp, nnlsp, dtcupd, dqcupd, dtcupl, dqcupl) async(async_id)
+         !$acc exit data delete(ut_save_sppt, vt_save_sppt, tt_save_sppt, qt_save_sppt) &
+         !$acc&      async(async_id)
          !!$acc exit data delete(tbpvs) async(async_id)
          !$acc exit data delete(ls) async(async_id)
 #ifdef TIMCOMCPL

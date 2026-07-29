@@ -42,7 +42,7 @@ module unuse ${MDIR}/modulefiles
    DMSFLAG=GI
  fi
 
- dtg='22081500'
+ dtg='23012000'
  fgdtg=$(/users/xb80/bin/Caldtg.ksh ${dtg} -6)
 
  idmshead='MASOPS'
@@ -169,8 +169,7 @@ cat > ${GFSWRK}/namlsts << EOF
   dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f,
   dograv=true, docgrav=true,
   donnmi=true,
-  dosppt=false, dospptout=false,
-  doshum=false,
+  dosppt=true, doskeb=true, doshum=true,
   cutfreq=3, nnmivm=3,
   doincr=f,
   hdiff=t, frad=1.0, ldiag=0,
@@ -207,19 +206,30 @@ cat > ${GFSWRK}/namlsts << EOF
   sppt_sfclimit = true,
   sppt_sigbot1 = 0.975,
   sppt_sigbot2 = 0.9,
-  sppt = 0.80,0.4,0.10,0.08,0.04
+  sppt = 0.3,0.15,0.075,0.03,0.015
   sppt_seed = -999,-999,-999,-999,-999
   sppt_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7
   sppt_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
-  shum = 0.04,-999,-999,-999,-999
+  shum = 0.003,-999,-999,-999,-999
   shum_seed = -999,-999,-999,-999,-999
   shum_decort = 2.16E4,1.728E5,2.592E6,7.776E6,3.1536E7
   shum_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
   shum_sigefold = 0.2,
-  ssst = 0.80,-999,-999,-999,-999
+  skeb_sigtop1 = 0.1,
+  skeb_sigtop2 = 0.025,
+  skeb_sigbot1 = 0.975,
+  skeb_sigbot2 = 0.9,
+  skeb_vdof = 5,
+  skebnorm = 2,
+  skebfilt = 12,
+  skeb = 18.,-999,-999,-999,-999
+  skeb_seed = -999,-999,-999,-999,-999
+  skeb_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7
+  skeb_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
+  ssst = 0.80,0.4,0.10,0.08,0.04
   ssst_seed = -999,-999,-999,-999,-999
   ssst_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7
-  ssst_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
- /
+  ssst_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3 
+/
 
 EOF
