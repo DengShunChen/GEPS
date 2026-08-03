@@ -585,7 +585,7 @@
         if(ocean(i)) then
           restar(i) = ustar(i) * z0max(i) / vis
           restar(i) = max(restar(i),.000001)
-!         restar(i) = alog(restar(i))
+!         restar(i) = log(restar(i))
 !         restar(i) = min(restar(i),5.)
 !         restar(i) = max(restar(i),-5.)
 !         rat(i) = aa1 + bb1 * restar(i) + cc1 * restar(i) ** 2

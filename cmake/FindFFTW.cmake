@@ -11,9 +11,17 @@
 # The following variables will be checked by the function FFTW_USE_STATIC_LIBS
 # ... if true, only static libraries are found
 
-# If environment variable FFTWDIR is specified, it has same effect as FFTW_ROOT
+# GEPS_LIB sets FFTW / FFTW_DIR; legacy a100 module used FFTW3
 if(NOT FFTW_ROOT)
-  set(FFTW_ROOT $ENV{FFTW3})
+  if(DEFINED ENV{FFTW_DIR} AND NOT "$ENV{FFTW_DIR}" STREQUAL "")
+    set(FFTW_ROOT $ENV{FFTW_DIR})
+  elseif(DEFINED ENV{FFTW} AND NOT "$ENV{FFTW}" STREQUAL "")
+    set(FFTW_ROOT $ENV{FFTW})
+  elseif(DEFINED ENV{FFTW_ROOT} AND NOT "$ENV{FFTW_ROOT}" STREQUAL "")
+    set(FFTW_ROOT $ENV{FFTW_ROOT})
+  else()
+    set(FFTW_ROOT $ENV{FFTW3})
+  endif()
 endif()
 message(STATUS "Found fftw3 root directory at ${FFTW_ROOT}")
 
@@ -23,6 +31,8 @@ find_path(
   NAMES fftw3.h
   PATHS ${FFTW_ROOT}/include
         $ENV{FFTW_ROOT}/include
+        $ENV{FFTW_DIR}/include
+        $ENV{FFTW}/include
         $ENV{FFTW3}
         $ENV{FFTW3}/include
         $ENV{FFTW3}/api
@@ -45,6 +55,8 @@ foreach(_lib IN ITEMS fftw3f fftw3f_threads fftw3 fftw3_threads)
     PATHS ${FFTW_ROOT}/lib
           $ENV{FFTW_ROOT}/lib
           ${FFTW_ROOT}/lib64
+          $ENV{FFTW_DIR}/lib
+          $ENV{FFTW}/lib
           $ENV{FFTW3}
           $ENV{FFTW3}/lib
           $ENV{FFTW3}/.libs

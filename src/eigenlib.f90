@@ -598,11 +598,11 @@
 !     FINDS SQRT(A**2+B**2) WITHOUT OVERFLOW OR DESTRUCTIVE UNDERFLOW
 !
       REAL P,R,S,T,U
-!     P = AMAX1(ABS(A),ABS(B))
-      P = DMAX1(ABS(A),ABS(B))        ! CWB2015
+!     P = max(ABS(A),ABS(B))
+      P = max(ABS(A),ABS(B))        ! CWB2015
       IF (P .EQ. 0.0E0) GO TO 20
-!     R = (AMIN1(ABS(A),ABS(B))/P)**2
-      R = (DMIN1(ABS(A),ABS(B))/P)**2 ! CWB2015
+!     R = (min(ABS(A),ABS(B))/P)**2
+      R = (min(ABS(A),ABS(B))/P)**2 ! CWB2015
    10 CONTINUE
          T = 4.0E0 + R
          IF (T .EQ. 4.0E0) GO TO 20

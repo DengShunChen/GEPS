@@ -45,6 +45,29 @@ option(CWBSUM "enable CWBSUM" ON)
 option(USE_aeroclx "enable Readaeroclx" OFF)
 option(USE_NDMS "enable NDMS" OFF)
 
+# Toolchain selector: nvidia | gnu | intel | fujitsu
+# Prefer -DGEPS_COMPILER=... or $ENV{GEPS_COMPILER}; fall back from USE_CUDA.
+if(NOT DEFINED GEPS_COMPILER OR GEPS_COMPILER STREQUAL "")
+  if(DEFINED ENV{GEPS_COMPILER} AND NOT "$ENV{GEPS_COMPILER}" STREQUAL "")
+    set(GEPS_COMPILER
+        "$ENV{GEPS_COMPILER}"
+        CACHE STRING "GEPS toolchain (nvidia|gnu|intel|fujitsu)" FORCE)
+  elseif(${USE_CUDA})
+    set(GEPS_COMPILER
+        "nvidia"
+        CACHE STRING "GEPS toolchain (nvidia|gnu|intel|fujitsu)" FORCE)
+  else()
+    set(GEPS_COMPILER
+        "fujitsu"
+        CACHE STRING "GEPS toolchain (nvidia|gnu|intel|fujitsu)" FORCE)
+  endif()
+endif()
+string(TOLOWER "${GEPS_COMPILER}" GEPS_COMPILER)
+set(GEPS_COMPILER
+    "${GEPS_COMPILER}"
+    CACHE STRING "GEPS toolchain (nvidia|gnu|intel|fujitsu)" FORCE)
+set_property(CACHE GEPS_COMPILER PROPERTY STRINGS nvidia gnu intel fujitsu)
+
 set(GPU_ARCHS
     "80"
     CACHE STRING "GPU architecture(V100=70;A100=80)")
@@ -67,6 +90,7 @@ if(NOT ${USE_RSM} AND ${USE_MPMD})
 endif()
 
 message(STATUS "Build Summary")
+message(STATUS "GEPS_COMPILER: ${GEPS_COMPILER}")
 message(STATUS "USE_ACC:      ${USE_ACC}")
 message(STATUS "USE_CUDA:     ${USE_CUDA}")
 message(STATUS "USE_NVTX:     ${USE_NVTX}")
@@ -86,16 +110,25 @@ message(STATUS "Install path: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "BUILD_TYPE : ${CMAKE_BUILD_TYPE}")
 message(STATUS "USE_NDMS:       ${USE_NDMS}")
 
-if(${USE_CUDA})
-  include(OpenACC)
+# Per-toolchain flags / library search (GEPS_LIB env)
+if(GEPS_COMPILER STREQUAL "nvidia")
+  include(compilers/NVIDIA)
   if(${USE_NVTX})
     include(NVTX)
   endif()
+elseif(GEPS_COMPILER STREQUAL "gnu")
+  include(compilers/GNU)
+elseif(GEPS_COMPILER STREQUAL "intel")
+  include(compilers/INTEL)
+elseif(GEPS_COMPILER STREQUAL "fujitsu")
+  include(compilers/FUJITSU)
 else()
-  include(NoCUDA)
+  message(FATAL_ERROR "Unsupported GEPS_COMPILER=${GEPS_COMPILER}. "
+                      "Use nvidia|gnu|intel|fujitsu")
 endif()
 
-if(NOT ${USE_CUDA})
+# Fujitsu frtpx uses -M for module output; gfortran/ifx/nvfortran use -J or default
+if(GEPS_COMPILER STREQUAL "fujitsu")
   set(CMAKE_Fortran_MODDIR_FLAG "-M")
 endif()
 # ##############################################################################
@@ -140,14 +173,26 @@ endif()
 # ##############################################################################
 
 # NetCDF
-include_directories(${NetCDF_Fortran_INCLUDE_DIRS})
+if(NetCDF_Fortran_INCLUDE_DIRS)
+  include_directories(${NetCDF_Fortran_INCLUDE_DIRS})
+elseif(DEFINED ENV{NETCDF_INC} AND NOT "$ENV{NETCDF_INC}" STREQUAL "")
+  include_directories($ENV{NETCDF_INC})
+elseif(DEFINED ENV{NETCDF} AND NOT "$ENV{NETCDF}" STREQUAL "")
+  include_directories($ENV{NETCDF}/include)
+endif()
 
 # FFTW
 find_package(FFTW REQUIRED)
 include_directories(${FFTW_INCLUDE_DIR})
 
 # G2
-include_directories($ENV{G2_INC_PATH})
+if(DEFINED ENV{G2_INC_PATH} AND NOT "$ENV{G2_INC_PATH}" STREQUAL "")
+  include_directories($ENV{G2_INC_PATH})
+elseif(DEFINED ENV{G2LIB_DIR} AND NOT "$ENV{G2LIB_DIR}" STREQUAL "")
+  include_directories($ENV{G2LIB_DIR}/include)
+elseif(DEFINED ENV{G2LIB} AND NOT "$ENV{G2LIB}" STREQUAL "")
+  include_directories($ENV{G2LIB}/include)
+endif()
 
 
 set(TCOGFS_INCLUDE_DIRS
@@ -159,21 +204,55 @@ set(TCOGFS_INCLUDE_DIRS
 # ##############################################################################
 
 # W3
-link_libraries($ENV{W3LIB_LIB})
+if(DEFINED ENV{W3LIB_LIB} AND NOT "$ENV{W3LIB_LIB}" STREQUAL "")
+  link_libraries($ENV{W3LIB_LIB})
+elseif(DEFINED ENV{W3LIB_DIR} AND NOT "$ENV{W3LIB_DIR}" STREQUAL "")
+  link_directories($ENV{W3LIB_DIR}/lib)
+  link_libraries(-lw3)
+elseif(DEFINED ENV{W3LIB} AND NOT "$ENV{W3LIB}" STREQUAL "")
+  link_directories($ENV{W3LIB}/lib)
+  link_libraries(-lw3)
+endif()
 
-# CWB operlib
-link_libraries($ENV{OPERLIB_LIB})
+# CWB operlib (directory or -l flag; -lnwp also linked in compilers/*)
+if(DEFINED ENV{OPERLIB_LIB} AND NOT "$ENV{OPERLIB_LIB}" STREQUAL "")
+  if(IS_DIRECTORY "$ENV{OPERLIB_LIB}")
+    link_directories($ENV{OPERLIB_LIB})
+  else()
+    link_libraries($ENV{OPERLIB_LIB})
+  endif()
+endif()
 
 # G2
-link_directories($ENV{G2_LIB_PATH})
+if(DEFINED ENV{G2_LIB_PATH} AND NOT "$ENV{G2_LIB_PATH}" STREQUAL "")
+  link_directories($ENV{G2_LIB_PATH})
+elseif(DEFINED ENV{G2LIB_DIR} AND NOT "$ENV{G2LIB_DIR}" STREQUAL "")
+  link_directories($ENV{G2LIB_DIR}/lib)
+elseif(DEFINED ENV{G2LIB} AND NOT "$ENV{G2LIB}" STREQUAL "")
+  link_directories($ENV{G2LIB}/lib)
+endif()
 link_libraries(-lg2)
 
 # PNG
-link_directories($ENV{PNG_LIB_PATH})
+if(DEFINED ENV{PNG_LIB_PATH} AND NOT "$ENV{PNG_LIB_PATH}" STREQUAL "")
+  link_directories($ENV{PNG_LIB_PATH})
+elseif(DEFINED ENV{LIBPNG_DIR} AND NOT "$ENV{LIBPNG_DIR}" STREQUAL "")
+  link_directories($ENV{LIBPNG_DIR}/lib)
+elseif(DEFINED ENV{LIBPNG} AND NOT "$ENV{LIBPNG}" STREQUAL "")
+  link_directories($ENV{LIBPNG}/lib)
+endif()
 link_libraries(-lpng)
 
-# Jasper
-link_directories($ENV{JAPSER_LIB_PATH})
+# Jasper (accept historical JAPSER typo)
+if(DEFINED ENV{JASPER_LIB_PATH} AND NOT "$ENV{JASPER_LIB_PATH}" STREQUAL "")
+  link_directories($ENV{JASPER_LIB_PATH})
+elseif(DEFINED ENV{JAPSER_LIB_PATH} AND NOT "$ENV{JAPSER_LIB_PATH}" STREQUAL "")
+  link_directories($ENV{JAPSER_LIB_PATH})
+elseif(DEFINED ENV{JASPER_DIR} AND NOT "$ENV{JASPER_DIR}" STREQUAL "")
+  link_directories($ENV{JASPER_DIR}/lib)
+elseif(DEFINED ENV{JASPER} AND NOT "$ENV{JASPER}" STREQUAL "")
+  link_directories($ENV{JASPER}/lib)
+endif()
 link_libraries(-ljasper)
 
 # ##############################################################################

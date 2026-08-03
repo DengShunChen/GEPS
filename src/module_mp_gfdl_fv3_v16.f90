@@ -4329,11 +4329,11 @@ subroutine qs_table3 (n)
             ! see smithsonian meteorological tables page 350.
             ! -----------------------------------------------------------------------
             aa = - 9.09718 * (table_ice / tem - 1.)
-!            b = - 3.56654 * alog10 (table_ice / tem)
-            b = - 3.56654 * dlog10 (table_ice / tem)
+!            b = - 3.56654 * log10 (table_ice / tem)
+            b = - 3.56654 * log10 (table_ice / tem)
             c = 0.876793 * (1. - tem / table_ice)
-!            e = alog10 (esbasi)
-            e = dlog10 (esbasi)
+!            e = log10 (esbasi)
+            e = log10 (esbasi)
             table3 (i) = 0.1 * 10 ** (aa + b + c + e)
         else
             ! -----------------------------------------------------------------------
@@ -4341,12 +4341,12 @@ subroutine qs_table3 (n)
             ! see smithsonian meteorological tables page 350.
             ! -----------------------------------------------------------------------
             aa = - 7.90298 * (tbasw / tem - 1.)
-!            b = 5.02808 * alog10 (tbasw / tem)
-            b = 5.02808 * dlog10 (tbasw / tem)
+!            b = 5.02808 * log10 (tbasw / tem)
+            b = 5.02808 * log10 (tbasw / tem)
             c = - 1.3816e-7 * (10 ** ((1. - tem / tbasw) * 11.344) - 1.)
             d = 8.1328e-3 * (10 ** ((tbasw / tem - 1.) * (- 3.49149)) - 1.)
-!            e = alog10 (esbasw)
-            e = dlog10 (esbasw)
+!            e = log10 (esbasw)
+            e = log10 (esbasw)
             table3 (i) = 0.1 * 10 ** (aa + b + c + d + e)
         endif
     enddo
@@ -4978,7 +4978,7 @@ end subroutine cloud_diagnosis
                     CBACK, mixingrulestring_s, matrixstring_s,          &
                     inclusionstring_s, hoststring_s,                    &
                     hostmatrixstring_s, hostinclusionstring_s)
-              f_d = N0_s(k)*xxDs(n)**xmu_s * DEXP(-lams*xxDs(n))
+              f_d = N0_s(k)*xxDs(n)**xmu_s * exp(-lams*xxDs(n))
               eta = eta + f_d * CBACK * simpson(n) * xdts(n)
            enddo
            ze_snow(k) = SNGL(lamda4 / (pi5 * K_w) * eta)
@@ -4998,7 +4998,7 @@ end subroutine cloud_diagnosis
                     CBACK, mixingrulestring_g, matrixstring_g,          &
                     inclusionstring_g, hoststring_g,                    &
                     hostmatrixstring_g, hostinclusionstring_g)
-              f_d = N0_g(k)*xxDg(n)**xmu_g * DEXP(-lamg*xxDg(n))
+              f_d = N0_g(k)*xxDg(n)**xmu_g * exp(-lamg*xxDg(n))
               eta = eta + f_d * CBACK * simpson(n) * xdtg(n)
            enddo
            ze_graupel(k) = SNGL(lamda4 / (pi5 * K_w) * eta)

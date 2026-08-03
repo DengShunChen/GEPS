@@ -213,8 +213,8 @@ SUBROUTINE cuflx(nxj,klon,klev,klevp1,pqen,pqsen,ptenh,pqenh,&
     DO jl = 1, nxj
       zrsum    = prfl(jl)+psfl(jl)
       zdpevap  = zpsubcl(jl) - zrsum
-      prfl(jl) = prfl(jl) + zdpevap*prfl(jl)*(1./MAX(1.d-20,zrsum))
-      psfl(jl) = psfl(jl) + zdpevap*psfl(jl)*(1./MAX(1.d-20,zrsum))
+      prfl(jl) = prfl(jl) + zdpevap*prfl(jl)*(1./MAX(1.e-20,zrsum))
+      psfl(jl) = psfl(jl) + zdpevap*psfl(jl)*(1./MAX(1.e-20,zrsum))
     END DO
 
   RETURN

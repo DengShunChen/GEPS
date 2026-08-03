@@ -586,7 +586,7 @@ contains
 
       !if (myrank.eq.0) write(6,*)'CACtotal variance =',var
       !if (myrank.eq.0) write(6,*)'CADrpattern(n)%varspec =',rpattern(n)%varspec
-      #ifdef VERBOSE
+#ifdef VERBOSE
 #endif
       ! initialize spectrum coefficient 
       noise = 0. 

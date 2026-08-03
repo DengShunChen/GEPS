@@ -305,11 +305,11 @@
            enddo
            enddo
          enddo !m=1,levp
-         #ifdef I38K
+#ifdef I38K
            315  format(a6,'  gbck',a4,4x,i2.2,6x)
-         #else
+#else
            315  format(a6,'gbck',a4,4x,i2.2,6x)
-         #endif
+#endif
        end subroutine Read3DAer_split
 
       end subroutine readaeroclx

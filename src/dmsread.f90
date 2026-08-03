@@ -49,13 +49,13 @@
          keyi(i:i)=char(ia)
        endif
       enddo
-  #ifdef O38K
+#ifdef O38K
       ifn=trim(ifile)//'/'//keyi(17:28)//keyi(7:12)//'/' &
                   //keyi(1:6)//keyi(13:16)//'H'//keyi(30:38)
-  #else
+#else
       ifn=trim(ifile)//'/'//keyi(15:26)//keyi(7:10)//'/' &
                   //keyi(1:6)//keyi(11:14)//'H'//keyi(28:34)
-  #endif
+#endif
       open(12,file=trim(ifn),access='stream',form='unformatted' &
              ,action='read',convert='little_endian',iostat=istat)
       read(12)z(:,:)
@@ -80,7 +80,7 @@
       print*, crmk
       print *,'istat=',istat
 !CWB2016 force mpi code abort
-      stop'dmsread: fatal error !'
+      stop 'dmsread: fatal error !'
       endif
       call mpe_finalize
       call dmsexit(-1)
@@ -149,13 +149,13 @@
          keyi(i:i)=char(ia)
        endif
       enddo
-  #ifdef O38K
+#ifdef O38K
       ifn=trim(ifile)//'/'//keyi(17:28)//keyi(7:12)//'/' &
                   //keyi(1:6)//keyi(13:16)//'I'//keyi(30:38)
-  #else
+#else
       ifn=trim(ifile)//'/'//keyi(15:26)//keyi(7:10)//'/' &
                   //keyi(1:6)//keyi(11:14)//'I'//keyi(28:34)
-  #endif
+#endif
       open(12,file=trim(ifn),access='stream',form='unformatted' &
              ,action='read',convert='little_endian',iostat=istat)
       read(12)z(:,:)
@@ -180,7 +180,7 @@
       print*, crmk
       print *,'istat=',istat
 !CWB2016 force mpi code abort
-      stop'dmsreadi: fatal error !'
+      stop 'dmsreadi: fatal error !'
       endif
       call mpe_finalize
       call dmsexit(-1)
@@ -247,13 +247,13 @@
          keyi(i:i)=char(ia)
        endif
       enddo
-  #ifdef O38K
+#ifdef O38K
       ifn=trim(ifile)//'/'//keyi(17:28)//keyi(7:12)//'/' &
                   //keyi(1:6)//keyi(13:16)//'H'//keyi(30:38)
-  #else
+#else
       ifn=trim(ifile)//'/'//keyi(15:26)//keyi(7:10)//'/' &
                   //keyi(1:6)//keyi(11:14)//'H'//keyi(28:34)
-  #endif
+#endif
       open(12,file=trim(ifn),access='stream',form='unformatted' &
              ,action='read',convert='little_endian',iostat=istat)
       read(12)z(:,:)
@@ -278,7 +278,7 @@
       print*, crmk
       print *,'istat=',istat
 !CWB2016 force mpi code abort
-      stop'dmsread: fatal error !'
+      stop 'dmsread: fatal error !'
       endif
       call mpe_finalize
       call dmsexit(-1)

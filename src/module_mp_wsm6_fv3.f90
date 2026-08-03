@@ -2507,7 +2507,7 @@ CONTAINS
                     CBACK, mixingrulestring_s, matrixstring_s,          &
                     inclusionstring_s, hoststring_s,                    &
                     hostmatrixstring_s, hostinclusionstring_s)
-              f_d = N0_s(k)*xxDs(n)**xmu_s * DEXP(-lams*xxDs(n))
+              f_d = N0_s(k)*xxDs(n)**xmu_s * exp(-lams*xxDs(n))
               eta = eta + f_d * CBACK * simpson(n) * xdts(n)
            enddo
            ze_snow(k) = SNGL(lamda4 / (pi5 * K_w) * eta)
@@ -2527,7 +2527,7 @@ CONTAINS
                     CBACK, mixingrulestring_g, matrixstring_g,          &
                     inclusionstring_g, hoststring_g,                    &
                     hostmatrixstring_g, hostinclusionstring_g)
-              f_d = N0_g(k)*xxDg(n)**xmu_g * DEXP(-lamg*xxDg(n))
+              f_d = N0_g(k)*xxDg(n)**xmu_g * exp(-lamg*xxDg(n))
               eta = eta + f_d * CBACK * simpson(n) * xdtg(n)
            enddo
            ze_graupel(k) = SNGL(lamda4 / (pi5 * K_w) * eta)

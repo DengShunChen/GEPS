@@ -552,14 +552,14 @@
       t2_qg_me = PI*4.*C_cube*olfus * 0.28*Sc3*SQRT(av_g) * cgg(11)
 
 !..Constants for helping find lookup table indexes.
-      nic2 = NINT(DLOG10(r_c(1)))
-      nii2 = NINT(DLOG10(r_i(1)))
-      nii3 = NINT(DLOG10(Nt_i(1)))
-      nir2 = NINT(DLOG10(r_r(1)))
-      nir3 = NINT(DLOG10(N0r_exp(1)))
-      nis2 = NINT(DLOG10(r_s(1)))
-      nig2 = NINT(DLOG10(r_g(1)))
-      nig3 = NINT(DLOG10(N0g_exp(1)))
+      nic2 = NINT(log10(r_c(1)))
+      nii2 = NINT(log10(r_i(1)))
+      nii3 = NINT(log10(Nt_i(1)))
+      nir2 = NINT(log10(r_r(1)))
+      nir3 = NINT(log10(N0r_exp(1)))
+      nis2 = NINT(log10(r_s(1)))
+      nig2 = NINT(log10(r_g(1)))
+      nig3 = NINT(log10(N0g_exp(1)))
 
 !..Create bins of cloud water (from min diameter up to 100 microns).
       Dc(1) = D0c*1.0d0
@@ -573,11 +573,11 @@
       xDx(1) = D0i*1.0d0
       xDx(nbi+1) = 5.0d0*D0s
       do n = 2, nbi
-         xDx(n) = DEXP(DFLOAT(n-1)/DFLOAT(nbi) &
-                  *DLOG(xDx(nbi+1)/xDx(1)) +DLOG(xDx(1)))
+         xDx(n) = exp(real(n-1)/real(nbi) &
+                  *log(xDx(nbi+1)/xDx(1)) +log(xDx(1)))
       enddo
       do n = 1, nbi
-         Di(n) = DSQRT(xDx(n)*xDx(n+1))
+         Di(n) = sqrt(xDx(n)*xDx(n+1))
          dti(n) = xDx(n+1) - xDx(n)
       enddo
 
@@ -585,11 +585,11 @@
       xDx(1) = D0r*1.0d0
       xDx(nbr+1) = 0.005d0
       do n = 2, nbr
-         xDx(n) = DEXP(DFLOAT(n-1)/DFLOAT(nbr) &
-                  *DLOG(xDx(nbr+1)/xDx(1)) +DLOG(xDx(1)))
+         xDx(n) = exp(real(n-1)/real(nbr) &
+                  *log(xDx(nbr+1)/xDx(1)) +log(xDx(1)))
       enddo
       do n = 1, nbr
-         Dr(n) = DSQRT(xDx(n)*xDx(n+1))
+         Dr(n) = sqrt(xDx(n)*xDx(n+1))
          dtr(n) = xDx(n+1) - xDx(n)
       enddo
 
@@ -597,11 +597,11 @@
       xDx(1) = D0s*1.0d0
       xDx(nbs+1) = 0.02d0
       do n = 2, nbs
-         xDx(n) = DEXP(DFLOAT(n-1)/DFLOAT(nbs) &
-                  *DLOG(xDx(nbs+1)/xDx(1)) +DLOG(xDx(1)))
+         xDx(n) = exp(real(n-1)/real(nbs) &
+                  *log(xDx(nbs+1)/xDx(1)) +log(xDx(1)))
       enddo
       do n = 1, nbs
-         Ds(n) = DSQRT(xDx(n)*xDx(n+1))
+         Ds(n) = sqrt(xDx(n)*xDx(n+1))
          dts(n) = xDx(n+1) - xDx(n)
       enddo
 
@@ -609,11 +609,11 @@
       xDx(1) = D0g*1.0d0
       xDx(nbg+1) = 0.05d0
       do n = 2, nbg
-         xDx(n) = DEXP(DFLOAT(n-1)/DFLOAT(nbg) &
-                  *DLOG(xDx(nbg+1)/xDx(1)) +DLOG(xDx(1)))
+         xDx(n) = exp(real(n-1)/real(nbg) &
+                  *log(xDx(nbg+1)/xDx(1)) +log(xDx(1)))
       enddo
       do n = 1, nbg
-         Dg(n) = DSQRT(xDx(n)*xDx(n+1))
+         Dg(n) = sqrt(xDx(n)*xDx(n+1))
          dtg(n) = xDx(n+1) - xDx(n)
       enddo
 
@@ -1466,11 +1466,11 @@
       N0_min = gonv_max
       do k = kte, kts, -1
          if (temp(k).lt.270.65 .and. L_qr(k) .and. mvd_r(k).gt.100.E-6) then
-            xslw1 = 4.01 + dlog10(mvd_r(k))
+            xslw1 = 4.01 + log10(mvd_r(k))
          else
             xslw1 = 0.01
          endif
-         ygra1 = 4.31 + dlog10(max(5.E-5, rg(k)))
+         ygra1 = 4.31 + log10(max(5.E-5, rg(k)))
          zans1 = 3.1 + (100./(300.*xslw1*ygra1/(10./xslw1+1.+0.25*ygra1)+30.+10.*ygra1))
          N0_exp = 10.**(zans1)
          N0_exp = MAX(DBLE(gonv_min), MIN(N0_exp, DBLE(gonv_max)))
@@ -1569,7 +1569,7 @@
 !..Rain collecting cloud water.  In CE, assume Dc<<Dr and vtc=~0.
          if (L_qr(k) .and. mvd_r(k).gt. D0r .and. mvd_c(k).gt. D0c) then
           lamr = 1./ilamr(k)
-          idx = 1 + INT(nbr*DLOG(mvd_r(k)/Dr(1))/DLOG(Dr(nbr)/Dr(1)))
+          idx = 1 + INT(nbr*log(mvd_r(k)/Dr(1))/log(Dr(nbr)/Dr(1)))
           idx = MIN(idx, nbr)
           if(INT(mvd_c(k)*1.E6) .gt. nbr) then 
             print*,'t_efrw:idx:',idx,'mvd_c(k)*1.e6:',                  &
@@ -1600,7 +1600,7 @@
 
 !..Cloud water lookup table index.
          if (rc(k).gt. r_c(1)) then
-          nic = NINT(DLOG10(rc(k)))
+          nic = NINT(log10(rc(k)))
           do nn = nic-1, nic+1
              n = nn
              if ( (rc(k)/10.**nn).ge.1.0 .and. &
@@ -1615,7 +1615,7 @@
 
 !..Cloud ice lookup table indexes.
          if (ri(k).gt. r_i(1)) then
-          nii = NINT(DLOG10(ri(k)))
+          nii = NINT(log10(ri(k)))
           do nn = nii-1, nii+1
              n = nn
              if ( (ri(k)/10.**nn).ge.1.0 .and. &
@@ -1629,7 +1629,7 @@
          endif
 
          if (ni(k).gt. Nt_i(1)) then
-          nii = NINT(DLOG10(ni(k)))
+          nii = NINT(log10(ni(k)))
           do nn = nii-1, nii+1
              n = nn
              if ( (ni(k)/10.**nn).ge.1.0 .and. &
@@ -1644,7 +1644,7 @@
 
 !..Rain lookup table indexes.
          if (rr(k).gt. r_r(1)) then
-          nir = NINT(DLOG10(rr(k)))
+          nir = NINT(log10(rr(k)))
           do nn = nir-1, nir+1
              n = nn
              if ( (rr(k)/10.**nn).ge.1.0 .and. &
@@ -1657,7 +1657,7 @@
           lamr = 1./ilamr(k)
           lam_exp = lamr * (crg(3)*org2*org1)**bm_r
           N0_exp = org1*rr(k)/am_r * lam_exp**cre(1)
-          nir = NINT(DLOG10(N0_exp))
+          nir = NINT(log10(N0_exp))
           do nn = nir-1, nir+1
              n = nn
              if ( (N0_exp/10.**nn).ge.1.0 .and. &
@@ -1673,7 +1673,7 @@
 
 !..Snow lookup table index.
          if (rs(k).gt. r_s(1)) then
-          nis = NINT(DLOG10(rs(k)))
+          nis = NINT(log10(rs(k)))
           do nn = nis-1, nis+1
              n = nn
              if ( (rs(k)/10.**nn).ge.1.0 .and. &
@@ -1688,7 +1688,7 @@
 
 !..Graupel lookup table index.
          if (rg(k).gt. r_g(1)) then
-          nig = NINT(DLOG10(rg(k)))
+          nig = NINT(log10(rg(k)))
           do nn = nig-1, nig+1
              n = nn
              if ( (rg(k)/10.**nn).ge.1.0 .and. &
@@ -1701,7 +1701,7 @@
           lamg = 1./ilamg(k)
           lam_exp = lamg * (cgg(3)*ogg2*ogg1)**bm_g
           N0_exp = ogg1*rg(k)/am_g * lam_exp**cge(1)
-          nig = NINT(DLOG10(N0_exp))
+          nig = NINT(log10(N0_exp))
           do nn = nig-1, nig+1
              n = nn
              if ( (N0_exp/10.**nn).ge.1.0 .and. &
@@ -1739,7 +1739,7 @@
           xDs = 0.0
           if (L_qs(k)) xDs = smoc(k) / smob(k)
           if (xDs .gt. D0s) then
-           idx = 1 + INT(nbs*DLOG(xDs/Ds(1))/DLOG(Ds(nbs)/Ds(1)))
+           idx = 1 + INT(nbs*log(xDs/Ds(1))/log(Ds(nbs)/Ds(1)))
            idx = MIN(idx, nbs)
            if(INT(mvd_c(k)*1.E6) .gt. nbr) then
              print*,'t_efsw:idx:',idx,'mvd_c(k)*1.e6:', &            
@@ -1757,7 +1757,7 @@
            stoke_g = mvd_c(k)*mvd_c(k)*vtg*rho_w/(9.*visco(k)*xDg)
            if (xDg.gt. D0g) then
             if (stoke_g.ge.0.4 .and. stoke_g.le.10.) then
-             Ef_gw = 0.55*DLOG10(2.51*stoke_g)
+             Ef_gw = 0.55*log10(2.51*stoke_g)
             elseif (stoke_g.lt.0.4) then
              Ef_gw = 0.0
             elseif (stoke_g.gt.10) then
@@ -2432,11 +2432,11 @@
       N0_min = gonv_max
       do k = kte, kts, -1
          if (temp(k).lt.270.65 .and. L_qr(k) .and. mvd_r(k).gt.100.E-6) then
-            xslw1 = 4.01 + dlog10(mvd_r(k))
+            xslw1 = 4.01 + log10(mvd_r(k))
          else
             xslw1 = 0.01
          endif
-         ygra1 = 4.31 + dlog10(max(5.E-5, rg(k)))
+         ygra1 = 4.31 + log10(max(5.E-5, rg(k)))
          zans1 = 3.1 + (100./(300.*xslw1*ygra1/(10./xslw1+1.+0.25*ygra1)+30.+10.*ygra1))
          N0_exp = 10.**(zans1)
          N0_exp = MAX(DBLE(gonv_min), MIN(N0_exp, DBLE(gonv_max)))
@@ -2928,7 +2928,7 @@
 !+---+
 
       do n2 = 1, nbr
-!        vr(n2) = av_r*Dr(n2)**bv_r * DEXP(-fv_r*Dr(n2))
+!        vr(n2) = av_r*Dr(n2)**bv_r * exp(-fv_r*Dr(n2))
          vr(n2) = -0.1021 + 4.932E3*Dr(n2) - 0.9551E6*Dr(n2)*Dr(n2)     &
               + 0.07934E9*Dr(n2)*Dr(n2)*Dr(n2)                          &
               - 0.002362E12*Dr(n2)*Dr(n2)*Dr(n2)*Dr(n2)
@@ -2955,7 +2955,7 @@
          lamr = lam_exp * (crg(3)*org2*org1)**obmr
          N0_r = N0r_exp(k)/(crg(2)*lam_exp) * lamr**cre(2)
          do n2 = 1, nbr
-            N_r(n2) = N0_r*Dr(n2)**mu_r *DEXP(-lamr*Dr(n2))*dtr(n2)
+            N_r(n2) = N0_r*Dr(n2)**mu_r *exp(-lamr*Dr(n2))*dtr(n2)
          enddo
 
          do j = 1, ntb_g
@@ -2964,7 +2964,7 @@
             lamg = lam_exp * (cgg(3)*ogg2*ogg1)**obmg
             N0_g = N0g_exp(i)/(cgg(2)*lam_exp) * lamg**cge(2)
             do n = 1, nbg
-               N_g(n) = N0_g*Dg(n)**mu_g * DEXP(-lamg*Dg(n))*dtg(n)
+               N_g(n) = N0_g*Dg(n)**mu_g * exp(-lamg*Dg(n))*dtg(n)
             enddo
 
             t1 = 0.0d0
@@ -2978,8 +2978,8 @@
                do n = 1, nbg
                   massg = am_g * Dg(n)**bm_g
 
-                  dvg = 0.5d0*((vr(n2) - vg(n)) + DABS(vr(n2)-vg(n)))
-                  dvr = 0.5d0*((vg(n) - vr(n2)) + DABS(vg(n)-vr(n2)))
+                  dvg = 0.5d0*((vr(n2) - vg(n)) + abs(vr(n2)-vg(n)))
+                  dvr = 0.5d0*((vg(n) - vr(n2)) + abs(vg(n)-vr(n2)))
 
                   t1 = t1+ PI*.25*Ef_rg*(Dg(n)+Dr(n2))*(Dg(n)+Dr(n2)) &
                       *dvg*massg * N_g(n)* N_r(n2)
@@ -2998,7 +2998,7 @@
  97            continue
             enddo
             tcg_racg(i,j,k,m) = t1
-            tmr_racg(i,j,k,m) = DMIN1(z1, r_r(m)*1.0d0)
+            tmr_racg(i,j,k,m) = min(z1, r_r(m)*1.0d0)
             tcr_gacr(i,j,k,m) = t2
             tmg_gacr(i,j,k,m) = z2
             tnr_racg(i,j,k,m) = y1
@@ -3043,14 +3043,14 @@
 !+---+
 
       do n2 = 1, nbr
-!        vr(n2) = av_r*Dr(n2)**bv_r * DEXP(-fv_r*Dr(n2))
+!        vr(n2) = av_r*Dr(n2)**bv_r * exp(-fv_r*Dr(n2))
          vr(n2) = -0.1021 + 4.932E3*Dr(n2) - 0.9551E6*Dr(n2)*Dr(n2)     &
               + 0.07934E9*Dr(n2)*Dr(n2)*Dr(n2)                          &
               - 0.002362E12*Dr(n2)*Dr(n2)*Dr(n2)*Dr(n2)
          D1(n2) = (vr(n2)/av_s)**(1./bv_s)
       enddo
       do n = 1, nbs
-         vs(n) = 1.5*av_s*Ds(n)**bv_s * DEXP(-fv_s*Ds(n))
+         vs(n) = 1.5*av_s*Ds(n)**bv_s * exp(-fv_s*Ds(n))
       enddo
 
 !..Note values returned from wrf_dm_decomp1d are zero-based, add 1 for
@@ -3071,7 +3071,7 @@
          lamr = lam_exp * (crg(3)*org2*org1)**obmr
          N0_r = N0r_exp(k)/(crg(2)*lam_exp) * lamr**cre(2)
          do n2 = 1, nbr
-            N_r(n2) = N0_r*Dr(n2)**mu_r * DEXP(-lamr*Dr(n2))*dtr(n2)
+            N_r(n2) = N0_r*Dr(n2)**mu_r * exp(-lamr*Dr(n2))*dtr(n2)
          enddo
 
          do j = 1, ntb_t
@@ -3118,8 +3118,8 @@
                slam2 = M2 * oM3 * Lam1
 
                do n = 1, nbs
-                  N_s(n) = Mrat*(Kap0*DEXP(-slam1*Ds(n)) &
-                      + Kap1*M0*Ds(n)**mu_s * DEXP(-slam2*Ds(n)))*dts(n)
+                  N_s(n) = Mrat*(Kap0*exp(-slam1*Ds(n)) &
+                      + Kap1*M0*Ds(n)**mu_s * exp(-slam2*Ds(n)))*dts(n)
                enddo
 
                t1 = 0.0d0
@@ -3139,8 +3139,8 @@
                   do n = 1, nbs
                      masss = am_s * Ds(n)**bm_s
       
-                     dvs = 0.5d0*((vr(n2) - vs(n)) + DABS(vr(n2)-vs(n)))
-                     dvr = 0.5d0*((vs(n) - vr(n2)) + DABS(vs(n)-vr(n2)))
+                     dvs = 0.5d0*((vr(n2) - vs(n)) + abs(vr(n2)-vs(n)))
+                     dvr = 0.5d0*((vs(n) - vr(n2)) + abs(vs(n)-vr(n2)))
 
                      if (massr .gt. 1.5*masss) then
                      t1 = t1+ PI*.25*Ef_rs*(Ds(n)+Dr(n2))*(Ds(n)+Dr(n2)) &
@@ -3177,7 +3177,7 @@
                   enddo
                enddo
                tcs_racs1(i,j,k,m) = t1
-               tmr_racs1(i,j,k,m) = DMIN1(z1, r_r(m)*1.0d0)
+               tmr_racs1(i,j,k,m) = min(z1, r_r(m)*1.0d0)
                tcs_racs2(i,j,k,m) = t3
                tmr_racs2(i,j,k,m) = z3
                tcr_sacr1(i,j,k,m) = t2
@@ -3245,7 +3245,7 @@
 !..Freeze water (smallest drops become cloud ice, otherwise graupel).
       do k = 1, 45
 !         print*, ' Freezing water for temp = ', -k
-         Texp = DEXP( DFLOAT(k) ) - 1.0D0
+         Texp = exp( real(k) ) - 1.0D0
          do j = 1, ntb_r1
             do i = 1, ntb_r
                lam_exp = (N0r_exp(j)*am_r*crg(1)/r_r(i))**ore1
@@ -3256,9 +3256,9 @@
                sumn1 = 0.0d0
                sumn2 = 0.0d0
                do n2 = nbr, 1, -1
-                  N_r(n2) = N0_r*Dr(n2)**mu_r*DEXP(-lamr*Dr(n2))*dtr(n2)
+                  N_r(n2) = N0_r*Dr(n2)**mu_r*exp(-lamr*Dr(n2))*dtr(n2)
                   vol = massr(n2)*orho_w
-                  prob = 1.0D0 - DEXP(-120.0D0*vol*5.2D-4 * Texp)
+                  prob = 1.0D0 - exp(-120.0D0*vol*5.2D-4 * Texp)
                   if (massr(n2) .lt. xm0g) then
                      sumn1 = sumn1 + prob*N_r(n2)
                      sum1 = sum1 + prob*N_r(n2)*massr(n2)
@@ -3290,7 +3290,7 @@
             do n = nbc, 1, -1
                y = Dc(n)*1.0D6
                vol = massc(n)*orho_w
-               prob = 1.0D0 - DEXP(-120.0D0*vol*5.2D-4 * Texp)
+               prob = 1.0D0 - exp(-120.0D0*vol*5.2D-4 * Texp)
 !              N_c(n) = N0_c* y**mu_c * EXP(-lamc*y)*dtc(n)
                if(j==1) then
                  N_c(n) = N0_c* y**mu_cl * EXP(-lamc*y)*dtc(n)
@@ -3355,7 +3355,7 @@
              xlimit_intg = lami*D0s
              tpi_ide(i,j) = GAMMP(mu_i+2.0, xlimit_intg) * 1.0D0
              do n2 = 1, nbi
-               N_i(n2) = N0_i*Di(n2)**mu_i * DEXP(-lami*Di(n2))*dti(n2)
+               N_i(n2) = N0_i*Di(n2)**mu_i * exp(-lami*Di(n2))*dti(n2)
                if (Di(n2).ge.D0s) then
                   t1 = t1 + N_i(n2) * am_i*Di(n2)**bm_i
                   t2 = t2 + N_i(n2)
@@ -3416,10 +3416,10 @@
           stokes = Dc(j)*Dc(j)*vtr*rho_w/(9.*1.718E-5*Dr(i))
           reynolds = 9.*stokes/(p*p*rho_w)
 
-          F = DLOG(reynolds)
+          F = log(reynolds)
           G = -0.1007D0 - 0.358D0*F + 0.0261D0*F*F
-          K0 = DEXP(G)
-          z = DLOG(stokes/(K0+1.D-15))
+          K0 = exp(G)
+          z = log(stokes/(K0+1.D-15))
           H = 0.1465D0 + 1.302D0*z - 0.607D0*z*z + 0.293D0*z*z*z
           yc0 = 2.0D0/PI * ATAN(H)
           Ef_rw = (yc0+p)*(yc0+p) / ((1.+p)*(1.+p))
@@ -3451,7 +3451,7 @@
       do j = 1, nbc
       vtc = 1.19D4 * (1.0D4*Dc(j)*Dc(j)*0.25D0)
       do i = 1, nbs
-         vts = av_s*Ds(i)**bv_s * DEXP(-fv_s*Ds(i)) - vtc
+         vts = av_s*Ds(i)**bv_s * exp(-fv_s*Ds(i)) - vtc
          Ds_m = (am_s*Ds(i)**bm_s / am_r)**obmr
          p = Dc(j)/Ds_m
          if (p.gt.0.25 .or. Ds(i).lt.D0s .or. Dc(j).lt.6.E-6 &
@@ -3461,10 +3461,10 @@
           stokes = Dc(j)*Dc(j)*vts*rho_w/(9.*1.718E-5*Ds_m)
           reynolds = 9.*stokes/(p*p*rho_w)
 
-          F = DLOG(reynolds)
+          F = log(reynolds)
           G = -0.1007D0 - 0.358D0*F + 0.0261D0*F*F
-          K0 = DEXP(G)
-          z = DLOG(stokes/(K0+1.D-15))
+          K0 = exp(G)
+          z = log(stokes/(K0+1.D-15))
           H = 0.1465D0 + 1.302D0*z - 0.607D0*z*z + 0.293D0*z*z*z
           yc0 = 2.0D0/PI * ATAN(H)
           Ef_sw = (yc0+p)*(yc0+p) / ((1.+p)*(1.+p))
@@ -3512,13 +3512,13 @@
 
 ! TO APPLY TABLE ABOVE
 !..Rain lookup table indexes.
-!         Dr_star = DSQRT(-2.D0*DT * t1_evap/(2.*PI) &
+!         Dr_star = sqrt(-2.D0*DT * t1_evap/(2.*PI) &
 !                 * 0.78*4.*diffu(k)*xsat*rvs/rho_w)
-!         idx_d = NINT(1.0 + FLOAT(nbr) * DLOG(Dr_star/D0r)             &
-!               / DLOG(Dr(nbr)/D0r))
+!         idx_d = NINT(1.0 + FLOAT(nbr) * log(Dr_star/D0r)             &
+!               / log(Dr(nbr)/D0r))
 !         idx_d = MAX(1, MIN(idx_d, nbr))
 !
-!         nir = NINT(DLOG10(rr(k)))
+!         nir = NINT(log10(rr(k)))
 !         do nn = nir-1, nir+1
 !            n = nn
 !            if ( (rr(k)/10.**nn).ge.1.0 .and. &
@@ -3531,7 +3531,7 @@
 !         lamr = (am_r*crg(3)*org2*nr(k)/rr(k))**obmr
 !         lam_exp = lamr * (crg(3)*org2*org1)**bm_r
 !         N0_exp = org1*rr(k)/am_r * lam_exp**cre(1)
-!         nir = NINT(DLOG10(N0_exp))
+!         nir = NINT(log10(N0_exp))
 !         do nn = nir-1, nir+1
 !            n = nn
 !            if ( (N0_exp/10.**nn).ge.1.0 .and. &
@@ -3698,9 +3698,9 @@
 !  ; Source: Murphy and Koop, Review of the vapour pressure of ice and
 !             supercooled water for atmospheric applications, Q. J. R.
 !             Meteorol. Soc (2005), 131, pp. 1539-1565.
-!    ESL = EXP(54.842763 - 6763.22 / T - 4.210 * ALOG(T) + 0.000367 * T
+!    ESL = EXP(54.842763 - 6763.22 / T - 4.210 * log(T) + 0.000367 * T
 !        + TANH(0.0415 * (T - 218.8)) * (53.878 - 1331.22
-!        / T - 9.44523 * ALOG(T) + 0.014025 * T))
+!        / T - 9.44523 * log(T) + 0.014025 * T))
 
       END FUNCTION RSLF
 !+---+-----------------------------------------------------------------+
@@ -3730,7 +3730,7 @@
 !  ; Source: Murphy and Koop, Review of the vapour pressure of ice and
 !             supercooled water for atmospheric applications, Q. J. R.
 !             Meteorol. Soc (2005), 131, pp. 1539-1565.
-!     ESI = EXP(9.550426 - 5723.265/T + 3.53068*ALOG(T) - 0.00728332*T)
+!     ESI = EXP(9.550426 - 5723.265/T + 3.53068*log(T) - 0.00728332*T)
 
       END FUNCTION RSIF
 !+---+-----------------------------------------------------------------+
@@ -3886,11 +3886,11 @@
       N0_min = gonv_max
       do k = kte, kts, -1
          if (temp(k).lt.270.65 .and. L_qr(k) .and. mvd_r(k).gt.100.E-6) then
-            xslw1 = 4.01 + dlog10(mvd_r(k))
+            xslw1 = 4.01 + log10(mvd_r(k))
          else
             xslw1 = 0.01
          endif
-         ygra1 = 4.31 + dlog10(max(5.E-5, rg(k)))
+         ygra1 = 4.31 + log10(max(5.E-5, rg(k)))
          zans1 = 3.1 + (100./(300.*xslw1*ygra1/(10./xslw1+1.+0.25*ygra1)+30.+10.*ygra1))
          N0_exp = 10.**(zans1)
          N0_exp = MAX(DBLE(gonv_min), MIN(N0_exp, DBLE(gonv_max)))
@@ -3962,8 +3962,8 @@
                     CBACK, mixingrulestring_s, matrixstring_s,          &
                     inclusionstring_s, hoststring_s,                    &
                     hostmatrixstring_s, hostinclusionstring_s)
-              f_d = Mrat*(Kap0*DEXP(-slam1*xxDs(n))                     &
-                    + Kap1*(M0*xxDs(n))**mu_s * DEXP(-slam2*xxDs(n)))
+              f_d = Mrat*(Kap0*exp(-slam1*xxDs(n))                     &
+                    + Kap1*(M0*xxDs(n))**mu_s * exp(-slam2*xxDs(n)))
               eta = eta + f_d * CBACK * simpson(n) * xdts(n)
            enddo
            ze_snow(k) = SNGL(lamda4 / (pi5 * K_w) * eta)
@@ -3982,7 +3982,7 @@
                     CBACK, mixingrulestring_g, matrixstring_g,          &
                     inclusionstring_g, hoststring_g,                    &
                     hostmatrixstring_g, hostinclusionstring_g)
-              f_d = N0_g(k)*xxDg(n)**mu_g * DEXP(-lamg*xxDg(n))
+              f_d = N0_g(k)*xxDg(n)**mu_g * exp(-lamg*xxDg(n))
               eta = eta + f_d * CBACK * simpson(n) * xdtg(n)
            enddo
            ze_graupel(k) = SNGL(lamda4 / (pi5 * K_w) * eta)

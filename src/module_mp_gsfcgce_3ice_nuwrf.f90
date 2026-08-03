@@ -671,9 +671,9 @@ CONTAINS
    !           if (.not. vtr(k) .gt. 0.0) cycle ! EMK NUWRF Bug fix
 
                      if (k .eq. 1) then
-                        del_tv = dmin1(del_tv, 0.9*(zz(k) - topo(i, j))/vtr(k))
+                        del_tv = min(del_tv, 0.9*(zz(k) - topo(i, j))/vtr(k))
                      else
-                        del_tv = dmin1(del_tv, 0.9*(zz(k) - zz(k - 1))/vtr(k))
+                        del_tv = min(del_tv, 0.9*(zz(k) - zz(k - 1))/vtr(k))
                      end if
                   end if
                end do
@@ -700,7 +700,7 @@ CONTAINS
                      flux = (fluxin - fluxout)/rhoz(k)/dzw(k)
    !            tmpqrz=qrz(k)
                      qrz(k) = qrz(k) + del_tv*flux
-                     qrz(k) = dmax1(0., qrz(k))
+                     qrz(k) = max(0., qrz(k))
                      qr(i, k, j) = qrz(k)
                      fluxin = fluxout
                      rsed(k) = rsed(k) + fluxin
@@ -760,9 +760,9 @@ CONTAINS
                      call vts_mks(improve, rhoz(k), qsz(k), tz(k), vts(k))
 
                      if (k .eq. 1) then
-                        del_tv = dmin1(del_tv, 0.9*(zz(k) - topo(i, j))/vts(k))
+                        del_tv = min(del_tv, 0.9*(zz(k) - topo(i, j))/vts(k))
                      else
-                        del_tv = dmin1(del_tv, 0.9*(zz(k) - zz(k - 1))/vts(k))
+                        del_tv = min(del_tv, 0.9*(zz(k) - zz(k - 1))/vts(k))
                      end if
                   end if
                end do
@@ -789,7 +789,7 @@ CONTAINS
                      fluxout = rhoz(k)*vts(k)*qsz(k)
                      flux = (fluxin - fluxout)/rhoz(k)/dzw(k)
                      qsz(k) = qsz(k) + del_tv*flux
-                     qsz(k) = dmax1(0., qsz(k))
+                     qsz(k) = max(0., qsz(k))
                      qs(i, k, j) = qsz(k)
                      fluxin = fluxout
                      ssed(k) = ssed(k) + fluxin
@@ -854,9 +854,9 @@ CONTAINS
                         call vtg_mks(ihail, improve, rhoz(k), qgz(k), tz(k), vtg(k))
 
                         if (k .eq. 1) then
-                           del_tv = dmin1(del_tv, 0.9*(zz(k) - topo(i, j))/vtg(k))
+                           del_tv = min(del_tv, 0.9*(zz(k) - topo(i, j))/vtg(k))
                         else
-                           del_tv = dmin1(del_tv, 0.9*(zz(k) - zz(k - 1))/vtg(k))
+                           del_tv = min(del_tv, 0.9*(zz(k) - zz(k - 1))/vtg(k))
                         end if
    !
                      end if !qgz
@@ -884,7 +884,7 @@ CONTAINS
                         fluxout = rhoz(k)*vtg(k)*qgz(k)
                         flux = (fluxin - fluxout)/rhoz(k)/dzw(k)
                         qgz(k) = qgz(k) + del_tv*flux
-                        qgz(k) = dmax1(0., qgz(k))
+                        qgz(k) = max(0., qgz(k))
                         qg(i, k, j) = qgz(k)
                         fluxin = fluxout
                         gsed(k) = gsed(k) + fluxin
@@ -947,9 +947,9 @@ CONTAINS
                      ! EMK:  Avoid division by zero
                      if ((vti(k) .gt. 1.0e-20)) then
                         if (k .eq. 1) then
-                           del_tv = dmin1(del_tv, 0.9*(zz(k) - topo(i, j))/vti(k))
+                           del_tv = min(del_tv, 0.9*(zz(k) - topo(i, j))/vti(k))
                         else
-                           del_tv = dmin1(del_tv, 0.9*(zz(k) - zz(k - 1))/vti(k))
+                           del_tv = min(del_tv, 0.9*(zz(k) - zz(k - 1))/vti(k))
                         end if
                      end if
                   end if
@@ -978,7 +978,7 @@ CONTAINS
                      fluxout = rhoz(k)*vti(k)*qiz(k)
                      flux = (fluxin - fluxout)/rhoz(k)/dzw(k)
                      qiz(k) = qiz(k) + del_tv*flux
-                     qiz(k) = dmax1(0., qiz(k))
+                     qiz(k) = max(0., qiz(k))
                      qi(i, k, j) = qiz(k)
                      fluxin = fluxout
                      ised(k) = ised(k) + fluxin
@@ -1067,7 +1067,7 @@ CONTAINS
          do k = kts, kte
             do j = jts, jte
                do i = its, ite
-                  X(i, k, j) = A0*DMAX1(X(i, k, j), 0.0)
+                  X(i, k, j) = A0*max(X(i, k, j), 0.0)
                end do
             end do
          end do
@@ -3284,7 +3284,7 @@ CONTAINS
                      else
                         ncloud = 0.0
                      end if
-   #ifdef Readaeroclx
+#ifdef Readaeroclx
                   elseif (ccnflag .eq. 2) then
                      if (qv(i, j) .gt. qsw(i, j)) then
                         rhw = max(1.e-6, qv(i, j)/qsw(i, j)*100.)       !relative humidity (%)
@@ -3294,7 +3294,7 @@ CONTAINS
                      else
                         ncloud = 0.0
                      end if
-   #endif
+#endif
                   else
                      stop 'ccnflag error!!!'
                   end if
@@ -3340,14 +3340,14 @@ CONTAINS
                      if (inflag .eq. 1) then      ! Meyers et al. 1992 (m^-3)
                         ssi(i, j) = qv(i, j)/qsi(i, j) - 1.
                         nice = 1.e3*exp(1.296E+1*ssi(i, j) - 6.39E-1)  ! IN (convert from L^-1 to m^-3)
-   #ifdef Readaeroclx
+#ifdef Readaeroclx
                      elseif (inflag .eq. 2) then  ! GOCART mass2icn
                         p_mb = p0(i, j, k)*1.e-3                       ! pressure (hPa, equal to mbar)
                         call mass2icn(p_mb, tair(i, j), aerog, nice)
                         nice = nice*1.e+3                              ! IN (convert from L^-1 to m^-3)
 !                        nice = min(nice, rhoair*qi(i, j)/4.71E-10)     ! cap IN to the amount corresponding to rhoi=900, Ri=50
 !                        nice = min(nice, rhoair*qi(i, j)/3.77E-9)      ! cap IN to the amount corresponding to rhoi=900, Ri=100
-   #endif
+#endif
                      elseif (inflag .eq. 3) then  ! Hong et al. 2004
                         nice = 5.38e+7*exp(0.75*log(qi(i, j)*rhoair))   ! IN (m^-3)
                      elseif (inflag .eq. 4) then  ! Cooper curve ; Chern et al. 2016
@@ -4266,8 +4266,8 @@ CONTAINS
 
             sccc = cnd(i, j)
             seee = dd(i, j) + ern(i, j)
-            sddd = dep(i, j) + dmax1(pint(i, j), 0.0) + psdep(i, j) + pgdep(i, j)
-            ssss = dd1(i, j) - dmin1(pint(i, j), 0.0) + pssub(i, j) + pgsub(i, j) + pmlts(i, j) + pmltg(i, j)
+            sddd = dep(i, j) + max(pint(i, j), 0.0) + psdep(i, j) + pgdep(i, j)
+            ssss = dd1(i, j) - min(pint(i, j), 0.0) + pssub(i, j) + pgsub(i, j) + pmlts(i, j) + pmltg(i, j)
             smmm = psmlt(i, j) + pgmlt(i, j) + pimlt(i, j) + qracs(i, j)
             sfff = psacw(i, j)*d2t + piacr(i, j)*d2t + psfw(i, j)*d2t + pgfr(i, j)*d2t &
                    + dgacw(i, j)*d2t + dgacr(i, j)*d2t + psacr(i, j)*d2t + pihom(i, j) &
@@ -4354,15 +4354,15 @@ CONTAINS
             IF (TAIR(I, J) .LT. 273.16) THEN
 !           ZDRY = MAX(1.e-4,A_11+A_33+ZE_CLD) ! Xiping's  !rain,snow,cloud ice,cloud water,graupel
                ZDRY = MAX(1.e-4, A_11 + A_22 + A_33 + ZE_CLD) !rain,snow,cloud ice,cloud water,graupel
-!           DBZ(I,K,J) = 10.*ALOG10(ZDRY)
-               DBZ(I, K, J) = 10.*DLOG10(ZDRY)
+!           DBZ(I,K,J) = 10.*log10(ZDRY)
+               DBZ(I, K, J) = 10.*log10(ZDRY)
             ELSE
 !           A_44 = A_11+UWET*(A_22+A_33)**.95         ! old formula
 !           A_44 = A_11+UWET*A_33**.95+ZE_CLD         ! Xiping's
                A_44 = A_11 + UWET*(A_22 + A_33)**.95 + ZE_CLD
                ZWET = MAX(1.e-4, A_44)
-!           DBZ(I,K,J) = 10.*ALOG10(ZWET)
-               DBZ(I, K, J) = 10.*DLOG10(ZWET)
+!           DBZ(I,K,J) = 10.*log10(ZWET)
+               DBZ(I, K, J) = 10.*log10(ZWET)
             END IF
 !end of EXT_DIAG
 #endif
@@ -4789,8 +4789,8 @@ CONTAINS
                      ga = 1.0d+300
                   end if
                else
-                  if (dabs(dble(x)) .gt. 1.0d0) then
-                     z = dabs(dble(x))
+                  if (abs(dble(x)) .gt. 1.0d0) then
+                     z = abs(dble(x))
                      m = int(z)
                      r = 1.0d0
                      do k = 1, m
@@ -4805,9 +4805,9 @@ CONTAINS
                      gr = gr*z + g(k)
                   end do
                   ga = 1.0d0/(gr*z)
-                  if (dabs(dble(x)) .gt. 1.0d0) then
+                  if (abs(dble(x)) .gt. 1.0d0) then
                      ga = ga*r
-                     if (x .lt. 0.0d0) ga = -pi/(x*ga*dsin(pi*x))
+                     if (x .lt. 0.0d0) ga = -pi/(x*ga*sin(pi*x))
                   end if
                end if
 
@@ -4958,7 +4958,7 @@ CONTAINS
                                                          CBACK, mixingrulestring_s, matrixstring_s, &
                                                          inclusionstring_s, hoststring_s, &
                                                          hostmatrixstring_s, hostinclusionstring_s)
-                           f_d = N0_s(k)*xxDs(n)**xmu_s*DEXP(-lams*xxDs(n))
+                           f_d = N0_s(k)*xxDs(n)**xmu_s*exp(-lams*xxDs(n))
                            eta = eta + f_d*CBACK*simpson(n)*xdts(n)
                         end do
                         ze_snow(k) = SNGL(lamda4/(pi5*K_w)*eta)
@@ -4977,7 +4977,7 @@ CONTAINS
                                                          CBACK, mixingrulestring_g, matrixstring_g, &
                                                          inclusionstring_g, hoststring_g, &
                                                          hostmatrixstring_g, hostinclusionstring_g)
-                           f_d = N0_g(k)*xxDg(n)**xmu_g*DEXP(-lamg*xxDg(n))
+                           f_d = N0_g(k)*xxDg(n)**xmu_g*exp(-lamg*xxDg(n))
                            eta = eta + f_d*CBACK*simpson(n)*xdtg(n)
                         end do
                         ze_graupel(k) = SNGL(lamda4/(pi5*K_w)*eta)
@@ -5437,7 +5437,7 @@ CONTAINS
                         call sgmap(2, y1, r00, tzc, ftng0)
                         ftng = ftng0**bgq
                      end if
-                     vtg = dmax1(vgcr*(r00*y1)**bgq/ftng, 0.0)
+                     vtg = max(vgcr*(r00*y1)**bgq/ftng, 0.0)
                      vtg = vtg*0.01  !convert back to MKS
 
 !            endif  !end of if igce

@@ -36,7 +36,7 @@
             call dfftw_destroy_plan(plan_c2r)
 
          else                    !FFTW_FORWARD
-            scale=1.0/dfloat(n)
+            scale=1.0/real(n)
             call dfftw_plan_many_dft_r2c(plan_r2c,1,n,m,a,n,inc,jump,pa,n,inc,nn,FFTW_ESTIMATE)
             call dfftw_execute(plan_r2c)
 
@@ -101,7 +101,7 @@
             call sfftw_destroy_plan(plan_c2r)
 
          else                    !FFTW_FORWARD
-!           scale=1.0/dfloat(n)
+!           scale=1.0/real(n)
             scale=1.0/float(n)
             call sfftw_plan_many_dft_r2c(plan_r2c,1,n,m,a,n,inc,jump,pa,n,inc,nn,FFTW_ESTIMATE)
             call sfftw_execute(plan_r2c)
@@ -228,7 +228,7 @@
                ib=ib+jump
             end do
          else
-            scale=1.0/dfloat(n)
+            scale=1.0/real(n)
             ibmsign=1
             if(isign.ne.ibmtype.or.m.ne.ibmm.or.n.ne.ibmn) then
 !
@@ -280,7 +280,7 @@
                        aux1,naux1,aux2,naux2,aux3,0)
 
          else
-            scale=1.0/dfloat(n)
+            scale=1.0/real(n)
             ibmsign=+1
             if(isign.ne.ibmtype.or.m.ne.ibmm.or.n.ne.ibmn) then
 !

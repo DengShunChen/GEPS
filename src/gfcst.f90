@@ -126,29 +126,29 @@
 !  time integration
 !
 #ifdef TIMCOMCPL
-   #ifdef USE_CUDA
+#ifdef USE_CUDA
       call cudaProfilerStart
       call intgrt_gpu(compid)
       call cudaProfilerStop
       call mpe_finalize
-   #else
+#else
       call intgrt(compid)
       call mpe_finalize
-   #endif
+#endif
 
    end subroutine gfcst
 
    
 #else
        if ( ttl ) then
-  #ifdef USE_CUDA
+#ifdef USE_CUDA
         call cudaProfilerStart
         call intgrt_gpu
   !      call intgrt
         call cudaProfilerStop
-  #else
+#else
         call intgrt
-  #endif
+#endif
    else
       call intgrt_3tl
    end if

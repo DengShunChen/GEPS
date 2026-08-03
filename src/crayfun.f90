@@ -51,3 +51,29 @@
       isamax = mmm
       return
       end
+
+! Cray rtc() / NCEP timef() — not provided by gfortran
+      function rtc()
+      real*8 rtc
+      integer count, rate
+      call system_clock(count, rate)
+      if (rate .gt. 0) then
+        rtc = dble(count) / dble(rate)
+      else
+        rtc = 0.d0
+      endif
+      return
+      end
+
+      function timef()
+! return wall time in milliseconds (NCEP/W3 convention)
+      real timef
+      integer count, rate
+      call system_clock(count, rate)
+      if (rate .gt. 0) then
+        timef = real(count) * 1.0e3 / real(rate)
+      else
+        timef = 0.0
+      endif
+      return
+      end

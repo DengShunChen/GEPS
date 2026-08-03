@@ -119,11 +119,11 @@
       xxDx(1) = 100.D-6
       xxDx(nrbins+1) = 0.02d0
       do n = 2, nrbins
-         xxDx(n) = DEXP(DFLOAT(n-1)/DFLOAT(nrbins) &
-                  *DLOG(xxDx(nrbins+1)/xxDx(1)) +DLOG(xxDx(1)))
+         xxDx(n) = exp(real(n-1)/real(nrbins) &
+                  *log(xxDx(nrbins+1)/xxDx(1)) +log(xxDx(1)))
       enddo
       do n = 1, nrbins
-         xxDs(n) = DSQRT(xxDx(n)*xxDx(n+1))
+         xxDs(n) = sqrt(xxDx(n)*xxDx(n+1))
          xdts(n) = xxDx(n+1) - xxDx(n)
       enddo
 
@@ -131,11 +131,11 @@
       xxDx(1) = 100.D-6
       xxDx(nrbins+1) = 0.05d0
       do n = 2, nrbins
-         xxDx(n) = DEXP(DFLOAT(n-1)/DFLOAT(nrbins) &
-                  *DLOG(xxDx(nrbins+1)/xxDx(1)) +DLOG(xxDx(1)))
+         xxDx(n) = exp(real(n-1)/real(nrbins) &
+                  *log(xxDx(nrbins+1)/xxDx(1)) +log(xxDx(1)))
       enddo
       do n = 1, nrbins
-         xxDg(n) = DSQRT(xxDx(n)*xxDx(n+1))
+         xxDg(n) = sqrt(xxDx(n)*xxDx(n+1))
          xdtg(n) = xxDx(n+1) - xxDx(n)
       enddo
 
@@ -285,9 +285,9 @@
       m_air = (1.0d0,0.0d0)
 
 !     Limiting the degree of melting --- for safety: 
-      fm = DMAX1(DMIN1(fmelt, 1.0d0), 0.0d0)
+      fm = max(min(fmelt, 1.0d0), 0.0d0)
 !     Limiting the ratio of (melting on outside)/(melting on inside):
-      mra = DMAX1(DMIN1(meltratio_outside, 1.0d0), 0.0d0)
+      mra = max(min(meltratio_outside, 1.0d0), 0.0d0)
 
 !    ! The relative portion of meltwater melting at outside should increase
 !    ! from the given input value (between 0 and 1)
@@ -303,7 +303,7 @@
       if (D_g .ge. 1d-12) then
 
        vg = PIx/6. * D_g**3
-       rhog = DMAX1(DMIN1(x_g / vg, 900.0d0), 10.0d0)
+       rhog = max(min(x_g / vg, 900.0d0), 10.0d0)
        vg = x_g / rhog
       
        meltratio_outside_grenz = 1.0d0 - rhog / 1000.
@@ -542,7 +542,7 @@
 
       error = 0
 
-      if (DABS(vol1+vol2+vol3-1.0d0) .gt. 1d-6) then
+      if (abs(vol1+vol2+vol3-1.0d0) .gt. 1d-6) then
        write(*,*) 'M_COMPLEX_MAXWELLGARNETT: sum of the ',       &
               'partial volume fractions is not 1...ERROR'
        m_complex_maxwellgarnett=CMPLX(-999.99d0,-999.99d0)

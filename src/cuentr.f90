@@ -74,10 +74,10 @@ SUBROUTINE cuentr(nxj,klon,klev,klevp1,kk,ptenh,paphp1,papp1,klwmin,ldcum, &
     zpmid = 0.5*(ppbase(jl)+paphp1(jl,kctop0(jl)))
     zentr = pentr(jl)*pmfu(jl,kk+1)*zdprho*zrrho
     llo1 = kk < kcbot(jl) .AND. ldcum(jl)
-    pdmfde(jl) = MERGE(zentr,0.d0,llo1)
+    pdmfde(jl) = MERGE(zentr,0.e0,llo1)
     llo2 = llo1 .AND. ktype(jl) == 2 .AND. (ppbase(jl)-paphp1(jl,kk)<0.2E5 &
 &        .OR. paphp1(jl,kk)>zpmid)
-    pdmfen(jl) = MERGE(zentr,0.d0,llo2)
+    pdmfen(jl) = MERGE(zentr,0.e0,llo2)
     iklwmin = MAX(klwmin(jl),kctop0(jl)+2)
     llo2 = llo1 .AND. ktype(jl) == 3 .AND. (kk>=iklwmin .OR. papp1(jl,kk)> &
 &        zpmid)
@@ -97,7 +97,7 @@ SUBROUTINE cuentr(nxj,klon,klev,klevp1,kk,ptenh,paphp1,papp1,klwmin,ldcum, &
         arg = 3.1415*(zzmzk/ztmzk)*0.5
         zorgde = TAN(arg)*3.1415*0.5/ztmzk
         zdprho = (paphp1(jl,kk+1)-paphp1(jl,kk))*(zrg*zrrho)
-        podetr(jl,kk) = MIN(zorgde,1.d-3)*pmfu(jl,kk+1)*zdprho
+        podetr(jl,kk) = MIN(zorgde,1.e-3)*pmfu(jl,kk+1)*zdprho
       END IF
     END IF
   END DO

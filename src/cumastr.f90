@@ -228,7 +228,7 @@ zmfub(klon), zmfub1(klon), zmful(klon,klev), &
 
 !  DO JL = 1, klon
   DO JL = 1, nxj
-    ktype(jl) = MERGE(1,2,zdqcv(jl)>MAX(0.d0,-1.1d0*pqhfl(jl)*g))
+    ktype(jl) = MERGE(1,2,zdqcv(jl)>MAX(0.e0,-1.1e0*pqhfl(jl)*g))
   END DO
 
   ! (C) Determine moisture supply for boundary layer
@@ -241,9 +241,9 @@ zmfub(klon), zmfub1(klon), zmful(klon,klev), &
   DO jl = 1, nxj
     ikb = kcbot(jl)
     zqumqe = pqu(jl,ikb) + plu(jl,ikb) - zqenh(jl,ikb)
-    zdqmin = MAX(0.01*zqenh(jl,ikb),1.d-10)
+    zdqmin = MAX(0.01*zqenh(jl,ikb),1.e-10)
     llo1 = zdqpbl(jl) > 0. .AND. zqumqe > zdqmin .AND. ldcum(jl)
-    zmfub(jl) = MERGE(zdqpbl(jl)/(g*MAX(zqumqe,zdqmin)),0.01d0,llo1)
+    zmfub(jl) = MERGE(zdqpbl(jl)/(g*MAX(zqumqe,zdqmin)),0.01e0,llo1)
     zmfmax = (paphp1(jl,ikb)-paphp1(jl,ikb-1))*zcons2
     zmfub(jl) = MIN(zmfub(jl),zmfmax)
     IF ( .NOT. llo1) ldcum(jl) = .FALSE.
@@ -449,10 +449,10 @@ zmfub(klon), zmfub1(klon), zmful(klon,klev), &
     IF (ktype(jl)/=1) THEN
       ikb = kcbot(jl)
       llo1 = pmfd(jl,ikb) < 0. .AND. loddraf(jl)
-      zeps = MERGE(cmfdeps,0.d0,llo1)
+      zeps = MERGE(cmfdeps,0.e0,llo1)
       zqumqe = pqu(jl,ikb) + plu(jl,ikb) - zeps*zqd(jl,ikb) - &
                (1.-zeps)*zqenh(jl,ikb)
-      zdqmin = MAX(0.01*zqenh(jl,ikb),1.d-10)
+      zdqmin = MAX(0.01*zqenh(jl,ikb),1.e-10)
       zmfmax = (paphp1(jl,ikb)-paphp1(jl,ikb-1))*zcons2
       llo1 = zdqpbl(jl) > 0. .AND. zqumqe > zdqmin .AND. ldcum(jl) .AND. &
              zmfub(jl) < zmfmax
@@ -465,7 +465,7 @@ zmfub(klon), zmfub1(klon), zmful(klon,klev), &
 !    DO jl = 1, klon
     DO jl = 1, nxj
       IF (ldcum(jl)) THEN
-        zfac = zmfub1(jl)/MAX(zmfub(jl),1.d-10)
+        zfac = zmfub1(jl)/MAX(zmfub(jl),1.e-10)
         pmfd(jl,jk) = pmfd(jl,jk)*zfac
         zmfds(jl,jk) = zmfds(jl,jk)*zfac
         zmfdq(jl,jk) = zmfdq(jl,jk)*zfac

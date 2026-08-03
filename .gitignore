@@ -28,4 +28,4 @@ build_lake.sh
 modulefiles/modulefile.tcogfs.fx1000_lake
 src/Makefile_lake
 exp*
-build_a100
+build_*

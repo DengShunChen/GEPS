@@ -480,7 +480,8 @@
 
 !CWB 2007-09-27 for random number seed >>>
       real*8    rtc,rsecond
-      integer   isize(2)
+      integer, allocatable :: isize(:)
+      integer   nseed
 ! CWB <<<
 
 
@@ -1581,10 +1582,16 @@
         ! original :        
         !    call random_number(XKT2)
         ! CWB 2007-09-27 change random number seed dynamically >>>
+        ! gfortran requires put(:) length == random_seed(size=); fujitsu/nvhpc
+        ! historically accepted a 2-element seed.
         rsecond=rtc()
+        call random_seed(size=nseed)
+        allocate(isize(nseed))
+        isize = 0
         isize(1)=rsecond
-        isize(2)=(rsecond-isize(1))*100000000.
-        call random_seed(put=isize(1:2))
+        if (nseed >= 2) isize(2)=(rsecond-isize(1))*100000000.
+        call random_seed(put=isize)
+        deallocate(isize)
         call random_number(XKT2)
         ! CWB <<<
         lprnt=.false.

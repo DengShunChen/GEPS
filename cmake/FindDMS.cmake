@@ -11,9 +11,17 @@
 # The following variables will be checked by the function DMS_USE_STATIC_LIBS
 # ... if true, only static libraries are found
 
-# If environment variable DMSDIR is specified, it has same effect as DMS_ROOT
+# GEPS_LIB sets DMS / DMS_DIR / DMS38KEY; prefer those over hard-coded paths
 if(NOT DMS_ROOT)
-  set(DMS_ROOT $ENV{DMS})
+  if(DEFINED ENV{DMS_DIR} AND NOT "$ENV{DMS_DIR}" STREQUAL "")
+    set(DMS_ROOT $ENV{DMS_DIR})
+  elseif(DEFINED ENV{DMS} AND NOT "$ENV{DMS}" STREQUAL "")
+    set(DMS_ROOT $ENV{DMS})
+  elseif(DEFINED ENV{DMS38KEY_DIR} AND NOT "$ENV{DMS38KEY_DIR}" STREQUAL "")
+    set(DMS_ROOT $ENV{DMS38KEY_DIR})
+  elseif(DEFINED ENV{DMS38KEY} AND NOT "$ENV{DMS38KEY}" STREQUAL "")
+    set(DMS_ROOT $ENV{DMS38KEY})
+  endif()
 endif()
 message(STATUS "Found DMS root directory at ${DMS_ROOT}")
 
@@ -35,13 +43,16 @@ foreach(_lib IN ITEMS rdms gdbm)
   find_library(
     DMS_LIBRARY_${_lib}
     NAMES ${_lib}
-    PATHS /users/xa09/pkg/x86_64/dms38key/lib
-          ${DMS_ROOT}/lib
+    PATHS ${DMS_ROOT}/lib
           $ENV{DMS_ROOT}/lib
           ${DMS_ROOT}/lib64
+          $ENV{DMS_DIR}/lib
           $ENV{DMS}
           $ENV{DMS}/lib
           $ENV{DMS}/.libs
+          $ENV{DMS38KEY_DIR}/lib
+          $ENV{DMS38KEY}/lib
+          /users/xa09/pkg/x86_64/dms38key/lib
           /usr/local/lib
           /usr/lib
           /opt/DMS/lib

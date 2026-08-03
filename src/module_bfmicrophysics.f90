@@ -754,8 +754,8 @@
           endif
 !---- Eccentricity & shape factor for columns following Young (1993, p. 144)
           ecc_column=sqrt(1.-wd*wd/(d*d))                     ! Eccentricity
-!CWB2016  c_column=ecc_column*d/alog((1.+ecc_column)*d/wd)    ! Shape factor
-          c_column=ecc_column*d/dlog((1.+ecc_column)*d/wd)    ! Shape factor
+!CWB2016  c_column=ecc_column*d/log((1.+ecc_column)*d/wd)    ! Shape factor
+          c_column=ecc_column*d/log((1.+ecc_column)*d/wd)    ! Shape factor
 !---- Characteristic length for columns following Young (1993, p. 150, eq. 6.7)
           cl_column=(wd+2.*d)/(c1+c2*d/wd)       ! Characteristic lengths for columns
 !
@@ -1681,8 +1681,8 @@
                   VrimeF=1.
                 ELSE
                   IXS=MAX(2, MIN(INDEXS/100, 9))
-!CWB2016          XRF=10.492*ALOG(RimeF1)
-                  XRF=10.492*DLOG(RimeF1)
+!CWB2016          XRF=10.492*log(RimeF1)
+                  XRF=10.492*log(RimeF1)
                   IXRF=MAX(0, MIN(INT(XRF), Nrime))
                   IF (IXRF .GE. Nrime) THEN
                     VrimeF=VEL_RF(IXS,Nrime)

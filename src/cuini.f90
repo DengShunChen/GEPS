@@ -105,7 +105,7 @@ pverv,pgeo,paphp1, &
       pxenh(jl,jk) = (pxen(jl,jk)+pxen(jl,jk-1))*zdp
       pqenh(jl,jk) = MIN(pqen(jl,jk-1),pqsen(jl,jk-1)) + &
 &          (pqsenh(jl,jk)-pqsen(jl,jk-1))
-      pqenh(jl,jk) = MAX(pqenh(jl,jk),0.d0)
+      pqenh(jl,jk) = MAX(pqenh(jl,jk),0.e0)
       
     END DO
   END DO

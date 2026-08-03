@@ -1745,12 +1745,12 @@
                              sld_adj, zice, cice, xtice, &
                              hpbl, asl, atl, xmu, gfx, &
                              kpbl, nmpbl, nmmiph, isot, ivegsrc, sfemis, &
-   #ifdef TIMCOMCPL
+#ifdef TIMCOMCPL
                              dudtc,dvdtc,dtdtc,dqdtc,ntrac,ustress,vstress,    &
                              ssu,ssv)
-   #else
+#else
                              dudtc,dvdtc,dtdtc,dqdtc,ntrac)
-   #endif
+#endif
                !$acc wait(async_id)
                !$acc exit data delete(slope_data, bb, drysmc, f11, maxsmc, refsmc, &
                !$acc&     satpsi, satdk, satdw, wltsmc, qtz, rsmtbl, rgltbl, hstbl, &
@@ -2909,9 +2909,9 @@
                    dsigma, phii, islimsk, q0, kdt, tpi, me, dta, area, 1, &
                    itimestep, sgeo, phi, rhc_mp, pk, &
                    snr, xlat, sdec, ivegsrc, ivegtyp, &
-   #ifdef Readaeroclx
+#ifdef Readaeroclx
                    aeroclx, naero, &
-   #endif
+#endif
                    !  ---  inputs/outputs:
                    ttc, qt, clds, &
                    utc, vtc, vvel, &
@@ -2942,9 +2942,9 @@
                       dsigma, phii(1, 1, jj), islimsk(1, jj), q0(1, 1, jj), kdt, tpi, me, dta, area(jj), jj, &
                       itimestep, sgeo(1, jj), phi(1, 1, jj), rhc_mp(1, 1, jj), pk(1, 1, jj), &
                       snr(1, jj), xlat(j), sdec, ivegsrc, ivegtyp(1, jj), &
-   #ifdef Readaeroclx
+#ifdef Readaeroclx
                       aeroclx(1, 1, jj), naero, &
-   #endif
+#endif
                       !  ---  inputs/outputs:
                       ttc(1, 1, jj), qt(1, 1, jj), clds(1, 1, jj), &
                       utc(1, 1, jj), vtc(1, 1, jj), vvel(1, 1, jj), &

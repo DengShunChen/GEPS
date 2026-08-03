@@ -3470,7 +3470,7 @@
 
       bfac = dthr*c1 * exp(0.08*tavgc - c2*sndens)
 
-!     dsx = sndens * ((dexp(bfac*esdc)-1.0) / (bfac*esdc))
+!     dsx = sndens * ((exp(bfac*esdc)-1.0) / (bfac*esdc))
 
 !  --- ...  the function of the form (e**x-1)/x imbedded in above expression
 !           for dsx was causing numerical difficulties when the denominator "x"
@@ -3719,8 +3719,8 @@
           do while ( (nlog < 10) .and. (kcount == 0) )
             nlog = nlog + 1
 
-            df = dlog( (psis*gs2/lsubf) * ( (1.0 + ck*swl)**2.0 )       & 
-               * (smcmax/(smc-swl))**bx ) - dlog(-(tkelv-tfreez)/tkelv)
+            df = log( (psis*gs2/lsubf) * ( (1.0 + ck*swl)**2.0 )       & 
+               * (smcmax/(smc-swl))**bx ) - log(-(tkelv-tfreez)/tkelv)
 
             denom = 2.0*ck/(1.0 + ck*swl) + bx/(smc - swl)
             swlk  = swl - df/denom

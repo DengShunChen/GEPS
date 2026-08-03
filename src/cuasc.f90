@@ -115,7 +115,7 @@ SUBROUTINE cuasc(nxj,klon,klev,klevp1,klevm1,ptenh,pqenh,pxenh,puen,            
 
 !-- 1. Specify parameters
 
-  prec  = EPSILON(0.0d0)
+  prec  = EPSILON(0.0e0)
   ztmst = ztodt*0.5
 ! IF (is_first_step()) ztmst = 0.5*ztodt
   zcons2 = 1./(g*ztmst)
@@ -188,8 +188,8 @@ SUBROUTINE cuasc(nxj,klon,klev,klevp1,klevm1,ptenh,pqenh,pxenh,puen,            
         zdrodz = -LOG(pten(jl,ikb-1)/pten(jl,ikb))/zdz - g/(rd*ptenh(jl,ikb))
         ! nb zoentr is here a fractional value
         zoentr(jl,ikb-1) = zbuoy(jl)*0.5/(1.+zbuoy(jl)*zdz) + zdrodz
-        zoentr(jl,ikb-1) = MIN(zoentr(jl,ikb-1),3.d-4)
-        zoentr(jl,ikb-1) = MAX(zoentr(jl,ikb-1),0.d0)
+        zoentr(jl,ikb-1) = MIN(zoentr(jl,ikb-1),3.e-4)
+        zoentr(jl,ikb-1) = MAX(zoentr(jl,ikb-1),0.e0)
       END IF
     END IF
   END DO
@@ -352,7 +352,7 @@ SUBROUTINE cuasc(nxj,klon,klev,klevp1,klevm1,ptenh,pqenh,pxenh,puen,            
                                                       !      den deutlich besseren
                                                       !      Monsun !!!!!
 
-              zprcon = MERGE(0.d0,cprcon,zpbase(jl)-paphp1(jl,jk)<zdnoprc)
+              zprcon = MERGE(0.e0,cprcon,zpbase(jl)-paphp1(jl,jk)<zdnoprc)
 !             zprcon = MERGE(5.e-4,cprcon,ktype(jl)==1)
 !cprcon: conversion coefficient from cloud water to rain,6e-4
 !zdnoprc: depth limit for no precipitation
@@ -416,8 +416,8 @@ SUBROUTINE cuasc(nxj,klon,klev,klevp1,klevm1,ptenh,pqenh,pxenh,puen,            
         zdrodz = -LOG(pten(jl,jk-1)/pten(jl,jk))/zdz - g/(rd*ptenh(jl,jk))
         zbuoy(jl) = zbuoy(jl) + zbuoyz*zdz
         zoentr(jl,jk-1) = zbuoyz*0.5/(1.+zbuoy(jl)) + zdrodz
-        zoentr(jl,jk-1) = MIN(zoentr(jl,jk-1),3.d-4)
-        zoentr(jl,jk-1) = MAX(zoentr(jl,jk-1),0.d0)
+        zoentr(jl,jk-1) = MIN(zoentr(jl,jk-1),3.e-4)
+        zoentr(jl,jk-1) = MAX(zoentr(jl,jk-1),0.e0)
 
       END IF
     END DO

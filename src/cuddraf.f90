@@ -150,7 +150,7 @@ SUBROUTINE cuddraf(nxj,klon,klev,klevp1,ptenh,pqenh,puen,pven,&
         zbuo = ptd(jl,jk)*(1.+vtmpc1*pqd(jl,jk)) - ptenh(jl,jk)*(1.+vtmpc1* &
 &            pqenh(jl,jk))
         llo1 = zbuo < 0. .AND. (prfl(jl)-pmfd(jl,jk)*zcond(jl)>0.)
-        pmfd(jl,jk) = MERGE(pmfd(jl,jk),0.d0,llo1)
+        pmfd(jl,jk) = MERGE(pmfd(jl,jk),0.e0,llo1)
         pmfds(jl,jk) = (cpd*ptd(jl,jk)+pgeoh(jl,jk))*pmfd(jl,jk)
         pmfdq(jl,jk) = pqd(jl,jk)*pmfd(jl,jk)
         zdmfdp = -pmfd(jl,jk)*zcond(jl)

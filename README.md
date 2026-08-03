@@ -4,20 +4,41 @@
 # GFS TCO #
 
 ## Requirement ##
+* [GEPS_LIB](../GEPS_LIB) dependency stack (per-compiler install tree)
 * CMake 3.21.4
-* NVIDIA HPC SDK 23.11
-* OpenMPI 4.0.1
-* DMS v4
-* NetCDF 4.9.0
-* FFTW 3.5.5
-* Operlib
-* W3 2.0.2
-* Grib2 libraries
-   * g2-1.4.0
-   * png-1.6.37
-   * jasper-1.900.1
+* Toolchains (via `GEPS_COMPILER`):
+  * `nvidia` — NVIDIA HPC SDK + CUDA/OpenACC
+  * `gnu` — GCC/GFortran + OpenMPI
+  * `intel` — Intel oneAPI (icx/ifx + MPI)
+  * `fujitsu` — Fujitsu tcsds (`fccpx`/`frtpx`; alias `tcsds`)
 
-## Quick start (x86_64 / GPU) ##
+## Quick start (multi-compiler / GEPS_LIB) ##
+
+Build matching GEPS_LIB first (`./build_all.sh --compiler <name>`), then:
+
+```sh
+export GEPS_LIB_ROOT=/path/to/GEPS_LIB   # default: ../GEPS_LIB
+
+./compile nvidia    # GPU (CUDA/OpenACC)
+./compile gnu
+./compile intel
+./compile fujitsu   # or: ./compile tcsds
+```
+
+Artifacts land in `build_<compiler>/`.
+
+### Math libraries (BLAS/LAPACK)
+
+| `GEPS_COMPILER` | Math library |
+|-----------------|--------------|
+| `gnu` | OpenBLAS (`GEPS_LIB` `openblas/*`, else system) |
+| `intel` | Intel MKL (`module load mkl/...`, `-qmkl=sequential`) |
+| `nvidia` | NVHPC-shipped BLAS/LAPACK (`$NVHPC_ROOT/compilers/lib`) |
+| `fujitsu` | Fujitsu SSL2 (`-SSL2BLAMP`) |
+
+Do **not** use OpenBLAS for intel/nvidia/fujitsu.
+
+## Quick start (legacy x86_64 / GPU modulefile) ##
 
 ### Setup environment ###
 
@@ -49,7 +70,7 @@ cd job
 pjsub TCo383L72_IC_sample_a100
 ```
 
-## Quick start (ARM) ##
+## Quick start (legacy ARM / Makefile) ##
 
 ### Setup environment and build ###
 
@@ -63,6 +84,7 @@ pjsub TCo383L72_IC_sample_a100
 cd job
 pjsub TCo383L72_IC_sample_fx1000
 ```
+
 
 ### CI ###
 

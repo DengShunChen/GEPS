@@ -1,51 +1,247 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
-# Set the machine type, default is "fx1000"
-MACHINE=${1:-"fx1000"}
+#------------------------------------------------------------------------------
+# Build TCoGFS via CMake against GEPS_LIB toolchains.
+#
+# Usage:
+#   export GEPS_LIB_ROOT=/path/to/GEPS_LIB   # optional; default ../GEPS_LIB
+#   ./compile [COMPILER] [extra cmake args...]
+#
+# COMPILER: nvidia | gnu | intel | fujitsu | tcsds
+#   tcsds is an alias for fujitsu
+#------------------------------------------------------------------------------
 
-# Initialize the Modules system
-. /usr/share/Modules/init/bash
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "${SCRIPT_DIR}"
 
-# Clear and reload the required modules
-module purge
-
-# Load the GFS modules
-module use modulefiles
-module load modulefile.tcogfs.${MACHINE}
-module unuse modulefiles
-
-# Set the build directory
-BLD_DIR=build_${MACHINE}
-[[ -e ${BLD_DIR} ]] && rm -rf ${BLD_DIR}
-
-# Compile based on the selected MACHINE
-if [[ ${MACHINE} == 'fx1000' ]] ; then
-    # Build settings for the fx1000 machine
-    cmake -B${BLD_DIR} -S. \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DUSE_RSM=OFF \
-        -DCWBSUM=OFF  \
-        -DTIMCOMCPL=OFF  \
-        -DUSE_aeroclx=OFF
-
-    	cmake --build ${BLD_DIR} -j $(($(nproc)/2))
-
-elif [[ ${MACHINE} == 'a100' ]] ; then
-    # Build settings for the a100 machine
-    cmake -B${BLD_DIR} -S. \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DUSE_RSM=OFF \
-        -DUSE_CUDA=ON \
-        -DUSE_ACC=ON \
-        -DUSE_PAR=OFF \
-        -DUSE_SP=OFF  \
-        -DCWBSUM=OFF  \
-        -DTIMCOMCPL=OFF  \
-        -DUSE_aeroclx=OFF \
-        -DUSE_NDMS=OFF
-    cmake --build ${BLD_DIR} -j $(($(nproc)/2)) -v
-else
-    echo "[ERROR] Fatal error: unknown MACHINE!"
-    exit 1
+COMPILER_IN="${1:-${GEPS_COMPILER:-nvidia}}"
+if [[ $# -ge 1 ]]; then
+  shift
 fi
+
+COMPILER_IN="$(echo "${COMPILER_IN}" | tr '[:upper:]' '[:lower:]')"
+case "${COMPILER_IN}" in
+  nvidia|nvhpc|a100) GEPS_COMPILER=nvidia ;;
+  gnu|gcc)           GEPS_COMPILER=gnu ;;
+  intel|oneapi|pcc)  GEPS_COMPILER=intel ;;
+  fujitsu|tcsds|fx1000) GEPS_COMPILER=fujitsu ;;
+  -h|--help)
+    cat <<EOF
+Usage: $(basename "$0") [COMPILER] [extra cmake args...]
+
+COMPILER:
+  nvidia   NVHPC + CUDA/OpenACC (default)
+  gnu      GCC/GFortran + OpenMPI
+  intel    Intel oneAPI (icx/ifx + MPI)
+  fujitsu  Fujitsu tcsds (fccpx/frtpx); alias: tcsds
+
+Environment:
+  GEPS_LIB_ROOT   Path to GEPS_LIB (default: ${SCRIPT_DIR}/../GEPS_LIB)
+  GEPS_COMPILER   Used when COMPILER arg omitted
+EOF
+    exit 0
+    ;;
+  *)
+    echo "[ERROR] Unknown COMPILER: ${COMPILER_IN}" >&2
+    echo "        Use: nvidia | gnu | intel | fujitsu | tcsds" >&2
+    exit 1
+    ;;
+esac
+export GEPS_COMPILER
+
+: "${GEPS_LIB_ROOT:=${SCRIPT_DIR}/../GEPS_LIB}"
+GEPS_LIB_ROOT="$(cd "${GEPS_LIB_ROOT}" && pwd)"
+export GEPS_LIB_ROOT
+
+if [[ ! -d "${GEPS_LIB_ROOT}/install/modulefiles" ]]; then
+  echo "[ERROR] GEPS_LIB modulefiles not found: ${GEPS_LIB_ROOT}/install/modulefiles" >&2
+  echo "        Set GEPS_LIB_ROOT to a built/checked-out GEPS_LIB tree." >&2
+  exit 1
+fi
+
+. /usr/share/Modules/init/bash
+module purge 2>/dev/null || true
+
+# Load GEPS_LIB umbrella (toolchain + deps). Prefer source env.sh for wrappers.
+# shellcheck source=/dev/null
+if [[ -f "${GEPS_LIB_ROOT}/env.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "${GEPS_LIB_ROOT}/env.sh"
+  load_geps_compiler
+fi
+
+module use "${GEPS_LIB_ROOT}/install/modulefiles"
+module load geps/1.0
+module unuse "${GEPS_LIB_ROOT}/install/modulefiles"
+
+# Optional GEPS-side thin module (COMP_MP aliases etc.)
+if [[ -f "${SCRIPT_DIR}/modulefiles/modulefile.tcogfs.${GEPS_COMPILER}" ]]; then
+  module use "${SCRIPT_DIR}/modulefiles"
+  module load "modulefile.tcogfs.${GEPS_COMPILER}"
+  module unuse "${SCRIPT_DIR}/modulefiles"
+fi
+
+# MPI / serial compiler wrappers for CMake
+case "${GEPS_COMPILER}" in
+  gnu)
+    export COMP_MP="${COMP_MP:-${MPIFC:-mpifort}}"
+    export C_COMP_MP="${C_COMP_MP:-${MPICC:-mpicc}}"
+    export CXX_COMP_MP="${CXX_COMP_MP:-${MPICXX:-mpicxx}}"
+    ;;
+  fujitsu)
+    export COMP_MP="${COMP_MP:-${MPIFC:-mpifrtpx}}"
+    export C_COMP_MP="${C_COMP_MP:-${MPICC:-mpifccpx}}"
+    export CXX_COMP_MP="${CXX_COMP_MP:-${MPICXX:-mpiFCCpx}}"
+    ;;
+  intel)
+    export COMP_MP="${COMP_MP:-${MPIFC:-mpiifort}}"
+    export C_COMP_MP="${C_COMP_MP:-${MPICC:-mpiicc}}"
+    export CXX_COMP_MP="${CXX_COMP_MP:-${MPICXX:-mpiicpc}}"
+    # Prevent Intel MPI wrapper self-recursion during CMake FindMPI (-showme)
+    export I_MPI_CC="${I_MPI_CC:-${CC:-icx}}"
+    export I_MPI_CXX="${I_MPI_CXX:-${CXX:-icpx}}"
+    export I_MPI_FC="${I_MPI_FC:-${FC:-ifx}}"
+    export I_MPI_F90="${I_MPI_F90:-${FC:-ifx}}"
+    export I_MPI_F77="${I_MPI_F77:-${FC:-ifx}}"
+    if [[ "${I_MPI_CC}" == *mpiicc* || "${I_MPI_CC}" == mpiicc ]]; then
+      export I_MPI_CC="${CC:-icx}"
+    fi
+    if [[ "${I_MPI_CXX}" == *mpiicpc* || "${I_MPI_CXX}" == mpiicpc ]]; then
+      export I_MPI_CXX="${CXX:-icpx}"
+    fi
+    if [[ "${I_MPI_FC}" == *mpiifort* || "${I_MPI_FC}" == mpiifort ]]; then
+      export I_MPI_FC="${FC:-ifx}"
+      export I_MPI_F90="${FC:-ifx}"
+      export I_MPI_F77="${FC:-ifx}"
+    fi
+    unset MPICH_CC MPICH_CXX MPICH_FC MPICH_F90 MPICH_F77 || true
+    ;;
+  nvidia)
+    export COMP_MP="${COMP_MP:-${MPIFC:-mpifort}}"
+    export C_COMP_MP="${C_COMP_MP:-${MPICC:-mpicc}}"
+    export CXX_COMP_MP="${CXX_COMP_MP:-${MPICXX:-mpic++}}"
+    ;;
+esac
+
+# Bridge GEPS_LIB module env names -> CMakeLists / Find* expectations
+_first_existing() {
+  local p
+  for p in "$@"; do
+    if [[ -e "${p}" ]]; then
+      echo "${p}"
+      return 0
+    fi
+  done
+  return 1
+}
+
+if [[ -n "${W3LIB_DIR:-${W3LIB:-}}" ]]; then
+  _w3_root="${W3LIB_DIR:-${W3LIB}}"
+  export W3LIB_LIB="$(_first_existing \
+    "${_w3_root}/lib/libw3.a" \
+    "${_w3_root}/lib/libw3.so" \
+    "${_w3_root}/lib" || echo "${_w3_root}/lib")"
+fi
+
+if [[ -n "${OPERLIB_DIR:-${OPERLIB:-}}" ]]; then
+  _op_root="${OPERLIB_DIR:-${OPERLIB}}"
+  export OPERLIB_LIB="${_op_root}/lib"
+fi
+
+if [[ -n "${G2LIB_DIR:-${G2LIB:-}}" ]]; then
+  _g2_root="${G2LIB_DIR:-${G2LIB}}"
+  export G2_INC_PATH="${G2_INC_PATH:-${_g2_root}/include}"
+  export G2_LIB_PATH="${G2_LIB_PATH:-${_g2_root}/lib}"
+fi
+
+if [[ -n "${LIBPNG_DIR:-${LIBPNG:-}}" ]]; then
+  _png_root="${LIBPNG_DIR:-${LIBPNG}}"
+  export PNG_LIB_PATH="${PNG_LIB_PATH:-${_png_root}/lib}"
+fi
+
+if [[ -n "${JASPER_DIR:-${JASPER:-}}" ]]; then
+  _jas_root="${JASPER_DIR:-${JASPER}}"
+  export JASPER_LIB_PATH="${JASPER_LIB_PATH:-${_jas_root}/lib}"
+  # CMakeLists historically typo'd this name
+  export JAPSER_LIB_PATH="${JAPSER_LIB_PATH:-${JASPER_LIB_PATH}}"
+fi
+
+if [[ -n "${FFTW_DIR:-${FFTW:-}}" ]]; then
+  _fftw_root="${FFTW_DIR:-${FFTW}}"
+  export FFTW3="${FFTW3:-${_fftw_root}}"
+  export FFTW_ROOT="${FFTW_ROOT:-${_fftw_root}}"
+fi
+
+if [[ -n "${NETCDF_DIR:-${NETCDF:-}}" ]]; then
+  export NETCDF="${NETCDF:-${NETCDF_DIR}}"
+  export NETCDF_ROOT="${NETCDF_ROOT:-${NETCDF}}"
+fi
+
+if [[ -n "${DMS_DIR:-${DMS:-}}" ]]; then
+  export DMS="${DMS:-${DMS_DIR}}"
+fi
+
+if [[ -n "${DMS38KEY_DIR:-${DMS38KEY:-}}" ]]; then
+  export DMS38KEY="${DMS38KEY:-${DMS38KEY_DIR}}"
+fi
+
+if [[ -n "${MCT_DIR:-${MCT:-}}" ]]; then
+  export MCT="${MCT:-${MCT_DIR}}"
+fi
+
+if [[ -n "${GEPS_COUPLER_DIR:-${GEPS_COUPLER:-}}" ]]; then
+  export GEPS_COUPLER="${GEPS_COUPLER:-${GEPS_COUPLER_DIR}}"
+fi
+
+module list 2>&1 || true
+echo "[GEPS] compiler=${GEPS_COMPILER}"
+echo "[GEPS] GEPS_LIB_ROOT=${GEPS_LIB_ROOT}"
+echo "[GEPS] COMP_MP=${COMP_MP} C_COMP_MP=${C_COMP_MP} CXX_COMP_MP=${CXX_COMP_MP}"
+
+BLD_DIR="build_${GEPS_COMPILER}"
+[[ -e "${BLD_DIR}" ]] && rm -rf "${BLD_DIR}"
+
+CMAKE_OPTS=(
+  -DCMAKE_BUILD_TYPE=Release
+  -DUSE_RSM=OFF
+  -DCWBSUM=OFF
+  -DTIMCOMCPL=OFF
+  -DUSE_aeroclx=OFF
+  -DGEPS_COMPILER="${GEPS_COMPILER}"
+)
+
+case "${GEPS_COMPILER}" in
+  nvidia)
+    CMAKE_OPTS+=(
+      -DUSE_CUDA=ON
+      -DUSE_ACC=ON
+      -DUSE_PAR=OFF
+      -DUSE_SP=OFF
+      -DUSE_NDMS=OFF
+    )
+    ;;
+  fujitsu)
+    CMAKE_OPTS+=(
+      -DUSE_CUDA=OFF
+      -DUSE_ACC=OFF
+      -DUSE_PAR=ON
+      -DUSE_OMP=ON
+      -DUSE_NDMS=OFF
+    )
+    ;;
+  gnu|intel)
+    CMAKE_OPTS+=(
+      -DUSE_CUDA=OFF
+      -DUSE_ACC=OFF
+      -DUSE_PAR=OFF
+      -DUSE_OMP=ON
+      -DUSE_NDMS=OFF
+    )
+    ;;
+esac
+
+cmake -B"${BLD_DIR}" -S. "${CMAKE_OPTS[@]}" "$@"
+cmake --build "${BLD_DIR}" -j "$(($(nproc)/2))"
+
+echo "[OK] Build completed: compiler=${GEPS_COMPILER} dir=${BLD_DIR}"

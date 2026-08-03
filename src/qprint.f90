@@ -34,8 +34,9 @@
 !     determine scaling factor limits
 !
       if ( xm .lt. 1.e-200 ) xm=99.0
-!     xm = alog10( 99./xm )
-      xm = dlog10( 99./xm ) ! CWB 2015
+!     xm = log10( 99./xm )
+!     xm = log10( 99./xm ) ! CWB 2015
+      xm = log10( 99./xm )  ! generic: gfortran -fdefault-real-8
       kp = xm
       if( xm .lt. 0.0 ) kp = kp-1
 !

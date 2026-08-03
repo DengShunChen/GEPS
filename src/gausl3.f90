@@ -86,7 +86,7 @@
 !       cubically-convergent iterative improvement of root
 !
 	    dzeri = dzero-drat*(1.d0+drat*dp2pri/(2.d0*dppr))
-	    ddum= dabs(dzeri-dzero)
+	    ddum= abs(dzeri-dzero)
 	 if (ddum .le. tol) go to 104
 	    dzero = dzeri
   103    continue

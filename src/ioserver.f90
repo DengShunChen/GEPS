@@ -113,7 +113,7 @@ use const, only : ifilout_grb,RTYPE,keyo,KLENO2,cleno
 use mod_grb2_param
 implicit none
 integer :: NMAX=500
-integer ::nx,my,nxmy,i,j,ist,ncnt,ntag,itau,istat
+integer ::nx,my,nxmy,i,j,ist,ncnt,ntag,itau,istat,ifromtau,itotau
 integer*8::idtg
 !integer::ptp0(9,NMAX)
 !real*8   z(nx*my,NMAX)
@@ -121,7 +121,6 @@ real(kind=RTYPE)::fld(nx*my)
 integer,allocatable::ptp0(:,:)
 real*4,allocatable ::z(:,:)
 integer::t12
-integer  ifromtau,itotau,istat
 ifromtau=0
 nxmy=nx*my
 
