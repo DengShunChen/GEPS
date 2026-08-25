@@ -8,9 +8,10 @@
 * CMake 3.21.4
 * Toolchains (via `GEPS_COMPILER`):
   * `nvidia` — NVIDIA HPC SDK + CUDA/OpenACC
-  * `gnu` — GCC/GFortran + OpenMPI
-  * `intel` — Intel oneAPI (icx/ifx + MPI)
-  * `fujitsu` — Fujitsu tcsds (`fccpx`/`frtpx`; alias `tcsds`)
+  * `gnu` — GCC/GFortran + OpenMPI (CPU)
+  * `intel` — Intel oneAPI (icx/ifx + MPI) (CPU)
+  * `fujitsu` — Fujitsu tcsds (`fccpx`/`frtpx`; alias `tcsds`) (CPU)
+  * `rocm` — AMD ROCm (`amdclang`/`amdflang` + OpenMP offload / HIP; alias `amd`)
 
 ## Quick start (multi-compiler / GEPS_LIB) ##
 
@@ -19,22 +20,27 @@ Build matching GEPS_LIB first (`./build_all.sh --compiler <name>`), then:
 ```sh
 export GEPS_LIB_ROOT=/path/to/GEPS_LIB   # default: ../GEPS_LIB
 
-./compile nvidia    # GPU (CUDA/OpenACC)
-./compile gnu
-./compile intel
+./compile nvidia    # NVIDIA GPU (CUDA/OpenACC)
+./compile gnu       # CPU
+./compile intel     # CPU
 ./compile fujitsu   # or: ./compile tcsds
+./compile rocm      # AMD Instinct MI300X (HIP + OpenMP offload, gfx942)
+./compile rocm-cpu  # AMD toolchain, host OpenMP only (no GPU offload)
 ```
 
-Artifacts land in `build_<compiler>/`.
+Artifacts land in `build_<compiler>/` (`rocm-cpu` → `build_rocm_cpu`).
+
+`./compile rocm` does **not** use NVIDIA OpenACC: amdflang cannot offload OpenACC to AMDGPU. GPU kernels are compile-time translated (`cmake/acc2omp.py`) to OpenMP target + HIP libraries. Original NVIDIA sources are unchanged.
 
 ### Math libraries (BLAS/LAPACK)
 
-| `GEPS_COMPILER` | Math library |
-|-----------------|--------------|
-| `gnu` | OpenBLAS (`GEPS_LIB` `openblas/*`, else system) |
-| `intel` | Intel MKL (`module load mkl/...`, `-qmkl=sequential`) |
-| `nvidia` | NVHPC-shipped BLAS/LAPACK (`$NVHPC_ROOT/compilers/lib`) |
-| `fujitsu` | Fujitsu SSL2 (`-SSL2BLAMP`) |
+| `GEPS_COMPILER` | Math library | Device |
+|-----------------|--------------|--------|
+| `gnu` | OpenBLAS (`GEPS_LIB` `openblas/*`, else system) | CPU |
+| `rocm` | OpenBLAS + hipBLAS/hipFFT/hipSOLVER/RCCL | AMD GPU (`AMD_GPU_ARCHS`, default `gfx942`) |
+| `intel` | Intel MKL (`module load mkl/...`, `-qmkl=sequential`) | CPU |
+| `nvidia` | NVHPC BLAS/LAPACK + cuBLAS/cuFFT/NCCL | NVIDIA GPU |
+| `fujitsu` | Fujitsu SSL2 (`-SSL2BLAMP`) | CPU |
 
 Do **not** use OpenBLAS for intel/nvidia/fujitsu.
 

@@ -8,8 +8,9 @@ set -euo pipefail
 #   export GEPS_LIB_ROOT=/path/to/GEPS_LIB   # optional; default ../GEPS_LIB
 #   ./compile [COMPILER] [extra cmake args...]
 #
-# COMPILER: nvidia | gnu | intel | fujitsu | tcsds
+# COMPILER: nvidia | gnu | intel | fujitsu | tcsds | rocm
 #   tcsds is an alias for fujitsu
+#   rocm aliases: amd | amdclang
 #------------------------------------------------------------------------------
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -26,25 +27,32 @@ case "${COMPILER_IN}" in
   gnu|gcc)           GEPS_COMPILER=gnu ;;
   intel|oneapi|pcc)  GEPS_COMPILER=intel ;;
   fujitsu|tcsds|fx1000) GEPS_COMPILER=fujitsu ;;
+  rocm|amd|amdclang) GEPS_COMPILER=rocm ;;
+  rocm-cpu|amd-cpu)
+    GEPS_COMPILER=rocm
+    GEPS_ROCM_CPU=1
+    ;;
   -h|--help)
     cat <<EOF
 Usage: $(basename "$0") [COMPILER] [extra cmake args...]
 
-COMPILER:
   nvidia   NVHPC + CUDA/OpenACC (default)
-  gnu      GCC/GFortran + OpenMPI
-  intel    Intel oneAPI (icx/ifx + MPI)
-  fujitsu  Fujitsu tcsds (fccpx/frtpx); alias: tcsds
+  gnu      GCC/GFortran + OpenMPI (CPU)
+  intel    Intel oneAPI (icx/ifx + MPI) (CPU)
+  fujitsu  Fujitsu tcsds (fccpx/frtpx); alias: tcsds (CPU)
+  rocm     AMD ROCm amdclang/amdflang + OpenMP GPU offload; alias: amd
+  rocm-cpu AMD ROCm host-only (USE_HIP=OFF); alias: amd-cpu
 
 Environment:
   GEPS_LIB_ROOT   Path to GEPS_LIB (default: ${SCRIPT_DIR}/../GEPS_LIB)
   GEPS_COMPILER   Used when COMPILER arg omitted
+  AMD_GPU_ARCHS   ROCm offload ISA (default: gfx942 / MI300X)
 EOF
     exit 0
     ;;
   *)
     echo "[ERROR] Unknown COMPILER: ${COMPILER_IN}" >&2
-    echo "        Use: nvidia | gnu | intel | fujitsu | tcsds" >&2
+    echo "        Use: nvidia | gnu | intel | fujitsu | tcsds | rocm | rocm-cpu" >&2
     exit 1
     ;;
 esac
@@ -60,8 +68,36 @@ if [[ ! -d "${GEPS_LIB_ROOT}/install/modulefiles" ]]; then
   exit 1
 fi
 
-. /usr/share/Modules/init/bash
+if [[ ! -f "${SCRIPT_DIR}/src/CMakeLists.txt" ]]; then
+  echo "[ERROR] GEPS Fortran sources missing: ${SCRIPT_DIR}/src/" >&2
+  exit 1
+fi
+
+if [[ -f /usr/share/modules/init/bash ]]; then
+  # shellcheck disable=SC1091
+  . /usr/share/modules/init/bash
+elif [[ -f /usr/share/Modules/init/bash ]]; then
+  # shellcheck disable=SC1091
+  . /usr/share/Modules/init/bash
+else
+  echo "[ERROR] environment-modules init script not found" >&2
+  exit 1
+fi
 module purge 2>/dev/null || true
+
+# OpenMPI: env.sh defaults to 5.0.5. Prefer a flang-built tree for rocm
+# (system Ubuntu mpi.mod is gfortran and amdflang cannot read it).
+: "${GEPS_OPENMPI_MODULEFILES:=${GEPS_LIB_ROOT}/install/modulefiles}"
+export GEPS_OPENMPI_MODULEFILES
+if [[ -z "${GEPS_OPENMPI_MODULE:-}" ]]; then
+  if [[ "${GEPS_COMPILER}" == "rocm" && -e "${GEPS_OPENMPI_MODULEFILES}/openmpi/4.1.6-rocm" ]]; then
+    export GEPS_OPENMPI_MODULE=openmpi/4.1.6-rocm
+  elif [[ -e "${GEPS_OPENMPI_MODULEFILES}/openmpi/5.0.5" ]]; then
+    export GEPS_OPENMPI_MODULE=openmpi/5.0.5
+  elif [[ -e "${GEPS_OPENMPI_MODULEFILES}/openmpi/4.1.6" ]]; then
+    export GEPS_OPENMPI_MODULE=openmpi/4.1.6
+  fi
+fi
 
 # Load GEPS_LIB umbrella (toolchain + deps). Prefer source env.sh for wrappers.
 # shellcheck source=/dev/null
@@ -84,7 +120,7 @@ fi
 
 # MPI / serial compiler wrappers for CMake
 case "${GEPS_COMPILER}" in
-  gnu)
+  gnu|rocm)
     export COMP_MP="${COMP_MP:-${MPIFC:-mpifort}}"
     export C_COMP_MP="${C_COMP_MP:-${MPICC:-mpicc}}"
     export CXX_COMP_MP="${CXX_COMP_MP:-${MPICXX:-mpicxx}}"
@@ -200,6 +236,9 @@ echo "[GEPS] GEPS_LIB_ROOT=${GEPS_LIB_ROOT}"
 echo "[GEPS] COMP_MP=${COMP_MP} C_COMP_MP=${C_COMP_MP} CXX_COMP_MP=${CXX_COMP_MP}"
 
 BLD_DIR="build_${GEPS_COMPILER}"
+if [[ "${GEPS_ROCM_CPU:-}" == 1 ]]; then
+  BLD_DIR="build_rocm_cpu"
+fi
 [[ -e "${BLD_DIR}" ]] && rm -rf "${BLD_DIR}"
 
 CMAKE_OPTS=(
@@ -215,6 +254,7 @@ case "${GEPS_COMPILER}" in
   nvidia)
     CMAKE_OPTS+=(
       -DUSE_CUDA=ON
+      -DUSE_HIP=OFF
       -DUSE_ACC=ON
       -DUSE_PAR=OFF
       -DUSE_SP=OFF
@@ -224,6 +264,7 @@ case "${GEPS_COMPILER}" in
   fujitsu)
     CMAKE_OPTS+=(
       -DUSE_CUDA=OFF
+      -DUSE_HIP=OFF
       -DUSE_ACC=OFF
       -DUSE_PAR=ON
       -DUSE_OMP=ON
@@ -233,15 +274,44 @@ case "${GEPS_COMPILER}" in
   gnu|intel)
     CMAKE_OPTS+=(
       -DUSE_CUDA=OFF
+      -DUSE_HIP=OFF
       -DUSE_ACC=OFF
       -DUSE_PAR=OFF
       -DUSE_OMP=ON
       -DUSE_NDMS=OFF
     )
     ;;
+  rocm)
+    if [[ "${GEPS_ROCM_CPU:-}" == 1 ]]; then
+      CMAKE_OPTS+=(
+        -DUSE_CUDA=OFF
+        -DUSE_HIP=OFF
+        -DUSE_ACC=OFF
+        -DUSE_PAR=OFF
+        -DUSE_OMP=ON
+        -DUSE_NDMS=OFF
+      )
+    else
+      CMAKE_OPTS+=(
+        -DUSE_CUDA=OFF
+        -DUSE_HIP=ON
+        -DUSE_ACC=OFF
+        -DUSE_PAR=OFF
+        -DUSE_OMP=ON
+        -DUSE_NDMS=OFF
+        -DAMD_GPU_ARCHS="${AMD_GPU_ARCHS:-gfx942}"
+      )
+    fi
+    ;;
 esac
 
+if [[ "${GEPS_COMPILER}" == "rocm" ]]; then
+  NJ="${GEPS_BUILD_JOBS:-32}"
+else
+  NJ="${GEPS_BUILD_JOBS:-$(($(nproc)/2))}"
+fi
+
 cmake -B"${BLD_DIR}" -S. "${CMAKE_OPTS[@]}" "$@"
-cmake --build "${BLD_DIR}" -j "$(($(nproc)/2))"
+cmake --build "${BLD_DIR}" -j "${NJ}"
 
 echo "[OK] Build completed: compiler=${GEPS_COMPILER} dir=${BLD_DIR}"

@@ -463,7 +463,8 @@
 ! for new shlcon
       real      rcup2(nxp)
 ! for scale-aware convection
-      real      garea(nxp),tpr,tem1,tem2,jup,jdn,tpi
+      real      garea(nxp),tpr,tem1,tem2,tpi
+      integer   jup,jdn
 ! for wsm6 & thompson
       integer   nmmiph
       real      phii(nxp,lev+1)

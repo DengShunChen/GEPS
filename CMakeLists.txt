@@ -32,7 +32,8 @@ endif()
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/modules)
 
 option(USE_ACC "enable OpenACC" OFF)
-option(USE_CUDA "enable CUDA" OFF)
+option(USE_CUDA "enable CUDA (NVIDIA GPU)" OFF)
+option(USE_HIP "enable HIP/ROCm (AMD GPU)" OFF)
 option(USE_NVTX "enable NVTX" OFF)
 option(USE_OMP "enable OpenMP" ON)
 option(USE_PAR "enable Auto Parallel" ON)
@@ -45,35 +46,53 @@ option(CWBSUM "enable CWBSUM" ON)
 option(USE_aeroclx "enable Readaeroclx" OFF)
 option(USE_NDMS "enable NDMS" OFF)
 
-# Toolchain selector: nvidia | gnu | intel | fujitsu
+# Toolchain selector: nvidia | gnu | intel | fujitsu | rocm
 # Prefer -DGEPS_COMPILER=... or $ENV{GEPS_COMPILER}; fall back from USE_CUDA.
 if(NOT DEFINED GEPS_COMPILER OR GEPS_COMPILER STREQUAL "")
   if(DEFINED ENV{GEPS_COMPILER} AND NOT "$ENV{GEPS_COMPILER}" STREQUAL "")
     set(GEPS_COMPILER
         "$ENV{GEPS_COMPILER}"
-        CACHE STRING "GEPS toolchain (nvidia|gnu|intel|fujitsu)" FORCE)
+        CACHE STRING "GEPS toolchain (nvidia|gnu|intel|fujitsu|rocm)" FORCE)
+  elseif(${USE_HIP})
+    set(GEPS_COMPILER
+        "rocm"
+        CACHE STRING "GEPS toolchain (nvidia|gnu|intel|fujitsu|rocm)" FORCE)
   elseif(${USE_CUDA})
     set(GEPS_COMPILER
         "nvidia"
-        CACHE STRING "GEPS toolchain (nvidia|gnu|intel|fujitsu)" FORCE)
+        CACHE STRING "GEPS toolchain (nvidia|gnu|intel|fujitsu|rocm)" FORCE)
   else()
     set(GEPS_COMPILER
         "fujitsu"
-        CACHE STRING "GEPS toolchain (nvidia|gnu|intel|fujitsu)" FORCE)
+        CACHE STRING "GEPS toolchain (nvidia|gnu|intel|fujitsu|rocm)" FORCE)
   endif()
 endif()
 string(TOLOWER "${GEPS_COMPILER}" GEPS_COMPILER)
 set(GEPS_COMPILER
     "${GEPS_COMPILER}"
-    CACHE STRING "GEPS toolchain (nvidia|gnu|intel|fujitsu)" FORCE)
-set_property(CACHE GEPS_COMPILER PROPERTY STRINGS nvidia gnu intel fujitsu)
+    CACHE STRING "GEPS toolchain (nvidia|gnu|intel|fujitsu|rocm)" FORCE)
+set_property(CACHE GEPS_COMPILER PROPERTY STRINGS nvidia gnu intel fujitsu rocm)
 
 set(GPU_ARCHS
     "80"
-    CACHE STRING "GPU architecture(V100=70;A100=80)")
+    CACHE STRING "NVIDIA GPU architecture (V100=70;A100=80)")
+set(AMD_GPU_ARCHS
+    "gfx942"
+    CACHE STRING "AMD GPU ISA (MI300X/MI325X=gfx942; MI250=gfx90a)")
 set(CUDA_RUNTIME_VERSION
     "12.6"
     CACHE STRING "CUDA runtime version")
+
+# Shared GPU path: NVIDIA CUDA/OpenACC or AMD HIP/OpenMP offload.
+if(${USE_CUDA} OR ${USE_HIP})
+  set(USE_GPU ON)
+else()
+  set(USE_GPU OFF)
+endif()
+if(${USE_HIP} AND ${USE_CUDA})
+  message(FATAL_ERROR "USE_HIP and USE_CUDA are mutually exclusive. "
+                      "Pick nvidia (CUDA) or rocm (HIP).")
+endif()
 # set(TCO_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/src" CACHE STRING "TCO destination")
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -93,6 +112,8 @@ message(STATUS "Build Summary")
 message(STATUS "GEPS_COMPILER: ${GEPS_COMPILER}")
 message(STATUS "USE_ACC:      ${USE_ACC}")
 message(STATUS "USE_CUDA:     ${USE_CUDA}")
+message(STATUS "USE_HIP:      ${USE_HIP}")
+message(STATUS "USE_GPU:      ${USE_GPU}")
 message(STATUS "USE_NVTX:     ${USE_NVTX}")
 message(STATUS "USE_OMP:      ${USE_OMP}")
 message(STATUS "USE_PAR:      ${USE_PAR}")
@@ -104,6 +125,7 @@ message(STATUS "TIMCOMCPL:      ${TIMCOMCPL}")
 message(STATUS "CWBSUM:      ${CWBSUM}")
 message(STATUS "USE_aeroclx:  ${USE_aeroclx}")
 message(STATUS "GPU_ARCHS:    ${GPU_ARCHS}")
+message(STATUS "AMD_GPU_ARCHS:${AMD_GPU_ARCHS}")
 message(STATUS "CUDA_RUNTIME_VERSION: ${CUDA_RUNTIME_VERSION}")
 message(STATUS "Output path:  ${TCO_OUTPUT_PATH}")
 message(STATUS "Install path: ${CMAKE_INSTALL_PREFIX}")
@@ -122,9 +144,11 @@ elseif(GEPS_COMPILER STREQUAL "intel")
   include(compilers/INTEL)
 elseif(GEPS_COMPILER STREQUAL "fujitsu")
   include(compilers/FUJITSU)
+elseif(GEPS_COMPILER STREQUAL "rocm")
+  include(compilers/ROCM)
 else()
   message(FATAL_ERROR "Unsupported GEPS_COMPILER=${GEPS_COMPILER}. "
-                      "Use nvidia|gnu|intel|fujitsu")
+                      "Use nvidia|gnu|intel|fujitsu|rocm")
 endif()
 
 # Fujitsu frtpx uses -M for module output; gfortran/ifx/nvfortran use -J or default

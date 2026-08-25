@@ -29,3 +29,6 @@ modulefiles/modulefile.tcogfs.fx1000_lake
 src/Makefile_lake
 exp*
 build_*
+__pycache__/
+*.pyc
+*.bc

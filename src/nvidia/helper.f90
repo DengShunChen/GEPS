@@ -109,7 +109,8 @@ subroutine nccl_alltoallv_stride(sendbuf, sendcount, senddisplace, recvbuf, recv
 
    implicit none
 
-   real(kind=RTYPE), intent(in) :: sendbuf(senddisplace, nsize), recvbuf(recvdisplace, nsize)
+   real(kind=RTYPE), intent(in) :: sendbuf(senddisplace, nsize)
+   real(kind=RTYPE), intent(inout) :: recvbuf(recvdisplace, nsize)
    integer, intent(in), dimension(nsize) :: sendcount, recvcount
    integer, intent(in) :: senddisplace, recvdisplace
    type(ncclComm), intent(in) :: comm
