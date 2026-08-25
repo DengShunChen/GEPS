@@ -1,4 +1,0 @@
-global_orography.tco639_xnew.2576.1280.grb filter=lfs diff=lfs merge=lfs -text
-global_orography.tco383.1552.768.grb filter=lfs diff=lfs merge=lfs -text
-global_orography.tco383_xnew.1552.768.grb filter=lfs diff=lfs merge=lfs -text
-global_orography.tco639.2576.1280.grb filter=lfs diff=lfs merge=lfs -text
