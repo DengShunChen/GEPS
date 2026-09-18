@@ -238,31 +238,64 @@
 !-------------------------------------------------------------------------
       subroutine mpe_unify3_r(a,n,m,jx,nsize)
 
-      use rank, only : MPI_COMM_gfs
+      use rank, only : MPI_COMM_gfs, myrank
       use index
       use mpi
- 
+
       real a(n,m)
-      real b1(n,jx)
-      real b2(n,jx*nsize)
+      real, allocatable :: b1(:), b2(:)
+      integer nn,mm,jxx,ncount,i,j,jj,j1,jf,ierr
+      integer(kind=8) :: dbg0, dbg1, dbg2
+      interface
+        subroutine geps_dbg_log(hyp, locid, irank, p0, p1, p2)
+          integer hyp, locid, irank
+          integer(kind=8) p0, p1, p2
+        end subroutine
+        subroutine geps_mpi_allgather_dbl(send, recv, count, fcomm, ierr)
+          real send, recv
+          integer count, fcomm, ierr
+        end subroutine
+      end interface
+
+      nn = n
+      mm = m
+      jxx = jx
+      ncount = nn*jxx
+      allocate(b1(ncount), b2(ncount*nsize))
+      b1 = 0.
 
       do jj=1,mlistnum
         j1=mlist(jj)
-      do i=1,n
-        b1(i,jj)=a(i,j1)
+      do i=1,nn
+        b1(i+(jj-1)*nn)=a(i,j1)
       enddo
       enddo
- 
-      call MPI_ALLGATHER( B1,N*jx,   MPI_DOUBLE_PRECISION, &
-                          B2,N*jx,   MPI_DOUBLE_PRECISION, &
-                          col_comm, IERR )
- 
-      do j=1,m
+
+      ! #region agent log
+      if (nn .eq. 1) then
+        dbg0 = loc(b1(1))
+        dbg1 = loc(b2(1))
+        dbg2 = ncount
+        call geps_dbg_log(18, 261, myrank, dbg0, dbg1, dbg2)
+      endif
+      ! #endregion
+      call geps_mpi_allgather_dbl(b1(1), b2(1), ncount, col_comm, ierr)
+      ! #region agent log
+      if (nn .eq. 1) then
+        dbg0 = ierr
+        dbg1 = loc(b2(1))
+        dbg2 = loc(a)
+        call geps_dbg_log(18, 262, myrank, dbg0, dbg1, dbg2)
+      endif
+      ! #endregion
+
+      do j=1,mm
         jf=nlist(j)
-      do i=1,n
-        a(i,j)=b2(i,jf)
+      do i=1,nn
+        a(i,j)=b2(i+(jf-1)*nn)
       enddo
       enddo
+      deallocate(b1, b2)
 
       return
       end

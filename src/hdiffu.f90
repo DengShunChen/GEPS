@@ -316,6 +316,9 @@
 !  2003/10/7 :
 !  sometimes wind speed greater than 100m/s happens at k=2
 !
+      ! #region agent log
+      if (myrank .eq. 0) print *, 'DBGHD wmax(1:hdk1) max=', maxval(wmax(1:hdk1)), ' hdk1=', hdk1
+      ! #endregion
       windchk=.false.
       do k=1,hdk1
         if ( wmax(k) .gt. windmax3 ) windchk=.true.

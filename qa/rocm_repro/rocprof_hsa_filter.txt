@@ -1,0 +1,1 @@
+hsa: hsa_queue_create hsa_queue_destroy hsa_amd_memory_pool_allocate hsa_amd_memory_pool_free hsa_signal_create hsa_signal_destroy hsa_amd_memory_lock hsa_amd_memory_unlock

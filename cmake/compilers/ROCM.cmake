@@ -129,6 +129,16 @@ if(${USE_HIP})
   include_directories("${GEPS_ROCM_ROOT}/include"
                       "${GEPS_ROCM_ROOT}/include/hip"
                       "${CMAKE_SOURCE_DIR}/src/rocm")
+  # amdflang does not inject OpenMPI's module dir; mpi.mod lives in lib/.
+  foreach(_geps_mpi_hint
+      "$ENV{INSTALL_DIR}/openmpi-4.1.6"
+      "$ENV{MPI_DIR}"
+      "$ENV{OPENMPI_ROOT}")
+    if(_geps_mpi_hint AND EXISTS "${_geps_mpi_hint}/lib/mpi.mod")
+      include_directories("${_geps_mpi_hint}/include" "${_geps_mpi_hint}/lib")
+      break()
+    endif()
+  endforeach()
 
   # Host compile stays `-fopenmp` (set above). `--offload-arch` on every
   # translation unit makes device LTO link hundreds of empty amdgcn objects

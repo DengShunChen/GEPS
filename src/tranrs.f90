@@ -29,7 +29,44 @@
       use fftcom
       use fj_pad
 !
+      ! #region agent log
+      use rank, only : myrank, MPI_COMM_gfs
+      use mpi
+      ! #endregion
       implicit none
+      ! #region agent log
+      ! Clean comparison points against the GPU: twcc_fk and wss are both
+      ! explicitly zeroed here (L57/L58) and on the GPU side twcc_fk is
+      ! cudaMemsetAsync'd while wss is fully overwritten by dgemm beta=0.0,
+      ! so neither carries uninitialised padding. `cc` deliberately NOT
+      ! measured: its whole-array sum is NaN on CPU (handoff 7.1 rule 2).
+      real(kind=8) :: dbgtw, dbgwf, dbgws
+      ! cc is cc(nx+2, lev, num, my_max) but only i<=nxj / jj<=jlistnum are
+      ! ever written, so a whole-array sum reads uninitialised padding and
+      ! comes back NaN. Sum the USED region only and count non-finite values
+      ! separately, so a stray NaN shows up instead of poisoning the total.
+      real(kind=8) :: dbgcb, dbgca, dbgv
+      integer :: dbi, dbk, dbii, dbjj, dbj, dbnxj, dbnb, dbna
+      ! Post-transpose quantities are split by WAVENUMBER across ranks, and
+      ! spectral energy is concentrated at low m, so "rank 0 x nsize" is not
+      ! a valid global estimate for them (handoff, 2026-09-15). Instead:
+      !   - per-m sums (wcc_fk over all latitudes, wss over l>=mf only, the
+      !     region the GPU dgemm actually writes) gathered to rank 0 and
+      !     printed by mf, so the GPU's single rank can be matched 1:1;
+      !   - ALLREDUCE'd global totals.
+      ! dbg_call counts collective calls so the analyser can pick the record
+      ! belonging to a DBGMARK (tranrs is shared by getrdy/intgrt/incrini).
+      ! MPI_REAL8, NOT MPI_DOUBLE_PRECISION: this OpenMPI was configured with
+      ! -fdefault-real-8 alone, so its DOUBLE PRECISION is 16 bytes
+      ! (OMPI_SIZEOF_FORTRAN_DOUBLE_PRECISION 16) while the model's is 8.
+      ! With MPI_DOUBLE_PRECISION every call moved 2x the bytes: half the
+      ! gathered rows were garbage and the receive overrun corrupted the heap
+      ! ("double free or corruption" at the deallocate). Measured 2026-09-15.
+      real(kind=8), allocatable :: dbg_loc(:,:), dbg_all(:,:)
+      real(kind=8) :: dbg_g(3), dbg_gl(3)
+      integer :: dbg_m, dbg_ierr, dbg_np
+      integer, save :: dbg_call = 0
+      ! #endregion
 
       integer jtrun,jtmax,nx,my,my_max,lev,num,nsize
       integer mlx,myhalf,lev2,nxj,j,jj,mchk,jtrunj,m,mm,mp
@@ -56,6 +93,10 @@
 !CWBinit
       twcc_fk=0.
       wss=0.
+      ! #region agent log
+      dbg_call = dbg_call + 1
+      if (myrank .eq. 0) print *,'DBGTRC call=',dbg_call
+      ! #endregion
 
 !CWB2014
       gwk1=0.
@@ -68,6 +109,27 @@
 !
 !  fft for each guassian latitude of 2-d field
 !
+      ! #region agent log
+      dbgcb = 0.0d0
+      dbnb = 0
+      do dbjj = 1, jlistnum
+         dbj = jlist1(dbjj)
+         dbnxj = nxdef(dbj)
+         do dbii = 1, num
+            do dbk = 1, lev
+               do dbi = 1, dbnxj
+                  dbgv = real(cc(dbi, dbk, dbii, dbjj), kind=8)
+                  if (dbgv /= dbgv) then
+                     dbnb = dbnb + 1
+                  else
+                     dbgcb = dbgcb + dbgv*dbgv
+                  end if
+               end do
+            end do
+         end do
+      end do
+      if (myrank .eq. 0) print *,'DBGCB cc_before=',dbgcb,' nonfinite=',dbnb
+      ! #endregion
       if( length_fft .eq. 0 .and. lreduce.eq.0 )then
 #ifdef SP
       call rfftmlt_sp(cc,gwk1,trigs,ifax,1,nx+2,nx,lev*jlistnum*num,-1)
@@ -91,6 +153,27 @@
       end do
 !$omp end parallel do
       end if
+      ! #region agent log
+      dbgca = 0.0d0
+      dbna = 0
+      do dbjj = 1, jlistnum
+         dbj = jlist1(dbjj)
+         dbnxj = nxdef(dbj)
+         do dbii = 1, num
+            do dbk = 1, lev
+               do dbi = 1, dbnxj + 2
+                  dbgv = real(cc(dbi, dbk, dbii, dbjj), kind=8)
+                  if (dbgv /= dbgv) then
+                     dbna = dbna + 1
+                  else
+                     dbgca = dbgca + dbgv*dbgv
+                  end if
+               end do
+            end do
+         end do
+      end do
+      if (myrank .eq. 0) print *,'DBGCB cc_after =',dbgca,' nonfinite=',dbna
+      ! #endregion
 !
       mchk=iand(jtrun,3)
 
@@ -140,7 +223,15 @@
 
       enddo
 
+      ! #region agent log
+      dbgtw = sum(real(twcc_fk, kind=8)**2)
+      if (myrank .eq. 0) print *,'DBGTR stwcc_fk=',dbgtw
+      ! #endregion
       call mpe_transpose_rs_sp(twcc_fk,wcc_fk,lev*2*num,jtmax,my_max,nsize,col_comm)
+      ! #region agent log
+      dbgwf = sum(real(wcc_fk, kind=8)**2)
+      if (myrank .eq. 0) print *,'DBGTR swcc_fk=',dbgwf
+      ! #endregion
 !      call mpe_transpose_rs(twcc_fk,wcc_fk,lev*2*num,jtmax,my_max,nsize,col_comm)
 
       do m=1,mlistnum
@@ -227,6 +318,48 @@
 !
       enddo
 
+      ! #region agent log
+      dbgws = sum(real(wss, kind=8)**2)
+      if (myrank .eq. 0) print *,'DBGTR swss=',dbgws
+      allocate(dbg_loc(3, jtmax))
+      dbg_loc = 0.0d0
+      do m = 1, mlistnum
+         mf = mlist(m)
+         dbg_loc(1, m) = real(mf, kind=8)
+         dbg_loc(2, m) = sum(real(wcc_fk(:, :, :, m, :), kind=8)**2)
+         dbg_loc(3, m) = sum(real(wss(:, :, :, mf:jtrun, m), kind=8)**2)
+      end do
+      dbg_gl(1) = sum(dbg_loc(2, :))
+      dbg_gl(2) = sum(dbg_loc(3, :))
+      dbg_gl(3) = dbgws
+      call MPI_COMM_SIZE(MPI_COMM_gfs, dbg_np, dbg_ierr)
+      allocate(dbg_all(3, jtmax*dbg_np))
+      dbg_all = 0.0d0
+      if (dbg_np .eq. 1) then
+         ! single rank (the GPU binary's getrdy path): nothing to gather.
+         ! 2026-09-15: the 1-rank GPU run died with a glibc top-chunk
+         ! assertion right after this block; bypassing MPI here is the
+         ! discriminating experiment (standalone gather test was clean).
+         dbg_g = dbg_gl
+         dbg_all(:, 1:jtmax) = dbg_loc
+      else
+         call MPI_ALLREDUCE(dbg_gl, dbg_g, 3, MPI_REAL8, MPI_SUM, &
+                            MPI_COMM_gfs, dbg_ierr)
+         call MPI_GATHER(dbg_loc, 3*jtmax, MPI_REAL8, &
+                         dbg_all, 3*jtmax, MPI_REAL8, 0, &
+                         MPI_COMM_gfs, dbg_ierr)
+      end if
+      if (myrank .eq. 0) then
+         print *,'DBGTRG call=',dbg_call,' gwcc_fk=',dbg_g(1), &
+                 ' gwss_lgem=',dbg_g(2),' gwss_all=',dbg_g(3)
+         do dbg_m = 1, jtmax*dbg_np
+            if (dbg_all(1, dbg_m) .gt. 0.5d0) &
+               print *,'DBGTRM',dbg_call,nint(dbg_all(1, dbg_m)), &
+                       dbg_all(2, dbg_m),dbg_all(3, dbg_m)
+         end do
+      end if
+      deallocate(dbg_loc, dbg_all)
+      ! #endregion
       return
       end
 !      

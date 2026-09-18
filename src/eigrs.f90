@@ -1,4 +1,5 @@
       subroutine eigrs (rx,ir,idum,eval,evec,ix,wrk,ier)
+      use rank
 !
       dimension rx(ir,ir),eval(ir),evec(ir,ir),wrk(ir,ir)
 !
@@ -8,6 +9,19 @@
 !jh      dimension        xx(2000),eig(800),vec(800*800),work(2000)
 !ch   dimension        xx(8000),eig(3200),vec(3200*3200),work(8000)
       dimension        xx(8000),eig(ir),vec(ir*ir),work(8000)
+      ! #region agent log
+      integer(kind=8) :: dbg0, dbg1, dbg2
+      interface
+        subroutine geps_dbg_log(hyp, locid, irank, p0, p1, p2)
+          integer hyp, locid, irank
+          integer(kind=8) p0, p1, p2
+        end subroutine
+      end interface
+      dbg0 = loc(rx)
+      dbg1 = ir
+      dbg2 = loc(vec)
+      call geps_dbg_log(14, 11, myrank, dbg0, dbg1, dbg2)
+      ! #endregion
 !
       if(ir.gt.2) then
 !
@@ -26,7 +40,19 @@
 !
 !  find eigenvalues and eigenvectors for coefficient matrix
 !
+      ! #region agent log
+      dbg0 = loc(vec)
+      dbg1 = ir
+      dbg2 = loc(xx)
+      call geps_dbg_log(6, 29, myrank, dbg0, dbg1, dbg2)
+      ! #endregion
       call rsb (ir,ir,3,xx,eig,1,vec,work,work(ir+1),ier)
+      ! #region agent log
+      dbg0 = loc(vec)
+      dbg1 = ier
+      dbg2 = ir
+      call geps_dbg_log(6, 30, myrank, dbg0, dbg1, dbg2)
+      ! #endregion
 !
       do 40 i=1,ir*ir
       evec(i,1)= real(vec(i))

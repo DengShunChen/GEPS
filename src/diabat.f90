@@ -1031,6 +1031,12 @@
 !                                                                      c
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
+      ! #region agent log
+      call geps_dbg_ssq_grid(tt, nxp, lev, my_max, 'p0_tt')
+      call geps_dbg_ssq_grid(qt, nxp, lev*ncld, my_max, 'p0_qt')
+      call geps_dbg_ssq_grid(ut, nxp, lev, my_max, 'p0_ut')
+      call geps_dbg_ssq_grid(vt, nxp, lev, my_max, 'p0_vt')
+      ! #endregion
     do 290 jj =1, jlistnum
       j=jlist1(jj)
       nxj=nxdef_2d(j)
@@ -1359,6 +1365,10 @@
         dudtc=0.
         dvdtc=0.
         dqdtc=0.
+      ! #region agent log
+      call geps_dbg_acc(qt(1,1,jj), nxp, nxj, lev*ncld, 'c_pbl_qt')
+      call geps_dbg_acc(tt(1,1,jj), nxp, nxj, lev, 'c_pbl_tt')
+      ! #endregion
 
 !
 !
@@ -1662,6 +1672,15 @@
             ,qtr,qti,qtc,ttc,utc,vtc,cldwrk(1,jj),rcup(1,jj),kbot(1,jj)  &
             ,ktop(1,jj),kuo(1,jj),islimsk,garea,dotc,ncld,cnvw,cnvc      &
             ,snow_flxn,ptun,pqun,diss_dcc)
+      ! #region agent log
+      call geps_dbg_acc(qtc, nxp, nxj, lev, 'c_deep_qtc')
+      call geps_dbg_acc(ttc, nxp, nxj, lev, 'c_deep_ttc')
+      call geps_dbg_acc(rcup(1,jj), nxp, nxj, 1, 'c_deep_rcup')
+      call geps_dbg_acc(cldwrk(1,jj), nxp, nxj, 1, 'c_deep_cldwrk')
+      call geps_dbg_acc_int(kuo(1,jj), nxp, nxj, 'c_deep_kuo')
+      call geps_dbg_acc_int(kbot(1,jj), nxp, nxj, 'c_deep_kbot')
+      call geps_dbg_acc_int(ktop(1,jj), nxp, nxj, 'c_deep_ktop')
+      ! #endregion
 
         ! for rad input of convection cloud information
         ! bottom(plcl) layer and top(cumtop) layer in pressure(mb)
@@ -1859,6 +1878,10 @@
           call samfshalcnv_kh(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil,qtr&
             ,qti,qtc,ttc,utc,vtc,rcup2,kbot(1,jj),ktop(1,jj),kuo(1,jj)  &
             ,islimsk,garea,dotc,ncld,hpbl(1,jj),cnvw,cnvc)
+      ! #region agent log
+      call geps_dbg_acc(qtc, nxp, nxj, lev, 'c_shal_qtc')
+      call geps_dbg_acc(ttc, nxp, nxj, lev, 'c_shal_ttc')
+      ! #endregion
         endif
 
         do i=1,nxj
@@ -2066,6 +2089,10 @@
           enddo
         enddo
 
+      ! #region agent log
+      call geps_dbg_acc(qt(1,1,jj), nxp, nxj, lev*ncld, 'c_premp_qt')
+      call geps_dbg_acc(tt(1,1,jj), nxp, nxj, lev, 'c_premp_tt')
+      ! #endregion
         call mp_scheme                                                 &
 !  ---  inputs:
            ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),ptop,             &
@@ -2258,6 +2285,21 @@
       enddo
      
   290 continue  ! end of big j-loop for diabatic calculation
+      ! #region agent log
+      call geps_dbg_acc_flush()
+      ! #endregion
+      ! #region agent log
+      call geps_dbg_ssq_grid(tt, nxp, lev, my_max, 'p2_tt')
+      call geps_dbg_ssq_grid(qt, nxp, lev*ncld, my_max, 'p2_qt')
+      call geps_dbg_ssq_grid(ut, nxp, lev, my_max, 'p2_ut')
+      call geps_dbg_ssq_grid(vt, nxp, lev, my_max, 'p2_vt')
+      ! #endregion
+      ! #region agent log
+      call geps_dbg_ssq_grid(tt, nxp, lev, my_max, 'p1_tt')
+      call geps_dbg_ssq_grid(qt, nxp, lev*ncld, my_max, 'p1_qt')
+      call geps_dbg_ssq_grid(ut, nxp, lev, my_max, 'p1_ut')
+      call geps_dbg_ssq_grid(vt, nxp, lev, my_max, 'p1_vt')
+      ! #endregion
 
 #ifdef VERBOSE
       if (myrank == 0) write(6,'(a18,a3,3(1x,a15))')'u wind','k','mean','variance','std. dev.'

@@ -32,3 +32,7 @@ build_*
 __pycache__/
 *.pyc
 *.bc
+
+# ROCm port: dated run logs and compile logs stay local
+job/*.log.*
+/compile_*.log

@@ -1,8 +1,18 @@
       SUBROUTINE RSB(NM,N,MB,A,W,MATZ,Z,FV1,FV2,IERR)
+      use rank
 !
       INTEGER N,MB,NM,IERR,MATZ
       REAL A(NM,MB),W(N),Z(NM,N),FV1(N),FV2(N)
       LOGICAL TF
+      ! #region agent log
+      integer(kind=8) :: dbg0, dbg1, dbg2
+      interface
+        subroutine geps_dbg_log(hyp, locid, irank, p0, p1, p2)
+          integer hyp, locid, irank
+          integer(kind=8) p0, p1, p2
+        end subroutine
+      end interface
+      ! #endregion
 !
 !     THIS SUBROUTINE CALLS THE RECOMMENDED SEQUENCE OF
 !     SUBROUTINES FROM THE EIGENSYSTEM SUBROUTINE PACKAGE (EISPACK)
@@ -72,8 +82,34 @@
       GO TO 50
 !     .......... FIND BOTH EIGENVALUES AND EIGENVECTORS ..........
    20 TF = .TRUE.
+      ! #region agent log
+      dbg0 = loc(z)
+      dbg1 = n
+      dbg2 = loc(a)
+      call geps_dbg_log(6, 75, myrank, dbg0, dbg1, dbg2)
+      ! #endregion
       CALL  BANDR(NM,N,MB,A,W,FV1,FV1,TF,Z)
+      ! #region agent log
+      dbg0 = loc(z)
+      dbg1 = n
+      dbg2 = 1
+      call geps_dbg_log(6, 76, myrank, dbg0, dbg1, dbg2)
+      dbg0 = 0
+      do i = 1, n
+        if (w(i) /= w(i)) dbg0 = dbg0 + 1
+        if (fv1(i) /= fv1(i)) dbg0 = dbg0 + 1
+      enddo
+      dbg1 = n
+      dbg2 = loc(fv1)
+      call geps_dbg_log(15, 78, myrank, dbg0, dbg1, dbg2)
+      ! #endregion
       CALL  TQL2(NM,N,W,FV1,Z,IERR)
+      ! #region agent log
+      dbg0 = loc(z)
+      dbg1 = ierr
+      dbg2 = n
+      call geps_dbg_log(6, 77, myrank, dbg0, dbg1, dbg2)
+      ! #endregion
    50 RETURN
       END
 
@@ -385,10 +421,20 @@
       END
 
       SUBROUTINE TQL2(NM,N,D,E,Z,IERR)
+      use rank
 !
       INTEGER I,J,K,L,M,N,II,L1,L2,NM,MML,IERR
       REAL D(N),E(N),Z(NM,N)
       REAL C,C2,C3,DL1,EL1,F,G,H,P,R,S,S2,TST1,TST2,PYTHAG
+      ! #region agent log
+      integer(kind=8) :: dbg0, dbg1, dbg2
+      interface
+        subroutine geps_dbg_log(hyp, locid, irank, p0, p1, p2)
+          integer hyp, locid, irank
+          integer(kind=8) p0, p1, p2
+        end subroutine
+      end interface
+      ! #endregion
 !
 !     THIS SUBROUTINE IS A TRANSLATION OF THE ALGOL PROCEDURE TQL2,
 !     NUM. MATH. 11, 293-306(1968) BY BOWDLER, MARTIN, REINSCH, AND
@@ -455,6 +501,12 @@
       F = 0.0E0
       TST1 = 0.0E0
       E(N) = 0.0E0
+      ! #region agent log
+      dbg0 = loc(z)
+      dbg1 = n
+      dbg2 = nm
+      call geps_dbg_log(16, 485, myrank, dbg0, dbg1, dbg2)
+      ! #endregion
 !
       DO 240 L = 1, N
          J = 0
@@ -468,7 +520,16 @@
 !                THROUGH THE BOTTOM OF THE LOOP ..........
   110    CONTINUE
 !
-  120    IF (M .EQ. L) GO TO 220
+  120    CONTINUE
+      ! #region agent log
+      if (l .eq. 1) then
+        dbg0 = m
+        dbg1 = n
+        dbg2 = l
+        call geps_dbg_log(16, 120, myrank, dbg0, dbg1, dbg2)
+      endif
+      ! #endregion
+         IF (M .EQ. L) GO TO 220
   130    IF (J .EQ. 30) GO TO 1000
          J = J + 1
 !     .......... FORM SHIFT ..........
@@ -516,6 +577,14 @@
   180       CONTINUE
 !
   200    CONTINUE
+      ! #region agent log
+      if (l .eq. 1 .and. j .eq. 1) then
+        dbg0 = m
+        dbg1 = n
+        dbg2 = loc(z)
+        call geps_dbg_log(16, 200, myrank, dbg0, dbg1, dbg2)
+      endif
+      ! #endregion
 !
          P = -S * S2 * C3 * EL1 * E(L) / DL1
          E(L) = S * P

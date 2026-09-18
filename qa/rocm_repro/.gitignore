@@ -1,0 +1,5 @@
+rpv3_out/
+hsa_out.*
+rocprofv3_ompt_segv
+hsa_trace_mini
+*.db

@@ -1,0 +1,118 @@
+#!/bin/bash
+# Lab smoke: host OpenMP only (USE_HIP=OFF), no PJM.
+# Aligns with TCo383L72_IC_sample_rocm IC/BCK/namelist, CPU binary.
+set -x
+
+MDIR=$(cd ..; pwd)
+echo "MDIR=${MDIR}"
+
+machine=rocm_cpu
+TERR=GMTED30
+JCAP=383
+
+# Same 2dMPI as the run that finished getrdy (NPEX=1, NPEY=8).
+# lev/nsizex: NPEX=1 keeps all levels on each rank (A100-like).
+ncpu=$(nproc)
+NPEX=1
+NPEY=32
+MPI=$((NPEX * NPEY))
+OMP=1
+export OMP_NUM_THREADS=$OMP
+ulimit -s unlimited
+
+CMAKE_BUILD=1
+SMOKE=1
+export GEPS_DMSDB="${GEPS_DMSDB:-/mlsteam/workspace/data/geps/dmsdb}"
+
+# GEPS_LIB + MPI: native ROCm MPI if present, else self-built OpenMPI
+export GEPS_COMPILER=rocm
+export GEPS_LIB_ROOT="${GEPS_LIB_ROOT:-$(cd "${MDIR}/../GEPS_LIB" && pwd)}"
+export GEPS_OPENMPI_MODULEFILES="${GEPS_LIB_ROOT}/install/modulefiles"
+
+set +x
+if [[ -f /usr/share/modules/init/bash ]]; then
+  # shellcheck disable=SC1091
+  . /usr/share/modules/init/bash
+elif [[ -f /usr/share/Modules/init/bash ]]; then
+  # shellcheck disable=SC1091
+  . /usr/share/Modules/init/bash
+elif [[ -f /usr/share/lmod/lmod/init/bash ]]; then
+  . /usr/share/lmod/lmod/init/bash
+else
+  echo "ERROR: environment-modules init not found"
+  exit 1
+fi
+module purge 2>/dev/null || true
+
+if [[ -f "${GEPS_LIB_ROOT}/env.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "${GEPS_LIB_ROOT}/env.sh"
+  load_geps_compiler
+fi
+module use "${GEPS_LIB_ROOT}/install/modulefiles"
+module load geps/1.0
+module unuse "${GEPS_LIB_ROOT}/install/modulefiles"
+
+module use "${MDIR}/modulefiles"
+module load modulefile.tcogfs.rocm
+module unuse "${MDIR}/modulefiles"
+module av
+
+set -x
+
+# geps/1.0 setenv GEPS_LIB_ROOT; unuse of its modulepath can drop it.
+export GEPS_LIB_ROOT="$(cd "${MDIR}/../GEPS_LIB" && pwd)"
+
+# host-only: never offload, never pick a GPU
+unset HIP_VISIBLE_DEVICES
+unset ROCR_VISIBLE_DEVICES
+export OMP_TARGET_OFFLOAD=disabled
+export OMPI_ALLOW_RUN_AS_ROOT=1
+export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+
+# --- preflight ---
+EXE="${MDIR}/build_rocm_cpu/bin/tcogfs.x"
+IC="${GEPS_DMSDB}/ncep_ana_n1.ufs/TCo${JCAP}l72_22081500"
+BCK="${GEPS_DMSDB}/bckdms.ufs/BCK_TCo${JCAP}_GI30S_xnew"
+O3_NUCHEM="${MDIR}/fix/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77"
+O3_FALLBACK="${MDIR}/fix/global_o3prdlos.f77"
+
+fail=0
+for d in \
+  "${IC}/2022081500000000" \
+  "${IC}/2022081418000006" \
+  "${BCK}"
+do
+  if [[ ! -d "${d}" ]]; then
+    echo "ERROR: missing IC/BCK path: ${d}"
+    fail=1
+  fi
+done
+if [[ ! -x "${EXE}" ]]; then
+  echo "ERROR: missing CPU binary: ${EXE}"
+  fail=1
+fi
+if [[ ! -f "${O3_NUCHEM}" && ! -f "${O3_FALLBACK}" ]]; then
+  echo "ERROR: no ozone forcing file in ${MDIR}/fix"
+  fail=1
+fi
+if [[ ! -x "${GEPS_LIB_ROOT}/install/rocm/dms-4.0.0/bin/rdmsdbcrt" ]]; then
+  echo "ERROR: DMS tools missing under ${GEPS_LIB_ROOT}/install/rocm/dms-4.0.0/bin"
+  fail=1
+fi
+if [[ -x "${EXE}" ]]; then
+  hip_libs=$(ldd "${EXE}" 2>/dev/null | grep -E 'libamdhip64|libhipblas|libhipfft|libhipsolver|librccl|libomptarget' || true)
+  if [[ -n "${hip_libs}" ]]; then
+    echo "ERROR: CPU binary still links HIP/RCCL/omptarget:"
+    echo "${hip_libs}"
+    fail=1
+  fi
+fi
+if [[ "${fail}" -ne 0 ]]; then
+  echo "preflight failed; not running getrdy"
+  exit 1
+fi
+echo "preflight OK  IC=${IC}  BCK=${BCK}  EXE=${EXE}  MPI=${MPI} nproc=${ncpu}"
+ldd "${EXE}" | head -40 || true
+
+. "${MDIR}/job/regression.ksh"

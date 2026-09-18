@@ -2,7 +2,9 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
+#include <ctime>
 #include <mutex>
 #include <string>
 #include <unordered_map>
@@ -39,9 +41,119 @@ hipStream_t stream_for(int async_id) {
   return s;
 }
 
+/* Host ptr with an OpenMP mapping → device ptr. Already-device ptr is kept. */
+void *device_ptr(void *p) {
+  if (!p)
+    return p;
+  int d = omp_get_default_device();
+  if (omp_target_is_present(p, d)) {
+    void *m = omp_get_mapped_ptr(p, d);
+    if (m)
+      return m;
+  }
+  return p;
+}
+
+hipsolverSyevjInfo_t g_syevj = nullptr;
+
+/* #region agent log */
+void dbg_ndjson(const char *hyp, const char *loc, const char *msg, int rank,
+                long long p0, long long p1, long long p2, int do_sync) {
+  /* 2026-09-17: opt-in (GEPS_DBG_NDJSON=1). Each call does hipMemGetInfo +
+   * a file append; the src/rocm cyclic_cell wrappers call it ~34x per
+   * advection, which is measurable once the model runs at full speed. */
+  static int ndjson_on = -1;
+  if (ndjson_on < 0)
+    ndjson_on = std::getenv("GEPS_DBG_NDJSON") ? 1 : 0;
+  if (!ndjson_on)
+    return;
+  int dev = -1;
+  (void)hipGetDevice(&dev);
+  hipError_t peek = hipPeekAtLastError();
+  struct timespec ts;
+  clock_gettime(CLOCK_REALTIME, &ts);
+  long long ms = (long long)ts.tv_sec * 1000LL + ts.tv_nsec / 1000000LL;
+  size_t free_b = 0, tot_b = 0;
+  (void)hipMemGetInfo(&free_b, &tot_b);
+  FILE *f = fopen("/mlsteam/workspace/data/geps/.cursor/debug-a51a4c.log", "a");
+  if (f) {
+    fprintf(f,
+            "{\"sessionId\":\"a51a4c\",\"runId\":\"pre-fix\",\"hypothesisId\":\"%s\","
+            "\"location\":\"%s\",\"message\":\"%s\",\"data\":{\"rank\":%d,\"dev\":%d,"
+            "\"peek\":%d,\"sync\":-1,\"p0\":%lld,\"p1\":%lld,\"p2\":%lld,"
+            "\"freeB\":%zu,\"usedB\":%zu,\"totB\":%zu},"
+            "\"timestamp\":%lld}\n",
+            hyp, loc, msg, rank, dev, (int)peek, p0, p1, p2, free_b,
+            tot_b > free_b ? tot_b - free_b : 0, tot_b, ms);
+    fflush(f);
+    fclose(f);
+  }
+  if (!do_sync)
+    return;
+  hipError_t syn = hipDeviceSynchronize();
+  clock_gettime(CLOCK_REALTIME, &ts);
+  ms = (long long)ts.tv_sec * 1000LL + ts.tv_nsec / 1000000LL;
+  f = fopen("/mlsteam/workspace/data/geps/.cursor/debug-a51a4c.log", "a");
+  if (f) {
+    fprintf(f,
+            "{\"sessionId\":\"a51a4c\",\"runId\":\"pre-fix\",\"hypothesisId\":\"%s\","
+            "\"location\":\"%s\",\"message\":\"%s-sync\",\"data\":{\"rank\":%d,\"dev\":%d,"
+            "\"peek\":%d,\"sync\":%d,\"p0\":%lld,\"p1\":%lld,\"p2\":%lld},"
+            "\"timestamp\":%lld}\n",
+            hyp, loc, msg, rank, dev, (int)peek, (int)syn, p0, p1, p2, ms);
+    fflush(f);
+    fclose(f);
+  }
+}
+/* #endregion */
+
 } /* namespace */
 
 extern "C" {
+
+/* #region agent log */
+void geps_dbg_vram_(int *hyp, int *locid, long long *p0, long long *p1,
+                    long long *p2) {
+  char loc[64];
+  std::snprintf(loc, sizeof(loc), "vram:%d", locid ? *locid : 0);
+  const char *h = "A";
+  int hv = hyp ? *hyp : 1;
+  if (hv == 2)
+    h = "B";
+  else if (hv == 3)
+    h = "C";
+  else if (hv == 4)
+    h = "D";
+  else if (hv >= 5)
+    h = "E";
+  dbg_ndjson(h, loc, "vram", 0, p0 ? *p0 : 0, p1 ? *p1 : 0, p2 ? *p2 : 0, 0);
+}
+
+void geps_dbg_gpu_log_(int *hyp, int *locid, int *rank, long long *p0,
+                       long long *p1, long long *p2) {
+  const char *h = "E";
+  switch (*hyp) {
+  case 1:
+    h = "A";
+    break;
+  case 2:
+    h = "B";
+    break;
+  case 3:
+    h = "C";
+    break;
+  case 4:
+    h = "D";
+    break;
+  default:
+    h = "E";
+    break;
+  }
+  char loc[64];
+  std::snprintf(loc, sizeof(loc), "initial_gpu:%d", *locid);
+  dbg_ndjson(h, loc, "ckpt", *rank, *p0, *p1, *p2, 1);
+}
+/* #endregion */
 
 int64_t geps_acc_get_stream(int async_id) {
   return (int64_t)(uintptr_t)stream_for(async_id);
@@ -56,13 +168,81 @@ void geps_hip_wait(int async_id) {
   (void)hipStreamSynchronize(stream_for(async_id));
 }
 
+/* Device-wide wait. acc2omp inserts this after every cudaMemsetAsync /
+   cudaMemcpyAsync run: those go to a HIP stream while the translated
+   OpenMP kernels run on libomptarget's own queue, so without it a memset
+   can land AFTER the kernel that fills the same buffer (2026-09-15: the
+   NDSL pack in ndslfv_monoadvh2 lost about half of ddtemp that way). */
+void geps_hip_wait_all(void) {
+  (void)hipDeviceSynchronize();
+}
+
+/* #region agent log: DBGMAP/DBGUNMAP print with the current free VRAM.
+   Called with an implicit Fortran interface (character literal + real(8)
+   expression), so it needs no declaration in the caller - that matters in
+   `!$omp declare target` routines, where a USE after the directive is an
+   error. flang passes the character length as a trailing size_t. */
+void geps_dbgmap_(const char *tag, const double *gib, size_t taglen) {
+  size_t f = 0, t = 0;
+  (void)hipMemGetInfo(&f, &t);
+  fprintf(stdout, " %.*s GiB= %.4f free= %.2f\n", (int)taglen, tag, *gib,
+          (double)f / 1073741824.0);
+  fflush(stdout);
+}
+/* #endregion */
+
 int geps_hip_device_count() {
   int n = 0;
   (void)hipGetDeviceCount(&n);
-  return n;
+  if (n <= 1)
+    return n < 1 ? 1 : n;
+  /* Collapse DPX partitions of the same PCI device (this lab: C5:00.0 / .1). */
+  int unique = 0;
+  int seen_bus[32], seen_dev[32], seen_dom[32];
+  int nseen = 0;
+  for (int i = 0; i < n && i < 32; ++i) {
+    hipDeviceProp_t p{};
+    if (hipGetDeviceProperties(&p, i) != hipSuccess)
+      continue;
+    int dup = 0;
+    for (int k = 0; k < nseen; ++k) {
+      if (seen_dom[k] == p.pciDomainID && seen_bus[k] == p.pciBusID &&
+          seen_dev[k] == p.pciDeviceID) {
+        dup = 1;
+        break;
+      }
+    }
+    if (!dup && nseen < 32) {
+      seen_dom[nseen] = p.pciDomainID;
+      seen_bus[nseen] = p.pciBusID;
+      seen_dev[nseen] = p.pciDeviceID;
+      nseen++;
+      unique++;
+    }
+  }
+  return unique < 1 ? 1 : unique;
 }
 
-int geps_hip_set_device(int id) { return (int)hipSetDevice(id); }
+int geps_hip_set_device(int id) {
+  int use = id;
+  if (geps_hip_device_count() <= 1)
+    use = 0;
+  else if (use < 0)
+    use = 0;
+  int rc = (int)hipSetDevice(use);
+  omp_set_default_device(use);
+  /* #region agent log */
+  {
+    int nraw = 0;
+    hipDeviceProp_t p{};
+    (void)hipGetDeviceCount(&nraw);
+    (void)hipGetDeviceProperties(&p, use);
+    dbg_ndjson("F", "hip_set_device", "pci", nraw, (long long)p.pciBusID,
+               (long long)p.pciDeviceID, (long long)use, 0);
+  }
+  /* #endregion */
+  return rc;
+}
 
 int geps_hip_get_device() {
   int id = 0;
@@ -81,17 +261,27 @@ int geps_hip_memcpy(void *dst, const void *src, int64_t bytes, int /*kind*/) {
   return (int)hipMemcpy(dst, src, (size_t)bytes, hipMemcpyDefault);
 }
 
-int geps_hip_memcpy_async(void *dst, const void *src, int64_t bytes, int /*kind*/,
+int geps_hip_memcpy_async(void *dst, const void *src, int64_t bytes, int kind,
                           int64_t stream) {
+  // 2026-09-18 (rocprofv3): with hipMemcpyDefault the 14 D2D state copies in
+  // intgrt_gpu ran at ~26 MB/s (13 s for a 343 MB array, 87 s for qm) and
+  // cost ~190 s per step: the buffers come from libomptarget's allocator,
+  // which HIP's pointer classification does not recognise as device memory,
+  // so CLR takes the host-staged path. Explicit DtoD skips the lookup.
+  if (kind == 3)
+    return (int)hipMemcpyDtoDAsync((hipDeviceptr_t)dst, (hipDeviceptr_t)src,
+                                   (size_t)bytes, (hipStream_t)(uintptr_t)stream);
   return (int)hipMemcpyAsync(dst, src, (size_t)bytes, hipMemcpyDefault,
                              (hipStream_t)(uintptr_t)stream);
 }
 
 int geps_hip_memset_async(void *dst, int64_t bytes, int64_t stream) {
+  dst = device_ptr(dst);
   return (int)hipMemsetAsync(dst, 0, (size_t)bytes, (hipStream_t)(uintptr_t)stream);
 }
 
 int geps_hip_memset_i32_async(void *dst, int val, int64_t count, int64_t stream) {
+  dst = device_ptr(dst);
   return (int)hipMemsetD32Async((hipDeviceptr_t)dst, val, (size_t)count,
                                 (hipStream_t)(uintptr_t)stream);
 }
@@ -179,12 +369,53 @@ int geps_blas_set_stream(void *handle, int64_t stream) {
                                (hipStream_t)(uintptr_t)stream);
 }
 
+/* #region agent log: report the device address OpenMP has mapped a host array
+   to. Called from Fortran by reference, so no iso_c_binding is needed:
+       call geps_dbg_mapped(nnmi_buf, 1)
+   Compare the result with the C pointer printed by [dgemm]. */
+extern "C" void geps_dbg_mapped_(double *p, int *tag) {
+  int d = omp_get_default_device();
+  int present = omp_target_is_present(p, d);
+  void *mapped = present ? omp_get_mapped_ptr(p, d) : nullptr;
+  fprintf(stderr, "[mapped] tag=%d host=%p is_present=%d device=%p\n",
+          tag ? *tag : -1, (void *)p, present, mapped);
+  fflush(stderr);
+}
+/* #endregion */
+
 int geps_blas_dgemm(void *handle, int ta, int tb, int m, int n, int k,
                     double alpha, const double *a, int lda, const double *b,
                     int ldb, double beta, double *c, int ldc) {
-  return (int)hipblasDgemm((hipblasHandle_t)handle, (hipblasOperation_t)ta,
-                           (hipblasOperation_t)tb, m, n, k, &alpha, a, lda, b,
-                           ldb, &beta, c, ldc);
+  /* #region agent log: which buffer does dgemm actually write?
+     nnmi_gpu's `bal` implies |wrk| ~ 1 while its x_out implies |wrk| ~ 1e-3.
+     If the address dgemm gets from `use_device_addr` differs from the one the
+     OpenMP kernel reads (printed by geps_dbg_mapped_), they are two buffers. */
+  {
+    /* Only nnmi_gpu's shape: dgemm(op, op, nn, 2, nn, ...) - the first few
+       dgemm calls in the program come from elsewhere (m=144, n=1..6) and
+       their pointers are not comparable. */
+    static int seen = 0;
+    if (n == 2 && m == k && seen < 6) {
+      ++seen;
+      fprintf(stderr, "[dgemm] m=%d n=%d k=%d  A=%p B=%p C=%p\n", m, n, k,
+              (const void *)a, (const void *)b, (void *)c);
+      fflush(stderr);
+    }
+  }
+  /* #endregion */
+  int rc = (int)hipblasDgemm((hipblasHandle_t)handle, (hipblasOperation_t)ta,
+                             (hipblasOperation_t)tb, m, n, k, &alpha, a, lda, b,
+                             ldb, &beta, c, ldc);
+  /* 2026-09-16 (layer 15): hipBLAS queues on the handle's current stream and
+     returns; translated OpenMP kernels run on libomptarget's own queue with
+     no ordering against it. Sites outside the graph blocks (correct_gpu,
+     tranuv1_gpu, dgemm_async's 20 callers) read the result in the very next
+     kernel with no wait, and with LIBOMPTARGET_MEMORY_MANAGER_THRESHOLD=0
+     that showed up as a 1e-5 shift in sptend and NaN feeding the
+     microphysics. Make every dgemm synchronous here, once, instead of
+     patching each call site. */
+  (void)hipDeviceSynchronize();
+  return rc;
 }
 
 int geps_fft_create(int *plan) {
@@ -224,11 +455,36 @@ int geps_fft_make_plan_many(int plan, int rank, int n, int inembed, int istride,
   int nn = n;
   int ine = inembed;
   int one = onembed;
+  /* #region agent log: plans are created per latitude (768 per distinct
+     batch size) with auto-allocation ON, and every routine's FIRST call
+     costs 15-45 GiB of VRAM that never comes back (2026-09-16 trace). Log
+     the reported work size and the real hipMemGetInfo delta per plan set. */
+  size_t free0 = 0, tot0 = 0;
+  (void)hipMemGetInfo(&free0, &tot0);
+  /* #endregion */
   int rc = (int)hipfftMakePlanMany(fft_of(plan), rank, &nn, &ine, istride,
                                    idist, &one, ostride, odist,
                                    (hipfftType)ffttype, batch, &ws);
   if (work_size)
     *work_size = (int64_t)ws;
+  /* #region agent log */
+  {
+    static long long nplans = 0, ws_sum = 0, vram_sum = 0;
+    size_t free1 = 0, tot1 = 0;
+    (void)hipMemGetInfo(&free1, &tot1);
+    ++nplans;
+    ws_sum += (long long)ws;
+    vram_sum += (long long)free0 - (long long)free1;
+    if (nplans <= 3 || nplans % 256 == 0)
+      fprintf(stderr,
+              "[fftplan] #%lld n=%d batch=%d ws=%.1f MB vram_delta=%.1f MB  "
+              "cum ws=%.2f GB cum vram=%.2f GB free=%.1f GB\n",
+              nplans, n, batch, ws / 1048576.0,
+              ((double)free0 - (double)free1) / 1048576.0,
+              ws_sum / 1073741824.0, vram_sum / 1073741824.0,
+              free1 / 1073741824.0);
+  }
+  /* #endregion */
   return rc;
 }
 
@@ -241,18 +497,26 @@ int geps_fft_set_work_area(int plan, void *work) {
 }
 
 int geps_fft_exec_z2d(int plan, void *in, void *out) {
-  return (int)hipfftExecZ2D(fft_of(plan), (hipfftDoubleComplex *)in,
+  int rc = (int)hipfftExecZ2D(fft_of(plan), (hipfftDoubleComplex *)in,
                             (double *)out);
+  (void)hipDeviceSynchronize();   /* layer 15, see geps_blas_dgemm */
+  return rc;
 }
 int geps_fft_exec_d2z(int plan, void *in, void *out) {
-  return (int)hipfftExecD2Z(fft_of(plan), (double *)in,
+  int rc = (int)hipfftExecD2Z(fft_of(plan), (double *)in,
                             (hipfftDoubleComplex *)out);
+  (void)hipDeviceSynchronize();   /* layer 15, see geps_blas_dgemm */
+  return rc;
 }
 int geps_fft_exec_c2r(int plan, void *in, void *out) {
-  return (int)hipfftExecC2R(fft_of(plan), (hipfftComplex *)in, (float *)out);
+  int rc = (int)hipfftExecC2R(fft_of(plan), (hipfftComplex *)in, (float *)out);
+  (void)hipDeviceSynchronize();   /* layer 15, see geps_blas_dgemm */
+  return rc;
 }
 int geps_fft_exec_r2c(int plan, void *in, void *out) {
-  return (int)hipfftExecR2C(fft_of(plan), (float *)in, (hipfftComplex *)out);
+  int rc = (int)hipfftExecR2C(fft_of(plan), (float *)in, (hipfftComplex *)out);
+  (void)hipDeviceSynchronize();   /* layer 15, see geps_blas_dgemm */
+  return rc;
 }
 
 int geps_solver_create(void **handle) {
@@ -316,10 +580,86 @@ int geps_solver_dsyevj_buf(void *handle, int jobz, int uplo, int n, double *A,
 int geps_solver_dsyevj(void *handle, int jobz, int uplo, int n, double *A,
                        int lda, double *W, double *work, int lwork,
                        int *devinfo, void *params) {
-  return (int)hipsolverDnDsyevj(
+  /* #region agent log */
+  static int syevj_n = 0;
+  int seq = syevj_n++;
+  if (seq < 2)
+    dbg_ndjson("C", "hip_compat:dsyevj", "before", seq, (long long)(uintptr_t)A,
+               (long long)n, (long long)lda, 0);
+  /* #endregion */
+  int rc = (int)hipsolverDnDsyevj(
       (hipsolverDnHandle_t)handle, (hipsolverEigMode_t)jobz,
       (hipblasFillMode_t)uplo, n, A, lda, W, work, lwork, devinfo,
       (hipsolverSyevjInfo_t)params);
+  /* #region agent log */
+  if (seq < 2)
+    dbg_ndjson("C", "hip_compat:dsyevj", "after", seq, (long long)rc,
+               (long long)n, (long long)lda, 1);
+  /* #endregion */
+  return rc;
+}
+
+int geps_rocm_dsyevj_dev(double *A, int n, double *W, int *devinfo) {
+  if (n <= 0)
+    return 0;
+  /* #region agent log: is `use_device_addr` actually giving us a device
+     address? device_ptr() silently passes a host pointer straight through when
+     omp_target_is_present() is false, which would make hipSOLVER write
+     somewhere other than the `mx` the model reads back. Print the first few. */
+  {
+    static int seen = 0;
+    if (seen < 4) {
+      ++seen;
+      int d = omp_get_default_device();
+      int present = omp_target_is_present(A, d);
+      void *mapped = present ? omp_get_mapped_ptr(A, d) : nullptr;
+      void *resolved = device_ptr(A);
+      fprintf(stderr,
+              "[dsyevj] n=%d A=%p is_present=%d mapped=%p resolved=%p %s\n", n,
+              (void *)A, present, mapped, resolved,
+              (resolved == (void *)A && !present)
+                  ? "<-- passed through unchanged (suspect host address)"
+                  : "");
+      fflush(stderr);
+    }
+  }
+  /* #endregion */
+  A = (double *)device_ptr(A);
+  W = (double *)device_ptr(W);
+  devinfo = (int *)device_ptr(devinfo);
+
+  hipsolverHandle_t h = nullptr;
+  hipsolverSyevjInfo_t params = nullptr;
+  {
+    std::lock_guard<std::mutex> lock(g_mu);
+    if (!g_solver)
+      (void)hipsolverDnCreate(&g_solver);
+    if (!g_syevj) {
+      (void)hipsolverDnCreateSyevjInfo(&g_syevj);
+      (void)hipsolverDnXsyevjSetTolerance(g_syevj, 1e-15);
+      (void)hipsolverDnXsyevjSetSortEig(g_syevj, 0);
+    }
+    h = g_solver;
+    params = g_syevj;
+  }
+
+  int lwork = 0;
+  int rc = (int)hipsolverDnDsyevj_bufferSize(
+      h, HIPSOLVER_EIG_MODE_VECTOR, HIPBLAS_FILL_MODE_UPPER, n, A, n, W, &lwork,
+      params);
+  if (rc != 0)
+    return rc;
+  if (lwork < 1)
+    lwork = 1;
+  double *work = nullptr;
+  if (hipMalloc(&work, sizeof(double) * (size_t)lwork) != hipSuccess)
+    return -1;
+  rc = (int)hipsolverDnDsyevj(h, HIPSOLVER_EIG_MODE_VECTOR,
+                              HIPBLAS_FILL_MODE_UPPER, n, A, n, W, work, lwork,
+                              devinfo, params);
+  (void)hipDeviceSynchronize();
+  (void)hipFree(work);
+  return rc;
 }
 
 int geps_sparse_create(void **handle) {
@@ -348,11 +688,44 @@ int geps_sparse_dgtsv_interleaved_buf(void *handle, int algo, int m,
   return rc;
 }
 
+// 2026-09-16: rocSPARSE's Thomas solver (algo 0) overwrites BOTH the main
+// diagonal `d` and the upper diagonal `du` (measured with a standalone test:
+// d changed 72000/72000, du 71000/72000, dl untouched), whereas the cuSPARSE
+// callers in moninedmf_gpu only restore `aug` (du) between solves that share
+// alg/adg/aug.  NOTE: those call sites are inside `if (.false.)` today (the
+// live path is tridin_gpu/tridi2_gpu), so this is NOT the cause of the
+// layer-18 microphysics hang -- it only matters if that path is re-enabled.
+// Preserve all three coefficient arrays so both libraries look alike.
+static double *g_gtsv_save = nullptr;
+static size_t g_gtsv_cap = 0;
+
 int geps_sparse_dgtsv_interleaved(void *handle, int algo, int m, double *dl,
                                   double *d, double *du, double *x, int batch,
                                   void *buf) {
-  return (int)hipsparseDgtsvInterleavedBatch((hipsparseHandle_t)handle, algo, m,
-                                             dl, d, du, x, batch, buf);
+  hipsparseHandle_t h = (hipsparseHandle_t)handle;
+  size_t n = (size_t)m * (size_t)batch;
+  if (n > g_gtsv_cap) {
+    if (g_gtsv_save)
+      (void)hipFree(g_gtsv_save);
+    g_gtsv_save = nullptr;
+    if (hipMalloc(&g_gtsv_save, 3 * n * sizeof(double)) != hipSuccess) {
+      g_gtsv_cap = 0;
+      return (int)HIPSPARSE_STATUS_ALLOC_FAILED;
+    }
+    g_gtsv_cap = n;
+  }
+  hipStream_t s = nullptr;
+  (void)hipsparseGetStream(h, &s);
+  double *sdl = g_gtsv_save, *sd = g_gtsv_save + n, *sdu = g_gtsv_save + 2 * n;
+  (void)hipMemcpyAsync(sdl, dl, n * sizeof(double), hipMemcpyDeviceToDevice, s);
+  (void)hipMemcpyAsync(sd, d, n * sizeof(double), hipMemcpyDeviceToDevice, s);
+  (void)hipMemcpyAsync(sdu, du, n * sizeof(double), hipMemcpyDeviceToDevice, s);
+  int rc = (int)hipsparseDgtsvInterleavedBatch(h, algo, m, dl, d, du, x, batch, buf);
+  (void)hipMemcpyAsync(dl, sdl, n * sizeof(double), hipMemcpyDeviceToDevice, s);
+  (void)hipMemcpyAsync(d, sd, n * sizeof(double), hipMemcpyDeviceToDevice, s);
+  (void)hipMemcpyAsync(du, sdu, n * sizeof(double), hipMemcpyDeviceToDevice, s);
+  (void)hipStreamSynchronize(s);
+  return rc;
 }
 
 int geps_nccl_unique_id(void *id) {
@@ -382,18 +755,22 @@ int geps_nccl_group_end() { return (int)ncclGroupEnd(); }
 
 int geps_nccl_send(const void *s, int64_t count, int dtype, int peer,
                    void *comm, int64_t stream) {
+  s = device_ptr(const_cast<void *>(s));
   return (int)ncclSend(s, (size_t)count, (ncclDataType_t)dtype, peer,
                        (ncclComm_t)comm, (hipStream_t)(uintptr_t)stream);
 }
 
 int geps_nccl_recv(void *r, int64_t count, int dtype, int peer, void *comm,
                    int64_t stream) {
+  r = device_ptr(r);
   return (int)ncclRecv(r, (size_t)count, (ncclDataType_t)dtype, peer,
                        (ncclComm_t)comm, (hipStream_t)(uintptr_t)stream);
 }
 
 int geps_nccl_allreduce(const void *s, void *r, int64_t count, int dtype,
                         int op, void *comm, int64_t stream) {
+  s = device_ptr(const_cast<void *>(s));
+  r = device_ptr(r);
   return (int)ncclAllReduce(s, r, (size_t)count, (ncclDataType_t)dtype,
                             (ncclRedOp_t)op, (ncclComm_t)comm,
                             (hipStream_t)(uintptr_t)stream);
@@ -401,14 +778,32 @@ int geps_nccl_allreduce(const void *s, void *r, int64_t count, int dtype,
 
 int geps_nccl_allgather(const void *s, void *r, int64_t count, int dtype,
                         void *comm, int64_t stream) {
+  s = device_ptr(const_cast<void *>(s));
+  r = device_ptr(r);
   return (int)ncclAllGather(s, r, (size_t)count, (ncclDataType_t)dtype,
                             (ncclComm_t)comm, (hipStream_t)(uintptr_t)stream);
 }
 
 int geps_nccl_broadcast(const void *s, void *r, int64_t count, int dtype,
                         int root, void *comm, int64_t stream) {
-  return (int)ncclBroadcast(s, r, (size_t)count, (ncclDataType_t)dtype, root,
+  /* #region agent log */
+  static int bcast_n = 0;
+  int seq = bcast_n++;
+  int interesting = (seq < 3) || (count >= 100000);
+  if (interesting)
+    dbg_ndjson("B", "hip_compat:ncclBcast", "before", seq,
+               (long long)(uintptr_t)s, (long long)(uintptr_t)r, count, 0);
+  /* #endregion */
+  s = device_ptr(const_cast<void *>(s));
+  r = device_ptr(r);
+  int rc = (int)ncclBroadcast(s, r, (size_t)count, (ncclDataType_t)dtype, root,
                             (ncclComm_t)comm, (hipStream_t)(uintptr_t)stream);
+  /* #region agent log */
+  if (interesting)
+    dbg_ndjson("B", "hip_compat:ncclBcast", "after", seq, (long long)rc,
+               (long long)root, count, 1);
+  /* #endregion */
+  return rc;
 }
 
 void geps_nccl_error_string(int err, char *buf, int n) {

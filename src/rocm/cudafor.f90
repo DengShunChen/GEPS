@@ -327,6 +327,15 @@ contains
       p = c_loc(dst(lbound(dst, 1), lbound(dst, 2), lbound(dst, 3)))
     rank (4)
       p = c_loc(dst(lbound(dst, 1), lbound(dst, 2), lbound(dst, 3), lbound(dst, 4)))
+    rank (5)
+      p = c_loc(dst(lbound(dst, 1), lbound(dst, 2), lbound(dst, 3), lbound(dst, 4), &
+                    lbound(dst, 5)))
+    rank (6)
+      p = c_loc(dst(lbound(dst, 1), lbound(dst, 2), lbound(dst, 3), lbound(dst, 4), &
+                    lbound(dst, 5), lbound(dst, 6)))
+    rank (7)
+      p = c_loc(dst(lbound(dst, 1), lbound(dst, 2), lbound(dst, 3), lbound(dst, 4), &
+                    lbound(dst, 5), lbound(dst, 6), lbound(dst, 7)))
     rank default
       error stop 'cudaMemsetAsync: unsupported rank'
     end select
@@ -343,6 +352,17 @@ contains
       p = c_loc(dst(lbound(dst, 1), lbound(dst, 2)))
     rank (3)
       p = c_loc(dst(lbound(dst, 1), lbound(dst, 2), lbound(dst, 3)))
+    rank (4)
+      p = c_loc(dst(lbound(dst, 1), lbound(dst, 2), lbound(dst, 3), lbound(dst, 4)))
+    rank (5)
+      p = c_loc(dst(lbound(dst, 1), lbound(dst, 2), lbound(dst, 3), lbound(dst, 4), &
+                    lbound(dst, 5)))
+    rank (6)
+      p = c_loc(dst(lbound(dst, 1), lbound(dst, 2), lbound(dst, 3), lbound(dst, 4), &
+                    lbound(dst, 5), lbound(dst, 6)))
+    rank (7)
+      p = c_loc(dst(lbound(dst, 1), lbound(dst, 2), lbound(dst, 3), lbound(dst, 4), &
+                    lbound(dst, 5), lbound(dst, 6), lbound(dst, 7)))
     rank default
       error stop 'cudaMemsetAsync: unsupported integer rank'
     end select

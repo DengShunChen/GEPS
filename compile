@@ -85,14 +85,12 @@ else
 fi
 module purge 2>/dev/null || true
 
-# OpenMPI: env.sh defaults to 5.0.5. Prefer a flang-built tree for rocm
-# (system Ubuntu mpi.mod is gfortran and amdflang cannot read it).
+# OpenMPI: env.sh defaults to 5.0.5. For rocm, load_geps_compiler prefers
+# native ROCm MPI, then self-built openmpi/4.1.6-rocm (amdflang mpi.mod).
 : "${GEPS_OPENMPI_MODULEFILES:=${GEPS_LIB_ROOT}/install/modulefiles}"
 export GEPS_OPENMPI_MODULEFILES
-if [[ -z "${GEPS_OPENMPI_MODULE:-}" ]]; then
-  if [[ "${GEPS_COMPILER}" == "rocm" && -e "${GEPS_OPENMPI_MODULEFILES}/openmpi/4.1.6-rocm" ]]; then
-    export GEPS_OPENMPI_MODULE=openmpi/4.1.6-rocm
-  elif [[ -e "${GEPS_OPENMPI_MODULEFILES}/openmpi/5.0.5" ]]; then
+if [[ -z "${GEPS_OPENMPI_MODULE:-}" && "${GEPS_COMPILER}" != "rocm" ]]; then
+  if [[ -e "${GEPS_OPENMPI_MODULEFILES}/openmpi/5.0.5" ]]; then
     export GEPS_OPENMPI_MODULE=openmpi/5.0.5
   elif [[ -e "${GEPS_OPENMPI_MODULEFILES}/openmpi/4.1.6" ]]; then
     export GEPS_OPENMPI_MODULE=openmpi/4.1.6

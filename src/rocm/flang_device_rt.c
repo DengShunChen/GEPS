@@ -53,5 +53,17 @@ float lgammaf(float x)
   return (float)lgamma((double)x);
 }
 
+/* Host definition is hip_compat.cc. Device LTO of offload TUs may still
+ * reference this from the host-side glue of a target subroutine. */
+void geps_dbg_vram_(int *hyp, int *locid, long long *p0, long long *p1,
+                    long long *p2)
+{
+  (void)hyp;
+  (void)locid;
+  (void)p0;
+  (void)p1;
+  (void)p2;
+}
+
 #pragma omp end declare target
 

@@ -1,4 +1,5 @@
       subroutine eigen(mx,nn,eval,evec,epos,wk)
+      use rank
 !
 !  purpose: find the eigenvecotrs and eigenvalues of matrix 
 !------------------------------------------------------------------
@@ -13,6 +14,19 @@
 !------------------------------------------------------------------
       real mx(nn,nn),eval(nn),evec(nn,nn),epos(nn,nn),wk(nn,nn)
       dimension wr(nn),wi(nn),z(nn,nn),fv1(nn),iv1(nn),ipp(nn)
+      ! #region agent log
+      integer(kind=8) :: dbg0, dbg1, dbg2
+      interface
+        subroutine geps_dbg_log(hyp, locid, irank, p0, p1, p2)
+          integer hyp, locid, irank
+          integer(kind=8) p0, p1, p2
+        end subroutine
+      end interface
+      dbg0 = loc(z)
+      dbg1 = nn
+      dbg2 = loc(mx)
+      call geps_dbg_log(1, 15, myrank, dbg0, dbg1, dbg2)
+      ! #endregion
 !
 !  find the eigenvalue and eigenvector
 !--------

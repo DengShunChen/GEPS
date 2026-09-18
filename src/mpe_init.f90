@@ -42,6 +42,17 @@
     integer, intent(in), optional :: mpi_comm_mct
 #endif
     integer i,ierr,istat,iworld,igfs,iio,mini,m,n
+      ! #region agent log
+      integer(kind=8) :: dbg0, dbg1, dbg2
+      interface
+        subroutine geps_dbg_log(hyp, locid, irank, p0, p1, p2)
+          integer hyp, locid, irank
+          integer(kind=8) p0, p1, p2
+        end subroutine
+        subroutine geps_dbg_install()
+        end subroutine
+      end interface
+      ! #endregion
 
      integer, dimension(:), allocatable :: ranks_gfs, ranks_io
 
@@ -61,6 +72,13 @@
     call MPI_COMM_SIZE( MPI_COMM_atm, nsize_all,  ierr )
     root_rsm = nsize_all
 #endif
+      ! #region agent log
+      dbg0 = 0
+      dbg1 = 0
+      dbg2 = 0
+      call geps_dbg_install()
+      call geps_dbg_log(1, 1, myrank_all, dbg0, dbg1, dbg2)
+      ! #endregion
 #ifdef USE_CUDA
      call device_init(myrank_all, nsize_all)
 #endif

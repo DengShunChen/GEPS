@@ -11,3 +11,15 @@ subroutine geps_acc_wait(async_id)
   end interface
   call geps_acc_wait_c(int(async_id, c_int))
 end subroutine geps_acc_wait
+
+! Device-wide wait, inserted by acc2omp after cudaMemsetAsync/cudaMemcpyAsync
+! runs (see geps_hip_wait_all in hip_compat.cc for why).
+subroutine geps_acc_wait_all()
+  implicit none
+  interface
+      subroutine geps_acc_wait_all_c() bind(C, name="geps_hip_wait_all")
+    end subroutine
+  end interface
+  call geps_acc_wait_all_c()
+end subroutine geps_acc_wait_all
+

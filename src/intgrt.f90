@@ -659,6 +659,17 @@
 !      call ujoinsr(cc,rdivm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
 !      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temmid,cc,1,nsizey)
 !      call ujoinsr(cc,tm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      ! #region agent log
+      call geps_dbg_ssq_grid(up, nxp, lev, my_max, 's0_copy_up')
+      call geps_dbg_ssq_grid(vp, nxp, lev, my_max, 's0_copy_vp')
+      call geps_dbg_ssq_grid(ttp, nxp, lev, my_max, 's0_copy_ttp')
+      call geps_dbg_ssq_grid(ut, nxp, lev, my_max, 's0_copy_ut')
+      call geps_dbg_ssq_grid(vt, nxp, lev, my_max, 's0_copy_vt')
+      call geps_dbg_ssq_grid(um, nxp, lev, my_max, 's0_copy_um')
+      call geps_dbg_ssq_grid(rdivm, nxp, lev, my_max, 's0_copy_rdivm')
+      call geps_dbg_ssq_grid(qm, nxp, lev*ncld, my_max, 's0_copy_qm')
+      call geps_dbg_ssq_grid(ptm, nxp, 1, my_max, 's0_copy_ptm')
+      ! #endregion
           forward = .true.
           fwd = .true.
           ndsldtah = dta / powd
@@ -708,6 +719,11 @@
                                            nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, row_comm)
              call mpe2d_transpose_ndsl_f2p(ttm_sl, ddtemp, &
                                            nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, row_comm)
+      ! #region agent log
+      call geps_dbg_ssq_grid(vdzonl, nxp, lev, my_max, 's1_fgnl_vdzonl')
+      call geps_dbg_ssq_grid(vdmerd, nxp, lev, my_max, 's1_fgnl_vdmerd')
+      call geps_dbg_ssq_grid(ddtemp, nxp, lev, my_max, 's1_fgnl_ddtemp')
+      ! #endregion
 !
 !     calculate vertical velocity at mid-point
 !
@@ -734,11 +750,20 @@
                                         , sgeo(1, jj))
 !
              end do !jj = 1,jlistnum
+      ! #region agent log
+      call geps_dbg_ssq_grid(diveng, nxp, lev, my_max, 's1_gridnl_diveng')
+      call geps_dbg_ssq_grid(pdot, nxp, lev+1, latpart, 's1_gridnl_pdot')
+      ! #endregion
              call joinrs(cc, diveng, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
              call tranrs(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc &
                          , hldten, 1, nsizey)
              call trngra3(jtrun, jtmax, nx, levp, my, my_max, cim, poly, dpoly &
                           , hldten, dlphi, dtphi, nsizey)
+      ! #region agent log
+      call geps_dbg_ssq_spec(hldten, levp*2, jtrun, jtmax, 's1_trngra3_hldten')
+      call geps_dbg_ssq_grid(dlphi, nxp, lev, my_max, 's1_trngra3_dlphi')
+      call geps_dbg_ssq_grid(dtphi, nxp, lev, my_max, 's1_trngra3_dtphi')
+      ! #endregion
              !
              do jj = 1, jlistnum
                 j = jlist1(jj)
@@ -757,6 +782,11 @@
              !      do itt = 1,itter
              call ndslfv_monoadvv_fgnl(vdzonl, vdmerd, ddtemp, pdot, ptm &
                                        , nxjp, dtahi, 3, forward)
+      ! #region agent log
+      call geps_dbg_ssq_grid(vdzonl, nxp, lev, my_max, 's1_vadv_vdzonl')
+      call geps_dbg_ssq_grid(vdmerd, nxp, lev, my_max, 's1_vadv_vdmerd')
+      call geps_dbg_ssq_grid(ddtemp, nxp, lev, my_max, 's1_vadv_ddtemp')
+      ! #endregion
              !      enddo
 
 !CWB2021 ndsl single precision test
@@ -765,6 +795,9 @@
              call mpe2d_unify_nx(ww1, deldm)
              call tranrs1(jtrun, jtmax, nx, my, my_max, poly, weight, ww1 &
                           , plten, nsizey)
+      ! #region agent log
+      call geps_dbg_ssq_spec2(plten, jtrun, jtmax, 2, 's1_tranrs1_plten')
+      ! #endregion
              do jj = 1, jlistnum
                 j = jlist1(jj)
                 nxj = nxdef_2d(j)
@@ -783,10 +816,20 @@
                          , temten, 1, nsizey)
              call rstrandz(jtrun, jtmax, nx, my, my_max, levp, vdmerd, vdzonl &
                            , weight, cim, onocos, poly, dpoly, divten, vorten, nsizey)
+      ! #region agent log
+      call geps_dbg_ssq_spec(temten, levp*2, jtrun, jtmax, 's1_trandv_temten')
+      call geps_dbg_ssq_spec(vorten, levp*2, jtrun, jtmax, 's1_trandv_vorten')
+      call geps_dbg_ssq_spec(divten, levp*2, jtrun, jtmax, 's1_trandv_divten')
+      ! #endregion
              if (lsimpl) &
                 call siimpl(jtrun, jtmax, lev, dtah, ptmeans, dsigma, spalm, eps4, eigval &
                            , evecin, evectr, arrhyd, arsddt, temnow, divnow, plnow &
                            , temmid, divmid, plmid, temten, divten, plten, alphax)
+      ! #region agent log
+      call geps_dbg_ssq_spec(temmid, levp*2, jtrun, jtmax, 's1_siimpl_temmid')
+      call geps_dbg_ssq_spec(divmid, levp*2, jtrun, jtmax, 's1_siimpl_divmid')
+      call geps_dbg_ssq_spec2(plmid, jtrun, jtmax, 2, 's1_siimpl_plmid')
+      ! #endregion
 
 !      call trandv ( jtrun,jtmax,nx,my,my_max,lev,vdzonl,vdmerd,weight,cim &
 !                   ,onocos,poly,dpoly,vormid,divmid,nsizey)
@@ -839,6 +882,11 @@
                 call hdiffu(dtah, my, my_max, nx, jtrun, jtmax, lev, ncld &
                              , hfiltm, rad, cosl, um, vm, vormid, divmid, temmid &
                              , eps4, trefs)
+      ! #region agent log
+      call geps_dbg_ssq_spec(vormid, levp*2, jtrun, jtmax, 's1_hdiffu_vormid')
+      call geps_dbg_ssq_spec(divmid, levp*2, jtrun, jtmax, 's1_hdiffu_divmid')
+      call geps_dbg_ssq_spec(temmid, levp*2, jtrun, jtmax, 's1_hdiffu_temmid')
+      ! #endregion
 !             end if
 !
 !      call hdiffu ( dth,my,my_max,nx,jtrun,jtmax,lev,ncld     &
@@ -857,6 +905,15 @@
              call transr1(jtrun, jtmax, nx, my, my_max, poly, plmid, ptm, nsizey)
              call trngra(jtrun, jtmax, nx, my, my_max, cim, poly, dpoly, plmid &
                          , dlpl, dtpl, nsizey)
+      ! #region agent log
+      call geps_dbg_ssq_grid(um, nxp, lev, my_max, 's1_mid_um')
+      call geps_dbg_ssq_grid(vm, nxp, lev, my_max, 's1_mid_vm')
+      call geps_dbg_ssq_grid(rdivm, nxp, lev, my_max, 's1_mid_rdivm')
+      call geps_dbg_ssq_grid(tm, nxp, lev, my_max, 's1_mid_tm')
+      call geps_dbg_ssq_grid(ptm, nxp, 1, my_max, 's1_mid_ptm')
+      call geps_dbg_ssq_grid(dlpl, nxp, 1, my_max, 's1_mid_dlpl')
+      call geps_dbg_ssq_grid(dtpl, nxp, 1, my_max, 's1_mid_dtpl')
+      ! #endregion
              forward = .false.
              dtahi = dtah
           end do ! do itt=1,itter
@@ -890,11 +947,20 @@
                                      , sgeo(1, jj))
           end do !jj = 1,jlistnum
 !
+      ! #region agent log
+      call geps_dbg_ssq_grid(diveng, nxp, lev, my_max, 's2_gridnl_diveng')
+      call geps_dbg_ssq_grid(pdot, nxp, lev+1, latpart, 's2_gridnl_pdot')
+      ! #endregion
           call joinrs(cc, diveng, dummy, dummy, dummy, nx, my_max, lev, jlistnum, 1, 1)
           call tranrs(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc &
                       , hldten, 1, nsizey)
           call trngra3(jtrun, jtmax, nx, levp, my, my_max, cim, poly, dpoly &
                        , hldten, dlphi, dtphi, nsizey)
+      ! #region agent log
+      call geps_dbg_ssq_spec(hldten, levp*2, jtrun, jtmax, 's2_trngra3_hldten')
+      call geps_dbg_ssq_grid(dlphi, nxp, lev, my_max, 's2_trngra3_dlphi')
+      call geps_dbg_ssq_grid(dtphi, nxp, lev, my_max, 's2_trngra3_dtphi')
+      ! #endregion
 !
           do jj = 1, jlistnum
              j = jlist1(jj)
@@ -962,6 +1028,12 @@
                                         nxp, nx, levf, levp, 1, myf, my_max, jlistnum, jlen, nsizex, row_comm)
           call mpe2d_transpose_ndsl_f2p(qm_sl, qt, &
                                         nxp, nx, levf, levp, ncld, myf, my_max, jlistnum, jlen, nsizex, row_comm)
+      ! #region agent log
+      call geps_dbg_ssq_grid(tt, nxp, lev, my_max, 's2_hadv_tt')
+      call geps_dbg_ssq_grid(ut, nxp, lev, my_max, 's2_hadv_ut')
+      call geps_dbg_ssq_grid(vt, nxp, lev, my_max, 's2_hadv_vt')
+      call geps_dbg_ssq_grid(qt, nxp, lev*ncld, my_max, 's2_hadv_qt')
+      ! #endregion
 !#endif
 
 !
@@ -977,6 +1049,12 @@
 !       call ndslfv_monoadvv(ddtemp,qt,vdzonl,vdmerd,pdot,ptm      &
 !      do itt = 1,itter
           call ndslfv_monoadvv(tt, qt, ut, vt, pdot, ptm, nxjp, dtah, forward)
+      ! #region agent log
+      call geps_dbg_ssq_grid(tt, nxp, lev, my_max, 's2_vadv_tt')
+      call geps_dbg_ssq_grid(ut, nxp, lev, my_max, 's2_vadv_ut')
+      call geps_dbg_ssq_grid(vt, nxp, lev, my_max, 's2_vadv_vt')
+      call geps_dbg_ssq_grid(qt, nxp, lev*ncld, my_max, 's2_vadv_qt')
+      ! #endregion
 !      enddo
 
 !CWB2021 ndsl single precision test
@@ -994,6 +1072,9 @@
              end do
           end do
           call transr1(jtrun, jtmax, nx, my, my_max, poly, pltemp, pt, nsizey)
+      ! #region agent log
+      call geps_dbg_ssq_grid(pt, nxp, 1, my_max, 's2_pt')
+      ! #endregion
 
       !mass conservation
       call ptotc(pdry,dpprt)
@@ -1016,12 +1097,33 @@
                 end do
              end do
 !
+      ! #region agent log
+      call geps_dbg_ssq_grid(vdzonl, nxp, lev, my_max, 's2_tendin_vdzonl')
+      call geps_dbg_ssq_grid(vdmerd, nxp, lev, my_max, 's2_tendin_vdmerd')
+      call geps_dbg_ssq_grid(ddtemp, nxp, lev, my_max, 's2_tendin_ddtemp')
+      if (myrank .eq. 0) print *,'DBGGRID s2_pcorr ssq=',real(pcorr,kind=8)**2,' nonfinite= 0'
+      ! #endregion
+      ! #region agent log
+      call geps_dbg_ssq_grid(up, nxp, lev, my_max, 's2_tendin_up')
+      call geps_dbg_ssq_grid(vp, nxp, lev, my_max, 's2_tendin_vp')
+      call geps_dbg_ssq_grid(ttp, nxp, lev, my_max, 's2_tendin_ttp')
+      call geps_dbg_ssq_grid(ut, nxp, lev, my_max, 's2_tendin_ut')
+      call geps_dbg_ssq_grid(vt, nxp, lev, my_max, 's2_tendin_vt')
+      ! #endregion
              call joinrs(cc, ddtemp, dummy, dummy, dummy, nx, my_max, lev &
                          , jlistnum, 1, 1)
              call tranrs(jtrun, jtmax, nx, my, my_max, levp, poly, weight, cc &
                          , temten, 1, nsizey)
+      ! #region agent log
+      call geps_dbg_ssq_spec(temten, levp*2, jtrun, jtmax, 's2_tranrs_temten')
+      ! #endregion
              call rstrandz(jtrun, jtmax, nx, my, my_max, levp, vdmerd, vdzonl &
                            , weight, cim, onocos, poly, dpoly, divten, vorten, nsizey)
+      ! #region agent log
+      call geps_dbg_ssq_spec(temten, levp*2, jtrun, jtmax, 's2_trandv_temten')
+      call geps_dbg_ssq_spec(vorten, levp*2, jtrun, jtmax, 's2_trandv_vorten')
+      call geps_dbg_ssq_spec(divten, levp*2, jtrun, jtmax, 's2_trandv_divten')
+      ! #endregion
 
 !        if ( mass_dp ) then
              ! sureface pressure global mean correction
@@ -1038,9 +1140,22 @@
 !   tendencies to stablize integration for long time steps
 !
 !CWB2021
+      ! #region agent log
+      call geps_dbg_ssq_spec(temnow, levp*2, jtrun, jtmax, 's2_siimplin_temnow')
+      call geps_dbg_ssq_spec(divnow, levp*2, jtrun, jtmax, 's2_siimplin_divnow')
+      call geps_dbg_ssq_spec2(plnow, jtrun, jtmax, 2, 's2_siimplin_plnow')
+      call geps_dbg_ssq_spec2(plten, jtrun, jtmax, 2, 's2_siimplin_plten')
+      call geps_dbg_ssq_spec(temten, levp*2, jtrun, jtmax, 's2_siimplin_temten')
+      call geps_dbg_ssq_spec(divten, levp*2, jtrun, jtmax, 's2_siimplin_divten')
+      ! #endregion
                 call siimpl(jtrun, jtmax, lev, dta, ptmeans, dsigma, spalm, eps4, eigval &
                             , evecin, evectr, arrhyd, arsddt, temnow, divnow, plnow &
                             , temmid, divmid, plmid, temten, divten, plten, alphax)
+      ! #region agent log
+      call geps_dbg_ssq_spec(temten, levp*2, jtrun, jtmax, 's2_siimpl_temten')
+      call geps_dbg_ssq_spec(divten, levp*2, jtrun, jtmax, 's2_siimpl_divten')
+      call geps_dbg_ssq_spec2(plten, jtrun, jtmax, 2, 's2_siimpl_plten')
+      ! #endregion
              end if
 !
 !  zero out global mean tendencies for divergence, vorticity, and
@@ -1066,6 +1181,10 @@
              end do
 !
              call transr1(jtrun, jtmax, nx, my, my_max, poly, plten, ptend, nsizey)
+      ! #region agent log
+      call geps_dbg_ssq_grid(ptend, nxp, 1, my_max, 's2_ptend')
+      call geps_dbg_ssq_spec2(plten, jtrun, jtmax, 2, 's2_ptend_plten')
+      ! #endregion
              do mf = 1, jtrun
                 wkmf(mf) = 0.
              end do

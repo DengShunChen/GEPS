@@ -593,6 +593,25 @@ subroutine mpe2d_transpose_ndsl_p2f_gpu(ain, aout, nxp, nx, lev, levp, ncld, my,
    async_id = 1
    stream = acc_get_cuda_stream(async_id)
 
+   ! 1-rank: skip c1/c2 (each can be hundreds of MB; HIP 1-rank TCo383
+   ! only has ~26GB free after NDSL, 5 f2p pairs fill the GPU).
+   if (nsizex .eq. 1) then
+      !$acc parallel loop collapse(4) private(jj) async(async_id)
+      do k = 1, levp
+         do j = 1, jlistnum
+            do n = 1, ncld
+               do i = 1, nxp
+                  jj = jlist1(j)
+                  if (i .le. nxjlen(jj)) then
+                     aout(i, k, n, j) = ain(i, lev - k + 1, n, j)
+                  end if
+               end do
+            end do
+         end do
+      end do
+      return
+   end if
+
    !$acc enter data create(c1, c2) async(async_id)
 
    !$acc host_data use_device(c1, c2, aout)
@@ -679,6 +698,23 @@ subroutine mpe2d_transpose_ndsl_f2p_gpu(ain, aout, nxp, nx, lev, levp, ncld, my,
 
    async_id = 1
    stream = acc_get_cuda_stream(async_id)
+
+   if (proc .eq. 1) then
+      !$acc parallel loop collapse(4) private(ii) async(async_id)
+      do j = 1, jlistnum
+         do n = 1, ncld
+            do k = 1, levp
+               do i = 1, nxp
+                  ii = jlist1(j)
+                  if (i .le. nxjp(ii)) then
+                     aout(i, lev - k + 1, n, j) = ain(i, k, n, j)
+                  end if
+               end do
+            end do
+         end do
+      end do
+      return
+   end if
 
    !$acc enter data create(c1, c2) async(async_id)
 
@@ -848,15 +884,56 @@ subroutine mpe2d_unify_spec_lev_zx_gpu(aout, a1, a2, a3, &
    integer ii, j, jj, k, kk, n, m, p, ierr
    integer async_id
    integer(kind=cuda_stream_kind) stream
+#ifdef USE_HIP
+   integer zi1, zi2, zi3, zi4, zi5, zi6
+#endif
 
    async_id = 1
    stream = acc_get_cuda_stream(async_id)
 
    !$acc enter data create(work, ain) async(async_id)
+#ifdef USE_HIP
+   ! `aout` is a reshaped view of the caller's already-mapped zx_buf (1D in
+   ! initial_gpu.f90 -> 5D wrk in zx_gpu.f90 -> 5D aout here). amdflang's
+   ! `!$omp target data use_device_addr` does not recognize a differently-
+   ! shaped view of an already-present array across a subroutine boundary as
+   ! present, so it attempts a fresh host->device copy that fails with
+   ! "hsa_amd_memory_lock: HSA_STATUS_ERROR" (root-caused 2026-09-08).
+   ! Plain implicit-map compute kernels DO handle such views correctly
+   ! (verified across 384 iterations elsewhere in this GPU path), so zero via
+   ! a kernel instead of a raw-pointer cudaMemsetAsync on ROCm.
+   !$acc parallel loop collapse(5) async(async_id)
+   do zi5 = 1, jtmax
+      do zi4 = 1, jtrun
+         do zi3 = 1, 3
+            do zi2 = 1, 2
+               do zi1 = 1, lev
+                  aout(zi1, zi2, zi3, zi4, zi5) = 0.0_RTYPE
+               end do
+            end do
+         end do
+      end do
+   end do
+   !$acc parallel loop collapse(6) async(async_id)
+   do zi6 = 1, proc
+      do zi5 = 1, jtmax
+         do zi4 = 1, jtrun
+            do zi3 = 1, 3
+               do zi2 = 1, 2
+                  do zi1 = 1, levp
+                     work(zi1, zi2, zi3, zi4, zi5, zi6) = 0.0_RTYPE
+                  end do
+               end do
+            end do
+         end do
+      end do
+   end do
+#else
    !$acc host_data use_device(aout, work)
    CUDACHECK(cudaMemsetAsync(aout, real(0.0, RTYPE), size(aout), stream))
    CUDACHECK(cudaMemsetAsync(work, real(0.0, RTYPE), size(work), stream))
    !$acc end host_data
+#endif
 
    !$acc parallel loop collapse(4) async(async_id)
    do m = 1, mlistnum

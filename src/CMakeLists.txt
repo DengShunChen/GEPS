@@ -42,6 +42,15 @@ list(REMOVE_ITEM TCO_SRC "module_mp_thompson_gfs_new_ori.f90")
 
 if(GEPS_COMPILER STREQUAL "rocm")
   list(APPEND TCO_SRC "${CMAKE_CURRENT_SOURCE_DIR}/rocm/flang_compat.f90")
+  list(APPEND TCO_SRC "${CMAKE_CURRENT_SOURCE_DIR}/rocm/stack_probe.c")
+  # amdflang -O3 aliases intgrt's spilled jtrun address with an integer
+  # decrement (same stack slot). 1st hdiffu lives; 2nd gets r8=NULL SIGSEGV.
+  # Last -O0 wins over the global -O3. CPU-only: do not change HIP flags.
+  if(NOT USE_HIP)
+    # amdflang -O3 clobbers spilled addresses in huge routines
+    # (intgrt: jtrun→hdiffu; initial: bal_tmp after mpe_unify).
+    set_source_files_properties(intgrt.f90 initial.f90 eigenlib.f90 mpe_unify.f90 PROPERTIES COMPILE_OPTIONS -O0)
+  endif()
 endif()
 
 set(GEPS_USE_GPU OFF)
@@ -56,10 +65,19 @@ function(geps_acc2omp in_file out_var)
   set(_geps_out "${CMAKE_CURRENT_BINARY_DIR}/hip_src/${_geps_flat}")
   get_filename_component(_geps_out_dir "${_geps_out}" DIRECTORY)
   file(MAKE_DIRECTORY "${_geps_out_dir}")
+  set(_geps_acc_dep "${_geps_abs}" "${PROJECT_SOURCE_DIR}/cmake/acc2omp.py")
+  if(_geps_rel MATCHES "mod_ndslfv_monoadv_gpu")
+    list(APPEND _geps_acc_dep
+      "${CMAKE_CURRENT_SOURCE_DIR}/rocm/vertical_cell_advect_gpu.f90"
+      "${CMAKE_CURRENT_SOURCE_DIR}/rocm/ndslfv_monoadvv_gpu.f90")
+  endif()
+  if(_geps_rel MATCHES "cufft_wrapper")
+    list(APPEND _geps_acc_dep "${CMAKE_CURRENT_SOURCE_DIR}/rocm/rfftmlt_loop_gpu.f90")
+  endif()
   add_custom_command(
     OUTPUT "${_geps_out}"
     COMMAND python3 "${PROJECT_SOURCE_DIR}/cmake/acc2omp.py" "${_geps_abs}" "${_geps_out}"
-    DEPENDS "${_geps_abs}" "${PROJECT_SOURCE_DIR}/cmake/acc2omp.py"
+    DEPENDS ${_geps_acc_dep}
     COMMENT "acc2omp ${_geps_rel}")
   set(${out_var}
       "${_geps_out}"
@@ -109,12 +127,25 @@ elseif(${USE_HIP})
   list(REMOVE_ITEM TCO_GPU_ROOT
        "${CMAKE_CURRENT_SOURCE_DIR}/mod_ndslfv_monoadv_gpu.f90"
        "${CMAKE_CURRENT_SOURCE_DIR}/mpe_ndslfv_gpu.f90")
+  # Dialect-hot NVIDIA files: first-class OpenMP in src/rocm/, not acc2omp.
+  # acc2omp stays for CWA / large !$acc parallel loop physics.
+  list(REMOVE_ITEM TCO_GPU_NV
+       "${CMAKE_CURRENT_SOURCE_DIR}/nvidia/eigen_mx_gpu.f90"
+       "${CMAKE_CURRENT_SOURCE_DIR}/nvidia/cusolver_wrapper.f90"
+       "${CMAKE_CURRENT_SOURCE_DIR}/nvidia/ndslfv_para_gpu.f90")
   set(TCO_GPU_ACC ${TCO_GPU_NV} ${TCO_GPU_ROOT} ${TCO_GPU_CWA})
   foreach(_geps_f ${TCO_GPU_ACC})
     geps_acc2omp("${_geps_f}" _geps_t)
     list(APPEND TCO_SRC "${_geps_t}")
   endforeach()
   list(APPEND TCO_SRC ${TCO_GPU_CC})
+  list(APPEND TCO_SRC
+       "${CMAKE_CURRENT_SOURCE_DIR}/rocm/eigen_mx_gpu.f90"
+       "${CMAKE_CURRENT_SOURCE_DIR}/rocm/mpe2d_row_broadcast_gpu.f90"
+       "${CMAKE_CURRENT_SOURCE_DIR}/rocm/cyclic_cell_ppm_gpu.f90"
+       "${CMAKE_CURRENT_SOURCE_DIR}/rocm/cyclic_cell_intpx_gpu.f90"
+       "${CMAKE_CURRENT_SOURCE_DIR}/rocm/cyclic_cell_massadvy_gpu.f90"
+       "${CMAKE_CURRENT_SOURCE_DIR}/rocm/ndslfv_para_gpu.f90")
 
   # These live only in libmod_ndslfv_monoadv_gpu. Compiling them again into
   # libtcogfs.a duplicates OpenMP offload device symbols (lld error).
@@ -182,7 +213,11 @@ if(${USE_HIP})
   # CPU OpenMP so the device LTO link does not ingest every TU.
   get_target_property(_geps_lib_srcs ${LIB} SOURCES)
   foreach(_geps_s ${_geps_lib_srcs})
-    if(_geps_s MATCHES "hip_src/")
+    if(_geps_s MATCHES "hip_src/" OR _geps_s MATCHES "rocm/eigen_mx"
+       OR _geps_s MATCHES "rocm/mpe2d_row" OR _geps_s MATCHES "rocm/cyclic_cell_ppm"
+       OR _geps_s MATCHES "rocm/cyclic_cell_intpx"
+       OR _geps_s MATCHES "rocm/cyclic_cell_massadvy"
+       OR _geps_s MATCHES "rocm/ndslfv_para")
       set_property(SOURCE "${_geps_s}" APPEND PROPERTY
         COMPILE_OPTIONS "--offload-arch=${AMD_GPU_ARCHS}")
     endif()

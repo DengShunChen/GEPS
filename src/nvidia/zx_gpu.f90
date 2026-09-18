@@ -66,9 +66,25 @@ subroutine zx_gpu(evec, vorten, divten, phiten, jtrun, jtmax, lev, &
          matmul_stream(m) = acc_get_cuda_stream(m + 1)
       end do
 
+#ifdef USE_HIP
+      ! Allocate `vars` before capture starts (not stream-ordered inside the
+      ! graph): the `!$omp target ... has_device_addr(vars)` kernel below
+      ! bakes in whatever address `vars` holds at capture time, and amdflang's
+      ! libomptarget does not re-virtualize that address against a graph
+      ! memory node the way CUDA Fortran's `device`-attributed cudaMallocAsync
+      ! does on NVIDIA. Allocating first gives `vars` a real, stable address
+      ! before anything is recorded, so the baked-in address stays valid for
+      ! every future graph replay (root-caused 2026-09-08: without this,
+      ! replay hit a GPU memory access fault reading a stale/placeholder
+      ! address). Never freed -- it must outlive every replay of this graph.
+      CUDACHECK(cudaMallocAsync(vars, lev*6*jtrun*jtmax, stream))
+      CUDACHECK(cudaStreamSynchronize(stream))
+#endif
       call accx_async_begin_capture(async_id)
 
+#ifndef USE_HIP
       CUDACHECK(cudaMallocAsync(vars, lev*6*jtrun*jtmax, stream))
+#endif
 
       CUDACHECK(cudaEventRecord(spread_event, stream))
 
@@ -95,7 +111,24 @@ subroutine zx_gpu(evec, vorten, divten, phiten, jtrun, jtmax, lev, &
       end do
 
       !
+#ifdef USE_HIP
+      ! `vars` is a raw device pointer from cudaMallocAsync (CUDA Fortran
+      ! `device` attribute stripped to a plain `pointer` by acc2omp -- see
+      ! cmake/acc2omp.py). NVIDIA's OpenACC compiler natively recognizes a
+      ! `device`-attributed array as already device-resident and emits no
+      ! mapping for it. amdflang/libomptarget has no such information for
+      ! the translated `pointer`, so an ordinary implicit-map
+      ! `!$omp target teams distribute` here tries to treat `vars`'s (device)
+      ! address as a host address needing a fresh host->device copy, which
+      ! fails with "hsa_amd_memory_lock: HSA_STATUS_ERROR" (root-caused
+      ! 2026-09-08). `has_device_addr(vars)` tells the compiler `vars`'s
+      ! address is already a valid device address, so no copy is attempted.
+      ! (`is_device_ptr` was tried first but amdflang requires that clause's
+      ! argument to be literally type(c_ptr); `vars` is a Fortran pointer.)
+      !$omp target teams distribute parallel do collapse(4) private(mf, kk, idx) has_device_addr(vars)
+#else
       !$acc parallel loop collapse(4) private(mf, kk, idx) async(async_id)
+#endif
       do m = 1, mlistnum
          do l = 1, jtrun
             do n = 1, 2
@@ -112,7 +145,9 @@ subroutine zx_gpu(evec, vorten, divten, phiten, jtrun, jtmax, lev, &
             end do
          end do
       end do
+#ifndef USE_HIP
       CUDACHECK(cudaFreeAsync(vars, stream))
+#endif
 
       call accx_async_end_capture(async_id, cg_graph)
       cg_created = .true.
