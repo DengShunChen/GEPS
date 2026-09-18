@@ -11,13 +11,14 @@
 |---|---|
 | ROCm CPU build (`build_rocm_cpu`, amdflang host-only OpenMP) | ✅ 可編、**可完整跑完 1 小時預報**（2026-08-27 01:52 的 log 有 `PROGRAM CWBGFS HAS ENDED`） |
 | ROCm GPU build (`build_rocm_hip`, OpenMP target offload + HIP) | ✅ 可編；✅ **2026-09-10 首次跑完全部 3 輪 NNMI 並進入預報積分**（換成 2 張實體 MI300X / SPX 之後）；❌ 但**數值是錯的**：`iteration=2` 起 VRAM 耗盡，垂直平流輸入 `dd` 全為零，積分第一步就 `surf pres tend rms(GPU) = NaN`，最後仍以 `HSA_STATUS_ERROR_OUT_OF_RESOURCES` 中止 |
+| **2026-09-18 進版控** | ✅ **跑通的版本已 commit 並 push 到 GitHub**：`feature/multi-compiler` `cefc44d0..4424cf83`（https://github.com/DengShunChen/GEPS/commit/4424cf83），55 個檔案、+11500/−108，工作樹乾淨、與 `origin` 同步。內容＝2026-09-17 18:55 驗證通過的狀態（acc2omp 修法、四類 stream 競態修法、`src/rocm/` 新 kernel、job 腳本、ckpt 比對工具、`qa/rocm_repro/`、本文件與兩份 ticket）。**探針還在 commit 裡**（commit message 有註明），拆探針要另開 commit。`.gitignore` 新增 `job/*.log.*` 與 `/compile_*.log`，約 70 個日期命名的 run log（~70 MB）留在本地。這台機器 push 的兩個坑見 §8「版控」。 |
 | **2026-09-17 18:55 最新狀態** | ✅ **ROCm GPU 六步 `surf pres tend rms` 與 CPU 全部對到 1e-11～1e-14**（`job/TCo383L72_IC_sample_rocm.log.20260917_2gpu_val`，tau=1 跑完）；深對流觸發數 29,009 = CPU；物理結束點 `qt` 差 8e-11。最後一片是 `samfdeepcnv_kh_gpu` 的 `val1/val2`（kernel 外初始化卻列 `private` ⇒ ROCm 讀垃圾 ⇒ `heso` NaN ⇒ 0 觸發），acc2omp 的宣告解析補上「無 `::` 的續行宣告」後自動改成 firstprivate。**移植數值上完成；待辦：拆探針、量速度、1-GPU、上游回報。** |
 | **2026-09-17 05:00** | ✅ **ROCm GPU 首次完整跑完 1 小時預報**（2 張 MI300X，`job/TCo383L72_IC_sample_rocm.log.20260917_2gpu_l18g`，`PROGRAM CWBGFS HAS ENDED`）。step-1 `sptend` 與 CPU 15 位相同；step 2–5 比 CPU 低 4–6%：逐常式對照（08:40）PBL 與 CPU 逐位元等價，**差異在深對流 `samfdeepcnv_kh_gpu`：ROCm 上 0 個 column 觸發（CPU 29,009）**——根因（17:00 量到）：`heso` 整條 NaN，因為 `val1/val2` 在 kernel 外初始化卻被列為 `private`（與 `snoexp` 同病），acc2omp 的 pass 漏掉「無 `::` 的續行宣告」；已修、重編驗證中（`…_2gpu_val`）。第 18 層根因：**runtime 大小的 private 陣列在裝置堆疊上互相覆寫**（`LIBOMPTARGET_STACK_SIZE=65536` 修，`job/regression.ksh`）＋ `adjptqintp_gpu` 的 `plold(i,0,jj)` 越界讀（acc2omp guard）。帶探針每步 ~750 s，拆探針後再量速度。 |
 | **2026-09-16 21:17（第 17 層；第 18 層見 §6 末）** | ✅ **積分第 1 步在 2 張 MI300X 上與 CPU 對上**：`surf pres tend rms(GPU) = 0.43807396825059497`（CPU 0.4380739682505907）、NNMI `bal` 三輪 1.7619218910e-05 / 6.3945974578e-06 / 1.6451316149e-06、**105 個 step-1 檢查點全部相對差 < 1e-9**（`s1_hdiffu_vormid` 2e-15、`s2_pcorr` 1e-8）。**但第 1 步末的微物理 `fall_flux_gpu` 仍卡死**（rocgdb 實測：`__omp_offloading_…fall_flux_gpu_l625`，即 sedimentation `DO while (notlast)` kernel，916 個 wave 全在裡面轉；自 `mm0` 起每一次 step-1 正確的 run 都停在這裡，與 pool/競態無關，是獨立的 bug）。根因：**第 4 類 stream 競態——裸 `NCCLCHECK(ncclAllReduce…)` 之後沒有 wait**（`mpe2d_gpu` 12 處、`hdiffu_gpu`、`rayleifr_gpu`、`intgrt_gpu`），修在 `cmake/acc2omp.py`（§6 第 17 層）。待辦：跑完 tau=1、拆探針做乾淨對照。log：`job/TCo383L72_IC_sample_rocm.log.20260916_2gpu_l17`、CPU 基準 `job/TCo383L72_IC_sample_rocm_cpu.log.20260916_hd`。 |
 | GPU 端是否已完成 tau=1 積分 | ❌ **還沒**，但 **NNMI 已於 2026-09-15 修好**：三輪 `bal`/`pt`/`qgini` 與 CPU/NVIDIA 對上 8-9 位（第 10 層 memset 競態 ＋ 第 7 層延伸到 6 個 LT 常式，都在 `cmake/acc2omp.py`）。積分第 1 步 `surf pres tend rms` = 132.6（應為 0.42，不再是 NaN），第 2 步死於 VRAM 耗盡（舊問題）。**2026-09-15 定位過程**：`tranrs`/FFT/LT/轉置整條鏈已證明**逐波數與 CPU 相同**（384 個 `mf` 全部 1.000）、`hldten` 一直是對的、垂直平流也清白；**壞的是水平半拉格朗日平流 `ndslfv_monoadvh2_gpu_refactor` 的輸出**（`ddtemp` 進垂直平流前 Σ² 只有 CPU 的 0.48 倍，`vdzonl` 0.54、`vdmerd` 1.38），其 kernel 正是 `src/rocm/cyclic_cell_*_gpu.f90` 的手寫 tiled 改寫。詳見 §6 第 9 層末尾「逐波數 1:1 對照」以下各節。以下為 2026-09-14 以前的舊摘要：崩潰類問題**都修好了**（第 1-3、6、7 層，`memory access fault` = 0），GPU 已能跑完三輪 NNMI 並進入積分。剩下的是**數值錯誤**：`bal` 比 CPU 大 8 個數量級（2624 vs 1.76e-05）、跑批間非決定性、`pt` 不變、積分 `NaN`。**已排除**：hipSOLVER、`use_device_addr` 指標傳遞、特徵向量正確性、以及第 9 層的「內層 private 被丟掉造成競態」（修法已 landed 並通過編譯、911 個指令受惠，但 `bal` 完全沒變）。**目前最強線索**：GPU 自己的數字矛盾——`bal` 推得 `\|wrk\| ~ 1`，`x_out` 推得 `\|wrk\| ~ 1e-3`，相差 1000 倍，指向 dgemm 寫的緩衝區與 OpenMP kernel 讀的不是同一塊（第 1、2 層那類 bug） |
 | 最後一次 CPU 重跑（2026-08-28 06:14, NPEY=32） | ❌→✅ 已修好，見下 |
 | CPU 回歸（2026-09-08 00:30, NPEY=32） | ✅ **已修復並重跑成功**，`tau=1.000` + `PROGRAM CWBGFS HAS ENDED`，`surf pres tend rms` 序列與 08-27 完全一致（見 §6） |
-| 工作樹 | GPU **修法**：2 個檔案、112 行淨改動（`src/nvidia/mpe2d_gpu.f90` 77 行 + `src/nvidia/zx_gpu.f90` 35 行），全部 `#ifdef USE_HIP` guard、NVIDIA 路徑完全不受影響。另有 2 個檔案是 2026-09-10 新增的**除錯探針**（`cmake/acc2omp.py`、`src/rocm/vertical_cell_advect_gpu.f90`），**會改變執行時行為**（含 `hipDeviceSynchronize()`），詳見 §6「第 5 層根因」末。**全部尚未 commit**，branch = `feature/multi-compiler` |
+| 工作樹（2026-09-18 起） | ✅ 乾淨，全部在 `4424cf83`。以下為 2026-09-10 的舊描述：GPU **修法**：2 個檔案、112 行淨改動（`src/nvidia/mpe2d_gpu.f90` 77 行 + `src/nvidia/zx_gpu.f90` 35 行），全部 `#ifdef USE_HIP` guard、NVIDIA 路徑完全不受影響。另有 2 個檔案是 2026-09-10 新增的**除錯探針**（`cmake/acc2omp.py`、`src/rocm/vertical_cell_advect_gpu.f90`），**會改變執行時行為**（含 `hipDeviceSynchronize()`），詳見 §6「第 5 層根因」末。**全部尚未 commit**，branch = `feature/multi-compiler` |
 
 **下一步最短路徑**：CPU 已綠燈。GPU 端第 1-3 層是真原始碼 bug（已修好）；**第 6 層**（RCCL 集合通訊後的競態）已修好並驗證，但乾淨對照顯示它對記憶體與 `NaN` 無影響；**2026-09-11 查到第 7 層，就是 `NaN` 的根因**：`nnmi_gpu` / `tendget_gpu` / `zx_gpu` 把計算包在 HIP graph capture 裡，而 acc2omp 丟掉 `async` 之後，capture 內的 OpenMP kernel 既在錄製期搶先執行、又沒被錄進 graph——**GPU 的 NNMI 因此是個完全的 no-op**（`bal` 精確為 0、`pt` 逐位元不變），模式帶著不平衡場進積分才炸成 `NaN`。**第 6 層與第 7 層是同一個病根（丟掉 `async`）的兩種表現。** 下一步是把這 3 個檔案的 ROCm 路徑改成 eager 執行（**注意 `cg_created` 陷阱，見 §6 第 7 層**），驗證只要跑到 `iteration= 1` 之後（約 25 分鐘）看 `bal` 與 `pt` 即可。剩下的「記憶體不歸還」是另一個獨立問題。
 
@@ -3783,6 +3784,18 @@ cd /mlsteam/workspace/data/geps/GEPS/job && ./TCo383L72_IC_sample_rocm 2>&1 | te
 #   PROGRAM CWBGFS HAS ENDED.
 ```
 
+```bash
+# 版控（2026-09-18 起）。remote = https://github.com/DengShunChen/GEPS.git，branch = feature/multi-compiler
+# 坑 1：這台機器沒有 GitHub 憑證（無 gh、無 credential helper、無 SSH key），連 fetch 都要帳密。
+#        不要把 token 存進 ~/.git-credentials（明文）；用一次性的 credential helper，token 只留在環境變數：
+export GH_PAT=...   # classic PAT (ghp_…) 帶 repo scope；fine-grained 的話 Contents 要 Read and write，否則 403 "Write access not granted"
+git -c credential.helper='!f() { echo username=x-access-token; echo password=$GH_PAT; }; f' push origin feature/multi-compiler
+unset GH_PAT        # 用完到 GitHub revoke
+# 坑 2：repo 的 pre-push / post-commit hook 需要 git-lfs（fix/*.f77、*.dat 走 LFS）。2026-09-18 已裝 git-lfs 3.4.1；
+#        沒裝的話 push 會被 hook 擋，只有在 commit 沒碰 LFS 檔時才可以 git push --no-verify 繞過。
+# 進版控前的檢查：git diff --cached --name-only | grep -i '\.log' 必須是空的（run log 不進 repo）。
+```
+
 ---
 
 ## 9. 建議的下一步（依序）
@@ -3835,7 +3848,7 @@ cd /mlsteam/workspace/data/geps/GEPS/job && ./TCo383L72_IC_sample_rocm 2>&1 | te
    `src/rocm/vertical_cell_advect_gpu.f90` 的 host 端 CFL 重算）。
    ⚠️ 後者**會改變執行時行為**（含 `hipDeviceSynchronize()`），做數值驗證前務必移除。
 
-16. **收斂 commit**：GPU **修法**現在有 3 項：`src/nvidia/mpe2d_gpu.f90` + `src/nvidia/zx_gpu.f90`（112 行，第 1-3 層）＋ `cmake/acc2omp.py` 的第 6 層修法。另有除錯探針若干（見 #11）。加上其餘既有的 25+ 個檔案改動，全部未進版控。
+16. ~~**收斂 commit**~~ ✅ **已完成（2026-09-18）**：全部 55 個檔案以單一 commit `4424cf83` 進 `feature/multi-compiler` 並 push（探針仍在，拆探針＝#15/#8d(i) 要另開 commit）。原文：GPU **修法**現在有 3 項：`src/nvidia/mpe2d_gpu.f90` + `src/nvidia/zx_gpu.f90`（112 行，第 1-3 層）＋ `cmake/acc2omp.py` 的第 6 層修法。另有除錯探針若干（見 #11）。加上其餘既有的 25+ 個檔案改動，全部未進版控。
     （`src/nvidia/mpe2d_gpu.f90` + `src/nvidia/zx_gpu.f90`，全部 `#ifdef USE_HIP`），
     加上其餘既有的 25+ 個檔案改動與上述探針，全部未進版控。
 
@@ -3850,4 +3863,4 @@ cd /mlsteam/workspace/data/geps/GEPS/job && ./TCo383L72_IC_sample_rocm 2>&1 | te
    - §6 的第 1-3 層是已修好的歷史；第 4 層、第 5 層兩節保留的是推理過程，**結論都在「第 5 層根因」那一節**，時間不夠就只讀它
 2. §4（懂 acc2omp + src/rocm 的設計，這是整個移植的骨架）
 3. §7 規矩（避免重蹈覆轍）
-4. 動手前先跑 `git status` 和 `git diff --stat` 確認工作樹還是不是本文件描述的樣子
+4. 動手前先跑 `git status` 和 `git log --oneline -3` 確認工作樹還是不是本文件描述的樣子（2026-09-18 基準：乾淨，HEAD = `4424cf83`）
