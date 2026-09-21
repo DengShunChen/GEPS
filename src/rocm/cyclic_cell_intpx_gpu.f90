@@ -12,7 +12,7 @@ subroutine cyclic_cell_intpx_jlist_gpu(levs, nvars, lonfull, qq, to_lonfull)
    logical, intent(in) :: to_lonfull
    integer :: lan, lat, lons_lat, i, imp, imf, k, n, ot, og, ob, nloc
    real(kind=RTYPE) :: pi, two_pi
-   integer, parameter :: otile = 8
+   integer, parameter :: otile = 128   ! 2026-09-19: 64 -> 128 (256 was no faster) (halves the launch count; prof11: NDSL is launch-gap bound); 2026-09-18: was 8 (OOM-era); 8 rows x 72 levels = 576 teams per launch, 48 tiles x 6 kernels per call -> 11 s/step of under-occupied kernels
    real(kind=RTYPE), dimension(lonfull + 1, levs, otile) :: xpast, xnext
    real(kind=RTYPE), dimension(lonfull, nvars, levs, otile) :: old
    integer :: async_id

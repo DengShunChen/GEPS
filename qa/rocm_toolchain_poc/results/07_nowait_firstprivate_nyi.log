@@ -1,0 +1,12 @@
+
+################ variant: (default, implicit firstprivate) ################
+loc("/mlsteam/workspace/data/geps/GEPS/qa/rocm_toolchain_poc/07_nowait_firstprivate_nyi/nowait_scalar.F90":26:10): error: not yet implemented: Unhandled clause privatization for deferred target tasks in omp.target operation
+
+################ variant: -DEXPLICIT ################
+loc("/mlsteam/workspace/data/geps/GEPS/qa/rocm_toolchain_poc/07_nowait_firstprivate_nyi/nowait_scalar.F90":24:10): error: not yet implemented: Unhandled clause privatization for deferred target tasks in omp.target operation
+
+################ variant: -DMAPTO ################
+a(1) =  2.0  (expected 2.0)
+
+################ variant: -DNOSCALAR ################
+a(1) =  2.0  (expected 2.0)

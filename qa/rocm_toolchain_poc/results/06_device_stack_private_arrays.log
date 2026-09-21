@@ -1,0 +1,17 @@
+
+################ build ################
+
+################ automatic arrays, default stack (run 3x: count varies) ################
+automatic a1..a8(nsoil)  LIBOMPTARGET_STACK_SIZE=(default): nbad = 16938192 of 19070976  out(497,210) =  4.923224881710155E+05
+automatic a1..a8(nsoil)  LIBOMPTARGET_STACK_SIZE=(default): nbad = 16864640 of 19070976  out(497,210) =  4.987458698423064E+05
+automatic a1..a8(nsoil)  LIBOMPTARGET_STACK_SIZE=(default): nbad = 16874480 of 19070976  out(497,210) =  5.036447816067942E+05
+
+################ automatic arrays, LIBOMPTARGET_STACK_SIZE sweep ################
+automatic a1..a8(nsoil)  LIBOMPTARGET_STACK_SIZE=1024: nbad = 16916064 of 19070976  out(497,210) =  4.974191282750778E+05
+automatic a1..a8(nsoil)  LIBOMPTARGET_STACK_SIZE=4096: nbad = 14397899 of 19070976  out(497,210) =  4.873834204869330E+05
+automatic a1..a8(nsoil)  LIBOMPTARGET_STACK_SIZE=16384: nbad = 0 of 19070976  out(497,210) =  4.871859551499317E+05
+automatic a1..a8(nsoil)  LIBOMPTARGET_STACK_SIZE=65536: nbad = 0 of 19070976  out(497,210) =  4.871859551499317E+05
+
+################ fixed-size arrays, default stack (control) ################
+fixed-size a1..a8(4)     LIBOMPTARGET_STACK_SIZE=(default): nbad = 0 of 19070976  out(497,210) =  4.871859551499317E+05
+RESULT: PASS

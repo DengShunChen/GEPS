@@ -36,3 +36,12 @@ __pycache__/
 # ROCm port: dated run logs and compile logs stay local
 job/*.log.*
 /compile_*.log
+
+# ROCm optimisation (2026-09-21): re-include scripts caught by the generic build_*/run*/*.ksh patterns
+!src/rocm/build_hsa_pool.sh
+!qa/**/run*.sh
+!job/regression_rocprof.ksh
+# toolchain PoC: sources, run scripts and result logs go in; compiled binaries do not
+qa/rocm_toolchain_poc/**/*.x
+qa/rocm_toolchain_poc/**/*.mod
+qa/rocm_toolchain_poc/**/*.o

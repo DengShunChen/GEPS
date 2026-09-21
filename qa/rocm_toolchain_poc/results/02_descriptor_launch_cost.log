@@ -1,0 +1,24 @@
+
+################ build ################
+
+################ timing (2000 launches each) ################
+us per launch (trivial kernel, data already resident):
+   2 explicit-shape dummies                11.1
+  17 explicit-shape dummies                21.9
+  17 assumed-shape dummies (descriptor)   710.7
+  17 allocatables in scope                173.0
+  17 allocatables + map(present,alloc:)   170.6
+descriptor cost per array: ~  40.5 us
+
+################ data movement per launch (LIBOMPTARGET_INFO=-1, 1 timed launch each) ################
+arguments  : number of kernel arguments = which kernel
+   8  = k_explicit2 (2 explicit-shape),  62 = k_explicit (17 explicit-shape)
+  88  = k_assumed  (17 assumed-shape),   87 = 17 allocatables referenced in scope
+  x21     8 arguments:  0 host->device copies (   0 bytes),  0 device->host copies
+  x21    62 arguments:  0 host->device copies (   0 bytes),  0 device->host copies
+  x2    87 arguments: 17 host->device copies (1280 bytes),  0 device->host copies
+  x21    88 arguments: 51 host->device copies (1552 bytes), 17 device->host copies
+
+################ -fno-defer-desc-map does not change it ################
+  17 assumed-shape dummies (descriptor)   713.1
+  17 allocatables in scope                172.1

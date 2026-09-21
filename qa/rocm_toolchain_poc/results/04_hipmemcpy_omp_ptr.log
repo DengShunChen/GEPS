@@ -1,0 +1,30 @@
+
+################ build ################
+
+################ 64 MB copies ################
+buffer 64 MB, device 0
+  hipMalloc              0x7d7d85600000  hipPointerGetAttributes: type=2 device=0
+  omp_target_alloc       0x7d7d97200000  hipPointerGetAttributes: type=2 device=0
+
+  copy API                     hipMalloc bufs       omp bufs   [GB/s]
+  hipMemcpy(Default)                   1325.6          0.051   <-- CPU path
+  hipMemcpy(DeviceToDevice)            1347.1          0.051   <-- CPU path
+  hipMemcpyDtoD                        1336.6          0.051   <-- CPU path
+  hipMemcpyAsync(D2D)+sync             1217.4          0.051   <-- CPU path
+  omp_target_memcpy                      54.1         57.850
+
+  hipMemcpy on omp buffers: 0 wrong bytes of 67108864 (data is correct, only slow)
+
+################ HSA_XNACK=1 (as used by the application) - same ################
+buffer 64 MB, device 0
+  hipMalloc              0x7f14d1600000  hipPointerGetAttributes: type=2 device=0
+  omp_target_alloc       0x7f14e3200000  hipPointerGetAttributes: type=2 device=0
+
+  copy API                     hipMalloc bufs       omp bufs   [GB/s]
+  hipMemcpy(Default)                   1802.6          0.051   <-- CPU path
+  hipMemcpy(DeviceToDevice)            1369.9          0.051   <-- CPU path
+  hipMemcpyDtoD                        1354.7          0.051   <-- CPU path
+  hipMemcpyAsync(D2D)+sync             1216.7          0.051   <-- CPU path
+  omp_target_memcpy                      54.6         57.958
+
+  hipMemcpy on omp buffers: 0 wrong bytes of 67108864 (data is correct, only slow)

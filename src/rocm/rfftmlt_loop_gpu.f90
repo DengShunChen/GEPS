@@ -22,6 +22,7 @@ subroutine rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nx
    use cufft
    use openacc
    use iso_c_binding
+   use omp_lib
    implicit none
 
    integer :: jlistnum, jump, m, isign
@@ -53,10 +54,42 @@ subroutine rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nx
    integer(4), save :: set_plan(0:NMAX, MAXSETS)
    integer :: is, iold, n
    character(len=32) :: envbuf
+   ! ---- 2026-09-19: the per-latitude exec loop is host-launch bound (prof8:
+   ! ~31k rocFFT kernel launches per step, GPU 30% busy in this phase), so the
+   ! latitudes are issued from GEPS_FFT_THREADS host threads (default 4), each
+   ! on its own non-blocking stream; every plan has its own work area
+   ! (auto-allocation on), so plans never share state. Same kernels, same
+   ! data, same order per plan -> bit-identical.
+   integer, parameter :: MAXTHR = 16
+   integer, save :: nthr = -1
+   integer(kind=cuda_stream_kind), save :: thr_stream(MAXTHR)
+   integer :: it, dev
+   interface
+      function geps_hip_set_device(id) bind(C, name="geps_hip_set_device")
+         import c_int
+         integer(c_int), value :: id
+         integer(c_int) :: geps_hip_set_device
+      end function
+      function geps_hip_get_device() bind(C, name="geps_hip_get_device")
+         import c_int
+         integer(c_int) :: geps_hip_get_device
+      end function
+   end interface
 
    async_id = 1
    stream = acc_get_cuda_stream(async_id)
 
+   if (nthr .lt. 0) then
+      nthr = 4
+      call get_environment_variable("GEPS_FFT_THREADS", envbuf, status=istat)
+      if (istat .eq. 0) read (envbuf, *, iostat=istat) nthr
+      if (istat .ne. 0 .or. nthr .lt. 1) nthr = 4
+      if (nthr .gt. MAXTHR) nthr = MAXTHR
+      do it = 1, nthr
+         istat = cudaStreamCreatewithFlags(thr_stream(it), cudastreamnonblocking)
+      end do
+      print *, '[rfftmlt_loop rocm] fft host threads =', nthr
+   end if
    if (budget .lt. 0) then
       budget = 8
       call get_environment_variable("GEPS_FFT_PLAN_SETS", envbuf, status=istat)
@@ -123,9 +156,15 @@ subroutine rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nx
 
    ! the FFT reads/writes cc/gwk1 that OpenMP kernels produced synchronously;
    ! rocFFT itself is queued on `stream`, so one wait after the loop suffices
+   dev = geps_hip_get_device()
    !$omp target data use_device_addr(cc, gwk1)
+   !$omp parallel num_threads(nthr) private(jj, it, istat)
+   it = omp_get_thread_num() + 1
+   ! HIP's current device is per host thread; rank r runs on device r
+   if (it .gt. 1) istat = geps_hip_set_device(dev)
+   !$omp do schedule(static)
    do jj = 1, jlistnum
-      istat = cufftSetStream(plan_jj(jj), stream)
+      istat = cufftSetStream(plan_jj(jj), thr_stream(it))
       if (isign .eq. 1) then
 #ifdef SP
          istat = cufftExecC2R(plan_jj(jj), gwk1(1, 1, jj), cc(1, 1, jj))
@@ -141,7 +180,12 @@ subroutine rfftmlt_loop_identical_cuda_graph(cc, gwk1, trigsj, ifaxj, jlist1, nx
       end if
       if (istat .ne. 0) print *, '[rfftmlt_loop rocm] hipfftExec failed', istat, ' jj=', jj
    end do
+   !$omp end do
+   !$omp end parallel
    !$omp end target data
+   do it = 1, nthr
+      istat = cudaStreamSynchronize(thr_stream(it))
+   end do
    call geps_acc_wait(async_id)
 
    if (isign .ne. 1) then

@@ -366,8 +366,7 @@ EOF
 
  if [ $CMAKE_BUILD = 1 ] ; then
    if [ ${machine} = rocm ]; then
-	# GEPS_PROF_WRAP="rocprofv3 --kernel-trace --stats -d /path -o r_%pid% --" prefixes the binary (2026-09-18)
-	FCT_MODEL="${GEPS_PROF_WRAP:-} $MDIR/build_rocm_hip/bin/tcogfs.x"
+	FCT_MODEL=$MDIR/build_rocm_hip/bin/tcogfs.x
    elif [ ${machine} = rocm_cpu ]; then
 	FCT_MODEL=$MDIR/build_rocm_cpu/bin/tcogfs.x
    else
@@ -390,45 +389,17 @@ EOF
   export NVCOMPILER_ACC_CUDA_NOCOPY="1"
  fi
  if [ ${machine} = rocm ]; then
-  # 2026-09-10: lab now has TWO PHYSICAL MI300X, both NPS1/SPX (unpartitioned):
-  #   GPU[0] = KFD node 4, PCI 0000:46:00.0   GPU[1] = KFD node 5, PCI 0000:66:00.0
-  # GPU[1] is a real second card, not a DPX partition (pre-09-10 layout, when the
-  # only card was DPX-split and .1 had to be avoided). Each card now exposes the
-  # full 192GiB to HIP; the old "~96GB visible" note no longer applies.
-  # Still binding GPU0 only: the model runs 1 MPI rank, multi-GPU needs RCCL work.
-  # GEPS_ROCM_PCI is informational only - nothing reads it.
-  export GEPS_ROCM_PCI="${GEPS_ROCM_PCI:-0000:46:00.0}"
-  # 2026-09-16: GEPS_ROCM_DEVICES="0,1" runs on both cards (one MPI rank per
-  # card, device_init picks mod(rank, ndevices)); default stays GPU0 only.
-  export HIP_VISIBLE_DEVICES="${GEPS_ROCM_DEVICES:-0}"
-  export ROCR_VISIBLE_DEVICES="${GEPS_ROCM_DEVICES:-0}"
-  export GPU_DEVICE_ORDINAL="${GEPS_ROCM_DEVICES:-0}"
+  # This lab may only bind PCI 0000:c5:00.0 (one AMD GPU).
+  # c5:00.1 is a DPX partition of the same MI300X — do not expose it.
+  # HIP still reports ~96GB on .0 (not rocm-smi's 192GB package total).
+  export GEPS_ROCM_PCI="${GEPS_ROCM_PCI:-0000:c5:00.0}"
+  export HIP_VISIBLE_DEVICES=0
+  export ROCR_VISIBLE_DEVICES=0
+  export GPU_DEVICE_ORDINAL=0
   export OMP_DEFAULT_DEVICE=0
   export OMP_NUM_THREADS=1
   export OMP_TARGET_OFFLOAD=MANDATORY
   export HSA_XNACK=1
-  # 2026-09-16: libomptarget's memory manager keeps large freed blocks in a
-  # pool and only reuses exact sizes; the radiation blocks all differ in
-  # size, so device memory grew monotonically until OUT_OF_RESOURCES
-  # (reproduced standalone: exit data of 1.5-1.9 GB never returned VRAM,
-  # returned fully with the threshold at 0). Safe now that the layer-6/7/10
-  # races are fixed - the earlier "=0 crashes early" was the masked
-  # use-after-free.
-  export LIBOMPTARGET_MEMORY_MANAGER_THRESHOLD="${LIBOMPTARGET_MEMORY_MANAGER_THRESHOLD:-0}"
-  # layer 18 (2026-09-17): runtime-sized private arrays in target regions
-  # (sflx_gpu's dimension(nsoil) work arrays) live on the device stack; with
-  # the default size neighbouring lanes overwrite each other -> Inf skin
-  # temperature on ~10% of land columns, count varying run to run.  A
-  # standalone test needs >= 49152 for 20 such arrays; 65536 leaves margin.
-  export LIBOMPTARGET_STACK_SIZE="${LIBOMPTARGET_STACK_SIZE:-65536}"
-  # 2026-09-19: with the threshold at 0 every `data create` is a raw HSA
-  # alloc/free (3.6k+3.6k per step, 4.1 s of an 11.8 s step measured with
-  # rocprofv3 --hsa-amd-trace). libgeps_hsa_pool.so (src/rocm/geps_hsa_pool.cc,
-  # built by src/rocm/build_hsa_pool.sh) caches freed blocks by size class
-  # with a capped footprint. GEPS_HSA_POOL=0 skips the preload.
-  if [ "${GEPS_HSA_POOL:-1}" != "0" ] && [ -f "$MDIR/build_rocm_hip/lib/libgeps_hsa_pool.so" ]; then
-    export LD_PRELOAD="$MDIR/build_rocm_hip/lib/libgeps_hsa_pool.so${LD_PRELOAD:+:$LD_PRELOAD}"
-  fi
   export OMPI_ALLOW_RUN_AS_ROOT=1
   export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
  elif [ ${machine} = rocm_cpu ]; then
@@ -439,7 +410,10 @@ EOF
  fi
  if [ ${rocm_lab} = 1 ]; then
   ulimit -s unlimited
-  if [ -x /usr/bin/time ]; then
+  if [ ${machine} = rocm ] && [ -n "${GEPS_ROCPROF_OUT:-}" ]; then
+    mpiexec -n $MPI rocprof --hsa-trace -i "${MDIR}/job/rocprof_hsa_filter.txt" \
+      --timestamp on -d "${GEPS_ROCPROF_OUT}" -o "${GEPS_ROCPROF_OUT}/trace.csv" ${FCT_MODEL} -Wl,-T
+  elif [ -x /usr/bin/time ]; then
     /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} -Wl,-T
   else
     mpiexec -n $MPI ${FCT_MODEL} -Wl,-T

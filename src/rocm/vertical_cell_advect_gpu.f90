@@ -7,7 +7,7 @@ subroutine vertical_cell_advect_gpu(lons, londim, levs, nvars, &
                                      async_id, ibase)
    use const, only: RTYPE
    use grid, only: latpart
-   use index, only: jlistnum, jlist1, nxjp, nxp, nxjp_acc
+   use index, only: jlistnum, jlist1, nxjp, nxp, nxjp_acc, nxptot
    implicit none
 
    integer, intent(in) :: lons, londim, levs, nvars, mass, async_id
@@ -17,13 +17,14 @@ subroutine vertical_cell_advect_gpu(lons, londim, levs, nvars, &
    real(kind=RTYPE), intent(in) :: wwi(nxp, levs + 1, latpart)
    real(kind=RTYPE), intent(inout) :: qql(levs, nvars, londim)
    logical :: forward
-   integer, parameter :: otile = 8192   ! 2026-09-18: was 32 (OOM-era); 32 meant ~9.4k tiles x 8 launches per call + an O(nxptot) pack scan per tile (rocprofv3: 634 s of monoadvv pack kernels per run)
+   integer, parameter :: otile = 32768   ! 2026-09-19: 8192 -> 32768 (131072 was slower) (4x fewer tiles, prof11: NDSL launch-gap bound); 2026-09-18: was 32 (OOM-era); 32 meant ~9.4k tiles x 8 launches per call + an O(nxptot) pack scan per tile (rocprofv3: 634 s of monoadvv pack kernels per run)
    real(kind=RTYPE) :: dd(levs + 1, otile), ds(levs, otile)
    real(kind=RTYPE) :: xgrid(levs + 1, otile), xpast(levs + 1, otile), xnext(levs + 1, otile)
    real(kind=RTYPE) :: da(levs, nvars, otile), step(10), dd_step, dsfact
    integer :: i, j, k, n, nst, nstep, lat, nxj, istr, ob, ot, nloc, i0, i1, ig
    integer :: nnan, ninf, nzero, ib
    real(kind=RTYPE) :: dsmin, ddmax, hostchk, chk
+   integer :: col_i(nxptot), col_j(nxptot)   ! column -> (i, j) map
    ! #region agent log
    integer(kind=8) :: dbg0, dbg1, dbg2
    interface
@@ -45,6 +46,17 @@ subroutine vertical_cell_advect_gpu(lons, londim, levs, nvars, &
    end if
    ! #endregion
    !$omp target enter data map(alloc:dd, ds, xgrid, xpast, xnext, da)
+   !$omp target enter data map(alloc:col_i, col_j)
+   !$omp target teams distribute parallel do private(lat, nxj, istr, i)
+   do j = 1, jlistnum
+      lat = jlist1(j)
+      nxj = nxjp(lat)
+      istr = nxjp_acc(j) - 1
+      do i = 1, nxj
+         col_i(istr + i) = i
+         col_j(istr + i) = j
+      end do
+   end do
    ! #region agent log
    if (ib .eq. 1) then
       dbg0 = int(londim, 8); dbg1 = int(levs, 8); dbg2 = int(nvars, 8)
@@ -70,20 +82,16 @@ subroutine vertical_cell_advect_gpu(lons, londim, levs, nvars, &
          end do
       end do
 
-      !$omp target teams distribute parallel do private(lat, nxj, istr, i0, i1, i, k) firstprivate(ob, nloc, ib)
-      do j = 1, jlistnum
-         lat = jlist1(j)
-         nxj = nxjp(lat)
-         istr = nxjp_acc(j) - 1
-         i0 = max(1, ib + ob - 1 - istr)
-         i1 = min(nxj, ib + ob + nloc - 2 - istr)
-         if (i0 .le. i1) then
-            do k = 2, levs
-               do i = i0, i1
-                  dd(k, istr + i - (ib + ob - 1) + 1) = wwi(i, k, j)*deltim
-               end do
-            end do
-         end if
+      ! 2026-09-18: tile-local via the column map (was a per-tile scan over
+      ! all latitudes: 74 x 14 ms per step)
+      !$omp target teams distribute parallel do collapse(2) private(ig, i, j) firstprivate(ob, nloc, ib)
+      do ot = 1, nloc
+         do k = 2, levs
+            ig = ib + ob + ot - 2
+            i = col_i(ig)
+            j = col_j(ig)
+            dd(k, ot) = wwi(i, k, j)*deltim
+         end do
       end do
 
       ! #region agent log
@@ -229,4 +237,5 @@ subroutine vertical_cell_advect_gpu(lons, londim, levs, nvars, &
    end do
 
    !$omp target exit data map(delete:dd, ds, xgrid, xpast, xnext, da)
+   !$omp target exit data map(delete:col_i, col_j)
 end subroutine vertical_cell_advect_gpu

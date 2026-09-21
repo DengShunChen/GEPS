@@ -285,7 +285,9 @@ def translate_directive(line: str) -> str:
         # `end loop` is a nested-loop closer (serial on the parent thread).
         return f"{indent}! acc2omp: end nested loop"
     if low.startswith("end parallel loop") or low.startswith("end parallel"):
-        return emit("end target teams distribute parallel do")
+        # optional in OpenMP, and the owner may have become `teams distribute`
+        # (vectorised inner loops) - so emit nothing (2026-09-18)
+        return f"{indent}! acc2omp: end parallel loop"
     if low.startswith("end kernels"):
         return emit("end target")
     if low.startswith("end data"):
@@ -342,6 +344,15 @@ def translate_directive(line: str) -> str:
     if low.startswith("data"):
         body = _rewrite_clauses(rest[len("data") :])
         return emit(f"target data {body}".strip())
+    if low.startswith("__pdo"):
+        # inner `loop vector` promoted by _vectorise_inner_loops (2026-09-18)
+        body = _rewrite_clauses(rest[len("__pdo") :])
+        extra = f" {body}" if body else ""
+        return emit(f"parallel do{extra}")
+    if low.startswith("parallel loop") and "__teamsonly" in low:
+        body = _rewrite_clauses(rest[len("parallel loop") :].replace("__teamsonly", ""))
+        extra = f" {body}" if body else ""
+        return emit(f"target teams distribute{extra}")
     if low.startswith("parallel loop"):
         body = _rewrite_clauses(rest[len("parallel loop") :])
         extra = f" {body}" if body else ""
@@ -520,6 +531,407 @@ def _clause_names(text: str) -> set:
         i = j
     return names
 
+
+
+VECTORISE = os.environ.get("GEPS_ACC2OMP_VECTORISE", "1") == "1"
+
+
+def _unit_scalar_sets(joined):
+    """For every line index, the set of declared scalar names (lower case) of
+    the program unit it belongs to (same declaration parsing as layer 16/18,
+    continued declarations joined, `::`-less form included)."""
+    sets = [None] * len(joined)
+    scalars = set()
+    start = 0
+    pending = ""
+    cpp = 0
+    for i, (line, is_acc) in enumerate(joined):
+        if is_acc:
+            continue
+        code = line.strip()
+        if not code or code.startswith("!") or code.startswith("#"):
+            continue
+        low = code.lower()
+        if re.match(r"^(subroutine|function|program|module)\b", low) or re.match(r"^[a-z0-9_() ,=*]*\bfunction\s+\w+", low):
+            for k in range(start, i):
+                sets[k] = scalars
+            scalars = set(); start = i; pending = ""
+            continue
+        if pending:
+            pending += " " + code.lstrip("&").strip().rstrip("&").strip()
+            if code.rstrip().endswith("&"):
+                continue
+            code = pending; pending = ""; low = code.lower()
+        elif _DECL_RE.match(code) and code.rstrip().endswith("&") and not re.search(r"\b(function|subroutine)\b", low):
+            pending = code.rstrip().rstrip("&").strip()
+            continue
+        dm = _DECL_RE.match(code)
+        if dm and (("::" in code) or not re.search(r"\b(function|subroutine)\b", low)):
+            if "::" in code:
+                attrs, _, ents = code.partition("::")
+                attrs = attrs.lower()
+            else:
+                attrs = (dm.group("attrs") or "").lower(); ents = dm.group("ents")
+            if any(k in attrs for k in ("dimension", "allocatable", "pointer", "parameter")):
+                continue
+            for ent in _split_top(ents):
+                m = re.match(r"\s*([A-Za-z_]\w*)\s*(\(|=|$|\*)", ent.strip() + " ")
+                if m and m.group(2) != "(":
+                    scalars.add(m.group(1).lower())
+    for k in range(start, len(joined)):
+        sets[k] = scalars
+    return sets
+
+
+def _nest_end(joined, i_do):
+    """Index of the `end do` closing the DO statement at joined[i_do]."""
+    depth = 0
+    labels = []
+    for k in range(i_do, len(joined)):
+        line, is_acc = joined[k]
+        if is_acc:
+            continue
+        code = line.strip()
+        if not code or code.startswith("!") or code.startswith("#"):
+            continue
+        is_do, lab = _do_start(code)
+        if is_do:
+            depth += 1; labels.append(lab); continue
+        lc = _LABEL_CONT.match(code)
+        if re.match(r"^end\s*do\b", code, re.IGNORECASE) or (lc and int(lc.group(1)) in labels):
+            if lc:
+                n_ = int(lc.group(1))
+                while labels and labels[-1] == n_:
+                    labels.pop(); depth -= 1
+            else:
+                if labels: labels.pop()
+                depth -= 1
+            if depth <= 0:
+                return k
+    return len(joined) - 1
+
+
+def _vectorise_inner_loops(joined):
+    """`!$acc parallel loop gang` + nested `!$acc loop [vector|worker]`
+    (2026-09-18, performance layer): acc2omp used to flatten every inner
+    `loop` to a serial DO on the team's thread, so a kernel had only as many
+    threads as OUTER iterations (384 latitudes / 384 wavenumbers) - ~2% of an
+    MI300X - which is the 10-30x-slower-than-NVIDIA signature everywhere.
+    Now the owner becomes `target teams distribute` and the first-level inner
+    loops become `parallel do` inside each team. Scalars assigned inside the
+    inner nest (and the DO variables of deeper loops) are made private on the
+    `parallel do`; deeper `loop` directives stay serial. Loops with
+    `reduction(` or `seq` are left as they were (a parallel reduction would
+    change the summation order - the six-step sptend must stay bit-identical).
+    Disable with GEPS_ACC2OMP_VECTORISE=0."""
+    if not VECTORISE:
+        return joined
+    # default skip list (2026-09-18 measurements): the NDSL advection family
+    # gets slower (short inner loops under already-collapsed owners) and one
+    # of the physics files faults after promotion (not yet bisected); the
+    # spectral transforms / hdiffu / mpe2d are where promotion pays off.
+    default_skip = ("ndslfv,mod_ndslfv,diabat,gwd,prerrtmg,stochastic,module_mp,samf,moninedmf,"
+                    "rrtmg,adjptqintp,radsw,mfpbl,ozphys,prexp,mp_scheme,lightning,dcyc2")
+    skip = [x for x in os.environ.get("GEPS_ACC2OMP_VECTORISE_SKIP", default_skip).split(",") if x]
+    if skip and any(x in _CURRENT_FILE for x in skip):
+        return joined
+    out = [list(t) for t in joined]
+    scal = _unit_scalar_sets(joined)
+    n = len(joined)
+    i = 0
+    while i < n:
+        line, is_acc = joined[i]
+        if not is_acc:
+            i += 1; continue
+        rest = _acc_rest(line)
+        low = rest.lower()
+        if not low.startswith("parallel loop") or line.rstrip().endswith("&"):
+            i += 1; continue
+        # measured 2026-09-18: promoting inner loops under an owner that
+        # already collapses 2+ loops (thousands of teams, short inner loops)
+        # made those kernels SLOWER (monoadvh 2.7 -> 3.6 s); under a single
+        # outer loop (384 teams) it is a big win (trngra 0.78 -> <0.16 s).
+        mcol = re.search(r"\bcollapse\s*\(\s*(\d+)\s*\)", low)
+        if mcol and int(mcol.group(1)) >= 2:
+            i += 1; continue
+        # owner nest: first DO after the directive
+        j = i + 1
+        while j < n and (joined[j][1] or not joined[j][0].strip() or joined[j][0].strip().startswith(("!", "#"))):
+            j += 1
+        if j >= n or not _do_start(joined[j][0].strip())[0]:
+            i += 1; continue
+        end_owner = _nest_end(joined, j)
+        # cpp depth bookkeeping inside the nest
+        cpp_owner = 0
+        cpp = 0
+        promoted = 0
+        k = j
+        while k <= end_owner:
+            lk, ak = joined[k]
+            code = lk.strip()
+            if not ak:
+                if _CPP_OPEN.match(code): cpp += 1
+                elif _CPP_CLOSE.match(code): cpp -= 1
+                k += 1; continue
+            r = _acc_rest(lk).lower()
+            if not r.startswith("loop") or cpp != cpp_owner or lk.rstrip().endswith("&"):
+                k += 1; continue
+            if re.search(r"\bseq\b", r) or "gang" in r:
+                k += 1; continue
+            # reductions: max/min are exact (order-independent), so they may
+            # be parallelised bit-identically (2026-09-19: hdiffu's wmax scan
+            # was 72 threads x 200k elements = 83 ms x 2 per step); +/* would
+            # change the summation order -> left serial.
+            red_clauses = []
+            red_vars = []
+            red_ok = True
+            for mr in re.finditer(r"reduction\s*\(\s*([^:()]+?)\s*:\s*([^)]*)\)", r):
+                op = mr.group(1).strip().lower()
+                # 2026-09-19 02:30: promoting hdiffu/rayleifr's
+                # `reduction(max:wt)` changed step-1 sptend by 3e-5
+                # (0.43807396825059497 -> 0.4380482957086226) - not a rounding
+                # effect; the nested parallel-do max reduction is wrong under
+                # amdflang (see handoff). Disabled until understood.
+                if op not in ("max", "min") or not os.environ.get("GEPS_ACC2OMP_VEC_REDMAX") == "1":
+                    red_ok = False
+                    break
+                vs = [v.strip().lower() for v in mr.group(2).split(",") if v.strip()]
+                red_vars += vs
+                red_clauses.append(f"reduction({op}:{', '.join(vs)})")
+            if not red_ok:
+                k += 1; continue
+            # the DO right after it
+            d = k + 1
+            while d <= end_owner and (joined[d][1] or not joined[d][0].strip() or joined[d][0].strip().startswith(("!", "#"))):
+                d += 1
+            if d > end_owner or not _do_start(joined[d][0].strip())[0]:
+                k += 1; continue
+            end_inner = _nest_end(joined, d)
+            # collapse depth of the inner directive
+            mc = re.search(r"\bcollapse\s*\(\s*(\d+)\s*\)", r)
+            ncol = int(mc.group(1)) if mc else 1
+            # names: private() of the directive, scalars assigned in the nest, deeper DO vars
+            names = []
+            for nm in _private_names(_acc_rest(lk)):
+                names.append(nm)
+            own_vars = []
+            seen_do = 0
+            for q in range(d, end_inner + 1):
+                lq, aq = joined[q]
+                if aq:
+                    # deeper acc loop directives: take their private() too
+                    rq = _acc_rest(lq)
+                    if rq.lower().startswith("loop"):
+                        names += list(_private_names(rq))
+                    continue
+                cq = lq.strip()
+                if not cq or cq.startswith(("!", "#")):
+                    continue
+                is_do, _lab = _do_start(cq)
+                if is_do:
+                    lm = re.match(r"^\s*(?:\w+\s*:\s*)?do\s+(?:\d+\s*,?\s*)?([A-Za-z_]\w*)\s*=", cq, re.IGNORECASE)
+                    if lm:
+                        seen_do += 1
+                        if seen_do <= ncol:
+                            own_vars.append(lm.group(1).lower())
+                        else:
+                            names.append(lm.group(1).lower())
+                    continue
+                am = _ASSIGN_RE.match(cq)
+                if am and am.group(1).lower() in (scal[q] or set()):
+                    names.append(am.group(1).lower())
+            uniq = []
+            for nm in names:
+                if nm not in uniq and nm not in own_vars and nm not in red_vars:
+                    uniq.append(nm)
+            # scalars assigned in the nest and READ by the team after it (before
+            # being reassigned) keep the serial semantics with lastprivate:
+            # the value of the sequentially last iteration, as before.
+            assigned_in = set(nm for nm in uniq)
+            escaping = []
+            live = set(assigned_in)
+            for q in range(end_inner + 1, end_owner + 1):
+                if joined[q][1]:
+                    continue
+                cq = joined[q][0].split("!")[0]
+                if not cq.strip():
+                    continue
+                am = _ASSIGN_RE.match(cq)
+                lhs = am.group(1).lower() if am else None
+                toks = set(t.lower() for t in re.findall(r"[A-Za-z_]\w*", cq))
+                is_do, _ = _do_start(cq.strip())
+                for v in list(live):
+                    if v in toks and lhs != v and not is_do:
+                        if v not in escaping:
+                            escaping.append(v)
+                    if lhs == v or (is_do and re.match(r"^\s*(?:\w+\s*:\s*)?do\s+(?:\d+\s*,?\s*)?" + v + r"\s*=", cq, re.IGNORECASE)):
+                        live.discard(v)
+            clause = ""
+            priv = [nm for nm in uniq if nm not in escaping]
+            if priv:
+                clause += " private(" + ", ".join(priv) + ")"
+            if escaping:
+                clause += " lastprivate(" + ", ".join(escaping) + ")"
+            if ncol > 1:
+                clause += f" collapse({ncol})"
+            for rc in red_clauses:
+                clause += " " + rc
+            indent = SENT.match(lk).group(1)
+            out[k][0] = f"{indent}!$acc __pdo{clause}"
+            promoted += 1
+            k = end_inner + 1
+        if promoted:
+            out[i][0] = joined[i][0].rstrip() + " __teamsonly"
+        i = end_owner + 1
+    return [tuple(t) for t in out]
+
+# 2026-09-19: SPMD collapse of the column loop in physics kernels.
+# file substring -> longitude extent to run the guarded inner loop over
+_SPMD_EXT = {
+    "samfdeepcnv": "ix", "samfshalcnv": "ix", "moninedmf": "ix", "mfpbl": "ix",
+    "ozphys_2015": "ix", "gwdc": "ix", "adjptqintp": "nxp",
+    "module_mp_gsfcgce": "ite", "diabat_gpu": "nxp", "gwdps": "ix", "nor_gwdp": "nx",
+    "rrtmg_gpu": "nx", "dcyc2": "ix", "lightning": "klon",
+}
+SPMD = os.environ.get("GEPS_ACC2OMP_SPMD", "1") == "1"
+_SPMD_SKIP = [x for x in os.environ.get("GEPS_ACC2OMP_SPMD_SKIP", "").split(",") if x]
+
+def _spmd_collapse_inner(joined):
+    """`parallel loop collapse(2)` over (jj, k) with the OpenACC `loop vector`
+    over columns `do i = lo, myim(jj)` nested directly inside became, after
+    flattening, 27648 threads each walking ~1000 longitudes serially
+    (prof8: every physics kernel has grid 27648 = 108 teams on 304 CUs, and
+    the per-thread stride-1 walk is uncoalesced - 3x slower in the
+    microbenchmark). Fold the column loop into the collapse: the inner
+    directive is dropped, the DO runs over the file's extent (_SPMD_EXT) with
+    the original bound as a guard, so every (jj, k, i) is one work-item. The
+    body stays identical and each column's arithmetic is unchanged ->
+    bit-identical. Only perfectly nested triples are touched; loops with
+    `seq`, `reduction(` or `gang` are left alone."""
+    if not SPMD:
+        return joined
+    ext = None
+    for key, e in _SPMD_EXT.items():
+        if key in _CURRENT_FILE:
+            ext = e
+    if ext is None or any(x in _CURRENT_FILE for x in _SPMD_SKIP):
+        return joined
+    out = []
+    n = len(joined)
+    i = 0
+    n_done = 0
+    while i < n:
+        line, is_acc = joined[i]
+        if not is_acc:
+            out.append(joined[i]); i += 1; continue
+        rest = _acc_rest(line)
+        low = rest.lower()
+        mcol = re.search(r"\bcollapse\s*\(\s*(\d+)\s*\)", low)
+        ncol = int(mcol.group(1)) if mcol else 1
+        if not low.startswith("parallel loop") or line.rstrip().endswith("&") or ncol not in (1, 2):
+            out.append(joined[i]); i += 1; continue
+        # outer nest: ncol DOs, optional scalar-assignment prefix (e.g.
+        # `j = jlist1(jj); nxj = nxdef_2d(j)`), the inner acc loop, its DO
+        j = i + 1
+        def _skip(j):
+            while j < n and (not joined[j][0].strip() or joined[j][0].strip().startswith(("!", "#"))) and not joined[j][1]:
+                j += 1
+            return j
+        j = _skip(j)
+        if j >= n or joined[j][1] or not _do_start(joined[j][0].strip())[0]:
+            out.append(joined[i]); i += 1; continue
+        d1 = j
+        if ncol == 2:
+            j = _skip(j + 1)
+            if j >= n or joined[j][1] or not _do_start(joined[j][0].strip())[0]:
+                out.append(joined[i]); i += 1; continue
+            d2 = j
+        else:
+            d2 = d1
+        # prefix: plain scalar assignments only (no parentheses on the LHS,
+        # no calls); they are replicated inside the collapsed loop
+        prefix = []
+        j = _skip(j + 1)
+        while j < n and not joined[j][1] and re.match(r"^\s*[A-Za-z_]\w*\s*=(?!=)", joined[j][0]) \
+                and not re.match(r"^\s*(if|do|call|where|select)\b", joined[j][0].strip(), re.IGNORECASE):
+            prefix.append(joined[j][0])
+            j = _skip(j + 1)
+        if j >= n or not joined[j][1]:
+            out.append(joined[i]); i += 1; continue
+        inner_dir = j
+        r = _acc_rest(joined[j][0]).lower()
+        if not r.startswith("loop") or re.search(r"\bseq\b", r) or "reduction(" in r.replace(" ", "") or "gang" in r or "collapse" in r:
+            out.append(joined[i]); i += 1; continue
+        j = _skip(j + 1)
+        if j >= n or joined[j][1] or not _do_start(joined[j][0].strip())[0]:
+            out.append(joined[i]); i += 1; continue
+        d3 = j
+        m3 = re.match(r"^(\s*)do\s+([A-Za-z_]\w*)\s*=\s*([^,]+),\s*([^,]+?)\s*(,\s*[^,]+)?\s*$", joined[d3][0], re.IGNORECASE)
+        if not m3 or m3.group(5):
+            out.append(joined[i]); i += 1; continue
+        ind3, ivar, lo, hi = m3.group(1), m3.group(2), m3.group(3).strip(), m3.group(4).strip()
+        v1 = re.match(r"^\s*do\s+([A-Za-z_]\w*)", joined[d1][0], re.IGNORECASE).group(1).lower()
+        v2 = re.match(r"^\s*do\s+([A-Za-z_]\w*)", joined[d2][0], re.IGNORECASE).group(1).lower()
+        e3 = _nest_end(joined, d3)
+        e2 = _nest_end(joined, d2)
+        e1 = _nest_end(joined, d1)
+        # perfect nesting: nothing but comments between end do's
+        def _only_comments(a, b):
+            for q in range(a + 1, b):
+                if joined[q][1] or (joined[q][0].strip() and not joined[q][0].strip().startswith("!")):
+                    return False
+            return True
+        if not (_only_comments(e3, e2) and (ncol == 1 or _only_comments(e2, e1))):
+            out.append(joined[i]); i += 1; continue
+        # any deeper acc directive inside the body? leave it (vectorise territory)
+        if any(joined[q][1] for q in range(d3 + 1, e3)):
+            out.append(joined[i]); i += 1; continue
+        # prefix scalars must not be re-assigned in the body (replication would change them)
+        pre_names = set(re.match(r"^\s*([A-Za-z_]\w*)", pl).group(1).lower() for pl in prefix)
+        body_lhs = set()
+        for q in range(d3 + 1, e3):
+            am = _ASSIGN_RE.match(joined[q][0])
+            if am: body_lhs.add(am.group(1).lower())
+        if pre_names & body_lhs:
+            out.append(joined[i]); i += 1; continue
+        toks = set(t.lower() for t in re.findall(r"[A-Za-z_]\w*", hi)) | set(
+            t.lower() for pl in prefix for t in re.findall(r"[A-Za-z_]\w*", pl.split("=", 1)[0]))
+        hi_toks = set(t.lower() for t in re.findall(r"[A-Za-z_]\w*", hi))
+        guarded = bool(hi_toks & ({v1, v2} | pre_names))
+        newcol = ncol + 1
+        if mcol:
+            new_owner = re.sub(r"\bcollapse\s*\(\s*\d+\s*\)", f"collapse({newcol})", line, count=1, flags=re.IGNORECASE)
+        else:
+            new_owner = line.rstrip() + f" collapse({newcol})"
+        out.append((new_owner, True))
+        for q in range(i + 1, inner_dir):
+            if q >= d2 + 1 and joined[q][0] in prefix:
+                continue          # moved inside the collapsed loop
+            out.append(joined[q])
+        out.append((f"{ind3}! acc2omp: column loop folded into collapse({newcol})", False))
+        for q in range(inner_dir + 1, d3):
+            out.append(joined[q])
+        if guarded:
+            out.append((f"{ind3}do {ivar} = {lo}, {ext}", False))
+            for pl in prefix:
+                out.append((f"{ind3}   {pl.strip()}", False))
+            out.append((f"{ind3}if ({ivar} .le. {hi}) then", False))
+            for q in range(d3 + 1, e3):
+                out.append(joined[q])
+            out.append((f"{ind3}end if", False))
+        else:
+            out.append(joined[d3])
+            for pl in prefix:
+                out.append((f"{ind3}   {pl.strip()}", False))
+            for q in range(d3 + 1, e3):
+                out.append(joined[q])
+        for q in range(e3, e1 + 1):
+            out.append(joined[q])
+        n_done += 1
+        i = e1 + 1
+    if n_done:
+        sys.stderr.write(f"[acc2omp] spmd collapse: {n_done} column loops folded in {_CURRENT_FILE}\n")
+    return out
 
 def _privatise_nested_loops(joined):
     """Give the enclosing parallel directive the private() of inner `!$acc loop`s.
@@ -1272,10 +1684,15 @@ def resolve_gpu_ifdefs(lines: list[str]) -> list[str]:
     return out
 
 
+_CURRENT_FILE = ""
+
+
 def translate_file(src: Path, dst: Path) -> None:
+    global _CURRENT_FILE
+    _CURRENT_FILE = src.name.lower()
     text = src.read_text(errors="replace")
     lines = resolve_gpu_ifdefs(text.splitlines())
-    joined = _privatise_nested_loops(_merge_parallel_loop(_join_continuations(lines)))
+    joined = _spmd_collapse_inner(_privatise_nested_loops(_vectorise_inner_loops(_merge_parallel_loop(_join_continuations(lines)))))
     joined = _privatise_assigned_scalars(joined)
     out: list[str] = [
         "! acc2omp: generated from " + src.as_posix(),
@@ -1323,7 +1740,11 @@ def _collect_parameters(lines: list[str]) -> set[str]:
 OMP_SENT = re.compile(r"^(\s*)!\$omp(\s|&)(.*)$", re.IGNORECASE)
 
 _DEVICE_WRITE = re.compile(
-    r"^(print\b|write\s*\(\s*(?:\*|6)\b)",
+    # 2026-09-19: `write (*, *)` was missed (`\b` after `*` never matches
+    # before `,`), and `stop` in device code pulls the Fortran runtime's RPC
+    # client into the image (sflx_gpu l309, radiation_aerosols, gocart
+    # mass2icn), which makes libomptarget start its RPC server thread.
+    r"^(print\b|write\s*\(\s*(?:\*|6)\s*[,)]|stop\b|error\s+stop\b)",
     re.IGNORECASE,
 )
 
@@ -1343,11 +1764,14 @@ def _silence_device_io(lines: list[str]) -> list[str]:
     pending_do = 0
     assoc_depth: list[int] = []
     cont_io = False
+    in_routine = False   # bare `!$omp declare target` (from `!$acc routine`) .. end subroutine
     out: list[str] = []
     for line in lines:
         m = OMP_SENT.match(line)
         if m:
             rest = m.group(3).strip().lower()
+            if rest == "declare target":
+                in_routine = True
             if rest.startswith("end target data"):
                 pass
             elif rest.startswith("end target"):
@@ -1356,12 +1780,16 @@ def _silence_device_io(lines: list[str]) -> list[str]:
                 ("target data", "target enter", "target exit", "target update")
             ):
                 pass
-            elif "distribute parallel do" in rest:
+            elif "distribute parallel do" in rest or rest.startswith("target teams distribute"):
+                # combined loop constructs (also the vectorised `target teams
+                # distribute` owner, 2026-09-18) close with their do-construct
                 pending_do += 1
             elif rest.startswith("target"):
                 explicit += 1
         else:
             stmt = line.split("!")[0]
+            if in_routine and re.match(r"^\s*end\s+(subroutine|function)\b", stmt, re.IGNORECASE):
+                in_routine = False
             if pending_do and _DO_START.match(stmt):
                 assoc_depth.append(1)
                 pending_do -= 1
@@ -1371,12 +1799,20 @@ def _silence_device_io(lines: list[str]) -> list[str]:
                 assoc_depth[-1] -= 1
                 if assoc_depth[-1] <= 0:
                     assoc_depth.pop()
-        in_device = explicit > 0 or bool(assoc_depth)
+        in_device = explicit > 0 or bool(assoc_depth) or in_routine
         code = line.lstrip()
+        if in_device and not cont_io:
+            # logical-if form: `if (cond) stop '...'` -> keep the if, drop the stop
+            mif = re.match(r"^(if\s*\(.*\)\s*)(stop\b|error\s+stop\b).*$", code, re.IGNORECASE | re.DOTALL)
+            if mif and not re.search(r"&\s*$", line.rstrip()):
+                indent = line[: len(line) - len(code)]
+                out.append(f"{indent}{mif.group(1)}continue   ! acc2omp: device stop removed")
+                continue
         if cont_io or (in_device and _DEVICE_WRITE.match(code)):
             indent = line[: len(line) - len(code)]
             out.append(f"{indent}! acc2omp: device io {code}")
-            cont_io = bool(re.search(r"&\s*$", line.rstrip()))
+            # continuation `&` may be followed by a trailing comment (sflx's `!%f`)
+            cont_io = bool(re.search(r"&\s*(!.*)?$", line.rstrip()))
             continue
         out.append(line)
     return out
@@ -1725,6 +2161,79 @@ def _replace_subroutine(lines: list[str], name: str, new_src: Path) -> list[str]
                 skipping = False
             continue
         out.append(ln)
+    return out
+
+
+def _defer_graph_loop_syncs(lines: list[str]) -> list[str]:
+    """See the call site in the _gpu_cuda_graph block. A pack-event sync line
+    is `istat = cudaStreamSynchronize(lt_cg_stream(...))` right after the
+    layer-7 comment; its enclosing DO is the nearest `do` above with a
+    smaller indent, closed by the `end do` with that indent."""
+    sync_re = re.compile(r"^(\s*)istat\s*=\s*cudaStreamSynchronize\(lt_cg_stream\(", re.I)
+    do_re = re.compile(r"^(\s*)do\s+\w+\s*=", re.I)
+    enddo_re = re.compile(r"^(\s*)end\s*do\b", re.I)
+    loops = {}   # do-line index -> end-do index
+    for i, ln in enumerate(lines):
+        if not sync_re.match(ln):
+            continue
+        ind = len(sync_re.match(ln).group(1))
+        j = i - 1
+        while j >= 0:
+            m = do_re.match(lines[j])
+            if m and len(m.group(1)) < ind:
+                break
+            j -= 1
+        if j < 0:
+            continue
+        dind = len(do_re.match(lines[j]).group(1))
+        k = i + 1
+        while k < len(lines):
+            m = enddo_re.match(lines[k])
+            if m and len(m.group(1)) == dind:
+                break
+            k += 1
+        if k < len(lines):
+            loops[j] = k
+    if not loops:
+        return lines
+    ends = set(loops.values())
+    # inside the loop: one hipblasSetStream per m (rocgdb samples showed the
+    # host inside hipblasSetStream, 2/30) and a cudaStreamWaitEvent per m are
+    # replaced by a single SetStream on the acc stream before the loop; all
+    # dgemms then queue in order on that stream.
+    setst_re = re.compile(r"^(\s*)istat\s*=\s*cublasSetStream\((\w+)\s*,\s*lt_cg_stream\(", re.I)
+    waitev_re = re.compile(r"^\s*istat\s*=\s*cudaStreamWaitEvent\(lt_cg_stream\(.*spread_event", re.I)
+    out = []
+    in_loop = False
+    for i, ln in enumerate(lines):
+        if in_loop and sync_re.match(ln):
+            out.append(f"{sync_re.match(ln).group(1)}! ROCm 2026-09-19: dgemm sync deferred to the wait after the loop")
+            continue
+        if in_loop and setst_re.match(ln):
+            out.append(f"{setst_re.match(ln).group(1)}! ROCm 2026-09-19: dgemms of this loop share the acc stream (SetStream before the loop)")
+            continue
+        if in_loop and waitev_re.match(ln):
+            continue
+        if in_loop and ln.strip() == "call geps_acc_wait(async_id)":
+            continue          # would drain the shared stream every m
+        if i in loops:
+            ind = do_re.match(ln).group(1)
+            # handle name from the first SetStream inside the loop
+            hname = "handle"
+            for q in range(i, loops[i]):
+                mm = setst_re.match(lines[q])
+                if mm:
+                    hname = mm.group(2)
+                    break
+            out.append(f"{ind}istat = cublasSetStream({hname}, stream)")
+            out.append(f"{ind}call geps_blas_defer_sync(1)")
+            in_loop = True
+        out.append(ln)
+        if i in ends:
+            ind = enddo_re.match(ln).group(1)
+            out.append(f"{ind}call geps_blas_defer_sync(0)")
+            out.append(f"{ind}call geps_acc_wait_all()   ! all dgemms of the loop")
+            in_loop = False
     return out
 
 
@@ -2308,6 +2817,15 @@ def apply_file_fixups(name: str, lines: list[str]) -> list[str]:
                     fixed.append(f"{indent}call geps_acc_wait(async_id)")
             fixed.append(ln)
         out = fixed
+        # ---- 2026-09-19: the per-m `cudaStreamSynchronize(lt_cg_stream(m))`
+        # above (plus the shim's own sync inside every dgemm) makes the
+        # Legendre loops host-latency bound: ~5k dgemms per step, each
+        # launch + 2 syncs. The loop bodies contain only dgemms (inputs come
+        # from synchronous OpenMP kernels before the loop), so: defer the
+        # shim's dgemm sync for the whole loop, drop the per-m sync, and wait
+        # once on every dirty stream right after the loop's `end do` (before
+        # any consumer kernel). Same kernels, same data -> bit-identical.
+        out = _defer_graph_loop_syncs(out)
     if PROBES and "tranrs_gpu" in name:
         # #region agent log: presence check, NOT a value probe.
         #
@@ -2912,6 +3430,227 @@ def apply_file_fixups(name: str, lines: list[str]) -> list[str]:
         if pack.is_file():
             out = _replace_subroutine(out, "ndslfv_monoadvv_gpu", pack)
             out = _replace_subroutine(out, "ndslfv_monoadvv_fgnl_gpu", pack)
+    if "mod_ndslfv_monoadv_gpu" in name:
+        # ---- 2026-09-18 (rocprofv3): def_cfl_step_gpu_type2's `!$acc kernels`
+        # + `!$acc loop` became a SERIAL `!$omp target` (one GPU thread over
+        # 8192 columns x 72 levels: 107 ms per call, 74 calls = 8 s per
+        # step). Make it a parallel loop with a max reduction (the atomic is
+        # then redundant).
+        fixed = []
+        n_fix = 0
+        skip_atomic = False
+        for ln in out:
+            st = ln.strip()
+            if st.replace(" ", "").startswith("!$omptargetmap(tofrom:check_max)map(tofrom:loc_max,check_point,safe_step)"):
+                indent = re.match(r"^(\s*)", ln).group(1)
+                fixed.append(f"{indent}!$omp target teams distribute parallel do reduction(max:check_max) private(i, check, loc_max) firstprivate(check_point)")
+                n_fix += 1
+                skip_atomic = True
+                continue
+            if skip_atomic and st == "!$omp atomic":
+                continue
+            if skip_atomic and st == "!$omp end target":
+                fixed.append(f"{re.match(r'^(\s*)', ln).group(1)}!$omp end target teams distribute parallel do")
+                skip_atomic = False
+                continue
+            fixed.append(ln)
+        out = fixed
+        assert n_fix == 1, f"def_cfl_step_gpu_type2 kernels region: expected 1, found {n_fix}"
+        # ---- same disease in vertical_cell_ppm_intp_gpu: the `hh(k,i) =
+        # pp(k+1,i) - pp(k,i)` fill is an `!$acc kernels` region -> serial
+        # `!$omp target` over 8192 x 72 (68 ms x 111 calls = 7.5 s per step).
+        fixed = []
+        n_fix = 0
+        i = 0
+        while i < len(out):
+            ln = out[i]
+            if ln.strip() == "!$omp target" and i + 3 < len(out) \
+                    and out[i + 1].strip() == "do i = 1, nxy" and out[i + 2].strip() == "do k = 1, levs" \
+                    and out[i + 3].strip().startswith("hh(k, i) = pp(k + 1, i) - pp(k, i)"):
+                indent = re.match(r"^(\s*)", ln).group(1)
+                fixed.append(f"{indent}!$omp target teams distribute parallel do collapse(2)")
+                fixed += out[i + 1:i + 6]          # do i / do k / hh = / end do / end do
+                assert out[i + 6].strip() == "!$omp end target", out[i + 6]
+                fixed.append(f"{indent}!$omp end target teams distribute parallel do")
+                i += 7
+                n_fix += 1
+                continue
+            fixed.append(ln)
+            i += 1
+        out = fixed
+        assert n_fix == 1, f"ppm_intp hh kernels region: expected 1, found {n_fix}"
+    if name.startswith("hdiffu_gpu") or name.startswith("rayleifr_gpu"):
+        # ---- 2026-09-19: the wind-max scan `parallel loop gang` over k with
+        # `loop vector collapse(2) reduction(max:wt)` inside became 72 threads
+        # each scanning 200k points (83 ms x 2 per step, prof8). A nested
+        # `parallel do reduction` is miscompiled by amdflang roc-7.2.2 (always
+        # 0, see handoff), so split it into two exact kernels: per-(k,jj)
+        # partial max, then max over jj. max is exact -> bit-identical.
+        fixed = []
+        n_fix = 0
+        i = 0
+        while i < len(out):
+            ln = out[i]
+            st = ln.strip()
+            if st == "!$omp target teams distribute parallel do private(wt) private(j, nxj, xx, jj, i)" \
+                    and i + 14 < len(out) and out[i + 1].strip() == "do k = 1, lev" \
+                    and out[i + 10].strip().startswith("wt = max(wt, xx*sqrt(ut(i, k, jj)**2 + vt(i, k, jj)**2))") \
+                    and out[i + 14].strip() in ("wmax(k) = wt", "wmax_buf(k) = wt"):
+                ind = re.match(r"^(\s*)", ln).group(1)
+                init = out[i + 2].strip()            # wt = 0.0 / wt = 0.
+                target = out[i + 14].strip()         # wmax(k) = wt
+                body = out[i + 5:i + 13]             # do i ... end do (8 lines)
+                assert body[0].strip() == "do i = 1, nxp" and body[-1].strip() == "end do", body
+                fixed.append(f"{ind}!$omp target data map(alloc:geps_wpart)")
+                fixed.append(f"{ind}!$omp target teams distribute parallel do collapse(2) private(wt, j, nxj, xx, i)")
+                fixed.append(f"{ind}do k = 1, lev")
+                fixed.append(f"{ind}   do jj = 1, jlistnum")
+                fixed.append(f"{ind}      {init}")
+                fixed += body
+                fixed.append(f"{ind}      geps_wpart(jj, k) = wt")
+                fixed.append(f"{ind}   end do")
+                fixed.append(f"{ind}end do")
+                fixed.append(f"{ind}!$omp target teams distribute parallel do private(wt, jj)")
+                fixed.append(f"{ind}do k = 1, lev")
+                fixed.append(f"{ind}   {init}")
+                fixed.append(f"{ind}   do jj = 1, jlistnum")
+                fixed.append(f"{ind}      wt = max(wt, geps_wpart(jj, k))")
+                fixed.append(f"{ind}   end do")
+                fixed.append(f"{ind}   {target}")
+                fixed.append(f"{ind}end do")
+                fixed.append(f"{ind}!$omp end target data")
+                assert out[i + 15].strip() == "end do", out[i + 15]
+                i += 16
+                n_fix += 1
+                continue
+            fixed.append(ln)
+            i += 1
+            # declaration of the partial-max array, right after wmax's
+            if n_fix == 0 and re.match(r"^\s*real\s+wmax\s*\(lev\)\s*,", ln):
+                fixed.append(re.match(r"^(\s*)", ln).group(1) + "real geps_wpart(jlistnum, lev)   ! acc2omp: split wind-max scan")
+        out = fixed
+        assert n_fix == 1, f"wmax scan: expected 1, found {n_fix}"
+    if name.startswith("mpe2d_gpu"):
+        # ---- 2026-09-19 (prof8): two `parallel loop` over m whose bodies are
+        # array-section copies (one GPU thread copies ~56k elements each):
+        # mpe2d_transpose_siimpl_gpu's c1 <- ain (12 x 11 ms per step) and
+        # mpe2d_reshape_pl_gpu's b1 <- plin. Scalarised into collapsed loops
+        # with a guard on the per-m length (pure copies, bit-identical).
+        fixed = []
+        n_fix = 0
+        i = 0
+        while i < len(out):
+            ln = out[i]
+            st = ln.strip()
+            if st == "!$omp target teams distribute parallel do firstprivate(mf, NL, i)" and i + 6 < len(out) \
+                    and out[i + 1].strip() == "do m = 1, mlistnum" \
+                    and out[i + 5].strip() == "c1(1:levp, 1, i:i + nl - 1) = ain(1:levp, 1, mf:jtrun, m)":
+                ind = re.match(r"^(\s*)", ln).group(1)
+                fixed += [
+                    f"{ind}!$omp target teams distribute parallel do collapse(3) private(mf, NL, i)",
+                    f"{ind}do m = 1, mlistnum",
+                    f"{ind}   do j = 1, jtrun",
+                    f"{ind}      do k = 1, levp",
+                    f"{ind}         mf = mlist(m)",
+                    f"{ind}         NL = jtrun - mf + 1",
+                    f"{ind}         i = i_array(m)",
+                    f"{ind}         if (j .le. NL) then",
+                    f"{ind}            c1(k, 1, i + j - 1) = ain(k, 1, mf + j - 1, m)",
+                    f"{ind}            c1(k, 2, i + j - 1) = ain(k, 2, mf + j - 1, m)",
+                    f"{ind}         end if",
+                    f"{ind}      end do",
+                    f"{ind}   end do",
+                    f"{ind}end do",
+                ]
+                assert out[i + 7].strip() == "end do", out[i + 7]
+                i += 8
+                n_fix += 1
+                continue
+            if st == "!$omp target teams distribute parallel do firstprivate(mf, NL, i)" and i + 6 < len(out) \
+                    and out[i + 1].strip() == "do m = 1, mlistnum" \
+                    and out[i + 5].strip() == "b1(i:i + nl - 1, 1) = plin(mf:jtrun, m, 1)":
+                ind = re.match(r"^(\s*)", ln).group(1)
+                fixed += [
+                    f"{ind}!$omp target teams distribute parallel do collapse(2) private(mf, NL, i)",
+                    f"{ind}do m = 1, mlistnum",
+                    f"{ind}   do j = 1, jtrun",
+                    f"{ind}      mf = mlist(m)",
+                    f"{ind}      NL = jtrun - mf + 1",
+                    f"{ind}      i = i_array(m)",
+                    f"{ind}      if (j .le. NL) then",
+                    f"{ind}         b1(i + j - 1, 1) = plin(mf + j - 1, m, 1)",
+                    f"{ind}         b1(i + j - 1, 2) = plin(mf + j - 1, m, 2)",
+                    f"{ind}      end if",
+                    f"{ind}   end do",
+                    f"{ind}end do",
+                ]
+                assert out[i + 7].strip() == "end do", out[i + 7]
+                i += 8
+                n_fix += 1
+                continue
+            fixed.append(ln)
+            i += 1
+        out = fixed
+        assert n_fix == 2, f"mpe2d array-section kernels: expected 2, found {n_fix}"
+    if name.startswith("ndslfv_pack_gpu"):
+        # ---- 2026-09-19 (prof8): three regions in cyclic_cell_massadvx_jlist_gpu
+        # run serially on the device. `parallel loop` over k with the array
+        # statement `xreg_dup(:, k, :) = xreg` inside is 72 threads each
+        # copying 148k elements (104 ms x 2 per step); `outer_index(i, :) =
+        # lons_size` and the `!$acc kernels` `nstep_less = (nst .le. nstep)`
+        # are the same shape of problem. Scalarise them into collapsed loops
+        # (pure copies, bit-identical).
+        fixed = []
+        n_fix = 0
+        i = 0
+        while i < len(out):
+            ln = out[i]
+            st = ln.strip()
+            ind = re.match(r"^(\s*)", ln).group(1)
+            if st == "!$omp target teams distribute parallel do" and i + 3 < len(out) \
+                    and out[i + 1].strip() == "do i = 1, 3" \
+                    and out[i + 2].strip() == "outer_index(i, :) = lons_size":
+                fixed.append(f"{ind}!$omp target teams distribute parallel do collapse(2) private(lan)")
+                fixed.append(f"{ind}do i = 1, 3")
+                fixed.append(f"{ind}   do lan = 1, jlistnum")
+                fixed.append(f"{ind}      outer_index(i, lan) = lons_size(lan)")
+                fixed.append(f"{ind}   end do")
+                fixed.append(f"{ind}end do")
+                assert out[i + 3].strip() == "end do", out[i + 3]
+                i += 4
+                n_fix += 1
+                continue
+            if st == "!$omp target teams distribute parallel do" and i + 3 < len(out) \
+                    and out[i + 1].strip() == "do k = 1, levs" \
+                    and out[i + 2].strip() == "xreg_dup(:, k, :) = xreg":
+                fixed.append(f"{ind}!$omp target teams distribute parallel do collapse(3) private(lan, i)")
+                fixed.append(f"{ind}do k = 1, levs")
+                fixed.append(f"{ind}   do lan = 1, jlistnum")
+                fixed.append(f"{ind}      do i = 1, lonfull + 1")
+                fixed.append(f"{ind}         xreg_dup(i, k, lan) = xreg(i, lan)")
+                fixed.append(f"{ind}      end do")
+                fixed.append(f"{ind}   end do")
+                fixed.append(f"{ind}end do")
+                assert out[i + 3].strip() == "end do", out[i + 3]
+                i += 4
+                n_fix += 1
+                continue
+            if st == "!$omp target" and i + 2 < len(out) \
+                    and out[i + 1].strip() == "nstep_less = (nst .le. nstep)" \
+                    and out[i + 2].strip() == "!$omp end target":
+                fixed.append(f"{ind}!$omp target teams distribute parallel do collapse(2) private(lan, k)")
+                fixed.append(f"{ind}do lan = 1, jlistnum")
+                fixed.append(f"{ind}   do k = 1, levs")
+                fixed.append(f"{ind}      nstep_less(k, lan) = (nst .le. nstep(k, lan))")
+                fixed.append(f"{ind}   end do")
+                fixed.append(f"{ind}end do")
+                i += 3
+                n_fix += 1
+                continue
+            fixed.append(ln)
+            i += 1
+        out = fixed
+        assert n_fix == 3, f"massadvx_jlist serial regions: expected 3, found {n_fix}"
     if "intgrt_gpu" in name:
         # ---- 2026-09-16: the full-step trandv call passes the UNPACKED
         # poly/dpoly (CPU layout (jtrun,my/2,jtmax)) where the routine wants
@@ -3158,7 +3897,88 @@ def apply_file_fixups(name: str, lines: list[str]) -> list[str]:
             fixed.append(ln)
         out = fixed
         # #endregion
-    if PROBES and "intgrt_gpu" in name or "tendget_gpu" in name:
+    _tfiles = [x for x in os.environ.get("GEPS_ACC2OMP_TIMERS", "0").replace("1", "intgrt_gpu", 1).split(",") if x and x != "0"]
+    if _tfiles and any(x in name for x in _tfiles):
+        # ---- 2026-09-18 phase timers: wall time of every host-level `call`
+        # in intgrt_gpu, accumulated per callee and printed with the
+        # `surf pres tend rms` line (so per-step totals can be read directly).
+        import importlib.util as _ilu
+        _spec = _ilu.spec_from_file_location("intgrt_ckpts", str(Path(__file__).resolve().parent / "intgrt_ckpts.py"))
+        _ck = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_ck)
+        fixed = []
+        names = {}
+        i = 0
+        decl_done = False
+        while i < len(out):
+            ln = out[i]
+            st = ln.strip()
+            if re.match(r"^\s*(subroutine|function|recursive|pure|elemental)\b", st, re.IGNORECASE) \
+                    or re.match(r"^\s*(real|integer|logical)[^!]*\bfunction\s+\w+", st, re.IGNORECASE):
+                decl_done = False      # new program unit: declare timers again
+            if not decl_done and st.lower().startswith("implicit none"):
+                fixed.append(ln)
+                fixed.append("      real(kind=8) :: geps_t0, geps_tacc(128) = 0.0d0")
+                fixed.append("      character(len=40) :: geps_tname(128)")
+                fixed.append("      integer :: geps_tn = 0, geps_ti")
+                fixed.append("      real(kind=8), external :: geps_wtime")
+                fixed.append("      integer, external :: geps_hide_myrank_t")
+                decl_done = True
+                i += 1
+                continue
+            m = re.match(r"^(\s*)call\s+([A-Za-z0-9_]+)", ln)
+            if m and not m.group(2).lower().startswith(("geps_", "flush", "system", "exit", "abort", "mpi_")):
+                nm = m.group(2).lower()
+                if nm not in names:
+                    names[nm] = len(names) + 1
+                k = names[nm]
+                ind = m.group(1)
+                fixed.append(f"{ind}geps_tname({k}) = '{nm}'; geps_tn = max(geps_tn, {k}); geps_t0 = geps_wtime()")
+                fixed.append(ln)
+                cont = _ck._cont(out[i])
+                cpp_open = 0
+                while cont:
+                    i += 1
+                    fixed.append(out[i])
+                    if out[i].lstrip().startswith("!"):
+                        continue          # comment inside a continued call
+                    if out[i].lstrip().startswith("#"):
+                        # cpp line inside a continued call (diabat_gpu's
+                        # `#ifdef Readaeroclx` argument block, 2026-09-19:
+                        # the accumulate landed inside the #ifdef and the
+                        # diabat timer never counted)
+                        d = out[i].lstrip()
+                        if d.startswith("#if"): cpp_open += 1
+                        elif d.startswith("#endif"): cpp_open -= 1
+                        continue
+                    cont = _ck._cont(out[i])
+                # swallow an `#else ... #endif` tail whose branch closed the call
+                while cpp_open > 0 and i + 1 < len(out):
+                    i += 1
+                    fixed.append(out[i])
+                    d = out[i].lstrip()
+                    if d.startswith("#if"): cpp_open += 1
+                    elif d.startswith("#endif"): cpp_open -= 1
+                fixed.append(f"{ind}geps_tacc({k}) = geps_tacc({k}) + (geps_wtime() - geps_t0)")
+                i += 1
+                continue
+            if "print *, 'surf pres tend rms(GPU) ='" in ln or \
+                    ("intgrt_gpu" not in name and re.match(r"^\s*end\s+subroutine\b", st, re.IGNORECASE) and decl_done):
+                if "surf pres" in ln:
+                    fixed.append(ln)
+                ind = re.match(r"^(\s*)", ln).group(1) or "      "
+                fixed.append(f"{ind}do geps_ti = 1, geps_tn")
+                fixed.append(f"{ind}   if (geps_tacc(geps_ti) .gt. 0.005d0) print '(a,i3,1x,a,f9.3)', 'TIMER ', geps_hide_myrank_t(), geps_tname(geps_ti), geps_tacc(geps_ti)")
+                fixed.append(f"{ind}end do")
+                fixed.append(f"{ind}geps_tacc = 0.0d0")
+                if "surf pres" not in ln:
+                    fixed.append(ln)
+                    decl_done = False
+                i += 1
+                continue
+            fixed.append(ln)
+            i += 1
+        out = fixed
+    if PROBES and ("intgrt_gpu" in name or "tendget_gpu" in name):
         _VIF = [
             "      ! #region agent log",
             "      integer(kind=8) :: geps_d0, geps_d1, geps_d2",

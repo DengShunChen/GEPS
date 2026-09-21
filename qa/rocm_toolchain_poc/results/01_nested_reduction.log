@@ -1,0 +1,24 @@
+
+################ amdflang -O2 ################
+(a) nested  parallel do reduction(+)   WRONG got(1)=  0.000000E+00 expected   1.001000E+03
+(b) nested  parallel do reduction(max) WRONG got(1)=  0.000000E+00 expected   1.001000E+00
+(c) teams/distribute split, nested (+) WRONG got(1)=  0.000000E+00 expected   1.001000E+03
+(d) flat teams distribute parallel do  OK    got(1)=  1.001000E+03
+(e) inner loop serial, no reduction    OK    got(1)=  1.001000E+03
+RESULT: FAIL (3 variants wrong)
+
+################ amdflang -O0 ################
+(a) nested  parallel do reduction(+)   WRONG got(1)=  0.000000E+00 expected   1.001000E+03
+(b) nested  parallel do reduction(max) WRONG got(1)=  0.000000E+00 expected   1.001000E+00
+(c) teams/distribute split, nested (+) WRONG got(1)=  0.000000E+00 expected   1.001000E+03
+(d) flat teams distribute parallel do  WRONG got(1)=  0.000000E+00 expected   1.001000E+03
+(e) inner loop serial, no reduction    OK    got(1)=  1.001000E+03
+RESULT: FAIL (4 variants wrong)
+
+################ host OpenMP only (no offload) - reference behaviour ################
+(a) nested  parallel do reduction(+)   OK    got(1)=  1.001000E+03
+(b) nested  parallel do reduction(max) OK    got(1)=  1.001000E+00
+(c) teams/distribute split, nested (+) OK    got(1)=  1.001000E+03
+(d) flat teams distribute parallel do  OK    got(1)=  1.001000E+03
+(e) inner loop serial, no reduction    OK    got(1)=  1.001000E+03
+ RESULT: PASS

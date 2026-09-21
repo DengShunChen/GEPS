@@ -22,6 +22,20 @@ namespace {
 
 std::mutex g_mu;
 std::unordered_map<int, hipStream_t> g_streams;
+std::vector<hipStream_t> g_all_streams; /* every stream this shim created */
+/* streams that received work since the last geps_hip_wait_all(); ~350
+   streams exist (prof8), so waiting on all of them cost 147k
+   hipStreamSynchronize per step */
+std::vector<hipStream_t> g_dirty;
+hipStream_t use_stream(int64_t stream) {
+  hipStream_t s = (hipStream_t)(uintptr_t)stream;
+  std::lock_guard<std::mutex> lock(g_mu);
+  for (hipStream_t d : g_dirty)
+    if (d == s)
+      return s;
+  g_dirty.push_back(s);
+  return s;
+}
 std::unordered_map<int, hipfftHandle> g_fft;
 int g_fft_next = 1;
 hipblasHandle_t g_blas = nullptr;
@@ -38,6 +52,7 @@ hipStream_t stream_for(int async_id) {
   hipStream_t s = nullptr;
   (void)hipStreamCreateWithFlags(&s, hipStreamNonBlocking);
   g_streams[async_id] = s;
+  g_all_streams.push_back(s);
   return s;
 }
 
@@ -174,7 +189,22 @@ void geps_hip_wait(int async_id) {
    can land AFTER the kernel that fills the same buffer (2026-09-15: the
    NDSL pack in ndslfv_monoadvh2 lost about half of ddtemp that way). */
 void geps_hip_wait_all(void) {
-  (void)hipDeviceSynchronize();
+  // 2026-09-18: every HIP async op the model issues (memset/memcpy, RCCL,
+  // hipfft, hipblas) goes through a shim function that takes the stream
+  // (use_stream marks it dirty), and the translated OpenMP kernels are
+  // synchronous. Waiting on the dirty streams is therefore equivalent to a
+  // device-wide sync (~16k calls per step). 2026-09-19: waiting on every
+  // stream the shim ever created was 350 syncs per call (prof8), hence the
+  // dirty list. async_id <= 0 maps to the null stream, always waited.
+  std::vector<hipStream_t> ss;
+  {
+    std::lock_guard<std::mutex> lock(g_mu);
+    ss.swap(g_dirty);
+  }
+  (void)hipStreamSynchronize(nullptr);
+  for (hipStream_t s : ss)
+    if (s)
+      (void)hipStreamSynchronize(s);
 }
 
 /* #region agent log: DBGMAP/DBGUNMAP print with the current free VRAM.
@@ -268,30 +298,38 @@ int geps_hip_memcpy_async(void *dst, const void *src, int64_t bytes, int kind,
   // cost ~190 s per step: the buffers come from libomptarget's allocator,
   // which HIP's pointer classification does not recognise as device memory,
   // so CLR takes the host-staged path. Explicit DtoD skips the lookup.
-  if (kind == 3)
-    return (int)hipMemcpyDtoDAsync((hipDeviceptr_t)dst, (hipDeviceptr_t)src,
-                                   (size_t)bytes, (hipStream_t)(uintptr_t)stream);
+  // 2026-09-18 (rocprofv3 prof2): hipMemcpyDtoDAsync was no better -- 84
+  // calls, 1127 s, 13 s per 343 MB, i.e. the copy still runs at ~26 MB/s.
+  // HIP does not know libomptarget's HSA allocations, so it falls back to a
+  // CPU memcpy through the large-BAR mapping of device memory. Let
+  // libomptarget do the copy (hsa_amd_memory_async_copy on the device):
+  // omp_target_memcpy is synchronous, which every caller tolerates (each
+  // memcpy run is followed by geps_acc_wait_all anyway).
+  if (kind == 3) {
+    int dev = omp_get_default_device();
+    return omp_target_memcpy(dst, src, (size_t)bytes, 0, 0, dev, dev);
+  }
   return (int)hipMemcpyAsync(dst, src, (size_t)bytes, hipMemcpyDefault,
-                             (hipStream_t)(uintptr_t)stream);
+                             use_stream(stream));
 }
 
 int geps_hip_memset_async(void *dst, int64_t bytes, int64_t stream) {
   dst = device_ptr(dst);
-  return (int)hipMemsetAsync(dst, 0, (size_t)bytes, (hipStream_t)(uintptr_t)stream);
+  return (int)hipMemsetAsync(dst, 0, (size_t)bytes, use_stream(stream));
 }
 
 int geps_hip_memset_i32_async(void *dst, int val, int64_t count, int64_t stream) {
   dst = device_ptr(dst);
   return (int)hipMemsetD32Async((hipDeviceptr_t)dst, val, (size_t)count,
-                                (hipStream_t)(uintptr_t)stream);
+                                use_stream(stream));
 }
 
 int geps_hip_malloc_async(void **ptr, int64_t bytes, int64_t stream) {
-  return (int)hipMallocAsync(ptr, (size_t)bytes, (hipStream_t)(uintptr_t)stream);
+  return (int)hipMallocAsync(ptr, (size_t)bytes, use_stream(stream));
 }
 
 int geps_hip_free_async(void *ptr, int64_t stream) {
-  return (int)hipFreeAsync(ptr, (hipStream_t)(uintptr_t)stream);
+  return (int)hipFreeAsync(ptr, use_stream(stream));
 }
 
 int geps_hip_event_create(void **ev) {
@@ -306,11 +344,11 @@ int geps_hip_event_destroy(void *ev) {
 }
 
 int geps_hip_event_record(void *ev, int64_t stream) {
-  return (int)hipEventRecord((hipEvent_t)ev, (hipStream_t)(uintptr_t)stream);
+  return (int)hipEventRecord((hipEvent_t)ev, use_stream(stream));
 }
 
 int geps_hip_stream_wait_event(int64_t stream, void *ev, unsigned int flags) {
-  return (int)hipStreamWaitEvent((hipStream_t)(uintptr_t)stream, (hipEvent_t)ev,
+  return (int)hipStreamWaitEvent(use_stream(stream), (hipEvent_t)ev,
                                  flags);
 }
 
@@ -318,21 +356,25 @@ int geps_hip_stream_create_flags(int64_t *stream, unsigned int flags) {
   hipStream_t s = nullptr;
   int rc = (int)hipStreamCreateWithFlags(&s, flags);
   *stream = (int64_t)(uintptr_t)s;
+  if (rc == 0) {
+    std::lock_guard<std::mutex> lock(g_mu);
+    g_all_streams.push_back(s);
+  }
   return rc;
 }
 
 int geps_hip_stream_sync(int64_t stream) {
-  return (int)hipStreamSynchronize((hipStream_t)(uintptr_t)stream);
+  return (int)hipStreamSynchronize(use_stream(stream));
 }
 
 int geps_hip_begin_capture(int64_t stream, int mode) {
-  return (int)hipStreamBeginCapture((hipStream_t)(uintptr_t)stream,
+  return (int)hipStreamBeginCapture(use_stream(stream),
                                     (hipStreamCaptureMode)mode);
 }
 
 int geps_hip_end_capture(int64_t stream, void **graph) {
   hipGraph_t g = nullptr;
-  int rc = (int)hipStreamEndCapture((hipStream_t)(uintptr_t)stream, &g);
+  int rc = (int)hipStreamEndCapture(use_stream(stream), &g);
   *graph = (void *)g;
   return rc;
 }
@@ -346,7 +388,7 @@ int geps_hip_graph_instantiate(void **exec, void *graph, int /*unused*/) {
 
 int geps_hip_graph_launch(void *exec, int64_t stream) {
   return (int)hipGraphLaunch((hipGraphExec_t)exec,
-                             (hipStream_t)(uintptr_t)stream);
+                             use_stream(stream));
 }
 
 int geps_blas_create(void **handle) {
@@ -366,7 +408,7 @@ void *geps_blas_default() {
 
 int geps_blas_set_stream(void *handle, int64_t stream) {
   return (int)hipblasSetStream((hipblasHandle_t)handle,
-                               (hipStream_t)(uintptr_t)stream);
+                               use_stream(stream));
 }
 
 /* #region agent log: report the device address OpenMP has mapped a host array
@@ -382,6 +424,12 @@ extern "C" void geps_dbg_mapped_(double *p, int *tag) {
   fflush(stderr);
 }
 /* #endregion */
+
+/* 2026-09-19: acc2omp's Legendre-loop rewrite turns the per-dgemm sync off
+   for the duration of a dgemm-only loop and waits all dirty streams after it
+   (geps_blas_defer_sync in geps_acc_wait.f90). */
+static int g_blas_defer_sync = 0;
+void geps_blas_defer_sync_set(int v) { g_blas_defer_sync = v; }
 
 int geps_blas_dgemm(void *handle, int ta, int tb, int m, int n, int k,
                     double alpha, const double *a, int lda, const double *b,
@@ -413,8 +461,15 @@ int geps_blas_dgemm(void *handle, int ta, int tb, int m, int n, int k,
      kernel with no wait, and with LIBOMPTARGET_MEMORY_MANAGER_THRESHOLD=0
      that showed up as a 1e-5 shift in sptend and NaN feeding the
      microphysics. Make every dgemm synchronous here, once, instead of
-     patching each call site. */
-  (void)hipDeviceSynchronize();
+     patching each call site. 2026-09-18: wait on the handle's stream only
+     (the dgemm is the last thing queued there); ~2.7k calls per step. */
+  if (!g_blas_defer_sync) {
+    hipStream_t hs = nullptr;
+    if (hipblasGetStream((hipblasHandle_t)handle, &hs) == HIPBLAS_STATUS_SUCCESS)
+      (void)hipStreamSynchronize(hs);
+    else
+      (void)hipDeviceSynchronize();
+  }
   return rc;
 }
 
@@ -489,7 +544,7 @@ int geps_fft_make_plan_many(int plan, int rank, int n, int inembed, int istride,
 }
 
 int geps_fft_set_stream(int plan, int64_t stream) {
-  return (int)hipfftSetStream(fft_of(plan), (hipStream_t)(uintptr_t)stream);
+  return (int)hipfftSetStream(fft_of(plan), use_stream(stream));
 }
 
 int geps_fft_set_work_area(int plan, void *work) {
@@ -499,23 +554,31 @@ int geps_fft_set_work_area(int plan, void *work) {
 int geps_fft_exec_z2d(int plan, void *in, void *out) {
   int rc = (int)hipfftExecZ2D(fft_of(plan), (hipfftDoubleComplex *)in,
                             (double *)out);
-  (void)hipDeviceSynchronize();   /* layer 15, see geps_blas_dgemm */
+  /* 2026-09-18: no per-exec device sync (layer 15 was redundant here: the
+   * caller waits on the FFT stream once after its 384-latitude loop; the
+   * per-exec sync cost ~3k x 150 us per step). */
   return rc;
 }
 int geps_fft_exec_d2z(int plan, void *in, void *out) {
   int rc = (int)hipfftExecD2Z(fft_of(plan), (double *)in,
                             (hipfftDoubleComplex *)out);
-  (void)hipDeviceSynchronize();   /* layer 15, see geps_blas_dgemm */
+  /* 2026-09-18: no per-exec device sync (layer 15 was redundant here: the
+   * caller waits on the FFT stream once after its 384-latitude loop; the
+   * per-exec sync cost ~3k x 150 us per step). */
   return rc;
 }
 int geps_fft_exec_c2r(int plan, void *in, void *out) {
   int rc = (int)hipfftExecC2R(fft_of(plan), (hipfftComplex *)in, (float *)out);
-  (void)hipDeviceSynchronize();   /* layer 15, see geps_blas_dgemm */
+  /* 2026-09-18: no per-exec device sync (layer 15 was redundant here: the
+   * caller waits on the FFT stream once after its 384-latitude loop; the
+   * per-exec sync cost ~3k x 150 us per step). */
   return rc;
 }
 int geps_fft_exec_r2c(int plan, void *in, void *out) {
   int rc = (int)hipfftExecR2C(fft_of(plan), (float *)in, (hipfftComplex *)out);
-  (void)hipDeviceSynchronize();   /* layer 15, see geps_blas_dgemm */
+  /* 2026-09-18: no per-exec device sync (layer 15 was redundant here: the
+   * caller waits on the FFT stream once after its 384-latitude loop; the
+   * per-exec sync cost ~3k x 150 us per step). */
   return rc;
 }
 
@@ -534,7 +597,7 @@ int geps_solver_destroy(void *handle) {
 
 int geps_solver_set_stream(void *handle, int64_t stream) {
   return (int)hipsolverDnSetStream((hipsolverHandle_t)handle,
-                                   (hipStream_t)(uintptr_t)stream);
+                                   use_stream(stream));
 }
 
 int geps_solver_syevj_create(void **info) {
@@ -673,7 +736,7 @@ int geps_sparse_create(void **handle) {
 
 int geps_sparse_set_stream(void *handle, int64_t stream) {
   return (int)hipsparseSetStream((hipsparseHandle_t)handle,
-                                 (hipStream_t)(uintptr_t)stream);
+                                 use_stream(stream));
 }
 
 int geps_sparse_dgtsv_interleaved_buf(void *handle, int algo, int m,
@@ -757,14 +820,14 @@ int geps_nccl_send(const void *s, int64_t count, int dtype, int peer,
                    void *comm, int64_t stream) {
   s = device_ptr(const_cast<void *>(s));
   return (int)ncclSend(s, (size_t)count, (ncclDataType_t)dtype, peer,
-                       (ncclComm_t)comm, (hipStream_t)(uintptr_t)stream);
+                       (ncclComm_t)comm, use_stream(stream));
 }
 
 int geps_nccl_recv(void *r, int64_t count, int dtype, int peer, void *comm,
                    int64_t stream) {
   r = device_ptr(r);
   return (int)ncclRecv(r, (size_t)count, (ncclDataType_t)dtype, peer,
-                       (ncclComm_t)comm, (hipStream_t)(uintptr_t)stream);
+                       (ncclComm_t)comm, use_stream(stream));
 }
 
 int geps_nccl_allreduce(const void *s, void *r, int64_t count, int dtype,
@@ -773,15 +836,40 @@ int geps_nccl_allreduce(const void *s, void *r, int64_t count, int dtype,
   r = device_ptr(r);
   return (int)ncclAllReduce(s, r, (size_t)count, (ncclDataType_t)dtype,
                             (ncclRedOp_t)op, (ncclComm_t)comm,
-                            (hipStream_t)(uintptr_t)stream);
+                            use_stream(stream));
+}
+
+static size_t nccl_elem_size(int dtype) {
+  switch ((ncclDataType_t)dtype) {
+  case ncclInt8: case ncclUint8: return 1;
+  case ncclFloat16: case ncclBfloat16: return 2;
+  case ncclInt32: case ncclUint32: case ncclFloat32: return 4;
+  default: return 8;
+  }
 }
 
 int geps_nccl_allgather(const void *s, void *r, int64_t count, int dtype,
                         void *comm, int64_t stream) {
   s = device_ptr(const_cast<void *>(s));
   r = device_ptr(r);
+  // 2026-09-18: out-of-place AllGather makes RCCL copy the local chunk with
+  // hipMemcpyAsync(hipMemcpyDefault); HIP does not know libomptarget's
+  // buffers and takes the CPU/large-BAR path (~26 MB/s: 3-10 s per call,
+  // ~30 s per step, seen with an LD_PRELOAD backtrace from
+  // mpe2d_unify_lev_gpu). In-place (sendbuff == recvbuff + rank*count)
+  // skips that copy; stage the chunk with libomptarget's own D2D copy.
+  int rank = 0;
+  if (ncclCommUserRank((ncclComm_t)comm, &rank) == ncclSuccess) {
+    size_t bytes = (size_t)count * nccl_elem_size(dtype);
+    char *slot = (char *)r + (size_t)rank * bytes;
+    if ((const void *)slot != s) {
+      int dev = omp_get_default_device();
+      (void)omp_target_memcpy(slot, s, bytes, 0, 0, dev, dev);
+      s = slot;
+    }
+  }
   return (int)ncclAllGather(s, r, (size_t)count, (ncclDataType_t)dtype,
-                            (ncclComm_t)comm, (hipStream_t)(uintptr_t)stream);
+                            (ncclComm_t)comm, use_stream(stream));
 }
 
 int geps_nccl_broadcast(const void *s, void *r, int64_t count, int dtype,
@@ -796,8 +884,21 @@ int geps_nccl_broadcast(const void *s, void *r, int64_t count, int dtype,
   /* #endregion */
   s = device_ptr(const_cast<void *>(s));
   r = device_ptr(r);
+  // same in-place trick as AllGather: the root's local copy is a slow
+  // hipMemcpyAsync otherwise; in-place broadcast (s == r on every rank)
+  // needs no copy at all.
+  if (s != r) {
+    int rank = -1;
+    if (ncclCommUserRank((ncclComm_t)comm, &rank) == ncclSuccess) {
+      if (rank == root) {
+        int dev = omp_get_default_device();
+        (void)omp_target_memcpy(r, s, (size_t)count * nccl_elem_size(dtype), 0, 0, dev, dev);
+      }
+      s = r;
+    }
+  }
   int rc = (int)ncclBroadcast(s, r, (size_t)count, (ncclDataType_t)dtype, root,
-                            (ncclComm_t)comm, (hipStream_t)(uintptr_t)stream);
+                            (ncclComm_t)comm, use_stream(stream));
   /* #region agent log */
   if (interesting)
     dbg_ndjson("B", "hip_compat:ncclBcast", "after", seq, (long long)rc,

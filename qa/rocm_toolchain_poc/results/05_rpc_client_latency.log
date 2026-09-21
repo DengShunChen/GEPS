@@ -1,0 +1,51 @@
+
+################ build ################
+
+################ device image contents ################
+rpc_plain.x: 0 rpc/Fortran-I/O symbols in device image
+rpc_devio.x: 1 rpc/Fortran-I/O symbols in device image
+    __llvm_rpc_client
+
+################ threads at runtime (the extra thread is libomptarget's RPC server) ################
+rpc_plain: 3 threads
+rpc_devio: 4 threads
+
+################ plain (no device I/O) ################
+   iters   wall/launch [us]
+    6400         266.2
+   12800         498.5
+   25600         964.1
+   51200        1895.3
+  102400        3821.3
+  204800        7655.6
+checksum a(1) =   1.000000000041E-01
+
+################ devio (never-taken print in the kernel) ################
+   iters   wall/launch [us]
+    6400         243.3
+   12800         450.5
+   25600         866.8
+   51200        1699.9
+  102400        3444.5
+  204800        6845.7
+checksum a(1) =   1.000000000041E-01
+
+################ plain_nowait (no device I/O) ################
+   iters   wall/launch [us]
+    6400         263.6
+   12800         472.3
+   25600         890.1
+   51200        1724.6
+  102400        3506.5
+  204800        6919.5
+checksum a(1) =   1.000000000041E-01
+
+################ devio_nowait (never-taken print in the kernel) ################
+   iters   wall/launch [us]
+    6400         239.1
+   12800         424.1
+   25600         793.3
+   51200        1531.4
+  102400        3098.5
+  204800        6105.4
+checksum a(1) =   1.000000000041E-01

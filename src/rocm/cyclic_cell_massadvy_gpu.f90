@@ -10,7 +10,7 @@ subroutine cyclic_cell_massadvy_mylonlen_gpu(latfull, levs, nvars, deltim, vv, q
    real(kind=RTYPE), intent(in) :: deltim
    real(kind=RTYPE), dimension(latfull, levs, lonpart), intent(in) :: vv
    real(kind=RTYPE), dimension(latfull, nvars, levs, lonpart) :: qq
-   integer, parameter :: otile = 8
+   integer, parameter :: otile = 128   ! 2026-09-19: 64 -> 128 (256 was no faster) (halves the launch count; prof11: NDSL is launch-gap bound); 2026-09-18: was 8 (OOM-era); 8 rows x 72 levels = 576 teams per launch, 48 tiles x 6 kernels per call -> 11 s/step of under-occupied kernels
    integer :: lon, j, k, nst, n, max_nstep, ot, og, ob, nloc
    real(kind=RTYPE) ds(latfull), sc
    real(kind=RTYPE) var(latfull, levs, otile), dist(latfull + 1, levs, otile)

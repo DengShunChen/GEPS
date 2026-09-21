@@ -23,3 +23,37 @@ subroutine geps_acc_wait_all()
   call geps_acc_wait_all_c()
 end subroutine geps_acc_wait_all
 
+
+! wall clock for the acc2omp phase timers (GEPS_ACC2OMP_TIMERS=1)
+function geps_wtime() result(t)
+   use, intrinsic :: iso_fortran_env, only: int64
+   implicit none
+   real(kind=8) :: t
+   integer(int64) :: c, r
+   call system_clock(c, r)
+   t = real(c, 8)/real(r, 8)
+end function geps_wtime
+
+! MPI rank for the acc2omp phase timers (avoids a `use rank` inside translated units)
+function geps_hide_myrank_t() result(r)
+   use rank, only: myrank
+   implicit none
+   integer :: r
+   r = myrank
+end function geps_hide_myrank_t
+
+! 2026-09-19: turn the shim's per-dgemm stream sync off/on around the Legendre
+! dgemm loops (acc2omp _defer_graph_loop_syncs); the loop is followed by
+! geps_acc_wait_all().
+subroutine geps_blas_defer_sync(on)
+  use iso_c_binding, only: c_int
+  implicit none
+  integer, intent(in) :: on
+  interface
+      subroutine geps_blas_defer_sync_c(v) bind(C, name="geps_blas_defer_sync_set")
+      import c_int
+      integer(c_int), value :: v
+    end subroutine
+  end interface
+  call geps_blas_defer_sync_c(int(on, c_int))
+end subroutine geps_blas_defer_sync
