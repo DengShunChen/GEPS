@@ -48,17 +48,25 @@ Do **not** use OpenBLAS for intel/nvidia/fujitsu.
 
 ## AMD ROCm / Instinct MI300X ##
 
-Status (2026-09-19): the full TCo383L72 tau=1 case runs on 2× MI300X (gfx942, ROCm 7.2.2,
+Status (2026-10-02): the full TCo383L72 tau=1 case runs on 2× MI300X (gfx942, ROCm 7.2.2,
 amdflang 22.0.0) and all six `surf pres tend rms` values match the CPU run to 1e-11..1e-14.
-2.43 s per integration step on 2 GPUs versus 10.5 s on 32 CPU cores of the same machine
-(NVIDIA reference: 0.34 s). Documents:
+2.21 s per integration step on 2 GPUs versus 10.5 s on 32 CPU cores of the same machine
+(4.75× faster; NVIDIA reference: 0.34 s on 8× A100 80GB, i.e. four times the GPU count).
+A 24 h forecast (144 steps) also completes: median 2.28 s/step, 416 s of integration, VRAM peak
+176.9 of 192 GiB per card. AMD's afar 24.3.0 compiler was evaluated as well (432 s over 24 h,
+needs three extra settings); ROCm 7.2.2 stays the production toolchain. Documents:
 
 * [`ROCM_PORT_HANDOFF.md`](ROCM_PORT_HANDOFF.md) — layer-by-layer diagnosis log, environment facts,
   working rules and the open-items list (§9). Read §0, §4 and §8 first.
-* [`ROCM_OPTIMIZATION_REPORT.md`](ROCM_OPTIMIZATION_REPORT.md) — the 740 s → 2.43 s/step work,
-  one measured root cause per change.
+* [`ROCM_OPTIMIZATION_REPORT.md`](ROCM_OPTIMIZATION_REPORT.md) — the 740 s → 2.21 s/step work,
+  one measured root cause per change; §10 is the afar 24.3.0 evaluation.
 * [`TICKET_amd_rocm_support.md`](TICKET_amd_rocm_support.md), [`TICKET_internal_infra.md`](TICKET_internal_infra.md)
-  — outward-facing issue reports; `qa/rocm_toolchain_poc/` holds stand-alone reproducers with results.
+  — outward-facing issue reports; `qa/rocm_toolchain_poc/` holds stand-alone reproducers with results
+  (`AFAR_24.3.0_RETEST.md` for the afar re-test).
+* [`qa/afar_app/INSTALL_AFAR.md`](qa/afar_app/INSTALL_AFAR.md) — installing afar 24.3.0, rebuilding
+  GEPS_LIB with it, and recovering after a container rebuild.
+* [`qa/tools/`](qa/tools/README.md) — the small benchmarks, reproducers and profiling scripts the
+  documents cite; `qa/tools/container/` holds the container init script.
 
 ### How the port works
 
@@ -97,7 +105,7 @@ cd job
 A successful run ends with `tau= 1.000` and `PROGRAM CWBGFS HAS ENDED`; compare the six
 `surf pres tend rms` lines against the CPU log. `job/cmp_ckpt.py` / `job/cmp_mf.py` compare
 optional checkpoints. A 2-GPU tau=1 run takes ~6.5 min wall (model start to end, dominated by
-initialisation and NNMI; 2.4 s per step); the CPU smoke ~4 min. Do not run both at once — they share
+initialisation and NNMI; measured 2026-09-19 at 2.4 s per step, now 2.2 s); the CPU smoke ~4 min. Do not run both at once — they share
 the DMS key.
 
 ### Runtime knobs (set by `job/regression.ksh`, all overridable)
@@ -105,9 +113,13 @@ the DMS key.
 | Variable | Default | Meaning |
 |---|---|---|
 | `GEPS_ROCM_DEVICES` | `0` | `HIP_VISIBLE_DEVICES` / `ROCR_VISIBLE_DEVICES` for the rank (the 2-GPU script binds one card per rank) |
-| `LIBOMPTARGET_MEMORY_MANAGER_THRESHOLD` | `0` | libomptarget's pool only reuses identical sizes and grows to OOM on the radiation blocks; keep at 0 |
+| `LIBOMPTARGET_MEMORY_MANAGER_THRESHOLD` | `0` | libomptarget's pool only reuses identical sizes and grows to OOM on the radiation blocks; keep at 0 (`default` leaves the runtime's own setting) |
 | `LIBOMPTARGET_STACK_SIZE` | `65536` | runtime-sized `private` arrays corrupt across lanes below 49152 |
 | `GEPS_HSA_POOL` | `1` | preload `libgeps_hsa_pool.so`; `0` disables (costs ~4 s/step in HSA alloc/free) |
+| `GEPS_HSA_POOL_CAP_GB` | `48` | cache cap per rank; higher pushes VRAM to the limit and KFD evicts pages (~20 s stall) |
+| `HSA_ENABLE_SDMA` | `0` | blit kernels instead of SDMA for copies: `omp_target_memcpy` D2D 58 → 1240 GB/s, −5 % per step |
+| `GEPS_TAUE` | `1.0` | forecast length in hours for `SMOKE=1` runs (e.g. `24`); extends `gfsctl` to match |
+| `GEPS_ROCM_BUILD_DIR` | `build_rocm_hip` | build tree to run, e.g. `build_afar_hip` |
 | `GEPS_FFT_PLAN_SETS` | `8` | rocFFT plan-set LRU budget; the model needs 7 |
 | `GEPS_FFT_THREADS` | `4` | host threads issuing per-latitude FFTs, one stream each |
 | `GEPS_PROF_WRAP` | — | command prefix for `tcogfs.x`, e.g. `rocprofv3 --kernel-trace` (needs `OMP_TOOL=disabled`) |
