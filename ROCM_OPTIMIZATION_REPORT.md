@@ -38,7 +38,7 @@
 | `rocprofv3 --hip-runtime-trace` | HIP API 次數（找到 26 萬次 `hipStreamSynchronize`） |
 | `GEPS_ACC2OMP_TIMERS=<檔案清單>`（acc2omp 在 build 時插 `system_clock` 計時） | intgrt / diabat 內每個被呼叫常式的每步秒數 |
 | rocgdb 取樣（`sample_bt3.sh`） | host 主執行緒在哪裡等 |
-| 微基準（scratchpad `launchbench/`、`fftbench/`、`redmax/`） | 把假設從模式裡抽出來單獨驗證 |
+| 微基準（`qa/tools/launchbench/`、`fftbench/`、`redmax/`） | 把假設從模式裡抽出來單獨驗證 |
 | `llvm-objcopy --dump-section=.llvm.offloading` ＋ `llvm-readelf` | 檢查裝置映像的符號（找到 RPC client） |
 
 ---
@@ -89,7 +89,7 @@ OpenACC 的 `kernels` 區域、`gang`＋`loop vector` 巢狀、陣列語法賦�
 
 ## 5. 過程中發現的 toolchain 缺陷（要回報上游／要記住）
 
-1. **amdflang roc-7.2.2：`parallel do reduction(...)` 巢狀在 `target teams distribute` 之下結果永遠是 0**（max 與 `+` 都是、`-O0` 一樣、有無 collapse 一樣；扁平的 `target teams distribute parallel do reduction` 正確）。standalone 重現：scratchpad `redmax/t.f90`、`s.f90`。在模式裡表現為 hdiffu 的 `wmax` 全 0 → `sptend` 第一步差 3e-5。acc2omp 對 reduction 一律不升級（`GEPS_ACC2OMP_VEC_REDMAX=1` 才開）。
+1. **amdflang roc-7.2.2：`parallel do reduction(...)` 巢狀在 `target teams distribute` 之下結果永遠是 0**（max 與 `+` 都是、`-O0` 一樣、有無 collapse 一樣；扁平的 `target teams distribute parallel do reduction` 正確）。standalone 重現：`qa/tools/redmax/t.f90`、`s.f90`。在模式裡表現為 hdiffu 的 `wmax` 全 0 → `sptend` 第一步差 3e-5。acc2omp 對 reduction 一律不升級（`GEPS_ACC2OMP_VEC_REDMAX=1` 才開）。
 2. **flang 每次 launch 都重新 `to` allocatable 的 descriptor**：每個 allocatable 引數讓一次 launch 多 ~10 µs（2 個 35–45 µs、17 個 190 µs；explicit-shape 17 個只要 24 µs）。`-fno-defer-desc-map`、`map(present,alloc:)`、`has_device_addr` 都無效。模式的 kernel 大多是 explicit-shape dummy，影響有限，但 module allocatable（`gglati`、`fa1..4`、`jlist1`…）要注意。
 3. **libomptarget 記憶體池只重用相同大小**，varying-size 的配置單調成長到 OOM（本輪再驗：threshold 64 GB 在第 2 步 `OUT_OF_RESOURCES`）。
 4. **HIP runtime 對 libomptarget 指標的 `hipMemcpy*` 走 CPU 路徑**（§4.1）。

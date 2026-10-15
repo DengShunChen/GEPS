@@ -1068,7 +1068,7 @@ int geps_rocm_dsyevj_dev(double *A, int n, double *W, int *devinfo) {
 
 ##### ✅ 已排除：hipSOLVER `Dsyevj` 本身沒有問題（2026-09-11，最小 repro）
 
-寫了一支獨立的小程式（`scratchpad/eigrepro2.cc`，把 `geps_rocm_dsyevj_dev` 的呼叫序列原樣內嵌，
+寫了一支獨立的小程式（`qa/tools/eigrepro2.cc`，把 `geps_rocm_dsyevj_dev` 的呼叫序列原樣內嵌，
 避免拖進整個 compat 層的相依），拿一個 4×4 對稱矩陣測試，**幾秒鐘就跑完**：
 
 ```
@@ -2939,7 +2939,7 @@ surf pres tend rms   GPU 0.43807396825059497   CPU 0.4380739682505907
 
 #### ★★★ 第 13 層（2026-09-16，VRAM 耗盡的根因，已量測）：每個緯度一個 hipfft plan，rocFFT 每個 plan 固定吃 ~20 MB
 
-##### 量測（獨立小程式，scratchpad `fftplan*.cc`，在閒置的 GPU1 上）
+##### 量測（獨立小程式，`qa/tools/fftplan*.cc`，在閒置的 GPU1 上）
 
 | 情境 | 384 個 plan 的 VRAM | 每個 plan |
 |---|---|---|
@@ -3004,7 +3004,7 @@ exit 之前 free 63.41，exit 之後、下一次 enter 之前 63.18，再 enter 
 radsw 每 block 掉 3–5 GB、radlw 每隔一次掉 7–10 GB，到 `mp_scheme` 時 free 只剩 1 GB。
 （碎片化與隱式映射兩個假設先前已用小程式排除。）
 
-##### 獨立重現（scratchpad `pool.f90`，注意 libomptarget 只認 `ROCR_VISIBLE_DEVICES`，不認 `HIP_VISIBLE_DEVICES`——第一版量到別張卡）
+##### 獨立重現（`qa/tools/pool.f90`，注意 libomptarget 只認 `ROCR_VISIBLE_DEVICES`，不認 `HIP_VISIBLE_DEVICES`——第一版量到別張卡）
 
 8 次 `enter data map(to:a)` → kernel → `exit data map(release:a)`，每次 `a` 尺寸不同（1.54 → 1.91 GB）：
 
@@ -3175,7 +3175,7 @@ GPU `diabat_gpu` 在 rrtmg/dcyc2t3/pbl_noah/gwdps/samfdeepcnv/lightning/gwdc/sam
 （`moninedmf_gpu.f90:1078/1093`：先 t 再 q；`1434/1449`：先 u 再 v），兩次之間**只把上對角 `aug` 從 `aug_backup` 還原**——
 也就是原作者知道 cuSPARSE 的 Thomas 會改寫 `du`，但 `dl`/`d` 不動。
 
-**量測（scratchpad `gtsv_test.cc`，hipSPARSE 直接呼叫，m=72、batch=1000）**：
+**量測（`qa/tools/gtsv_test.cc`，hipSPARSE 直接呼叫，m=72、batch=1000）**：
 
 ```
 algo=0 (Thomas) changed: dl=0  d=72000/72000  du=71000/72000
@@ -3256,7 +3256,7 @@ acc2omp 的三個解析修正與 firstprivate 擴充仍然有效且正確（NNMI
   （df2=0.262、rch=140.3、rr=1.042、`dsoil=-0.5*zsoil(1)=0.05` ⇒ zsoil(1)=-0.1）；`ddz_2 = 1/(-0.5*zsoil(2)) = Inf` ⇒ 算的時候 `zsoil(2)` 是 0；
   `stc(1:4)` 全 NaN、`ssoil/sheat/t1` NaN。也就是**private 陣列 `zsoil`（`dimension(nsoil)`，nsoil 是 dummy 引數 ⇒ 執行期大小）在 kernel 執行中被別人改掉了**。
 
-**獨立重現（scratchpad `privarr/t2.f90`，amdflang -O3 -fopenmp --offload-arch=gfx942，1552×384 個 thread）**：
+**獨立重現（`qa/tools/privarr/t2.f90`，amdflang -O3 -fopenmp --offload-arch=gfx942，1552×384 個 thread）**：
 `target teams distribute parallel do private(a1..a20)`，20 個 `real(8) :: aN(nsoil)`（nsoil 為引數）每個 thread 寫自己的值、算一陣、再檢查：
 
 | 設定 | 錯的元素數（共 47.7M） |
@@ -3500,7 +3500,7 @@ DtoD 改法保留（正確且無害）。**06:15 重編 `otile=8192`（`…_2gpu
 **prof3（08:55）**：kernel 413 s/run（每步 ~40 s：`vertical_cell_ppm_intp` 60、`def_cfl_step` 60、pack/unpack 53+39、`cyclic_cell_ppm_intp_two_loops` 四個 kernel ~105、fgnl 15 s，都是 9 次呼叫的總和）；
 HIP API：`hipModuleLoadData` 465 s（只在暖機）、**`hipMemcpyAsync` 9,626 次 102 s，其中 48 次 ≥0.1 s 共 94 s**（每步一組 0.2/3.2/9.8/9.8/3.2/3.2 s），又是 26 MB/s 那條 CPU 路徑，但不是我們的 shim 發的（前面緊接 `hipThreadExchangeStreamCaptureMode`）。
 
-**LD_PRELOAD backtrace（`…_2gpu_bt`，scratchpad `interpose/libmemcpy_bt.so` 攔截 ≥16 MB 的 `hipMemcpyAsync` 印 `backtrace()`，09:00）**：
+**LD_PRELOAD backtrace（`…_2gpu_bt`，`qa/tools/interpose/memcpy_bt.cc` 編成的 `libmemcpy_bt.so` 攔截 ≥16 MB 的 `hipMemcpyAsync` 印 `backtrace()`，09:00）**：
 
 ```
 [memcpy_bt] hipMemcpyAsync 81 MB kind=4 (hipMemcpyDefault)
@@ -3540,7 +3540,7 @@ launch 數：rocFFT 小 kernel ~25k（384 個逐緯度 plan × bluestein/pre/pos
 (b) 結構性：`src/rocm/cyclic_cell_ppm_gpu.f90` 的逐緯度 kernel 改成整個 domain 一次 launch（574×6 → 6），並把 rocFFT 逐緯度 plan 換成少數幾個 batched plan（同長度的緯度合併）。
 
 **`…_2gpu_mm16` 結果（13:37）**：每步 38/27/27/27/27 s——**只快 1 s**，`sptend` 不變 ⇒ 空檔不是 `hipMalloc/hipFree`。threshold 先維持 0（VRAM 保守）。
-下一個量測：沒有 `perf`，用 rocgdb 對 rank 0 在預報階段取 40 次 host backtrace（scratchpad `sample_bt.sh` → `host_samples.txt`），看 host 在空檔裡卡在哪（libomptarget 映射／MPI 等待／host Fortran）。跑 `…_2gpu_bt2`。
+下一個量測：沒有 `perf`，用 rocgdb 對 rank 0 在預報階段取 40 次 host backtrace（`qa/tools/sample_bt.sh` → scratchpad `host_samples.txt`），看 host 在空檔裡卡在哪（libomptarget 映射／MPI 等待／host Fortran）。跑 `…_2gpu_bt2`。
 
 **host backtrace 直方圖（`…_2gpu_bt2`，rank 0，預報第 2–4 步，rocgdb 取樣 30 次，scratchpad `host_samples2.txt`；第一版腳本 `pgrep -f` 抓到 mpiexec 而不是 tcogfs.x，改用 PID）**：
 
@@ -3687,7 +3687,7 @@ kernel 本身已經不是問題；接下來是**純粹減少 launch 數與每次
 (b) `geps_acc_wait_all()` 從 device 級 `hipDeviceSynchronize` 改成 `hipStreamSynchronize`（null stream + shim 建過的每條 stream，`g_all_streams`），dgemm 後的 sync 也改成只等 handle 的 stream——**結果（`…_2gpu_ssync`，binary 23:44，00:01）：無效**，每步 11.79/11.83/11.76/11.81 s，六步 `sptend` 逐位元相同。改法保留（無害）。
 ⇒ 和 prof6 的 per-second 分解一致：每步 12 s 裡，**譜轉換段（~6 s）每秒 1 萬次 launch、GPU 忙 0.25 s/s**；**NDSL 水平＋垂直平流段（~4 s）每秒只有 60–700 次 launch、HIP API 幾乎沒在動、GPU 忙 <0.1 s/s**——後者不是 launch 延遲，是 host 在做別的事（假設：每次呼叫 `cyclic_cell_ppm_intp` 的 `enter/exit data` 配置 ~2.5 GB 工作陣列，threshold 0 ⇒ 每次都走 HSA alloc/free；massadvy/intpx/vertical 的 wrapper 也各自每次呼叫 map 一批）。00:02 用 `rocprofv3 --hsa-core-trace --hsa-amd-trace --memory-allocation-trace` 直接量（`…_2gpu_prof7`，scratchpad `prof7/`），同時把 PPM 的工作陣列改成 module 級持久配置（`src/rocm/cyclic_cell_ppm_gpu.f90`：`module cyclic_cell_ppm_work`，同形狀只配一次）。
 
-**prof7 結果（`…_2gpu_prof7`，00:17；rank 0 主執行緒、第 4 步的 12 s 視窗；`rocprofv3 --hsa-core-trace --hsa-amd-trace --memory-allocation-trace`，結果在 scratchpad `prof7/r_3582039_results.db`（sqlite，分析腳本 `prof7/an2.py`、`an3.py`）；追蹤下每步仍 11.8 s，`sptend` 六步不變）**：
+**prof7 結果（`…_2gpu_prof7`，00:17；rank 0 主執行緒、第 4 步的 12 s 視窗；`rocprofv3 --hsa-core-trace --hsa-amd-trace --memory-allocation-trace`，結果在 scratchpad `prof7/r_3582039_results.db`（sqlite，分析腳本 `qa/tools/prof7/an2.py`、`an3.py`）；追蹤下每步仍 11.8 s，`sptend` 六步不變）**：
 
 | 主執行緒在 HSA API 裡的時間／步 | 次數 | 秒 | 說明 |
 |---|---|---|---|
@@ -3702,7 +3702,7 @@ kernel 本身已經不是問題；接下來是**純粹減少 launch 數與每次
 00:20 實驗：`LIBOMPTARGET_MEMORY_MANAGER_THRESHOLD=68719476736`（64 GB，全部走池子；binary 不變）跑 `…_2gpu_mmpool`，同時每 10 s 記 `rocm-smi` VRAM（scratchpad `vram_mmpool.log`）看池子是否單調成長。
 **`…_2gpu_mmpool` 結果（00:26）：❌ 如第 6/7 層所記，libomptarget 的池子單調成長**——VRAM（`vram_mmpool2.log`）73 → 76 → 82 → 95 → 197 GB（滿），第 2 步 `HSA_STATUS_ERROR_OUT_OF_RESOURCES`（exit 134）；第 1 步 `sptend` 仍 0.43807396825059497。池子本身不能用。
 
-**launch/alloc 微基準（scratchpad `launchbench/lb.f90`，單卡、job 的環境變數；`run.sh`）**：trivial kernel 39 µs/launch（launch＋同步）；`target update to` 8 bytes 54 µs；`enter/exit data` 37 KB 28 µs、**28 MB 242 µs、850 MB 285 µs**（模型裡因碎片化更貴）。`LIBOMPTARGET_STACK_SIZE`、`HSA_XNACK` 對這些數字沒影響。另一個附帶量測：collapse(2) 外層＋每 thread 串行走 `i` 的 kernel（翻譯碼常見型態）讀 8 個 3D 陣列要 785 µs，是 coalesced 頻寬的 ~10 倍——GPU 忙的 2.45 s 裡有多少是這種 pattern，之後再查。
+**launch/alloc 微基準（`qa/tools/launchbench/lb.f90`，單卡、job 的環境變數；`run.sh`）**：trivial kernel 39 µs/launch（launch＋同步）；`target update to` 8 bytes 54 µs；`enter/exit data` 37 KB 28 µs、**28 MB 242 µs、850 MB 285 µs**（模型裡因碎片化更貴）。`LIBOMPTARGET_STACK_SIZE`、`HSA_XNACK` 對這些數字沒影響。另一個附帶量測：collapse(2) 外層＋每 thread 串行走 `i` 的 kernel（翻譯碼常見型態）讀 8 個 3D 陣列要 785 µs，是 coalesced 頻寬的 ~10 倍——GPU 忙的 2.45 s 裡有多少是這種 pattern，之後再查。
 
 **修法（00:40）：自製 HSA 配置快取 `src/rocm/geps_hsa_pool.cc` → `build_rocm_hip/lib/libgeps_hsa_pool.so`（`src/rocm/build_hsa_pool.sh` 編；刻意不進 CMake，避免 reconfigure）**，由 `job/regression.ksh` `LD_PRELOAD`（`GEPS_HSA_POOL=0` 關）。攔 `hsa_amd_memory_pool_allocate/free`：≥256 KB 的配置依 (pool, flags, 大小 class) 快取，大小進位到 3 個尾數位（最多 12.5% 浪費，讓大小略有不同的輻射 block 也能重用），總量上限 48 GB/rank（`GEPS_HSA_POOL_CAP_GB`），超過就真釋放最久沒用的；配置失敗先清空快取重試。threshold 仍是 0（libomptarget 每次都來叫我們）。微基準：28 MB alloc+free 242 → 28 µs、850 MB 285 → 34 µs。跑 `…_2gpu_hsapool`（binary 不變，只加 preload；`GEPS_HSA_POOL_STATS=1` 在結束時印命中數）。
 **`…_2gpu_hsapool` 結果（00:41）：每步 6.96 / 4.98 / 4.98 / 4.91 / 4.93 s（原 11.8），六步 `sptend` 逐位元相同**（`.43807396825059497 .4462741042925732 .4275272147313331 .403981044588656 .3968162229541496 .39255042414676805`），`HAS ENDED`。快取統計（整個 run、每 rank）：alloc 60.4k（hit 23.6k、miss 5.2k、<256 KB 直通 31.6k）、free 39.8k（進快取 25.7k、淘汰 1.8k、flush 0）、結束時快取 45.8 GB。VRAM（`vram_hsapool.log`）：NNMI 期 69–77 GB，預報期 95 → 135 → 155 → 158 GB 後持平（live ~110 GB ＋ 快取 ≤48 GB；206 GB 卡）。NDSL 計時：massadvy 1.45 → 0.21 s、intpx 0.90 → 0.16 s（每次 monoadvh 呼叫）。
@@ -3710,7 +3710,7 @@ kernel 本身已經不是問題；接下來是**純粹減少 launch 數與每次
 ⚠️ 未驗證：長預報（tau ≫ 1）下的 VRAM 是否持平（快取有上限，live set 由模式決定；建議跑一次 tau=3 看 `rocm-smi`）；快取回傳的記憶體不清零（裸 HSA 實務上也不保證），六步逐位元相同是目前的證據。
 下一步：在 4.9 s 的狀態重新做 kernel/HIP API profile（prof8），看剩下的 ~2.4 s 非 GPU 時間在哪（launch 延遲 vs rocFFT/hipBLAS host 端 vs MPI）。
 
-**prof8（`…_2gpu_prof8`，00:58；kernel＋HSA＋HIP trace，追蹤下每步 7.6 s；scratchpad `prof8/an8.py`）**，rank 0 主執行緒、一步：
+**prof8（`…_2gpu_prof8`，00:58；kernel＋HSA＋HIP trace，追蹤下每步 7.6 s；`qa/tools/prof8/an8.py`）**，rank 0 主執行緒、一步：
 - kernel 39.7k 次、GPU 忙 2.59 s：RCCL 56 次 0.43 s（兩卡之間是 **PCIe**，`rocm-smi --showtopo`）、`massadvx_jlist l79` 2×104 ms、`hdiffu l52` 2×83 ms、`siimpl 轉置` 12×11 ms、PPM `l102` 75×1.5 ms、微物理 saticel 各 2×15–38 ms、gwdc 34、diabat 30、深/淺對流 25/24 ms……
 - 主執行緒：等 signal 3.64 s；**`hipStreamSynchronize` 26 萬次 0.78 s**——(b) 的 `geps_hip_wait_all` 對 shim 建過的每條 stream 都等（模式用了 ~350 個 async id ⇒ 350 條 stream）；`hipModuleLaunchKernel`（rocFFT）31k 次 0.72 s；HSA alloc/free 剩 0.09 s（快取生效）。
 - 0.5 s 分箱的時間軸：**譜轉換（FFT＋dgemm）段佔 ~5.5 s（GPU 忙 30%）**、NDSL 段 1.5 s、物理 0.5 s。FFT 段每 0.5 s 有 2–5k 次 rocFFT kernel launch，是純 host launch 綁定。
@@ -3726,7 +3726,7 @@ kernel 本身已經不是問題；接下來是**純粹減少 launch 數與每次
 **結果（01:55–02:05）**：`…_2gpu_fftthr` 因為預設值的 bug 實際跑 1 thread（4.58/4.68/4.63/4.64 s，= 基準）；`…_2gpu_fftthr4`（`GEPS_FFT_THREADS=4`）**4.44 / 4.54 / 4.53 / 4.58 s——只快 ~0.1 s**，六步 `sptend` 逐位元相同。FFT 迴圈本身不是那 5.5 s 的主體（或 HIP runtime 的 launch 路徑有全域鎖，多 thread 發也序列化）。預設改成 4（無害），下一步用 TIMER build 把譜轉換段按常式拆開再看（02:05 編譯：含 hdiffu/rayleifr 的 `reduction(max:)` 內層迴圈平行化——acc2omp 的 vectorise pass 原本跳過所有 reduction，max/min 是精確運算，順序無關，逐位元安全；hdiffu `l52` 是 72 個 thread 各掃 20 萬元素 = 83 ms×2）。
 
 **❌ `…_2gpu_wmax` 結果（02:25）：`sptend` 變了**——`.4380482957086226 .44625022265080605 …`（第 1 步就差 3e-5，不是捨入）。每步 4.28–4.35 s 但數值錯，不算數。
-**根因（02:35，standalone 證實，scratchpad `redmax/t.f90`、`s.f90`）：amdflang roc-7.2.2 的「`target teams distribute` 之下巢狀 `parallel do reduction(...)`」結果永遠是 0**——max 與 `+` 都一樣、`-O0` 一樣、有無 collapse 一樣、`teams`＋`distribute` 拆開也一樣；同一個 reduction 放在扁平的 `target teams distribute parallel do reduction` 上是對的。所以 hdiffu 的 `wmax` 全成 0 ⇒ 水平擴散係數變了。這是 **compiler bug**（要進 §9 上游回報清單），acc2omp 的 vectorise pass 對 reduction 一律不升級（`GEPS_ACC2OMP_VEC_REDMAX=1` 才開，預設關）。**教訓：任何要在 team 內做 reduction 的 kernel，在這個編譯器上都得手寫成扁平 kernel 或兩段式（先每 thread 寫部分結果到陣列，再一個 kernel 合併）。** 02:40 重編（gate 關）驗證回到逐位元相同。
+**根因（02:35，standalone 證實，`qa/tools/redmax/t.f90`、`s.f90`）：amdflang roc-7.2.2 的「`target teams distribute` 之下巢狀 `parallel do reduction(...)`」結果永遠是 0**——max 與 `+` 都一樣、`-O0` 一樣、有無 collapse 一樣、`teams`＋`distribute` 拆開也一樣；同一個 reduction 放在扁平的 `target teams distribute parallel do reduction` 上是對的。所以 hdiffu 的 `wmax` 全成 0 ⇒ 水平擴散係數變了。這是 **compiler bug**（要進 §9 上游回報清單），acc2omp 的 vectorise pass 對 reduction 一律不升級（`GEPS_ACC2OMP_VEC_REDMAX=1` 才開，預設關）。**教訓：任何要在 team 內做 reduction 的 kernel，在這個編譯器上都得手寫成扁平 kernel 或兩段式（先每 thread 寫部分結果到陣列，再一個 kernel 合併）。** 02:40 重編（gate 關）驗證回到逐位元相同。
 
 TIMER（`…_2gpu_wmax`，intgrt 內各常式，rank 0 最後一步；數值雖錯、時間分佈仍有參考價值）：`read_mtnvar` **0.66**（！每步讀地形檔？）、`ndslfv_monoadvh_gpu_refactor` 0.63、`ndslfv_monoadvv_gpu` 0.42、`monoadvh_fgnl` 0.35、`tranrs` 0.22、`transr` 0.19、`siimpl` 0.19、`monoadvv_fgnl` 0.19、`trandv` 0.18、`tranuv` 0.16、`trngra3` 0.11、`transr1` 0.08、其餘 <0.05；合計 ~3.4 s（intgrt 內）＋物理（diabat，不在這張表）。
 （`read_mtnvar` 只在第一步出現一次——一次性初始化，不是每步成本。）
@@ -3735,9 +3735,9 @@ TIMER（`…_2gpu_wmax`，intgrt 內各常式，rank 0 最後一步；數值雖�
 
 03:00 編譯：hdiffu/rayleifr 的 wind-max 掃描改成兩段精確 kernel（acc2omp fixup：每 (k,jj) 部分 max → 每 k 合併；max 精確，逐位元安全；不用巢狀 reduction）。
 **`…_2gpu_wmax2` 結果（03:45）：每步 6.39 / 4.29 / 4.36 / 4.33 / 4.36 s（原 4.5），六步 `sptend` 逐位元相同。** 修好的 diabat 計時：**`diabat_gpu` 每步 1.20 s**（其中 `mp_scheme_gpu` 微物理 0.48、深對流 0.11、adjptqintp 0.08、淺對流 0.07、gwdc 0.07，其餘 ~0.35 是 diabat 內嵌 kernel/host 碼）。每步 4.33 s 的組成（rank 0）：NDSL 平流 1.54、物理 1.20、譜轉換 ~1.05、siimpl 0.20、其他 ~0.3。
-（附帶：自製 SIGUSR2 取樣 profiler（scratchpad `hostsamp/`）會讓模式卡在 iteration 1——signal 打斷 HSA 等待；mpiexec 也會把 signal 轉發給 rank。作廢，host 取樣仍用 rocgdb（`sample_bt2.sh`）。）
+（附帶：自製 SIGUSR2 取樣 profiler（scratchpad `hostsamp/`）會讓模式卡在 iteration 1——signal 打斷 HSA 等待；mpiexec 也會把 signal 轉發給 rank。作廢，host 取樣仍用 rocgdb（`qa/tools/sample_bt2.sh`）。）
 
-**host backtrace 直方圖 #3（`…_2gpu_bt4`，4.33 s/步的 build，rank 0，30 個樣本，scratchpad `host_samples4.txt`、`sample_bt3.sh`）**：21/30 在 `__tgt_target_kernel`（等 OpenMP kernel 跑完：微物理 `saticel_s` 4、PPM 3、深/淺對流各 2、輻射 2、其餘各 1）、dgemm 相關 4（`geps_blas_dgemm` 2、**`hipblasSetStream` 2**——Legendre 迴圈每個 m 都換 stream，rocBLAS 換 stream 不便宜）、rocFFT exec 2、libomptarget `deleteData` 1。⇒ host 端自己的計算幾乎不佔時間，**剩下的是 kernel 執行本身（物理的長 column kernel）＋每次 launch 的等待**。
+**host backtrace 直方圖 #3（`…_2gpu_bt4`，4.33 s/步的 build，rank 0，30 個樣本，scratchpad `host_samples4.txt`、`qa/tools/sample_bt3.sh`）**：21/30 在 `__tgt_target_kernel`（等 OpenMP kernel 跑完：微物理 `saticel_s` 4、PPM 3、深/淺對流各 2、輻射 2、其餘各 1）、dgemm 相關 4（`geps_blas_dgemm` 2、**`hipblasSetStream` 2**——Legendre 迴圈每個 m 都換 stream，rocBLAS 換 stream 不便宜）、rocFFT exec 2、libomptarget `deleteData` 1。⇒ host 端自己的計算幾乎不佔時間，**剩下的是 kernel 執行本身（物理的長 column kernel）＋每次 launch 的等待**。
 修法（04:00，acc2omp `_defer_graph_loop_syncs`）：六個 `*_gpu_cuda_graph` 的 Legendre dgemm 迴圈（tranrs/transr/trandv/tranuv/trngra3/transr1，每步 ~5k 個 dgemm）原本每個 m：`cublasSetStream(lt_cg_stream(m))`＋`cudaStreamWaitEvent`＋`geps_acc_wait`＋dgemm（shim 內再 sync）＋`cudaStreamSynchronize`；改成迴圈前 `SetStream(handle, stream)` 一次、`geps_blas_defer_sync(1)` 關掉 shim 的逐 dgemm sync，迴圈內只剩 dgemm（同一條 stream 依序排隊），迴圈後 `defer_sync(0)`＋`geps_acc_wait_all()`。同樣的 kernel、同樣的順序 ⇒ 逐位元不變。跑 `…_2gpu_dgemmq`。
 **`…_2gpu_dgemmq` 結果（04:20）：每步 6.13 / 4.04 / 4.12 / 4.03 / 4.08 s（原 4.33），六步 `sptend` 逐位元相同。** 譜轉換：tranrs 0.24→0.14、transr 0.19→0.13、trandv 0.19→0.11、tranuv 0.15→0.10、trngra3 0.11→0.08（合計 1.05 → 0.75 s）。
 
@@ -3782,7 +3782,7 @@ KFD queue 數（`/sys/class/kfd/kfd/proc/<host pid>/queues`）：每 rank 在自
 `GEPS_LIB/src/openmpi/compile.sh` 用 `FCFLAGS="-O1 -fPIC -fdefault-real-8"` 設定 OpenMPI，
 **沒有 `-fdefault-double-8`**，所以 configure 時 amdflang 的 `DOUBLE PRECISION` 被提升成 16 bytes：
 `opal_config.h` 裡 `OMPI_SIZEOF_FORTRAN_DOUBLE_PRECISION 16`。模式本身用
-`-fdefault-real-8 -fdefault-double-8`，`double precision` 是 8 bytes。實測（scratchpad `mpisize.f90`）：
+`-fdefault-real-8 -fdefault-double-8`，`double precision` 是 8 bytes。實測（`qa/tools/mpisize.f90`）：
 
 ```
 MPI_TYPE_SIZE: DOUBLE_PRECISION=16  REAL8=8  REAL=8  REAL4=4  INTEGER=4
@@ -4118,7 +4118,7 @@ unset GH_PAT        # 用完到 GitHub revoke
    `4GB` 與預設相同。
 
 7. ~~查 `NaN` 的來源~~ ✅ **已查明（2026-09-11）= 第 7 層**：GPU 的 NNMI 是完全的 no-op（`bal` 精確為 0、`pt` 逐位元不變），因為 graph capture 區塊內的 OpenMP kernel 不在被 capture 的 stream 上——錄製期搶先執行讀到空 `wrk`，又沒被錄進 graph。**與第 6 層同源。** 詳見 §6「第 7 層」。
-8f. **速度（2026-09-18）**：探針已拆（無影響）；每步 740 → 11.8 s（見 §6 末的逐項）。下一步依序：(i) 1-GPU（NPEY=1）路徑跑通 tau=1；(ii) 水平平流 `cyclic_cell_ppm` 6 個 kernel 合併／tracer 維度 collapse；(iii) 譜轉換逐 mf 小 kernel 合併；(iv) `geps_acc_wait_all`（device 級）改 stream 級；(v) 上游回報清單。量測工具都在：`GEPS_ACC2OMP_TIMERS=1`（build 時）印每步各常式秒數、`GEPS_PROF_WRAP` 接 rocprofv3、scratchpad `sample_bt2.sh` 取 host backtrace。
+8f. **速度（2026-09-18）**：探針已拆（無影響）；每步 740 → 11.8 s（見 §6 末的逐項）。下一步依序：(i) 1-GPU（NPEY=1）路徑跑通 tau=1；(ii) 水平平流 `cyclic_cell_ppm` 6 個 kernel 合併／tracer 維度 collapse；(iii) 譜轉換逐 mf 小 kernel 合併；(iv) `geps_acc_wait_all`（device 級）改 stream 級；(v) 上游回報清單。量測工具都在：`GEPS_ACC2OMP_TIMERS=1`（build 時）印每步各常式秒數、`GEPS_PROF_WRAP` 接 rocprofv3、`qa/tools/sample_bt2.sh` 取 host backtrace。
 8e. **✅ 2026-09-17 18:55：GPU 六步與 CPU 對到 1e-11**（深對流 `val1/val2` 修好）。優先序不變：拆探針＋量速度 → 1-GPU → 上游回報（新增：`samfdeepcnv_kh_gpu` 34 vs 29 個引數；`val1/val2`、`snoexp` 等 private-未初始化清單）。
 8d. **✅ 2026-09-17 05:00：GPU 已能完整跑完 tau=1**（第 17 層 raw RCCL 等待、第 18 層 `LIBOMPTARGET_STACK_SIZE` + `adjptqintp` guard）。**現在的優先序**：
    (i) **拆探針做乾淨對照**：acc2omp 裡的 DBGMAP/DBGFREE/DBGTRM/DBGHD/DBGMP/DBGSFLX/intgrt_ckpts/diabat_ckpts/pbl_ckpts 全部關掉（建議加一個 `GEPS_ACC2OMP_PROBES=0` 開關，而不是刪碼），
@@ -4137,7 +4137,7 @@ unset GH_PAT        # 用完到 GitHub revoke
       - **2026-09-30 afar 長預報變慢的原因（已確認）**：afar 樹加上與 7.2.2 相同的 phase timer（`GEPS_ACC2OMP_TIMERS=intgrt_gpu,diabat_gpu`），「8 小時」預報（**實際只跑到 6 小時、36 步**：當時 gfsctl 只補 6 的倍數，2026-10-01 已修）。變慢不是漸進的，而是**某一步起永久 +0.8 s**（cap 96：第 34 步、tau 5.667，兩次重現同一步）；多出來的時間幾乎全在 **`tranrs1_gpu`（0.04→0.72 s）與 `pbl_noah_gpu`（0.09→0.22 s，輻射步 1.0–2.6 s；7.2.2 全程 0.05）**——正是 afar 把 runtime 大小 private 陣列放 **device heap**（PoC 06 修法）的那幾支。快取第一次 evict 早在這之前，不是觸發點。對照：`LIBOMPTARGET_HEAP_SIZE=4G`（cap 88）→ tranrs1 好了、pbl_noah 在同一步變慢；`16G`（cap 80）→ pbl_noah 提早到第 ~20 步；cap 64（預設 heap）→ 6 小時內沒有永久跳升，但輻射步 6–7.7 s。⇒ **device heap malloc 在 VRAM 吃緊時變慢**（heap／快取越大、剩餘 VRAM 越少，越早發生）。**驗證**：只在 afar 樹的產生檔 `nvidia_sflx_gpu.f90:265` 把 12 個 `dimension(nsoil)` 改成 `dimension(nsold)`（`nsold=4` 是 parameter、nsoil ≤ 4）→ sflx 不再走 heap：pbl_noah 一般步 0.05、輻射步 0.15–0.30，**一般步全程 2.18–2.24 s（比 7.2.2 的 2.27 還快）、沒有跳升**，輻射步 3.9–4.8 s，六值逐位元不變（`…20260930_2gpu_afar_8h_sflxfix`）。剩下的是 tranrs1（`wss(jtrun,2)`、`fj_polyw(my/2,jtrun)` 等，輻射步仍 ~1 s）。
       - **2026-10-01 已正式改進 src**：`src/nvidia/sflx_gpu.f90` 12 個 work 陣列 `dimension(nsoil)` → `dimension(nsold)`（nsold=4 parameter，同一常式的 ciin…part 本來就這樣宣告；沒有整陣列運算、callee 都是 explicit-shape）。兩棵樹都重編（7.2.2 舊 binary 備份在 scratchpad `tcogfs_r722_20260919.x`）。**tranrs1 不用改**：heap 陣列其實在沒被呼叫的 `tranrs1_gpu_old`；真正的 `tranrs1_gpu` 沒有 heap 陣列，sflx 改完後它自己就回到 0.04 s（之前的變慢是 sflx heap 壓力的副作用）。附帶發現：acc2omp 的 `GEPS_ACC2OMP_TIMERS` 以 `.replace("1","intgrt_gpu",1)` 展開，名字裡有 `1` 的會被弄壞（用 `tranrs` 代替 `tranrs1_gpu`）；非 intgrt/diabat 檔的 timer 不會印出。
       - **24 h 結果（`job/…20261001_2gpu_*_24h*`）**：7.2.2+sflx 中位 2.28 s、總 416 s、VRAM 176.9 GiB、**24 h sptend 與舊 binary 逐位元相同**。afar+sflx cap 96：中位 2.20、總 431 s、VRAM 191.5（峰值是快取在第 1–2 步衝到 cap 97.9 GB 再 evict 到 72，之後穩定 ~150）。**afar+sflx cap 48：中位 2.35、總 432 s、VRAM 167.2 GiB**（比 7.2.2 還低；cap 48 的交替變慢原來也是 heap 問題）。afar 總時間仍多 ~4%：輻射步較重（~3.9 vs 3.6 s）＋每次 run 一次的 rrtmg 13.7 s（第 2 次輻射呼叫；只在 sflx 不走 heap 後出現，原因未查）。afar 各 24 h run 的 sptend 彼此逐位元相同。
-      - **2026-10-01 rrtmg 13.7 s 尖峰（已確認）**：只在快取 cap 96 出現（cap 96 三次全有、cap 48 從未出現；`LIBOMPTARGET_STACK_SIZE=1024` 無效 → 不是 scratch）。rocgdb 取樣顯示時間花在 radsw/radlw kernel 的 stream 等待（注意：rocgdb attach 本身會拖慢 GPU，取樣那次尖峰變 30 s）。**用 KFD sysfs 計數器證實**（`/sys/class/kfd/kfd/proc/<host pid>/stats_<gpu>/evicted_ms`、`counters_<gpu>/{faults,page_in,page_out}`；目錄名是**主機 PID**，容器內看不到對應，要掃整個目錄；監看腳本 scratchpad `kfdmon.sh`）：cap 96 在尖峰那一步 `evicted_ms` +19.6 s、`page_out` 363,320 頁（= 開機時 XNACK page-in 進 VRAM 的全部頁面），cap 48 兩者皆 0。⇒ **VRAM 滿（191.5/192 GiB）時 amdgpu/KFD 把 XNACK 遷入的頁面趕回系統記憶體，並暫停本程序的 GPU queue 近 20 s**。結論：afar 用 cap 48（VRAM 峰值 167 GiB），長預報 VRAM 不要逼近上限。
+      - **2026-10-01 rrtmg 13.7 s 尖峰（已確認）**：只在快取 cap 96 出現（cap 96 三次全有、cap 48 從未出現；`LIBOMPTARGET_STACK_SIZE=1024` 無效 → 不是 scratch）。rocgdb 取樣顯示時間花在 radsw/radlw kernel 的 stream 等待（注意：rocgdb attach 本身會拖慢 GPU，取樣那次尖峰變 30 s）。**用 KFD sysfs 計數器證實**（`/sys/class/kfd/kfd/proc/<host pid>/stats_<gpu>/evicted_ms`、`counters_<gpu>/{faults,page_in,page_out}`；目錄名是**主機 PID**，容器內看不到對應，要掃整個目錄；監看腳本 `qa/tools/kfdmon.sh`）：cap 96 在尖峰那一步 `evicted_ms` +19.6 s、`page_out` 363,320 頁（= 開機時 XNACK page-in 進 VRAM 的全部頁面），cap 48 兩者皆 0。⇒ **VRAM 滿（191.5/192 GiB）時 amdgpu/KFD 把 XNACK 遷入的頁面趕回系統記憶體，並暫停本程序的 GPU queue 近 20 s**。結論：afar 用 cap 48（VRAM 峰值 167 GiB），長預報 VRAM 不要逼近上限。
       - **另一發現**：解析 afar 裝置映像（s_getpc/s_add 呼叫目標）有 **43 個 kernel 會呼叫 `malloc`**、編譯時沒有任何警告——幾乎都是 `_vectorise_inner_loops` 改成 `teams distribute`＋內層 `parallel do` 的譜轉換 kernel（tranrs/trandv/transr/rstrandz/trngra/hdiffu/filter_top/tranrs1_gpu l263·l289…），推測是 OpenMP device runtime 把與內層 parallel 共用的變數 globalize，共享記憶體堆疊不夠時改用 malloc。這解釋了 tranrs1 在 VRAM 吃緊時也變慢；rrtmg 的 kernel 不在其中。另：當時的「8 小時」跑法實際只到 6 小時（gfsctl 補時數的 bug，已修：結尾一定補 `GEPS_TAUE`）。
       - **待辦（更新）**：~~afar 建議設定改為 `GEPS_HSA_POOL_CAP_GB=48`~~ ✅ 2026-10-01 已成為 regression.ksh 在 hsa_front（afar）分支的預設（可用環境變數覆寫；7.2.2 走 LD_PRELOAD，函式庫預設本來就是 48）
       - **2026-10-01 afar 預設環境（regression.ksh 的 hsa_front 分支，皆可用環境變數覆寫）**：`GEPS_HSA_POOL_CAP_GB=48`、`ROCFFT_RTC_CACHE_PATH=$MDIR/qa/afar_app/rocfft_cache/afar_gfx942.db`（目錄不存在會自動建；第一次約 4 分鐘填滿 ~38 MB，之後正常啟動）；連同既有的 `HSA_ENABLE_SDMA=0`。**afar 跑法因此簡化為**：`ROCM_PATH=/opt/afar/current GEPS_LIB_ROOT=…/GEPS_LIB_afar GEPS_ROCM_BUILD_DIR=build_afar_hip GEPS_FFT_PLAN_SETS=8 ./TCo383L72_IC_sample_rocm_2gpu`（長預報再加 `GEPS_TAUE=<小時>`）。驗證（只靠預設、`…20261001_2gpu_afar_defaults`）：三個變數都有 export、第 3–6 步 2.29–2.32 s、步 6 sptend .3925504241467753 與其他 afar run 相同、`HAS ENDED`。；剩下的差距是輻射步與一次性 rrtmg 尖峰；是否切換 afar 由使用者決定；寄出 AMD 回覆（草稿已是最新）。
