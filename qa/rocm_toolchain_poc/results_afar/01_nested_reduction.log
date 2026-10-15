@@ -1,0 +1,60 @@
+++ dirname ./01_nested_reduction/run.sh
++ cd ./01_nested_reduction
++ source ../common.sh
+++ ROCM=/opt/afar/current
+++ FC=/opt/afar/current/bin/amdflang
+++ HIPCC=/opt/afar/current/bin/hipcc
+++ ARCH=gfx942
+++ FFLAGS='-O2 -fopenmp --offload-arch=gfx942'
+++ export HIP_VISIBLE_DEVICES=0
+++ HIP_VISIBLE_DEVICES=0
+++ export ROCR_VISIBLE_DEVICES=0
+++ ROCR_VISIBLE_DEVICES=0
+++ export OMP_TARGET_OFFLOAD=MANDATORY
+++ OMP_TARGET_OFFLOAD=MANDATORY
+++ export PATH=/opt/afar/current/bin:/opt/afar/current/lib/llvm/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+++ PATH=/opt/afar/current/bin:/opt/afar/current/lib/llvm/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+++ export LD_LIBRARY_PATH=/opt/afar/current/lib:/opt/afar/current/lib/llvm/lib
+++ LD_LIBRARY_PATH=/opt/afar/current/lib:/opt/afar/current/lib/llvm/lib
++ for opt in -O2 -O0
++ banner 'amdflang -O2'
++ echo
+
++ echo '################ amdflang -O2 ################'
+################ amdflang -O2 ################
++ /opt/afar/current/bin/amdflang -O2 -fopenmp --offload-arch=gfx942 nested_reduction.f90 -o nested_reduction-O2.x
++ ./nested_reduction-O2.x
+(a) nested  parallel do reduction(+)   OK    got(1)=  1.001000E+03
+(b) nested  parallel do reduction(max) OK    got(1)=  1.001000E+00
+(c) teams/distribute split, nested (+) OK    got(1)=  1.001000E+03
+(d) flat teams distribute parallel do  OK    got(1)=  1.001000E+03
+(e) inner loop serial, no reduction    OK    got(1)=  1.001000E+03
+ RESULT: PASS
++ for opt in -O2 -O0
++ banner 'amdflang -O0'
++ echo
+
++ echo '################ amdflang -O0 ################'
+################ amdflang -O0 ################
++ /opt/afar/current/bin/amdflang -O0 -fopenmp --offload-arch=gfx942 nested_reduction.f90 -o nested_reduction-O0.x
++ ./nested_reduction-O0.x
+(a) nested  parallel do reduction(+)   OK    got(1)=  1.001000E+03
+(b) nested  parallel do reduction(max) OK    got(1)=  1.001000E+00
+(c) teams/distribute split, nested (+) OK    got(1)=  1.001000E+03
+(d) flat teams distribute parallel do  OK    got(1)=  1.001000E+03
+(e) inner loop serial, no reduction    OK    got(1)=  1.001000E+03
+ RESULT: PASS
++ banner 'host OpenMP only (no offload) - reference behaviour'
++ echo
+
++ echo '################ host OpenMP only (no offload) - reference behaviour ################'
+################ host OpenMP only (no offload) - reference behaviour ################
++ /opt/afar/current/bin/amdflang -O2 -fopenmp nested_reduction.f90 -o nested_reduction_host.x
++ OMP_TARGET_OFFLOAD=DISABLED
++ ./nested_reduction_host.x
+(a) nested  parallel do reduction(+)   OK    got(1)=  1.001000E+03
+(b) nested  parallel do reduction(max) OK    got(1)=  1.001000E+00
+(c) teams/distribute split, nested (+) OK    got(1)=  1.001000E+03
+(d) flat teams distribute parallel do  OK    got(1)=  1.001000E+03
+(e) inner loop serial, no reduction    OK    got(1)=  1.001000E+03
+ RESULT: PASS

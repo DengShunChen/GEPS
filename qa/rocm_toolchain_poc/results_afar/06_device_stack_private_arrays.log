@@ -1,0 +1,25 @@
+
+################ build ################
+warning: loc("privarr.F90":24:15): OpenMP private dynamic array 'a1' on a GPU target may exceed stack memory; using device heap allocation instead, which can severely degrade performance
+warning: loc("privarr.F90":24:26): OpenMP private dynamic array 'a2' on a GPU target may exceed stack memory; using device heap allocation instead, which can severely degrade performance
+warning: loc("privarr.F90":24:37): OpenMP private dynamic array 'a3' on a GPU target may exceed stack memory; using device heap allocation instead, which can severely degrade performance
+warning: loc("privarr.F90":24:48): OpenMP private dynamic array 'a4' on a GPU target may exceed stack memory; using device heap allocation instead, which can severely degrade performance
+warning: loc("privarr.F90":24:59): OpenMP private dynamic array 'a5' on a GPU target may exceed stack memory; using device heap allocation instead, which can severely degrade performance
+warning: loc("privarr.F90":24:70): OpenMP private dynamic array 'a6' on a GPU target may exceed stack memory; using device heap allocation instead, which can severely degrade performance
+warning: loc("privarr.F90":24:81): OpenMP private dynamic array 'a7' on a GPU target may exceed stack memory; using device heap allocation instead, which can severely degrade performance
+warning: loc("privarr.F90":24:92): OpenMP private dynamic array 'a8' on a GPU target may exceed stack memory; using device heap allocation instead, which can severely degrade performance
+
+################ automatic arrays, default stack (run 3x: count varies) ################
+automatic a1..a8(nsoil)  LIBOMPTARGET_STACK_SIZE=(default): nbad = 0 of 19070976  out(497,210) =  4.871859551499317E+05
+automatic a1..a8(nsoil)  LIBOMPTARGET_STACK_SIZE=(default): nbad = 0 of 19070976  out(497,210) =  4.871859551499317E+05
+automatic a1..a8(nsoil)  LIBOMPTARGET_STACK_SIZE=(default): nbad = 0 of 19070976  out(497,210) =  4.871859551499317E+05
+
+################ automatic arrays, LIBOMPTARGET_STACK_SIZE sweep ################
+automatic a1..a8(nsoil)  LIBOMPTARGET_STACK_SIZE=1024: nbad = 0 of 19070976  out(497,210) =  4.871859551499317E+05
+automatic a1..a8(nsoil)  LIBOMPTARGET_STACK_SIZE=4096: nbad = 0 of 19070976  out(497,210) =  4.871859551499317E+05
+automatic a1..a8(nsoil)  LIBOMPTARGET_STACK_SIZE=16384: nbad = 0 of 19070976  out(497,210) =  4.871859551499317E+05
+automatic a1..a8(nsoil)  LIBOMPTARGET_STACK_SIZE=65536: nbad = 0 of 19070976  out(497,210) =  4.871859551499317E+05
+
+################ fixed-size arrays, default stack (control) ################
+fixed-size a1..a8(4)     LIBOMPTARGET_STACK_SIZE=(default): nbad = 0 of 19070976  out(497,210) =  4.871859551499317E+05
+RESULT: PASS

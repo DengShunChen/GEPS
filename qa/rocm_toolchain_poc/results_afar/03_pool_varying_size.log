@@ -1,0 +1,76 @@
+
+################ build ################
+freegb.cc:3:55: warning: ignoring return value of type 'hipError_t' declared with 'nodiscard' attribute [-Wunused-value]
+    3 | extern "C" double freegb(void) { size_t f = 0, t = 0; hipMemGetInfo(&f, &t); return f / 1073741824.0; }
+      |                                                       ^~~~~~~~~~~~~~~~~~~~~
+1 warning generated when compiling for gfx942.
+freegb.cc:3:55: warning: ignoring return value of type 'hipError_t' declared with 'nodiscard' attribute [-Wunused-value]
+    3 | extern "C" double freegb(void) { size_t f = 0, t = 0; hipMemGetInfo(&f, &t); return f / 1073741824.0; }
+      |                                                       ^~~~~~~~~~~~~~~~~~~~~
+1 warning generated when compiling for host.
+
+################ default memory manager (pool enabled) ################
+start: free VRAM   191.31 GB
+iter   1: mapped   1.54 GB | free while mapped   189.76 GB | free after exit data   189.76 GB | not returned     1.55 GB
+iter   2: mapped   1.59 GB | free while mapped   188.17 GB | free after exit data   188.17 GB | not returned     3.14 GB
+iter   3: mapped   1.65 GB | free while mapped   186.52 GB | free after exit data   186.52 GB | not returned     4.79 GB
+iter   4: mapped   1.70 GB | free while mapped   184.82 GB | free after exit data   184.82 GB | not returned     6.49 GB
+iter   5: mapped   1.75 GB | free while mapped   183.07 GB | free after exit data   183.07 GB | not returned     8.24 GB
+iter   6: mapped   1.80 GB | free while mapped   181.26 GB | free after exit data   181.26 GB | not returned    10.05 GB
+iter   7: mapped   1.86 GB | free while mapped   179.41 GB | free after exit data   179.41 GB | not returned    11.90 GB
+iter   8: mapped   1.91 GB | free while mapped   177.50 GB | free after exit data   177.50 GB | not returned    13.81 GB
+iter   9: mapped   1.96 GB | free while mapped   175.54 GB | free after exit data   175.54 GB | not returned    15.77 GB
+iter  10: mapped   2.01 GB | free while mapped   173.53 GB | free after exit data   173.53 GB | not returned    17.78 GB
+iter  11: mapped   2.06 GB | free while mapped   171.46 GB | free after exit data   171.46 GB | not returned    19.85 GB
+iter  12: mapped   2.12 GB | free while mapped   169.35 GB | free after exit data   169.35 GB | not returned    21.96 GB
+iter  13: mapped   2.17 GB | free while mapped   167.18 GB | free after exit data   167.18 GB | not returned    24.13 GB
+iter  14: mapped   2.22 GB | free while mapped   164.96 GB | free after exit data   164.96 GB | not returned    26.36 GB
+iter  15: mapped   2.27 GB | free while mapped   162.68 GB | free after exit data   162.68 GB | not returned    28.63 GB
+iter  16: mapped   2.32 GB | free while mapped   160.36 GB | free after exit data   160.36 GB | not returned    30.96 GB
+RESULT: FAIL -    30.96 GB still held after every array was released (pool never reuses)
+
+################ LIBOMPTARGET_MEMORY_MANAGER_THRESHOLD=0 (pool disabled) ################
+start: free VRAM   191.31 GB
+iter   1: mapped   1.54 GB | free while mapped   189.76 GB | free after exit data   191.31 GB | not returned     0.00 GB
+iter   2: mapped   1.59 GB | free while mapped   189.71 GB | free after exit data   191.31 GB | not returned     0.00 GB
+iter   3: mapped   1.65 GB | free while mapped   189.66 GB | free after exit data   191.31 GB | not returned     0.00 GB
+iter   4: mapped   1.70 GB | free while mapped   189.61 GB | free after exit data   191.31 GB | not returned     0.00 GB
+iter   5: mapped   1.75 GB | free while mapped   189.55 GB | free after exit data   191.31 GB | not returned     0.00 GB
+iter   6: mapped   1.80 GB | free while mapped   189.50 GB | free after exit data   191.31 GB | not returned     0.00 GB
+iter   7: mapped   1.86 GB | free while mapped   189.45 GB | free after exit data   191.31 GB | not returned     0.00 GB
+iter   8: mapped   1.91 GB | free while mapped   189.40 GB | free after exit data   191.31 GB | not returned     0.00 GB
+iter   9: mapped   1.96 GB | free while mapped   189.35 GB | free after exit data   191.31 GB | not returned     0.00 GB
+iter  10: mapped   2.01 GB | free while mapped   189.29 GB | free after exit data   191.31 GB | not returned     0.00 GB
+iter  11: mapped   2.06 GB | free while mapped   189.24 GB | free after exit data   191.31 GB | not returned     0.00 GB
+iter  12: mapped   2.12 GB | free while mapped   189.19 GB | free after exit data   191.31 GB | not returned     0.00 GB
+iter  13: mapped   2.17 GB | free while mapped   189.14 GB | free after exit data   191.31 GB | not returned     0.00 GB
+iter  14: mapped   2.22 GB | free while mapped   189.09 GB | free after exit data   191.31 GB | not returned     0.00 GB
+iter  15: mapped   2.27 GB | free while mapped   189.03 GB | free after exit data   191.31 GB | not returned     0.00 GB
+iter  16: mapped   2.32 GB | free while mapped   188.98 GB | free after exit data   191.31 GB | not returned     0.00 GB
+RESULT: PASS - at most one block held (    0.00 GB)
+
+################ 03b: cost of one enter/exit data pair, pool enabled vs disabled ################
+-- default (pool)
+   size        enter data (alloc)   exit data (free)     [us per call, data uninitialised]
+    0.004 MB              29.9               1.5
+    0.250 MB              30.4               1.6
+    4.000 MB              30.5               1.7
+   64.000 MB              30.4               1.6
+ 1024.000 MB              30.4               1.6
+-- LIBOMPTARGET_MEMORY_MANAGER_THRESHOLD=0
+   size        enter data (alloc)   exit data (free)     [us per call, data uninitialised]
+    0.004 MB              29.7               1.9
+    0.250 MB              29.8               1.9
+    4.000 MB             100.6             142.6
+   64.000 MB             136.6             137.5
+ 1024.000 MB           21327.3             396.5
+
+################ same program, every iteration the SAME size (pool reuse works) ################
+start: free VRAM   191.31 GB
+iter   1: mapped   1.86 GB | free while mapped   189.44 GB | free after exit data   189.44 GB | not returned     1.87 GB
+iter   2: mapped   1.86 GB | free while mapped   189.44 GB | free after exit data   189.44 GB | not returned     1.87 GB
+iter   3: mapped   1.86 GB | free while mapped   189.44 GB | free after exit data   189.44 GB | not returned     1.87 GB
+iter   4: mapped   1.86 GB | free while mapped   189.44 GB | free after exit data   189.44 GB | not returned     1.87 GB
+iter   5: mapped   1.86 GB | free while mapped   189.44 GB | free after exit data   189.44 GB | not returned     1.87 GB
+iter   6: mapped   1.86 GB | free while mapped   189.44 GB | free after exit data   189.44 GB | not returned     1.87 GB
+RESULT: PASS - at most one block held (    1.87 GB)

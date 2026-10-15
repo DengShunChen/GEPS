@@ -1,0 +1,12 @@
+
+################ variant: (default, implicit firstprivate) ################
+a(1) =  2.0  (expected 2.0)
+
+################ variant: -DEXPLICIT ################
+a(1) =  2.0  (expected 2.0)
+
+################ variant: -DMAPTO ################
+a(1) =  2.0  (expected 2.0)
+
+################ variant: -DNOSCALAR ################
+a(1) =  2.0  (expected 2.0)

@@ -1,6 +1,6 @@
 # GEPS / TCoGFS ROCm 移植：效能優化報告
 
-日期：2026-09-20　範圍：2026-09-18 ～ 2026-09-19 的加速工作（數值移植完成之後）
+日期：2026-09-20，**2026-10-02 更新**　範圍：2026-09-18 ～ 2026-09-19 的加速工作（數值移植完成之後），以及 2026-09-29 ～ 10-01 的追加（#14、#15、24 小時驗證、afar 24.3.0 評估）
 平台：2 × AMD Instinct MI300X（SPX、PCIe 互連）、ROCm 7.2.2、amdflang 22.0.0git（roc-7.2.2）、自編 OpenMPI 4.1.6
 案例：TCo383L72 IC sample，tau=1（6 個積分步），2 MPI rank（NPEY=2，一卡一 rank）
 
@@ -8,17 +8,18 @@
 
 ## 1. 結果摘要
 
-| 指標 | 起點（2026-09-18 00:00） | 現在（2026-09-19 15:30） |
+| 指標 | 起點（2026-09-18 00:00） | 現在（2026-10-01） |
 |---|---|---|
-| 每積分步 wall time（2 GPU） | **740 s** | **2.43 s**（第 1 步含初始化 4.1 s） |
+| 每積分步 wall time（2 GPU，第 3–6 步平均） | **740 s** | **2.21 s**（09-19 為 2.43；第 2 步含初始化 ~3.9 s） |
 | 數值 | 六步 `surf pres tend rms` 與 CPU 對到 1e-11～1e-14 | **每一次改動後六步 `sptend` 逐位元不變**（`.43807396825059497 .4462741042925732 .4275272147313331 .403981044588656 .3968162229541496 .39255042414676805`） |
-| 對照 CPU（32 核，同一機器） | 10.5 s/步 | GPU 快 **4.3 倍** |
-| 對照 NVIDIA 參考 log | 0.34 s/步 | 差距 305× → **7×** |
-| VRAM（每卡 206 GB） | — | 峰值 ~158 GB（含 48 GB 配置快取） |
+| 對照 CPU（32 核，同一機器） | 10.5 s/步 | GPU 快 **4.75 倍** |
+| 對照 NVIDIA 參考 log | 0.34 s/步 | 差距 305× → **6.5×** |
+| VRAM（每卡 192 GiB） | — | 6 步峰值 ~158 GB；**24 小時峰值 176.9 GiB**（含 48 GB 配置快取） |
+| 24 小時預報（144 步） | — | 跑完；中位步時 2.28 s、積分總時間 416 s；24 h `sptend` 在 #15 前後逐位元相同 |
 
-十三次改動、每次一個變數、每次跑完整 tau=1 驗證；所有 log 在 `job/TCo383L72_IC_sample_rocm.log.2026091[89]_2gpu_*`，逐項紀錄在 `ROCM_PORT_HANDOFF.md` §0/§6。
+十五次改動（#14、#15 為 2026-09-30 ～ 10-01 追加）、每次一個變數、每次跑完整 tau=1 驗證；所有 log 在 `job/TCo383L72_IC_sample_rocm.log.2026091[89]_2gpu_*`，逐項紀錄在 `ROCM_PORT_HANDOFF.md` §0/§6。
 
-原始碼原則維持不變：改動全部在 `cmake/acc2omp.py`（OpenACC→OpenMP 翻譯器）、`src/rocm/`（ROCm 專用的 shim 與替換 kernel）與 `job/regression.ksh`；`src/`、`src/nvidia/` 未動。
+原始碼原則：改動集中在 `cmake/acc2omp.py`（OpenACC→OpenMP 翻譯器）、`src/rocm/`（ROCm 專用的 shim 與替換 kernel）與 `job/regression.ksh`。例外（2026-10-01，經使用者同意）：`src/nvidia/sflx_gpu.f90` 12 個工作陣列 `dimension(nsoil)` → `dimension(nsold)`（#15，各編譯器語意相同）；另 `src/outsigs.f90`、`src/outsit.f90` 加 `external split`（afar flang 24 的 F2023 `SPLIT` intrinsic 會遮蔽它，與速度無關）。
 
 ---
 
@@ -59,7 +60,10 @@
 | 10 | 3.49 | **物理 kernel 的經度迴圈串行**：原 OpenACC `gang collapse(2)`(jj,k)＋`loop vector`(i)，翻譯後 27648 個 thread 各串行走 ~1000 個經度，跨 thread 存取不 coalesced（微基準慢 3 倍）、只用 108 個 team（304 CU） | acc2omp 新 pass `_spmd_collapse_inner`：完美巢狀的 `do i = lo, myim(jj)` 折進 collapse(3)，`do i = lo, <ix/nxp/ite>` ＋ `if (i .le. myim(jj))` 守衛；每個 column 算式不變。首批 96 個 kernel（module_mp 24、samfdeepcnv 11、moninedmf 11、samfshalcnv 10…）；同 build 展開 mpe2d 兩個單 thread 抄陣列的 kernel（siimpl 轉置 12×11 ms） | `cmake/acc2omp.py`（`_SPMD_EXT`、`GEPS_ACC2OMP_SPMD`） | `…_spmd` |
 | 11 | 2.80 | **裝置映像含 `__llvm_rpc_client`**：`sflx_gpu` 的 `write (*, *)`＋`stop 333`、`radiation_aerosols` 的 `stop`、`gocart mass2icn_gpu`（`!$acc routine`）的 `stop '…'` 沒被靜音器拿掉（regex `\*\b` 在 `*,` 前不匹配；`stop` 從未處理），把 Fortran I/O runtime → emissary RPC 連進映像，libomptarget 因此開 RPC server thread，**每個 >1 ms 的 kernel 完成通知晚 ~一個 kernel 長度**（每步 ~1.3 s 空檔） | `_silence_device_io` 修 regex、處理 `stop`/`error stop`/`if (…) stop`、bare `declare target` 常式視為 device code、續行 `&` 後允許註解 | `cmake/acc2omp.py` | `…_norpc` |
 | 12 | 2.51 | NDSL 是 launch 空檔綁定（prof11：ndsl-h 859 次、ndsl-v 1566 次 launch） | tile 加大：水平 64→128、垂直 8192→32768（再大一級：無效，退回） | `src/rocm/cyclic_cell_*`、`vertical_cell_advect_gpu.f90`、`ndslfv_monoadvv_gpu.f90` | `…_tile2` |
-| 13 | **2.43** | diabat/gwdc/rrtmg 還有單層 `do jj` owner＋前綴純量（`j = jlist1(jj); nxj = nxdef_2d(j)`）的 column 迴圈 | SPMD pass 擴充：單層 owner → collapse(2)、純量前綴複製進迴圈體；再折 60 個 kernel | `cmake/acc2omp.py` | `…_spmd2` |
+| 13 | 2.43 | diabat/gwdc/rrtmg 還有單層 `do jj` owner＋前綴純量（`j = jlist1(jj); nxj = nxdef_2d(j)`）的 column 迴圈 | SPMD pass 擴充：單層 owner → collapse(2)、純量前綴複製進迴圈體；再折 60 個 kernel | `cmake/acc2omp.py` | `…_spmd2` |
+| — | 2.38 | 2026-09-29 用同一個 binary 重量基準（run-to-run 差異；六值與 09-19 逐位元相同） | — | — | `…0929_2gpu_r722_base` |
+| 14 | 2.25 | `omp_target_memcpy` D2D 只有 58 GB/s（SDMA 引擎路徑；AMD 建議的 workaround） | `HSA_ENABLE_SDMA=0`（改用 blit kernel）：D2D 58 → 1240 GB/s；預設開啟，`HSA_ENABLE_SDMA=1` 可關 | `job/regression.ksh` | `…0930_2gpu_r722_sdmadef` |
+| 15 | **2.21** | `sflx_gpu` 12 個工作陣列是 runtime 大小（`nsoil`）的 private 自動陣列 | 改 `dimension(nsold)`（parameter=4，同一常式其他陣列本來就這樣宣告）；pbl_noah 0.05 s 不變、整步略快。主因是 afar 會把這類陣列放 device heap（§10），7.2.2 上順便受益 | `src/nvidia/sflx_gpu.f90` | `…1001_2gpu_r722_sflx` |
 
 ---
 
@@ -91,10 +95,14 @@ OpenACC 的 `kernels` 區域、`gang`＋`loop vector` 巢狀、陣列語法賦�
 4. **HIP runtime 對 libomptarget 指標的 `hipMemcpy*` 走 CPU 路徑**（§4.1）。
 5. **裝置端 Fortran I/O/STOP 帶進 RPC client** 後 kernel 等待變慢（§4.1）。
 6. 已在先前層次記錄：runtime 大小的 private 陣列需要 `LIBOMPTARGET_STACK_SIZE ≥ 49152`；OpenACC `private` 純量在 kernel 外初始化的語意差異；`plold(i,0,jj)` 越界讀。
+7. **`omp_target_memcpy` D2D 預設只有 ~58 GB/s**，`HSA_ENABLE_SDMA=0` 後 1240 GB/s（#14）。
+8. **VRAM 逼近上限時 KFD 會把 XNACK 遷入的頁面趕回系統記憶體並暫停 queue**（afar 快取 96 GB、191.5/192 GiB 時一步多 ~20 s；`/sys/class/kfd/kfd/proc/<host pid>/stats_<gpu>/evicted_ms` 可證）。長預報 VRAM 要留餘裕。
+
+以上 1、2、6（以及 `nowait` NYI）在 AMD afar 24.3.0 已修；3、4、5 仍在。獨立 PoC 與重測結果：`qa/rocm_toolchain_poc/`（`README.md`、`AFAR_24.3.0_RETEST.md`）。
 
 ---
 
-## 6. 現在每步 2.43 s 的組成（rank 0，TIMER；GPU 忙碌約 1.6 s）
+## 6. 每步 2.43 s 的組成（2026-09-19 量測，rank 0，TIMER；GPU 忙碌約 1.6 s；#14、#15 之後整體約 -9%，組成比例相近）
 
 | 區塊 | 秒 | 內容 |
 |---|---|---|
@@ -135,7 +143,7 @@ kernel 級（prof11，追蹤下）：每步 39.7k 次 launch；GPU 忙 1.60 s，
 1. NDSL launch 空檔：把 PPM 的 7 個 kernel、垂直 PPM 的 6 個合併（每步 ~1.5k launch × ~40 µs ≈ 0.06 s，收益有限）；PPM `l102` 的 `kstr/kend` 線性搜尋改二分（locs 單調，答案相同；0.1 s）。
 2. RCCL 轉置 0.25 s：與計算重疊（目前發完就等）。
 3. `has_error` 之類每次呼叫的小 H2D/D2H 合併。
-4. rrtmg 1.47 s/次：輻射還有未折的 column 迴圈與 radsw/radlw 的 `pack_size(j2)` 型態。
+4. rrtmg ~1.3 s/次（每小時一次）：輻射還有未折的 column 迴圈與 radsw/radlw 的 `pack_size(j2)` 型態。
 5. 1-GPU（NPEY=1）路徑：沒有 RCCL 轉置，但單 rank 的 live set 約 2 倍（估 ~220 GB）放不進 192 GB。
 
 **會改捨入（不再逐位元相同，但與 CPU 仍在 1e-11 量級；需要決定）**：
@@ -152,7 +160,8 @@ kernel 級（prof11，追蹤下）：每步 39.7k 次 launch；GPU 忙 1.60 s，
 - `src/rocm/hip_compat.cc`：`omp_target_memcpy` D2D、in-place RCCL、dirty-stream `wait_all`、`geps_blas_defer_sync`、FFT exec 不逐次 sync。
 - `src/rocm/rfftmlt_loop_gpu.f90`：plan-set LRU（`GEPS_FFT_PLAN_SETS`）、`GEPS_FFT_THREADS`。
 - `src/rocm/cyclic_cell_*_gpu.f90`、`vertical_cell_advect_gpu.f90`、`ndslfv_monoadvv_gpu.f90`：tile 大小、tile-local pack、PPM collapse(3)。
-- `job/regression.ksh`：`LIBOMPTARGET_STACK_SIZE=65536`、`LIBOMPTARGET_MEMORY_MANAGER_THRESHOLD=0`、`LD_PRELOAD` 快取、`GEPS_PROF_WRAP`。
+- `job/regression.ksh`：`LIBOMPTARGET_STACK_SIZE=65536`、`LIBOMPTARGET_MEMORY_MANAGER_THRESHOLD=0`、`LD_PRELOAD` 快取、`GEPS_PROF_WRAP`、`HSA_ENABLE_SDMA=0`（#14）、`GEPS_TAUE=<小時>`（較長的 smoke，gfsctl 自動補到該時數）、`GEPS_ROCM_BUILD_DIR`／`GEPS_LIB_ROOT` 覆寫、afar 分支（§10）。
+- `src/nvidia/sflx_gpu.f90`：#15。
 
 **重現**
 ```bash
@@ -170,7 +179,24 @@ grep "Timing=" TCo383L72_IC_sample_rocm.log.<tag>                  # 每步秒�
 ```
 
 **注意事項**
-- 快取上限 48 GB/rank 是以 6 步 VRAM 持平為依據，長預報（tau ≫ 1）請用 `rocm-smi --showmeminfo vram` 再確認一次。
+- 快取上限 48 GB/rank：2026-10-01 已用 24 小時預報驗證（VRAM 峰值 176.9 GiB / 192）。更長的預報仍建議用 `rocm-smi --showmeminfo vram` 監看；不要把快取調高（96 GB 時 VRAM 逼近上限會觸發 KFD eviction，§5.8）。
 - 任何新加的 device code 都要重新檢查映像沒有 `__llvm_rpc_client`（§5.5）。
 - 任何 team 內的 reduction 都要寫成扁平 kernel 或兩段式（§5.1）。
 - 每次 build 後先看 `bin/tcogfs.x` 的時間戳（有兩次建置失敗但舊 binary 照跑）。
+
+---
+
+## 10. AMD afar 24.3.0 評估（2026-09-29 ～ 10-01）
+
+AMD 請我們用新版 flang（afar 24.3.0，TheRock SDK）重測 7 個 PoC 並在 app 上驗證。完整結果：`qa/rocm_toolchain_poc/AFAR_24.3.0_RETEST.md`，給 AMD 的中文回覆草稿 `AFAR_reply_zh.md`，過程記錄 `ROCM_PORT_HANDOFF.md` §9 (iv-b)。
+
+| 24 小時預報（144 步，皆 `HSA_ENABLE_SDMA=0`、快取 48 GB、含 #15） | 中位步時 | 積分總時間 | VRAM 峰值 |
+|---|---|---|---|
+| ROCm 7.2.2（正式環境） | 2.28 s | 416 s | 176.9 GiB |
+| afar 24.3.0 | 2.35 s | 432 s | 167.2 GiB |
+| afar 24.3.0，#15 之前（快取 96 GB） | 3.07 s | 537 s | 191.4 GiB |
+
+- afar 修好 PoC 01、02、06、07；數值與 7.2.2 差 1.2e-14（第 1 步）。
+- 要在 afar 上跑得動，需要三件事（regression.ksh 的 afar 分支已預設）：HSA 快取改成 `lib/hsa_front/libhsa-runtime64.so.1`（afar 的 libomptarget 用 dlopen 取 HSA，`LD_PRELOAD` 攔不到）、`ROCFFT_RTC_CACHE_PATH`（SDK 的 rocFFT 沒有預編 kernel 資料庫）、快取 48 GB。
+- afar 長預報原本慢 30%：device malloc（PoC 06 的修法把 runtime 大小 private 陣列放 device heap，另有 43 個 kernel 無警告地呼叫 malloc）在 VRAM 吃緊時慢 10–40 倍；#15 之後解決。
+- **結論：維持 ROCm 7.2.2 為正式環境**（略快，且不需要 hsa_front 與 rocFFT 快取檔）；待 PoC 03（size-class pool）與 device heap 改善後再評估。
