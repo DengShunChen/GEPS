@@ -24,3 +24,4 @@ Claude 工作階段的 scratchpad（`/tmp`，容器重建會消失），2026-10-
 | `sample_bt4.sh` | 同上的通用版：`pgrep -x tcogfs.x` 跳過 zombie、樣本數參數 | handoff §9 (iv-b) rrtmg 尖峰 |
 | `kfdmon.sh` | 每秒記錄 KFD `evicted_ms`／`faults`／`page_in`／`page_out`（目錄名是主機 PID；GPU id `29122`、`43483` 是這台機器的，換機要改） | handoff §9 (iv-b)、report §5 |
 | `prof7/an1.py`–`an3.py`、`prof8/an8.py` | rocprofv3 sqlite 結果的分析腳本（每步 kernel／HSA／HIP 時間分解） | handoff「效能層 P1」prof7、prof8 |
+| `container/init.sh`、`container/amdgpu_top_render_filter.patch` | `/mlsteam/workspace/init/` 的容器初始化腳本副本與 amdgpu_top 本地修改（原檔仍在 NFS 上，改了要同步） | handoff §5「容器初始化」 |

@@ -1,0 +1,12 @@
+diff --git a/crates/libamdgpu_top/src/device_path.rs b/crates/libamdgpu_top/src/device_path.rs
+index af67247..7c1f8eb 100644
+--- a/crates/libamdgpu_top/src/device_path.rs
++++ b/crates/libamdgpu_top/src/device_path.rs
+@@ -93,6 +93,7 @@ impl DevicePath {
+             let pci = name.into_string().ok()?.parse::<PCI::BUS_INFO>().ok()?;
+ 
+             Self::try_from(pci).ok()
++                .filter(|v| v.render.exists())
+                 .map(|mut v| {
+                     v.libdrm_amdgpu = libdrm_amdgpu.clone();
+                     v.fill_amdgpu_device_name();
