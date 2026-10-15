@@ -26,6 +26,7 @@ export GEPS_DMSDB="${GEPS_DMSDB:-/mlsteam/workspace/data/geps/dmsdb}"
 # GEPS_LIB + MPI: native ROCm MPI if present, else self-built OpenMPI
 export GEPS_COMPILER=rocm
 export GEPS_LIB_ROOT="${GEPS_LIB_ROOT:-$(cd "${MDIR}/../GEPS_LIB" && pwd)}"
+_GEPS_LIB_ROOT_SEL="${GEPS_LIB_ROOT}"   # 2026-09-29: GEPS_LIB_ROOT=... overrides (afar toolchain test)
 export GEPS_OPENMPI_MODULEFILES="${GEPS_LIB_ROOT}/install/modulefiles"
 
 if [[ -f /usr/share/modules/init/bash ]]; then
@@ -54,10 +55,10 @@ module load modulefile.tcogfs.rocm
 module unuse "${MDIR}/modulefiles"
 
 # geps/1.0 setenv GEPS_LIB_ROOT; unuse of its modulepath can drop it.
-export GEPS_LIB_ROOT="$(cd "${MDIR}/../GEPS_LIB" && pwd)"
+export GEPS_LIB_ROOT="${_GEPS_LIB_ROOT_SEL}"
 
 # --- preflight ---
-EXE="${MDIR}/build_rocm_hip/bin/tcogfs.x"
+EXE="${MDIR}/${GEPS_ROCM_BUILD_DIR:-build_rocm_hip}/bin/tcogfs.x"
 IC="${GEPS_DMSDB}/ncep_ana_n1.ufs/TCo${JCAP}l72_22081500"
 BCK="${GEPS_DMSDB}/bckdms.ufs/BCK_TCo${JCAP}_GI30S_xnew"
 O3_NUCHEM="${MDIR}/fix/ozprdlos_2015_new_sbuvO3_tclm15_nuchem.f77"

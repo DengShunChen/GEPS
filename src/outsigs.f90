@@ -9,6 +9,7 @@
       use const, only : RTYPE,kflag,nmmiph
 
       implicit  none
+      external  split   ! F2023 intrinsic SPLIT (flang >= 24) would shadow ours
 
       integer   itau,nx,my,my_max,lev,ncld,km,nc,kl
 

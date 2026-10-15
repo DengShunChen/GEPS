@@ -290,7 +290,10 @@ end subroutine check_boundary
             real(kind=kind_phys), dimension(nsold) :: ciin, dmax, &
                ai, bi, ci, part
                
-            real(kind=kind_phys), dimension(nsoil) :: rhsttin, &
+            ! 2026-09-30: sized nsold (parameter, >= nsoil) like ciin..part above.
+            ! A runtime size (nsoil) makes them per-lane automatic arrays: on afar 24.x
+            ! those go to the device heap, whose malloc slows 10-40x once VRAM is tight.
+            real(kind=kind_phys), dimension(nsold) :: rhsttin, &
                rhstsin, stsoil, et1, rtdis, zsoil, rhstt, sice, sh2oa, &
                sh2ofg, rhsts, stcf
 

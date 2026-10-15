@@ -67,6 +67,7 @@ std::mutex g_mu;
 bool g_init = false;
 bool g_enabled = true;
 bool g_stats = false;
+int g_stats_level = 0; // GEPS_HSA_POOL_STATS=2: also every 3000 allocations (2026-09-30)
 size_t g_min = 256 * 1024;
 size_t g_cap = (size_t)48 << 30;
 size_t g_cached = 0; // bytes in free lists
@@ -84,8 +85,20 @@ void init_once() {
   if (g_init)
     return;
   g_init = true;
+#ifdef GEPS_HSA_FRONT
+  // Front mode (2026-09-29, afar 24.x): the new libomptarget does not link HSA; it
+  // dlopen()s "libhsa-runtime64.so.1" and resolves entry points with dlsym(handle),
+  // which LD_PRELOAD cannot interpose. This build *is* libhsa-runtime64.so.1 (found
+  // first via LD_LIBRARY_PATH, see job/regression.ksh) and depends on the real
+  // runtime under another name (libhsa-real.so -> the real file), so dlsym on its
+  // handle finds these two wrappers first and every other symbol in the real one.
+  void *h = dlopen("libhsa-real.so", RTLD_NOW | RTLD_NOLOAD);
+  real_alloc = (alloc_fn_t)dlsym(h, "hsa_amd_memory_pool_allocate");
+  real_free = (free_fn_t)dlsym(h, "hsa_amd_memory_pool_free");
+#else
   real_alloc = (alloc_fn_t)dlsym(RTLD_NEXT, "hsa_amd_memory_pool_allocate");
   real_free = (free_fn_t)dlsym(RTLD_NEXT, "hsa_amd_memory_pool_free");
+#endif
   const char *e = std::getenv("GEPS_HSA_POOL");
   if (e && e[0] == '0')
     g_enabled = false;
@@ -93,8 +106,10 @@ void init_once() {
     g_min = (size_t)std::atoll(e);
   if ((e = std::getenv("GEPS_HSA_POOL_CAP_GB")))
     g_cap = (size_t)std::atoll(e) << 30;
-  if ((e = std::getenv("GEPS_HSA_POOL_STATS")) && e[0] == '1')
+  if ((e = std::getenv("GEPS_HSA_POOL_STATS")) && (e[0] == '1' || e[0] == '2')) {
     g_stats = true;
+    g_stats_level = e[0] - '0';
+  }
 }
 
 // round up to 3 mantissa bits: 1.000, 1.125, ..., 1.875 x 2^k
@@ -127,7 +142,12 @@ void release_block(const Block &b) {
   (void)real_free(b.ptr);
 }
 
+void print_stats();
+
 void evict_to(size_t target) {
+  if (g_stats && n_evict == 0 && g_cached > target)
+    std::fprintf(stderr, "[geps_hsa_pool] first eviction: cached %.1f GB > target %.1f GB\n",
+                 g_cached / 1073741824.0, target / 1073741824.0);
   while (g_cached > target && !g_lru.empty()) {
     Block b = g_lru.back();
     g_lru.pop_back();
@@ -167,6 +187,8 @@ hsa_status_t hsa_amd_memory_pool_allocate(hsa_amd_memory_pool_t pool,
   std::lock_guard<std::mutex> lock(g_mu);
   init_once();
   n_alloc++;
+  if (g_stats_level == 2 && n_alloc % 3000 == 0)
+    print_stats();
   if (!g_enabled || size < g_min) {
     n_pass++;
     return real_alloc(pool, size, flags, ptr);

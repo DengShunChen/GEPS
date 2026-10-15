@@ -226,6 +226,11 @@ if [ "${GITLAB_CICD:-0}" = 1 ] ; then
 fi
 if [ "${SMOKE:-0}" = 1 ] ; then
   echo -e "00\n01" > $GFSWRK/gfsctl
+  # the model stops at the last hour listed here, so a longer smoke (GEPS_TAUE) needs it too
+  if [ -n "${GEPS_TAUE:-}" ]; then
+    { echo 00; echo 01; h=6; while [ $h -le ${GEPS_TAUE%.*} ]; do printf "%02d\n" $h; h=$((h+6)); done
+      [ $(( ${GEPS_TAUE%.*} % 6 )) -ne 0 ] && [ ${GEPS_TAUE%.*} -gt 1 ] && printf "%02d\n" ${GEPS_TAUE%.*}; } > $GFSWRK/gfsctl
+  fi
 fi
 cp $NWPETC/ocards $GFSWRK/ocards
 cp $NWPETC/namlsts $GFSWRK/namlsts
@@ -263,7 +268,7 @@ TAUO=1.0
 TAUP=6.0
 if [ "${SMOKE:-0}" = 1 ]; then
   # keep taup=6 so getrdy can read the 6h FG (22081418). taup=1 looks for 23Z keys we don't have.
-  TAUE=1.0
+  TAUE=${GEPS_TAUE:-1.0}   # 2026-09-30: GEPS_TAUE=24 for a longer smoke (VRAM check)
   TAUO=1.0
   TAUP=6.0
 fi
@@ -367,7 +372,7 @@ EOF
  if [ $CMAKE_BUILD = 1 ] ; then
    if [ ${machine} = rocm ]; then
 	# GEPS_PROF_WRAP="rocprofv3 --kernel-trace --stats -d /path -o r_%pid% --" prefixes the binary (2026-09-18)
-	FCT_MODEL="${GEPS_PROF_WRAP:-} $MDIR/build_rocm_hip/bin/tcogfs.x"
+	FCT_MODEL="${GEPS_PROF_WRAP:-} $MDIR/${GEPS_ROCM_BUILD_DIR:-build_rocm_hip}/bin/tcogfs.x"
    elif [ ${machine} = rocm_cpu ]; then
 	FCT_MODEL=$MDIR/build_rocm_cpu/bin/tcogfs.x
    else
@@ -407,6 +412,10 @@ EOF
   export OMP_NUM_THREADS=1
   export OMP_TARGET_OFFLOAD=MANDATORY
   export HSA_XNACK=1
+  # 2026-09-29: blit kernels instead of SDMA for copies. omp_target_memcpy D2D goes
+  # 58 -> 1240 GB/s (qa/rocm_toolchain_poc PoC 04); step 2.38 -> 2.25 s on 7.2.2,
+  # 2.35 -> 2.27 s on afar, six sptend bit-identical. HSA_ENABLE_SDMA=1 restores SDMA.
+  export HSA_ENABLE_SDMA="${HSA_ENABLE_SDMA:-0}"
   # 2026-09-16: libomptarget's memory manager keeps large freed blocks in a
   # pool and only reuses exact sizes; the radiation blocks all differ in
   # size, so device memory grew monotonically until OUT_OF_RESOURCES
@@ -415,6 +424,8 @@ EOF
   # races are fixed - the earlier "=0 crashes early" was the masked
   # use-after-free.
   export LIBOMPTARGET_MEMORY_MANAGER_THRESHOLD="${LIBOMPTARGET_MEMORY_MANAGER_THRESHOLD:-0}"
+  # =default leaves libomptarget's own pool on (2026-09-29, PoC 03 re-test on the app)
+  [ "${LIBOMPTARGET_MEMORY_MANAGER_THRESHOLD}" = "default" ] && unset LIBOMPTARGET_MEMORY_MANAGER_THRESHOLD
   # layer 18 (2026-09-17): runtime-sized private arrays in target regions
   # (sflx_gpu's dimension(nsoil) work arrays) live on the device stack; with
   # the default size neighbouring lanes overwrite each other -> Inf skin
@@ -426,8 +437,22 @@ EOF
   # rocprofv3 --hsa-amd-trace). libgeps_hsa_pool.so (src/rocm/geps_hsa_pool.cc,
   # built by src/rocm/build_hsa_pool.sh) caches freed blocks by size class
   # with a capped footprint. GEPS_HSA_POOL=0 skips the preload.
-  if [ "${GEPS_HSA_POOL:-1}" != "0" ] && [ -f "$MDIR/build_rocm_hip/lib/libgeps_hsa_pool.so" ]; then
-    export LD_PRELOAD="$MDIR/build_rocm_hip/lib/libgeps_hsa_pool.so${LD_PRELOAD:+:$LD_PRELOAD}"
+  # 2026-09-29: the afar 24.x libomptarget dlopen()s HSA (dlsym on the handle), which
+  # LD_PRELOAD cannot reach; build_hsa_pool.sh then also builds lib/hsa_front/ - the same
+  # cache as a libhsa-runtime64.so.1 that sits in front of the real one.
+  if [ "${GEPS_HSA_POOL:-1}" != "0" ] && [ -f "$MDIR/${GEPS_ROCM_BUILD_DIR:-build_rocm_hip}/lib/hsa_front/libhsa-runtime64.so.1" ]; then
+    export LD_LIBRARY_PATH="$MDIR/${GEPS_ROCM_BUILD_DIR:-build_rocm_hip}/lib/hsa_front${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+    # 2026-10-01: keep the cache at 48 GB on afar. 96 GB pushed VRAM to 191.5/192 GiB, and
+    # KFD then evicted the XNACK-migrated pages and suspended our queues (~20 s, one step).
+    # 24 h: cap 48 432 s vs cap 96 431 s, peak VRAM 167 vs 191.5 GiB.
+    export GEPS_HSA_POOL_CAP_GB="${GEPS_HSA_POOL_CAP_GB:-48}"
+    # 2026-10-01: the afar SDK's rocFFT ships no AOT kernel database, so every FFT length is
+    # JIT-compiled (NNMI still running after 30 min without a cache file). Persist the kernels;
+    # the first run fills the file (~4 min, ~38 MB), later runs start normally.
+    export ROCFFT_RTC_CACHE_PATH="${ROCFFT_RTC_CACHE_PATH:-$MDIR/qa/afar_app/rocfft_cache/afar_gfx942.db}"
+    mkdir -p "$(dirname "$ROCFFT_RTC_CACHE_PATH")"
+  elif [ "${GEPS_HSA_POOL:-1}" != "0" ] && [ -f "$MDIR/${GEPS_ROCM_BUILD_DIR:-build_rocm_hip}/lib/libgeps_hsa_pool.so" ]; then
+    export LD_PRELOAD="$MDIR/${GEPS_ROCM_BUILD_DIR:-build_rocm_hip}/lib/libgeps_hsa_pool.so${LD_PRELOAD:+:$LD_PRELOAD}"
   fi
   export OMPI_ALLOW_RUN_AS_ROOT=1
   export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1

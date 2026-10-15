@@ -9,6 +9,7 @@
       use mod_sit_control,    only:outsitlev
 
       implicit none
+      external  split   ! F2023 intrinsic SPLIT (flang >= 24) would shadow ours
       integer nx,my,my_max,itau,num
       real whtlev(num)
    
@@ -173,6 +174,7 @@
       use mod_sit_control, only: xmissing,outsitlev
 
       implicit none
+      external  split   ! F2023 intrinsic SPLIT (flang >= 24) would shadow ours
 
       integer nx,my,my_max,lkvl,itau
 
@@ -297,6 +299,7 @@
       use mod_sit_control,    only: xmissing,outsitlev
   
       implicit none
+      external  split   ! F2023 intrinsic SPLIT (flang >= 24) would shadow ours
 
       integer nx,my,my_max,lkvl,itau
   

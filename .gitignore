@@ -45,3 +45,12 @@ job/*.log.*
 qa/rocm_toolchain_poc/**/*.x
 qa/rocm_toolchain_poc/**/*.mod
 qa/rocm_toolchain_poc/**/*.o
+# afar 24.x toolchain test (2026-09-29): build logs and the rocFFT JIT kernel cache stay local
+qa/afar_app/*.log*
+qa/afar_app/rocfft_cache/
+qa/rocm_toolchain_poc/**/build*.log
+!qa/afar_app/build_afar_hip.sh
+# correspondence drafts and derived decks/reports stay local (repo is public)
+qa/rocm_toolchain_poc/AFAR_*reply*_zh.md
+qa/rocm_toolchain_poc/*_report.html
+/*.pptx

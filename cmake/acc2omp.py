@@ -1760,6 +1760,11 @@ def _silence_device_io(lines: list[str]) -> list[str]:
     cyclic_cell_ppm_intp). Combined `target teams distribute parallel do` has
     no `end` directive; close it when the associated do-construct ends.
     """
+    # 2026-09-29 experiment switch (PoC 05 on the app): GEPS_ACC2OMP_KEEP_DEVIO=sflx
+    # leaves device I/O in the listed files, so the image links __llvm_rpc_client again.
+    keep = [x for x in os.environ.get("GEPS_ACC2OMP_KEEP_DEVIO", "").split(",") if x]
+    if keep and any(x in _CURRENT_FILE for x in keep):
+        return lines
     explicit = 0
     pending_do = 0
     assoc_depth: list[int] = []
@@ -3479,7 +3484,10 @@ def apply_file_fixups(name: str, lines: list[str]) -> list[str]:
             i += 1
         out = fixed
         assert n_fix == 1, f"ppm_intp hh kernels region: expected 1, found {n_fix}"
-    if name.startswith("hdiffu_gpu") or name.startswith("rayleifr_gpu"):
+    # GEPS_ACC2OMP_VEC_REDMAX=1 keeps the nested `parallel do reduction(max)` instead
+    # (2026-09-29: PoC 01 re-test on the app with the afar compiler).
+    if (name.startswith("hdiffu_gpu") or name.startswith("rayleifr_gpu")) \
+            and os.environ.get("GEPS_ACC2OMP_VEC_REDMAX") != "1":
         # ---- 2026-09-19: the wind-max scan `parallel loop gang` over k with
         # `loop vector collapse(2) reduction(max:wt)` inside became 72 threads
         # each scanning 200k points (83 ms x 2 per step, prof8). A nested
