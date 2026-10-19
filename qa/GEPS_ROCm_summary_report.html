@@ -1,0 +1,306 @@
+<title>GEPS ROCm 移植總結</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column (~50rem) with a sticky-free section index; verdict → timeline → phases → evidence → open items */
+:root{
+  --bg:#f5f7f8; --surface:#ffffff; --fg:#16222a; --muted:#56656f; --line:#d4dce1;
+  --accent:#0f6b78; --accent-soft:#e1eff1; --old:#9aa7b0;
+  --ok-bg:#e3f2e8; --ok-fg:#1d6a3a; --warn-bg:#fbf0d9; --warn-fg:#8a5a00; --bad-bg:#f8e3de; --bad-fg:#9c3a22;
+  --f-display:"Noto Serif TC","Songti TC",serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10171c; --surface:#172129; --fg:#e3eaee; --muted:#9aa9b2; --line:#2b3942;
+  --accent:#5cc0cc; --accent-soft:#15333a; --old:#5d6b74;
+  --ok-bg:#183626; --ok-fg:#86d4a2; --warn-bg:#3a2e12; --warn-fg:#e8c170; --bad-bg:#3e2119; --bad-fg:#f0a28c;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10171c; --surface:#172129; --fg:#e3eaee; --muted:#9aa9b2; --line:#2b3942;
+  --accent:#5cc0cc; --accent-soft:#15333a; --old:#5d6b74;
+  --ok-bg:#183626; --ok-fg:#86d4a2; --warn-bg:#3a2e12; --warn-fg:#e8c170; --bad-bg:#3e2119; --bad-fg:#f0a28c;
+  color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15.5px;line-height:1.75}
+.wrap{max-width:50rem;margin:0 auto;padding-inline:20px;padding-block:40px 72px;display:flex;flex-direction:column;gap:48px}
+h1,h2{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.3}
+h1{font-size:2.05rem}
+h2{font-size:1.38rem;padding-bottom:6px;border-bottom:1px solid var(--line);scroll-margin-top:16px}
+h3{font-size:1.02rem;margin:6px 0 0}
+p{margin:0}
+section{display:flex;flex-direction:column;gap:14px;min-width:0}
+.eyebrow{font-size:.78rem;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.meta{color:var(--muted);font-size:.9rem}
+.mono,td.n,th.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+code{font-family:var(--f-mono);font-size:.85em;background:var(--accent-soft);padding:1px 5px;border-radius:4px;word-break:break-word}
+nav.toc{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.88rem}
+nav.toc a{color:var(--accent);text-decoration:none}
+nav.toc a:hover,nav.toc a:focus-visible{text-decoration:underline}
+.verdict{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:6px;padding:18px 20px;display:flex;flex-direction:column;gap:10px}
+ul.tight{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(10.5rem,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.kpi b{font-family:var(--f-mono);font-size:1.45rem;font-weight:500;color:var(--accent)}
+.kpi span{font-size:.84rem;color:var(--muted);line-height:1.5}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.9rem;line-height:1.55}
+th,td{padding:9px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+th{font-weight:500;color:var(--muted);font-size:.82rem;background:var(--bg)}
+td.n,th.n{text-align:right;white-space:nowrap}
+td.d{white-space:nowrap;font-family:var(--f-mono);font-size:.84rem;color:var(--muted)}
+.pill{display:inline-block;font-size:.76rem;font-weight:500;padding:1px 8px;border-radius:999px;white-space:nowrap}
+.ok{background:var(--ok-bg);color:var(--ok-fg)}
+.warn{background:var(--warn-bg);color:var(--warn-fg)}
+.bad{background:var(--bad-bg);color:var(--bad-fg)}
+.chart{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px 10px 8px;overflow-x:auto}
+.chart svg{display:block;width:100%;min-width:560px;height:auto}
+.chart text{fill:var(--fg);font-family:var(--f-body);font-size:12.5px}
+.chart .num{font-family:var(--f-mono);font-size:12px}
+.chart .ax{fill:var(--muted);font-size:11px;font-family:var(--f-mono)}
+.note{font-size:.86rem;color:var(--muted)}
+ol.list{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:10px}
+ol.list li::marker{font-family:var(--f-mono);color:var(--accent)}
+.src{font-size:.82rem;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.src code{background:transparent;padding:0}
+</style>
+
+<div class="wrap">
+
+<header style="display:flex;flex-direction:column;gap:10px">
+  <div class="eyebrow">中央氣象署 GEPS / TCoGFS · AMD Instinct MI300X</div>
+  <h1>GEPS 全球模式 ROCm 移植與加速：工作總結報告</h1>
+  <p class="meta">期間 2026-08-24 至 2026-10-15　平台 2 × MI300X（gfx942，SPX/NPS1）、ROCm 7.2.2　案例 TCo383L72 IC sample（2022-08-15 00Z）<br>原始碼：<code>feature/multi-compiler</code>，最新 commit <code>ae43e781</code>，已與 origin 同步</p>
+  <nav class="toc" aria-label="章節">
+    <a href="#summary">摘要</a><a href="#timeline">時間軸</a><a href="#approach">移植架構</a><a href="#numerics">數值移植</a><a href="#speed">效能優化</a><a href="#long">24 小時驗證</a><a href="#toolchain">工具鏈缺陷</a><a href="#afar">afar 評估</a><a href="#deliver">交付物</a><a href="#lessons">方法教訓</a><a href="#next">未完成事項</a>
+  </nav>
+</header>
+
+<section id="summary">
+  <h2>摘要</h2>
+  <div class="verdict">
+    <ul class="tight">
+      <li>GEPS 原本只支援 NVIDIA（OpenACC + CUDA Fortran）。現在已能在 AMD MI300X 上<b>完整執行並算出正確結果</b>：六個積分步的 <code>surf pres tend rms</code> 與 CPU 版相差 1e-11 到 1e-14。</li>
+      <li>數值移植完成時每步要 740 s，經過 15 項優化降到 <b>2.21 s</b>，比同一台機器上 32 核 CPU（10.5 s）快 4.75 倍。每一項改動後六步結果都逐位元相同。</li>
+      <li><b>24 小時預報（144 步）已跑完</b>：積分總時間 416 s，中位步時 2.28 s，VRAM 峰值 176.9 / 192 GiB。</li>
+      <li>找到並整理 8 類 ROCm 工具鏈缺陷，做成 7 個獨立 PoC 給 AMD。AMD 新版編譯器 afar 24.3.0 修好其中 4 個，但 24 小時預報仍比 7.2.2 慢約 4%，<b>正式環境維持 ROCm 7.2.2</b>。</li>
+      <li>NVIDIA 參考值為 0.34 s/步，跑在 <b>8 張 A100 80GB</b> 上，GPU 數量是我們的 4 倍，所以兩者不能直接比較。</li>
+    </ul>
+  </div>
+  <div class="kpis">
+    <div class="kpi"><b>740 → 2.21 s</b><span>每步時間（2 GPU，第 3–6 步平均）</span></div>
+    <div class="kpi"><b>4.75×</b><span>相對 32 核 CPU（10.5 s/步）</span></div>
+    <div class="kpi"><b>1e-11</b><span>與 CPU 的最大相對差（六步）</span></div>
+    <div class="kpi"><b>416 s</b><span>24 小時預報積分總時間</span></div>
+  </div>
+</section>
+
+<section id="timeline">
+  <h2>時間軸</h2>
+  <div class="tbl"><table>
+    <tr><th>日期</th><th>階段</th><th>成果</th></tr>
+    <tr><td class="d">08-24 – 09-08</td><td>建置環境</td><td>GEPS_LIB 相依函式庫以 amdflang 重編；ROCm CPU 版跑完 1 小時預報；修好容器重建造成的 CPU 回歸</td></tr>
+    <tr><td class="d">09-08 – 09-10</td><td>GPU 崩潰</td><td>修好第 1–3 層崩潰；與機房確認 DPX 分區造成 OUT_OF_RESOURCES，換成 2 張實體 MI300X（SPX）</td></tr>
+    <tr><td class="d">09-10 – 09-17</td><td>數值移植</td><td>逐層排除 18 層問題。09-15 NNMI 對上 CPU，09-16 積分第 1 步對上，09-17 六步全部對到 1e-11</td></tr>
+    <tr><td class="d">09-18</td><td>版控</td><td>可運作版本 commit <code>4424cf83</code> 並 push</td></tr>
+    <tr><td class="d">09-18 – 09-19</td><td>效能優化</td><td>13 項改動，每步 740 → 2.43 s</td></tr>
+    <tr><td class="d">09-20 – 09-26</td><td>報告</td><td>效能報告、7 個 toolchain PoC（給 AMD）、主管簡報</td></tr>
+    <tr><td class="d">09-29 – 10-01</td><td>afar 與長時間驗證</td><td>afar 24.3.0 重測 PoC 與 app；24 小時預報；改動 #14、#15，每步 2.21 s</td></tr>
+    <tr><td class="d">10-02 – 10-15</td><td>收尾</td><td>報告與 handoff 更新、除錯工具與安裝步驟進版控，共 9 個 commit</td></tr>
+  </table></div>
+</section>
+
+<section id="approach">
+  <h2>移植架構</h2>
+  <p>原則是<b>不改動 NVIDIA 的原始碼</b>，讓同一份程式碼同時支援兩種 GPU。AMD 版在編譯時自動產生：</p>
+  <div class="tbl"><table>
+    <tr><th>元件</th><th>作用</th></tr>
+    <tr><td><code>cmake/acc2omp.py</code></td><td>編譯期轉譯器（約 1600 行），把 <code>src/nvidia/</code> 的 OpenACC 與 CUDA Fortran 轉成 OpenMP target offload。大部分數值修正與 kernel 結構優化都在這裡</td></tr>
+    <tr><td><code>src/rocm/</code></td><td>AMD 專用的 shim（cudafor/NCCL/cuBLAS/cuFFT → HIP/RCCL/hipBLAS/rocFFT）、手寫替代 kernel（tile 化平流）、HSA 配置快取</td></tr>
+    <tr><td><code>job/regression.ksh</code></td><td>執行環境：stack 大小、配置快取、SDMA、afar 分支、<code>GEPS_TAUE</code> 長預報</td></tr>
+  </table></div>
+  <p class="note">對 <code>src/</code> 只有兩處例外，都經過同意：<code>sflx_gpu.f90</code> 陣列改固定大小（#15），以及 <code>outsigs.f90</code>、<code>outsit.f90</code> 加 <code>external split</code>（flang 24 相容）。</p>
+</section>
+
+<section id="numerics">
+  <h2>階段一：數值移植（18 層）</h2>
+  <p>GPU 版一開始會崩潰，修好後又算出 NaN，再來是數字錯。我們逐層排除，問題歸成以下幾類：</p>
+  <div class="tbl"><table>
+    <tr><th>類別</th><th>層</th><th>內容與修法</th></tr>
+    <tr><td>HIP stream 競態</td><td class="mono">6, 7, 10, 17</td><td>acc2omp 把 OpenACC 的 <code>async</code> 丟掉，造成四種形態：NCCL 集合通訊後沒等待、graph capture 內的 OpenMP kernel 沒被錄進 graph（NNMI 變成 no-op，是 NaN 的根因）、<code>cudaMemsetAsync</code> 與 kernel 競態、裸 <code>NCCLCHECK</code> 沒等待。修法都在 acc2omp</td></tr>
+    <tr><td>OpenACC 與 OpenMP 語意差異</td><td class="mono">9, 12, 16, 17</td><td>內層 <code>private</code> 被丟掉；<code>exit data delete</code> 不等於 <code>map(delete:)</code>；迴圈內純量 OpenACC 預設 firstprivate、OpenMP 預設共享；kernel 外初始化的 private 純量（深對流 <code>val1/val2</code>、sflx <code>snoexp</code>）要改成 firstprivate</td></tr>
+    <tr><td>指標與記憶體</td><td class="mono">1, 2, 3</td><td>reshape 後 memset、<code>cudaMallocAsync</code> 裸指標、graph replay 後 <code>has_device_addr</code> 失效</td></tr>
+    <tr><td>VRAM 耗盡</td><td class="mono">4, 5, 13, 14</td><td>DPX 分區、每個緯度一個 FFT plan（每個約 20 MB）、libomptarget 池子不歸還</td></tr>
+    <tr><td>裝置 stack</td><td class="mono">18</td><td>runtime 大小的 private 陣列在 stack 上互相覆寫，需要 <code>LIBOMPTARGET_STACK_SIZE ≥ 49152</code></td></tr>
+    <tr><td>原始碼潛在 bug</td><td class="mono">11, 18</td><td><code>intgrt_gpu</code> 傳錯 <code>poly</code>（graph capture 掩蓋了）、<code>adjptqintp_gpu</code> 越界讀、<code>hdiffu</code> 讀 host 端 <code>wmax</code></td></tr>
+  </table></div>
+  <p>最終驗證（2026-09-17）：積分第 1 步 <code>sptend</code> = 0.43807396825059497（CPU 0.4380739682505907），六步全部在 1e-11 以內；深對流觸發數 29,009，與 CPU 相同。</p>
+  <p class="note">有三個推論後來被量測推翻（第 4、5、8 層的初判），handoff 裡保留了推翻的過程，避免後人重走。</p>
+</section>
+
+<section id="speed">
+  <h2>階段二：效能優化（15 項）</h2>
+  <p>每項改動只改一個變數，改完都跑完整 tau=1，並要求六步結果與上一版逐位元相同。</p>
+  <div class="chart" role="img" aria-label="每步時間由 740 秒逐項降到 2.21 秒，對數刻度">
+<svg viewBox="0 0 680 392">
+<line x1="250.0" y1="6" x2="250.0" y2="362" stroke="var(--line)"/>
+<text class="ax" x="250.0" y="378" text-anchor="middle">1 s</text>
+<line x1="370.0" y1="6" x2="370.0" y2="362" stroke="var(--line)" stroke-dasharray="2 3"/>
+<text class="ax" x="370.0" y="378" text-anchor="middle">10 s</text>
+<line x1="490.0" y1="6" x2="490.0" y2="362" stroke="var(--line)" stroke-dasharray="2 3"/>
+<text class="ax" x="490.0" y="378" text-anchor="middle">100 s</text>
+<line x1="610.0" y1="6" x2="610.0" y2="362" stroke="var(--line)" stroke-dasharray="2 3"/>
+<text class="ax" x="610.0" y="378" text-anchor="middle">1000 s</text>
+<text x="240" y="25" text-anchor="end"><tspan class="ax">#0</tspan> 起點</text>
+<rect x="250" y="14" width="344.3" height="14" rx="2" fill="var(--old)"/>
+<text class="num" x="600.3" y="25">740</text>
+<text x="240" y="47" text-anchor="end"><tspan class="ax">#1</tspan> FFT plan 預算</text>
+<rect x="250" y="36" width="323.9" height="14" rx="2" fill="var(--old)"/>
+<text class="num" x="579.9" y="47">500</text>
+<text x="240" y="69" text-anchor="end"><tspan class="ax">#2</tspan> 垂直平流 tile</text>
+<rect x="250" y="58" width="287.1" height="14" rx="2" fill="var(--old)"/>
+<text class="num" x="543.1" y="69">247</text>
+<text x="240" y="91" text-anchor="end"><tspan class="ax">#3</tspan> D2D 改 omp_target_memcpy</text>
+<rect x="250" y="80" width="211.6" height="14" rx="2" fill="var(--old)"/>
+<text class="num" x="467.6" y="91">58</text>
+<text x="240" y="113" text-anchor="end"><tspan class="ax">#4</tspan> kernels 區域平行化</text>
+<rect x="250" y="102" width="173.7" height="14" rx="2" fill="var(--old)"/>
+<text class="num" x="429.7" y="113">28</text>
+<text x="240" y="135" text-anchor="end"><tspan class="ax">#5</tspan> 水平平流 tile</text>
+<rect x="250" y="124" width="128.6" height="14" rx="2" fill="var(--old)"/>
+<text class="num" x="384.6" y="135">11.8</text>
+<text x="240" y="157" text-anchor="end"><tspan class="ax">#6</tspan> HSA 配置快取</text>
+<rect x="250" y="146" width="82.8" height="14" rx="2" fill="var(--old)"/>
+<text class="num" x="338.8" y="157">4.9</text>
+<text x="240" y="179" text-anchor="end"><tspan class="ax">#7</tspan> 序列區域＋dirty stream</text>
+<rect x="250" y="168" width="79.9" height="14" rx="2" fill="var(--old)"/>
+<text class="num" x="335.9" y="179">4.63</text>
+<text x="240" y="201" text-anchor="end"><tspan class="ax">#8</tspan> wind-max 兩段＋FFT 多執行緒</text>
+<rect x="250" y="190" width="76.4" height="14" rx="2" fill="var(--old)"/>
+<text class="num" x="332.4" y="201">4.33</text>
+<text x="240" y="223" text-anchor="end"><tspan class="ax">#9</tspan> dgemm 同 stream 排隊</text>
+<rect x="250" y="212" width="73.0" height="14" rx="2" fill="var(--old)"/>
+<text class="num" x="329.0" y="223">4.06</text>
+<text x="240" y="245" text-anchor="end"><tspan class="ax">#10</tspan> 物理經度迴圈 collapse</text>
+<rect x="250" y="234" width="65.1" height="14" rx="2" fill="var(--old)"/>
+<text class="num" x="321.1" y="245">3.49</text>
+<text x="240" y="267" text-anchor="end"><tspan class="ax">#11</tspan> 移除裝置 I/O（RPC）</text>
+<rect x="250" y="256" width="53.7" height="14" rx="2" fill="var(--old)"/>
+<text class="num" x="309.7" y="267">2.8</text>
+<text x="240" y="289" text-anchor="end"><tspan class="ax">#12</tspan> NDSL tile 加大</text>
+<rect x="250" y="278" width="48.0" height="14" rx="2" fill="var(--old)"/>
+<text class="num" x="304.0" y="289">2.51</text>
+<text x="240" y="311" text-anchor="end"><tspan class="ax">#13</tspan> SPMD pass 擴充</text>
+<rect x="250" y="300" width="46.3" height="14" rx="2" fill="var(--old)"/>
+<text class="num" x="302.3" y="311">2.43</text>
+<text x="240" y="333" text-anchor="end"><tspan class="ax">#14</tspan> HSA_ENABLE_SDMA=0</text>
+<rect x="250" y="322" width="42.3" height="14" rx="2" fill="var(--old)"/>
+<text class="num" x="298.3" y="333">2.25</text>
+<text x="240" y="355" text-anchor="end"><tspan class="ax">#15</tspan> sflx 固定大小陣列</text>
+<rect x="250" y="344" width="41.3" height="14" rx="2" fill="var(--accent)"/>
+<text class="num" x="297.3" y="355">2.21</text>
+</svg>
+  </div>
+  <p class="note">對數刻度。#14 之前另以同一個執行檔重新量過基準，為 2.38 s（run-to-run 差異）。</p>
+  <h3>主要根因</h3>
+  <div class="tbl"><table>
+    <tr><th>類別</th><th>項目</th><th>說明</th></tr>
+    <tr><td>ROCm runtime 走錯路徑</td><td class="mono">#1 #3 #6 #11 #14</td><td>rocFFT plan 反覆重建；<code>hipMemcpy</code> 遇到 libomptarget 指標走 CPU 路徑（26 MB/s）；每個 <code>data create</code> 都是裸 HSA alloc/free（每步 4.1 s，自製 <code>LD_PRELOAD</code> 快取解決，11.8 → 4.9 s）；裝置 I/O 帶進 RPC client，kernel 完成通知晚一拍；SDMA 複製只有 58 GB/s</td></tr>
+    <tr><td>轉譯後 kernel 結構差</td><td class="mono">#2 #4 #5 #7 #8 #10 #12 #13</td><td><code>kernels</code> 區域與陣列語法被翻成單執行緒；物理 kernel 的經度迴圈串行執行（新增 SPMD pass，把迴圈折進 collapse，涵蓋 156 個 kernel）；tile 太小導致 launch 太多</td></tr>
+    <tr><td>同步過多</td><td class="mono">#7 #9</td><td>每步 26 萬次 <code>hipStreamSynchronize</code>；每個 dgemm 等三次。改成只等有派過工作的 stream，同一條 stream 上排隊、用之前才等一次</td></tr>
+  </table></div>
+  <h3>2.4 s 的組成（09-19 量測）</h3>
+  <div class="tbl"><table>
+    <tr><th>區塊</th><th class="n">秒/步</th><th>內容</th></tr>
+    <tr><td>半拉格朗日平流 NDSL</td><td class="n">0.80</td><td>RCCL 轉置約 0.25（兩卡之間走 PCIe）、PPM kernel 約 0.3，其餘是 launch 空檔</td></tr>
+    <tr><td>物理 diabat</td><td class="n">0.58</td><td>微物理 0.17 最大；輻射 rrtmg 每 6 步一次，約 1.5 s</td></tr>
+    <tr><td>譜轉換</td><td class="n">~0.55</td><td>每步約 7 千次 rocFFT 與 5 千個小 dgemm</td></tr>
+    <tr><td>其他</td><td class="n">~0.5</td><td>水平擴散、半隱式、轉置、時間濾波</td></tr>
+  </table></div>
+  <p class="note">每步約 4 萬次 kernel launch，GPU 實際忙碌約 1.6 s。剩下的時間主要是 launch 延遲。</p>
+</section>
+
+<section id="long">
+  <h2>24 小時預報驗證</h2>
+  <div class="tbl"><table>
+    <tr><th>項目</th><th>ROCm 7.2.2（正式環境）</th></tr>
+    <tr><td>步數</td><td class="mono">144（tau 0 → 24）</td></tr>
+    <tr><td>中位步時／積分總時間</td><td class="mono">2.28 s ／ 416 s</td></tr>
+    <tr><td>輻射步／歷史輸出步</td><td class="mono">~3.6 s ／ ~22 s</td></tr>
+    <tr><td>VRAM 峰值</td><td class="mono">176.9 / 192 GiB（含 48 GB 配置快取）</td></tr>
+    <tr><td>數值</td><td>改動 #15 前後 24 小時 <code>sptend</code> 逐位元相同</td></tr>
+  </table></div>
+  <p class="note">1 小時的測試看不出長預報的問題：afar 的慢化要到第 34 步才出現，VRAM 逼近上限時的 KFD 逐出也只在長預報發生。新環境至少要跑 6 小時才能下結論。</p>
+</section>
+
+<section id="toolchain">
+  <h2>工具鏈缺陷與 AMD PoC</h2>
+  <p>獨立重現程式放在 <code>qa/rocm_toolchain_poc/</code>（7 個目錄，<code>run_all.sh</code> 約 6 分鐘跑完）。</p>
+  <div class="tbl"><table>
+    <tr><th>缺陷</th><th>GEPS 的繞法</th><th>afar 24.3.0</th></tr>
+    <tr><td>01 巢狀 <code>parallel do reduction</code> 回傳 0</td><td>改成兩段式扁平 kernel</td><td><span class="pill ok">已修</span></td></tr>
+    <tr><td>02 每次 launch 重抄 descriptor</td><td>多用 explicit-shape</td><td><span class="pill ok">已修</span></td></tr>
+    <tr><td>03 記憶體池只重用相同大小，會成長到 OOM</td><td>自製 HSA 配置快取（48 GB）</td><td><span class="pill bad">未修</span></td></tr>
+    <tr><td>04 <code>hipMemcpy</code> 對 OMP 指標 0.05 GB/s</td><td><code>omp_target_memcpy</code>、in-place RCCL</td><td><span class="pill bad">未修</span></td></tr>
+    <tr><td>05 裝置 I/O 帶進 RPC client，kernel 延遲</td><td>轉譯時移除裝置端 write/stop</td><td><span class="pill warn">仍連入</span></td></tr>
+    <tr><td>06 private 陣列在 stack 互相覆寫</td><td><code>LIBOMPTARGET_STACK_SIZE=65536</code></td><td><span class="pill ok">已修</span>（改走 heap，有新問題）</td></tr>
+    <tr><td>07 <code>nowait</code> + firstprivate 未實作</td><td>未使用 nowait</td><td><span class="pill ok">已修</span></td></tr>
+    <tr><td>SDMA 複製慢、VRAM 超用時 KFD 逐出</td><td><code>HSA_ENABLE_SDMA=0</code>、快取上限 48 GB</td><td>兩版相同</td></tr>
+  </table></div>
+</section>
+
+<section id="afar">
+  <h2>afar 24.3.0 評估</h2>
+  <div class="tbl"><table>
+    <tr><th>24 小時預報</th><th class="n">中位步時</th><th class="n">積分總時間</th><th class="n">VRAM 峰值</th></tr>
+    <tr><td>ROCm 7.2.2</td><td class="n">2.28 s</td><td class="n">416 s</td><td class="n">176.9 GiB</td></tr>
+    <tr><td>afar 24.3.0</td><td class="n">2.35 s</td><td class="n">432 s</td><td class="n">167.2 GiB</td></tr>
+    <tr><td>afar 24.3.0（修正前）</td><td class="n">3.07 s</td><td class="n">537 s</td><td class="n">191.4 GiB</td></tr>
+  </table></div>
+  <p>數值與 7.2.2 相差 1.2e-14。要讓 afar 跑出這個成績，需要三項額外處理：HSA 快取改成前置函式庫（afar 的 libomptarget 用 dlopen 載入 HSA）、設定 rocFFT 編譯快取、把 sflx 陣列移出 device heap。結論是維持 7.2.2。詳細比較見 <a href="https://claude.ai/artifact/8eMHP8a9fCrstDuRcYRgdQ">afar 與 ROCm 7.2.2 比較報告</a>。</p>
+</section>
+
+<section id="deliver">
+  <h2>交付物</h2>
+  <div class="tbl"><table>
+    <tr><th>類別</th><th>內容</th></tr>
+    <tr><td>程式</td><td><code>cmake/acc2omp.py</code>、<code>src/rocm/</code>（shim、tile 化 kernel、<code>geps_hsa_pool.cc</code>）、<code>job/regression.ksh</code>、<code>cmake/compilers/ROCM.cmake</code></td></tr>
+    <tr><td>文件</td><td><code>ROCM_PORT_HANDOFF.md</code>（完整除錯紀錄與接手指南）、<code>ROCM_OPTIMIZATION_REPORT.md</code>（效能權威數字）、<code>README.md</code></td></tr>
+    <tr><td>對外</td><td><code>TICKET_internal_infra.md</code>（機房，已結案）、<code>TICKET_amd_rocm_support.md</code>、<code>qa/rocm_toolchain_poc/</code>（PoC、英文報告、afar 重測與中文回覆草稿）</td></tr>
+    <tr><td>工具</td><td><code>qa/tools/</code>（launchbench、fftbench、redmax、kfdmon、rocgdb 取樣）、<code>qa/afar_app/</code>（afar 安裝與建置）</td></tr>
+    <tr><td>簡報</td><td><code>GEPS_ROCm_加速報告.pptx</code>、<a href="https://claude.ai/artifact/RVvPkgfKgzvgjNKkJLtVmX">主管簡報（09-26）</a></td></tr>
+    <tr><td>版控</td><td><code>feature/multi-compiler</code>：<code>4424cf83</code>（09-18 可運作版本）之後再 9 個 commit，HEAD <code>ae43e781</code>，工作樹乾淨</td></tr>
+  </table></div>
+</section>
+
+<section id="lessons">
+  <h2>方法上的教訓</h2>
+  <ol class="list">
+    <li><b>先量再下結論。</b>過程中有六個看似合理的假設被量測推翻（例如「特徵向量是垃圾」其實是探針量錯）。假設和結論在紀錄裡要分開寫。</li>
+    <li><b>探針樣本要涵蓋目標。</b>有一天內五個錯誤結論，都來自樣本沒有涵蓋問題所在的位置。</li>
+    <li><b>先建立 CPU 基準，再逐波數從兩端夾。</b>數值問題是靠 CPU 與 GPU 逐常式、逐波數對照才定位到的。</li>
+    <li><b>「數值錯」常常是 stream 競態。</b>四類競態看起來都像演算法錯誤。先搜尋產生碼裡沒被等待的 stream 操作，再提理論。</li>
+    <li><b>逐位元相同當驗收標準。</b>這個標準在優化期間抓到一個編譯器 bug（巢狀 reduction）。</li>
+    <li><b>先看執行檔時間戳。</b>有兩次建置失敗但舊執行檔照跑，差點當成實驗結果。</li>
+  </ol>
+</section>
+
+<section id="next">
+  <h2>未完成事項</h2>
+  <div class="tbl"><table>
+    <tr><th>項目</th><th>狀態</th><th>說明</th></tr>
+    <tr><td>寄出 AMD 回覆</td><td><span class="pill warn">待決定</span></td><td>中文草稿 <code>AFAR_reply_zh.md</code> 與英文附件已更新到最新結果，尚未寄出</td></tr>
+    <tr><td>單卡（NPEY=1）</td><td><span class="pill warn">未做</span></td><td>單 rank 工作集估計約 220 GB，超過 192 GB</td></tr>
+    <tr><td>上游回報 GEPS 原始碼問題</td><td><span class="pill warn">未做</span></td><td><code>hdiffu</code> wmax 競態、<code>intgrt_gpu</code> poly 引數、<code>adjptqintp</code> 越界讀、sflx <code>snoexp</code> 未初始化</td></tr>
+    <tr><td>OpenMPI <code>MPI_DOUBLE_PRECISION</code></td><td><span class="pill warn">未修</span></td><td>自編 OpenMPI 缺 <code>-fdefault-double-8</code>，是 16 bytes；目前一律用 <code>MPI_REAL8</code></td></tr>
+    <tr><td>進一步加速（保持逐位元相同）</td><td>機會</td><td>NDSL kernel 合併、RCCL 轉置與計算重疊、輻射 column 迴圈</td></tr>
+    <tr><td>進一步加速（會改捨入）</td><td>需決策</td><td>自寫單一 launch 的多緯度 FFT、Legendre 小 dgemm 改 grouped GEMM。數值仍在 1e-11 量級，但不再逐位元相同</td></tr>
+    <tr><td>切換到 afar</td><td>等 AMD</td><td>PoC 03（記憶體池）與 device heap 改善後，以 24 小時預報重測</td></tr>
+  </table></div>
+</section>
+
+<footer class="src">
+  <div>數字來源：<code>GEPS/ROCM_OPTIMIZATION_REPORT.md</code>、<code>GEPS/ROCM_PORT_HANDOFF.md</code>、<code>GEPS/job/TCo383L72_IC_sample_rocm.log.*</code>、<code>GEPS/qa/rocm_toolchain_poc/</code></div>
+</footer>
+
+</div>

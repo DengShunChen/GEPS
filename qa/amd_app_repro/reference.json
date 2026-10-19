@@ -1,0 +1,27 @@
+{
+  "_comment": "surf pres tend rms(GPU), mb/hrs, printed once per step. Measured on 2x MI300X (SPX/NPS1), 2026-10-01, source = commit abac239f or later. Logs named after job/TCo383L72_IC_sample_rocm.log.<name>.",
+  "afar-24.3.0": {
+    "log_1h": "20261001_2gpu_afar_defaults",
+    "log_24h": "20261001_2gpu_afar_24h_cap48",
+    "sptend_1h": [0.43807396825058964, 0.4462741042925625, 0.4275272147313447, 0.4039810445886566, 0.39681622295415525, 0.3925504241467753],
+    "sptend_24h": {"36": 0.37799180448329383, "72": 0.3745103795504178, "144": 0.35008264843432285},
+    "sec_per_step_1h_mean_steps_3_6": 2.31,
+    "sec_24h_sum_steps_3_144": 431.8,
+    "sec_24h_median": 2.35,
+    "peak_vram_gib_24h": 167.2
+  },
+  "rocm-7.2.2": {
+    "log_1h": "20261001_2gpu_r722_sflx",
+    "log_24h": "20261001_2gpu_r722_24h_sflx",
+    "sptend_1h": [0.43807396825059497, 0.4462741042925732, 0.4275272147313331, 0.403981044588656, 0.3968162229541496, 0.39255042414676805],
+    "sptend_24h": {"36": 0.3779918044757443, "72": 0.3733864658251453, "144": 0.35047487674616895},
+    "sec_per_step_1h_mean_steps_3_6": 2.21,
+    "sec_24h_sum_steps_3_144": 415.7,
+    "sec_24h_median": 2.28,
+    "peak_vram_gib_24h": 176.9
+  },
+  "cpu-32-cores": {
+    "sptend_step1": 0.4380739682505907,
+    "sec_per_step": 10.5
+  }
+}
